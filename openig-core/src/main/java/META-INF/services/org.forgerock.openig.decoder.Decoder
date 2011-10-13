@@ -1,0 +1,2 @@
+org.forgerock.openig.decoder.GzipDecoder
+org.forgerock.openig.decoder.DeflateDecoder
