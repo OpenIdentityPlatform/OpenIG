@@ -29,12 +29,12 @@
  xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
  <properties>
   <title>OpenIDM News</title>
-  <author email="openidm-dev@forgerock.org">ForgeRock AS</author>
+  <author email="openig@forgerock.org">ForgeRock AS</author>
  </properties>
  <body>
-  <section name="New Releases">
-   <p>ForgeRock Identity Gateway release 2.0 coming soon.
-   <a href="http://www.forgerock.org/openidm.html">Visit the download page</a> 
+  <section name="New Release">
+   <p>ForgeRock Identity Gateway release 2.0 is here !
+   <a href="http://www.forgerock.org/openig.html">Visit the download page</a> 
    to get started.
   </p>
   </section>
