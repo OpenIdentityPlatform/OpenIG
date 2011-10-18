@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011 ForgeRock AS
+  !    
+-->
+<project name="${project.name}"
+ xmlns="http://maven.apache.org/DECORATION/1.0.1"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1 http://maven.apache.org/xsd/decoration-1.0.1.xsd">
+
+ <skin>
+  <groupId>org.forgerock.commons</groupId>
+  <artifactId>forgerock-community-skin</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+ </skin>
+ <publishDate position="right" format="yyyy.MM.dd" />
+ <version position="right" />
+
+ <body>
+ 
+  <breadcrumbs>
+   <item name="Developer Community" href="http://www.forgerock.org" />
+   <item name="OpenIG" href="http://openig.forgerock.org" />
+  </breadcrumbs>
+ 
+  <menu name="OpenIG">
+   <item name="Welcome" href="index.html" />
+   <item name="News" href="news.html" />
+   <item name="Join" href="https://idp.forgerock.org/openam/UI/Login?service=register" />
+   <item name="Downloads" href="http://www.forgerock.org/openig.html" />
+   <item name="Mailing List" href="mail-lists.html" />
+   <item name="Support" href="http://forgerock.com/subscriptions.html" />
+   <item name="Partners" href="http://forgerock.com/partners.html" />
+  </menu>
+  
+  <menu name="Core Documentation">
+  <item name="All Docs" href="http://resources.apexidentity.com" />
+  </menu>
+
+  <menu name="OpenIG Development">
+   <item name="Join" href="https://idp.forgerock.org/openam/UI/Login?service=register" />
+   <item name="Issue Tracking" href="issue-tracking.html" />
+   <item name="License" href="license.html" />
+   <item name="Source Repository" href="source-repository.html" />
+  </menu>
+  
+ </body>
+ 
+ <custom>
+  <googleAnalytics>UA-23412190-5</googleAnalytics>
+  <openproject>
+   <href>http://openig.forgerock.org/</href>
+   <src>./images/openig-tagline-177x65.png</src>
+   <alt>OpenIG</alt>
+  </openproject>
+  <siteSearchFQDN>openig.forgerock.org</siteSearchFQDN>
+ </custom>
+
+</project>
