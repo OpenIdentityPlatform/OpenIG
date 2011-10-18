@@ -18,11 +18,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+      <groupId>org.forgerock</groupId>
+      <artifactId>forgerock-parent</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </parent>
     <groupId>org.forgerock.openig</groupId>
     <artifactId>openig-project</artifactId>
     <packaging>pom</packaging>
     <version>2.0.0-SNAPSHOT</version>
-    <name>OpenIG parent project</name>
+    <name>OpenIG Project</name>
+    <description>
+       The ForgeRock Identity Gateway is a high-performance reverse proxy server with
+       specialized session management and credential replay functionality.
+    </description>
+    <url>http://openig.forgerock.org</url>
     <modules>
         <module>openig-core</module>
         <module>openig-war</module>
@@ -55,4 +65,47 @@
             <url>http://download.java.net/maven/2/</url>
         </repository>
     </repositories>
+    <issueManagement>
+        <system>jira</system>
+        <url>https://bugster.forgerock.org/jira/browse/OPENIG</url>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>CDDL-1.0</name>
+            <url>http://www.opensource.org/licenses/cddl1.php</url>
+            <comments>Common Development and Distribution License (CDDL) 1.0.
+            This license applies to OpenIG source code as indicated in the
+            source code.</comments>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>CC BY-NC-ND 3.0</name>
+            <url>http://creativecommons.org/licenses/by-nc-nd/3.0/</url>
+            <comments>Creative Commons Attribution-NonCommercial-NoDerivs 3.0
+            Unported. This license applies to the site content, and to the
+            documentation as indicated in the documentation source code.</comments>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
+        <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
+        <url>http://sources.forgerock.org/browse/openig/trunk</url>
+    </scm>
+    <mailingLists>
+        <mailingList>
+            <name>OpenIG: Users</name>
+            <post>openig@forgerock.org</post>
+            <subscribe>http://lists.forgerock.org/mailman/listinfo/openig</subscribe>
+            <unsubscribe>http://lists.forgerock.org/mailman/listinfo/openig</unsubscribe>
+            <archive>http://lists.forgerock.org/pipermail/openig/</archive>
+        </mailingList>
+        <mailingList>
+            <name>OpenIG: Commit Notificatons</name>
+            <post>commitopenig@forgerock.org</post>
+            <subscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</subscribe>
+            <unsubscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</unsubscribe>
+            <archive>http://lists.forgerock.org/pipermail/commitopenig/</archive>
+        </mailingList>
+    </mailingLists>
 </project>
