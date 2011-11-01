@@ -39,8 +39,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -181,15 +181,15 @@ public class DispatchServlet extends HttpServlet {
      * Creates and initializes a dispatch servlet in a heap environment.
      */
     public static class Heaplet extends GenericServletHeaplet {
-        @Override public HttpServlet createServlet() throws HeapException, JsonNodeException {
+        @Override public HttpServlet createServlet() throws HeapException, JsonValueException {
             DispatchServlet servlet = new DispatchServlet();
-            for (JsonNode bindingNode : config.get("bindings").required().expect(List.class)) { // required
-                bindingNode.required().expect(Map.class); // object, required
+            for (JsonValue bindingValue : config.get("bindings").required().expect(List.class)) { // required
+                bindingValue.required().expect(Map.class); // object, required
                 Binding binding = new Binding();
-                binding.pattern = bindingNode.get("pattern").required().asPattern();
-                binding.object = HeapUtil.getRequiredObject(heap, bindingNode.get("object"), Object.class);
+                binding.pattern = bindingValue.get("pattern").required().asPattern();
+                binding.object = HeapUtil.getRequiredObject(heap, bindingValue.get("object"), Object.class);
                 if (!(binding.object instanceof HttpServlet) && !(binding.object instanceof Filter)) {
-                    throw new JsonNodeException(bindingNode.get("object"), "must be " + Filter.class.getName() + " or " + HttpServlet.class.getName());
+                    throw new JsonValueException(bindingValue.get("object"), "must be " + Filter.class.getName() + " or " + HttpServlet.class.getName());
                 }
                 servlet.bindings.add(binding);
             }

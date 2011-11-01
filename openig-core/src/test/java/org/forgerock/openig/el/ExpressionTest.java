@@ -64,7 +64,7 @@ public class ExpressionTest {
     public void exchangeRequestHeader() throws ExpressionException {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.put("Host", "www.example.com");
+        exchange.request.headers.putSingle("Host", "www.example.com");
         Expression expr = new Expression("${exchange.request.headers['Host'][0]}");
         String host = expr.eval(exchange, String.class);
         assertThat(host).isEqualTo("www.example.com");

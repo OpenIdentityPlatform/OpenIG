@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -34,7 +34,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
@@ -84,26 +84,26 @@ public class AssignmentFilter extends GenericFilter {
 
     /** Creates and initializes an assignment filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
-            AssignmentFilter filter = new AssignmentFilter();
-            filter.onRequest.addAll(asBindings("onRequest"));
-            filter.onResponse.addAll(asBindings("onResponse"));
-            return filter;
+        @Override public Object create() throws HeapException, JsonValueException {
+            AssignmentFilter result = new AssignmentFilter();
+            result.onRequest.addAll(asBindings("onRequest"));
+            result.onResponse.addAll(asBindings("onResponse"));
+            return result;
         }
-        private ArrayList<Binding> asBindings(String name) throws JsonNodeException {
-            ArrayList<Binding> bindings = new ArrayList<Binding>();
-            JsonNode bindingsNode = config.get(name).expect(List.class); // optional
-            for (JsonNode bindingNode : bindingsNode) {
-                bindings.add(asBinding(bindingNode.required().expect(Map.class)));
+        private ArrayList<Binding> asBindings(String name) throws JsonValueException {
+            ArrayList<Binding> result = new ArrayList<Binding>();
+            JsonValue bindings = config.get(name).expect(List.class); // optional
+            for (JsonValue binding : bindings) {
+                result.add(asBinding(binding.required().expect(Map.class)));
             }
-            return bindings;
+            return result;
         }
-        private Binding asBinding(JsonNode node) throws JsonNodeException {
-            Binding binding = new Binding();
-            binding.condition = JsonNodeUtil.asExpression(node.get("condition")); // optional
-            binding.target = JsonNodeUtil.asExpression(node.get("target").required()); // required
-            binding.value = JsonNodeUtil.asExpression(node.get("value")); // optional
-            return binding;
+        private Binding asBinding(JsonValue value) throws JsonValueException {
+            Binding result = new Binding();
+            result.condition = JsonValueUtil.asExpression(value.get("condition")); // optional
+            result.target = JsonValueUtil.asExpression(value.get("target").required()); // required
+            result.value = JsonValueUtil.asExpression(value.get("value")); // optional
+            return result;
         }
     }
 }

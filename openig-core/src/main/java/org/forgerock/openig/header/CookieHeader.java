@@ -123,7 +123,7 @@ public class CookieHeader implements Header {
     public void toMessage(Message message) {
         String value = toString();
         if (value != null) {
-            message.headers.put(getKey(), value);
+            message.headers.putSingle(getKey(), value);
         }
     }
 

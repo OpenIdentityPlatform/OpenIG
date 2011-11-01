@@ -28,7 +28,7 @@ import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -43,7 +43,7 @@ import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
@@ -149,10 +149,10 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
     /** Creates and initializes an HTTP basic authentication filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-            filter.username = JsonNodeUtil.asExpression(config.get("username").required());
-            filter.password = JsonNodeUtil.asExpression(config.get("password").required());
+            filter.username = JsonValueUtil.asExpression(config.get("username").required());
+            filter.password = JsonValueUtil.asExpression(config.get("password").required());
             filter.failureHandler = HeapUtil.getObject(heap, config.get("failureHandler").required(), Handler.class); // required
             return filter;
         }

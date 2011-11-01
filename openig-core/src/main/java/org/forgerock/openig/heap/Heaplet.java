@@ -18,8 +18,8 @@
 package org.forgerock.openig.heap;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.util.Indexed;
@@ -36,7 +36,7 @@ public interface Heaplet extends Indexed<Class> {
      * Returns the class of object that the heaplet will create.
      */ 
     @Override
-    Class getKey();
+    Class<?> getKey();
 
     /**
      * Called to request the heaplet create an object.
@@ -46,9 +46,9 @@ public interface Heaplet extends Indexed<Class> {
      * @param heap the heap where object dependencies can be retrieved.
      * @return the object created by the heaplet.
      * @throws HeapException if an exception occurred during creation of the object or any of its dependencies.
-     * @throws JsonNodeException if the heaplet (or one of its dependencies) has a malformed configuration object.
+     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration object.
      */
-    Object create(String name, JsonNode config, Heap heap) throws HeapException, JsonNodeException;
+    Object create(String name, JsonValue config, Heap heap) throws HeapException, JsonValueException;
 
     /**
      * Called to indicate that the object created by the heaplet is going to be dereferenced.

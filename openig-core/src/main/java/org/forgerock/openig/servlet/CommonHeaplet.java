@@ -29,8 +29,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -79,11 +79,11 @@ abstract class CommonHeaplet extends NestedHeaplet {
      * Configures the servlet context and initialization parameters.
      *
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonNodeException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    protected void configure() throws HeapException, JsonNodeException {
+    protected void configure() throws HeapException, JsonValueException {
         servletContext = HeapUtil.getRequiredObject(heap, config.get("servletContext").defaultTo("ServletContext"), ServletContext.class);
-        JsonNode initParams = config.get("initParams").expect(Map.class); // optional
+        JsonValue initParams = config.get("initParams").expect(Map.class); // optional
         for (String key : initParams.keys()) {
             this.initParams.put(key, initParams.get(key).asString());
         }

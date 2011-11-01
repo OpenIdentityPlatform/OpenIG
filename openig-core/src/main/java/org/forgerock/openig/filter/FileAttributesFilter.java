@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -34,7 +34,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.openig.text.SeparatedValuesFile;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.LazyMap;
 
 /**
@@ -89,16 +89,16 @@ public class FileAttributesFilter extends GenericFilter {
 
     /** Creates and initializes a separated values file attribute provider in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             FileAttributesFilter filter = new FileAttributesFilter();
-            filter.target = JsonNodeUtil.asExpression(config.get("target").required());
+            filter.target = JsonValueUtil.asExpression(config.get("target").required());
             filter.file.file = new File(config.get("file").required().asString());
             filter.file.charset = config.get("charset").defaultTo("UTF-8").asCharset();
             filter.file.separator = config.get("separator").defaultTo("COMMA").asEnum(Separators.class).separator;
             filter.file.header = config.get("header").defaultTo(true).asBoolean();
             filter.file.fields = config.get("fields").asList(String.class);
             filter.key = config.get("key").required().asString();
-            filter.value = JsonNodeUtil.asExpression(config.get("value").required());
+            filter.value = JsonValueUtil.asExpression(config.get("value").required());
             return filter;
         }
     }

@@ -21,11 +21,11 @@ package org.forgerock.openig.servlet;
 import javax.servlet.Filter;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Creates and initializes a stock servlet filter in a heap environment.
@@ -36,7 +36,7 @@ public class ServletFilterHeaplet extends GenericFilterHeaplet {
     @Override public Class getKey() {
         return Filter.class;
     }
-    @Override public Filter createFilter() throws HeapException, JsonNodeException {
-        return JsonNodeUtil.asNewInstance(config.get("class").required(), Filter.class);
+    @Override public Filter createFilter() throws HeapException, JsonValueException {
+        return JsonValueUtil.asNewInstance(config.get("class").required(), Filter.class);
     }
 }

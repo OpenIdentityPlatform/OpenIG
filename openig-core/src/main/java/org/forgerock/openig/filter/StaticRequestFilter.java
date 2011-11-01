@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -37,7 +37,7 @@ import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.MultiValueMap;
 
 /**
@@ -111,24 +111,24 @@ public class StaticRequestFilter extends GenericFilter {
 
     /** Creates and initializes a request filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             StaticRequestFilter filter = new StaticRequestFilter();
             filter.method = config.get("method").required().asString(); // required
             filter.uri = config.get("uri").required().asURI(); // required
             filter.version = config.get("version").asString(); // optional
-            JsonNode headers = config.get("headers").expect(Map.class); // optional
+            JsonValue headers = config.get("headers").expect(Map.class); // optional
             if (headers != null) {
                 for (String key : headers.keys()) {
-                    for (JsonNode value : headers.get(key).required().expect(List.class)) {
-                        filter.headers.add(key, JsonNodeUtil.asExpression(value.required()));
+                    for (JsonValue value : headers.get(key).required().expect(List.class)) {
+                        filter.headers.add(key, JsonValueUtil.asExpression(value.required()));
                     }
                 }
             }
-            JsonNode form = config.get("form").expect(Map.class); // optional
+            JsonValue form = config.get("form").expect(Map.class); // optional
             if (form != null) {
                 for (String key : form.keys()) {
-                    for (JsonNode value : form.get(key).required().expect(List.class)) {
-                        filter.form.add(key, JsonNodeUtil.asExpression(value.required()));
+                    for (JsonValue value : form.get(key).required().expect(List.class)) {
+                        filter.form.add(key, JsonValueUtil.asExpression(value.required()));
                     }
                 }
             }

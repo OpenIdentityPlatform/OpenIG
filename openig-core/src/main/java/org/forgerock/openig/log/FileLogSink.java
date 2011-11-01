@@ -26,7 +26,7 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -85,7 +85,7 @@ public class FileLogSink implements LogSink {
 
     /** Creates and initializes a console sink in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             FileLogSink sink = new FileLogSink();
             sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
             sink.file = config.get("file").required().asFile();
@@ -93,7 +93,7 @@ public class FileLogSink implements LogSink {
                 FileOutputStream out = new FileOutputStream(sink.file, true);
                 out.close();
             } catch (IOException ioe) {
-                throw new JsonNodeException(config.get("file"), ioe);
+                throw new JsonValueException(config.get("file"), ioe);
             }
             return sink;
         }

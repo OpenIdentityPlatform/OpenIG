@@ -186,8 +186,8 @@ public class Form extends MultiValueMap<String, String> {
     public void toRequestEntity(Request request) {
         String form = toString();
         request.method = "POST";
-        request.headers.put("Content-Type", "application/x-www-form-urlencoded");
-        request.headers.put("Content-Length", Integer.toString(form.length()));
+        request.headers.putSingle("Content-Type", "application/x-www-form-urlencoded");
+        request.headers.putSingle("Content-Length", Integer.toString(form.length()));
         request.entity = new ByteArrayBranchingStream(form.getBytes());
     }
 }

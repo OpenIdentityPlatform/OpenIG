@@ -26,8 +26,8 @@ import java.net.URI;
 import javax.servlet.ServletContext;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.json.JSONRepresentation;
@@ -105,9 +105,9 @@ public class ConfigResource implements Resource {
             JSONRepresentation representation = new JSONRepresentation();
             bootResource.read(representation);
             try {
-                this.resource = Resources.newInstance(new JsonNode(representation.object).get("configURI").required().asURI());
-            } catch (JsonNodeException jne) {
-                throw new ResourceException(jne);
+                this.resource = Resources.newInstance(new JsonValue(representation.object).get("configURI").required().asURI());
+            } catch (JsonValueException jve) {
+                throw new ResourceException(jve);
             }
         }
     }

@@ -30,7 +30,7 @@ public abstract class NestedHeaplet extends GenericHeaplet {
      * Returns the the enclosing class.
      */
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return getClass().getEnclosingClass();
     }
 }

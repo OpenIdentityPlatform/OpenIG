@@ -18,7 +18,7 @@
 package org.forgerock.openig.heap;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 /**
  * Manages a collection of associated objects created and initialized by {@link Heaplet}
@@ -36,7 +36,7 @@ public interface Heap {
      * @param name the name of the object in the heap to be retrieved.
      * @return the requested object from the heap, or {@code null} if no such object exists.
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonNodeException if a heaplet (or one of its dependencies) has a malformed configuration object.
+     * @throws JsonValueException if a heaplet (or one of its dependencies) has a malformed configuration object.
      */
-    Object get(String name) throws HeapException, JsonNodeException;
+    Object get(String name) throws HeapException, JsonValueException;
 }

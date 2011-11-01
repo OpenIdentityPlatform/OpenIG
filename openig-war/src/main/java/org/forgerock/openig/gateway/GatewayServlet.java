@@ -29,8 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.config.Config;
@@ -58,7 +58,7 @@ public class GatewayServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             ServletContext context = getServletConfig().getServletContext();
-            JsonNode config = new Config(new ConfigResource("ForgeRock", "OpenIG", context)).read();
+            JsonValue config = new Config(new ConfigResource("ForgeRock", "OpenIG", context)).read();
             HeapImpl heap = new HeapImpl();
             heap.put("ServletContext", context); // can be overridden in config
             heap.put("TemporaryStorage", new TemporaryStorage()); // can be overridden in config
@@ -67,8 +67,8 @@ public class GatewayServlet extends HttpServlet {
             servlet = HeapUtil.getRequiredObject(heap, config.get("servletObject").required(), HttpServlet.class);
         } catch (HeapException he) {
             throw new ServletException(he);
-        } catch (JsonNodeException me) {
-            throw new ServletException(me);
+        } catch (JsonValueException jve) {
+            throw new ServletException(jve);
         } catch (ResourceException re) {
             throw new ServletException(re); 
         }

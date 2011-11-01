@@ -50,7 +50,7 @@ public class Loader {
      * @param name the fully qualified name of the desired class.
      * @return the Class object for the class with the specified name.
      */
-    public static Class getClass(String name) {
+    public static Class<?> getClass(String name) {
         try {
             return Class.forName(name, true, getClassLoader());
         } catch (Throwable t) {

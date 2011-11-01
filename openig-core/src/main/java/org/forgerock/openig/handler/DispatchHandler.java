@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -37,7 +37,7 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.URIUtil;
 
 /**
@@ -96,14 +96,14 @@ public class DispatchHandler extends GenericHandler {
      * Creates and initializes a dispatch handler in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             DispatchHandler handler = new DispatchHandler();
-            for (JsonNode node : config.get("bindings").expect(List.class)) {
-                node.required().expect(Map.class);
+            for (JsonValue jv : config.get("bindings").expect(List.class)) {
+                jv.required().expect(Map.class);
                 Binding binding = new Binding();
-                binding.condition = JsonNodeUtil.asExpression(node.get("condition")); // default: unconditional
-                binding.handler = HeapUtil.getRequiredObject(heap, node.get("handler"), Handler.class);
-                binding.baseURI = node.get("baseURI").asURI(); // optional
+                binding.condition = JsonValueUtil.asExpression(jv.get("condition")); // default: unconditional
+                binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                binding.baseURI = jv.get("baseURI").asURI(); // optional
                 handler.bindings.add(binding);
             }
             return handler;

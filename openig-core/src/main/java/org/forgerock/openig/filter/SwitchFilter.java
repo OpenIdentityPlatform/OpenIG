@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -36,7 +36,7 @@ import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
@@ -87,24 +87,24 @@ public class SwitchFilter extends GenericFilter {
      * Creates and initializes an expect filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
-            SwitchFilter filter = new SwitchFilter();
-            filter.onRequest.addAll(asCases("onRequest"));
-            filter.onResponse.addAll(asCases("onResponse"));
-            return filter;
+        @Override public Object create() throws HeapException, JsonValueException {
+            SwitchFilter result = new SwitchFilter();
+            result.onRequest.addAll(asCases("onRequest"));
+            result.onResponse.addAll(asCases("onResponse"));
+            return result;
         }
-        private List<Case> asCases(String name) throws HeapException, JsonNodeException {
-            ArrayList<Case> cases = new ArrayList<Case>();
-            JsonNode casesNode = config.get(name).expect(List.class); // optional
-            for (JsonNode caseNode : casesNode) {
-                cases.add(asCase(caseNode.required().expect(Map.class)));
+        private List<Case> asCases(String name) throws HeapException, JsonValueException {
+            ArrayList<Case> result = new ArrayList<Case>();
+            JsonValue cases = config.get(name).expect(List.class); // optional
+            for (JsonValue _case : cases) {
+                result.add(asCase(_case.required().expect(Map.class)));
             }
-            return cases;
+            return result;
         }
-        private Case asCase(JsonNode caseNode) throws HeapException, JsonNodeException {
+        private Case asCase(JsonValue _case) throws HeapException, JsonValueException {
             Case result = new Case();
-            result.condition = JsonNodeUtil.asExpression(caseNode.get("condition")); // optional
-            result.handler = HeapUtil.getRequiredObject(heap, caseNode.get("handler"), Handler.class);
+            result.condition = JsonValueUtil.asExpression(_case.get("condition")); // optional
+            result.handler = HeapUtil.getRequiredObject(heap, _case.get("handler"), Handler.class);
             return result;
         }
     }

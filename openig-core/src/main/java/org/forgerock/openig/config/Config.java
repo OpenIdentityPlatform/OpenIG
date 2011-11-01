@@ -21,8 +21,8 @@ package org.forgerock.openig.config;
 import javax.servlet.ServletContext;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.json.JSONRepresentation;
@@ -52,13 +52,13 @@ public class Config {
      * Reads a configuration object from the configuration resource.
      *
      * @return the configuration object read from a JSON object resource.
-     * @throws JsonNodeException if either the bootstrap or configuration JSON resource is malformed.
+     * @throws JsonValueException if either the bootstrap or configuration JSON resource is malformed.
      * @throws ResourceException if the configuration could not be read.
      */
-    public JsonNode read() throws JsonNodeException, ResourceException {
+    public JsonValue read() throws JsonValueException, ResourceException {
         JSONRepresentation representation = new JSONRepresentation();
         resource.read(representation);
-        return new JsonNode(representation.object); // configuration files are JSON objects
+        return new JsonValue(representation.object); // configuration files are JSON objects
     }
 
     /**
@@ -67,7 +67,7 @@ public class Config {
      * @param config the configuration object to write as a JSON object resource.
      * @throws ResourceException if the configuration could not be written.
      */
-    public void write(JsonNode config) throws ResourceException {
+    public void write(JsonValue config) throws ResourceException {
         JSONRepresentation representation = new JSONRepresentation(config.getValue());
         try {
             resource.update(representation);

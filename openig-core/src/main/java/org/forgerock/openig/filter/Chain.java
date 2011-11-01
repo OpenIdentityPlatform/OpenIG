@@ -23,8 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.GenericHandler;
@@ -76,9 +76,9 @@ public class Chain extends GenericHandler {
 
     /** Creates and initializes a filter chain in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             Chain chain = new Chain();
-            for (JsonNode filter : config.get("filters").required().expect(List.class)) {
+            for (JsonValue filter : config.get("filters").required().expect(List.class)) {
                 chain.filters.add(HeapUtil.getRequiredObject(heap, filter, Filter.class));
             }
             chain.handler = HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class);

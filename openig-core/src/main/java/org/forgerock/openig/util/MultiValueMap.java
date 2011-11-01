@@ -119,7 +119,7 @@ public class MultiValueMap<K, V> extends MapDecorator<K, List<V>> {
      * @param key key with which the specified value is to be mapped.
      * @param value the single value to be mapped to the specified key.
      */
-    public void put(K key, V value) {
+    public void putSingle(K key, V value) {
         remove(key);
         add(key, value);
     }

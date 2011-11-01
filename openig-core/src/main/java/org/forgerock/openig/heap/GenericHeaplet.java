@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.io.TemporaryStorage;
@@ -46,7 +46,7 @@ public abstract class GenericHeaplet implements Heaplet {
     protected String name;
 
     /** The heaplet's object configuration object. */
-    protected JsonNode config;
+    protected JsonValue config;
 
     /** Where objects should be put and where object dependencies should be retrieved. */
     protected Heap heap;
@@ -61,7 +61,7 @@ public abstract class GenericHeaplet implements Heaplet {
     protected Object object;
 
     @Override
-    public abstract Class getKey();
+    public abstract Class<?> getKey();
 
     /**
      * Initializes protected field members and calls the abstract {@link #create()} method. If
@@ -69,7 +69,7 @@ public abstract class GenericHeaplet implements Heaplet {
      * automatically injected with {@code logger} and {@code storage} objects. 
      */
     @Override
-    public Object create(String name, JsonNode config, Heap heap) throws HeapException, JsonNodeException {
+    public Object create(String name, JsonValue config, Heap heap) throws HeapException, JsonValueException {
         this.name = name;
         this.config = config.required().expect(Map.class);
         this.heap = heap;
@@ -93,11 +93,11 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /**
      * Called to request the heaplet create an object. Called by
-     * {@link GenericHeaplet#create(String, JsonNode, Heap)} after initializing the
+     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after initializing the
      * protected field members.
      *
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonNodeException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract Object create() throws HeapException, JsonNodeException;
+    public abstract Object create() throws HeapException, JsonValueException;
 }

@@ -90,7 +90,7 @@ public class ConnectionHeader implements Header {
     public void toMessage(Message message) {
         String value = toString();
         if (value != null) {
-            message.headers.put(NAME, value);
+            message.headers.putSingle(NAME, value);
         }
     }
 

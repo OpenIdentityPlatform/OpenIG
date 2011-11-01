@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
@@ -163,7 +163,7 @@ public class HandlerServlet extends HttpServlet {
 
     /** Creates and initializes a handler servlet in a heap environment. */
     public static class Heaplet extends GenericServletHeaplet {
-        @Override public HttpServlet createServlet() throws HeapException, JsonNodeException {
+        @Override public HttpServlet createServlet() throws HeapException, JsonValueException {
             HandlerServlet servlet = new HandlerServlet();
             servlet.handler = HeapUtil.getRequiredObject(heap, config.get("handler").required(), Handler.class);
             servlet.baseURI = config.get("baseURI").asURI(); // optional

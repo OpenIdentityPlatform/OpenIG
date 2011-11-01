@@ -21,19 +21,19 @@ package org.forgerock.openig.util;
 import java.util.HashMap;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 
 /**
- * Provides additional functionality to JsonNode.
+ * Provides additional functionality to JsonValue.
  *
  * @author Paul C. Bryan
  */ 
-public class JsonNodeUtil {
+public class JsonValueUtil {
 
     /** TODO: Description. */
     private static final HashMap<String, String> aliases = new HashMap<String, String>();
@@ -66,12 +66,12 @@ public class JsonNodeUtil {
     /**
      * TODO: Description.
      *
-     * @param node TODO.
+     * @param value TODO.
      * @return TODO.
-     * @throws JsonNodeException if value is not a string or the named class could not be found.
+     * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    private static Class classForName(JsonNode node) throws JsonNodeException {
-        String c = node.asString();
+    private static Class classForName(JsonValue value) throws JsonValueException {
+        String c = value.asString();
         String a = aliases.get(c);
         if (a != null) {
             c = a;
@@ -79,7 +79,7 @@ public class JsonNodeUtil {
         try {
             return Class.forName(c, true, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException cnfe) {
-            throw new JsonNodeException(node, cnfe);
+            throw new JsonValueException(value, cnfe);
         }
     }
 
@@ -88,10 +88,10 @@ public class JsonNodeUtil {
      * context class loader. If the value is {@code null}, this method returns {@code null}.
      *
      * @return the class object with the specified name.
-     * @throws JsonNodeException if value is not a string or the named class could not be found.
+     * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    public static Class asClass(JsonNode node) throws JsonNodeException {
-        return (node == null || node.isNull()? null : classForName(node));
+    public static Class asClass(JsonValue value) throws JsonValueException {
+        return (value == null || value.isNull()? null : classForName(value));
     }
 
     /**
@@ -100,44 +100,44 @@ public class JsonNodeUtil {
      * not already been initialized. If the value is {@code null}, this method returns
      * {@code null}.
      *
-     * @param node the node containing the class name string.
+     * @param value the value containing the class name string.
      * @param type the type that the instantiated class should to resolve to.
      * @return a new instance of the requested class.
-     * @throws JsonNodeException if the requested class could not be instantiated.
+     * @throws JsonValueException if the requested class could not be instantiated.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T asNewInstance(JsonNode node, Class<T> type) throws JsonNodeException {
-        if (node == null || node.isNull()) {
+    public static <T> T asNewInstance(JsonValue value, Class<T> type) throws JsonValueException {
+        if (value == null || value.isNull()) {
             return null;
         }
-        Class c = asClass(node);
+        Class c = asClass(value);
         if (!type.isAssignableFrom(c)) {
-            throw new JsonNodeException(node, "expecting " + type.getName()); 
+            throw new JsonValueException(value, "expecting " + type.getName()); 
         }
         try {
             return (T)c.newInstance();
         } catch (ExceptionInInitializerError eiie) {
-            throw new JsonNodeException(node, eiie);
+            throw new JsonValueException(value, eiie);
         } catch (IllegalAccessException iae) {
-            throw new JsonNodeException(node, iae);
+            throw new JsonValueException(value, iae);
         } catch (InstantiationException ie) {
-            throw new JsonNodeException(node, ie);
+            throw new JsonValueException(value, ie);
         }
     }
 
     /**
-     * Returns a node string value as an expression. If the value is {@code null}, this
+     * Returns a JSON value string value as an expression. If the value is {@code null}, this
      * method returns {@code null}.
      *
-     * @param node the node containing the expression string.
+     * @param value the JSON value containing the expression string.
      * @return the expression represented by the string value.
-     * @throws JsonNodeException if the value is not a string or the value is not a valid expression.
+     * @throws JsonValueException if the value is not a string or the value is not a valid expression.
      */
-    public static Expression asExpression(JsonNode node) throws JsonNodeException {
+    public static Expression asExpression(JsonValue value) throws JsonValueException {
         try {
-            return (node == null || node.isNull() ? null : new Expression(node.asString()));
+            return (value == null || value.isNull() ? null : new Expression(value.asString()));
         } catch (ExpressionException ee) {
-            throw new JsonNodeException(node, ee);
+            throw new JsonValueException(value, ee);
         }
     }
 }

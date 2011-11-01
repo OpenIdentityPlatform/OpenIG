@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -34,7 +34,7 @@ import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Processes an exchange through a sequence of handlers. This allows multi-request processing
@@ -77,13 +77,13 @@ public class SequenceHandler extends GenericHandler {
 
     /** Creates and initializes a sequence handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             SequenceHandler handler = new SequenceHandler();
-            for (JsonNode node : config.get("bindings").required().expect(List.class)) {
-                node.required().expect(Map.class);
+            for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
+                jv.required().expect(Map.class);
                 Binding binding = new Binding();
-                binding.handler = HeapUtil.getRequiredObject(heap, node.get("handler"), Handler.class);
-                binding.postcondition = JsonNodeUtil.asExpression(node.get("postcondition")); // optional
+                binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                binding.postcondition = JsonValueUtil.asExpression(jv.get("postcondition")); // optional
                 handler.bindings.add(binding);
             }
             return handler;

@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -42,7 +42,7 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.EnumerableMap;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either
@@ -114,19 +114,19 @@ public class EntityExtractFilter extends GenericFilter {
 
     /** Creates and initializes an entity extract handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             EntityExtractFilter filter = new EntityExtractFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
             filter.charset = config.get("charset").asCharset(); // optional
-            filter.target = JsonNodeUtil.asExpression(config.get("target").required());
-            for (JsonNode node : config.get("bindings").required().expect(List.class)) {
-                node.required().expect(Map.class);
-                String key = node.get("key").required().asString();
+            filter.target = JsonValueUtil.asExpression(config.get("target").required());
+            for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
+                jv.required().expect(Map.class);
+                String key = jv.get("key").required().asString();
                 if (filter.extractor.patterns.containsKey(key)) {
-                    throw new JsonNodeException(node.get("key"), "Key already defined");
+                    throw new JsonValueException(jv.get("key"), "Key already defined");
                 }
-                filter.extractor.patterns.put(key, node.get("pattern").required().asPattern());
-                String template = node.get("template").asString(); // optional
+                filter.extractor.patterns.put(key, jv.get("pattern").required().asPattern());
+                String template = jv.get("template").asString(); // optional
                 if (template != null) {
                     filter.extractor.templates.put(key, new PatternTemplate(template));
                 }

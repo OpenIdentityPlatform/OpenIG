@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -46,7 +46,7 @@ public abstract class GenericServletHeaplet extends CommonHeaplet implements Ser
      * {@link HttpServlet#init(ServletConfig) init(ServletConfig)} method.
      */
     @Override // GenericHeaplet
-    public final Object create() throws HeapException, JsonNodeException {
+    public final Object create() throws HeapException, JsonValueException {
         configure();
         servlet = createServlet();
         try {
@@ -80,7 +80,7 @@ public abstract class GenericServletHeaplet extends CommonHeaplet implements Ser
      * Called to request the heaplet create a servlet object. Called by {@link #create()}.
      *
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonNodeException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract HttpServlet createServlet() throws HeapException, JsonNodeException;
+    public abstract HttpServlet createServlet() throws HeapException, JsonValueException;
 }

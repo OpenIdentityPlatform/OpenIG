@@ -59,7 +59,7 @@ import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.protocol.RequestUserAgent;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.header.ConnectionHeader;
@@ -258,7 +258,7 @@ public class ClientHandler extends GenericHandler {
 
     /** Creates and initializes a client handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             Integer connections = config.get("connections").asInteger(); // optional
             return (connections != null ? new ClientHandler(connections.intValue(), this.storage) : new ClientHandler(this.storage));
         }

@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.Loader;
 
 /**
@@ -43,7 +43,7 @@ public class HeapImpl implements Heap {
     private HashMap<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
 
     /** Configuration objects for heaplets. */
-    private HashMap<String, JsonNode> configs = new HashMap<String, JsonNode>();
+    private HashMap<String, JsonValue> configs = new HashMap<String, JsonValue>();
 
     /** Objects allocated in the heap mapped to heaplet names. */
     private HashMap<String, Object> objects = new HashMap<String, Object>();
@@ -55,19 +55,19 @@ public class HeapImpl implements Heap {
      *
      * @param config a heap configuration object tree containing the heap configuration.
      * @throws HeapException if an exception occurs allocating heaplets.
-     * @throws JsonNodeException if the configuration object is malformed.
+     * @throws JsonValueException if the configuration object is malformed.
      */
-    public synchronized void init(JsonNode config) throws HeapException, JsonNodeException {
+    public synchronized void init(JsonValue config) throws HeapException, JsonValueException {
         // process configuration object model structure
-        for (JsonNode object : config.get("objects").required().expect(List.class)) {
+        for (JsonValue object : config.get("objects").required().expect(List.class)) {
             object.required().expect(Map.class);
-            Heaplet heaplet = Heaplets.getHeaplet(JsonNodeUtil.asClass(object.get("type").required()));
+            Heaplet heaplet = Heaplets.getHeaplet(JsonValueUtil.asClass(object.get("type").required()));
             if (heaplet == null) {
-                throw new JsonNodeException(object.get("type"), "no heaplet available to initialize object");
+                throw new JsonValueException(object.get("type"), "no heaplet available to initialize object");
             }
             String name = object.get("name").required().asString(); // objects[n].name (string)
             if (heaplets.get(name) != null) {
-                throw new JsonNodeException(object.get("name"), "object already defined");
+                throw new JsonValueException(object.get("name"), "object already defined");
             }
             objects.remove(name); // remove pre-allocated objects to be replaced
             heaplets.put(name, heaplet);
@@ -80,7 +80,7 @@ public class HeapImpl implements Heap {
     }
 
     @Override
-    public synchronized Object get(String name) throws HeapException, JsonNodeException {
+    public synchronized Object get(String name) throws HeapException, JsonValueException {
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);

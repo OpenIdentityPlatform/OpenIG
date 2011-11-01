@@ -36,7 +36,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.HandlerException;
@@ -181,7 +181,7 @@ public class CryptoHeaderFilter extends GenericFilter {
 
     /** Creates and initializes a header filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
             filter.operation = config.get("operation").required().asEnum(Operation.class);
@@ -189,12 +189,12 @@ public class CryptoHeaderFilter extends GenericFilter {
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset();
             byte[] key = new Base64(0).decode(config.get("key").required().asString());
             if (key.length == 0) {
-                throw new JsonNodeException(config.get("key"), "Empty key is not allowed");
+                throw new JsonValueException(config.get("key"), "Empty key is not allowed");
             }
             try {
                 filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("DES").asString());
             } catch (IllegalArgumentException iae) {
-                throw new JsonNodeException(config, iae);
+                throw new JsonValueException(config, iae);
             }
             filter.headers.addAll(config.get("headers").defaultTo(Collections.emptyList()).asList(String.class));
             return filter;

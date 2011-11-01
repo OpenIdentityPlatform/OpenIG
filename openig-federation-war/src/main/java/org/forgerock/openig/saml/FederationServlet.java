@@ -44,8 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.config.ConfigUtil;
@@ -60,7 +60,6 @@ import org.forgerock.openig.servlet.GenericServletHeaplet;
 import org.forgerock.openig.servlet.HandlerServlet;
 import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.MultiValueMap;
 
 // OpenAM
 import com.sun.identity.federation.common.FSUtils;
@@ -252,10 +251,10 @@ public class FederationServlet extends HttpServlet {
     }
 
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             final Map<String,String> tagSwapMap = new HashMap<String,String>();
             FederationServlet servlet = new FederationServlet();
-            JsonNode mappings = config.get("assertionMapping").required().expect(Map.class);
+            JsonValue mappings = config.get("assertionMapping").required().expect(Map.class);
             for (String key : mappings.keys()) {
                 servlet.attributeMapping.put(key, mappings.get(key).asString());
             }

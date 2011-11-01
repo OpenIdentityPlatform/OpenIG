@@ -21,11 +21,11 @@ package org.forgerock.openig.servlet;
 import javax.servlet.http.HttpServlet;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Creates and initializes a stock servlet in a heap environment.
@@ -36,7 +36,7 @@ public class HttpServletHeaplet extends GenericServletHeaplet {
     @Override public Class getKey() {
         return HttpServlet.class;
     }
-    @Override public HttpServlet createServlet() throws HeapException, JsonNodeException {
-        return JsonNodeUtil.asNewInstance(config.get("class").required(), HttpServlet.class);
+    @Override public HttpServlet createServlet() throws HeapException, JsonValueException {
+        return JsonValueUtil.asNewInstance(config.get("class").required(), HttpServlet.class);
     }
 }

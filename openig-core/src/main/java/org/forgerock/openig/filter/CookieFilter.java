@@ -33,7 +33,7 @@ import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.HandlerException;
@@ -158,7 +158,7 @@ public class CookieFilter extends GenericFilter {
             sb.append(cookie);
         }
         if (sb.length() > 0) {
-            request.headers.put("Cookie", sb.toString()); // replace any existing header(s)
+            request.headers.putSingle("Cookie", sb.toString()); // replace any existing header(s)
         }
     }
 
@@ -299,7 +299,7 @@ public class CookieFilter extends GenericFilter {
      * Creates and initializes a cookie filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             CookieFilter filter = new CookieFilter();
             filter.suppressed.addAll(config.get("suppressed").defaultTo(Collections.emptyList()).asList(String.class));
             filter.relayed.addAll(config.get("relayed").defaultTo(Collections.emptyList()).asList(String.class));

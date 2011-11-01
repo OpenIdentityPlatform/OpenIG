@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.HandlerException;
@@ -85,11 +85,11 @@ public class HeaderFilter extends GenericFilter {
 
     /** Creates and initializes a header filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             HeaderFilter filter = new HeaderFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class); // required
             filter.remove.addAll(config.get("remove").defaultTo(Collections.emptyList()).asList(String.class)); // optional
-            JsonNode add = config.get("add").defaultTo(Collections.emptyMap()).expect(Map.class); // optional
+            JsonValue add = config.get("add").defaultTo(Collections.emptyMap()).expect(Map.class); // optional
             for (String key : add.keys()) {
                 List<String> values = add.get(key).required().asList(String.class);
                 filter.add.addAll(key, values);

@@ -21,7 +21,7 @@ package org.forgerock.openig.io;
 import java.io.File;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -71,7 +71,7 @@ public class TemporaryStorage implements Factory<Buffer> {
      * Creates and initializes a temporary storage object in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             TemporaryStorage storage = new TemporaryStorage();
             storage.initialLength = config.get("initialLength").defaultTo(storage.initialLength).asInteger();
             storage.memoryLimit = config.get("memoryLimit").defaultTo(storage.memoryLimit).asInteger();

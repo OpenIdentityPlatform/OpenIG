@@ -21,7 +21,7 @@ package org.forgerock.openig.filter;
 import java.io.IOException;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
@@ -77,7 +77,7 @@ public class ExceptionFilter extends GenericFilter {
      * Creates and initializes an exception filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             ExceptionFilter filter = new ExceptionFilter();
             filter.handler = HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class);
             return filter;

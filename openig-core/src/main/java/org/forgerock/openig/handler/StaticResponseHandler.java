@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -42,7 +42,7 @@ import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.Loader;
 import org.forgerock.openig.util.MultiValueMap;
 
@@ -106,16 +106,16 @@ public class StaticResponseHandler extends GenericHandler {
      * Creates and initializes a static response handler in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             StaticResponseHandler handler = new StaticResponseHandler();
             handler.status = config.get("status").required().asInteger(); // required
             handler.reason = config.get("reason").asString(); // optional
             handler.version = config.get("version").asString(); // optional
-            JsonNode headers = config.get("headers").expect(Map.class);
+            JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
                 for (String key : headers.keys()) {
-                    for (JsonNode value : headers.get(key).expect(List.class)) {
-                        handler.headers.add(key, JsonNodeUtil.asExpression(value.required()));
+                    for (JsonValue value : headers.get(key).expect(List.class)) {
+                        handler.headers.add(key, JsonValueUtil.asExpression(value.required()));
                     }
                 }
             }

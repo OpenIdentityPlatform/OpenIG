@@ -23,7 +23,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -45,7 +45,7 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
      * initialized through a call to its {@link Filter#init(FilterConfig)} method.
      */
     @Override // GenericHeaplet
-    public Object create() throws HeapException, JsonNodeException {
+    public Object create() throws HeapException, JsonValueException {
         configure();
         filter = createFilter();
         try {
@@ -79,7 +79,7 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
      * Called to request the heaplet create a filter object. Called by {@link #create()}.
      *
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonNodeException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract Filter createFilter() throws HeapException, JsonNodeException;
+    public abstract Filter createFilter() throws HeapException, JsonValueException;
 }

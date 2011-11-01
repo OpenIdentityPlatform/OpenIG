@@ -18,7 +18,7 @@
 package org.forgerock.openig.log;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -60,7 +60,7 @@ public class ConsoleLogSink implements LogSink {
      * Creates and initializes a console sink in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             ConsoleLogSink sink = new ConsoleLogSink();
             sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
             return sink;

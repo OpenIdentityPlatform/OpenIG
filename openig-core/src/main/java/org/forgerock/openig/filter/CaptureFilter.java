@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong; 
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -49,7 +49,7 @@ import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Captures request and response messages for further analysis.
@@ -174,11 +174,11 @@ public class CaptureFilter extends GenericFilter {
 
     /** Creates and initializes a capture filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             CaptureFilter filter = new CaptureFilter();
             filter.file = config.get("file").required().asFile(); // required
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset(); // optional
-            filter.condition = JsonNodeUtil.asExpression(config.get("condition")); // optional
+            filter.condition = JsonValueUtil.asExpression(config.get("condition")); // optional
             filter.captureEntity = config.get("captureEntity").defaultTo(filter.captureEntity).asBoolean(); // optional
             filter.instance = super.name;
             return filter;

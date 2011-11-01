@@ -35,8 +35,8 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 // JSON Fluent
-import org.forgerock.json.fluent.JsonNode;
-import org.forgerock.json.fluent.JsonNodeException;
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -46,7 +46,7 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonNodeUtil;
+import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.LazyMap;
 
 /**
@@ -144,26 +144,26 @@ public class SqlAttributesFilter extends GenericFilter {
 
     /** Creates and initializes a static attribute provider in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonNodeException {
+        @Override public Object create() throws HeapException, JsonValueException {
             SqlAttributesFilter filter = new SqlAttributesFilter();
-            filter.target = JsonNodeUtil.asExpression(config.get("target").required());
+            filter.target = JsonValueUtil.asExpression(config.get("target").required());
             InitialContext ctx;
             try {
                 ctx = new InitialContext();
             } catch (NamingException ne) {
                 throw new HeapException(ne);
             }
-            JsonNode dataSource = config.get("dataSource").required();
+            JsonValue dataSource = config.get("dataSource").required();
             try {
                 filter.dataSource = (DataSource)ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
-                throw new JsonNodeException(dataSource, ne);
+                throw new JsonValueException(dataSource, ne);
             } catch (ClassCastException ne) {
-                throw new JsonNodeException(dataSource, "expecting " + DataSource.class.getName() + " type");
+                throw new JsonValueException(dataSource, "expecting " + DataSource.class.getName() + " type");
             }
             filter.preparedStatement = config.get("preparedStatement").asString();
-            for (JsonNode parameter : config.get("parameters").required().expect(List.class)) {
-                filter.parameters.add(JsonNodeUtil.asExpression(parameter));
+            for (JsonValue parameter : config.get("parameters").required().expect(List.class)) {
+                filter.parameters.add(JsonValueUtil.asExpression(parameter));
             }
             return filter;
         }

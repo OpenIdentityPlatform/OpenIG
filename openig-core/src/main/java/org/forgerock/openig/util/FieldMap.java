@@ -33,7 +33,7 @@ import java.util.Set;
 public class FieldMap implements FullMap<String, Object> {
 
     /** Cache of field mappings to avoid overhead of repeated mapping via reflection. */
-    private static final HashMap<Class, HashMap<String, Field>> MAPPINGS = new HashMap<Class, HashMap<String, Field>>();
+    private static final HashMap<Class<?>, HashMap<String, Field>> MAPPINGS = new HashMap<Class<?>, HashMap<String, Field>>();
 
     /** The object whose field members are being exposed through the map. */
     private final Object object;
@@ -137,7 +137,7 @@ public class FieldMap implements FullMap<String, Object> {
     }
 
     private static HashMap<String, Field> getFields(Object o) {
-        Class c = o.getClass();
+        Class<?> c = o.getClass();
         HashMap<String, Field> fields = MAPPINGS.get(c);
         if (fields == null) { // lazy initialization
             fields = new HashMap<String, Field>();

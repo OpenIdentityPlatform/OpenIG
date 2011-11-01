@@ -83,7 +83,7 @@ public class HttpUtil {
     public static void toEntity(Message message, String string, Charset charset) {
         byte[] data = string.getBytes(cs(message, charset));
         message.entity = new ByteArrayBranchingStream(data);
-        message.headers.put("Content-Length", Integer.toString(data.length));
+        message.headers.putSingle("Content-Length", Integer.toString(data.length));
     }
 
     /**
