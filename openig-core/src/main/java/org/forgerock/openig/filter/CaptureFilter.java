@@ -1,5 +1,4 @@
-/*
- * The contents of this file are subject to the terms of the Common Development and
+/* * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance with the
  * License.
  *
@@ -37,6 +36,7 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -89,7 +89,7 @@ public class CaptureFilter extends GenericFilter {
      * Filters the exchange by capturing request and response messages.
      */
     @Override
-    public synchronized void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public synchronized void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
         if (eval instanceof Boolean && (Boolean)eval) {
@@ -101,7 +101,7 @@ public class CaptureFilter extends GenericFilter {
                 writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
             }
             captureRequest(exchange.request, id);
-            chain.handle(exchange);
+            next.handle(exchange);
             captureResponse(exchange.response, id);        
         }
         timer.stop();

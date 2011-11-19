@@ -55,10 +55,10 @@ public class ExceptionFilter extends GenericFilter {
      * during handing of a request. 
      */
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         try {
-            chain.handle(exchange);
+            next.handle(exchange);
         } catch (Throwable t) {
             logger.warning(t); // user-impacting
             if (exchange.response != null && exchange.response.entity != null) {

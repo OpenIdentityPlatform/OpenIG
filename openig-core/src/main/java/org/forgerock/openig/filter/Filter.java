@@ -21,6 +21,7 @@ package org.forgerock.openig.filter;
 import java.io.IOException;
 
 // OpenIG Core
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 
@@ -35,19 +36,14 @@ public interface Filter {
     /**
      * Filters the request and/or response of an exchange. Initially, {@code exchange.request}
      * contains the request to be filtered. To pass the request to the next filter or handler
-     * in the chain, the filter calls {@code chain.handle(exchange)}. After this call,
+     * in the chain, the filter calls {@code next.handle(exchange)}. After this call,
      * {@code exchange.response} contains the response that can be filtered.
      * <p>
      * This method may elect not to pass the request to the next filter or handler, and instead
      * handle the request itself. It can achieve this by merely avoiding a call to
-     * {@code chain.handle(exchange)} and creating its own response object the exchange. The
+     * {@code next.handle(exchange)} and creating its own response object the exchange. The
      * filter is also at liberty to replace a response with another of its own after the call
-     * to {@code chain.handle(exchange)}.
-     * <p>
-     * A filter can exist in more than one chain, therefore should make no assumptions or
-     * correlations using the chain it is supplied. The only valid use of a chain by a filter
-     * is to call {@code chain.handle(exchange)} if it elects to dispatch the exchange to
-     * the rest of the chain.
+     * to {@code next.handle(exchange)}.
      * <p>
      * <strong>Important note:</strong> If an existing response exists in the exchange object
      * and the filter intends to replace it with its own, it must first check to see if the
@@ -55,9 +51,9 @@ public interface Filter {
      * order to signal that the processing of the response from a remote server is complete.
      *
      * @param exchange the exchange containing the request and response to filter.
-     * @param chain the chain which the filter is a part of, and which handles the exchange.
+     * @param next the next filter or handler in the chain to handle the exchange.
      * @throws HandlerException if an exception occurred handling the exchange.
      * @throws IOException if an I/O exception occurred.
      */
-    void filter(Exchange exchange, Chain chain) throws HandlerException, IOException;
+    void filter(Exchange exchange, Handler next) throws HandlerException, IOException;
 }

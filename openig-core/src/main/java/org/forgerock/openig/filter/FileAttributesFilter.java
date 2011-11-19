@@ -27,6 +27,7 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -71,7 +72,7 @@ public class FileAttributesFilter extends GenericFilter {
      * the {@code target} expression.
      */
     @Override
-    public void filter(final Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         target.set(exchange, new LazyMap<String, String>() {
             @Override protected Map<String, String> init() {
@@ -83,7 +84,7 @@ public class FileAttributesFilter extends GenericFilter {
                 }
             }
         });
-        chain.handle(exchange);
+        next.handle(exchange);
         timer.stop();
     }
 

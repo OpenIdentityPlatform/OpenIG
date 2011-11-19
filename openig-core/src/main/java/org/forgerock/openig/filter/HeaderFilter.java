@@ -28,6 +28,7 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -71,12 +72,12 @@ public class HeaderFilter extends GenericFilter {
      * headers to a message.
      */
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         if (messageType == MessageType.REQUEST) {
             process(exchange.request);
         }
-        chain.handle(exchange);
+        next.handle(exchange);
         if (messageType == MessageType.RESPONSE) {
             process(exchange.response);
         }

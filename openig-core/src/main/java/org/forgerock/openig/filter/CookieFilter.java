@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -167,13 +168,13 @@ public class CookieFilter extends GenericFilter {
      * managing cookies.
      */
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         URI resolved = resolveHostURI(exchange.request); // resolve to client-supplied host header
         CookieManager manager = getManager(exchange.session); // session cookie jar
         suppress(exchange.request); // remove cookies that are suppressed or managed
         addRequestCookies(manager, resolved, exchange.request); // add any request cookies to header
-        chain.handle(exchange); // pass exchange to next handler in chain
+        next.handle(exchange); // pass exchange to next handler in chain
         manager.put(resolved, exchange.response.headers); // manage cookie headers in response
         suppress(exchange.response); // remove cookies that are suppressed or managed
         timer.stop();

@@ -29,6 +29,7 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -64,12 +65,12 @@ public class AssignmentFilter extends GenericFilter {
      * to expressions before and after the exchange is handled.
      */
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         for (Binding binding : onRequest) {
             eval(binding, exchange);
         }
-        chain.handle(exchange);
+        next.handle(exchange);
         for (Binding binding : onResponse) {
             eval(binding, exchange);
         }

@@ -63,10 +63,10 @@ public class SwitchFilter extends GenericFilter {
     public final List<Case> onResponse = new ArrayList<Case>(); 
 
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         if (!doSwitch(exchange, onRequest)) { // not intercepted
-            chain.handle(exchange);
+            next.handle(exchange);
             doSwitch(exchange, onResponse);
         }
         timer.stop();

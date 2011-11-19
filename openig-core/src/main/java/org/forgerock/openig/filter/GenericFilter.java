@@ -21,6 +21,7 @@ package org.forgerock.openig.filter;
 import java.io.IOException;
 
 // OpenIG Core
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.http.Exchange;
@@ -34,5 +35,5 @@ import org.forgerock.openig.http.Exchange;
 public abstract class GenericFilter extends GenericHeapObject implements Filter {
 
     @Override // Filter
-    public abstract void filter(Exchange exchange, Chain chain) throws HandlerException, IOException;
+    public abstract void filter(Exchange exchange, Handler next) throws HandlerException, IOException;
 }

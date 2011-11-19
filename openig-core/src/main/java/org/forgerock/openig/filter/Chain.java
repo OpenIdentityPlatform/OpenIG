@@ -19,8 +19,7 @@ package org.forgerock.openig.filter;
 
 // Java Standard Edition
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
 import java.util.List;
 
 // JSON Fluent
@@ -56,7 +55,7 @@ import org.forgerock.openig.log.LogTimer;
 public class Chain extends GenericHandler {
 
     /** A list of filters, in the order they are to be dispatched by the chain. */
-    public final Deque<Filter> filters = new ArrayDeque<Filter>();
+    public final List<Filter> filters = new ArrayList<Filter>();
 
     /** The handler dispatch the exchange to; terminus of the chain. */
     public Handler handler;
@@ -64,14 +63,16 @@ public class Chain extends GenericHandler {
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        if (filters.size() > 0) {
-            Chain chain = new Chain();
-            chain.filters.addAll(filters);
-            chain.handler = handler;
-            chain.filters.pop().filter(exchange, chain);
-        } else {
-            handler.handle(exchange);
-        }
+        new Handler() {
+            int cursor = 0;
+            @Override public void handle(Exchange exchange) throws HandlerException, IOException {
+                if (cursor < filters.size()) {
+                    filters.get(cursor++).filter(exchange, this);
+                } else {
+                    handler.handle(exchange);
+                }
+            }
+        }.handle(exchange);
         timer.stop();
     }
 

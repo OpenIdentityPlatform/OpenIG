@@ -100,7 +100,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
      * authentication credentials.
      */
     @Override
-    public void filter(Exchange exchange, Chain chain) throws HandlerException, IOException {
+    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         exchange.request.headers.remove(SUPPRESS_REQUEST_HEADERS);
         BranchingInputStream trunk = exchange.request.entity;
@@ -115,7 +115,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
             if (userpass != null) {
                 exchange.request.headers.add("Authorization", "Basic " + userpass);
             }
-            chain.handle(exchange);
+            next.handle(exchange);
             // successful exchange from this filter's standpoint
             if (exchange.response.status != 401) {
                 exchange.response.headers.remove(SUPPRESS_RESPONSE_HEADERS);
