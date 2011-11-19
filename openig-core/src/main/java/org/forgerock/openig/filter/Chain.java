@@ -19,7 +19,8 @@ package org.forgerock.openig.filter;
 
 // Java Standard Edition
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 // JSON Fluent
@@ -55,7 +56,7 @@ import org.forgerock.openig.log.LogTimer;
 public class Chain extends GenericHandler {
 
     /** A list of filters, in the order they are to be dispatched by the chain. */
-    public final LinkedList<Filter> filters = new LinkedList<Filter>();
+    public final Deque<Filter> filters = new ArrayDeque<Filter>();
 
     /** The handler dispatch the exchange to; terminus of the chain. */
     public Handler handler;
