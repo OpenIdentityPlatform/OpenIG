@@ -68,7 +68,7 @@ public class Config {
      * @throws ResourceException if the configuration could not be written.
      */
     public void write(JsonValue config) throws ResourceException {
-        JSONRepresentation representation = new JSONRepresentation(config.getValue());
+        JSONRepresentation representation = new JSONRepresentation(config.getObject());
         try {
             resource.update(representation);
         } catch (ResourceException re) { // assume update failure is due to non-existence
