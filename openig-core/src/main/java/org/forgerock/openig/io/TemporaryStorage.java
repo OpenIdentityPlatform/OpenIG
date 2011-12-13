@@ -17,8 +17,11 @@
 
 package org.forgerock.openig.io;
 
-// Java Standard Edition
+// Java SE
 import java.io.File;
+
+// ForgeRock Utilities
+import org.forgerock.util.Factory;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
@@ -26,7 +29,7 @@ import org.forgerock.json.fluent.JsonValueException;
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.util.Factory;
+
 
 /**
  * Allocates temporary buffers for caching streamed content during request processing.

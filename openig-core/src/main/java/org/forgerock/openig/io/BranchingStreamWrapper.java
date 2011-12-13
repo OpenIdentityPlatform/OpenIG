@@ -17,13 +17,13 @@
 
 package org.forgerock.openig.io;
 
-// Java Standard Edition
+// Java SE
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// OpenIG Core
-import org.forgerock.openig.util.Factory;
+// ForgeRock Utilities
+import org.forgerock.util.Factory;
 
 /**
  * Wraps an standard input stream with a stream that can branch to perform divergent reads.

@@ -22,6 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+// ForgeRock Utilities
+import org.forgerock.util.Factory;
+import org.forgerock.util.LazyMap;
+
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -36,7 +40,6 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.LazyMap;
 
 /**
  * Retrieves and exposes a record from a delimier-separated file. Lookup of the record is
@@ -74,8 +77,8 @@ public class FileAttributesFilter extends GenericFilter {
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        target.set(exchange, new LazyMap<String, String>() {
-            @Override protected Map<String, String> init() {
+        target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
+            @Override public Map<String, String> newInstance() {
                 try {
                     return file.getRecord(key, value.eval(exchange).toString());
                 } catch (IOException ioe) {
@@ -83,7 +86,7 @@ public class FileAttributesFilter extends GenericFilter {
                     return null; // results in an empty map
                 }
             }
-        });
+        }));
         next.handle(exchange);
         timer.stop();
     }

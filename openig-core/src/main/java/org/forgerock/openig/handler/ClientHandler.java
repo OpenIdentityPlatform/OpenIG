@@ -18,7 +18,7 @@
 
 package org.forgerock.openig.handler;
 
-// Java Standard Edition
+// Java SE
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -58,6 +58,9 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.protocol.RequestUserAgent;
 
+// Forgerock Utilities
+import org.forgerock.util.Factory;
+
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -78,7 +81,6 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.Factory;
 
 /**
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched

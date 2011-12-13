@@ -34,6 +34,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+// ForgeRock Utilities
+import org.forgerock.util.Factory;
+import org.forgerock.util.LazyMap;
+
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
@@ -48,7 +52,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.LazyMap;
 
 /**
  * Executes a SQL query through a prepared statement and exposes its first result. Parameters
@@ -85,8 +88,8 @@ public class SqlAttributesFilter extends GenericFilter {
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        target.set(exchange, new LazyMap<String, Object>() {
-            @Override protected Map<String, Object> init() {
+        target.set(exchange, new LazyMap<String, Object>(new Factory<Map<String, Object>>() {
+            @Override public Map<String, Object> newInstance() {
                 HashMap<String, Object> result = new HashMap<String, Object>();
                 Connection c = null;
                 try {
@@ -138,7 +141,7 @@ public class SqlAttributesFilter extends GenericFilter {
                 }
                 return result;
             }
-        });
+        }));
         next.handle(exchange);
         timer.stop();
     }

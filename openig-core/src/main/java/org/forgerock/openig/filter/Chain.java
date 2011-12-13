@@ -64,12 +64,17 @@ public class Chain extends GenericHandler {
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         new Handler() {
-            int cursor = 0;
+            private int cursor = 0;
             @Override public void handle(Exchange exchange) throws HandlerException, IOException {
-                if (cursor < filters.size()) {
-                    filters.get(cursor++).filter(exchange, this);
-                } else {
-                    handler.handle(exchange);
+                int saved = cursor; // save position to restore after the call
+                try {
+                    if (cursor < filters.size()) {
+                        filters.get(cursor++).filter(exchange, this);
+                    } else {
+                        handler.handle(exchange);
+                    }
+                } finally {
+                    cursor = saved;
                 }
             }
         }.handle(exchange);
