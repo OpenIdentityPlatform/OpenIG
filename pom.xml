@@ -118,4 +118,11 @@
             <archive>http://lists.forgerock.org/pipermail/commitopenig/</archive>
         </mailingList>
     </mailingLists>
+    <distributionManagement>
+        <site>
+            <id>forgerock.org</id>
+            <name>ForgeRock Community Server</name>
+            <url>scp://forgerock.org/var/www/vhosts/openig.forgerock.org/httpdocs</url>
+        </site>
+    </distributionManagement>
 </project>
