@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011 ForgeRock AS
+  !      Copyright 2011-2012 ForgeRock AS
   !    
 -->
 <project name="${project.name}"
@@ -67,7 +67,7 @@
  </body>
  
  <custom>
-  <googleAnalytics>UA-23412190-5</googleAnalytics>
+  <googleAnalytics>UA-23412190-11</googleAnalytics>
   <openproject>
    <href>http://openig.forgerock.org/</href>
    <src>./images/openig-tagline-177x65.png</src>
