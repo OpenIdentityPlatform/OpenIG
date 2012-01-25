@@ -37,6 +37,7 @@
         <module>openig-core</module>
         <module>openig-war</module>
         <module>openig-federation-war</module>
+        <module>openig-saas</module>
     </modules>
     <build>
         <plugins>
