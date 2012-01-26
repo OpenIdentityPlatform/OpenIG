@@ -103,6 +103,9 @@ public class FederationServlet extends HttpServlet {
     private String subjectMapping;
 
     /** TODO: Description. */
+    private String sessionIndexMapping;
+
+    /** TODO: Description. */
     private String redirectURI;
 
     /** TODO: Description. */
@@ -189,16 +192,18 @@ public class FederationServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();
         String sessionValue = null;
         Map attributeStatement = (Map)assertion.get(SAML2Constants.ATTRIBUTE_MAP);
-        System.out.println("FederationServlet Assertion attributes: " + attributeStatement);
         for (String key : attributeMapping.keySet()) {
             sessionValue = (String)(((HashSet)attributeStatement.get(attributeMapping.get(key))).iterator().next());
-            System.out.println("FederationServlet adding to session: " + key + "=" + sessionValue);
             httpSession.setAttribute(key, sessionValue);
         }
         if (subjectMapping != null) {
             String subjectValue = ((Subject)assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
-            System.out.println("FederationServlet adding subject to session: " + subjectMapping + "=" + subjectValue);
             httpSession.setAttribute(subjectMapping, subjectValue);
+        }
+
+        if (sessionIndexMapping != null) {
+           String sessionIndexValue = (String)assertion.get(SAML2Constants.SESSION_INDEX);
+            httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
         }
     }
     
@@ -246,7 +251,6 @@ public class FederationServlet extends HttpServlet {
         String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
         String samlRequest = request.getParameter(SAML2Constants.SAML_REQUEST);
         SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
-        System.out.println("FederationServlet serviceIDPInitiatedSLO success redirect to logout of the app at " + logoutURI);
         response.sendRedirect(logoutURI);
     }
 
@@ -259,6 +263,7 @@ public class FederationServlet extends HttpServlet {
                 servlet.attributeMapping.put(key, mappings.get(key).asString());
             }
             servlet.subjectMapping = config.get("subjectMapping").asString();
+            servlet.sessionIndexMapping = config.get("sessionIndexMapping").asString();
             servlet.redirectURI = config.get("redirectURI").asString();
             servlet.logoutURI = config.get("logoutURI").asString();
             servlet.assertionConsumerEndpoint = config.get("assertionConsumerEndpoint").defaultTo("fedletapplication").asString();
