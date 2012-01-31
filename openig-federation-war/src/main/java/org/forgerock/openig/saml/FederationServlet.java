@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
 
 // Java Enterprise Edition
 import javax.servlet.Filter;
@@ -131,7 +132,7 @@ public class FederationServlet extends HttpServlet {
             } else if (path.indexOf(singleLogoutEndpoint) > 0) {
                 serviceIDPInitiatedSLO(request, response);
             } else {
-                System.out.println("FederationServlet: URI not in service");
+                System.out.println("FederationServlet warning: URI not in service");
             }
         } catch (SAML2Exception sme) {
             errorResponse(response, sme.getMessage());
@@ -192,18 +193,36 @@ public class FederationServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();
         String sessionValue = null;
         Map attributeStatement = (Map)assertion.get(SAML2Constants.ATTRIBUTE_MAP);
+        if (LogUtil.isAccessLoggable(Level.INFO)) {
+            System.out.println("FederationServlet attribute statement: " + attributeStatement);
+        }
         for (String key : attributeMapping.keySet()) {
-            sessionValue = (String)(((HashSet)attributeStatement.get(attributeMapping.get(key))).iterator().next());
-            httpSession.setAttribute(key, sessionValue);
+            HashSet t = (HashSet)attributeStatement.get(attributeMapping.get(key));
+            if (t != null) {
+                sessionValue = (String)t.iterator().next();
+                httpSession.setAttribute(key, sessionValue);
+                if (LogUtil.isAccessLoggable(Level.INFO)) {
+                    System.out.println("FederationServlet adding to session: " + key + " = " + sessionValue);
+                }
+            } else { 
+                 System.out.println("FederationServlet: Warning no assertion attribute found for:" + attributeMapping.get(key));
+                 continue;
+            }
         }
         if (subjectMapping != null) {
             String subjectValue = ((Subject)assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
             httpSession.setAttribute(subjectMapping, subjectValue);
+            if (LogUtil.isAccessLoggable(Level.INFO)) {
+                System.out.println("FederationServlet adding subject to session: " + subjectMapping + " = " + subjectValue);
+            }
         }
 
         if (sessionIndexMapping != null) {
            String sessionIndexValue = (String)assertion.get(SAML2Constants.SESSION_INDEX);
-            httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
+           httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
+           if (LogUtil.isAccessLoggable(Level.INFO)) {
+               System.out.println("FederationServlet adding session index: " + sessionIndexMapping + " = " + sessionIndexValue);
+           }
         }
     }
     
