@@ -35,46 +35,106 @@
  </refmeta>
  <refnamediv>
   <refname>heap-objects</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>configure and initialize objects, with dependency injection</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>A heap is a collection of associated objects, initialized from
+  declarative configuration artifacts. All configurable objects in the gateway
+  are heap objects. Heap objects are created and initialized by associated
+  "heaplets", which retrieve any objects an object depends on from the heap.
+  The heap configuration is included as an object in the <link
+  xlink:href="reference#gateway-servlet"
+  xlink:role="http://docbook.org/xlink/role/olink">gateway servlet</link>
+  configuration, and has the following format.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language='json'>{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "objects": [
+         {
+             "name": string,
+             "type": string,
+             "config": { <replaceable>object-specific configuration</replaceable> }
+         }, ...
+     ]  
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"name"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The unique name to give the heap object in the heap. This name is
+     used to resolve the heap object, for example when another heap object
+     names a heap object dependency.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"type"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The class name of the object to be created. Example:
+     <literal>"HandlerServlet"</literal>. To determine the type name, see
+     the specific object documentation in this reference.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"config"</code>: <emphasis>object, required</emphasis></term>
+    <listitem>
+     <para>The configuration that is specific to the heap object being created.
+     For an example, see the <link xlink:href="reference#HandlerServlet"
+     xlink:role="http://docbook.org/xlink/role/olink">HandlerServlet</link>
+     reference.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language='json'>{
-TODO
-}</programlisting>
+  <title>Automatically Created Objects</title>
+  <variablelist>
+   <para>When a heap is first created, it is automatically populated with some
+   objects, without required configuration. An automatically created object can
+   be overridden by creating a heap object with the same name.</para>
+   <varlistentry>
+    <term><code>"LogSink"</code></term>
+    <listitem>
+     <para>The default object to use for writing all audit and performance
+     logging. Default: a <link xlink:href="reference#ConsoleLogSink"
+     xlink:role="http://docbook.org/xlink/role/olink">ConsoleLogSink</link>
+     object with default values.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"TemporaryStorage"</code></term>
+    <listitem>
+     <para>The default object to use for managing temporary buffers. Default: a
+     <link xlink:href="reference#TemporaryStorage"
+     xlink:role="http://docbook.org/xlink/role/olink">TemporaryStorage</link>
+     object with default values.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
  <refsect1>
-  <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <title>Implicit Properties</title>
+  <variablelist>
+   <para>Every heap object has a set of implicit properties, which can be
+   overridden on an object-by-object basis:</para>
+   <varlistentry>
+    <term><code>"logSink"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>Specifies the heap object that should be used for audit and
+     performance logging. Default: <literal>"LogSink"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"temporaryStorage"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>Specifies the heap object that should be used for temporary buffer
+     storage. Default: <literal>"TemporaryStorage"</literal>.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 </refentry>
