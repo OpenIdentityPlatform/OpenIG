@@ -84,7 +84,7 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <docTargetVersion>2.1</docTargetVersion>
+        <docTargetVersion>2.1.0</docTargetVersion>
     </properties>
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->

@@ -35,46 +35,49 @@
  </refmeta>
  <refnamediv>
   <refname>gateway-servlet</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>entry point for all incoming requests</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>The gateway servlet is the entry point for all incoming requests. It
+  is responsible for initializing a <link xlink:href="reference#heap-objects"
+  xlink:role="http://docbook.org/xlink/role/olink">heap of objects</link>, and
+  dispatching all requests to a configured servlet (which is itself a heap
+  object). The configuration of the gateway servlet is loaded from a
+  JSON-encoded configuration file, typically located at
+  <filename>~/.ForgeRock/OpenIG/config.json</filename>.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language='json'>{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "heap": { <replaceable>heap-configuration object</replaceable> },
+     "servletObject": string
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The <link xlink:href="reference#heap-objects"
+     xlink:role="http://docbook.org/xlink/role/olink">heap object</link>
+     configuration.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"servletObject"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The name of the servlet heap object to dispatch all requests to.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language='json'>{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href='http://openig.forgerock.org/doc/public-api/org/forgerock/openig/gateway/GatewayServlet.html'
+  >org.forgerock.openig.gateway.GatewayServlet</link></para>
  </refsect1>
 </refentry>
