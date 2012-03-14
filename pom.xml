@@ -54,10 +54,37 @@
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.forgerock.commons</groupId>
+                <artifactId>forgerock-doc-maven-plugin</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <projectName>OpenIG</projectName>
+                    <googleAnalyticsId>UA-23412190-11</googleAnalyticsId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>build-doc</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>layout-doc</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>layout</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <docTargetVersion>2.1</docTargetVersion>
     </properties>
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->
