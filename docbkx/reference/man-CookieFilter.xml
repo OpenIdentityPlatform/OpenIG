@@ -43,7 +43,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language='json'>{
+  <programlisting language="javascript">{
 TODO
 }</programlisting>
  </refsect1>
@@ -66,7 +66,7 @@ TODO
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language='json'>{
+  <programlisting language="javascript">{
 TODO
 }</programlisting>
  </refsect1>
