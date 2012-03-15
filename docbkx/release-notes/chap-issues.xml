@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-issues'
+ xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Fixes, Limitations, &amp; Known Issues</title>
+
+ <para>OpenIG issues are tracked at <link xlink:show="new"
+ xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG"
+ >https://bugster.forgerock.org/jira/browse/OPENIG</link>. This chapter
+ covers the status of key issues and limitations at release
+ <?eval ${docTargetVersion}?>.</para>
+
+ <section xml:id="fixes">
+  <title>Fixes</title>
+
+  <para>The following issues were fixed in release
+  <?eval ${docTargetVersion}?>.</para>
+  
+  <itemizedlist>
+  <!-- This list does not include some fixes for typos, doc issues, removed
+  functionality, and issues raised on new features during testing. -->
+<listitem><para>TODO</para></listitem>
+  </itemizedlist>
+ </section>
+
+ <section xml:id="limitations">
+  <title>Limitations</title>
+  
+  <para>The Federation Gateway does not run on Glassfish V3 due to conflicts
+  with the Metro libraries.</para>
+ </section>
+ 
+ <section xml:id="known-issues">
+  <title>Known Issues</title>
+
+  <para>The following known issues remained open at the time
+  release <?eval ${docTargetVersion}?> became available.</para>
+
+  <itemizedlist>
+   <listitem>
+    <para>TODO</para>
+   </listitem>
+  </itemizedlist>
+ </section>
+</chapter>

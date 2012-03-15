@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-compatibility'
+ xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Changes &amp; Deprecated Functionality</title>
+
+ <para>This chapter covers both major changes to existing functionality, and
+ also deprecated and removed functionality.</para>
+
+ <section xml:id="changes">
+  <title>Major Changes to Existing Functionality</title>
+
+  <para>If you are running older versions of the Gateway you must modify
+  your <filename>config.json</filename>.</para>
+
+  <para><literal>"type"</literal> entries no longer require the full Java
+  package name. The <filename>config.json</filename> should no longer contain
+  any Java package names. For example, change lines such as the
+  following:</para>
+
+  <programlisting language="javascript"
+  >"type" : "com.apexidentity.filter.Chain"</programlisting>
+
+  <para>When you remove the full Java package name, the resulting line is as
+  follows.</para>
+
+  <programlisting language="javascript">"type" : "Chain"</programlisting>
+ </section>
+
+ <section xml:id="deprecated">
+  <title>Deprecated Functionality</title>
+  
+  <para>TODO</para>
+ </section>
+
+ <section xml:id="removed">
+  <title>Removed Functionality</title>
+  
+  <para>TODO</para>
+ </section>
+</chapter>
