@@ -36,6 +36,13 @@
    <p>This core documentation is in progress as part of the OpenIG project.</p>
    <dl>
 
+    <dt>Release Notes</dt>
+    <dd><a href="./doc/OpenIG-Release-Notes.epub">EPUB</a>,
+    <a href="./doc/release-notes/index.html">HTML (single page)</a>,
+    <a href="./doc/release-notes/index/index.html">HTML (1 page/chapter)</a>,
+    <a href="./doc/OpenIG-Release-Notes.pdf">PDF</a>,
+    <a href="./doc/OpenIG-Release-Notes.rtf">RTF</a></dd>
+
     <dt>Configuration Reference</dt>
     <dd><a href="./doc/OpenIG-Reference.epub">EPUB</a>,
     <a href="./doc/reference/index.html">HTML (single page)</a>,
