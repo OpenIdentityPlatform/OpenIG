@@ -1,0 +1,109 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LogSink",
+                "comment": "Default sink for logging information.",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG",
+                }
+            },
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler",
+                    "baseURI":"https://65.55.171.158"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.path == '/owa/auth/logon.aspx'}",
+                            "handler": "LoginChain",
+                        },
+                        {
+                            "handler": "OutgoingChain",
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": ["CryptoHeaderFilter","LoginRequest"],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {   
+                "name": "CryptoHeaderFilter",
+                "type": "CryptoHeaderFilter",
+                "config": {
+                    "messageType":"REQUEST",
+                    "operationType":"DECRYPT",
+                    "algorithm":"DES/ECB/NoPadding",
+                    "key":"DESKEY",
+                    "keyType":"DES",
+                    "charSet":"utf-8",
+                    "headers": ["replaypassword"],
+                },
+            },
+            {  
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "https://65.55.171.158/owa/auth/owaauth.dll",
+                    "headers" : {
+                        "Host": ["red001.mail.microsoftonline.com"],
+                        "Content-Type": ["Content-Type:application/x-www-form-urlencoded"],
+                    }
+                    "form": {
+                        "destination": ["https://red001.mail.microsoftonline.com/owa/"],
+                        "forcedownlevel": ["0"],
+                        "trusted": ["0"],
+                        "username": ["${exchange.request.headers['username'][0]}"],
+                        "password": ["${exchange.request.headers['replaypassword'][0]}"],
+                        "isUtf8": ["1"],
+                    }
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": ["HeaderFilter","CaptureFilter"],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "HeaderFilter",
+                "type": "HeaderFilter",
+                "config": {
+                    "messageType":"REQUEST",
+                    "remove": ["replaypassword","username"],
+                 }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log",
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {
+                }
+            },
+        ]
+    },
+    "servletObject": "HandlerServlet",
+}
