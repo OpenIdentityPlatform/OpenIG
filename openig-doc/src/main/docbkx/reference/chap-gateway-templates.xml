@@ -62,7 +62,7 @@
   </itemizedlist>
  </note>
   
- <section>
+ <section xml:id="template-proxy-capture">
   <title>Proxy &amp; Capture</title>
   <para>Proxies all requests and captures them in a flat file. Use this
   template if you need to analyze the traffic for your application. Simply
@@ -70,37 +70,71 @@
   restart the Gateway, and login to the application. The entire sequence will
   be logged to the flat file.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
- </section>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="capture.json" /></programlisting>
+</section>
 
- <section>
+ <section xml:id="template-simple-login">
   <title>Simple Login Form</title>
   <para>Logs the user into the target application with hard-coded username
   and password. This template intercepts the login page request and replaces
   it with the login form.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="loginSimple.json" /></programlisting>
  </section>
 
- <section>
+ <section xml:id="template-login-cookie">
   <title>Login Form With Cookie From Login Page</title>
   <para>For applications that expect a cookie from the login page to be sent
   in the login request form. This templates allows the login page request to
   go through to the target, intercepts the response, then creates the login
   form and adds the intercepted cookie to the POST.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="loginWithCookie.json" /></programlisting>
  </section>
 
- <section>
+ <section xml:id="template-login-extract-cookie-filters">
+  <title>Login Form With Extract Filter &amp; Cookie Filter</title>
+  <para>For applications that return the login page when the user tries to
+  access a page without a valid session. This template shows how to use the
+  <literal>ExtractFilter</literal> to find the login page on the response and
+  use the <literal>CookieFilter</literal> to ensure the cookies from the
+  application are replayed on each request. The sample application in this
+  template is OpenAM. If you change the <literal>TARGETIP:PORT</literal> to be
+  the IP address of OpenAM, the <literal>TARGETDN:PORT</literal> to be the
+  fully qualified name and port of OpenAM and modify <literal>USERNAME</literal>
+  and <literal>PASSWORD</literal> in the <literal>LoginRequest</literal> you
+  automatically log <literal>USERNAME</literal> into OpenAM.</para>
+
+  <note>
+   <para>Without the <literal>CookieFilter</literal> in the
+   <literal>OutgoingChain</literal> the cookie set in the login page response
+   would not get set in the browser since that request is intercepted before
+   it gets to the browser. The simplest way to deal with this situation is to
+   let the Gateway manage all the cookies by enabling the
+   <literal>CookieFilter</literal>. The side effect of the Gateway managing
+   cookies is none of the cookies are sent to the browser, but are managed
+   locally by the Gateway.</para>
+  </note>
+
+  <programlisting language="javascript"
+  ><xinclude:include parse="text"
+  href="loginWithCookieExtract.json" /></programlisting>
+ </section>
+
+ <section xml:id="template-login-hidden-value">
   <title>Login Which Requires a Hidden Value From the Login Page</title>
   <para>Extracts a hidden value from the login page and includes it in the
   login form POSTed to the target application.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text"
+  href="loginHiddenValue.json" /></programlisting>
  </section>
 
- <section>
+ <section xml:id="template-http-and-https">
   <title>HTTP &amp; HTTPS Application</title>
   <para>Proxies traffic to an application listening on ports 80 and 443. The
   assumption is the application uses HTTPS for authentication and HTTP for the
@@ -112,27 +146,44 @@
   application. Then add the logic for the <literal>LoginChain</literal> using
   the flow from one of the login templates.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="loginMixed.json" /></programlisting>
  </section>
 
- <section>
+ <section xml:id="template-multiple-apps">
+  <title>Multiple Applications</title>
+  <para>Shows how a single Gateway configuration can proxy to multiple
+  applications on different IPs and ports. This template is setup to proxy to
+  both the WordPress and MediaWiki hosted samples. The Gateway must be setup to
+  listen on both ports 8080 and 8181. The <literal>DispatchHandler</literal> is
+  used to route each incoming request to either the WordPress chain or the
+  MediaWiki chain.</para>
+  
+  <programlisting language="javascript"
+  ><xinclude:include parse="text"
+  href="multipleApplications.json" /></programlisting>
+ </section>
+
+ <section xml:id="template-am-integration-headers">
   <title>Access Management Integration With Headers</title>
   <para>Logs the user into the target application using the headers passed down
-  from an Access Management agent. This template assumes the username and
+  from an Access Management agent. This template assumes the user name and
   password are passed down by the Access Manager agent as headers. If the
-  header passed in contains only a username or subject and requires a lookup to
-  an external datasource, you will need to add an attribute filter to the chain
-  to retrieve the credentials.</para>
+  header passed in contains only a user name or subject and requires a lookup to
+  an external data source, you must add an attribute filter to the chain to
+  retrieve the credentials.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="loginAMHeaders.json" /></programlisting>
  </section>
 
- <section>
+ <section xml:id="template-owa-online">
   <title>Microsoft Online Outlook Web Access</title>
   <para>A sample template used to log a user into Microsoft Online Outlook Web
   Access. This template shows how you would use the Gateway and the OpenAM
   password capture feature to integrate with OWA.</para>
   
-  <para><link xlink:href='TODO'>Template</link></para>
+  <programlisting language="javascript"
+  ><xinclude:include parse="text" href="OWAOnline.json" /></programlisting>
  </section>
 </chapter>
