@@ -32,50 +32,46 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>Servlet-Filter</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>Servlet Filter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>Servlet-Filter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refname>Servlet Filter</refname>
+  <refpurpose>create stock servlet filter in heap environment</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Creates and initializes a stock servlet filter in a heap
+  environment.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "javax.servlet.Filter",
+     "config": {
+         "initParams": {
+             name: string, ...
+         }
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"initParams"</code>: <emphasis>object of name-value pairs</emphasis></term>
     <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
+     <para>Initialization parameters to supply to servlet filter. The
+     <literal>name</literal> is a string containing the name of the
+     initialization parameter.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/ServletFilterHeaplet.html"
+  >org.forgerock.openig.servlet.ServletFilterHeaplet</link></para>
  </refsect1>
 </refentry>

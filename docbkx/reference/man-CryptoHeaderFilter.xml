@@ -24,7 +24,7 @@
   !      Portions Copyright 2012 ForgeRock AS
   !    
 -->
-<refentry xml:id='StaticResponseHandler'
+<refentry xml:id='CryptoHeaderFilter'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -32,29 +32,28 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>StaticResponseHandler</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>CryptoHeaderFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>StaticResponseHandler</refname>
-  <refpurpose>create static response in HTTP exchange</refpurpose>
+  <refname>CryptoHeaderFilter</refname>
+  <refpurpose>encrypt, decrypt headers</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>Creates a static response in an HTTP exchange.</para>
+  <para>Encrypts or decrypts headers in a request or response.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript" linenumbering="numbered">{
      "name": string,
-     "type": "StaticResponseHandler",
+     "type": "CryptoHeaderFilter",
      "config": {
-         "status": number,
-         "reason": string,
-         "version": string,
-         "headers": {
-             name: [ expression, ... ], ...
-         },
-         "entity": string
+         "messageType": string,
+         "operationType": string,
+         "algorithm": string,
+         "key": string,
+         "keyType": string,
+         "headers": [ string, ... ]
      }
 }</programlisting>
  </refsect1>
@@ -62,39 +61,40 @@
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"status"</code>: <emphasis>number, required</emphasis></term>
-    <listitem>
-     <para>The response status code (for example, 200).</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"reason"</code>: <emphasis>string, optional</emphasis></term>
-    <listitem>
-     <para>The response status reason (for example,
-     <literal>"OK"</literal>).</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"version"</code>: <emphasis>string, optional</emphasis></term>
-    <listitem>
-     <para>Protocol version. Default: <literal>"HTTP/1.1"</literal>.</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"headers"</code>: <emphasis>array of objects,
+    <term><code>"messageType"</code>: <emphasis>string,
     required</emphasis></term>
     <listitem>
-     <para>Header fields to set in the response. The <literal>name</literal>
-     specifies the header name, with an associated array of expressions to
-     evaluate as values.</para>
+     <para>Indicates the type of message in the exchange to encrypt or decrypt
+     headers, form parameters or cookies. Must be one of:
+     <literal>"REQUEST"</literal>, <literal>"RESPONSE"</literal>.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"entity"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"operationType"</code>: <emphasis>string,
+    required</emphasis></term>
     <listitem>
-     <para>The message entity to write in the response. Conforms to the set
-     <literal>Content-Type</literal> header and sets
-     <literal>Content-Length</literal>.</para>
+     <para>Indicates whether to encrypt or decrypt. Must be one of:
+     <literal>"ENCRYPT"</literal>, <literal>"DECRYPT"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"algorithm"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>Algorithm used for encryption and decryption. Defaults to
+     DES/ECB/NoPadding.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"key"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>Base64 encoded key value.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"headers"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
+    <listitem>
+     <para>The names of header fields to encrypt or decrypt.</para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -102,19 +102,21 @@
  <refsect1>
   <title>Example</title>
   <programlisting language="javascript" linenumbering="numbered">{
-     "name": "ErrorHandler",
-     "type":"StaticResponseHandler",
+     "name": "DecryptReplayPasswordFilter",
+     "type": "CryptoHeaderFilter",
      "config": {
-        "status": 500,
-        "reason": "Error",
-        "entity":"&lt;html&gt;&lt;h2&gt;Epic #FAIL&lt;/h2&gt;&lt;/html&gt;" 
-     }
+         "messageType": "REQUEST",
+         "operationType": "DECRYPT",
+         "algorithm": "DES/ECB/NoPadding",
+         "keyType": "DES",
+         "key": "oqdP3DJdE1Q=",
+         "headers": [ "replaypassword" ]
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/StaticResponseHandler.html"
-  >org.forgerock.openig.handler.StaticResponseHandler</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/CryptoHeaderFilter.html"
+  >org.forgerock.openig.filter.CryptoHeaderFilter</link></para>
  </refsect1>
 </refentry>

@@ -39,43 +39,37 @@
   <refpurpose>TODO one-line description</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Patterns in configuration parameters and expressions use the standard
+  Java regular expression <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  >Pattern</link> class. For more information on regular expressions, see
+  Oracle's <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  >tutorial on Regular Expressions</link>.</para>
  </refsect1>
  <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
+  <title>Pattern Templates</title>
+  <para>A regular expression pattern template expresses a transformation to be
+  applied for a matching regular expression pattern. It may contain references
+  to <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg"
+  >capturing groups</link> within the match result. Each occurrence of
+  <literal>$g</literal> (where <replaceable>g</replaceable> is an integer value)
+  is substituted by the indexed capturing group in a match result. Capturing
+  group zero <literal>"$0"</literal> denotes the entire pattern match. A dollar
+  sign or numeral literal immediately following a capture group reference can
+  be included as a literal in the template by preceding it with a backslash (
+  <literal>\</literal> ). Backslash itself must be also escaped in this
+  manner.</para>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
-  <variablelist>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
- </refsect1>
- <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
-  <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <title>See also</title>
+  <para>Java <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  >Pattern</link> class</para>
+  <para><link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  >Regular Expressions tutorial</link></para>
  </refsect1>
 </refentry>

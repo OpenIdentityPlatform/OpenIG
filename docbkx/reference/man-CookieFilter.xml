@@ -36,46 +36,75 @@
  </refmeta>
  <refnamediv>
   <refname>CookieFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>manage, suppress, relay cookies</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Manages, suppresses and relays cookies. Managed cookies are intercepted
+  by the cookie filter itself and stored in the gateway session; managed cookies
+  are not transmitted to the user agent. Suppressed cookies are removed from
+  both request and response. Relayed cookies are transmitted freely between user
+  agent and remote server and vice-versa.</para>
+
+  <para>If a cookie does not appear in one of the three action parameters, then
+  the default action is performed, controlled by setting the
+  <literal>defaultAction</literal> parameter. If unspecified, the default
+  action is to manage all cookies. In the event a cookie appears in more than
+  one configuration parameter, then it will be selected in the order of
+  precedence: managed, suppressed, relayed.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "CookieFilter",
+     "config": {
+         "managed": [ string, ... ],
+         "suppressed": [ string, ... ],
+         "relayed": [ string, ... ],
+         "defaultAction": string
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"managed"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>A list of the names of cookies to be managed.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"suppressed"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>A list of the names of cookies to be suppressed.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"relayed"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
+    <listitem>
+     <para>A list of the names of cookies to be relayed.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"defaultAction"</code>: <emphasis>string,
+    optional</emphasis></term>
+    <listitem>
+     <para>Action to perform for cookies that do not match an action set. Must
+     be one of: <literal>"MANAGE"</literal>, <literal>"RELAY"</literal>,
+     <literal>"SUPPRESS"</literal>. Default: <literal>"MANAGE"</literal>.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/CookieFilter.html"
+  >org.forgerock.openig.filter.CookieFilter</link></para>
  </refsect1>
 </refentry>

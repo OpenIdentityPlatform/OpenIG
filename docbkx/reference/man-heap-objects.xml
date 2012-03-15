@@ -32,10 +32,10 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>heap-objects</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>Heap Objects</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>heap-objects</refname>
+  <refname>Heap Objects</refname>
   <refpurpose>configure and initialize objects, with dependency injection</refpurpose>
  </refnamediv>
  <refsect1>

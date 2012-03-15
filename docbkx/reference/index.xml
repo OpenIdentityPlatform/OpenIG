@@ -88,7 +88,7 @@
   <title>Servlets</title>
   <partintro>
    <para>The gateway includes objects that can create, initialize and dispatch
-   to Java EE Servlets and Servlet filters.</para>
+   to Java Enterprise Edition Servlets and Servlet filters.</para>
   </partintro>
   <xinclude:include href="man-DispatchServlet.xml" />
   <xinclude:include href="man-HandlerServlet.xml" />
@@ -122,9 +122,9 @@
   <xinclude:include href="man-ExceptionFilter.xml" />
   <xinclude:include href="man-FileAttributesFilter.xml" />
   <xinclude:include href="man-HeaderFilter.xml" />
-  <xinclude:include href="man-CryptoFilter.xml" />
-  <xinclude:include href="man-HTTPBasicAuthFilter.xml" />
-  <xinclude:include href="man-SQLAttributesFilter.xml" />
+  <xinclude:include href="man-CryptoHeaderFilter.xml" />
+  <xinclude:include href="man-HttpBasicAuthFilter.xml" />
+  <xinclude:include href="man-SqlAttributesFilter.xml" />
   <xinclude:include href="man-StaticRequestFilter.xml" />
   <xinclude:include href="man-SwitchFilter.xml" />
  </reference>

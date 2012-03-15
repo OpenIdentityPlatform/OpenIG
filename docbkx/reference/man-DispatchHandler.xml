@@ -36,46 +36,95 @@
  </refmeta>
  <refnamediv>
   <refname>DispatchHandler</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>dispatch to one of a list of handlers</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Dispatches to one of a list of handlers. When an exchange is handled,
+  each handler's <literal>condition</literal> is evaluated. If a condition
+  expression yields <literal>true</literal>, then the exchange is dispatched
+  to the associated handler with no further processing.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "DispatchHandler",
+     "config": {
+         "bindings": [
+             {
+                 "condition": expression,
+                 "handler": string,
+                 "baseURI": string,
+             }, ...
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"bindings"</code>: <emphasis>array of objects,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>A list of bindings of conditions and associated handlers to dispatch
+     to.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"condition"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Condition to evaluate to determine if associated handler should be
+     dispatched to. If omitted, then dispatch is unconditional.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The name of the handler heap object to dispatch to if the associated
+     condition yields <literal>true</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"baseURI"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>Overrides the existing request URI, making requests relative to a
+     new base URI. Only scheme, host and port are used in the supplied URI.
+     Default: leave URI untouched.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "Dispatcher",
+     "type": "DispatchHandler",
+     "config": {
+         "bindings": [ 
+             {
+                 "condition": "${exchange.request.uri.path == '/login.php'}",
+                 "handler": "LoginChain",
+             },
+             {
+                 "condition": "${exchange.request.uri.path == '/logout.php'}",
+                 "handler": "LogoutChain",
+             },
+             {
+                 "handler": "ClientHandler",
+             }
+         ]   
+     }   
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/DispatchHandler.html"
+  >org.forgerock.openig.handler.DispatchHandler</link></para>
  </refsect1>
 </refentry>
