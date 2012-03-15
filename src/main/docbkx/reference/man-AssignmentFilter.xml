@@ -36,46 +36,126 @@
  </refmeta>
  <refnamediv>
   <refname>AssignmentFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>conditionally assign values to expressions</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Conditionally assigns values to expressions before and after the
+  exchange is handled.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "AssignmentFilter",
+     "config": {
+         "onRequest": [
+             {
+                 "condition": expression,
+                 "target": lvalue-expression,
+                 "value": expression
+             }, ...
+         ],
+         "onResponse": [
+             {
+                 "condition": expression,
+                 "target": lvalue-expression,
+                 "value": expression
+             }, ...
+         ]
+     }
+ }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"onRequest"</code>: <emphasis>array of objects,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Defines a list of assignment bindings to evaluate before the
+     exchange is handled.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"onResponse"</code>: <emphasis>array of objects,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Defines a list of assignment bindings to evaluate after the exchange
+     is handled.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"condition"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    optional</emphasis></term>
+    <listitem>
+     <para>Expression to evaluate to determine if an assignment should occur.
+     Omitting the condition makes the assignment unconditional.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>Expression that yields the target object whose value is to be
+     set.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"value"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    optional</emphasis></term>
+    <listitem>
+     <para>Expression that yields the value to be set in the target.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
+  <para>This is an example of how you would capture credentials and store them
+  in the Gateway session during a login request. Notice the credentials are
+  captured on the request, but not marked as valid until the response returns
+  a positive 302. The credentials would then be used to login a user to a
+  different application.</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+  "name": "PortalLoginCaptureFilter",
+  "type": "AssignmentFilter",
+  "config": {
+      "onRequest": [
+          {   
+              "target": "${exchange.session.authUsername}",
+              "value": "${exchange.request.form['username'][0]}",
+          },  
+          {   
+              "target": "${exchange.session.authPassword}",
+              "value": "${exchange.request.form['password'][0]}",
+          },  
+          {   
+              "comment": "Indicates authentication has not yet been confirmed.",
+              "target": "${exchange.session.authConfirmed}",
+              "value": "${false}",
+          }   
+      ],  
+      "onResponse": [
+          {   
+              "condition": "${exchange.response.status == 302}",
+              "target": "${exchange.session.authConfirmed}",
+              "value": "${true}",
+          }   
+      ]   
+  }
+ }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/AssignmentFilter.html"
+  >org.forgerock.openig.filter.AssignmentFilter</link></para>
  </refsect1>
 </refentry>

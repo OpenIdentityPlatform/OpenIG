@@ -36,46 +36,42 @@
  </refmeta>
  <refnamediv>
   <refname>ExceptionFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>catch exceptions when handling request</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Catches any exceptions thrown during handling of a request. This allows
+  friendlier error pages to be displayed than would otherwise be displayed by
+  the container. Caught exceptions are logged with a log level of
+  <literal>WARNING</literal> and the exchange is diverted to the specified
+  exception handler.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "ExceptionFilter",
+     "config": {
+         "handler": string,
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
+     <para>The name of the handler heap object to dispatch to in the event of
+     caught exceptions.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/ExceptionFilter.html"
+  >org.forgerock.openig.filter.ExceptionFilter</link></para>
  </refsect1>
 </refentry>

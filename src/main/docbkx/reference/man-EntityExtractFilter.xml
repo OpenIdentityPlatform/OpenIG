@@ -36,46 +36,142 @@
  </refmeta>
  <refnamediv>
   <refname>EntityExtractFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>extract pattern from message entity</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Extracts regular expression patterns from a message entity. The
+  extraction results are stored in a <literal>target</literal> object. For a
+  given matched <link xlink:href="reference#Patterns"
+  xlink:role="http://docbook.org/xlink/role/olink">pattern</link>, the value
+  stored in the object is either the result of applying
+  its associated pattern template (if specified) or the match result itself
+  otherwise.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "EntityExtractFilter",
+     "config": {
+         "messageType": string,
+         "charset": string,
+         "target": lvalue-expression,
+         "bindings": [
+             {
+                 "key": string,
+                 "pattern": regex-pattern,
+                 "template": pattern-template
+             }, ...
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"messageType"</code>: <emphasis>string,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The message type in the exchange to extract patterns from. Must be
+     one of: <literal>"REQUEST"</literal>, <literal>"RESPONSE"</literal>.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"charset"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Overrides the character set encoding specified in message. Default:
+     the message encoding is used.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>Expression that yields the target object that contains the
+     extraction results.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"key"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>Name of element in target object to contain an extraction
+     result.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"pattern"</code>: <emphasis><link
+    xlink:href="reference#Patterns"
+    xlink:role="http://docbook.org/xlink/role/olink">pattern</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>The regular expression pattern to find in the entity.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"template"</code>: <emphasis><link
+    xlink:href="reference#Patterns"
+    xlink:role="http://docbook.org/xlink/role/olink">pattern-template</link>,
+    optional</emphasis></term>
+    <listitem>
+     <para>The template to apply to the pattern and store in the named target
+     element. Default: store the match result itself.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <title>Examples</title>
+  <para>Extracts a nonce from the response, which is typically a login page,
+  and sets its value in the exchange to be used by the downstream filter
+  posting the login form. The nonce value would be accessed using the following
+  expression <literal>${exchange.wikiNonce.wpLoginToken}</literal>. The pattern
+  is finding all matches in the HTTP body of the form
+  <literal>wpLogintoken value="abc"</literal>. Setting the template to
+  <literal>$1</literal> assigns the value <literal>abc</literal> to
+  <literal>exchange.wikiNonce.wpLoginToken</literal>:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+    "name": "WikiNoncePageExtract",
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": "response",
+        "target": "${exchange.wikiNonce}",
+        "bindings": [
+            {
+                "key": "wpLoginToken",
+                "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
+                "template": "$1" 
+            }
+        ]
+    }
+}</programlisting>
+
+  <para>Reads the response looking for the OpenAM login page. When found it
+  sets <literal>loginPage.found = true</literal> to be used in a SwitchFilter
+  to post the login credentials:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+    "name": "FindLoginPage",
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": "response",
+        "target": "${exchange.isLoginPage}",
+        "bindings": [
+             {
+                 "key": "found",
+                 "pattern": "OpenAM\s\(Login\)",
+                 "template": "true"
+             }
+         ]
+    }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/EntityExtractFilter.html"
+  >org.forgerock.openig.filter.EntityExtractFilter</link></para>
  </refsect1>
 </refentry>

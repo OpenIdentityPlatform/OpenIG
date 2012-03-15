@@ -24,7 +24,7 @@
   !      Portions Copyright 2012 ForgeRock AS
   !    
 -->
-<refentry xml:id='SwitchFilter'
+<refentry xml:id='HttpBasicAuthFilter'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -32,37 +32,37 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>SwitchFilter</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>HttpBasicAuthFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>SwitchFilter</refname>
-  <refpurpose>divert exchange to other handler</refpurpose>
+  <refname>HttpBasicAuthFilter</refname>
+  <refpurpose>perform HTTP Basic authentication</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>Conditionally diverts the exchange to another handler. If a
-  <literal>condition</literal> evaluates to <literal>true</literal>, then the
-  exchange is dispatched to the associated <literal>handler</literal> with no
-  further processing by the switch filter.</para>
+  <para>Performs authentication through the HTTP Basic authentication scheme.
+  For more information, see <link xlink:show="new"
+  xlink:href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</link>.</para>
+
+  <para>If challenged for authentication via a <literal>401
+  Unauthorized</literal> status code by the server, this filter retries the
+  request with credentials attached. Once an HTTP authentication challenge is
+  issued from the remote server, all subsequent requests to that remote server
+  that pass through the filter includes the user credentials.</para>
+
+  <para>If authentication fails (including the case of no credentials yielded
+  from expressions), then the exchange is diverted to the specified
+  authentication failure handler.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript" linenumbering="numbered">{
      "name": string,
-     "type": "SwitchFilter",
+     "type": "HttpBasicAuthFilter",
      "config": {
-         "onRequest": [
-             {
-                 "condition": expression,
-                 "handler": string,
-             }, ...
-         ],
-         "onResponse": [
-             {
-                 "condition": expression,
-                 "handler": string,
-             }, ...
-         ]
+         "username": expression,
+         "password": expression,
+         "failureHandler": string
      }
 }</programlisting>
  </refsect1>
@@ -70,36 +70,31 @@
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"onRequest"</code>: <emphasis>array of objects,
-    optional</emphasis></term>
-    <listitem>
-     <para>Conditions to test (and handler to dispatch to, if
-     <literal>true</literal>) before the exchange is handled.</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"onResponse"</code>: <emphasis>array of objects,
-    optional</emphasis></term>
-    <listitem>
-     <para>Conditions to test (and handler to dispatch to, if
-     <literal>true</literal>) after the exchange is handled.</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"condition"</code>: <emphasis><link
+    <term><code>"username"</code>: <emphasis><link
     xlink:href="reference#Expressions"
     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-    optional</emphasis></term>
+    required</emphasis></term>
     <listitem>
-     <para>Condition to evaluate to determine if exchange should be dispatched
-     to handler. Default: unconditional dispatch to handler.</para>
+     <para>Expression that yields the username to supply during
+     authentication.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"password"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to if condition
-     yields <literal>true</literal>.</para>
+     <para>Expression that yields the password to supply during
+     authentication.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"failureHandler"</code>: <emphasis>string,
+    required</emphasis></term>
+    <listitem>
+     <para>The name of the handler heap object to dispatch to if authentication
+     fails.</para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -107,13 +102,19 @@
  <refsect1>
   <title>Example</title>
   <programlisting language="javascript" linenumbering="numbered">{
-TODO
+     "name": "TomcatAuthenticator",
+     "type": "HttpBasicAuthFilter",
+     "config": {
+         "username": "tomcat",
+         "password": "tomcat",
+         "failureHandler": "TomcatAuthFailureHandler" 
+      }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/SwitchFilter.html"
-  >org.forgerock.openig.filter.SwitchFilter</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/HttpBasicAuthFilter.html"
+  >org.forgerock.openig.filter.HttpBasicAuthFilter</link></para>
  </refsect1>
 </refentry>

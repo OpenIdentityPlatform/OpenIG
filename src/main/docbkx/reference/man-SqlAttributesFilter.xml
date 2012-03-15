@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Portions Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='SqlAttributesFilter'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>SqlAttributesFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>SqlAttributesFilter</refname>
+  <refpurpose>execute SQL query</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <para>Executes a SQL query through a prepared statement and exposes its
+  first result. Parameters in the prepared statement are derived from
+  exchange-scoped expressions. The query result is exposed in an object whose
+  location is specified by the <literal>target</literal> expression. If the
+  query yields no result, then the resulting object is empty.</para>
+
+  <para>The execution of the query is performed lazily; it does not occur
+  until the first attempt to access a value in the target. This defers the
+  overhead of connection pool, network and database query processing until a
+  value is first required. This also means that the parameters expressions is
+  not evaluated until the object is first accessed.</para>
+ </refsect1>
+ <refsect1>
+  <title>Usage</title>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "SqlAttributesFilter",
+     "config": {
+         "dataSource": string,
+         "preparedStatement": string,
+         "parameters": [ expression, ... ],
+         "target": lvalue-expression
+     }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Properties</title>
+  <variablelist>
+   <varlistentry>
+    <term><code>"dataSource"</code>: <emphasis>string,
+    required</emphasis></term>
+    <listitem>
+     <para>The JNDI name of the factory for connections to the physical data
+     source.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"preparedStatement"</code>: <emphasis>string,
+    required</emphasis></term>
+    <listitem>
+     <para>The parameterized SQL query to execute, with <literal>?</literal>
+     parameter placeholders.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"parameters"</code>: <emphasis>array of <link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expressions</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>The parameters to evaluate and include in the execution of the
+     prepared statement.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>Expression that yields the target object that will contain the query
+     results.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>Example</title>
+  <para>Using the users sessionid from a cookie, query the database to find the
+  user logged in and set the profile attributes in the exchange:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+        "name": "SqlAttributesFilter",
+        "type": "SqlAttributesFilter",
+        "config": {
+              "target": "${exchange.sql}",
+              "dataSource": "java:comp/env/jdbc/mysql",
+              "preparedStatement": "SELECT f.value AS 'first', l.value AS
+                'last', u.mail AS 'email', GROUP_CONCAT(CAST(r.rid AS CHAR)) AS
+                'roles'
+                FROM sessions s
+                INNER JOIN users u
+                ON ( u.uid = s.uid AND u.status = 1 )
+                LEFT OUTER JOIN profile_values f
+                ON ( f.uid = u.uid AND f.fid = 1 )
+                LEFT OUTER JOIN profile_values l
+                ON ( l.uid = u.uid AND l.fid = 2 )
+                LEFT OUTER JOIN users_roles r
+                ON ( r.uid = u.uid )
+                WHERE (s.sid = ? AND s.uid &lt;&gt; 0) GROUP BY s.sid;",
+              "parameters": [ "${exchange.request.cookies
+                [keyMatch(exchange.request.cookies,'JSESSION1234')]
+                [0].value}" ]
+         }
+ }</programlisting>
+  <para>Lines are folded for readability in this example. In your JSON, keep
+  the values for <literal>"preparedStatement"</literal> and
+  <literal>"parameters"</literal> on one line.</para>
+ </refsect1>
+ <refsect1>
+  <title>Javadoc</title>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/SqlAttributesFilter.html"
+  >org.forgerock.openig.filter.SqlAttributesFilter</link></para>
+ </refsect1>
+</refentry>

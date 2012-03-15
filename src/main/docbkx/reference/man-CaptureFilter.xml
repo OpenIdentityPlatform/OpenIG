@@ -36,46 +36,106 @@
  </refmeta>
  <refnamediv>
   <refname>CaptureFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>capture request and response messages</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Captures request and response messages for further analysis.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "CaptureFilter",
+     "config": {
+         "file": string,
+         "charset": string,
+         "condition": expression,
+         "captureEntity": boolean
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"file"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The path of the file where captured output should be written.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"charset"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The character set to encode captured output with. Default:
+     <literal>"UTF-8"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"condition"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    optional</emphasis></term>
+    <listitem>
+     <para>The condition to evaluate to determine whether to capture an
+     exchange. Default: unconditional.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"captureEntity"</code>: <emphasis>boolean,
+    optional</emphasis></term>
+    <listitem>
+     <para>Indicates that message entity should be captured. Default:
+     <literal>true</literal>.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <title>Examples</title>
+  <para>Log the entire request and response:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "LogToTemporaryFile",
+     "type": "CaptureFilter",
+     "config": {
+         "file": "/tmp/gateway.log",
+     }
+}</programlisting>
+
+  <para>Log the request and response. Do not log the entity:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "LogToTemporaryFile",
+     "type": "CaptureFilter",
+     "config": {
+         "file": "/tmp/gateway.log" 
+         "captureEntity": false,
+     }
+}</programlisting>
+
+  <para>Normal usage of the CaptureFilter is to create an OutgoingChain.
+  This enables you to call filters like the CaptureFilter, before sending out
+  the request:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "OutgoingChain",
+     "type": "Chain",
+     "config": {
+         "filters": [ "LogToTemporaryFile" ],
+         "handler": "ClientHandler" 
+     }   
+ },
+ {   
+     "name": "LogToTemporaryFile",
+     "type": "CaptureFilter",
+     "config": {
+         "captureEntity": false,
+         "file": "/tmp/gateway.log",
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/CaptureFilter.html"
+  >org.forgerock.openig.filter.CaptureFilter</link></para>
  </refsect1>
 </refentry>

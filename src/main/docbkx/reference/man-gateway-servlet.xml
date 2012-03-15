@@ -32,10 +32,10 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>gateway-servlet</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>Gateway Servlet</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>gateway-servlet</refname>
+  <refname>Gateway Servlet</refname>
   <refpurpose>entry point for all incoming requests</refpurpose>
  </refnamediv>
  <refsect1>
@@ -76,9 +76,8 @@
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
   <para><link xlink:show="new"
-  xlink:href='http://openig.forgerock.org/doc/public-api/org/forgerock/openig/gateway/GatewayServlet.html'
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/gateway/GatewayServlet.html"
   >org.forgerock.openig.gateway.GatewayServlet</link></para>
  </refsect1>
 </refentry>

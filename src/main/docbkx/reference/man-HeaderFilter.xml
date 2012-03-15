@@ -36,46 +36,103 @@
  </refmeta>
  <refnamediv>
   <refname>HeaderFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>remove and add headers</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Removes headers from and adds headers to a message. Headers are added
+  to any existing headers in the message. To replace, remove the header and
+  add it.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": string,
+         "remove": [ string, ... ],
+         "add": {
+            name: [ string, ... ], ...
+         }
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"messageType"</code>: <emphasis>string,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Indicates the type of message in the exchange to filter headers for.
+     Must be one of: <literal>"REQUEST"</literal>,
+     <literal>"RESPONSE"</literal>.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"remove"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The names of header fields to remove from the message.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"add"</code>: <emphasis>object, optional</emphasis></term>
+    <listitem>
+     <para>Header fields to add to the message. The <literal>name</literal>
+     specifies the header name, with an associated array of string
+     values.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <title>Examples</title>
+  <para>Replace the host header on the incoming request with
+  <literal>myhost.com</literal>:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "ReplaceHostFilter",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "REQUEST",
+         "remove": [ "host" ],
+         "add": {
+             "host": [ "myhost.com" ]
+         }
+     }
+}</programlisting>
+
+  <para>Add a Set-Cookie header in the response:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "SetCookieFilter",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "RESPONSE",
+         "add": {
+             "Set-Cookie": [ "mysession=12345" ]
+         }
+     }
+}</programlisting>
+
+  <para>Add headers <literal>custom1</literal> and <literal>custom2</literal>
+  to the request:</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "SetCustomHeaders",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "RESQUEST",
+         "add": {
+             "custom1": [ "12345", "6789" ],
+             "custom2": [ "abcd" ]
+         }
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/HeaderFilter.html"
+  >org.forgerock.openig.filter.HeaderFilter</link></para>
  </refsect1>
 </refentry>

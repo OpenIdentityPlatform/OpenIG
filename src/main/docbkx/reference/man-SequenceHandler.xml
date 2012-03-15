@@ -36,46 +36,65 @@
  </refmeta>
  <refnamediv>
   <refname>SequenceHandler</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>process exchange through sequence of handlers</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Processes an exchange through a sequence of handlers. This allows
+  multi-request processing such as retrieving a form, extracting form content
+  (for example, nonce) and submitting in a subsequent request. Each
+  <literal>handler</literal> in the <literal>bindings</literal> is dispatched
+  to in order; the binding <literal>postcondition</literal> determines if the
+  sequence should continue.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "SequenceHandler",
+     "config": {
+         "bindings": [
+             {
+                 "handler": string,
+                 "postcondition": expression
+             }
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"bindings"</code>: <emphasis>array of objects,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>A list of bindings of handler and postcondition to determine that
+     sequence continues.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The name of the handler heap object to dispatch to.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"postcondition"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    optional</emphasis></term>
+    <listitem>
+     <para>Evaluated to determine if the sequence continues. Default:
+     unconditional.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/SequenceHandler.html"
+  >org.forgerock.openig.handler.SequenceHandler</link></para>
  </refsect1>
 </refentry>
