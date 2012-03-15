@@ -36,46 +36,103 @@
  </refmeta>
  <refnamediv>
   <refname>FileAttributesFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>retrieve record from a file</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Retrieves and exposes a record from a delimiter-separated file. Lookup
+  of the record is performed using a specified <literal>key</literal>, whose
+  <literal>value</literal> is derived from an exchange-scoped expression. The
+  resulting record is exposed in an object whose location is specified by the
+  <literal>target</literal> expression. If a matching record cannot be found,
+  then the resulting object is empty.</para>
+
+  <para>The retrieval of the record is performed lazily; it does not occur
+  until the first attempt to access a value in the <literal>target</literal>.
+  This defers the overhead of file operations and text processing until a value
+  is first required. This also means that the value expression is not evaluated
+  until the object is first accessed.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "FileAttributesFilter",
+     "config": {
+         "file": string,
+         "charset": string,
+         "separator": string,
+         "header": boolean,
+         "fields": [ string, ... ],
+         "target": lvalue-expression,
+         "key": string,
+         "value": expression
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"file"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The file containing the record to be read.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"charset"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The character set the file is encoded in. Default:
+     <literal>"UTF-8"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"header"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>Indicates the first line of the file contains the set of defined
+     field keys. Default: <literal>true</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"fields"</code>: <emphasis>array of strings,
+    optional</emphasis></term>
+    <listitem>
+     <para>Explicit field keys in the order they appear in a record, overriding
+     any existing field header. Default: use field header.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>Expression that yields the target object that will contain the
+     record.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"key"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The name of the field in the file to perform the lookup on.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"value"</code>: <emphasis><link
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+    required</emphasis></term>
+    <listitem>
+     <para>The name of the handler heap object to dispatch to in the event of
+     caught exceptions.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/FileAttributesFilter.html"
+  >org.forgerock.openig.filter.FileAttributesFilter</link></para>
  </refsect1>
 </refentry>

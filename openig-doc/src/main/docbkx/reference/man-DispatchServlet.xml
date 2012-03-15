@@ -36,46 +36,95 @@
  </refmeta>
  <refnamediv>
   <refname>DispatchServlet</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>dispatch request based on extra path information</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Dispatches requests to mapped filters and servlets based on request’s
+  extra path information. The extra path information is the path that follows
+  the path of the dispatch servlet itself, but precedes the query string. It is
+  guaranteed to be a value that always begins with a "/" character.</para>
+
+  <para>All filters that match the pattern are invoked in the order they are
+  expressed in the <literal>"bindings"</literal> list until a matching servlet
+  is encountered. The first matching servlet object in the bindings list is
+  invoked, and terminates any further processing of the request. If no matching
+  servlet is found, an exception is thrown. To avoid this, a final
+  <literal>"catch-all"</literal> servlet binding with a pattern of
+  <literal>".*"</literal> is recommended.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "DispatchServlet",
+     "config": {
+         "bindings": [
+             {
+                 "pattern": pattern,
+                 "object": string,
+             }, ...
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"bindings"</code>: <emphasis>array of objects,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>A list of bindings of patterns and associated servlets/filters to
+     dispatch to.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"pattern"</code>: <emphasis><link
+    xlink:href="reference#Patterns"
+    xlink:role="http://docbook.org/xlink/role/olink">pattern</link>,
+    required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The regular expression pattern to match against the incoming request
+     extra path information.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"object"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The name of the HTTP servlet or servlet filter heap object to
+     dispatch to if the regular expression pattern matches.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <para>Sample from a federation configuration. Federation is implemented as
+  its own servlet which will be dispatched-to based on the incoming URI
+  starting with <literal>"/saml"</literal>. All other requests will go through
+  the <literal>HandlerServlet</literal>.</para>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "Dispatcher",
+     "type": "DispatchServlet",
+     "config": {
+         "bindings": [
+             {
+                 "pattern":"^/saml",
+                 "object":"FederationServlet" 
+             },
+             {
+                 "pattern":".*",
+                 "object":"HandlerServlet" 
+             }
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/DispatchServlet.html"
+  >org.forgerock.openig.servlet.DispatchServlet</link></para>
  </refsect1>
 </refentry>

@@ -39,17 +39,17 @@
   <refpurpose>TODO one-line description</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
+  <title>Description</title>
   <para>TODO full description.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
+  <programlisting language="javascript" linenumbering="numbered">{
 TODO
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
     <term><code>"name"</code>: <emphasis>type</emphasis></term>
@@ -67,15 +67,14 @@ TODO
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
+  <programlisting language="javascript" linenumbering="numbered">{
 TODO
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
+  >org.forgerock.openig.filter.Chain</link></para>
  </refsect1>
 </refentry>

@@ -45,15 +45,16 @@
  <note>
   <itemizedlist>
    <listitem>
-    <para>All templates have the <literal>CaptureFilter</literal> enabled by
-    default. Remove the capture filter from the outgoing chain before running
-    the gateway in production. Capturing is typically used only for initial
-    development or debugging and may rapidly fill up your available disk space
-    if left enabled.</para>
+    <para>All templates have the <link xlink:href="reference#CaptureFilter"
+    xlink:role="http://docbook.org/xlink/role/olink">CaptureFilter</link>
+    enabled by default. Remove the capture filter from the outgoing chain
+    before running the gateway in production. Capturing is typically used only
+    for initial development or debugging and may rapidly fill up your available
+    disk space if left enabled.</para>
    </listitem>
    <listitem>
-    <para>Substitute the TARGETIP tag with the IP Address of your
-    application.</para>
+    <para>Substitute the <literal>TARGETIP</literal> tag with the IP address of
+    your application.</para>
    </listitem>
    <listitem>
     <para>Modify the <literal>LoginRequest</literal> filter to match the form
@@ -92,7 +93,8 @@
   form and adds the intercepted cookie to the POST.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="loginWithCookie.json" /></programlisting>
+  ><xinclude:include parse="text"
+  href="loginWithCookie.json" /></programlisting>
  </section>
 
  <section xml:id="template-login-extract-cookie-filters">
@@ -181,7 +183,10 @@
   <title>Microsoft Online Outlook Web Access</title>
   <para>A sample template used to log a user into Microsoft Online Outlook Web
   Access. This template shows how you would use the Gateway and the OpenAM
-  password capture feature to integrate with OWA.</para>
+  password capture feature to integrate with OWA. You can follow the
+  <link xlink:href="http://resources.apexidentity.com/projects/docs/wiki/UseCase6"
+  xlink:show="new">OpenAM password capture and replay</link> tutorial and
+  substitute this template.</para> <!-- FIXME: link to tutorial -->
   
   <programlisting language="javascript"
   ><xinclude:include parse="text" href="OWAOnline.json" /></programlisting>

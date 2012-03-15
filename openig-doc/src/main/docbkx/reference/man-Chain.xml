@@ -36,46 +36,59 @@
  </refmeta>
  <refnamediv>
   <refname>Chain</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>dispatch exchange to ordered list of filters</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>A chain is responsible for dispatching an exchange to an ordered list
+  of filters, and finally a handler.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
-}</programlisting>
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "Chain",
+     "config": {
+         "filters": [ string, ... ],
+         "handler": string
+     }
+}
+</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"filters"</code>: <emphasis>array of strings, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The names of the filter heap objects to dispatch the exchange to,
+     in order.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The name of the handler object to dispatch to once the exchange has
+     traversed all of the specified filters.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "LoginChain",
+     "type": "Chain",
+     "config": {
+         "filters": [ "LoginFilter" ],
+         "handler": "ClientHandler" 
+     }   
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
+  >org.forgerock.openig.filter.Chain</link></para>
  </refsect1>
 </refentry>

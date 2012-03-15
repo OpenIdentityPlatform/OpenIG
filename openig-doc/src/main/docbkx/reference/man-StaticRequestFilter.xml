@@ -36,46 +36,100 @@
  </refmeta>
  <refnamediv>
   <refname>StaticRequestFilter</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>create new request within exchange object</refpurpose>
  </refnamediv>
  <refsect1>
-  <!-- <title>Description</title> -->
-  <para>TODO full description.</para>
+  <title>Description</title>
+  <para>Creates a new request within the exchange object. It replaces any
+  request that may already be present in the exchange. The request can include
+  a form, specified in the <literal>form</literal> parameter, which is included
+  in an entity encoded in <literal>application/x-www-form-urlencoded</literal>
+  format if request method is <literal>POST</literal>, or otherwise as
+  (additional) query parameters in the URI.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": string,
+     "type": "StaticRequestFilter",
+     "config": {
+         "method": string,
+         "uri": string,
+         "version": string,
+         "headers": {
+             name: [ expression, ... ], ...
+         },
+         "form": {
+             field: [ expression, ... ], ...
+         }
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
-  <title>Parameters</title>
+  <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"method"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The HTTP method to be performed on the resource (for example,
+     <literal>"GET"</literal>).</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"uri"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The fully-qualified URI of the resource to access (for example,
+     <literal>"http://www.example.com/resource.txt"</literal>).</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"version"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>Protocol version. Default: <literal>"HTTP/1.1"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"headers"</code>: <emphasis>array of objects,
+    required</emphasis></term>
+    <listitem>
+     <para>Header fields to set in the request. The <literal>name</literal>
+     specifies the header name, with an associated array of expressions to
+     evaluate as values.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"form"</code>: <emphasis>array of objects,
+    required</emphasis></term>
+    <listitem>
+     <para>A form to include in the request. The <literal>field</literal>
+     specifies the field name, with an associated array of expressions to
+     evaluate as values.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-TODO
+  <programlisting language="javascript" linenumbering="numbered">{
+     "name": "LoginRequestFilter",
+     "type": "StaticRequestFilter",
+     "config": {
+         "method": "POST",
+         "uri": "http://10.10.0.2:8080/wp-login.php",
+         "form": {
+             "log": [ "george" ],
+             "pwd": [ "bosco" ],
+             "rememberme": [ "forever" ],
+             "redirect_to": [ "http://portal.example.com:8080/wp-admin/" ],
+             "testcookie": [ "1" ]
+         }
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
-  <!-- Here's an example with the wrong URL. -->
-  <para><link
-  xlink:href='http://resources.apexidentity.com/javadoc/core/1.0/com/apexidentity/handler/DispatchHandler.html'
-  >com.apexidentity.handler.DispatchHandler</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/StaticRequestFilter.html"
+  >org.forgerock.openig.filter.StaticRequestFilter</link></para>
  </refsect1>
 </refentry>
