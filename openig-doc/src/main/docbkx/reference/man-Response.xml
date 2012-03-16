@@ -36,45 +36,52 @@
  </refmeta>
  <refnamediv>
   <refname>Response</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>HTTP exchange response</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
- </refsect1>
- <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <para>An HTTP response message in an exchange object model.</para>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"status"</code>: <emphasis>number</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The response status code. Example: 200.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"reason"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The response status reason. Example: <literal>"OK"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"version"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>Protocol version. Example: <literal>"HTTP/1.1"</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"headers"</code>: <emphasis>object</emphasis></term>
+    <listitem>
+     <para>Exposes message header fields as name-value pairs, where name is
+     header name and value is an array of header values.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"entity"</code>: <emphasis>object</emphasis></term>
+    <listitem>
+     <para>The message entity body (no accessible properties).</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Response.html"
+  >org.forgerock.openig.http.Response</link></para>
  </refsect1>
 </refentry>

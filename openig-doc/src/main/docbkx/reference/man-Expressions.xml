@@ -36,45 +36,147 @@
  </refmeta>
  <refnamediv>
   <refname>Expressions</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>expression configuration parameter values</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
+  <para>Expressions are specified as configuration parameter values for a
+  number of built-in objects. Such expressions conform to the Universal
+  Expression Language as specified in <link xlink:show="new"
+  xlink:href="http://www.jcp.org/en/jsr/detail?id=245">JSR-245</link>.</para>
  </refsect1>
  <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <title>General Syntax</title>
+  <para>All expressions follow standard Universal Expression Language syntax:
+  <literal>${expression}</literal>. The expression can be a simple reference to
+  a value, a function call, and/or arbitrarily complex arithmetic, logical,
+  relational and conditional operations. When supplied within a configuration
+  parameter, an expression is always a string enclosed in quotation marks, for
+  example: <literal>"${exchange.request.method}"</literal>.</para>
  </refsect1>
  <refsect1>
-  <title>Properties</title>
-  <variablelist>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
+  <title>Value Expressions</title>
+  <para>A value expression references a value relative to the scope supplied to
+  the expression. In the current version of the gateway, the supplied scope is
+  always the HTTP <link xlink:href="reference#Exchange"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >exchange object</link>. For example
+  <literal>"${exchange.request.method}"</literal> references the method of an
+  incoming HTTP request in the exchange scope. A
+  <firstterm>lvalue-expression</firstterm> is a specific type of value
+  expression, which references a value to be written. For example,
+  <literal>"${exchange.session.gotoURL}"</literal> specifies a session
+  attribute named <literal>gotoURL</literal> to write a value to. Attempts to
+  write values to read-only values are ignored.</para>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <title>Indexed Properties</title>
+  <para>Properties of values are accessed using the <literal>.</literal> and
+  <literal>[]</literal> operators, and can be nested arbitrarily. The value
+  expressions <literal>"${exchange.request}"</literal> and
+  <literal>"${exchange['request']}"</literal> are equivalent. In the case of
+  arrays, the index of an element in the array is expressed as a number in
+  brackets, for example
+  <literal>"${exchange.request.headers['Content-Type'][0]}"</literal>
+  references the first <literal>Content-Type</literal> header value in a
+  request. If a property does not exist, then the index reference yields a
+  <literal>null</literal> (empty) value.</para>
  </refsect1>
  <refsect1>
-  <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  <title>Operations</title>
+  <para>Universal Expression Language supports arbitrarily complex arithmetic,
+  logical, relational and conditional operations. They are, in order of
+  precedence:</para>
+  <itemizedlist>
+   <listitem>
+    <para>Index property value: <literal>[]</literal>,
+    <literal>.</literal></para>
+   </listitem>
+   <listitem>
+    <para>Change precedence of operation: <literal>()</literal></para>
+   </listitem>
+   <listitem>
+    <para>Unary negative: <literal>-</literal></para>
+   </listitem>
+   <listitem>
+    <para>Logical operations: <literal>not</literal>, <literal>!</literal>,
+    <literal>empty</literal></para>
+   </listitem>
+   <listitem>
+    <para>Arithmetic operations: <literal>*</literal>, <literal>/</literal>,
+    <literal>div</literal>, <literal>%</literal>, <literal>mod</literal></para>
+   </listitem>
+   <listitem>
+    <para>Binary arithmetic operations: <literal>+</literal>,
+    <literal>-</literal></para>
+   </listitem>
+   <listitem>
+    <para>Relational operations: <literal>&lt;</literal>,
+    <literal>&gt;</literal>, <literal>&lt;=</literal>, <literal>&gt;=</literal>,
+    <literal>lt</literal>, <literal>gt</literal>, <literal>le</literal>,
+    <literal>ge</literal>, <literal>==</literal>, <literal>!=</literal>,
+    <literal>eq</literal>, <literal>ne</literal></para>
+   </listitem>
+   <listitem>
+    <para>Logical operations: <literal>&amp;&amp;</literal>,
+    <literal>and</literal>, <literal>||</literal>, <literal>or</literal></para>
+   </listitem>
+   <listitem>
+    <para>Conditional operations: <literal>?</literal>,
+    <literal>:</literal></para>
+   </listitem>
+  </itemizedlist>
+ </refsect1>
+ <refsect1>
+  <title>Functions</title>
+  <para>A number of <link xlink:href="reference#Functions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >built-in functions</link> can be called within an expression. Syntax is
+  <literal>${function(param, ...)}</literal>, where zero or more parameters
+  are supplied to the function. For example,
+  <literal>"${toLowerCase(exchange.request.method)}"</literal> yields the
+  method of the request, converted to lower case. Functions can be operands
+  for operations, and can yield parameters for other function calls.</para>
+ </refsect1>
+ <refsect1>
+  <title>Examples</title>
+  <para>Lines are folded for readability in these example. In your JSON, keep
+  the values on one line.</para>
+  <programlisting language="javascript">
+"${exchange.request.uri.path == '/wordpress/wp-login.php' and
+ exchange.request.form['action'][0] != 'logout'}"
+
+"${exchange.request.uri.host 'wiki.apexidentity.com'}"
+
+"${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0]
+ .value}"
+
+"${toString(exchange.request.uri)}"
+
+"${exchange.request.uri.value}"
+
+"${exchange.request.method 'POST' and exchange.request.uri.path
+ '/wordpress/wp-login.php'}"
+
+"${exchange.request.method 'GET'}"
+
+"${exchange.request.headers['cookie'][0]}"
+
+"${exchange.request.uri.scheme 'http'}"
+
+"${not (exchange.response.status 302 and not empty exchange.session.gotoURL)}"
+
+"${exchange.response.headers['Set-Cookie'][0]}"
+
+"${exchange.request.headers['host'][0]}"</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>See Also</title>
+  <para><link xlink:href="reference#Exchange"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >Exchange</link></para>
+  <para><link xlink:href="reference#Functions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >Functions</link></para>
  </refsect1>
 </refentry>

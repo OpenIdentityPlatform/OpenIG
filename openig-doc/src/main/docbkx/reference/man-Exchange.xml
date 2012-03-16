@@ -36,45 +36,64 @@
  </refmeta>
  <refnamediv>
   <refname>Exchange</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>HTTP exchange of request and response</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
- </refsect1>
- <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <para>The root object for the exchange object model: an HTTP exchange of
+  request and response. The exchange object model parallels the document object
+  model, exposing elements of the exchange. It supports this by exposing a set
+  of fixed properties and allowing arbitrary properties to be added.</para>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"exchange"</code>: <emphasis>object</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Self-referential property to make this the root object in the
+     exchange object model.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><link xlink:href="reference#Request"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    ><code>"request"</code></link>: <emphasis>object</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The request portion of the HTTP exchange.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><link xlink:href="reference#Response"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    ><code>"response"</code></link>: <emphasis>object</emphasis></term>
+    <listitem>
+     <para>The response portion of the HTTP exchange.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><link xlink:href="reference#Principal"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    ><code>"principal"</code></link>: <emphasis>object</emphasis></term>
+    <listitem>
+     <para>The principal associated with the request, or <literal>null</literal>
+     if unknown.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"session"</code>: <emphasis>object</emphasis></term>
+    <listitem>
+     <para>Session context associated with the remote client. Exposes session
+     attributes as name-value pairs, where both name and value are
+     strings.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html"
+  >org.forgerock.openig.http.Exchange</link></para>
  </refsect1>
 </refentry>

@@ -36,45 +36,365 @@
  </refmeta>
  <refnamediv>
   <refname>Functions</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>built-in functions to call within expressions</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
+  <para>A set of built-in functions that can be called from within
+  <link xlink:href="reference#Expressions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >expressions</link>.</para>
  </refsect1>
  <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
-  <title>Properties</title>
+  <title>contains</title>
+  <literallayout class="monospaced">contains(object, value)</literallayout>
+
+  <para>Returns <literal>true</literal> if the object contains the specified
+  value. If the object is a string, a substring is searched for the value. If
+  the object is a collection or array, its elements are searched for the
+  value.</para>
+
   <variablelist>
+   <title>Parameters</title>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term>object</term>
     <listitem>
-     <para>TODO description</para>
+     <para>the object to be searched for the presence of.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term>value</term>
     <listitem>
-     <para>TODO description</para>
+     <para>the value to be searched for.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>true</term>
+    <listitem>
+     <para>if the object contains the specified value.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <title>indexOf</title>
+  <literallayout class="monospaced">indexOf(string, substring)</literallayout>
+
+  <para>Returns the index within a string of the first occurrence of a specified
+  substring.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string to be searched.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>substring</term>
+    <listitem>
+     <para>the value to search for within the string.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the index of the first instance of substring, or -1 if not
+     found.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>join</title>
+  <literallayout class="monospaced">join(strings, separator)</literallayout>
+
+  <para>Joins an array of strings into a single string value, with a specified
+  separator.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>separator</term>
+    <listitem>
+     <para>the separator to place between joined elements.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>strings</term>
+    <listitem>
+     <para>the array of strings to be joined.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the string containing the joined strings.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>keyMatch</title>
+  <literallayout class="monospaced">keyMatch(map, pattern)</literallayout>
+
+  <para>Returns the first key found in a map that matches the specified <link
+  xlink:href="reference#Expressions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >regular expression pattern</link>, or <literal>null</literal> if no such
+  match is found.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>map</term>
+    <listitem>
+     <para>the map whose keys are to be searched.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>pattern</term>
+    <listitem>
+     <para>a string containing the regular expression pattern to match.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the first matching key, or <literal>null</literal> if no match
+     found.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>length</title>
+  <literallayout class="monospaced">length(object)</literallayout>
+
+  <para>Returns the number of items in a collection, or the number of
+  characters in a string.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>object</term>
+    <listitem>
+     <para>the object whose length is to be determined.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the length of the object, or 0 if length could not be
+     determined.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>matches</title>
+  <literallayout class="monospaced">matches(string, pattern)</literallayout>
+
+  <para>Returns an array of matching groups for a <link
+  xlink:href="reference#Expressions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >regular expression pattern</link> against a string, or
+  <literal>null</literal> if no such match is found. The first element of the
+  array is the entire match, and each subsequent element correlates to any
+  capture group specified within the regular expression.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string to be searched.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>pattern</term>
+    <listitem>
+     <para>a string containing the regular expression pattern to match.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>an array of matching groups, or <literal>null</literal> if no such
+     match is found.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>split</title>
+  <literallayout class="monospaced">split(string, pattern)</literallayout>
+
+  <para>Splits a string into an array of substrings around matches of the given
+  <link xlink:href="reference#Expressions"
+  xlink:role="http://docbook.org/xlink/role/olink">regular expression
+  pattern</link>.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string to be split.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>pattern</term>
+    <listitem>
+     <para>the regular expression to split substrings around.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the resulting array of split substrings.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>toLowerCase</title>
+  <literallayout class="monospaced">toLowerCase(string)</literallayout>
+
+  <para>Converts all of the characters in a string to lower case.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string whose characters are to be converted.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the string with characters converted to lower case.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>toString</title>
+  <literallayout class="monospaced">toString(object)</literallayout>
+
+  <para>Returns the string value of an aribtrary object.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>object</term>
+    <listitem>
+     <para>the object whose string value is to be returned.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the string value of the object.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>toUpperCase</title>
+  <literallayout class="monospaced">toUpperCase(string)</literallayout>
+
+  <para>Converts all of the characters in a string to upper case.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string whose characters are to be converted.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the string with characters converted to upper case.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>trim</title>
+  <literallayout class="monospaced">trim(string)</literallayout>
+
+  <para>Returns a copy of a string with leading and trailing whitespace
+  omitted.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string whose white space is to be omitted.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the string with leading and trailing white space omitted.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/el/Functions.html"
+  >org.forgerock.openig.el.Functions</link></para>
  </refsect1>
 </refentry>

@@ -36,45 +36,68 @@
  </refmeta>
  <refnamediv>
   <refname>TemporaryStorage</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>cache streamed content</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
+  <para>Allocates temporary buffers for caching streamed content during request
+  processing. Initially uses memory; when the memory limit is exceeded, switches
+  to a temporary file.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript" linenumbering="numbered">{
-TODO
+     "name": string,
+     "type": "TemporaryStorage",
+     "config": {
+         "initialLength": number,
+         "memoryLimit": number,
+         "fileLimit": number,
+         "directory": string
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"initialLength"</code>: <emphasis>number,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The initial length of memory buffer byte array. Default: 8192
+     (8 KiB).</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"memoryLimit"</code>: <emphasis>number,
+    optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The length limit of the memory buffer. Exceeding this limit results
+     in promotion from memory to file. Default: 65536 (64 KiB).</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"fileLimit"</code>: <emphasis>number, optional</emphasis></term>
+    <listitem>
+     <para>The length limit of the file buffer. Exceeding this limit results in
+     a thrown exception. Default: 1048576 (1 MiB).</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"directory"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>The directory where temporary files are created. If omitted, then
+     the system-dependent default temporary directory is used (typically
+     <literal>"/tmp"</literal> on Unix systems). Default: use system-dependent
+     default.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/io/TemporaryStorage.html"
+  >org.forgerock.openig.io.TemporaryStorage</link></para>
  </refsect1>
 </refentry>
