@@ -139,7 +139,7 @@
             <archive>http://lists.forgerock.org/pipermail/openig/</archive>
         </mailingList>
         <mailingList>
-            <name>OpenIG: Commit Notificatons</name>
+            <name>OpenIG: Commit Notifications</name>
             <post>commitopenig@forgerock.org</post>
             <subscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</subscribe>
             <unsubscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</unsubscribe>
