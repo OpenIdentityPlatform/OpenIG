@@ -36,45 +36,85 @@
  </refmeta>
  <refnamediv>
   <refname>URI</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>Uniform Resource Identifier in HTTP exchange</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
- </refsect1>
- <refsect1>
-  <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
+  <para>Represents a Uniform Resource Identifier (URI) reference in an exchange
+  object model. URI properties are read-only.</para>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"scheme"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The scheme component of the URI, or <literal>null</literal> if the
+     scheme is undefined.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"schemeSpecificPart"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The decoded scheme-specific part of the URI, never
+     <literal>null</literal>.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"authority"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The decoded authority component of the URI, or
+     <literal>null</literal> if the authority is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"userInfo"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The decoded user-information component of the URI, or
+     <literal>null</literal> if the user information is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"host"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The host component of the URI, or <literal>null</literal> if the
+     host is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"port"</code>: <emphasis>number</emphasis></term>
+    <listitem>
+     <para>The port component of the URI, or <literal>null</literal> if the
+     port is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"path"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The decoded path component of the URI, or <literal>null</literal>
+     if the path is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"query"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The decoded query component of the URI, or <literal>null</literal>
+     if the query is undefined.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"fragment"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>The decoded fragment component of the URI, or <literal>null</literal>
+     if the fragment is undefined.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/net/URI.html"
+  >java.net.URI</link></para>
  </refsect1>
 </refentry>
