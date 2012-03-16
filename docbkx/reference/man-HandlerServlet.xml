@@ -36,45 +36,48 @@
  </refmeta>
  <refnamediv>
   <refname>HandlerServlet</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>translate and marshal request to a handler</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
+  <para>Services a servlet request by translating it and marshaling to a
+  handler.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript" linenumbering="numbered">{
-TODO
+     "name": string,
+     "type": "HandlerServlet",
+     "config": {
+         "handler": string,
+         "baseURI": string
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>The name of the handler heap object to dispatch the exchange
+     to.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"baseURI"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
+     <para>Overrides request URLs constructed by container, making requests
+     relative to a new base URI. Only scheme, host and port are used in the
+     supplied URI. Default: use container URL.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
-  <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
-TODO
-}</programlisting>
- </refsect1>
- <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/HandlerServlet.html"
+  >org.forgerock.openig.servlet.HandlerServlet</link></para>
  </refsect1>
 </refentry>
