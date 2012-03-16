@@ -36,31 +36,34 @@
  </refmeta>
  <refnamediv>
   <refname>ConsoleLogSink</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>log to standard error</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
-  <para>TODO full description.</para>
+  <para>A log sink that writes log entries to the standard error stream.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript" linenumbering="numbered">{
-TODO
+     "name": string,
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": string
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
+    <term><code>"level"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>TODO description</para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><code>"name"</code>: <emphasis>type</emphasis></term>
-    <listitem>
-     <para>TODO description</para>
+     <para>The level of log entries to display in the console. Must be one of:
+     <literal>OFF</literal>, <literal>ERROR</literal>,
+     <literal>WARNING</literal>, <literal>INFO</literal>,
+     <literal>CONFIG</literal>, <literal>STAT</literal>,
+     <literal>DEBUG</literal>, <literal>TRACE</literal>, <literal>ALL</literal>.
+     Default: <literal>INFO</literal>.</para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -68,13 +71,21 @@ TODO
  <refsect1>
   <title>Example</title>
   <programlisting language="javascript" linenumbering="numbered">{
-TODO
+     "name": "LogSink",
+     "comment": "Default sink for logging information.",
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": "DEBUG" 
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/log/ConsoleLogSink.html"
+  >org.forgerock.openig.log.ConsoleLogSink</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/log/LogLevel.html"
+  >org.forgerock.openig.log.LogLevel</link></para>
  </refsect1>
 </refentry>
