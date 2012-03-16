@@ -36,7 +36,7 @@
  </refmeta>
  <refnamediv>
   <refname>Patterns</refname>
-  <refpurpose>TODO one-line description</refpurpose>
+  <refpurpose>regular expression patterns</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
@@ -64,7 +64,7 @@
   manner.</para>
  </refsect1>
  <refsect1>
-  <title>See also</title>
+  <title>See Also</title>
   <para>Java <link xlink:show="new"
   xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
   >Pattern</link> class</para>
