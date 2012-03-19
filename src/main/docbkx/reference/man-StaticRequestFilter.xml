@@ -49,7 +49,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "StaticRequestFilter",
      "config": {
@@ -110,7 +110,7 @@
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "LoginRequestFilter",
      "type": "StaticRequestFilter",
      "config": {

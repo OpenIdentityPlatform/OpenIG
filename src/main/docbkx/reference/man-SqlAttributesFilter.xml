@@ -54,7 +54,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "SqlAttributesFilter",
      "config": {
@@ -110,7 +110,7 @@
   <title>Example</title>
   <para>Using the users sessionid from a cookie, query the database to find the
   user logged in and set the profile attributes in the exchange:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
         "name": "SqlAttributesFilter",
         "type": "SqlAttributesFilter",
         "config": {

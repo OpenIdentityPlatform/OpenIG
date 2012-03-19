@@ -44,7 +44,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "ConsoleLogSink",
      "config": {
@@ -70,7 +70,7 @@
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "LogSink",
      "comment": "Default sink for logging information.",
      "type": "ConsoleLogSink",

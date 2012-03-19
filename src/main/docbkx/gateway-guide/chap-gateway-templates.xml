@@ -77,7 +77,7 @@
 
  <section xml:id="template-simple-login">
   <title>Simple Login Form</title>
-  <para>Logs the user into the target application with hard-coded username
+  <para>Logs the user into the target application with hard-coded user name
   and password. This template intercepts the login page request and replaces
   it with the login form.</para>
   

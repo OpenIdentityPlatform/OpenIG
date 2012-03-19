@@ -33,57 +33,68 @@
  <title>Federation Reference</title>
 
  <para>The Federation component of the Gateway is a standards based
- authentication service used by the Gateway to validate a user and retrieve key
- attributes of the user in order to log them into the target
- applications.</para>
+  authentication service used by the Gateway to validate a user and retrieve key
+  attributes of the user in order to log them into the target
+  applications.
+ </para>
 
  <orderedlist>
   <para>There are two ways the Federation Service can be invoked.</para>
   <listitem>
    <para>IDP initiated SSO, where the remote Identity Provider sends an
-   unsolicited Authentication statement to the Gateway</para>
+    unsolicited Authentication statement to the Gateway
+   </para>
   </listitem>
   <listitem>
    <para>SP initiated SSO where the Gateway calls the Federation Service to
-   initiate Federated SSO with the Identity provider</para>
+    initiate Federated SSO with the Identity provider
+   </para>
   </listitem>
  </orderedlist>
 
  <para>In either case, the job of the Federation Service is to validate the
- user and pass the required attributes to the Gateway to log the user into
- target applications.</para>
+  user and pass the required attributes to the Gateway to log the user into
+  target applications.
+ </para>
 
- <para>Refer to the <link xlink:href="gateway-guide#chap-tutorial-federation"
- xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Federation
- Gateway Tutorial</citetitle></link> for hands on experience with the
- Federation Gateway.</para>
+ <para>Refer to the 
+  <link xlink:href="gateway-guide#chap-tutorial-federation"
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Federation
+  Gateway Tutorial</citetitle></link> for hands on experience with the
+  Federation Gateway.
+ </para>
 
  <section xml:id="federation-installation">
   <title>Installation Overview</title>
 
   <itemizedlist>
    <para>This section is a summary of the steps needed to prepare the Gateway
-   to act as a Federation endpoint for your target application. Detailed
-   instructions follow the summary.</para>
+    to act as a Federation endpoint for your target application. Detailed
+    instructions follow the summary.
+   </para>
    <listitem>
     <para>Install the Gateway.</para>
    </listitem>
    <listitem>
     <para>Configure the Gateway to log users into the target application.
-    Getting this to work before configuring Federation will make the
-    process much simple to troubleshoot if anything goes wrong.</para>
+     Getting this to work before configuring Federation will make the
+     process much simple to troubleshoot if anything goes wrong.
+    </para>
    </listitem>
    <listitem>
     <para>Add the Federation configuration to the Gateway configuration
-    file.</para>
+     file.
+    </para>
    </listitem>
    <listitem>
     <para>Add the assertion and subject mappings, optional redirect URI and
-    optional logout URI to the Federation configuration.</para>
+     optional logout URI to the Federation configuration.
+    </para>
    </listitem>
    <listitem>
     <para>Export the Identity Provider MetaData from the remote Identity
-    Provider.</para>
+     Provider.
+    </para>
    </listitem>
    <listitem>
     <para>Import the Gateway metadata to your Identity Provider.</para>
@@ -93,110 +104,110 @@
 
  <section>
   <title>Configuration File Overview</title>
- <para>
+  <para>
    The Federation service is configured by modifying the Gateway config.json and Federation specific XML files located in the home directory of the effective user running the container of the Gateway. The home directory of this user will be referred to as $HOME_DIR  for the remainder of this document. By default, the Federation service looks in $HOME_DIR/.ApexIdentity/Gateway for config.json and $HOME_DIR/.ApexIdentity/SAML for the Federation xml configuration.  The following is a description of these files:
- </para>
- <para>
+  </para>
+  <para>
    $HOME_DIR/.ApexIdentity/Gateway/config.json
- </para>
- <para>
-This is the core configuration file for the Gateway. It is necessary to configure both this file and the xml files specific to the Federation Service. The reason there are two sets of configuration files is the Federation Service is based on the openFed library from the OpenAM open source project. The openFed library and the Federation configuration files are taken directly from the openfm release. In order to get the Federation Service configured it is necessary to tag swap the xml files. If you are familiar with the workflow in the OpenAM console you can generate a fedlet and directly copy the configuration files into $HOME_DIR.ApexIdentity/SAML.
- </para>
+  </para>
+  <para>
+   This is the core configuration file for the Gateway. It is necessary to configure both this file and the xml files specific to the Federation Service. The reason there are two sets of configuration files is the Federation Service is based on the openFed library from the OpenAM open source project. The openFed library and the Federation configuration files are taken directly from the openfm release. In order to get the Federation Service configured it is necessary to tag swap the xml files. If you are familiar with the workflow in the OpenAM console you can generate a fedlet and directly copy the configuration files into $HOME_DIR.ApexIdentity/SAML.
+  </para>
 
- <para>
-  sp.xml
- </para>
- <para>
-  sp-extended.xml
- </para>
- <para>
-These are the standard metadata and metadata extensions for the Federation Service of the Gateway.
- </para>
+  <para>
+   sp.xml
+  </para>
+  <para>
+   sp-extended.xml
+  </para>
+  <para>
+   These are the standard metadata and metadata extensions for the Federation Service of the Gateway.
+  </para>
 
- <para>
-idp-extended.xml
- </para>
- <para>
-The Standard extensions for the Identity Provider.
- </para>
+  <para>
+   idp-extended.xml
+  </para>
+  <para>
+   The Standard extensions for the Identity Provider.
+  </para>
 
- <para>
-  gateway.cot
- </para>
- <para>
-Circle of trust for the Gateway and the Identity Provider.
- </para>
+  <para>
+   gateway.cot
+  </para>
+  <para>
+   Circle of trust for the Gateway and the Identity Provider.
+  </para>
 
-<para>
-FederationConfig.properties
- </para>
- <para>
-Advanced features of the openFed library. The defaults will suffice in most deployments.
- </para>
+  <para>
+   FederationConfig.properties
+  </para>
+  <para>
+   Advanced features of the openFed library. The defaults will suffice in most deployments.
+  </para>
 
- <para>
-$HOME_DIR/.ApexIdentity/SAML/idp.xml
- </para>
- <para>
-This file is not included with the Federation Service xml. It must be generated by the Identity Provider and copied into the configuration directory.
- </para>
+  <para>
+   $HOME_DIR/.ApexIdentity/SAML/idp.xml
+  </para>
+  <para>
+   This file is not included with the Federation Service xml. It must be generated by the Identity Provider and copied into the configuration directory.
+  </para>
 
  </section>
 
  <section>
- <title>Configuration the Federation Service</title>
- <para>
-The simplest way to configure the Federation Gateway is to use the OpenAM task wizard to generate a Fedlet and then use the Fedlet configuration files in the Gateway configuration directory. If you use the Fedlet configuration files you simply need to unjar the Fedlet.war and copy all the files listed above into $HOME_DIR/.ApexIdentity/SAML. You do not have to modify the files to do basic IDP and SP initiated SSO with the Gateway. Please note the sample Federation Gateway config.json templates uses /saml as the URI so your Fedlet endpoint should be specified as proto://host.domain:port/saml.
- </para>
+  <title>Configuration the Federation Service</title>
+  <para>
+   The simplest way to configure the Federation Gateway is to use the OpenAM task wizard to generate a Fedlet and then use the Fedlet configuration files in the Gateway configuration directory. If you use the Fedlet configuration files you simply need to unjar the Fedlet.war and copy all the files listed above into $HOME_DIR/.ApexIdentity/SAML. You do not have to modify the files to do basic IDP and SP initiated SSO with the Gateway. Please note the sample Federation Gateway config.json templates uses /saml as the URI so your Fedlet endpoint should be specified as proto://host.domain:port/saml.
+  </para>
 
- <para>
-If you do not use the Fedlet wizard you must follow the instructions for the unconfigured Fedlet and then copy the Fedlet configuration files to the $HOME_DIR/.ApexIdentity/SAML directory. You must also export the metadata from the IDP and copy it to idp.xml in the same directory.
- </para>
+  <para>
+   If you do not use the Fedlet wizard you must follow the instructions for the unconfigured Fedlet and then copy the Fedlet configuration files to the $HOME_DIR/.ApexIdentity/SAML directory. You must also export the metadata from the IDP and copy it to idp.xml in the same directory.
+  </para>
  </section>
 
  <section>
- <title>Config.json Sample</title>
- <para>
-The following is the sample configuration from the Federating Wordpress tutorial. This sample configuration receives a SAML assertion from OpenAM and then logs the user into Wordpress using the username and password from the assertion.
- </para>
- <para>
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/FederationWordpress.json">"Federation to Wordpress Sample Config File</link>"
- </para>
- <para>
-The following is an excerpt of the Federation Service JSON in the config.json of the Gateway.   All fields are mandatory with the exception of the logoutURI.  The logoutURI is only necessary if your configuration will be utilizing the single logout feature.  A description of each follows.   
- </para>
-<screen width='80'>
-{
-    "name": "FederationServlet",
-    "type": "com.apexidentity.saml.FederationServlet",
-    "config": {
-        "assertionMapping": {
-            "userName":"uid",
-            "password":"userPassword"
-        },  
-        "subjectMapping":"subjectName",
-        "redirectURI":"/login",
-        "logoutURI":"/logout"
-        "assertionConsumerEndpoint":"fedletapplication",
-        "SPinitiatedSSOEndpoint":"SPInitiatedSSO",
-        "singleLogoutEndpoint":"fedletSlo"
+  <title>Config.json Sample</title>
+  <para>
+   The following is the sample configuration from the Federating Wordpress tutorial. This sample configuration receives a SAML assertion from OpenAM and then logs the user into Wordpress using the username and password from the assertion.
+  </para>
+  <para>
+   <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/FederationWordpress.json">"Federation to Wordpress Sample Config File</link>"
+  </para>
+  <para>
+   The following is an excerpt of the Federation Service JSON in the config.json of the Gateway.   All fields are mandatory with the exception of the logoutURI.  The logoutURI is only necessary if your configuration will be utilizing the single logout feature.  A description of each follows.   
+  </para>
+  <screen width='80'>
+   {
+   "name": "FederationServlet",
+   "type": "com.apexidentity.saml.FederationServlet",
+   "config": {
+   "assertionMapping": {
+   "userName":"uid",
+   "password":"userPassword"
+   },  
+   "subjectMapping":"subjectName",
+   "redirectURI":"/login",
+   "logoutURI":"/logout"
+   "assertionConsumerEndpoint":"fedletapplication",
+   "SPinitiatedSSOEndpoint":"SPInitiatedSSO",
+   "singleLogoutEndpoint":"fedletSlo"
    }   
-}
-</screen>
+   }
+  </screen>
 
-<variablelist>
+  <variablelist>
 
-  <varlistentry>
-  <term>name</term>
-   <listitem>
-    <para>
+   <varlistentry>
+    <term>name</term>
+    <listitem>
+     <para>
       Name of the Federation Service within the Gateway runtime. This value should not be modified.
-    </para>
-   </listitem>
-  </varlistentry>
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>asertionMapping</term>
+   <varlistentry>
+    <term>asertionMapping</term>
     <listitem>
      <para>
       The assertionMapping defines how to transform the attributes from the incoming 
@@ -212,124 +223,124 @@ The following is an excerpt of the Federation Service JSON in the config.json of
      <para>the following values will be set in the session:</para>
      <para>userName = jojo</para>
      <para>password = 123456789</para>
-   </listitem>
-  </varlistentry>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>subjectMapping</term>
-   <listitem>
-    <para>
-     The value contained in the assertion subject will be set at the value of 
-     the attribute subjectName in the session.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>subjectMapping</term>
+    <listitem>
+     <para>
+      The value contained in the assertion subject will be set at the value of 
+      the attribute subjectName in the session.
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>redirectURI</term>
-   <listitem>
-    <para>
-     The redirectURI should be set to the page the Form-Filter will recognize 
-     as the login page for the target application. This is how the Gateway and 
-     the Federation service work together to provide single sign-on. When the 
-     Gateway detects the target application's login page it redirects to the 
-     Federation Service. Once the Federation Service validates the SAML exchanges 
-     with the IDP and sets the required session attributes, it redirect back to 
-     the target application's login page. This will allow the Form-Filter to 
-     finish the job of logging in the user by retrieving the necessary user 
-     data from the session and creating a login form for the application.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>redirectURI</term>
+    <listitem>
+     <para>
+      The redirectURI should be set to the page the Form-Filter will recognize 
+      as the login page for the target application. This is how the Gateway and 
+      the Federation service work together to provide single sign-on. When the 
+      Gateway detects the target application's login page it redirects to the 
+      Federation Service. Once the Federation Service validates the SAML exchanges 
+      with the IDP and sets the required session attributes, it redirect back to 
+      the target application's login page. This will allow the Form-Filter to 
+      finish the job of logging in the user by retrieving the necessary user 
+      data from the session and creating a login form for the application.
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>logoutURI</term>
-   <listitem>
-    <para>
-     The logoutURI should be set to the URI which will log the user out of 
-     the target application. This attribute is only needed if your application 
-     will be using the single log-out feature of the Identity Provider.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>logoutURI</term>
+    <listitem>
+     <para>
+      The logoutURI should be set to the URI which will log the user out of 
+      the target application. This attribute is only needed if your application 
+      will be using the single log-out feature of the Identity Provider.
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>assertionConsumerEndpoint</term>
-   <listitem>
-    <para>
-     The default value of fedletapplication is the same as the Fedlet. If 
-     you modify this attribute you must change the metadata to match.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>assertionConsumerEndpoint</term>
+    <listitem>
+     <para>
+      The default value of fedletapplication is the same as the Fedlet. If 
+      you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>SPinitiatedSSOEndpoint</term>
-   <listitem>
-    <para>
-     The default value SPInitiatedSSO. If you modify this attribute you must 
-     change the metadata to match.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>SPinitiatedSSOEndpoint</term>
+    <listitem>
+     <para>
+      The default value SPInitiatedSSO. If you modify this attribute you must 
+      change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
 
-  <varlistentry>
-  <term>singleLogoutEndpoint</term>
-   <listitem>
-    <para>
-     The default value of fedletSLO is the same as the Fedlet. If you 
-     modify this attribute you must change the metadata to match.
-    </para>
-   </listitem>
-  </varlistentry>
+   <varlistentry>
+    <term>singleLogoutEndpoint</term>
+    <listitem>
+     <para>
+      The default value of fedletSLO is the same as the Fedlet. If you 
+      modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
 
-</variablelist>
-</section>
+  </variablelist>
+ </section>
 
-<section>
-<title>Example Settings</title>
- <para>
-  Application myportal requires a form with userName and password for login. 
-  The userName for myportal is the mail attribute at the user's Identity Provider. 
-  The password for myportal is the mailPassword at the Identity Provider. 
-  The incoming SAML2 assertion sent by the Identity Provider will contain the 
-  mail and mailPassword attributes. The Federation service will validate the 
-  incoming assertion, set the userName and password in the HttpSession to the 
-  values of mail and mailPassword from the assertion, and redirect the user 
-  to /myportal/login. The LoginRequest Filter will then retrieve the login 
-  values from the session and create the form to log the user into myportal. 
- </para>
-<screen width='80'>
-{
-    "name": "FederationServlet",
-    "type": "com.apexidentity.saml.FederationServlet",
-    "config": {
-            "assertionMapping": {
-                 "userName":"mail",
-                 "password":"mailPassword"
-            }
-            "redirectURI":"/myportal/login",
-            "logoutURI":"/myportal/logout"
-    }
-}
+ <section>
+  <title>Example Settings</title>
+  <para>
+   Application myportal requires a form with userName and password for login. 
+   The userName for myportal is the mail attribute at the user's Identity Provider. 
+   The password for myportal is the mailPassword at the Identity Provider. 
+   The incoming SAML2 assertion sent by the Identity Provider will contain the 
+   mail and mailPassword attributes. The Federation service will validate the 
+   incoming assertion, set the userName and password in the HttpSession to the 
+   values of mail and mailPassword from the assertion, and redirect the user 
+   to /myportal/login. The LoginRequest Filter will then retrieve the login 
+   values from the session and create the form to log the user into myportal. 
+  </para>
+  <screen width='80'>
+   {
+   "name": "FederationServlet",
+   "type": "com.apexidentity.saml.FederationServlet",
+   "config": {
+   "assertionMapping": {
+   "userName":"mail",
+   "password":"mailPassword"
+   }
+   "redirectURI":"/myportal/login",
+   "logoutURI":"/myportal/logout"
+   }
+   }
 
-{    
-    "name": "LoginRequest",
-    "type": "com.apexidentity.filter.StaticRequestFilter",
-    "config": {
-        "method": "POST",
-        "uri": "https://131.89.128.67/login",
-        "form": {
-            "userName": [${exchange.session.userName}],
-            "password": [${exchange.session.password}],
-        }   
-    }   
-}
-</screen>
-</section>
+   {    
+   "name": "LoginRequest",
+   "type": "com.apexidentity.filter.StaticRequestFilter",
+   "config": {
+   "method": "POST",
+   "uri": "https://131.89.128.67/login",
+   "form": {
+   "userName": [${exchange.session.userName}],
+   "password": [${exchange.session.password}],
+   }   
+   }   
+   }
+  </screen>
+ </section>
 
-<section>
-<title>Identity Provider MetaData</title>
+ <section>
+  <title>Identity Provider MetaData</title>
   <para>
    The metadata of the Identity Provider must be in idp.xml and copied 
    to the $HOME_DIR/.ApexIdentity/SAML directory.  Please refer to the 
@@ -340,10 +351,10 @@ The following is an excerpt of the Federation Service JSON in the config.json of
    Example command for exporting the Identity Provider metadata from OpenAM.
   </para>
 
-<screen width='80'>
-# ssoadm export-entity -u amadmin -f /tmp/pass -y http://www.idp.com:8888/opensso -m /tmp/idp.xml
-</screen>
-</section>
+  <screen width='80'>
+   # ssoadm export-entity -u amadmin -f /tmp/pass -y http://www.idp.com:8888/opensso -m /tmp/idp.xml
+  </screen>
+ </section>
 
 </chapter>
 
