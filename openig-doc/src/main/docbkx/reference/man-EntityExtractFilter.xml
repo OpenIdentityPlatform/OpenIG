@@ -50,7 +50,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "EntityExtractFilter",
      "config": {
@@ -133,7 +133,7 @@
   <literal>wpLogintoken value="abc"</literal>. Setting the template to
   <literal>$1</literal> assigns the value <literal>abc</literal> to
   <literal>exchange.wikiNonce.wpLoginToken</literal>:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
     "name": "WikiNoncePageExtract",
     "type": "EntityExtractFilter",
     "config": {
@@ -152,7 +152,7 @@
   <para>Reads the response looking for the OpenAM login page. When found it
   sets <literal>loginPage.found = true</literal> to be used in a SwitchFilter
   to post the login credentials:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
     "name": "FindLoginPage",
     "type": "EntityExtractFilter",
     "config": {

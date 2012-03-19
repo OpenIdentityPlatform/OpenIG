@@ -33,296 +33,301 @@
  <title>Samples and Tutorials</title>
 
  <para>The best way to understand the value of the Gateway is to 
-   read through the use cases. The best way to understand how it 
-   works is to take the tutorial or try out the samples for each 
-   of the use cases.
-  </para>
+  read through the use cases. The best way to understand how it 
+  works is to take the tutorial or try out the samples for each 
+  of the use cases.
+ </para>
  
  <section>
   <title>Gateway Tutorial with WordPress</title>
 
   <section>
-  <title>Introduction</title>
-  <para>
+   <title>Introduction</title>
+   <para>
     This tutorial gives you hands on experience with the basic features of the Gateway.   
     You will install the Gateway in your network and point it to an installation of the 
     WordPress Portal hosted at 
-    <link xlink:href="http://portal.apexidsamples.com:8080/wordpress">http://portal.apexidsamples.com:8080/wordpress</link>
+    <link xlink:href="http://demo.forgerock.com:8080/wordpress">http://demo.forgerock.com:8080/wordpress</link>
     The tutorial will progress through the following steps and explain what is 
     happening by walking you through the Gateway configuration:
-  </para>
-  <itemizedlist>
+   </para>
+   <itemizedlist>
     <listitem>
-      <para>Pure reverse proxy mode to the Portal</para>
+     <para>Pure reverse proxy mode to the Portal</para>
     </listitem>
     <listitem>
-      <para>Login with hard coded credentials</para>
+     <para>Login with hard coded credentials</para>
     </listitem>
     <listitem>
-      <para>Login with credentials from a flat file</para>
+     <para>Login with credentials from a flat file</para>
     </listitem>
     <listitem>
-      <para>Login with credentials from MySQL</para>
+     <para>Login with credentials from MySQL</para>
     </listitem>
-  </itemizedlist>
+   </itemizedlist>
 
-  <para>
+   <para>
     Before you begin the tutorial, it is highly recommended you read the 
-    2 page overview on <xref linkend="chap-howitworks"/>. 
-  </para>
+    2 page overview on 
+    <xref linkend="chap-howitworks"/>. 
+   </para>
   </section>
 
   <section>
-  <title>Detailed Flow</title>
-  <para>
-  Figure 1 and the steps below detail the flow between the Browser, the 
-  Gateway and the Portal for a basic login sequence to the Portal.  The 
-  key concept to understand is all requests to the application are routed 
-  through the Gateway by modifying the DNS entry for the target application.  
-  The Gateway can then be configured to intercept specific pages, such as 
-  login pages, and create requests to log the user in.
-  </para>
-  <mediaobject>
-      <imageobject>
-        <imagedata fileref="images/helloUserSample.png" format="PNG" />
-      </imageobject>
-  </mediaobject>
-  <itemizedlist>
+   <title>Detailed Flow</title>
+   <para>
+    Figure 1 and the steps below detail the flow between the Browser, the 
+    Gateway and the Portal for a basic login sequence to the Portal.  The 
+    key concept to understand is all requests to the application are routed 
+    through the Gateway by modifying the DNS entry for the target application.  
+    The Gateway can then be configured to intercept specific pages, such as 
+    login pages, and create requests to log the user in.
+   </para>
+   <mediaobject>
+    <imageobject>
+     <imagedata fileref="images/helloUserSample.png" format="PNG" />
+    </imageobject>
+   </mediaobject>
+   <itemizedlist>
     <listitem>
-      <para>User browses to the Portal, browser host makes a DNS 
-      request to get the IP address for portal.apexidsamples.com, DNS returns the IP address of the Gateway.</para>
+     <para>User browses to the Portal, browser host makes a DNS 
+      request to get the IP address for demo.forgerock.com, DNS returns the IP address of the Gateway.
+     </para>
     </listitem>
     <listitem>
-      <para>Browser sends the request to the Gateway</para>
+     <para>Browser sends the request to the Gateway</para>
     </listitem>
     <listitem>
-      <para>Gateway inspects the request,  finds no login page match</para>
+     <para>Gateway inspects the request,  finds no login page match</para>
     </listitem>
     <listitem>
-      <para>Gateway forwards the original request to  the Portal</para>
+     <para>Gateway forwards the original request to  the Portal</para>
     </listitem>
     <listitem>
-      <para>Portal finds no local application session and redirects to the Portal login page</para>
+     <para>Portal finds no local application session and redirects to the Portal login page</para>
     </listitem>
     <listitem>
-      <para>Gateway intercepts the redirect, inspects the request, finds a login page match </para>
+     <para>Gateway intercepts the redirect, inspects the request, finds a login page match </para>
     </listitem>
     <listitem>
-      <para>Gateway creates the login form</para>
+     <para>Gateway creates the login form</para>
     </listitem>
     <listitem>
-      <para>Gateway POSTs the login form to the Portal</para>
+     <para>Gateway POSTs the login form to the Portal</para>
     </listitem>
     <listitem>
-      <para>Portal validates the login and redirects to the Portal end user page</para>
+     <para>Portal validates the login and redirects to the Portal end user page</para>
     </listitem>
     <listitem>
-      <para>Gateway receives the final redirect and passes it back to the Browser</para>
+     <para>Gateway receives the final redirect and passes it back to the Browser</para>
     </listitem>
-  </itemizedlist>
+   </itemizedlist>
   </section>
 
   <section>
-  <title>Setup Summary</title>
-  <para>
-  To keep things simple, these instructions assume you are running the Gateway and 
-  the Browser on a single host.  If they are on separate hosts please make sure the 
-  host or DNS changes impact the Browser host.  We are also assuming Jetty 7 for the 
-  container, but you may use any supported container.
-  </para>
-  <itemizedlist>
+   <title>Setup Summary</title>
+   <para>
+    To keep things simple, these instructions assume you are running the Gateway and 
+    the Browser on a single host.  If they are on separate hosts please make sure the 
+    host or DNS changes impact the Browser host.  We are also assuming Jetty 7 for the 
+    container, but you may use any supported container.
+   </para>
+   <itemizedlist>
     <listitem>
-      <para> Gateway IP address 10.0.1.1  (substitute your Gateway's IP address)</para>
+     <para> Gateway IP address 10.0.1.1  (substitute your Gateway's IP address)</para>
     </listitem>
     <listitem>
-      <para> Jetty 7 listening on port 8080</para>
+     <para> Jetty 7 listening on port 8080</para>
     </listitem>
     <listitem>
-      <para> ApexIdentity Gateway deployed under the root context</para>
+     <para> ApexIdentity Gateway deployed under the root context</para>
     </listitem>
     <listitem>
-      <para> DNS or /etc/hosts pointing portal.apexidsamples.com to 10.0.1.1 
-      (substitute your Gateway's IP address) </para>
+     <para> DNS or /etc/hosts pointing demo.forgerock.com to 10.0.1.1 
+      (substitute your Gateway's IP address) 
+     </para>
     </listitem>
-  </itemizedlist>
+   </itemizedlist>
   </section>
 
   <section>
-  <title>Installing the Gateway</title>
-  <para>
-  It is recommended you use Jetty or Tomcat  for this sample.  Please refer to the 
-  <xref linkend="chap-install"/> to get your container and the Gateway up and running
-  on port 8080.
-  </para>
+   <title>Installing the Gateway</title>
+   <para>
+    It is recommended you use Jetty or Tomcat  for this sample.  Please refer to the 
+    <xref linkend="chap-install"/> to get your container and the Gateway up and running
+    on port 8080.
+   </para>
   </section>
 
   <section>
-  <title>Configuring the Browser Host</title>
-  <para>
-  Now that we have the Gateway running we need to configure the browser to 
-  go through the Gateway to get to the Portal. To do this we need to modify 
-  DNS or /etc/hosts so portal.apexidsamples.com points to the IP address of 
-  the host running the Gateway. If you are using /etc/hosts be sure to check 
-  that the naming services for your host is checking files before DNS.  On 
-  unix systems this is configured in /etc/nsswitch.conf. Assuming the Gateway 
-  is running on 10.0.1.1, the /etc/hosts entry should be the following:
-  </para>
+   <title>Configuring the Browser Host</title>
+   <para>
+    Now that we have the Gateway running we need to configure the browser to 
+    go through the Gateway to get to the Portal. To do this we need to modify 
+    DNS or /etc/hosts so demo.forgerock.com points to the IP address of 
+    the host running the Gateway. If you are using /etc/hosts be sure to check 
+    that the naming services for your host is checking files before DNS.  On 
+    unix systems this is configured in /etc/nsswitch.conf. Assuming the Gateway 
+    is running on 10.0.1.1, the /etc/hosts entry should be the following:
+   </para>
 
-  <screen width='80'>
-10.0.1.1   portal.apexidsamples.com
-  </screen>
+   <screen width='80'>
+    10.0.1.1   demo.forgerock.com
+   </screen>
 
-  <para>
-  Before continuing please verify your name to IP address changes are 
-  working properly. The simplest way to do this is to ping portal.apexidsamples.com.  
-  You should see the following if you have properly configured your name to IP mapping:
-  </para>
+   <para>
+    Before continuing please verify your name to IP address changes are 
+    working properly. The simplest way to do this is to ping demo.forgerock.com.  
+    You should see the following if you have properly configured your name to IP mapping:
+   </para>
 
-  <screen width='80'>
-$ ping portal.apexidsamples.com
-ping portal.apexidsamples.com
-PING portal.apexidsamples.com (10.0.1.1): 56 data bytes
-64 bytes from 10.0.1.1: icmp_seq=0 ttl=64 time=0.053 ms
-  </screen>
+   <screen width='80'>
+    $ ping demo.forgerock.com
+    ping demo.forgerock.com
+    PING demo.forgerock.com (10.0.1.1): 56 data bytes
+    64 bytes from 10.0.1.1: icmp_seq=0 ttl=64 time=0.053 ms
+   </screen>
 
-  <para>
-  If the ping command returns the actual address of portal.apexidsamples.com 
-  as below, you need to recheck your settings.
-  </para>
+   <para>
+    If the ping command returns the actual address of demo.forgerock.com 
+    as below, you need to recheck your settings.
+   </para>
 
-  <screen width='80'>
-$ ping portal.apexidsamples.com
-PING portal.apexidsamples.com (173.230.149.169): 56 data bytes
-64 bytes from 173.230.149.169: icmp_seq=0 ttl=53 time=20.266 ms
-  </screen>
+   <screen width='80'>
+    $ ping demo.forgerock.com
+    PING demo.forgerock.com (173.230.149.169): 56 data bytes
+    64 bytes from 173.230.149.169: icmp_seq=0 ttl=53 time=20.266 ms
+   </screen>
 
   </section>
 
   <section>
-  <title>Configuring the Gateway</title>
-  <para>
-  For the remainder of this document, $HOME will refer to the location 
-  you have unzipped your samples configuration files.
-  </para>
-  <para>
-  Download and unzip the 
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/apexid-sample-configs.zip">  
-  Gateway sample configuration files</link>. 
-  If you installed via quick start you already have the configuration files downloaded and installed.
-  </para>
-  <para>
-  Copy WordPressProxyOnly.json gateway configuration file to $HOME/.ApexIdentity/Gateway/config.json. By default, the Gateway looks for config.json under $HOME/.ApexIdentity/Gateway for its configuration. You must restart the Gateway container when making any change to the config file.
-  </para>
-  <screen width='80'>
-$ cp $HOME/apexid-sample-configs/WordPressProxyOnly.json  $HOME/.ApexIdentity/Gateway/config.json
-$ jetty.sh restart
-  </screen>
+   <title>Configuring the Gateway</title>
+   <para>
+    For the remainder of this document, $HOME will refer to the location 
+    you have unzipped your samples configuration files.
+   </para>
+   <para>
+    Download and unzip the 
+    <link xlink:href="http://resources.apexidentity.com/downloads/samples/apexid-sample-configs.zip">  
+     Gateway sample configuration files
+    </link>. 
+    If you installed via quick start you already have the configuration files downloaded and installed.
+   </para>
+   <para>
+    Copy WordPressProxyOnly.json gateway configuration file to $HOME/.ForgeRock/Gateway/config.json. By default, the Gateway looks for config.json under $HOME/.ForgeRock/Gateway for its configuration. You must restart the Gateway container when making any change to the config file.
+   </para>
+   <screen width='80'>
+    $ cp $HOME/apexid-sample-configs/WordPressProxyOnly.json  $HOME/.ForgeRock/Gateway/config.json
+    $ jetty.sh restart
+   </screen>
 
-  <para>
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressProxyOnly.json">Quick view of the "Wordpress Proxy Only Template</link>  
-  </para>
+   <para>
+    <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressProxyOnly.json">Quick view of the "Wordpress Proxy Only Template</link>  
+   </para>
   
-  <para>
-  To try out the first sample browse to 
-  <link xlink:href="http://portal.apexidsamples.com:8080/wordpress">http://portal.apexidsamples.com:8080/wordpress</link>You should see the WordPress Portal home page. If you click on the login link you should be prompted to login to the application as if you were accessing it directly.  To verify you are actually going through the Gateway, stop the Gateway container, refresh your browser and try to access the application again.  If you are still seeing the application, you need to make sure your DNS or host files are configured to point to the Gateway instead of the Portal.  You can login to the Portal with username george and password costanza. In the next section we will configure the Gateway to intercept the login page and automatically log you in when it sees that you have clicked the login link.
-  </para>
-  <para>
-  What is happening behind the scenes.
-  </para>
-  <para>
-Take a look at the $HOME/.ApexIdentity/Gateway/config.json.  Look for the HandlerServlet.  This is the servlet entry point to the Gateway.  The HandlerServlet passes the request off to another handler which may be a chain of filters and handlers.  In the pure proxy case there is no special logic to execute so it hands off to the ClientHandler.  The job of the ClientHandler is to send the request on to the target.  Since there were no chains called before the ClientHandler, the request passes through to the target untouched.
-  </para>
+   <para>
+    To try out the first sample browse to 
+    <link xlink:href="http://demo.forgerock.com:8080/wordpress">http://demo.forgerock.com:8080/wordpress</link>You should see the WordPress Portal home page. If you click on the login link you should be prompted to login to the application as if you were accessing it directly.  To verify you are actually going through the Gateway, stop the Gateway container, refresh your browser and try to access the application again.  If you are still seeing the application, you need to make sure your DNS or host files are configured to point to the Gateway instead of the Portal.  You can login to the Portal with username george and password costanza. In the next section we will configure the Gateway to intercept the login page and automatically log you in when it sees that you have clicked the login link.
+   </para>
+   <para>
+    What is happening behind the scenes.
+   </para>
+   <para>
+    Take a look at the $HOME/.ForgeRock/Gateway/config.json.  Look for the HandlerServlet.  This is the servlet entry point to the Gateway.  The HandlerServlet passes the request off to another handler which may be a chain of filters and handlers.  In the pure proxy case there is no special logic to execute so it hands off to the ClientHandler.  The job of the ClientHandler is to send the request on to the target.  Since there were no chains called before the ClientHandler, the request passes through to the target untouched.
+   </para>
 
   </section>
 
   <section>
-  <title>Login with hard coded credentials</title>
-  <para>
-  Now that we have the Gateway proxying all traffic to and from the application, the next step is to configure it to intercept the login page, and POST the login form to the Portal.
-  </para>
-  <screen width='80'>
-$ cp $HOME/apexid-sample-configs/WordPressLogin.json  $HOME/.ApexIdentity/Gateway/config.json
-$ jetty.sh restart
-  </screen>
-  <para>
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLogin.json">Quick view of the "Wordpress Login Template</link>  
-  </para>
+   <title>Login with hard coded credentials</title>
+   <para>
+    Now that we have the Gateway proxying all traffic to and from the application, the next step is to configure it to intercept the login page, and POST the login form to the Portal.
+   </para>
+   <screen width='80'>
+    $ cp $HOME/apexid-sample-configs/WordPressLogin.json  $HOME/.ForgeRock/Gateway/config.json
+    $ jetty.sh restart
+   </screen>
+   <para>
+    <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLogin.json">Quick view of the "Wordpress Login Template</link>  
+   </para>
 
-  <para>
-  Since we changed the Gateway configuration file we need to restart the Gateway container.  
-  After restarting you should be able to go to 
-  <link xlink:href="http://portal.apexidsamples.com:8080/wordpress">http://portal.apexidsamples.com:8080/wordpress</link>
-  , click on the login link, and be logged in as the 
-  user george without entering your credentials. The Gateway 
-  has intercepted the request for the login page, created the login 
-  form, and  POSTed the request to the Portal.
-  </para>
+   <para>
+    Since we changed the Gateway configuration file we need to restart the Gateway container.  
+    After restarting you should be able to go to 
+    <link xlink:href="http://demo.forgerock.com:8080/wordpress">http://demo.forgerock.com:8080/wordpress</link>
+    , click on the login link, and be logged in as the 
+    user george without entering your credentials. The Gateway 
+    has intercepted the request for the login page, created the login 
+    form, and  POSTed the request to the Portal.
+   </para>
 
-  <para>
-  What is happening behind the scenes.
-  </para>
+   <para>
+    What is happening behind the scenes.
+   </para>
 
-  <para>
-  Take a look at the HOME/.ApexIdentity/Gateway/config.json.  This time you will notice the HandlerServlet is calling the DispatchHandler.  The DispatchHandler has a condition which checks for the presence of  wp-login.php (the login page) in the URI path.  If the condition is false (no login page), the ClientHandler is called sending the request on to the Portal.  If the condition is true, the Gateway has found the login page, and calls the LoginChain for further processing. The LoginChain will call its filter,  the LoginRequestFilter, which will create the login form, and then call the ClientHandler to send the form to the Portal.  If you look at the LoginRequestFilter, you will notice it defines the method, URI, and form parameters for the request which will be sent by the ClientHandler.  In the form parameters you will see the hard coded credentials, which are used to log you in as the user george.
-  </para>
+   <para>
+    Take a look at the HOME/.ApexIdentity/Gateway/config.json.  This time you will notice the HandlerServlet is calling the DispatchHandler.  The DispatchHandler has a condition which checks for the presence of  wp-login.php (the login page) in the URI path.  If the condition is false (no login page), the ClientHandler is called sending the request on to the Portal.  If the condition is true, the Gateway has found the login page, and calls the LoginChain for further processing. The LoginChain will call its filter,  the LoginRequestFilter, which will create the login form, and then call the ClientHandler to send the form to the Portal.  If you look at the LoginRequestFilter, you will notice it defines the method, URI, and form parameters for the request which will be sent by the ClientHandler.  In the form parameters you will see the hard coded credentials, which are used to log you in as the user george.
+   </para>
 
   </section>
 
   <section>
-  <title>Login with credentials from a flat file</title>
-  <para>
-  Hard coding login credentials is great for a sample, but not to realistic when it comes to a production deployment.  In this next section you will see how the Gateway can be configured to fetch the user's credentials from an external source, such as a directory or a database. For this sample, we will use a flat file and the FileAttributesFilter.  The key to look up the user in the flat file will be hard coded, but you will understand how the key may come from something in the incoming request, such as an HTTP header, a session cookie, or even a SAML assertion. 
-  </para>
+   <title>Login with credentials from a flat file</title>
+   <para>
+    Hard coding login credentials is great for a sample, but not to realistic when it comes to a production deployment.  In this next section you will see how the Gateway can be configured to fetch the user's credentials from an external source, such as a directory or a database. For this sample, we will use a flat file and the FileAttributesFilter.  The key to look up the user in the flat file will be hard coded, but you will understand how the key may come from something in the incoming request, such as an HTTP header, a session cookie, or even a SAML assertion. 
+   </para>
  
-  <para>
-  For this sample you will need to modify the file attribute in the FileAttributesFilter  object in config.json to reflect the location of the sample flat file. The location of the userfile shipped with the samples is HOME/apexid-sample-configs/userfile.  Make sure to expand $HOME when entering the pathname.
-  </para>
-  <screen width='80'>
-$ cp $HOME/apexid-sample-configs/WordPressLoginFile.json  $HOME/.ApexIdentity/Gateway/config.json
-$ jetty.sh restart
-  </screen>
+   <para>
+    For this sample you will need to modify the file attribute in the FileAttributesFilter  object in config.json to reflect the location of the sample flat file. The location of the userfile shipped with the samples is HOME/apexid-sample-configs/userfile.  Make sure to expand $HOME when entering the pathname.
+   </para>
+   <screen width='80'>
+    $ cp $HOME/apexid-sample-configs/WordPressLoginFile.json  $HOME/.ForgeRock/Gateway/config.json
+    $ jetty.sh restart
+   </screen>
 
-  <para>
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLoginFile.json">Quick view of the "Wordpress Login File Template</link>
-  </para>
-  <para>
-  After restarting the container you should be able to go to http://portal.apexidsamples.com:8080 and be logged in as the user george without seeing the login page.  To verify the login credentials are being picked up from the flat file, change george's password, restart the Gateway, and try the login page again.  You should get a login failed page.  If you would like to log in as a different user, look for the value attribute in config.json, replace george@seinfeld.com with kramer@seinfeld.com.  Both george and kramer have accounts on the Portal so you can log in with either.
-  </para>
-  <para>
-  What is happening behind the scenes.
-  </para>
-  <para>
-Take a look at the $HOME/.ApexIdentity/Gateway/config.json.  For this sample, we added one additional filter to the LoginChain and made a slight modification to the LoginRequestFilter.  Take a look at the LoginChain and you will see the filters attribute now has the value of ["FileAttributesFilter","LoginRequestFilter" ].  When the LoginChain is executed the FileAttributesFilter will be called prior to the LoginRequestFilter.  The FileAttributesFilter will set the results of its lookup in the Exchange accessible through the Expressions|Expression ${exchange.credentials.xxx} where xxx is the name of any one of the values from the flat file. Now take a look at the form attribute in the LoginRequestFilter.  The hard coded values for log and pwd have been replaced with ["${exchange.credentials.username}"] and ["${exchange.credentials.password}"]. 
-  </para>
+   <para>
+    <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLoginFile.json">Quick view of the "Wordpress Login File Template</link>
+   </para>
+   <para>
+    After restarting the container you should be able to go to http://demo.forgerock.com:8080 and be logged in as the user george without seeing the login page.  To verify the login credentials are being picked up from the flat file, change george's password, restart the Gateway, and try the login page again.  You should get a login failed page.  If you would like to log in as a different user, look for the value attribute in config.json, replace george@seinfeld.com with kramer@seinfeld.com.  Both george and kramer have accounts on the Portal so you can log in with either.
+   </para>
+   <para>
+    What is happening behind the scenes.
+   </para>
+   <para>
+    Take a look at the $HOME/.ForgeRock/Gateway/config.json.  For this sample, we added one additional filter to the LoginChain and made a slight modification to the LoginRequestFilter.  Take a look at the LoginChain and you will see the filters attribute now has the value of ["FileAttributesFilter","LoginRequestFilter" ].  When the LoginChain is executed the FileAttributesFilter will be called prior to the LoginRequestFilter.  The FileAttributesFilter will set the results of its lookup in the Exchange accessible through the Expressions|Expression ${exchange.credentials.xxx} where xxx is the name of any one of the values from the flat file. Now take a look at the form attribute in the LoginRequestFilter.  The hard coded values for log and pwd have been replaced with ["${exchange.credentials.username}"] and ["${exchange.credentials.password}"]. 
+   </para>
 
   </section>
   
   <section>
-  <title>Login with credentials from MySQL</title>
-  <para>
-  This sample fetches the login credentials from MySQL.  You will need to have access to an instance of MySQL in order to execute this sample.  If you do not have access or just want to see how the SQLAttributesFilter works, please read Behind the scenes for this section.
-  </para>
+   <title>Login with credentials from MySQL</title>
+   <para>
+    This sample fetches the login credentials from MySQL.  You will need to have access to an instance of MySQL in order to execute this sample.  If you do not have access or just want to see how the SQLAttributesFilter works, please read Behind the scenes for this section.
+   </para>
   
-  <para>
-  For this sample you will need to configure your container for JNDI and MySQL.  Pleases refer to the <xref linkend="chap-install"/> for instructions on configuring Jetty for use with JNDI and MySQL.  You will also need to create an entry for a user and create a query which will return a result with  username and password attributes.  The query in the sample assumes there is a table named users, with attributes username and password.  The parameter passed into the prepared statement is email=george@seinfeld.com.
-  </para>
+   <para>
+    For this sample you will need to configure your container for JNDI and MySQL.  Pleases refer to the 
+    <xref linkend="chap-install"/> for instructions on configuring Jetty for use with JNDI and MySQL.  You will also need to create an entry for a user and create a query which will return a result with  username and password attributes.  The query in the sample assumes there is a table named users, with attributes username and password.  The parameter passed into the prepared statement is email=george@seinfeld.com.
+   </para>
 
-  <screen width='80'>
-$ cp $HOME/apexid-sample-configs/WordPressLoginSQL.json  $HOME/.ApexIdentity/Gateway/config.json
-$ jetty.sh restart
-  </screen>
+   <screen width='80'>
+    $ cp $HOME/apexid-sample-configs/WordPressLoginSQL.json  $HOME/.ForgeRock/Gateway/config.json
+    $ jetty.sh restart
+   </screen>
 
-  <para>
-  <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLoginSQL.json">Quick view of the "Wordpress Login SQL Template</link>
-  </para>
+   <para>
+    <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/apexid-sample-configs/WordPressLoginSQL.json">Quick view of the "Wordpress Login SQL Template</link>
+   </para>
 
-  <para>
-  What is happening behind the scenes.
-  </para>
+   <para>
+    What is happening behind the scenes.
+   </para>
 
-  <para>
-Take a look at the $HOME/.ApexIdentity/Gateway/config.json.  For this sample, we simply replaced the FileAttributesFilter with the SQLAttributesFilter.  The only difference between the filters is how hey retrieve the attribute value pairs to set in the Exchange.  Once the values are set in the Exchange, the LoginRequestFilter will access them in the exact same way.
-  </para>
+   <para>
+    Take a look at the $HOME/.ForgeRock/Gateway/config.json.  For this sample, we simply replaced the FileAttributesFilter with the SQLAttributesFilter.  The only difference between the filters is how hey retrieve the attribute value pairs to set in the Exchange.  Once the values are set in the Exchange, the LoginRequestFilter will access them in the exact same way.
+   </para>
 
   </section>
 
