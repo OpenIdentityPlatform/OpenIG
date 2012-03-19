@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-install'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Installation</title>
+
+ <section>
+  <title>Prerequisites</title>
+
+  <para>
+    Please refer to the 
+    <xref linkend="chap-container"/>
+    to ensure you have properly installed and configured your 
+    container and are running a supported version of Java.
+  </para>
+  
+   <para>Make sure you have the correct Java environment installed.</para>
+
+   <screen width='80'>$ java -version
+java version "1.6.0_24"
+Java(TM) SE Runtime Environment (build 1.6.0_24-b07-334-9M3326)
+Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)
+</screen>
+
+
+  <para>
+    For the remainder of this document $HOME will refer to 
+    the home directory of the user running the Gateway container.
+  </para>
+
+ </section>
+
+ <section>
+ <title>Download, Install, and Configure</title>
+
+<procedure>
+   <step>
+   <para>
+   <link xlink:href="http://resources.apexidentity.com/downloads/gateway-2.0.0.war.gz">Download</link>
+   and unzip the Gateway. In the zip you will find the gateway war.
+   </para>
+   </step>
+   <step>
+   <para>Deploy the war to the root context of the container.</para>
+   </step>
+
+   <step>
+   <para>Download the 
+   <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/capture.json">proxy and capture template.</link>
+   You may jump straight to a configuration templates that best matches your 
+   application, but it is highly recommended you start with the basic proxy template. 
+   </para>
+   </step>
+
+   <step>
+    <para>Copy the template to $HOME/.ApexIdentity/Gateway/config.json.  
+    Replace the TARGETIP tag in config.json with the IP address and port number of your target application.
+    </para>
+   </step>
+
+   <step>
+   <para>Modify DNS or host file settings so the name of your target application 
+   resolves to the IP address of the Gateway. Be sure to restart your browser after making this change.
+    </para>
+   </step>
+
+   <step>
+   <para>Start the Gateway container and browse to the target application.  
+   The Gateway should now be proxying all traffic to the application. </para>
+   </step>
+
+   <step>
+   <para>To ensure the browser is going through the Gateway, stop the Gateway 
+   container, and verify you cannot reach the application. You may also look 
+   in the Gateway capture log to verify the traffic is going through the 
+   Gateway.  The location for this log is set in config.json and defaults 
+   to /tmp/gateway.log.
+   </para>
+   </step>
+
+ </procedure>
+ </section>
+</chapter>
+

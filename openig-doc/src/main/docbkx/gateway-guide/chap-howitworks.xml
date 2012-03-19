@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-howitworks'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>How the Gateway Works</title>
+
+ <para> 
+ This section provides a detailed look at the Gateway's components and how they work together.
+ </para>
+ 
+ <section>
+  <title>How It Works In A Nutshell</title>
+  <para>
+     The underlying core of the ApexIdentity Gateway is based on a 
+     <link xlink:href="http://en.wikipedia.org/wiki/Reverse_proxy">reverse proxy architecture</link>.
+     All HTTP traffic to each protected application is routed through the Gateway, enabling close 
+     inspection, transformation and filtering of each request.  By inspecting the traffic, the 
+     Gateway is able to intercept requests that would normally require the user to authenticate, 
+     obtain the user's login credentials, and send the necessary HTTP request to the target 
+     application, thereby logging in the user without modifying or installing anything 
+     on the application.  In its simplest form and  basic configuration, the Gateway is a 
+     Java-based reverse proxy which runs as a web application.  Enable the Form-Filter 
+     replay module and the Gateway will automatically log users in when a timeout or 
+     authentication page is detected.  Additionally, enable the SAML2 or OpenID service and 
+     the Gateway becomes a SAML2 or OpenID relying party endpoint.  In this mode of operation, 
+     the Gateway receives and verifies the SAML2 or OpenID request and then logs the user 
+     directly into the target application. 
+  </para>
+ </section>
+
+ <section>
+  <title>How It Works In Detail</title>
+
+  <section>
+    <title> Gateway Core (Reverse Proxy) </title>
+      <para>
+        The Gateway core is a standard Java EE servlet implementation of a reverse proxy.  The main function of the Core Gateway is to act as a reverse proxy to the target application. When deployed in its base configuration, the Gateway may be used as a pure reverse proxy. The power of the Core Gateway comes in its ability to search, transform, and process HTTP traffic to and from the target application.  This enables the Gateway to recognize login pages, submit login forms, transform or filter content, and even function as a Federation endpoint for the application.  All these features are possible without making any changes to the application's deployment container or the application itself. 
+      </para>
+   </section>
+
+  <section>
+    <title>Exchange</title>
+      <para>
+        The [[Exchange]] is a wrapper around the HTTP request and response objects that pass through the Gateway.  Every request or response being processed in the Gateway can be accessed or modified through the Exchange object.  In addition, arbitrary data may be set in the Exchange to facilitate the passing of data and state between filters and handlers.
+      </para>
+  </section>
+
+  <section>
+    <title>Dispatcher</title>
+      <para>
+        The Dispatcher may be thought of as the internal router of the Gateway.  Every request that comes into the Gateway is analyzed and forwarded on to the configured processing chain of filters and handlers.  A request may be forwarded based on the target host, URL, URL parameters, headers, cookies, or any other component of the request.
+      </para>
+  </section>
+
+  <section>
+    <title>Chain</title>
+      <para>
+        A <emphasis>Chain</emphasis> is a combination of one or more Filters and a handler that process an incoming request from the Dispatcher.  For example, the Dispatcher may process an incoming request with a URL parameter of action=login and forward the request to the Login Chain.  The Login Chain would execute a list of Filters and  then call a Handler.  The Handler would send the request on to the target application or to another Chain for further processing.
+      </para>
+  </section>
+
+  <section>
+    <title>Handlers</title>
+      <para>
+        The final processing of every Chain ends in a call to a Handler.  A Handler may 
+        simply call another Chain or it may send the request on to the target application. 
+        The following Handlers are shipped with the Gateway:
+       </para>
+   <itemizedlist>
+    <listitem>
+     <para>ClientHandler: Sends the final request to the target
+     application.</para>
+    </listitem>
+    <listitem>
+     <para>StaticResponseHandler: Used to send a response, such as a redirect,
+     to a client during request processing.</para>
+    </listitem>
+    <listitem>
+     <para>SequenceHandler: Links together multiple handlers or chains during
+     request processing.</para>
+    </listitem>
+   </itemizedlist>
+  </section>
+
+  <section>
+    <title>Filters</title>
+      <para>
+        Filters are responsible for processing HTTP requests in the Gateway.  Filters may 
+        be chained together to act on the input stream coming from the browser, or the 
+        output stream returned back from the target application.  A filter may do something 
+        as simple as logging the input and output stream or something more complex, such 
+        as processing login pages, fetching user attributes, or transforming content.
+        There are multiple Filters shipped with the Gateway that may be combined in 
+        chains to provide very extensible request and response processing features.  
+        Custom filters may also be written using the Java SPIs. The following is a 
+        list of Filters shipping with the Gateway:
+      </para>
+   <itemizedlist>
+    <listitem>
+     <para>CookieFilter: The default behavior of the Gateway is to accept and forward all cookies.  Since this is not always the desirable behavior, the CookieFilter, when configured, allows you to suppress, manage, and relay cookies.</para>
+    </listitem>
+    <listitem>
+     <para>CaptureFilter: Captures the HTTP requests being processed by the Gateway. Capture may be used for audit purposes and may also be very useful when analyzing an application or troubleshooting a misbehaving Gateway. Logs are written to a flat file on the Gateway host.</para>
+    </listitem>
+    <listitem>
+     <para>HeaderFilter: The default behavior of the Gateway is to accept and forward all headers. The Header Filter may be configured to add additional headers or remove headers on both the HTTP request and the response.  It may also be configured to parse and set header values in the Gateway context to allow filters access to  the header attributes.  This feature would be used most commonly when the Gateway is integrated with an Access Management solution and being fronted by an agent.</para>
+    </listitem>
+    <listitem>
+     <para>AssignmentFilter: Sets values in the HTTP request and response.</para>
+    </listitem>
+    <listitem>
+     <para>StaticRequestFilter: Create and send HTTP GET and POST requests.  The request may be formed using parameters from previous processing or statically configured values.</para>
+    </listitem>
+    <listitem>
+     <para>EntityExtractFilter: Can be configured to search for specific content with the body of the requests. For example, it can be used to extract hidden form parameters in a login page, which are needed in the login request.</para>
+    </listitem>
+    <listitem>
+     <para>ExceptionFilter: Send users to configured URLs when errors or 
+            exceptions occur during request processing or user interactions.</para>
+    </listitem>
+    <listitem>
+     <para>SwitchFilter: Conditionally diverts the exchange to another handler.</para>
+    </listitem>
+    <listitem>
+     <para>HTTPBasicAuthFilter: Performs HTTP basic authentication to the target application per RFC 2617.</para>
+    </listitem>
+    <listitem>
+     <para>FileAttributesFilter: Looks up attributes in a flat file with the specified key.  
+             The attributes are added to the exchange to be used by subsequent filters or handlers.</para>
+    </listitem>
+    <listitem>
+     <para>SQLAttributesFilter: Executes an SQL prepared statement with configured parameters.  
+            The result is added to the exchange to be used by subsequent filters or handlers.</para>
+    </listitem>
+   </itemizedlist>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+      <para>
+        The configuration of the Gateway was designed to be very modular and self-contained .  
+        Each module within the Gateway stores its configuration in JSON representation, 
+        which is stored in flat files and managed via REST. The features of the Gateway 
+        may be configured by directly manipulating the JSON flat files, through  REST, 
+        or through the Gateway management console.
+      </para>
+  </section>
+
+  <section>
+    <title>Heaplets</title>
+      <para>
+        Every Gateway module which has JSON configuration also has a Heaplet associated with it.  
+        Each module's Heaplet is responsible for reading the JSON configuration and creating  
+        that module's configuration in the Gateway's runtime Heap.  Each module can then 
+        read its configuration from the Heap as well as make shared configuration information 
+        available to other modules.
+      </para>
+  </section>
+
+  <section>
+    <title>Services</title>
+      <para>
+        The Services model was designed to allow the integration of value added features, such as Federation, without requiring them to be tightly bound to the Gateway implementation. SAML2 and OpenID are the two add on services shipping with the Gateway today.
+      </para>
+  </section>
+
+  <section>
+    <title>Federation Service (Federation Gateway)</title>
+      <para>
+        When the Federation Service is enabled, the Gateway is acting as the Service Provider in a Circle of Trust with  a SAML2 compliant Identity Provider. The Federation service supports both IDP and SP initiated SAML2 profiles. The Federation Gateway may be a Service Provider in the classic Federation use case where the IDP and SP are different companies or domains. The Gateway SP may also be a standards based replacement for a proprietary Access Management Policy agent for internal enterprise applications that want to move away from proprietary agents and achieve Access Management independence.
+      </para>
+  </section>
+
+ </section>
+
+</chapter>
+

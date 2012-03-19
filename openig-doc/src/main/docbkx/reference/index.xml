@@ -164,8 +164,6 @@
   <xinclude:include href="man-URI.xml" />
  </reference>
 
- <xinclude:include href="chap-gateway-templates.xml" />
-
  <xinclude:include href='chap-ports-used.xml' />
  <xinclude:include href='chap-file-layout.xml' />
  <index />

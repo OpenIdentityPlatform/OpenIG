@@ -43,6 +43,13 @@
     <a href="./doc/OpenIG-Release-Notes.pdf">PDF</a>,
     <a href="./doc/OpenIG-Release-Notes.rtf">RTF</a></dd>
 
+    <dt>Guide to OpenIG</dt>
+    <dd><a href="./doc/OpenIG-Gateway-Guide.epub">EPUB</a>,
+    <a href="./doc/gateway-guide/index.html">HTML (single page)</a>,
+    <a href="./doc/gateway-guide/index/index.html">HTML (1 page/chapter)</a>,
+    <a href="./doc/OpenIG-Gateway-Guide.pdf">PDF</a>,
+    <a href="./doc/OpenIG-Gateway-Guide.rtf">RTF</a></dd>
+
     <dt>Configuration Reference</dt>
     <dd><a href="./doc/OpenIG-Reference.epub">EPUB</a>,
     <a href="./doc/reference/index.html">HTML (single page)</a>,

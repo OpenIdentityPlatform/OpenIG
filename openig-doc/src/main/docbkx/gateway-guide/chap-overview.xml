@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-overview'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Solutions Overview</title>
+
+ <para> 
+ This section provides an overview of the problems the Gateway solves.
+ </para>
+
+  <section>
+    <title>Extending SSO to any application</title>
+    <para>
+      In today's enterprise, more than 30% of web applications are incompatible with 
+      vendor web access management solutions . That is, the WAM product doesn't provide 
+      agents for protecting the web application, or the application is a legacy solution 
+      that doesn't follow standard protocols for single sign-on. This limits the return 
+      on the enterprise WAM investment and constrains what types of web applications 
+      can be protected.
+    </para>
+    <para>
+      The Universal Gateway addresses this problem by extending vendor WAM solutions to 
+      include all web applications. Access management deployments can now be extended 
+      to be inclusive of those applications that don't integrate with your WAM solution. 
+      The Universal Gateway integrates, out-of-the-box, with all management solutions. 
+      Most importantly, enterprises can on-board any web application without ever modifying 
+      or touching the target application again, significantly reducing the development and 
+      quality assurance required to protect web applications.
+    </para>
+  </section>
+
+  <section>
+    <title>Federate Enabling Applications </title>
+    <para> 
+       The expertise and cost required to add SAML2 support to web applications is a problem 
+       for many businesses.  Those businesses not moving to a standard for exposing their 
+       applications to their customers will see increased cost and maintenance due to the 
+       complexity of one-off proprietary integrations. They  may also see a loss of business 
+       to those customers requiring a Federation standard for the authentication. Purchasing 
+       a full-blown Access Management product just to Federate a few applications is far too 
+       complex and costly, and building out their own solution by modifying their applications 
+       is just not possible.
+    </para>
+    <para> 
+       The Federation Gateway allows businesses to add SAML2 support to their applications with 
+       little to no knowledge of the standard.  In addition, there is no need to modify the 
+       application or install any plugin or agent on the application container.
+    </para>
+  </section>
+
+  <section>
+    <title>Standards Based Policy Agent</title>
+    <para> 
+       In order to provide SSO, Access Management solutions require their own proprietary policy 
+       enforcement points (plugins) for each application. These proprietary enforcement points 
+       lock customers into a single Access Management solution,  proprietary APIs and protocols.  
+       What customers need is an Access Management independent policy enforcement point that is 
+       built on the SAML2 standard.
+    </para>
+    <para> 
+       The Federation Gateway can replace proprietary policy enforcement points with a 
+       standards based SAML2 compliant enforcement point.
+    </para>
+  </section>
+</chapter>
+
