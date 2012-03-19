@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-quickstart'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Quick Start with Jetty and Samples</title>
+
+  <para>
+    This document provides instructions to get you up and running the Universal Gateway on Jetty and configured to execute the WordPress samples at our hosted WordPress deployment. This will allow you to quickly see how the gateway works and provide hands on experience with a few key features. If you are looking for more general installation and configuration instructions for your deployment or would like to use a container other than Jetty, please refer to the <xref linkend="chap-install"/>.
+  </para>
+
+  <section>
+  <title>Before You Begin</title>
+  <para>
+    For the remainder of this document, $HOME is assumed to be the location of the 
+    user running the container, and will refer to the location you have 
+    unzipped Jetty, the Gateway and the Samples.
+  </para>
+  <para>Make sure you have the correct Java environment installed.</para>
+
+   <screen width='80'>$ java -version
+java version "1.6.0_24"
+Java(TM) SE Runtime Environment (build 1.6.0_24-b07-334-9M3326)
+Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)
+</screen>
+  <para>
+   If you don't have version 21 or gerater please download and install from 
+   <link xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html">Sun Java SE JDK 6 Update 21</link>
+ . At this time this is the only version of any JDK that is supported with the Gateway.
+ </para>
+  </section>
+
+  <section>
+  <title>Installation Steps</title>
+  <procedure>
+  <step>
+  <para>
+     Download and unzip the
+     <link xlink:href="http://resources.apexidentity.com/downloads/gateway-2.0.0.war.gz">Gateway</link>
+     or later. 
+ </para>
+  </step>
+  <step>
+  <para>
+     Download and unzip the
+     <link xlink:href="http://resources.apexidentity.com/downloads/samples/apexid-sample-configs.zip">Gateway sample configuration files</link>
+  </para>
+  </step>
+
+  <step>
+  <para>
+  Download and unzip 
+  <link xlink:href="http://dist.codehaus.org/jetty/jetty-hightide-7.1.6/jetty-hightide-7.1.6.v20100715.zip">Jetty 7.1.6 Hightide</link>. 
+  </para>
+  </step>
+
+  <step>
+  <para>
+    Copy the gateway WAR file as root.war to the webapps directory in Jetty. 
+    When copied to this location along with the root.xml file below, 
+    Jetty will automatically deploy the Gateway on startup.
+
+<screen width='80'>
+$ cp $HOME/gateway-2.0.0.war $HOME/jetty-hightide-7.1.6/webapps/root.war
+</screen> 
+  </para>
+  </step>
+
+  <step>
+  <para>
+    Copy the WordPressLogin.json gateway configuration file to 
+    $HOME/.ApexIdentity/Gateway/config.json. By default, the Gateway 
+    looks for config.json in the $HOME/.ApexIdentity/Gateway directory.
+  </para>
+<screen width='80'>
+$ cp $HOME/apexid-sample-configs/WordPressLogin.json  $HOME/.ApexIdentity/Gateway/config.json
+</screen> 
+ 
+  </step>
+
+  <step>
+  <para>
+    Create $HOME/jetty-hightide-7.1.6/contexts/root.xml with the following 
+    content. This tells Jetty to deploy the Gateway in the root context:
+  </para>
+
+<screen width='80'>
+&lt;xml version="1.0"  encoding="ISO-8859-1"?&gt;
+&lt;DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd"&gt;
+&lt;Configure class="org.eclipse.jetty.webapp.WebAppContext"&gt;
+    &lt;Set name="contextPath"&gt;lt;Set&gt;
+    &lt;Set name="war"&gt;lt;SystemProperty name="jetty.home" default="."/&gt;webapps/root.war&lt;Set&gt;
+    &lt;Set name="extractWAR"&gt;true&lt;Set&gt;
+    &lt;Set name="copyWebDir"&gt;false&lt;Set&gt;
+    &lt;Set name="defaultsDescriptor"&gt;lt;SystemProperty name="jetty.home" default="."/&gt;etc/webdefault.xml&lt;Set&gt;
+&lt;Configure&gt;
+</screen> 
+  </step>
+
+  <step>
+  <para>
+    If you are running the Simple SSO sample or will be managing multiple 
+    applications in one domain you will need to turn on domain cookies in Jetty.  
+    This can be done by adding the following property to 
+    $JETTY_HOME/contexts/root.xml or to $JETTY_HOME/etc/jetty.xml.  
+    Please note that any changes to jetty.xml impact all web applications 
+    running in the container.
+  </para>
+
+<screen width='80'>
+&lt;Get name="sessionHandler"&gt;
+        &lt;Get name="sessionManager"&gt;
+            &lt;Set name="sessionDomain"&gt;apexidsamples.com&lt;Set&gt;
+        &lt;Get&gt;
+&lt;Get&gt;
+</screen>
+  </step>
+
+  <step>
+  <para>
+    Start Jetty in the background:
+  </para>
+
+<screen width='80'>
+$ $HOME/jetty-hightide-7.1.6/bin/jetty.sh start
+</screen>
+
+  <para>
+     Or start Jetty in the foreground:
+  </para>
+
+<screen width='80'>
+$ java -jar $HOME/jetty-hightide-7.1.6/start.jar
+</screen>
+</step>
+</procedure>
+</section>
+
+<section>
+<title>Configuration Steps</title>
+  <para>
+    So far you have deployed the gateway web application in the root context of 
+    Jetty on port 8080. Since the gateway is a reverse proxy we need to make 
+    sure all traffic from your browser to 
+    http://portal.apexidsamples.com:8080/wordpress/ is going through the gateway. 
+    The quickest way to do this is to add an entry to your /etc/hosts 
+    on Unix systems or %SystemRoot%\system32\drivers\etc\hosts on Windows. 
+    Please refer to 
+    <link xlink:href="http://en.wikipedia.org/wiki/Hosts_(file)">this article</link>
+    for more information on host files.  If you are running the gateway and the 
+    browser on the same host, add this entry to the hosts file on the gateway host.
+  </para>
+<screen width='80'>
+127.0.0.1 portal.apexidsamples.com
+</screen>
+  <para>
+    If you are running the browser and gateway on separate hosts, you will need to add the IP address of the host running the gateway. For example, if the gateway is running on a host with IP Address of 10.0.1.5:
+  </para>
+<screen width='80'>
+10.0.1.5 portal.apexidsamples.com
+</screen>
+<note>
+<para>
+Some browsers may cache IP address resolutions, even after clearing all browsing data. It may be necessary to restart the browser if you are changing IP addresses of named hosts. The simplest way to make sure you have configured your DNS or host settings properly is to stop the gateway and make sure you cannot reach the target application. If you can still reach it, you need to double check your host settings.  You may also need to make sure your name resolution is configured to check your host files before DNS.  This configuration can be found in /etc/nsswitch.conf for most Unix systems.  Make sure files is listed before dns.
+</para>
+</note>
+</section>
+
+<section>
+<title>Try it out</title>
+<para>
+<link xlink:href="http://portal.apexidsamples.com:8080/wordpress/">http://portal.apexidsamples.com:8080/wordpress</link> 
+should take you to the WordPress portal hosted at ForgeRock. When you 
+click the login link, you will be automatically logged in by the gateway 
+with the username george. 
+</para>
+<para>
+What's happening behind the scenes?
+</para>
+<para>
+  When your browser goes to http://portal.apexidsamples.com:8080/wordpress/, it is actually connecting to the gateway deployed on Jetty. The Gateway is configured to proxy all traffic it receives to the target application at http://portal.apexidsamples.com:8080/wordpress/. For this example, the gateway is watching for the login page from WordPress. When it sees the login page, it creates and POSTs the login form for WordPress on behalf of the user. Since this is just a sample, the credentials for the user are hardcoded in the gateway configuration file.  In a real deployment, the credentials may come from a database, directory, flat file, HTTP headers, SAML assertion, an Access Management agent, or the gateway itself in simple single sign-on mode. 
+</para>
+</section>
+
+</chapter>
+

@@ -146,7 +146,7 @@
 "${exchange.request.uri.path == '/wordpress/wp-login.php' and
  exchange.request.form['action'][0] != 'logout'}"
 
-"${exchange.request.uri.host 'wiki.apexidentity.com'}"
+"${exchange.request.uri.host 'wiki.example.com'}"
 
 "${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0]
  .value}"

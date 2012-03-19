@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-troubleshooting'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Troubleshooting</title>
+
+<para>Common problems and suggested solutions.</para>
+
+<section>
+<title>Object not found in heap</title>
+<screen width='80'>
+HTTP ERROR 500
+com.apexidentity.model.NodeException: ['file:/Users/jamie/.ApexIdentity/Gateway/config.json'].heap.objects[2].config.filterObjects[0]: object not found in heap
+        at com.apexidentity.heaplet.HeapUtil.getRequiredObject(HeapUtil.java:54)
+        at com.apexidentity.filter.Chain$Heaplet.create(Chain.java:49)
+</screen>
+ <para>
+  You have a filter specified in the filterObjects list in the Chain Object that is not in the config.json.  Make sure you have added an entry for the Filter and have correctly spelled it's name in the filterObjects list.
+ </para>
+</section>
+
+<section>
+<title>Could not find local configuration file</title>
+<screen width='80'>
+HTTP ERROR 500
+Problem accessing /. Reason:
+
+could not find local configuration file at /var/root/.ApexIdentity/Gateway/config.json or bootstrap file at /var/root/.ApexIdentity/Gateway/_private_var_folders_zz_zzzivhrRn
+Amviuee____________-Tmp-_Jetty_0_0_0_0_80_root_war____z5zq2_webinf.json
+</screen>
+ <para>
+  The Gateway could not find it's configuration file in the home directory of the user running the container deploying the Gateway. In this case /var/root/.ApexIdentity/Gateway/config.json.  As you can see from the error message, the Gateway will look in a secondary location determined at runtime by the container.  The secondary location is only necessary if you are running more than one Gateway on a single host and they are not sharing a single configuration.
+ </para>
+</section>
+
+<section>
+<title>Unexpected character (x) at position 1103</title>
+<screen width='80'>
+HTTP ERROR 500
+Problem accessing /. Reason:
+
+Unexpected character (x) at position 1103
+</screen>
+ <para>
+  This error usually means a missing double quote or a missing bracket in the configuration file.  Make sure all of your double quotes and brackets match up.
+ </para>
+</section>
+
+<section>
+<title>The values from my flat file are incorrect.</title>
+ <para>
+  Ensure the flat file is readable by the user running the container of the Gateway. 
+  Values are all characters, including space and tabs, between the separator, so 
+  ensure the values are not padded with spaces.
+ </para>
+</section>
+
+<section>
+<title>Problem accessing URL</title>
+<screen width='80'>
+HTTP ERROR 500
+
+Problem accessing /myURL . Reason:
+
+    java.lang.String cannot be cast to java.util.List
+Caused by:
+
+java.lang.ClassCastException: java.lang.String cannot be cast to java.util.List
+    at com.apexidentity.filter.LoggingFilter.writeHeaders(LoggingFilter.java:132)
+    at com.apexidentity.filter.LoggingFilter.logResponse(LoggingFilter.java:119)
+    at com.apexidentity.filter.LoggingFilter.filter(LoggingFilter.java:86)
+    at com.apexidentity.filter.Chain.handle(Chain.java:54)
+</screen>
+ <para>
+  This error is typically encountered when using the [[AssignmentFilter]] and setting a string value for one of the Headers.  All headers are stored in Lists so must be addressed with a subscript.  For example, if you were trying to set exchange.request.headers['Location'] for a redirect in the response object, you should be setting exchange.request.headers['Location'][0].  Setting it without a subscript will lead to the error above.
+ </para>
+</section>
+
+<section>
+<title>StaticResponseHandler results in a blank page</title>
+ <para>
+  You must define an entity for the response.  For example:
+ </para>
+<screen width='80'>
+{
+    "name": "AccessDeniedHandler",
+    "type": "com.apexidentity.handler.StaticResponseHandler",
+    "config": {
+        "status": 403,
+        "reason": "Forbidden"
+        "entity": "&lt;html&gt;lt;h2&gt;User does not have permission&lt;h2&gt;html&gt;
+    }
+},
+</screen>
+</section>
+
+<section>
+<title>Gateway is not logging in my users</title>
+ <para>
+  If you are proxying to more than one application in multiple DNS domains, you will need to make sure your container is enabled for domain cookies.  Please refer to the[[containerhelp|container help]] section for details on your specific container.
+ </para>
+</section>
+
+</chapter>
+
