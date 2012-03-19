@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-container'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Container Configuration Help</title>
+
+ <para>
+   This section provides installation and configuration tips for the following containers:
+ </para>
+ <itemizedlist>
+   <listitem>
+   <para>Tomcat 6.x and 7.x</para>
+   </listitem>
+   <listitem>
+   <para>Jetty 6.x and 7.x</para>
+   </listitem>
+   <listitem>
+   <para>Glassfish 2.x and 3.x</para>
+   </listitem>
+   <listitem>
+   <para>JBOSS 5.x</para>
+   </listitem>
+   <listitem>
+   <para>Weblogic 10.x</para>
+   </listitem>
+   <listitem>
+   <para>WebSphere 7.x</para>
+   </listitem>
+ </itemizedlist>
+ 
+ <section>
+  <title>Tomcat</title>
+
+  <para>
+  Good Tomcat reference links:
+  </para>
+ <itemizedlist>
+   <listitem>
+   <para><link xlink:href="http://tomcat.apache.org/tomcat-6.0-doc">Tomcat Documentation</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://tomcat.apache.org/tomcat-6.0-doc/ssl-howto.html">Configuring Tomcat for HTTPS</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://www.owasp.org/index.php/Securing_tomcat">Hardening Tomcat for production</link></para>
+   </listitem>
+ </itemizedlist>
+
+ <para>
+   Download and install the 
+   <link xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html">Sun Java SE JDK 6 Update 21</link>
+ or later. At this time this is the only version of any JDK that is supported with the Gateway.
+ </para>
+
+ <para>
+   Download and install 
+   <link xlink:href="http://tomcat.apache.org/download-60.cgi">Tomcat 6</link>
+   or
+   <link xlink:href="http://tomcat.apache.org/download-70.cgi">Tomcat 7</link>
+  </para>
+ <para>
+   $TOMCAT_HOME will refer to the location you have installed the bits.
+ </para>
+
+ <para>
+   Configure Tomcat to listen on the same port and protocol of the application  
+   you are protecting with the Gateway. If your application listens on both an 
+   HTTP and an HTTPS port you must configure Tomcat to do so as well.  If you 
+   are installing to run the samples you will not have to modify the Tomcat port 
+   configuration since both the Tomcat default and the samples use port 8080.
+ </para>
+
+ <para>
+   To configure Tomcat to use a port other than 8080 modify the default 
+   $TOMCAT_HOME/conf/server.xml.  The quickest way to do this is to search 
+   for the default value of 8080 and replace it with the new port number.  
+ </para>
+
+
+ <section>
+  <title>Tomcat and MySQL/JNDI Configuration</title>
+  <para>
+    If the Gateway will be accessing a SQL database 
+    you will need to 
+    <link xlink:href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html">configure Tomcat for JNDI</link>.
+    Once you have Tomcat configured you will need to add the jar 
+    for the database, and set up a JNDI datasource and a reference 
+    to that datasource in your web application.  The following steps are 
+    for the MySQL Connector/J.
+  </para>
+  <para>
+    Download the 
+    <link xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver Connector/J</link>.  
+    Add it to the classpath by copying it to $TOMCAT_HOME/lib.
+  </para>
+
+  <para>
+    Add a JNDI datasource for your MySQL server and database in $TOMCAT_HOME/conf/context.xml.
+  </para>
+  <screen width='80'>
+     &lt;Resource name="jdbc/apex" auth="Container" type="javax.sql.DataSource"
+               maxActive="100" maxIdle="30" maxWait="10000"
+               username="admin" password="11111111" driverClassName="com.mysql.jdbc.Driver"
+               url="jdbc:mysql://localhost:3309/bitnami_drupal6"/&gt;
+  </screen>    
+
+  <para>
+    Add a resource reference to the datasource in $TOMCAT_HOME/conf/web.xml. 
+  </para>
+
+  <screen width='80'>
+&lt;resource-ref&gt;
+      &lt;description&gt;MySQL Connection&lt;description&gt;
+      &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+      &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
+      &lt;res-auth&gt;Container&lt;res-auth&gt;
+&lt;resource-ref&gt;
+  </screen>    
+
+ </section>
+
+ <section>
+  <title>Tomcat and cookie domains</title>
+  <para>
+    If you will be using the Gateway for more than a single application and those applications are on different hosts, you will need to configure Tomcat to set domain cookies.  To do this add the following to your $TOMCAT_HOME/conf/Catalina/&lt;server&gt;/root.xml.
+  </para>
+
+  <screen width='80'>
+&lt;Context sessionCookieDomain=".apexidentity.com" /&gt;
+  </screen>
+
+ </section>
+
+ <section>
+  <title>Tomcat and SSL</title>
+  <para>
+    To get Tomcat up quickly on an SSL port you can add an entry similar to the following in $TOMCAT_HOME/conf/server.xml.
+  </para>
+  <screen width='80'>
+    
+&lt;Connector port="443" protocol="HTTP/1.1" SSLEnabled="true"
+              maxThreads="150" scheme="https" secure="true"
+              address="10.0.1.6"
+              clientAuth="false" sslProtocol="TLS" keystorePass="11111111"/&gt;
+  </screen>
+
+  <para>
+    You will also have to make sure you have create a keystore along with a 
+    self signed certificate.  You can do that with the following unix commands:
+  </para>
+  <screen width='80'>
+keytool -genkey -alias tomcat -keyalg RSA
+  </screen>
+  </section>
+</section>
+
+  <section>
+    <title>Jetty</title>
+    <para>
+    Jetty reference links:
+    </para>
+ <itemizedlist>
+   <listitem>
+   <para><link xlink:href="http://wiki.eclipse.org/Jetty/Starting">Jetty Documentation</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://wiki.eclipse.org/Jetty/Howto/Port80">Running Jetty on port 80</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://wiki.eclipse.org/Jetty/Howto/Deploy_Web_Applications">Deploying Web Applications</link></para>
+   </listitem>
+ </itemizedlist>
+
+ <para>
+   Download and install the 
+   <link xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html">Sun Java SE JDK 6 Update 21</link>
+ or later. At this time this is the only version of any JDK that is supported with the Gateway.
+ </para>
+
+ <para>
+    Download and install
+    <link xlink:href="http://wiki.eclipse.org/Jetty/Starting/Downloads">Jetty</link>.
+    The install directory will be referred to as $JETTY_HOME from now on.
+ </para>
+
+ <para>
+   Configure Jetty to listen on the same port and protocol of the application 
+   you are protecting with the Gateway. If you are configuring the Gateway for 
+   the samples you will not have to modify the Jetty port configuration since 
+   the default for Jetty is 8080 and the samples use port 8080.
+ </para>
+
+ <para>
+   To configure Jetty to use a port other than 8080 you will need to modify 
+   the default $JETTY_HOME/etc/jetty.xml.  The quickest way to do that is 
+   to search for the default value of 8080 and replace it with the new port 
+   number.  The simplest way to get Jetty running on ports below 1024 is to 
+   run the Jetty process as root.  This is only appropriate for sample purposes 
+   and is highly discouraged for production.  
+ </para>
+
+ <para>
+If the application your are protecting is configured on an HTTPS port, you must configure Jetty for HTTPS as well.  Setting up Jetty for HTTPS may be found "here":http:/
+ </para>
+
+ <para>
+   If you are managing multiple applications in one domain you will need to 
+   turn on domain cookies in Jetty.  This can be done by adding the following 
+   property to $JETTY_HOME/contexts/root.xml or to $JETTY_HOME/etc/jetty.xml.  
+   Please note that any changes to jetty.xml impact all web applications 
+   running in the container.
+ </para>
+
+<screen width='80'>
+&lt;Get name="sessionHandler"&gt;
+        &lt;Get name="sessionManager"&gt;
+            &lt;Set name="sessionDomain"&gt;apexidentity.com&lt;Set&gt;
+        &lt;Get&gt;
+&lt;Get&gt;
+</screen>
+
+  <para>
+    If the Gateway will be accessing a SQL database you will need to 
+    <link xlink:href="http://wiki.eclipse.org/Jetty/Feature/JNDI">configure Jetty for JNDI</link>
+    or use the 
+    <link xlink:href="http://docs.codehaus.org/display/JETTY/Hightide+Documentation">Jetty Hightide distribution</link> 
+    which comes pre-configured for JNDI. Once you have Jetty 
+    configured you will need to add the jar for the database, and set up a 
+    JNDI datasource and a reference to that datasource in your web application.  
+    The following steps are for the MySQL Connector/J.
+  </para>
+
+  <para>
+    Download the 
+    <link xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver Connector/J</link>
+    Add it to the Jetty classpath by copying it to $JETTY_HOME/lib/jndi.
+  </para>
+
+  <para>
+    Add a JNDI datasource for your MySQL server and database in $JETTY_HOME/etc/jetty.xml
+  </para>
+
+<screen width='80'>
+&lt;New id="jdbc/apex" class="org.eclipse.jetty.plus.jndi.Resource"&gt;
+     &lt;Arg&gt;lt;Arg&gt;
+     &lt;Arg&gt;jdbc/apex&lt;Arg&gt;
+     &lt;Arg&gt;
+        &lt;New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"&gt;
+           &lt;Set name="Url"&gt;jdbc:mysql://localhost:3306/databasename&lt;Set&gt;
+           &lt;Set name="User"&gt;mysqladmin&lt;Set&gt;
+           &lt;Set name="Password"&gt;11111111&lt;Set&gt;
+        &lt;New&gt;
+     &lt;Arg&gt;
+&lt;New&gt;
+</screen>
+
+  <para>
+    Add a resource reference to the datasource in $JETTY_HOME/etc/webdefault.xml
+  </para>
+
+<screen width='80'>
+&lt;resource-ref&gt;
+     &lt;description&gt;My DataSource Reference&lt;description&gt;
+     &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+     &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
+     &lt;res-auth&gt;Container&lt;res-auth&gt;
+ &lt;resource-ref&gt;
+</screen>
+
+</section>
+
+<section>
+  <title>JBOSS</title>
+    <para>
+    JBOSS reference links:
+    </para>
+ <itemizedlist>
+   <listitem>
+   <para><link xlink:href="http://www.jboss.org/jbossas/docs/5-x">JBOSS 5 Documentation</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://www.jboss.org/jbossas/docs/6-x">JBOSS 6 Documentation</link></para>
+   </listitem>
+   <listitem>
+   <para><link xlink:href="http://www.jboss.org/jbossas/docs/5-x/admin-console-quick-start.html">Admin Console Quick Start Guide</link></para>
+   </listitem>
+ </itemizedlist>
+
+ <para>
+   Download and install the 
+   <link xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html">Sun Java SE JDK 6 Update 21</link>
+ or later. At this time this is the only version of any JDK that is supported with the Gateway.
+ </para>
+
+ <para>
+    Download and install the community version of 
+    <link xlink:href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA">JBOSS 5.1</link>
+    $JBOSS_HOME will refer to the location you have installed the bits. 
+    For simplicity we are assuming you are running the default server configuration. 
+ </para>
+
+ <para>
+   Configure JBOSS to listen on the same port and protocol of the application  you 
+   are protecting with the Gateway. If your application listens on both an HTTP and 
+   an HTTPS port you must configure JBOSS to do so as well.  If you are installing 
+   to run the samples you will not have to modify the JBOSS port configuration 
+   since both the JBOSS default and the samples use port 8080.
+ </para>
+
+ <para>
+   To configure JBOSS to use a port other than 8080 modify the server.xml under 
+   your server configuration.  For example, if you are using the default server 
+   configuration, server.xml will be  $JBOSS_HOME/server/default/deploy/jbossweb.sar/server.xml.  
+   The quickest way to do this is to search for the default value of 8080 and 
+   replace it with the new port number.  
+ </para>
+
+ <para>
+   If the Gateway will be accessing a SQL database you will need to "configure 
+   JBOSS for JNDI. Once you have JBOSS configured you will need to add the jar 
+   for the database, and set up a JNDI datasource and a reference to that datasource 
+   in your web application.  The following steps are for the MySQL Connector/J.
+ </para>
+
+  <para>
+    Download the 
+    <link xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver Connector/J</link>
+    Add it to the JBOSS classpath by copying it to $JBOSS_HOME/server/default/lib.
+  </para>
+
+  <para>
+    Add a JNDI datasource for your MySQL server and database in $JBOSS_HOME/server/default/deploy/mysql-ds.xml
+  </para>
+
+<screen width='80'>
+&lt;datasources&gt;
+    &lt;local-tx-datasource&gt;
+        &lt;jndi-name&gt;jdbc/apex&lt;jndi-name&gt;
+        &lt;connection-url&gt;jdbc:mysql://localhost:3309/bitnami_drupal6&lt;connection-url&gt;
+        &lt;driver-class&gt;com.mysql.jdbc.Driver&lt;driver-class&gt;
+        &lt;user-name&gt;admin&lt;user-name&gt;
+        &lt;password&gt;11111111&lt;password&gt;
+        &lt;min-pool-size&gt;5&lt;min-pool-size&gt;
+        &lt;max-pool-size&gt;20&lt;max-pool-size&gt;
+        &lt;idle-timeout-minutes&gt;5&lt;idle-timeout-minutes&gt;
+        &lt;exception-sorter-class-name&gt;
+             com.mysql.jdbc.integration.jboss.ExtendedMysqlExceptionSorter
+        &lt;exception-sorter-class-name&gt;
+        &lt;valid-connection-checker-class-name&gt;
+             com.mysql.jdbc.integration.jboss.MysqlValidConnectionChecker
+        &lt;valid-connection-checker-class-name&gt;
+    &lt;local-tx-datasource&gt;
+&lt;datasources&gt;
+</screen>
+
+  <para>
+    Add a resource reference to the datasource in 
+    $JBOSS_HOME/server/default/deployers/jbossweb.deployer/web.xml. 
+  </para>
+
+<screen width='80'>
+&lt;resource-ref&gt;
+      &lt;description&gt;MySQL Connection&lt;description&gt;
+      &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+      &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
+      &lt;res-auth&gt;Container&lt;res-auth&gt;
+  &lt;resource-ref&gt;
+</screen>
+
+
+</section>
+
+
+</chapter>
