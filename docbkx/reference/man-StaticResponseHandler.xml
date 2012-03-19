@@ -44,7 +44,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "StaticResponseHandler",
      "config": {
@@ -101,7 +101,7 @@
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "ErrorHandler",
      "type":"StaticResponseHandler",
      "config": {

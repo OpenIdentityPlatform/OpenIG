@@ -32,63 +32,61 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Solutions Overview</title>
 
- <para> 
- This section provides an overview of the problems the Gateway solves.
- </para>
+ <para>ForgeRock's Open Identity Gateway (OpenIG) provides the answer to
+ three important challenges.</para>
 
-  <section>
-    <title>Extending SSO to any application</title>
-    <para>
-      In today's enterprise, more than 30% of web applications are incompatible with 
-      vendor web access management solutions . That is, the WAM product doesn't provide 
-      agents for protecting the web application, or the application is a legacy solution 
-      that doesn't follow standard protocols for single sign-on. This limits the return 
-      on the enterprise WAM investment and constrains what types of web applications 
-      can be protected.
-    </para>
-    <para>
-      The Universal Gateway addresses this problem by extending vendor WAM solutions to 
-      include all web applications. Access management deployments can now be extended 
-      to be inclusive of those applications that don't integrate with your WAM solution. 
-      The Universal Gateway integrates, out-of-the-box, with all management solutions. 
-      Most importantly, enterprises can on-board any web application without ever modifying 
-      or touching the target application again, significantly reducing the development and 
-      quality assurance required to protect web applications.
-    </para>
-  </section>
+ <section xml:id="sso-for-any-app">
+  <title>Extend SSO To Any Application</title>
 
-  <section>
-    <title>Federate Enabling Applications </title>
-    <para> 
-       The expertise and cost required to add SAML2 support to web applications is a problem 
-       for many businesses.  Those businesses not moving to a standard for exposing their 
-       applications to their customers will see increased cost and maintenance due to the 
-       complexity of one-off proprietary integrations. They  may also see a loss of business 
-       to those customers requiring a Federation standard for the authentication. Purchasing 
-       a full-blown Access Management product just to Federate a few applications is far too 
-       complex and costly, and building out their own solution by modifying their applications 
-       is just not possible.
-    </para>
-    <para> 
-       The Federation Gateway allows businesses to add SAML2 support to their applications with 
-       little to no knowledge of the standard.  In addition, there is no need to modify the 
-       application or install any plugin or agent on the application container.
-    </para>
-  </section>
+  <para>In today's enterprise, more than 30% of web applications are
+  incompatible with vendor web access management solutions. That is, web
+  access management (WAM) products do not provide agents for protecting the
+  web application, or the application is a legacy solution that does not
+  follow standard protocols for single sign-on. This limits the return on the
+  enterprise WAM investment and constrains what types of web applications can
+  be protected.</para>
 
-  <section>
-    <title>Standards Based Policy Agent</title>
-    <para> 
-       In order to provide SSO, Access Management solutions require their own proprietary policy 
-       enforcement points (plugins) for each application. These proprietary enforcement points 
-       lock customers into a single Access Management solution,  proprietary APIs and protocols.  
-       What customers need is an Access Management independent policy enforcement point that is 
-       built on the SAML2 standard.
-    </para>
-    <para> 
-       The Federation Gateway can replace proprietary policy enforcement points with a 
-       standards based SAML2 compliant enforcement point.
-    </para>
-  </section>
+  <para>ForgeRock Open Identity Gateway addresses this problem by extending
+  vendor WAM solutions to include <emphasis>all</emphasis> web applications.
+  Access management deployments can now be extended to be inclusive of those
+  applications that do not integrate with your WAM solution. ForgeRock Open
+  Identity Gateway integrates, out-of-the-box, with all management solutions.
+  Most importantly, enterprises can on-board any web application without ever
+  modifying or touching the target application again, significantly reducing
+  the development and quality assurance required to protect web
+  applications.</para>
+ </section>
+
+ <section xml:id="federate-any-app">
+  <title>Federate Enabling Applications</title>
+
+  <para>The expertise and cost required to add SAML2 support to web
+  applications is a problem for many businesses. Those businesses not moving
+  to a standard for exposing their applications to their customers see
+  increased cost and maintenance due to the complexity of one-off proprietary
+  integrations. They may also see a loss of business to those customers
+  requiring a Federation standard for authentication. Purchasing a full-blown
+  Access Management product just to Federate a few applications is far too
+  complex and costly, and building out their own solution by modifying their
+  applications is just not possible.</para>
+
+  <para>OpenIG Federation Gateway allows businesses to add SAML2 support to
+  their applications with little to no knowledge of the standard. In addition,
+  there is no need to modify the application or install any plugin or agent on
+  the application container.</para>
+ </section>
+
+ <section xml:id="standards-based-policy-enforcement">
+  <title>Implement Standards Based Policy Enforcement</title>
+
+  <para>In order to provide SSO, Access Management solutions require their own
+  proprietary policy enforcement points (plugins) for each application. These
+  proprietary enforcement points lock customers into a single Access Management
+  solution, proprietary APIs and protocols. What customers need is an Access
+  Management independent policy enforcement point that is built on the SAML2
+  standard.</para>
+
+  <para>OpenIG Federation Gateway can replace proprietary policy enforcement
+  points with a standards based SAML2 compliant enforcement point.</para>
+ </section>
 </chapter>
-

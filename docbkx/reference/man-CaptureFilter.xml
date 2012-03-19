@@ -44,7 +44,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "CaptureFilter",
      "config": {
@@ -94,7 +94,7 @@
  <refsect1>
   <title>Examples</title>
   <para>Log the entire request and response:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "LogToTemporaryFile",
      "type": "CaptureFilter",
      "config": {
@@ -103,7 +103,7 @@
 }</programlisting>
 
   <para>Log the request and response. Do not log the entity:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "LogToTemporaryFile",
      "type": "CaptureFilter",
      "config": {
@@ -115,7 +115,7 @@
   <para>Normal usage of the CaptureFilter is to create an OutgoingChain.
   This enables you to call filters like the CaptureFilter, before sending out
   the request:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "OutgoingChain",
      "type": "Chain",
      "config": {

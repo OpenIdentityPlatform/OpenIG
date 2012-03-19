@@ -55,7 +55,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "DispatchServlet",
      "config": {
@@ -104,7 +104,7 @@
   its own servlet which will be dispatched-to based on the incoming URI
   starting with <literal>"/saml"</literal>. All other requests will go through
   the <literal>HandlerServlet</literal>.</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "Dispatcher",
      "type": "DispatchServlet",
      "config": {

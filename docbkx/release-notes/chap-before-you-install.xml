@@ -37,11 +37,30 @@
  xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.</para>
 
  <section xml:id="which-gateway">
-  <title>Which Gateway to Use</title>
+  <title>Which OpenIG to Use</title>
 
   <para>There are two versions of the Open Identity Gateway, OpenIG and OpenIG
   (Federation). The OpenIG Federation consists of OpenIG plus additional
   Federation libraries. Unless you require Federation capabilities, use core
   OpenIG.</para>
+ </section>
+
+ <section xml:id="java-requirements">
+  <title>JDK Version</title>
+
+  <para>Download and install <link xlink:show="new"
+  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time this is the only
+  version of any JDK that is supported with OpenIG.</para>
+ </section>
+
+ <section xml:id="which-container">
+  <title>Web Application Container</title>
+
+  <para>See the chapter on <link xlink:href="gateway-guide#chap-container"
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Container
+  Configuration Help</citetitle></link> in the <citetitle>Guide to
+  OpenIG</citetitle> for details on setting up your web application
+  container.</para>
  </section>
 </chapter>

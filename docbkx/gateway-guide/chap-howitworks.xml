@@ -32,174 +32,246 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>How the Gateway Works</title>
 
- <para> 
- This section provides a detailed look at the Gateway's components and how they work together.
- </para>
+ <para>This chapter provides a detailed look at OpenIG's components and how
+ they work together.</para>
  
- <section>
+ <section xml:id="how-it-works-short">
   <title>How It Works In A Nutshell</title>
-  <para>
-     The underlying core of the ApexIdentity Gateway is based on a 
-     <link xlink:href="http://en.wikipedia.org/wiki/Reverse_proxy">reverse proxy architecture</link>.
-     All HTTP traffic to each protected application is routed through the Gateway, enabling close 
-     inspection, transformation and filtering of each request.  By inspecting the traffic, the 
-     Gateway is able to intercept requests that would normally require the user to authenticate, 
-     obtain the user's login credentials, and send the necessary HTTP request to the target 
-     application, thereby logging in the user without modifying or installing anything 
-     on the application.  In its simplest form and  basic configuration, the Gateway is a 
-     Java-based reverse proxy which runs as a web application.  Enable the Form-Filter 
-     replay module and the Gateway will automatically log users in when a timeout or 
-     authentication page is detected.  Additionally, enable the SAML2 or OpenID service and 
-     the Gateway becomes a SAML2 or OpenID relying party endpoint.  In this mode of operation, 
-     the Gateway receives and verifies the SAML2 or OpenID request and then logs the user 
-     directly into the target application. 
-  </para>
+
+  <para>The underlying core of ForgeRock Open Identity Gateway is based on a
+  <link xlink:show="new" xlink:href="http://en.wikipedia.org/wiki/Reverse_proxy"
+  >reverse proxy architecture</link>. All HTTP traffic to each protected
+  application is routed through OpenIG, enabling close inspection,
+  transformation and filtering of each request.  By inspecting the traffic,
+  OpenIG is able to intercept requests that would normally require the user to
+  authenticate, obtain the user's login credentials, and send the necessary
+  HTTP request to the target application, thereby logging in the user without
+  modifying or installing anything on the application.  In its simplest form
+  and basic configuration, OpenIG is a Java-based reverse proxy which runs as
+  a web application.  Enable the Form-Filter replay module and OpenIG
+  automatically log users in when a timeout or authentication page is detected.
+  Additionally, enable the SAML2 or OpenID service and  OpenIG becomes a SAML2
+  or OpenID relying party endpoint. In this mode of operation, OpenIG receives
+  and verifies the SAML2 or OpenID request and then logs the user directly
+  into the target application.</para>
  </section>
 
- <section>
+ <section xml:id="how-it-works-detail">
   <title>How It Works In Detail</title>
 
-  <section>
-    <title> Gateway Core (Reverse Proxy) </title>
-      <para>
-        The Gateway core is a standard Java EE servlet implementation of a reverse proxy.  The main function of the Core Gateway is to act as a reverse proxy to the target application. When deployed in its base configuration, the Gateway may be used as a pure reverse proxy. The power of the Core Gateway comes in its ability to search, transform, and process HTTP traffic to and from the target application.  This enables the Gateway to recognize login pages, submit login forms, transform or filter content, and even function as a Federation endpoint for the application.  All these features are possible without making any changes to the application's deployment container or the application itself. 
-      </para>
-   </section>
+  <para>The following modules make up OpenIG.</para>
 
   <section>
-    <title>Exchange</title>
-      <para>
-        The [[Exchange]] is a wrapper around the HTTP request and response objects that pass through the Gateway.  Every request or response being processed in the Gateway can be accessed or modified through the Exchange object.  In addition, arbitrary data may be set in the Exchange to facilitate the passing of data and state between filters and handlers.
-      </para>
+   <title>OpenIG Core (Reverse Proxy)</title>
+
+   <para>OpenIG core is a standard Java EE servlet implementation of a reverse
+   proxy. The main function of OpenIG core is to act as a reverse proxy to the
+   target application. When deployed in its base configuration, OpenIG can be
+   used as a pure reverse proxy. The power of the OpenIG core comes in its
+   ability to search, transform, and process HTTP traffic to and from the
+   target application. This enables OpenIG to recognize login pages, submit
+   login forms, transform or filter content, and even function as a Federation
+   endpoint for the application.  All these features are possible without
+   making any changes to the application's deployment container or the
+   application itself.</para>
   </section>
 
   <section>
-    <title>Dispatcher</title>
-      <para>
-        The Dispatcher may be thought of as the internal router of the Gateway.  Every request that comes into the Gateway is analyzed and forwarded on to the configured processing chain of filters and handlers.  A request may be forwarded based on the target host, URL, URL parameters, headers, cookies, or any other component of the request.
-      </para>
+   <title>Exchange</title>
+   <para>The <link xlink:href="reference#Exchange"
+   xlink:role="http://docbook.org/xlink/role/olink">Exchange</link> is a
+   wrapper around the HTTP request and response objects that pass through
+   OpenIG. Every request or response being processed in OpenIG can be accessed
+   or modified through the Exchange object.  In addition, arbitrary data can
+   be set in the Exchange to facilitate the passing of data and state between
+   filters and handlers.</para>
   </section>
 
   <section>
-    <title>Chain</title>
-      <para>
-        A <emphasis>Chain</emphasis> is a combination of one or more Filters and a handler that process an incoming request from the Dispatcher.  For example, the Dispatcher may process an incoming request with a URL parameter of action=login and forward the request to the Login Chain.  The Login Chain would execute a list of Filters and  then call a Handler.  The Handler would send the request on to the target application or to another Chain for further processing.
-      </para>
+   <title>Dispatcher</title>
+   <para>The Dispatcher may be thought of as the internal router of OpenIG.
+   Every request that comes into OpenIG is analyzed and forwarded on to the
+   configured processing chain of filters and handlers. A request may be
+   forwarded based on the target host, URL, URL parameters, headers, cookies,
+   or any other component of the request.</para>
   </section>
 
   <section>
-    <title>Handlers</title>
-      <para>
-        The final processing of every Chain ends in a call to a Handler.  A Handler may 
-        simply call another Chain or it may send the request on to the target application. 
-        The following Handlers are shipped with the Gateway:
-       </para>
+   <title>Chain</title>
+   <para>A <link xlink:href="reference#Chain"
+   xlink:role="http://docbook.org/xlink/role/olink">Chain</link> is a
+   combination of one or more Filters and a handler that process an incoming
+   request from the Dispatcher. For example, the Dispatcher can process an
+   incoming request with a URL parameter of <literal>action=login</literal>
+   and forward the request to the Login Chain. The Login Chain executes a list
+   of Filters and then calls a Handler. The Handler sends the request on to
+   the target application or to another Chain for further processing.</para>
+  </section>
+
+  <section>
+   <title>Handlers</title>
+
+   <para>The final processing of every Chain ends in a call to a Handler. A
+   Handler can simply call another Chain or it can send the request on to the
+   target application. The following Handlers are shipped with OpenIG:</para>
+
    <itemizedlist>
     <listitem>
-     <para>ClientHandler: Sends the final request to the target
-     application.</para>
+     <para><link xlink:href="reference#ClientHandler"
+     xlink:role="http://docbook.org/xlink/role/olink">ClientHandler</link>:
+     Sends the final request to the target application.</para>
     </listitem>
     <listitem>
-     <para>StaticResponseHandler: Used to send a response, such as a redirect,
-     to a client during request processing.</para>
+     <para><link xlink:href="reference#StaticResponseHandler"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >StaticResponseHandler</link>: Used to send a response, such as a
+     redirect, to a client during request processing.</para>
     </listitem>
     <listitem>
-     <para>SequenceHandler: Links together multiple handlers or chains during
-     request processing.</para>
+     <para><link xlink:href="reference#StaticResponseHandler"
+     xlink:role="http://docbook.org/xlink/role/olink">SequenceHandler</link>:
+     Links together multiple handlers or chains during request
+     processing.</para>
     </listitem>
    </itemizedlist>
   </section>
 
   <section>
-    <title>Filters</title>
-      <para>
-        Filters are responsible for processing HTTP requests in the Gateway.  Filters may 
-        be chained together to act on the input stream coming from the browser, or the 
-        output stream returned back from the target application.  A filter may do something 
-        as simple as logging the input and output stream or something more complex, such 
-        as processing login pages, fetching user attributes, or transforming content.
-        There are multiple Filters shipped with the Gateway that may be combined in 
-        chains to provide very extensible request and response processing features.  
-        Custom filters may also be written using the Java SPIs. The following is a 
-        list of Filters shipping with the Gateway:
-      </para>
+   <title>Filters</title>
+   <para>Filters are responsible for processing HTTP requests in OpenIG.
+   Filters can be chained together to act on the input stream coming from the
+   browser, or the  output stream returned back from the target application.
+   A filter can do something as simple as logging the input and output stream
+   or something more complex, such as processing login pages, fetching user
+   attributes, or transforming content. There are multiple Filters shipped with
+   OpenIG that can be combined in chains to provide very extensible request and
+   response processing features. Custom filters can also be written using the
+   Java SPIs. The following is a list of Filters shipped with OpenIG:</para>
+
    <itemizedlist>
     <listitem>
-     <para>CookieFilter: The default behavior of the Gateway is to accept and forward all cookies.  Since this is not always the desirable behavior, the CookieFilter, when configured, allows you to suppress, manage, and relay cookies.</para>
+     <para><link xlink:href="reference#CookieFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">CookieFilter</link>:
+     The default behavior of OpenIG is to accept and forward all cookies.
+     Since this is not always the desirable behavior, the CookieFilter, when
+     configured, allows you to suppress, manage, and relay cookies.</para>
     </listitem>
     <listitem>
-     <para>CaptureFilter: Captures the HTTP requests being processed by the Gateway. Capture may be used for audit purposes and may also be very useful when analyzing an application or troubleshooting a misbehaving Gateway. Logs are written to a flat file on the Gateway host.</para>
+     <para><link xlink:href="reference#CaptureFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">CaptureFilter</link>:
+     Captures the HTTP requests being processed by OpenIG. Capture can be used
+     for audit purposes and may also be very useful when analyzing an
+     application or troubleshooting a misbehaving OpenIG. Logs are written to
+     a flat file on the OpenIG host.</para>
     </listitem>
     <listitem>
-     <para>HeaderFilter: The default behavior of the Gateway is to accept and forward all headers. The Header Filter may be configured to add additional headers or remove headers on both the HTTP request and the response.  It may also be configured to parse and set header values in the Gateway context to allow filters access to  the header attributes.  This feature would be used most commonly when the Gateway is integrated with an Access Management solution and being fronted by an agent.</para>
+     <para><link xlink:href="reference#HeaderFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">HeaderFilter</link>:
+     The default behavior of OpenIG is to accept and forward all headers.
+     The HeaderFilter can be configured to add additional headers or remove
+     headers on both the HTTP request and the response. It can also be
+     configured to parse and set header values in OpenIG context to allow
+     filters access to the header attributes. This feature is used most
+     commonly when OpenIG is integrated with an Access Management solution
+     and being fronted by an agent.</para>
     </listitem>
     <listitem>
-     <para>AssignmentFilter: Sets values in the HTTP request and response.</para>
+     <para><link xlink:href="reference#AssignmentFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">AssignmentFilter</link>:
+     Sets values in the HTTP request and response.</para>
     </listitem>
     <listitem>
-     <para>StaticRequestFilter: Create and send HTTP GET and POST requests.  The request may be formed using parameters from previous processing or statically configured values.</para>
+     <para><link xlink:href="reference#StaticRequestFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >StaticRequestFilter</link>: Create and send HTTP GET and POST requests.
+     The request can be formed using parameters from previous processing or
+     statically configured values.</para>
     </listitem>
     <listitem>
-     <para>EntityExtractFilter: Can be configured to search for specific content with the body of the requests. For example, it can be used to extract hidden form parameters in a login page, which are needed in the login request.</para>
+     <para><link xlink:href="reference#EntityExtractFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >EntityExtractFilter</link>: Can be configured to search for specific
+     content with the body of the requests. For example, it can be used to
+     extract hidden form parameters in a login page, which are needed in the
+     login request.</para>
     </listitem>
     <listitem>
-     <para>ExceptionFilter: Send users to configured URLs when errors or 
-            exceptions occur during request processing or user interactions.</para>
+     <para><link xlink:href="reference#ExceptionFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">ExceptionFilter</link>:
+     Send users to configured URLs when errors or exceptions occur during
+     request processing or user interactions.</para>
     </listitem>
     <listitem>
-     <para>SwitchFilter: Conditionally diverts the exchange to another handler.</para>
+     <para><link xlink:href="reference#SwitchFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">SwitchFilter</link>:
+     Conditionally diverts the exchange to another handler.</para>
     </listitem>
     <listitem>
-     <para>HTTPBasicAuthFilter: Performs HTTP basic authentication to the target application per RFC 2617.</para>
+     <para><link xlink:href="reference#HttpBasicAuthFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >HttpBasicAuthFilter</link>: Performs HTTP basic authentication to the
+     target application per RFC 2617.</para>
     </listitem>
     <listitem>
-     <para>FileAttributesFilter: Looks up attributes in a flat file with the specified key.  
-             The attributes are added to the exchange to be used by subsequent filters or handlers.</para>
+     <para><link xlink:href="reference#FileAttributesFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >FileAttributesFilter</link>: Looks up attributes in a flat file with the
+     specified key. The attributes are added to the exchange to be used by
+     subsequent filters or handlers.</para>
     </listitem>
     <listitem>
-     <para>SQLAttributesFilter: Executes an SQL prepared statement with configured parameters.  
-            The result is added to the exchange to be used by subsequent filters or handlers.</para>
+     <para><link xlink:href="reference#SqlAttributesFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >SqlAttributesFilter</link>: Executes an SQL prepared statement with
+     configured parameters. The result is added to the exchange to be used by
+     subsequent filters or handlers.</para>
     </listitem>
    </itemizedlist>
   </section>
 
   <section>
-    <title>Configuration</title>
-      <para>
-        The configuration of the Gateway was designed to be very modular and self-contained .  
-        Each module within the Gateway stores its configuration in JSON representation, 
-        which is stored in flat files and managed via REST. The features of the Gateway 
-        may be configured by directly manipulating the JSON flat files, through  REST, 
-        or through the Gateway management console.
-      </para>
+   <title>Configuration</title>
+
+   <para>The configuration of OpenIG was designed to be very modular and
+   self-contained . Each module within OpenIG stores its configuration in JSON
+   representation, which is stored in flat files and managed via REST. The
+   features of OpenIG can be configured by directly manipulating the JSON flat
+   files, through REST, or through OpenIG management console.</para>
   </section>
 
   <section>
-    <title>Heaplets</title>
-      <para>
-        Every Gateway module which has JSON configuration also has a Heaplet associated with it.  
-        Each module's Heaplet is responsible for reading the JSON configuration and creating  
-        that module's configuration in the Gateway's runtime Heap.  Each module can then 
-        read its configuration from the Heap as well as make shared configuration information 
-        available to other modules.
-      </para>
+   <title>Heaplets</title>
+
+   <para>Every OpenIG module which has JSON configuration also has a Heaplet
+   associated with it. Each module's Heaplet is responsible for reading the
+   JSON configuration and creating that module's configuration in OpenIG's
+   runtime heap. Each module can then read its configuration from the heap as
+   well as make shared configuration information available to other
+   modules.</para>
   </section>
 
   <section>
-    <title>Services</title>
-      <para>
-        The Services model was designed to allow the integration of value added features, such as Federation, without requiring them to be tightly bound to the Gateway implementation. SAML2 and OpenID are the two add on services shipping with the Gateway today.
-      </para>
+   <title>Services</title>
+
+   <para>The Services model was designed to allow the integration of value
+   added features, such as Federation, without requiring them to be tightly
+   bound to the OpenIG implementation. SAML2 and OpenID are the two add on
+   services shipping with OpenIG today.</para>
   </section>
 
   <section>
-    <title>Federation Service (Federation Gateway)</title>
-      <para>
-        When the Federation Service is enabled, the Gateway is acting as the Service Provider in a Circle of Trust with  a SAML2 compliant Identity Provider. The Federation service supports both IDP and SP initiated SAML2 profiles. The Federation Gateway may be a Service Provider in the classic Federation use case where the IDP and SP are different companies or domains. The Gateway SP may also be a standards based replacement for a proprietary Access Management Policy agent for internal enterprise applications that want to move away from proprietary agents and achieve Access Management independence.
-      </para>
+   <title>Federation Service (Federation Gateway)</title>
+
+   <para>When the Federation Service is enabled, OpenIG is acting as the
+   Service Provider in a Circle of Trust with  a SAML2 compliant Identity
+   Provider. The Federation service supports both IDP and SP initiated SAML2
+   profiles. The Federation Gateway may be a Service Provider in the classic
+   Federation use case where the IDP and SP are different companies or domains.
+   The OpenIG SP can also be a standards based replacement for a proprietary
+   Access Management policy agent for internal enterprise applications that
+   want to move away from proprietary agents and achieve Access Management
+   independence.</para>
   </section>
 
  </section>
-
 </chapter>
-

@@ -46,7 +46,7 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": string,
      "type": "HeaderFilter",
      "config": {
@@ -91,7 +91,7 @@
   <title>Examples</title>
   <para>Replace the host header on the incoming request with
   <literal>myhost.com</literal>:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "ReplaceHostFilter",
      "type": "HeaderFilter",
      "config": {
@@ -104,7 +104,7 @@
 }</programlisting>
 
   <para>Add a Set-Cookie header in the response:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "SetCookieFilter",
      "type": "HeaderFilter",
      "config": {
@@ -117,7 +117,7 @@
 
   <para>Add headers <literal>custom1</literal> and <literal>custom2</literal>
   to the request:</para>
-  <programlisting language="javascript" linenumbering="numbered">{
+  <programlisting language="javascript">{
      "name": "SetCustomHeaders",
      "type": "HeaderFilter",
      "config": {

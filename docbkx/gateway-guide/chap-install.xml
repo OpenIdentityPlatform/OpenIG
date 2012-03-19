@@ -30,83 +30,78 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Installation</title>
+ <title>Installing OpenIG</title>
 
- <section>
-  <title>Prerequisites</title>
-
-  <para>
-    Please refer to the 
-    <xref linkend="chap-container"/>
-    to ensure you have properly installed and configured your 
-    container and are running a supported version of Java.
-  </para>
-  
+ <itemizedlist>
+  <para>Before you install OpenIG, make sure you have the right version of Java,
+  and install and configure the web container.</para>
+  <listitem>
    <para>Make sure you have the correct Java environment installed.</para>
 
-   <screen width='80'>$ java -version
+   <screen>$ java -version
 java version "1.6.0_24"
 Java(TM) SE Runtime Environment (build 1.6.0_24-b07-334-9M3326)
-Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)
-</screen>
+Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)</screen>
+  </listitem>
+  <listitem>
+   <para>Refer to the chapter on <link xlink:href="gateway-guide#chap-container"
+   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Container
+   Configuration Help</citetitle></link> to ensure you have properly installed
+   and configured your web application container and are running a supported
+   version of Java.</para>
+  </listitem>
+ </itemizedlist>
 
+ <para>For the remainder of this chapter <literal>$HOME</literal> refers to
+ the home directory of the user running the web container where you install
+ OpenIG.</para>
 
-  <para>
-    For the remainder of this document $HOME will refer to 
-    the home directory of the user running the Gateway container.
-  </para>
+ <procedure xml:id="download-install-configure">
+  <title>Download, Install, &amp; Configure</title>
+  <step>
+   <para><link xlink:href="http://www.forgerock.org/openig.html"
+   xlink:show="new">Download</link> and if necessary unpack the gateway
+   .war file.</para>
+  </step>
+  <step>
+   <para>Deploy the .war to the root context of the web application
+   container.</para>
+  </step>
 
- </section>
+  <step>
+   <para>Copy the <link xlink:href="gateway-guide#template-proxy-capture"
+   xlink:role="http://docbook.org/xlink/role/olink">proxy and capture</link>
+   template. You can jump straight to a configuration template that best
+   matches your application, but it is highly recommended you start with the
+   basic proxy template.</para>
+  </step>
 
- <section>
- <title>Download, Install, and Configure</title>
+  <step>
+   <para>Copy the template to
+   <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. Replace the
+   <literal>TARGETIP</literal> tag in <filename>config.json</filename> with
+   the IP address and port number of your target application.</para>
+  </step>
 
-<procedure>
-   <step>
-   <para>
-   <link xlink:href="http://resources.apexidentity.com/downloads/gateway-2.0.0.war.gz">Download</link>
-   and unzip the Gateway. In the zip you will find the gateway war.
+  <step>
+   <para>Modify DNS or host file settings so the name of your target
+   application resolves to the IP address of OpenIG. Be sure to restart your
+   browser after making this change.</para>
+  </step>
+
+  <step>
+   <para>Start the web container where OpenIG is deployed and browse to the
+   target application. OpenIG should now proxy all traffic to the
+   application.</para>
+  </step>
+
+  <step>
+   <para>To ensure the browser is going through OpenIG, stop the OpenIG web
+   container, and verify you cannot reach the application. You can also look
+   in the OpenIG capture log to verify the traffic is going through OpenIG.
+   The location for this log is set in <filename>config.json</filename>, by
+   default <filename>/tmp/gateway.log</filename>.
    </para>
-   </step>
-   <step>
-   <para>Deploy the war to the root context of the container.</para>
-   </step>
-
-   <step>
-   <para>Download the 
-   <link xlink:href="http://resources.apexidentity.com/downloads/samples/templates/capture.json">proxy and capture template.</link>
-   You may jump straight to a configuration templates that best matches your 
-   application, but it is highly recommended you start with the basic proxy template. 
-   </para>
-   </step>
-
-   <step>
-    <para>Copy the template to $HOME/.ApexIdentity/Gateway/config.json.  
-    Replace the TARGETIP tag in config.json with the IP address and port number of your target application.
-    </para>
-   </step>
-
-   <step>
-   <para>Modify DNS or host file settings so the name of your target application 
-   resolves to the IP address of the Gateway. Be sure to restart your browser after making this change.
-    </para>
-   </step>
-
-   <step>
-   <para>Start the Gateway container and browse to the target application.  
-   The Gateway should now be proxying all traffic to the application. </para>
-   </step>
-
-   <step>
-   <para>To ensure the browser is going through the Gateway, stop the Gateway 
-   container, and verify you cannot reach the application. You may also look 
-   in the Gateway capture log to verify the traffic is going through the 
-   Gateway.  The location for this log is set in config.json and defaults 
-   to /tmp/gateway.log.
-   </para>
-   </step>
-
+  </step>
  </procedure>
- </section>
 </chapter>
-
