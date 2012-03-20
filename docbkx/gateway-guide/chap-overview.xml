@@ -70,6 +70,15 @@
   complex and costly, and building out their own solution by modifying their
   applications is just not possible.</para>
 
+  <mediaobject>
+   <imageobject>
+    <imagedata fileref="images/federate-any-app.png" format="PNG" />
+   </imageobject>
+   <textobject>
+    <para>OpenIG lets you quickly federate any application.</para>
+   </textobject>
+  </mediaobject>
+
   <para>OpenIG Federation Gateway allows businesses to add SAML2 support to
   their applications with little to no knowledge of the standard. In addition,
   there is no need to modify the application or install any plugin or agent on
@@ -85,6 +94,16 @@
   solution, proprietary APIs and protocols. What customers need is an Access
   Management independent policy enforcement point that is built on the SAML2
   standard.</para>
+
+  <mediaobject>
+   <imageobject>
+    <imagedata fileref="images/standards-based-agent.png" format="PNG" />
+   </imageobject>
+   <textobject>
+    <para>OpenIG integrates well as a policy enforcement point for other
+    web access management solutions, such as OpenAM.</para>
+   </textobject>
+  </mediaobject>
 
   <para>OpenIG Federation Gateway can replace proprietary policy enforcement
   points with a standards based SAML2 compliant enforcement point.</para>

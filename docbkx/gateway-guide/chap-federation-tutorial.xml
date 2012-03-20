@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-federation-tutorial'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Federation Gateway Tutorial</title>
+
+ <para>This tutorial expands on the <link
+ xlink:href="gateway-guide#chap-gateway-tutorial"
+ xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Gateway Tutorial
+ with WordPress</citetitle></link> by showing you how to configure OpenIG
+ as a SAML2 Federation endpoint to log the user into WordPress. When you
+ complete this tutorial you will have configured OpenAM to send a SAML2
+ assertion to OpenIG and configured OpenIG to validate the assertion and to
+ use the <literal>mail</literal> and <literal>employeenumber</literal>
+ attribute values from the assertion to log the user into WordPress.</para>
+
+ <section xml:id="fed-tutorial-before-you-start">
+  <title>Before You Start</title>
+
+  <para>Follow the <link xlink:href="gateway-guide#chap-gateway-tutorial"
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Gateway Tutorial
+  with WordPress</citetitle></link>, and make sure you can login to WordPress
+  before continuing this tutorial.</para>
+ </section>
+
+ <section xml:id="fed-tutorial-configure-openam">
+  <title>Configuring OpenAM</title>
+
+  <para>For this sample and the test URIs, OpenAM is configured on
+  <literal>http://www.idp.com:8888/openam</literal>. You can of course use any
+  configuration, but be sure to substitute the proper values for the test
+  URLs.</para>
+
+  <para>Use the OpenAM Console task wizard to create a Fedlet with the Name
+  gateway and the Destination URL
+  <literal>http://demo.forgerock.com:8080/saml</literal>. Configure the
+  Attributes Mapping to contain the <literal>mail</literal> and
+  <literal>employeenumber</literal> attributes.</para>
+
+  <para>Create a user with <literal>mail</literal> attribute
+  <literal>george</literal> and
+  <literal>employeenumber costanza</literal>.</para>
+ </section>
+
+ <section xml:id="fed-tutorial-configure-federation">
+  <title>Configuring OpenIG For Federation</title>
+
+  <para>Download the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/FederationWordpress.json">Federation
+  to WordPress Sample Config File</link> and copy it to
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>, overwriting the
+  <filename>config.json</filename> from the WordPress tutorial.</para>
+
+  <para>Assuming <filename>Fedlet.zip</filename> from the previous step is
+  found in <filename>$HOME/openam/myfedlets/Fedlet.zip</filename> extract the
+  Fedlet configuration files using the following commands:</para>
+
+  <screen>$ cd $HOME/openam/myfedlets
+$ unzip Fedlet.zip
+$ jar xvf Fedlet.war conf</screen>
+
+  <para>Create a <filename>$HOME/.ForgeRock/SAML/</filename> directory,
+  and copy the Fedlet configuration to the new directory.</para>
+
+  <screen>$ mkdir $HOME/.ForgeRock/SAML
+$ cp conf/* $HOME/.ForgeRock/SAML
+$ ls $HOME/.ForgeRock/SAML
+FederationConfig.properties    idp-extended.xml        sp-extended.xml
+fedlet.cot                     idp.xml                 sp.xm</screen>
+ </section>
+
+ <section xml:id="fed-tutorial-testing">
+  <title>Testing</title>
+
+  <para>IDP initiated SSO can be initiated by browsing <link xlink:show="new"
+  xlink:href="http://www.idp.com:8888/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=gateway&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+  >this link</link>.</para>
+
+  <para>SP initiated SSO can be initiated by browsing to <link xlink:show="new"
+  xlink:href="http://demo.forgerock.com:8080/wordpress/"
+  >http://demo.forgerock.com:8080/wordpress/</link> and clicking the login link,
+  or by clicking on <link xlink:show="new"
+  xlink:href="http://demo.forgerock.com:8080/saml/SPInitiatedSSO?metaAlias=/sp&amp;idpEntityID=http://www.idp.com:8888/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+  >this link</link>.</para>
+
+  <para>To understand what is happening behind the scenes, take a look at
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. The HandlerServlet
+  is no longer the entry point to OpenIG processing. If you look for the
+  servletObject at the end of the file you see the HandlerServlet has been
+  replaced by the DispatchServlet. The DispatchServlet provides an internal
+  routing mechanism based on the incoming URI. The DispatchServlet looks at
+  the incoming URI and dispatches to the FederationServlet when the SAML URI
+  is found, otherwise it dispatches to the HandlerServlet as in the previous
+  sample. This allows the FederationServlet to process the incoming assertion,
+  set the attributes from the assertion in the HTTPSession, which then allows
+  the normal chain of filter processing, through the HandlerServlet, to pick up
+  the credentials and log the user into the target application.</para>
+ </section>
+</chapter>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-customizing'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Customizing OpenIG</title>
+
+ <para>OpenIG includes a complete, stable <link xlink:show="new"
+ xlink:href="http://openig.forgerock.org/apidocs/index.html">application
+ programming interface</link>, designed to allow you to customize OpenIG
+ as required. Customizing OpenIG can be necessary if you need to perform
+ complex server interactions or intensive data transformations, and stock
+ handlers, filters and <link xlink:href="reference#Expressions"
+ xlink:role="http://docbook.org/xlink/role/olink">expressions</link> provided
+ by the gateway are too basic to meet the task.</para>
+
+ <section xml:id="extension-points">
+  <title>Key Extension Points</title>
+
+  <para>The two primary extension points are the interfaces: <link
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html"
+  xlink:show="new">Filter</link> (for processing a request and/or response en
+  route) and <link
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/Handler.html"
+  xlink:show="new">Handler</link> (for generating responses from requests).
+  These interfaces are similar to the Java Enterprise Edition
+  <literal>Filter</literal> and <literal>Servlet</literal> interfaces, with
+  some differences in the semantics of messages. While you can simply implement
+  these interfaces, there are also included convenience classes: <link
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/GenericFilter.html"
+  xlink:show="new">GenericFilter</link> and <link
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/GenericHandler.html"
+  xlink:show="new">GenericHandler</link> that you can use if you intend to make
+  your extensions configurable through the OpenIG configuration
+  resource.</para>
+
+  <para>OpenIG also allows standard Java Enterprise Edition servlets and
+  servlet filters to be embedded in the gateway, with initialization parameters
+  supplied through through the OpenIG configuration resource.</para>
+ </section>
+
+ <section xml:id="custom-filter">
+  <title>Implementing a Filter</title>
+
+  <para>The <literal>Filter</literal> interface exposes a <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
+  >filter</link> method, which takes an <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html"
+  >Exchange</link> object and the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
+  >Chain</link> of remaining filters and handler to dispatch to. Initially,
+  <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#request"
+  >exchange.request</link> contains the request to be filtered. To pass the
+  request to the next filter or handler in the chain, the filter calls
+  <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
+  >chain.handle(exchange)</link>. After this call, <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
+  >exchange.response</link> contains the response that can be filtered.</para>
+
+  <para>A filter might elect not to pass the request to the next filter or
+  handler, and instead handle the request itself. It can achieve this by
+  merely avoiding a call to <literal>chain.handle(exchange)</literal> and
+  creating its own response object in the exchange. The filter is also at
+  liberty to replace a response with another of its own. A filter can exist in
+  more than one chain, therefore should make no assumptions or correlations
+  using the chain it is supplied. The only valid use of a chain by a filter
+  is to call its <literal>handle</literal> method to dispatch the exchange to
+  the rest of the chain.</para>
+
+  <note>
+   <para>If an existing response exists in the exchange object and the filter
+   intends to replace it with its own, it must first check to see if the
+   existing response has an <link xlink:show="new"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Message.html#entity"
+   >entity</link>, and if it does, must call its <link xlink:show="new"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/io/BranchingInputStream.html#close()"
+   >close</link> method in order to signal that the processing of the response
+   from a remote server is complete.</para>
+  </note>
+ </section>
+
+ <section xml:id="custom-handler">
+  <title>Implementing a Handler</title>
+
+  <para>The <literal>Handler</literal> interface exposes a <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
+  >handle</link> method, which takes an <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
+  >Exchange</link> object. It processes the request in
+  <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#request"
+  >exchange.request</link> and produces a response in <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
+  >exchange.response</link>. A handler can elect to dispatch the exchange to
+  another handler or chain.</para>
+
+  <note>
+   <para>If an existing response exists in the exchange object and the filter
+   intends to replace it with its own, it must first check to see if the
+   existing response has an <link xlink:show="new"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Message.html#entity"
+   >entity</link>, and if it does, must call its <link xlink:show="new"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/io/BranchingInputStream.html#close()"
+   >close</link> method in order to signal that the processing of the response
+   from a remote server is complete.</para>
+  </note>
+ </section>
+
+ <section xml:id="custom-heap-config">
+  <title>Heap Object Configuration</title>
+
+  <para>Objects are added to the heap and supplied with configuration artifacts
+  at initialization time. To be integrated with the configuration, a class must
+  have an accompanying implementation of the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/Heaplet.html"
+  >Heaplet</link> interface. The easiest and most common way of exposing the
+  heaplet is to extend the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/NestedHeaplet.html"
+  >NestedHeaplet</link> class in a nested class in the class you want to create
+  and initialize and implementing its <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/GenericHeaplet.html#create()"
+  >create</link> method.</para>
+
+  <para>Within the <literal>create</literal> method, you can access the
+  object's configuration through the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/GenericHeaplet.html#config"
+  >config</link> field.</para>
+ </section>
+
+ <section xml:id="custom-servlets-filters">
+  <title>Including Servlets and Servlet Filters</title>
+
+  <para>A servlet or servlet filter can be added as a heap object by including
+  it in the classpath, and identifying it in the OpenIG heap configuration as
+  an <link xlink:href="reference#Servlet"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >javax.servlet.http.HttpServlet</link> or <link
+  xlink:href="reference#ServletFilter"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >javax.servlet.Filter</link> type, providing any appropriate initialization
+  parameters. A servlet can be dispatched directly by the <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/gateway/GatewayServlet.html"
+  >gateway servlet</link>, and servlets and filters can be flexibly dispatched
+  to through a <link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/DispatchServlet.html"
+  >DispatchServlet</link>.</para>
+ </section>
+
+ <section xml:id="custom-sample-filter">
+  <title>Sample Filter</title>
+
+  <para>The following sample filter sets an arbitrary header in the incoming
+  request and outgoing response.</para>
+
+  <programlisting language="java">package com.example.filter;
+
+// Java Standard Edition
+import java.io.IOException;
+
+// OpenIG Core Library
+import org.forgerock.openig.filter.Chain;
+import org.forgerock.openig.filter.GenericFilter;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.model.ModelException;
+
+public class HelloWorldFilter extends GenericFilter {
+
+    public String name;
+    public String value;
+
+    @Override
+    public void filter(Exchange exchange, Chain chain)
+            throws HandlerException, IOException {
+        exchange.request.headers.put(name, value); // set header in request
+        chain.handle(exchange); // pass to remaining filters &amp; handler in chain
+        exchange.response.headers.put(name, value); // set header in response
+    }
+
+    public static class Heaplet extends NestedHeaplet {
+
+        @Override
+        public Object create() throws HeapException, ModelException {
+            HelloWorldFilter filter = new HelloWorldFilter();
+            filter.name = config.get("name").required().asString(); // required
+            filter.value = config.get("value").required().asString(); // req'd
+            return filter;
+        }
+    }
+}</programlisting>
+
+  <para>The corresponding heap object configuration is as follows.</para>
+
+  <programlisting language="javascript">{
+     "name": "HelloWorldFilter",
+     "type": "com.example.filter.HelloWorldFilter",
+     "config": {
+         "name": "X-Hello",
+         "value": "World" 
+     }
+}</programlisting>
+ </section>
+</chapter>
