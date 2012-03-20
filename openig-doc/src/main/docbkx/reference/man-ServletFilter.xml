@@ -24,7 +24,7 @@
   !      Portions Copyright 2012 ForgeRock AS
   !    
 -->
-<refentry xml:id='Servlet-Filter'
+<refentry xml:id='ServletFilter'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -32,10 +32,10 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>Servlet Filter</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>ServletFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>Servlet Filter</refname>
+  <refname>ServletFilter</refname>
   <refpurpose>create stock servlet filter in heap environment</refpurpose>
  </refnamediv>
  <refsect1>

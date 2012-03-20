@@ -93,7 +93,7 @@
   <xinclude:include href="man-DispatchServlet.xml" />
   <xinclude:include href="man-HandlerServlet.xml" />
   <xinclude:include href="man-Servlet.xml" />
-  <xinclude:include href="man-Servlet-Filter.xml" />
+  <xinclude:include href="man-ServletFilter.xml" />
  </reference>
 
  <reference>
