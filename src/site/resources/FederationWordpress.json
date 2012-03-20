@@ -1,0 +1,111 @@
+{
+  "heap": {
+    "objects": [
+    {
+        "name": "LogSink",
+        "comment": "Default sink for logging information.",
+        "type": "ConsoleLogSink",
+        "config": {
+            "level": "DEBUG",
+        }
+    },
+    {
+        "name": "DispatchServlet",
+        "type": "DispatchServlet",
+        "config": {
+            "bindings": [
+                {
+                    "pattern":"^/saml",
+                    "object":"FederationServlet"
+                },
+                {
+                    "pattern":"",
+                    "object":"HandlerServlet"
+                }
+            ]
+        }
+    },
+    {
+        "name": "FederationServlet",
+        "type": "org.forgerock.openig.saml.FederationServlet",
+        "config": {
+            "assertionMapping": {
+                "userName":"mail",
+                "password":"employeenumber"
+            },
+            "subjectMapping":"subjectName",
+            "redirectURI":"/wordpress/wp-admin",
+            "logoutURI":"/wordpress/wp-login.php?action=logout"
+         }
+    },
+    {
+        "name": "HandlerServlet",
+        "type": "HandlerServlet",
+        "config": {
+            "handler": "DispatchHandler",
+            "baseURI":"http://109.73.67.52:8080"
+        }
+    },
+    {
+        "name": "DispatchHandler",
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${exchange.request.uri.path != '/wordpress/wp-login.php'}"
+                    "handler": "ClientHandler",
+                },
+                {
+                    "condition": "${empty exchange.session.userName}",
+                    "handler": "SPInitiatedSSORedirectHandler",
+                },
+                {
+                    "handler": "LoginChain",
+                },
+            ]
+        }
+    },
+    {
+        "name": "SPInitiatedSSORedirectHandler",
+           "type": "StaticResponseHandler",
+           "config": {
+               "status": 302,
+               "reason": "Found",
+               "headers": {
+                   "Location": ["http://demo.forgerock.com:8080/saml/SPInitiatedSSO"]
+               }
+           }
+    },
+    {
+        "name": "LoginChain",
+        "type": "Chain",
+        "config": {
+            "filters": ["LoginRequestFilter"],
+            "handler": "ClientHandler"
+        }
+    },
+    {
+        "name": "LoginRequestFilter",
+        "type": "StaticRequestFilter",
+        "config": {
+            "method": "POST",
+            "uri": "http://109.73.67.52:8080/wordpress/wp-login.php",
+            "form": {
+                "log": ["${exchange.session.userName}"],
+                "pwd": ["${exchange.session.password}"],
+                "rememberme": ["forever"],
+                "redirect_to" : ["http://demo.forgerock.com:8080/wordpress/wp-admin/"],
+                "testcookie": ["1"]
+            }
+        }
+    }, 
+    {
+        "name": "ClientHandler",
+        "type": "ClientHandler",
+        "config": {
+        }
+    },
+    ]
+  },
+  "servletObject": "DispatchServlet",
+}

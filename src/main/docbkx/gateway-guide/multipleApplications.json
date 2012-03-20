@@ -14,14 +14,14 @@
         "config": {
             "bindings": [   
                 {                       
-                    "condition": "${exchange.request.uri.host == 'portal.apexidsamples.com'}",
+                    "condition": "${exchange.request.uri.host == 'demo.forgerock.com'}",
                     "handler": "WordPressLoginChain",
-                    "baseURI":"http://173.230.156.194:8080",
+                    "baseURI":"http://109.73.67.52:8080",
                 },  
                 {                       
-                    "condition": "${exchange.request.uri.host == 'wiki.apexidsamples.com'}",
+                    "condition": "${exchange.request.uri.host == 'wikis.forgerock.com'}",
                     "handler": "MediaWikiLoginChain",
-                    "baseURI":"http://173.230.156.194:8181"
+                    "baseURI":"http://109.73.67.52:8181"
                 }
             ]   
         }   
