@@ -163,7 +163,7 @@
   points to the IP address of the host running OpenIG. If you are using
   <filename>/etc/hosts</filename> be sure to check that the naming services
   for your host check checking files before DNS. On UNIX systems this is
-  configured in <filename>/etc/nsswitch.conf</filename>. Assuming the Gateway
+  configured in <filename>/etc/nsswitch.conf</filename>. Assuming OpenIG
   is running on 10.0.1.1, the <filename>/etc/hosts</filename> entry should be
   the following:</para>
 
@@ -185,7 +185,7 @@ PING demo.forgerock.com (10.0.1.1): 56 data bytes
  </section>
 
  <section>
-  <title>Configuring the Gateway</title>
+  <title>Configuring OpenIG &amp; Trying It Out</title>
 
   <para>For the remainder of this document, <literal>$HOME</literal> refers to
   the location where you unzipped your sample configuration files.</para>

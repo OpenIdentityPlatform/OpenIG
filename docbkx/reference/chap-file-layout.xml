@@ -32,7 +32,7 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>File Layout</title>
  <indexterm><primary>File layout</primary></indexterm>
- <para>This chapter describes files installed with OpenIG.</para>
+ <para>This chapter describes files provided with OpenIG.</para>
 
  <variablelist>
   <para>TODO</para>
