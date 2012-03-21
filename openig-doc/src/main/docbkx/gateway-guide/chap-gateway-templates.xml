@@ -184,9 +184,9 @@
   <para>A sample template used to log a user into Microsoft Online Outlook Web
   Access. This template shows how you would use the Gateway and the OpenAM
   password capture feature to integrate with OWA. You can follow the
-  <link xlink:href="http://resources.apexidentity.com/projects/docs/wiki/UseCase6"
-  xlink:show="new">OpenAM password capture and replay</link> tutorial and
-  substitute this template.</para> <!-- FIXME: link to tutorial -->
+  <link xlink:href="gateway-guide#chap-password-capture-replay-tutorial"
+  xlink:role="http://docbook.org/xlink/role/olink">OpenAM Password Capture
+  &amp; Replay Tutorial</link> tutorial and substitute this template.</para>
   
   <programlisting language="javascript"
   ><xinclude:include parse="text" href="OWAOnline.json" /></programlisting>

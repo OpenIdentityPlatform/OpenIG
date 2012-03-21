@@ -32,5 +32,176 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial on Integration with Access Management</title>
 
- <para>TODO</para>
+ <itemizedlist>
+  <para>This tutorial walks you through OpenIG integration with an Access
+  Management product. For this tutorial we have OpenAM, OpenIG on Tomcat
+  protected by an OpenAM policy agent, and MediaWiki as the target application,
+  all hosted on our ForgeRock sample site. When you have finished this tutorial
+  you should understand:</para>
+
+  <listitem>
+   <para>How OpenIG integrates with OpenAM and other Access Management
+   products.</para>
+  </listitem>
+  <listitem>
+   <para>The role of the Access Management policy agent with OpenIG.</para>
+  </listitem>
+  <listitem>
+   <para>How OpenIG integrates target applications in Access Management
+   deployments.</para>
+  </listitem>
+ </itemizedlist>
+
+ <section>
+  <title>Detailed Flow</title>
+
+  <para>The figure below illustrates the flow of requests for a user logging
+  into OpenAM, and then being automatically logged into MediaWiki.</para>
+
+  <mediaobject>
+   <imageobject>
+    <imagedata fileref="images/am-integration-tutorial.png" format="PNG" />
+   </imageobject>
+   <textobject>
+    <para>This diagram shows the flow of requests during user login.</para>
+   </textobject>
+  </mediaobject>
+
+  <orderedlist>
+   <listitem>
+    <para>User authenticates to OpenAM establishing a session.</para>
+   </listitem>
+   <listitem>
+    <para>User browses to a MediWiki page requiring authentication.</para>
+   </listitem>
+   <listitem>
+    <para>OpenAM Agent intercepts the request, validates the user session,
+    and fetches user's email address and password to populate in headers.</para>
+   </listitem>
+   <listitem>
+    <para>Agent passes the original request with populated headers to
+    OpenIG.</para>
+   </listitem>
+   <listitem>
+    <para>OpenIG inspects the request, finds no login page, sends the request
+    to MediaWiki.</para>
+   </listitem>
+   <listitem>
+    <para>MediaWiki finds no application session and returns its login
+    page.</para>
+   </listitem>
+   <listitem>
+    <para>OpenIG intercepts, sees the login page, creates the login form with
+    the user name and password from the headers inserted by the agent.</para>
+   </listitem>
+   <listitem>
+    <para>MediaWiki validates the login form, returns an application session
+    and the user's home page.</para>
+   </listitem>
+   <listitem>
+    <para>MediaWiki home page returned to the user.</para>
+   </listitem>
+  </orderedlist>
+ </section>
+
+ <section>
+  <title>Setup Summary</title>
+
+  <itemizedlist>
+   <para>All of the following components of this tutorial are hosted at
+   demo.forgerock.com.</para>
+
+   <listitem>
+    <para>OpenIG on Tomcat at <link xlink:href="http://demo.forgerock.com:8585/"
+    xlink:show="new">http://demo.forgerock.com:8585/</link></para>
+   </listitem>
+   <listitem>
+    <para>OpenAM Policy Agent on Tomcat protecting OpenIG in SSO only mode
+    configured to pass the user name and password recorded from the OpenAM
+    login as headers</para>
+   </listitem>
+   <listitem>
+    <para>OpenAM at <link xlink:href="http://demo.forgerock.com:8888/openam/"
+    xlink:show="new">http://demo.forgerock.com:8888/openam/</link></para>
+   </listitem>
+   <listitem>
+    <para>MediaWiki at <link
+    xlink:href="http://demo.forgerock.com:8181/mediawiki/"
+    xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link></para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>OpenAM Policy Agent Configuration</para>
+
+   <listitem>
+    <para>Installed on OpenIG host at <link
+    xlink:href="http://demo.forgerock.com:8585/"
+    xlink:show="new">http://demo.forgerock.com:8585/</link></para>
+   </listitem>
+   <listitem>
+    <para>Agent filter mode set to <literal>SSO_ONLY</literal></para>
+   </listitem>
+   <listitem>
+    <para>Session Attributes Processing set to
+    <literal>HTTP_HEADER</literal></para>
+   </listitem>
+   <listitem>
+    <para>Session Attribute Mapping contains
+    <literal>UserToken=username</literal> and
+    <literal>PassWordToken=password</literal></para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>OpenAM Configuration</para>
+
+   <listitem>
+    <para>Standard installation using internal OpenDJ for the user store</para>
+   </listitem>
+   <listitem>
+    <para>Sample username and passwords: <literal>george/bosco</literal> and
+    <literal>kramer/newman</literal></para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>OpenAM Configuration</para>
+
+   <listitem>
+    <para>Proxying to <link
+    xlink:href="http://demo.forgerock.com:8181/mediawiki/"
+    xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link></para>
+   </listitem>
+   <listitem>
+    <para><link xlink:show="new"
+    xlink:href="http://openig.forgerock.org/AMMediaWikiLogin.json"
+    >AMMediaWikiLogin.json</link> configuration file</para>
+   </listitem>
+   <listitem>
+    <para>Configured to intercept the MediaWiki login page</para>
+   </listitem>
+   <listitem>
+    <para>User name and password for MediaWiki login taken from incoming
+    user name and password HTTP headers</para>
+   </listitem>
+  </itemizedlist>
+ </section>
+
+ <section>
+  <title>Logging In</title>
+
+  <para>Browse directly to <link
+  xlink:href="http://demo.forgerock.com:8181/mediawiki/"
+  xlink:show="new">MediaWiki</link> and click the login link. You should be
+  presented with the MediaWiki login page. This is because you are directly
+  accessing the application. Now browse to <link
+  xlink:href="http://demo.forgerock.com:8585/mediawiki/"
+  xlink:show="new">OpenIG</link> and click the login link. This time you should
+  be redirected to the OpenAM login page. You can login with the user name
+  <literal>george</literal> and password <literal>bosco</literal>. Once logged
+  in, the policy agent protecting OpenIG allows the request through and passes
+  the user name and password as headers to OpenIG. OpenIG creates and POSTs the
+  MediaWiki login form using the credentials from the headers.</para>
+ </section>
 </chapter>

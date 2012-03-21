@@ -98,7 +98,7 @@ fedlet.cot                     idp.xml                 sp.xm</screen>
  </section>
 
  <section xml:id="fed-tutorial-testing">
-  <title>Testing</title>
+  <title>Trying It Out</title>
 
   <para>IDP initiated SSO can be initiated by browsing <link xlink:show="new"
   xlink:href="http://www.idp.com:8888/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=gateway&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
