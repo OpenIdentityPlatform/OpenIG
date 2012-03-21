@@ -1,0 +1,96 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler",
+                    "baseURI":"http://74.208.127.116:8080"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.path == '/wordpress/wp-login.php'}",
+                            "handler": "LoginChain",
+                        },
+                        {
+                            "handler": "OutgoingChain",
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": ["CryptoHeaderFilter","LoginRequestFilter"],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {   
+                "name": "CryptoHeaderFilter",
+                "type": "CryptoHeaderFilter",
+                "config": {
+                    "messageType":"REQUEST",
+                    "operationType":"DECRYPT",
+                    "algorithm":"DES/ECB/NoPadding",
+                    "key":"DESKEY",
+                    "keyType":"DES",
+                    "charSet":"utf-8",
+                    "headers": ["replaypassword"],
+                },
+            },
+            {
+                "name": "LoginRequestFilter",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://74.208.127.116:8080/wordpress/wp-login.php",
+                    "form": {
+                        "log": ["${exchange.request.headers['username'][0]}"],
+                        "pwd": ["${exchange.request.headers['replaypassword'][0]}"],,
+                        "rememberme": ["forever"],
+                        "redirect_to" : ["http://demo.forgerock.com:8080/wordpress/wp-admin/"],
+                        "testcookie": ["1"]
+                    }
+                }
+            }, 
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": ["HeaderFilter","CaptureFilter"],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "HeaderFilter",
+                "type": "HeaderFilter",
+                "config": {
+                    "messageType":"REQUEST",
+                    "remove": ["replaypassword","username"],
+                 }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log",
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {
+                }
+            },
+        ]
+    },
+    "servletObject": "HandlerServlet",
+}
