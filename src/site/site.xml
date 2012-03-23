@@ -53,8 +53,12 @@
    <item name="Partners" href="http://forgerock.com/partners.html" />
   </menu>
   
-  <menu name="Core Documentation">
-  <item name="All Docs" href="http://resources.apexidentity.com" />
+  <menu name="Docs in progress">
+   <item name="All Formats" href="docs.html" />
+   <item name="Release Notes" href="./doc/release-notes/index.html" />
+   <item name="Guide to OpenIG" href="./doc/gateway-guide/index.html" />
+   <item name="Config Reference" href="./doc/reference/index.html" />
+   <item name="Javadoc" href="./apidocs/index.html" />
   </menu>
 
   <menu name="OpenIG Development">
