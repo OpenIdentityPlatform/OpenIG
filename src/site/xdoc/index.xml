@@ -34,7 +34,11 @@
  <body>
   <section name="About OpenIG">
    <p>
-   The ForgeRock Identity Gateway is a high-performance reverse proxy server with specialized session management and credential replay functionality. The Identity Gateway supports OpenAM or any existing web access management system. With either method, there is no need to modify the target application or the container that it runs in.
+   The ForgeRock Identity Gateway is a high-performance reverse proxy server
+   with specialized session management and credential replay functionality.
+   The Identity Gateway supports OpenAM or any existing web access management
+   system. With either method, there is no need to modify the target
+   application or the container that it runs in.
     </p>
   </section>
   <section name="Welcome Users">
@@ -49,8 +53,7 @@
     <li><a
     href="https://idp.forgerock.org/openam/UI/Login?service=register">Register
     to join the community</a>.</li>
-    <li>Read the <a
-    href="http://resources.apexidentity.com/">OpenIG documentation</a>.</li>
+    <li>Read the <a href="docs.html">OpenIG documentation</a>.</li>
    </ul>
    <p>Looking forward to hearing from you.</p>
   </section>
@@ -82,4 +85,3 @@
   </section>
  </body>
 </document>
-
