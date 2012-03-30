@@ -236,7 +236,7 @@ $ jetty.sh restart</screen>
   next step is to configure OpenIG to intercept the login page, and POST the
   login form to the Portal.</para>
 
-  <screen>$ cp $HOME/apexid-sample-configs/WordPressLogin.json
+  <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
  $HOME/.ForgeRock/Gateway/config.json
 $ jetty.sh restart</screen>
 
