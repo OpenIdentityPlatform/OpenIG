@@ -47,7 +47,7 @@
   credentials. OpenIG makes the assumption this user is logging into the
   sample application. In a real deployment OpenIG would look up the user
   credentials using its own session, a SAML2 assertion, or a header from an
-  Access Management agent. Use cases that follow show examples of these types
+  OpenAM policy agent. Use cases that follow show examples of these types
   of deployments.</para>
 
   <mediaobject>
@@ -91,11 +91,11 @@
  </section>
 
  <section xml:id="am-integration">
-  <title>Access Management Integration</title>
+  <title>OpenAM Integration</title>
 
-  <para>The figure below illustrates OpenIG integrated into an Access
-  Management deployment. In this deployment OpenIG is running in a container
-  that is protected by an Access Management agent. The agent is configured to
+  <para>The figure below illustrates OpenIG integrated into an OpenAM
+  deployment. In this deployment OpenIG is running in a container
+  that is protected by an OpenAM policy agent. The agent is configured to
   forward a header, with the subject (user) of the single sign-on session, to
   OpenIG. OpenIG then uses the subject as the login credentials, or uses the
   subject as a reference to look up the login credentials in a database or
@@ -109,7 +109,7 @@
    </imageobject>
    <textobject>
     <para>This image diagrams eight steps comprising a login integrated
-    with an Access Management solution.</para>
+    with OpenAM.</para>
    </textobject>
   </mediaobject>
 
@@ -118,15 +118,15 @@
     <para>User browses to the Portal.</para>
    </listitem>
    <listitem>
-    <para>Access Manager (AM) plugin intercepts the request, finds no valid
-    AM session, redirects the user to the AM login pages.</para>
+    <para>OpenAM plugin intercepts the request, finds no valid
+    OpenAM session, redirects the user to the OpenAM login pages.</para>
    </listitem>
    <listitem>
-    <para>AM logs in the user and redirects back to the Portal.</para>
+    <para>OpenAM logs in the user and redirects back to the Portal.</para>
    </listitem>
    <listitem>
-    <para>AM plugin finds a valid session, request goes through, OpenIG passes
-    the request through to the Portal.
+    <para>OpenAM plugin finds a valid session, request goes through, OpenIG
+    passes the request through to the Portal.
     </para>
    </listitem>
    <listitem>
@@ -157,12 +157,11 @@
   their core application. The companies to which they outsource are refusing
   proprietary means of authentication and demanding the widely accepted SAML2
   standard. myHR is not in a position to modify their application to support
-  SAML2 nor do they have the time or money to purchase, integrate, and deploy
-  an Access Management solution. With OpenIG Federation Gateway, myHR deploys
-  OpenIG in front of their HR application, configures it as a SAML2 endpoint
-  for SP initiated SSO, and configures it to log users into the HR application
-  upon successful verification of the SAML2 assertion from their
-  customers.</para>
+  SAML2 nor do they have the time or money to integrate and deploy all of
+  OpenAM. With OpenIG Federation Gateway, myHR deploys OpenIG in front of their
+  HR application, configures it as a SAML2 endpoint for SP initiated SSO,
+  and configures it to log users into the HR application upon successful
+  verification of the SAML2 assertion from their customers.</para>
 
   <mediaobject>
    <imageobject>
@@ -260,7 +259,7 @@
   <title>Standards Based SAML2 Agent</title>
 
   <para>The figure below illustrates the Federation Gateway as a standards
-  based replacement for proprietary Access Management agents.</para>
+  based replacement for OpenAM policy agents.</para>
 
   <mediaobject>
    <imageobject>
@@ -286,16 +285,16 @@
    </listitem>
    <listitem>
     <para>Federation Gateway intercepts the redirect, finds a match for the
-    login page, issues an SP initiated SSO SAML2 request to Company.com's
-    Access Manager.</para>
+    login page, issues an SP initiated SSO SAML2 request to OpenAM at
+    Company.com.</para>
    </listitem>
    <listitem>
-    <para>Company.com's Access Manager receives the SAML2 AuthN and
-    authenticates the user.</para>
+    <para>OpenAM at Company.com receives the SAML2 AuthN and authenticates
+    the user.</para>
    </listitem>
    <listitem>
-    <para>After authenticating the user the Access Manager sends a SAML2 POST
-    to OpenIG.</para>
+    <para>After authenticating the user OpenAM sends a SAML2 POST to
+    OpenIG.</para>
    </listitem>
    <listitem>
     <para>Federation Gateway validates the assertion and makes the assertion

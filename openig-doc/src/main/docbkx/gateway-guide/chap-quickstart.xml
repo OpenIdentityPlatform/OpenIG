@@ -206,7 +206,7 @@
   of the user. Since this is just a sample, the credentials for the user are
   hard coded in the gateway configuration file. In a real deployment, the
   credentials may come from a database, directory, flat file, HTTP headers,
-  SAML assertion, an Access Management agent, or the gateway itself in simple
+  SAML assertion, an OpenAM policy agent, or the gateway itself in simple
   single sign-on mode.</para>
  </section>
 

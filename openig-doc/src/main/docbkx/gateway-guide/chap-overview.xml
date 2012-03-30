@@ -39,22 +39,22 @@
   <title>Extend SSO To Any Application</title>
 
   <para>In today's enterprise, more than 30% of web applications are
-  incompatible with vendor web access management solutions. That is, web
-  access management (WAM) products do not provide agents for protecting the
-  web application, or the application is a legacy solution that does not
-  follow standard protocols for single sign-on. This limits the return on the
-  enterprise WAM investment and constrains what types of web applications can
-  be protected.</para>
+  incompatible with legacy web access management software. That is, unlike
+  OpenAM with OpenIG, most web access management (WAM) products lack the agent
+  to protect the web applications, or the application is a legacy solution that
+  does not follow standard protocols for single sign-on. This limits the return
+  on the enterprise WAM investment and constrains what types of web applications
+  can be protected.</para>
 
-  <para>ForgeRock Open Identity Gateway addresses this problem by extending
-  vendor WAM solutions to include <emphasis>all</emphasis> web applications.
-  Access management deployments can now be extended to be inclusive of those
-  applications that do not integrate with your WAM solution. ForgeRock Open
-  Identity Gateway integrates, out-of-the-box, with all management solutions.
-  Most importantly, enterprises can on-board any web application without ever
-  modifying or touching the target application again, significantly reducing
-  the development and quality assurance required to protect web
-  applications.</para>
+  <para>ForgeRock's Open Identity Gateway addresses this problem by extending
+  access management to encompass <emphasis>all</emphasis> web applications.
+  With OpenIG, OpenAM deployments can now be extended to be inclusive of those
+  applications that do not integrate with policy agents alone. In addition,
+  ForgeRock Open Identity Gateway interoperates, out-of-the-box, with all
+  management solutions. Most importantly, your organization can on-board any
+  web application without ever modifying or touching the target application
+  again, significantly reducing the development and quality assurance required
+  to protect web applications.</para>
  </section>
 
  <section xml:id="federate-any-app">
@@ -65,10 +65,10 @@
   to a standard for exposing their applications to their customers see
   increased cost and maintenance due to the complexity of one-off proprietary
   integrations. They may also see a loss of business to those customers
-  requiring a Federation standard for authentication. Purchasing a full-blown
-  Access Management product just to Federate a few applications is far too
-  complex and costly, and building out their own solution by modifying their
-  applications is just not possible.</para>
+  requiring a Federation standard for authentication. Sometimes, deploying all
+  of OpenAM just to federate a few applications is too complex and costly, and
+  building out their own solution by modifying their applications is just not
+  possible.</para>
 
   <mediaobject>
    <imageobject>
@@ -88,24 +88,23 @@
  <section xml:id="standards-based-policy-enforcement">
   <title>Implement Standards Based Policy Enforcement</title>
 
-  <para>In order to provide SSO, Access Management solutions require their own
-  proprietary policy enforcement points (plugins) for each application. These
-  proprietary enforcement points lock customers into a single Access Management
-  solution, proprietary APIs and protocols. What customers need is an Access
-  Management independent policy enforcement point that is built on the SAML2
-  standard.</para>
+  <para>In order to provide SSO, OpenAM policy enforcement points, the policy
+  agents, have traditionally functioned as plugins for each application. The
+  policy agents however use OpenAM specific APIs and protocols. In contrast,
+  you can roll out OpenIG as an independent policy enforcement point that is
+  built on the SAML2 standard.</para>
 
   <mediaobject>
    <imageobject>
     <imagedata fileref="images/standards-based-agent.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>OpenIG integrates well as a policy enforcement point for other
-    web access management solutions, such as OpenAM.</para>
+    <para>OpenIG integrates well as a policy enforcement point with OpenAM and
+    with other standards based solutions.</para>
    </textobject>
   </mediaobject>
 
-  <para>OpenIG Federation Gateway can replace proprietary policy enforcement
-  points with a standards based SAML2 compliant enforcement point.</para>
+  <para>OpenIG Federation Gateway can replace policy agents with a standards
+  based SAML2 compliant enforcement point.</para>
  </section>
 </chapter>

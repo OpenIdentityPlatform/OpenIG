@@ -30,25 +30,22 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Tutorial on Integration with Access Management</title>
+ <title>Tutorial On Integration With OpenAM</title>
 
  <itemizedlist>
-  <para>This tutorial walks you through OpenIG integration with an Access
-  Management product. For this tutorial we have OpenAM, OpenIG on Tomcat
-  protected by an OpenAM policy agent, and MediaWiki as the target application,
-  all hosted on our ForgeRock sample site. When you have finished this tutorial
-  you should understand:</para>
+  <para>This tutorial walks you through OpenIG integration with OpenAM. This
+  tutorial involves OpenAM, OpenIG on Tomcat protected by an OpenAM policy
+  agent, and MediaWiki as the target application, all hosted on our ForgeRock
+  demo site. When you have finished this tutorial you should understand:</para>
 
   <listitem>
-   <para>How OpenIG integrates with OpenAM and other Access Management
-   products.</para>
+   <para>How OpenIG integrates with OpenAM</para>
   </listitem>
   <listitem>
-   <para>The role of the Access Management policy agent with OpenIG.</para>
+   <para>How an OpenAM policy agent can work with OpenIG</para>
   </listitem>
   <listitem>
-   <para>How OpenIG integrates target applications in Access Management
-   deployments.</para>
+   <para>How OpenIG integrates target applications in OpenAM deployments</para>
   </listitem>
  </itemizedlist>
 
