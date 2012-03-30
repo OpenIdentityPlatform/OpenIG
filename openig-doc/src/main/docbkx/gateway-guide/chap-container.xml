@@ -124,10 +124,10 @@
    <para>Add a JNDI data source for your MySQL server and database in
    <filename>$TOMCAT_HOME/conf/context.xml</filename>.</para>
 
-   <screen>&lt;Resource name="jdbc/apex" auth="Container" type="javax.sql.DataSource"
+   <programlisting language="xml">&lt;Resource name="jdbc/apex" auth="Container" type="javax.sql.DataSource"
  maxActive="100" maxIdle="30" maxWait="10000"
  username="admin" password="11111111" driverClassName="com.mysql.jdbc.Driver"
- url="jdbc:mysql://localhost:3309/bitnami_drupal6"/&gt;</screen>
+ url="jdbc:mysql://localhost:3309/bitnami_drupal6"/&gt;</programlisting>
 
    <para>Add a resource reference to the data source in
    <filename>$TOMCAT_HOME/conf/web.xml</filename>.</para>
