@@ -196,13 +196,13 @@ PING demo.forgerock.com (10.0.1.1): 56 data bytes
   have the configuration files downloaded and installed.</para>
 
   <para>Copy <filename>WordPressProxyOnly.json</filename> to
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. By default, OpenIG
-  looks for <filename>$HOME/.ForgeRock/Gateway/config.json</filename> for its
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default, OpenIG
+  looks for <filename>$HOME/.ForgeRock/OpenIG/config.json</filename> for its
   configuration. You must restart the OpenIG container when making any change
   to the configuration file.</para>
 
   <screen>$ cp $HOME/forgerock-sample-configs/WordPressProxyOnly.json
- $HOME/.ForgeRock/Gateway/config.json
+ $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
   <para>To try out the first sample browse to <link xlink:show="new"
@@ -220,7 +220,7 @@ $ jetty.sh restart</screen>
   link.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. Look for the
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. Look for the
   HandlerServlet. This is the servlet entry point to OpenIG. The HandlerServlet
   passes the request off to another handler which may be a chain of filters
   and handlers. In the pure proxy case there is no special logic to execute so
@@ -237,7 +237,7 @@ $ jetty.sh restart</screen>
   login form to the Portal.</para>
 
   <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
- $HOME/.ForgeRock/Gateway/config.json
+ $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
   <para>As you changed the OpenIG configuration file, you must restart the
@@ -249,7 +249,7 @@ $ jetty.sh restart</screen>
   POSTed the request to the Portal.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. This time you
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. This time you
   notice the HandlerServlet is calling the DispatchHandler. The DispatchHandler
   has a condition which checks for the presence of
   <filename>wp-login.php</filename> (the login page) in the URI path. If the
@@ -284,7 +284,7 @@ $ jetty.sh restart</screen>
   <filename>forgerock-sample-configs/userfile</filename>.</para>
 
   <screen>$ cp $HOME/forgerock-sample-configs/WordPressLoginFile.json
- $HOME/.ForgeRock/Gateway/config.json
+ $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
   <para>After restarting the container, check that you can go to <link
@@ -301,7 +301,7 @@ $ jetty.sh restart</screen>
   either.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. For this sample,
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. For this sample,
   you added one additional filter to the LoginChain and made a slight
   modification to the LoginRequestFilter. Take a look at the LoginChain and you
   can see the filters attribute now has the value of
@@ -341,11 +341,11 @@ $ jetty.sh restart</screen>
   is <literal>email=george@seinfeld.com</literal>.</para>
 
   <screen>$ cp $HOME/forgerock-sample-configs/WordPressLoginSQL.json
- $HOME/.ForgeRock/Gateway/config.json
+ $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. For this sample, 
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. For this sample, 
   you replaced the FileAttributesFilter with the SqlAttributesFilter. The only
   difference between the filters is how they retrieve the attribute value pairs
   to set in the <link xlink:href="reference#Exchange"
