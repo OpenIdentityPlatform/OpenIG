@@ -135,13 +135,6 @@
   <xinclude:include href="man-TemporaryStorage.xml" />
  </reference>
 
-<!--
- <reference>
-  <title>Application Integration &amp; Provisioning</title>
-  <xinclude:include href="man-PBWorksLoginHandler.xml" />
- </reference>
--->
-
  <reference>
   <title>Expressions</title>
   <partintro>

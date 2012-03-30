@@ -106,8 +106,23 @@
  </refsect1>
  <refsect1>
   <title>Example</title>
+  <para>This example intercepts the response if it is equal to 200 and executes
+  the LoginRequestHandler. This filter might be used in a login flow where the
+  request for the login page must go through to the target, but the response
+  should be intercepted in order to send the login form to the application.
+  This is typical for scenarios where there is a hidden value or cookie
+  returned in the login page which must be sent in the login form:</para>
   <programlisting language="javascript">{
-TODO
+     "name": "SwitchFilter",
+     "type": "SwitchFilter",
+     "config": {
+         "onResponse": [
+             {
+                 "condition": "${exchange.response.status == 200}",
+                 "handler": "LoginRequestHandler" 
+             }
+         ]
+     }
 }</programlisting>
  </refsect1>
  <refsect1>
