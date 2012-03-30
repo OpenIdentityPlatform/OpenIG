@@ -92,12 +92,12 @@
    <step>
     <para>Copy the <filename>WordPressLogin.json</filename> gateway
     configuration file to
-    <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. By default,
+    <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default,
     OpenIG looks for <filename>config.json</filename> in the
-    <filename>$HOME/.ForgeRock/Gateway/</filename> directory.</para>
+    <filename>$HOME/.ForgeRock/OpenIG/</filename> directory.</para>
 
     <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
- $HOME/.ForgeRock/Gateway/config.json</screen>
+ $HOME/.ForgeRock/OpenIG/config.json</screen>
    </step>
 
    <step>
