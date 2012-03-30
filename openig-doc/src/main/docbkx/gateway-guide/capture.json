@@ -1,68 +1,69 @@
 {
-  "heap": {
-    "objects": [
-    {
-        "name": "HandlerServlet",
-        "comment": "Entry point that transforms Servlet request to handler request.",
-        "type": "HandlerServlet",
-        "config": {
-            "handler": "DispatchHandler",
-        }
-    },
-    {       
-        "name": "DispatchHandler",
-        "type": "DispatchHandler",
-        "config": {
-            "bindings": [   
-                {                       
-                    "condition": "${exchange.request.uri.scheme == 'http'}",
-                    "handler": "OutgoingChain",
-                    "baseURI":"http://TARGETIP"
-                },  
-                {                       
-                    "condition": "${exchange.request.uri.path == '/login'}",
-                    "handler": "LoginChain",
-                    "baseURI":"https://TARGETIP"
-                }, 
-                {                       
-                    "handler": "OutgoingChain",
-                    "baseURI":"https://TARGETIP"
-                }, 
-            ]   
-        }   
-    },
-    {
-        "name": "LoginChain",
-        "type": "Chain",
-        "config": {
-            "filters": [],
-            "handler": "OutgoingChain" 
-        }   
-    },
-    {
-        "name": "OutgoingChain",
-        "type": "Chain",
-        "config": {
-            "filters": ["CaptureFilter"],
-            "handler": "ClientHandler" 
-        }   
-    },
-    {   
-        "name": "CaptureFilter",
-        "type": "CaptureFilter",
-        "config": {
-            "captureEntity": false,
-            "file": "/tmp/gateway.log",
-        }       
-    },
-    {
-        "name": "ClientHandler",
-        "comment": "Responsible for sending all requests to remote servers.",
-        "type": "ClientHandler",
-        "config": {
+    "heap": {
+        "objects": [
+            {
+                "name": "HandlerServlet",
+                "comment": "Transforms Servlet request to handler request.",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.scheme == 'http'}",
+                            "handler": "OutgoingChain",
+                            "baseURI": "http://TARGETIP"
+                        },
+                        {
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": "LoginChain",
+                            "baseURI": "https://TARGETIP"
+                        },
+                        {
+                            "handler": "OutgoingChain",
+                            "baseURI": "https://TARGETIP"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "comment": "Sends all requests to remote servers.",
+                "type": "ClientHandler",
+                "config": {}
             }
-        }
-    ]
-  },
-  "servletObject": "HandlerServlet",
+        ]
+    },
+    "servletObject": "HandlerServlet"
 }
