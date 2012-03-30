@@ -172,8 +172,8 @@
      headers on both the HTTP request and the response. It can also be
      configured to parse and set header values in OpenIG context to allow
      filters access to the header attributes. This feature is used most
-     commonly when OpenIG is integrated with an Access Management solution
-     and being fronted by an agent.</para>
+     commonly when OpenIG is integrated with OpenAM and being fronted by a
+     policy agent.</para>
     </listitem>
     <listitem>
      <para><link xlink:href="reference#AssignmentFilter"
@@ -262,15 +262,14 @@
   <section>
    <title>Federation Service (Federation Gateway)</title>
 
-   <para>When the Federation Service is enabled, OpenIG is acting as the
+   <para>When the Federation Service is enabled, OpenIG acts as the
    Service Provider in a Circle of Trust with  a SAML2 compliant Identity
    Provider. The Federation service supports both IDP and SP initiated SAML2
    profiles. The Federation Gateway may be a Service Provider in the classic
    Federation use case where the IDP and SP are different companies or domains.
-   The OpenIG SP can also be a standards based replacement for a proprietary
-   Access Management policy agent for internal enterprise applications that
-   want to move away from proprietary agents and achieve Access Management
-   independence.</para>
+   The OpenIG SP can also be a standards based alternative to an OpenAM policy
+   agent for internal enterprise applications that want to move away from
+   installing agents with web and web application servers.</para>
   </section>
 
  </section>

@@ -167,10 +167,10 @@
  </section>
 
  <section xml:id="template-am-integration-headers">
-  <title>Access Management Integration With Headers</title>
+  <title>OpenAM Integration With Headers</title>
   <para>Logs the user into the target application using the headers passed down
-  from an Access Management agent. This template assumes the user name and
-  password are passed down by the Access Manager agent as headers. If the
+  from an OpenAM policy agent. This template assumes the user name and
+  password are passed down by the OpenAM policy agent as headers. If the
   header passed in contains only a user name or subject and requires a lookup to
   an external data source, you must add an attribute filter to the chain to
   retrieve the credentials.</para>
