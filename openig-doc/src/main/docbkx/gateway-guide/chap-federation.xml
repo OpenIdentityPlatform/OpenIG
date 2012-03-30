@@ -100,7 +100,7 @@
   in the home directory of the effective user running the web application
   container housing OpenIG. The home directory of this user is referred to as
   <filename>$HOME_DIR</filename> in this document. By default, the
-  Federation service looks in <filename>$HOME_DIR/.ForgeRock/Gateway/</filename>
+  Federation service looks in <filename>$HOME_DIR/.ForgeRock/OpenIG/</filename>
   for <filename>config.json</filename> and
   <filename>$HOME_DIR/.ForgeRock/SAML/</filename> for the Federation XML
   configuration.</para>
@@ -109,7 +109,7 @@
    <para>The following is a description of the files:</para>
 
    <varlistentry>
-    <term><filename>$HOME_DIR/.ForgeRock/Gateway/config.json</filename></term>
+    <term><filename>$HOME_DIR/.ForgeRock/OpenIG/config.json</filename></term>
     <listitem>
      <para>This is the core configuration file for OpenIG. You must configure
      both this file and the XML files specific to the Federation Service.

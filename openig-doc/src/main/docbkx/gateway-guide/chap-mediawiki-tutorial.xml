@@ -171,13 +171,13 @@
   >MediaWikiLogin.json</link> file.</para>
 
   <para>Copy <filename>MediaWikiLogin.json</filename> to
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. By default, OpenIG
-  looks for <filename>$HOME/.ForgeRock/Gateway/config.json</filename> for its
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default, OpenIG
+  looks for <filename>$HOME/.ForgeRock/OpenIG/config.json</filename> for its
   configuration. You must restart the OpenIG container when making any change
   to the configuration file.</para>
 
   <screen>$ cp $HOME/forgerock-sample-configs/MediaWikiLogin.json
- $HOME/.ForgeRock/Gateway/config.json
+ $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
   <para>To try out the first sample browse to <link xlink:show="new"
@@ -196,7 +196,7 @@ $ jetty.sh restart</screen>
   already created.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/Gateway/config.json</filename>. Look for the
+  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. Look for the
   HandlerServlet. This is the servlet entry point to OpenIG. The HandlerServlet
   passes the request off to another handler which may be a chain of filters
   and handlers. In the pure proxy case there is no special logic to execute so
