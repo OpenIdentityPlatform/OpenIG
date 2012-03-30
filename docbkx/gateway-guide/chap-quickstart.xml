@@ -96,7 +96,7 @@
     OpenIG looks for <filename>config.json</filename> in the
     <filename>$HOME/.ForgeRock/Gateway/</filename> directory.</para>
 
-    <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json \
+    <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
  $HOME/.ForgeRock/Gateway/config.json</screen>
    </step>
 

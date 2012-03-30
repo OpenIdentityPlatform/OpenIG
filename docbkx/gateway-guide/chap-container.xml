@@ -227,7 +227,7 @@
 
   <programlisting language="xml">&lt;Get name="sessionHandler"&gt;
     &lt;Get name="sessionManager"&gt;
-        &lt;Set name="sessionDomain"&gt;apexidentity.com&lt;Set&gt;
+        &lt;Set name="sessionDomain"&gt;example.com&lt;Set&gt;
     &lt;Get&gt;
 &lt;Get&gt;</programlisting>
 
