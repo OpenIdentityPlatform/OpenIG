@@ -29,7 +29,7 @@
     <version>2.1.0-SNAPSHOT</version>
     <name>OpenIG Project</name>
     <description>
-       The ForgeRock Identity Gateway is a high-performance reverse proxy server with
+       The Open Identity Gateway is a high-performance reverse proxy server with
        specialized session management and credential replay functionality.
     </description>
     <url>http://openig.forgerock.org</url>
