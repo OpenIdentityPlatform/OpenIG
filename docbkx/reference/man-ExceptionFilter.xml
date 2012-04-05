@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>ExceptionFilter</secondary>
+  </indexterm>
   <para>Catches any exceptions thrown during handling of a request. This allows
   friendlier error pages to be displayed than would otherwise be displayed by
   the container. Caught exceptions are logged with a log level of

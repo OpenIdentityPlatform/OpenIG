@@ -32,6 +32,10 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>How OpenIG Works</title>
 
+ <indexterm>
+  <primary>Architecture</primary>
+ </indexterm>
+
  <para>This chapter provides a detailed look at OpenIG's components and how
  they work together.</para>
  

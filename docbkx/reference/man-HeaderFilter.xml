@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>HeaderFilter</secondary>
+  </indexterm>
   <para>Removes headers from and adds headers to a message. Headers are added
   to any existing headers in the message. To replace, remove the header and
   add it.</para>

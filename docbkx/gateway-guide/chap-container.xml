@@ -32,6 +32,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Configuring Deployment Containers</title>
 
+ <indexterm>
+  <primary>Containers</primary>
+  <secondary>Supported</secondary>
+ </indexterm>
+
  <itemizedlist>
   <para>This section provides installation and configuration tips for the
   following containers:</para>
@@ -59,6 +64,11 @@
  
  <section xml:id="tomcat">
   <title>Tomcat</title>
+
+ <indexterm>
+  <primary>Containers</primary>
+  <secondary>Tomcat</secondary>
+ </indexterm>
 
   <itemizedlist>
    <para>Tomcat reference links:</para>
@@ -174,6 +184,11 @@
  <section xml:id="jetty">
   <title>Jetty</title>
 
+ <indexterm>
+  <primary>Containers</primary>
+  <secondary>Jetty</secondary>
+ </indexterm>
+
   <itemizedlist>
    <para>Jetty reference links:</para>
    <listitem>
@@ -274,6 +289,11 @@
 
  <section xml:id="jboss">
   <title>JBoss</title>
+
+ <indexterm>
+  <primary>Containers</primary>
+  <secondary>JBoss</secondary>
+ </indexterm>
 
   <itemizedlist>
    <para>JBoss reference links:</para>

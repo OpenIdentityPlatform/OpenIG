@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Servlets</primary>
+   <secondary>Servlet</secondary>
+  </indexterm>
   <para>Creates and initializes a stock servlet in a heap environment.</para>
  </refsect1>
  <refsect1>

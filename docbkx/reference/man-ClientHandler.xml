@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>ClientHandler</secondary>
+  </indexterm>
   <para>Submits exchange requests to remote servers.</para>
 
   <note>

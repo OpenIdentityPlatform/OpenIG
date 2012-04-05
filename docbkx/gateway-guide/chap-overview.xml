@@ -70,7 +70,7 @@
   building out their own solution by modifying their applications is just not
   possible.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-federate-any-app">
    <imageobject>
     <imagedata fileref="images/federate-any-app.png" format="PNG" />
    </imageobject>
@@ -94,7 +94,7 @@
   you can roll out OpenIG as an independent policy enforcement point that is
   built on the SAML2 standard.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-standards-based-agent">
    <imageobject>
     <imagedata fileref="images/standards-based-agent.png" format="PNG" />
    </imageobject>

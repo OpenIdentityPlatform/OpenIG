@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Exchange Object Model</primary>
+   <secondary>Principal</secondary>
+  </indexterm>
   <para>Represents a user principal in an exchange object model, containing the
   name of the current authenticated user.</para>
  </refsect1>

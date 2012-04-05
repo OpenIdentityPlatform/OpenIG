@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>SequenceHandler</secondary>
+  </indexterm>
   <para>Processes an exchange through a sequence of handlers. This allows
   multi-request processing such as retrieving a form, extracting form content
   (for example, nonce) and submitting in a subsequent request. Each

@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Servlets</primary>
+   <secondary>HandlerServlet</secondary>
+  </indexterm>
   <para>Services a servlet request by translating it and marshaling to a
   handler.</para>
  </refsect1>

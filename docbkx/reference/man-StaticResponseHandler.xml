@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>StaticResponseHandler</secondary>
+  </indexterm>
   <para>Creates a static response in an HTTP exchange.</para>
  </refsect1>
  <refsect1>
