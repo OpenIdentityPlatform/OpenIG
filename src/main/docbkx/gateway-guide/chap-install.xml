@@ -32,6 +32,10 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Installing OpenIG</title>
 
+  <indexterm>
+   <primary>Installation</primary>
+  </indexterm>
+
  <itemizedlist>
   <para>Before you install OpenIG, make sure you have the right version of Java,
   and install and configure the web container.</para>

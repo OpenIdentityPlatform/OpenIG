@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Expressions</primary>
+   <secondary>Expressions</secondary>
+  </indexterm>
   <para>Expressions are specified as configuration parameter values for a
   number of built-in objects. Such expressions conform to the Universal
   Expression Language as specified in <link xlink:show="new"

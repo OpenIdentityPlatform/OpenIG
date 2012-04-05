@@ -38,6 +38,10 @@
  <section xml:id="portal-app-login">
   <title>Portal Application Login</title>
 
+  <indexterm>
+   <primary>Use cases</primary>
+  </indexterm>
+
   <para>The figure below illustrates a sample flow with a description of each
   request from the browser to the back end application. This flow is taken from
   the <link xlink:href="gateway-guide#chap-gateway-tutorial"
@@ -50,7 +54,7 @@
   OpenAM policy agent. Use cases that follow show examples of these types
   of deployments.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-portal-app-login">
    <imageobject>
     <imagedata fileref="images/portal-app-login.png" format="PNG" />
    </imageobject>
@@ -93,6 +97,10 @@
  <section xml:id="am-integration">
   <title>OpenAM Integration</title>
 
+  <indexterm>
+   <primary>Use cases</primary>
+  </indexterm>
+
   <para>The figure below illustrates OpenIG integrated into an OpenAM
   deployment. In this deployment OpenIG is running in a container
   that is protected by an OpenAM policy agent. The agent is configured to
@@ -103,7 +111,7 @@
   an agent or any modification to the application or its deployment
   configuration.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-am-integration">
    <imageobject>
     <imagedata fileref="images/am-integration.png" format="PNG" />
    </imageobject>
@@ -150,6 +158,10 @@
  <section xml:id="sp-initiated-sso">
   <title>Federation Gateway SP Initiated SAML2 SSO</title>
 
+  <indexterm>
+   <primary>Use cases</primary>
+  </indexterm>
+
   <para>The figure below illustrates the OpenIG Federation Gateway providing
   SAML2 endpoint features acting as Service Provider in an SP initiated single
   sign-on configuration. In this sample, company myHR is an outsourced provider
@@ -163,7 +175,7 @@
   and configures it to log users into the HR application upon successful
   verification of the SAML2 assertion from their customers.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-sp-initiated-sso">
    <imageobject>
     <imagedata fileref="images/sp-initiated-sso.png" format="PNG" />
    </imageobject>
@@ -217,11 +229,15 @@
  <section xml:id="idp-initiated-sso">
   <title>Federation Gateway IDP Initiated SAML2 SSO</title>
 
+  <indexterm>
+   <primary>Use cases</primary>
+  </indexterm>
+
   <para>The figure below illustrates the Federation Gateway providing SAML2
   endpoint features acting as a Service Provider in a IDP initiated single
   sign-on configuration.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-idp-initiated-sso">
    <imageobject>
     <imagedata fileref="images/idp-initiated-sso.png" format="PNG" />
    </imageobject>
@@ -258,10 +274,14 @@
  <section xml:id="saml2-pep">
   <title>Standards Based SAML2 Agent</title>
 
+  <indexterm>
+   <primary>Use cases</primary>
+  </indexterm>
+
   <para>The figure below illustrates the Federation Gateway as a standards
   based replacement for OpenAM policy agents.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-saml2-pep">
    <imageobject>
     <imagedata fileref="images/saml2-pep.png" format="PNG" />
    </imageobject>

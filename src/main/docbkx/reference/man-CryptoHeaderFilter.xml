@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>CryptoHeaderFilter</secondary>
+  </indexterm>
   <para>Encrypts or decrypts headers in a request or response.</para>
  </refsect1>
  <refsect1>

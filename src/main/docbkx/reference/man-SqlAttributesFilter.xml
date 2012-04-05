@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>SqlAttributesFilter</secondary>
+  </indexterm>
   <para>Executes a SQL query through a prepared statement and exposes its
   first result. Parameters in the prepared statement are derived from
   exchange-scoped expressions. The query result is exposed in an object whose

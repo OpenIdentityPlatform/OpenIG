@@ -32,6 +32,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial With WordPress</title>
 
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Basic features</secondary>
+ </indexterm>
+
  <itemizedlist>
   <para>This tutorial gives you hands on experience with the basic features of
   OpenIG. You install the Gateway in your network and point it to an
@@ -69,7 +74,7 @@
   OpenIG can then be configured to intercept specific pages, such as
   login pages, and create requests to log the user in.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-gateway-tutorial">
    <imageobject>
     <imagedata fileref="images/gateway-tutorial.png" format="PNG" />
    </imageobject>

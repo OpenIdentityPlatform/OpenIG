@@ -32,6 +32,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial For the Federation Gateway</title>
 
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Federation</secondary>
+ </indexterm>
+
  <para>This tutorial expands on the <link
  xlink:href="gateway-guide#chap-gateway-tutorial"
  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial With

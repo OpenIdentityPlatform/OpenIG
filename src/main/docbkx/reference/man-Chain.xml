@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>Chain</secondary>
+  </indexterm>
   <para>A chain is responsible for dispatching an exchange to an ordered list
   of filters, and finally a handler.</para>
  </refsect1>

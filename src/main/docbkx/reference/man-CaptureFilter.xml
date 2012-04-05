@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>CaptureFilter</secondary>
+  </indexterm>
   <para>Captures request and response messages for further analysis.</para>
  </refsect1>
  <refsect1>

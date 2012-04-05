@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Required configuration</primary>
+   <secondary>Heap objects</secondary>
+  </indexterm>
   <para>A heap is a collection of associated objects, initialized from
   declarative configuration artifacts. All configurable objects in the gateway
   are heap objects. Heap objects are created and initialized by associated

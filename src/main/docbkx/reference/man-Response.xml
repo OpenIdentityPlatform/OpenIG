@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Exchange Object Model</primary>
+   <secondary>Response</secondary>
+  </indexterm>
   <para>An HTTP response message in an exchange object model.</para>
  </refsect1>
  <refsect1>

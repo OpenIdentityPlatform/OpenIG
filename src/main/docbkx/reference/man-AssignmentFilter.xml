@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>AssignmentFilter</secondary>
+  </indexterm>
   <para>Conditionally assigns values to expressions before and after the
   exchange is handled.</para>
  </refsect1>

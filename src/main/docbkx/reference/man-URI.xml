@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Exchange Object Model</primary>
+   <secondary>URI</secondary>
+  </indexterm>
   <para>Represents a Uniform Resource Identifier (URI) reference in an exchange
   object model. URI properties are read-only.</para>
  </refsect1>

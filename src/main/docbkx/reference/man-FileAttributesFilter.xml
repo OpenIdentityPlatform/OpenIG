@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>FileAttributesFilter</secondary>
+  </indexterm>
   <para>Retrieves and exposes a record from a delimiter-separated file. Lookup
   of the record is performed using a specified <literal>key</literal>, whose
   <literal>value</literal> is derived from an exchange-scoped expression. The

@@ -32,6 +32,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial With OpenAM</title>
 
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>OpenAM integration</secondary>
+ </indexterm>
+
  <itemizedlist>
   <para>This tutorial walks you through OpenIG integration with OpenAM. This
   tutorial involves OpenAM, OpenIG on Tomcat protected by an OpenAM policy
@@ -55,7 +60,7 @@
   <para>The figure below illustrates the flow of requests for a user logging
   into OpenAM, and then being automatically logged into MediaWiki.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-am-integration-tutorial">
    <imageobject>
     <imagedata fileref="images/am-integration-tutorial.png" format="PNG" />
    </imageobject>

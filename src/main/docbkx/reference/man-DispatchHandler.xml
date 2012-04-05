@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>DispatchHandler</secondary>
+  </indexterm>
   <para>Dispatches to one of a list of handlers. When an exchange is handled,
   each handler's <literal>condition</literal> is evaluated. If a condition
   expression yields <literal>true</literal>, then the exchange is dispatched

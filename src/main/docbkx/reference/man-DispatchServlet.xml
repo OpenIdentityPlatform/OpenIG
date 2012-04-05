@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Servlets</primary>
+   <secondary>DispatchServlet</secondary>
+  </indexterm>
   <para>Dispatches requests to mapped filters and servlets based on request’s
   extra path information. The extra path information is the path that follows
   the path of the dispatch servlet itself, but precedes the query string. It is

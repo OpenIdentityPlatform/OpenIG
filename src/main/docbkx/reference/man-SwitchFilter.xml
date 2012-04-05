@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>SwitchFilter</secondary>
+  </indexterm>
   <para>Conditionally diverts the exchange to another handler. If a
   <literal>condition</literal> evaluates to <literal>true</literal>, then the
   exchange is dispatched to the associated <literal>handler</literal> with no
