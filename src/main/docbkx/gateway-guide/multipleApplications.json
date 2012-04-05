@@ -19,7 +19,7 @@
                     "baseURI":"http://109.73.67.52:8080",
                 },  
                 {                       
-                    "condition": "${exchange.request.uri.host == 'wikis.forgerock.com'}",
+                    "condition": "${exchange.request.uri.host == 'demo.forgerock.com'}",
                     "handler": "MediaWikiLoginChain",
                     "baseURI":"http://109.73.67.52:8181"
                 }
