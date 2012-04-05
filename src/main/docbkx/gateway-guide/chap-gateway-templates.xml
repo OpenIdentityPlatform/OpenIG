@@ -185,8 +185,8 @@
   Access. This template shows how you would use the Gateway and the OpenAM
   password capture feature to integrate with OWA. You can follow the
   <link xlink:href="gateway-guide#chap-password-capture-replay-tutorial"
-  xlink:role="http://docbook.org/xlink/role/olink">OpenAM Password Capture
-  &amp; Replay Tutorial</link> tutorial and substitute this template.</para>
+  xlink:role="http://docbook.org/xlink/role/olink">Tutorial On Password Capture
+  &amp; Replay</link> tutorial and substitute this template.</para>
   
   <programlisting language="javascript"
   ><xinclude:include parse="text" href="OWAOnline.json" /></programlisting>

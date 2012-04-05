@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>OpenIG Tutorial with MediaWiki</title>
+ <title>Tutorial With MediaWiki</title>
 
  <itemizedlist>
   <para>MediaWiki is a good example of a login sequence that is a bit more
@@ -142,9 +142,9 @@
   <title>Installing OpenIG</title>
 
   <para>See <link xlink:href="gateway-guide#chap-quickstart"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Quick Start With
-  Jetty &amp; Samples</citetitle></link> for instructions, and have your
-  container listen on port 8181.</para>
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Getting
+  Started</citetitle></link> for instructions, and have your container listen
+  on port 8181.</para>
  </section>
 
  <section>

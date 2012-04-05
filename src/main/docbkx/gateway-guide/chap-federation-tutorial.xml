@@ -30,12 +30,12 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Federation Gateway Tutorial</title>
+ <title>Tutorial For the Federation Gateway</title>
 
  <para>This tutorial expands on the <link
  xlink:href="gateway-guide#chap-gateway-tutorial"
- xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Gateway Tutorial
- with WordPress</citetitle></link> by showing you how to configure OpenIG
+ xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial With
+ WordPress</citetitle></link> by showing you how to configure OpenIG
  as a SAML2 Federation endpoint to log the user into WordPress. When you
  complete this tutorial you will have configured OpenAM to send a SAML2
  assertion to OpenIG and configured OpenIG to validate the assertion and to
@@ -46,8 +46,8 @@
   <title>Before You Start</title>
 
   <para>Follow the <link xlink:href="gateway-guide#chap-gateway-tutorial"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Gateway Tutorial
-  with WordPress</citetitle></link>, and make sure you can login to WordPress
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial With
+  WordPress</citetitle></link>, and make sure you can login to WordPress
   before continuing this tutorial.</para>
  </section>
 
