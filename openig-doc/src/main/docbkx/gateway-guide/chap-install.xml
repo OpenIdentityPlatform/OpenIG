@@ -45,10 +45,10 @@ Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)</screen>
   </listitem>
   <listitem>
    <para>Refer to the chapter on <link xlink:href="gateway-guide#chap-container"
-   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Container
-   Configuration Help</citetitle></link> to ensure you have properly installed
-   and configured your web application container and are running a supported
-   version of Java.</para>
+   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
+   Deployment Containers</citetitle></link> to ensure you have properly
+   installed and configured your web application container and are running a
+   supported version of Java.</para>
   </listitem>
  </itemizedlist>
 

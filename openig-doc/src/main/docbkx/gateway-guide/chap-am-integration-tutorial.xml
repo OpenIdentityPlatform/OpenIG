@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Tutorial On Integration With OpenAM</title>
+ <title>Tutorial With OpenAM</title>
 
  <itemizedlist>
   <para>This tutorial walks you through OpenIG integration with OpenAM. This

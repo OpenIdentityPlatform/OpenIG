@@ -63,8 +63,8 @@
 
  <xinclude:include href='chap-overview.xml' />
  <xinclude:include href='chap-howitworks.xml' />
- <xinclude:include href='chap-install.xml' />
  <xinclude:include href='chap-quickstart.xml' />
+ <xinclude:include href='chap-install.xml' />
  <xinclude:include href='chap-container.xml' />
  <xinclude:include href='chap-usecases.xml' />
  <xinclude:include href='chap-gateway-tutorial.xml' />

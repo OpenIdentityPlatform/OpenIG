@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Quick Start With Jetty &amp; Samples</title>
+ <title>Getting Started</title>
 
  <para>This chapter provides instructions to get OpenIG up and running on
  Jetty, configured to execute the WordPress samples at our hosted WordPress

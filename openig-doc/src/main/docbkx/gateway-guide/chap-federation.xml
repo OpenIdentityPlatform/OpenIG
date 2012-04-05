@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Federation Reference</title>
+ <title>Using the Federation Gateway</title>
 
  <para>The Federation component of OpenIG is a standards based
  authentication service used by OpenIG to validate a user and retrieve
@@ -56,8 +56,8 @@
  target applications.</para>
 
  <para>See the <link xlink:href="gateway-guide#chap-federation-tutorial"
- xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Federation
- Gateway Tutorial</citetitle></link> for hands on experience with the
+ xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial For the
+ Federation Gateway</citetitle></link> for hands on experience with the
  Federation Gateway.</para>
 
  <section xml:id="federation-installation">

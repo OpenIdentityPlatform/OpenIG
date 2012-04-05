@@ -58,8 +58,8 @@
   <title>Web Application Container</title>
 
   <para>See the chapter on <link xlink:href="gateway-guide#chap-container"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Container
-  Configuration Help</citetitle></link> in the <citetitle>Guide to
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
+  Deployment Containers</citetitle></link> in the <citetitle>Guide to
   OpenIG</citetitle> for details on setting up your web application
   container.</para>
  </section>

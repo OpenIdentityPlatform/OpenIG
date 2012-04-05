@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Gateway Tutorial with WordPress</title>
+ <title>Tutorial With WordPress</title>
 
  <itemizedlist>
   <para>This tutorial gives you hands on experience with the basic features of
@@ -149,9 +149,9 @@
   <title>Installing OpenIG</title>
 
   <para>See <link xlink:href="gateway-guide#chap-quickstart"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Quick Start With
-  Jetty &amp; Samples</citetitle></link> for instructions, and have your
-  container listen on port 8080.</para>
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Getting
+  Started</citetitle></link> for instructions, and have your container listen
+  on port 8080.</para>
  </section>
 
  <section>
@@ -331,8 +331,8 @@ $ jetty.sh restart</screen>
 
   <para>For this sample you must configure your container for JNDI and MySQL.
   See the chapter on <link xlink:href="gateway-guide#chap-container"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Container
-  Configuration Help</citetitle></link> for instructions on configuring
+  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
+  Deployment Containers</citetitle></link> for instructions on configuring
   containers for use with JNDI and MySQL. You also must create an entry for a
   user and create a query which returns a result with user name and password
   attributes. The query in the sample assumes there is a table named
