@@ -72,7 +72,8 @@
   be logged to the flat file.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="capture.json" /></programlisting>
+  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="capture.json"
+  /></programlisting>
 </section>
 
  <section xml:id="template-simple-login">
@@ -82,7 +83,8 @@
   it with the login form.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="loginSimple.json" /></programlisting>
+  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginSimple.json"
+  /></programlisting>
  </section>
 
  <section xml:id="template-login-cookie">
@@ -93,7 +95,7 @@
   form and adds the intercepted cookie to the POST.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text"
+  ><?dbfo pgwide="1"?><xinclude:include parse="text"
   href="loginWithCookie.json" /></programlisting>
  </section>
 
@@ -122,7 +124,7 @@
   </note>
 
   <programlisting language="javascript"
-  ><xinclude:include parse="text"
+  ><?dbfo pgwide="1"?><xinclude:include parse="text"
   href="loginWithCookieExtract.json" /></programlisting>
  </section>
 
@@ -132,7 +134,7 @@
   login form POSTed to the target application.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text"
+  ><?dbfo pgwide="1"?><xinclude:include parse="text"
   href="loginHiddenValue.json" /></programlisting>
  </section>
 
@@ -149,7 +151,8 @@
   the flow from one of the login templates.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="loginMixed.json" /></programlisting>
+  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginMixed.json"
+  /></programlisting>
  </section>
 
  <section xml:id="template-multiple-apps">
@@ -162,7 +165,7 @@
   MediaWiki chain.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text"
+  ><?dbfo pgwide="1"?><xinclude:include parse="text"
   href="multipleApplications.json" /></programlisting>
  </section>
 
@@ -176,7 +179,8 @@
   retrieve the credentials.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="loginAMHeaders.json" /></programlisting>
+  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginAMHeaders.json"
+  /></programlisting>
  </section>
 
  <section xml:id="template-owa-online">
@@ -189,6 +193,7 @@
   &amp; Replay</link> tutorial and substitute this template.</para>
   
   <programlisting language="javascript"
-  ><xinclude:include parse="text" href="OWAOnline.json" /></programlisting>
+  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="OWAOnline.json"
+  /></programlisting>
  </section>
 </chapter>
