@@ -42,18 +42,16 @@
 
   <para>The following issues were fixed in release
   <?eval ${docTargetVersion}?>.</para>
-  
+
   <itemizedlist>
-  <!-- This list does not include some fixes for typos, doc issues, removed
-  functionality, and issues raised on new features during testing. -->
-<listitem><para>TODO</para></listitem>
+   <listitem><para>OpenIG-6: Missing relativePath in saas/pbworks module</para></listitem>
   </itemizedlist>
  </section>
 
  <section xml:id="limitations">
   <title>Limitations</title>
   
-  <para>The Federation Gateway does not run on Glassfish V3 due to conflicts
+  <para>OpenIG Federation Gateway does not run on Glassfish V3 due to conflicts
   with the Metro libraries.</para>
  </section>
  
@@ -64,9 +62,8 @@
   release <?eval ${docTargetVersion}?> became available.</para>
 
   <itemizedlist>
-   <listitem>
-    <para>TODO</para>
-   </listitem>
+   <listitem><para>OpenIG-4: boundary stripped off of multipart/form-data on POST operation</para></listitem>
+   <listitem><para>OpenIG-1: Federation Gateway 2.0.0 HTTPS file upload fails</para></listitem>
   </itemizedlist>
  </section>
 </chapter>
