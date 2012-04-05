@@ -127,7 +127,7 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)</screen>
     "config": {
         "status": 403,
         "reason": "Forbidden",
-        "entity": "&lt;html&gt;lt;h2&gt;User does not have permission&lt;h2&gt;html&gt;"
+        "entity": "&lt;html&gt;&lt;h2&gt;User does not have permission&lt;h2&gt;html&gt;"
     }
 }</programlisting>
  </section>
