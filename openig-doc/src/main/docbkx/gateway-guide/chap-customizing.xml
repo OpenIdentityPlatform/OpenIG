@@ -44,6 +44,11 @@
  <section xml:id="extension-points">
   <title>Key Extension Points</title>
 
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Extension points</secondary>
+ </indexterm>
+
   <para>The two primary extension points are the interfaces: <link
   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html"
   xlink:show="new">Filter</link> (for processing a request and/or response en
@@ -68,6 +73,11 @@
 
  <section xml:id="custom-filter">
   <title>Implementing a Filter</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Filters</secondary>
+ </indexterm>
 
   <para>The <literal>Filter</literal> interface exposes a <link xlink:show="new"
   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
@@ -111,6 +121,11 @@
  <section xml:id="custom-handler">
   <title>Implementing a Handler</title>
 
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Handlers</secondary>
+ </indexterm>
+
   <para>The <literal>Handler</literal> interface exposes a <link xlink:show="new"
   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
   >handle</link> method, which takes an <link xlink:show="new"
@@ -138,6 +153,11 @@
  <section xml:id="custom-heap-config">
   <title>Heap Object Configuration</title>
 
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Heap objects</secondary>
+ </indexterm>
+
   <para>Objects are added to the heap and supplied with configuration artifacts
   at initialization time. To be integrated with the configuration, a class must
   have an accompanying implementation of the <link xlink:show="new"
@@ -158,6 +178,11 @@
 
  <section xml:id="custom-servlets-filters">
   <title>Including Servlets and Servlet Filters</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Servlets</secondary>
+ </indexterm>
 
   <para>A servlet or servlet filter can be added as a heap object by including
   it in the classpath, and identifying it in the OpenIG heap configuration as

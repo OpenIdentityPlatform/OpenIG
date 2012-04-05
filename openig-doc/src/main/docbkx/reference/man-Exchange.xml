@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Exchange Object Model</primary>
+   <secondary>Exchange</secondary>
+  </indexterm>
   <para>The root object for the exchange object model: an HTTP exchange of
   request and response. The exchange object model parallels the document object
   model, exposing elements of the exchange. It supports this by exposing a set

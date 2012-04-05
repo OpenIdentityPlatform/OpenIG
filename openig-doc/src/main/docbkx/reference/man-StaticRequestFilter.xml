@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>StaticRequestFilter</secondary>
+  </indexterm>
   <para>Creates a new request within the exchange object. It replaces any
   request that may already be present in the exchange. The request can include
   a form, specified in the <literal>form</literal> parameter, which is included

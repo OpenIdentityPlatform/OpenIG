@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>CookieFilter</secondary>
+  </indexterm>
   <para>Manages, suppresses and relays cookies. Managed cookies are intercepted
   by the cookie filter itself and stored in the gateway session; managed cookies
   are not transmitted to the user agent. Suppressed cookies are removed from

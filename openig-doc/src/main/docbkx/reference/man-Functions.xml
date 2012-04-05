@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Expressions</primary>
+   <secondary>Functions</secondary>
+  </indexterm>
   <para>A set of built-in functions that can be called from within
   <link xlink:href="reference#Expressions"
   xlink:role="http://docbook.org/xlink/role/olink"

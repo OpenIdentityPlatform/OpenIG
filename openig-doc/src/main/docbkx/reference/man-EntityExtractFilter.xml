@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>EntityExtractFilter</secondary>
+  </indexterm>
   <para>Extracts regular expression patterns from a message entity. The
   extraction results are stored in a <literal>target</literal> object. For a
   given matched <link xlink:href="reference#Patterns"

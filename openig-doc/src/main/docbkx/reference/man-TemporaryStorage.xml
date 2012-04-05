@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>TemporaryStorage</secondary>
+  </indexterm>
   <para>Allocates temporary buffers for caching streamed content during request
   processing. Initially uses memory; when the memory limit is exceeded, switches
   to a temporary file.</para>

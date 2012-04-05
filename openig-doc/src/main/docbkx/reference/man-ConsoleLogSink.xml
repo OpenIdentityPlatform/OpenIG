@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>ConsoleLogSink</secondary>
+  </indexterm>
   <para>A log sink that writes log entries to the standard error stream.</para>
  </refsect1>
  <refsect1>

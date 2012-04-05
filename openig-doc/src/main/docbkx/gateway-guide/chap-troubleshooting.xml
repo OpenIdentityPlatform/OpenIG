@@ -32,6 +32,10 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Troubleshooting</title>
 
+ <indexterm>
+  <primary>Troubleshooting</primary>
+ </indexterm>
+
  <para>This chapter covers common problems and their solutions.</para>
 
  <section>

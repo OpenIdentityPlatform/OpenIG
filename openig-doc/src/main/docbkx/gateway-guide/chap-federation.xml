@@ -63,6 +63,11 @@
  <section xml:id="federation-installation">
   <title>Installation Overview</title>
 
+ <indexterm>
+  <primary>Installation</primary>
+  <secondary>Federation</secondary>
+ </indexterm>
+
   <itemizedlist>
    <para>This section is a summary of the steps needed to prepare OpenIG to
    act as a Federation endpoint for your target application.</para>
@@ -94,6 +99,11 @@
 
  <section xml:id="federation-configuration-files">
   <title>Configuration File Overview</title>
+
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>Federation</secondary>
+ </indexterm>
 
   <para>The Federation service is configured by modifying the OpenIG
   <filename>config.json</filename> and Federation specific XML files located
@@ -168,6 +178,11 @@
 
  <section xml:id="federation-configuring">
   <title>Configuring the Federation Service</title>
+
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>Federation</secondary>
+ </indexterm>
 
   <para>The simplest way to configure the Federation Gateway is to use the
   OpenAM task wizard to generate a Fedlet and then use the Fedlet

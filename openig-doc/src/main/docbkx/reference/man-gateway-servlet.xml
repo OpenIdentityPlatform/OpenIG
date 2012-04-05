@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Required configuration</primary>
+   <secondary>Gateway servlet</secondary>
+  </indexterm>
   <para>The gateway servlet is the entry point for all incoming requests. It
   is responsible for initializing a <link xlink:href="reference#heap-objects"
   xlink:role="http://docbook.org/xlink/role/olink">heap of objects</link>, and

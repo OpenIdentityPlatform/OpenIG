@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>HttpBasicAuthFilter</secondary>
+  </indexterm>
   <para>Performs authentication through the HTTP Basic authentication scheme.
   For more information, see <link xlink:show="new"
   xlink:href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</link>.</para>

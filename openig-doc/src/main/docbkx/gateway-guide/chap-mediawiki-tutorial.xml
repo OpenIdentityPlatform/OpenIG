@@ -32,6 +32,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial With MediaWiki</title>
 
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Build login form</secondary>
+ </indexterm>
+
  <itemizedlist>
   <para>MediaWiki is a good example of a login sequence that is a bit more
   complex and shows you how OpenIG can extract hidden values in order to create
@@ -64,7 +69,7 @@
   xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link> site
   through OpenIG.</para>
 
-  <mediaobject>
+  <mediaobject xml:id="figure-mediawiki-tutorial">
    <imageobject>
     <imagedata fileref="images/mediawiki-tutorial.png" format="PNG" />
    </imageobject>

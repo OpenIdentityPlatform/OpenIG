@@ -40,6 +40,10 @@
  </refnamediv>
  <refsect1>
   <title>Description</title>
+  <indexterm>
+   <primary>Expressions</primary>
+   <secondary>Patterns</secondary>
+  </indexterm>
   <para>Patterns in configuration parameters and expressions use the standard
   Java regular expression <link xlink:show="new"
   xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"

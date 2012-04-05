@@ -65,6 +65,12 @@
   
  <section xml:id="template-proxy-capture">
   <title>Proxy &amp; Capture</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Proxy &amp; capture</secondary>
+  </indexterm>
+
   <para>Proxies all requests and captures them in a flat file. Use this
   template if you need to analyze the traffic for your application. Simply
   change the <literal>baseURI</literal> to be that of the target application,
@@ -78,6 +84,12 @@
 
  <section xml:id="template-simple-login">
   <title>Simple Login Form</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Simple login form</secondary>
+  </indexterm>
+
   <para>Logs the user into the target application with hard-coded user name
   and password. This template intercepts the login page request and replaces
   it with the login form.</para>
@@ -89,6 +101,12 @@
 
  <section xml:id="template-login-cookie">
   <title>Login Form With Cookie From Login Page</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Login with cookie</secondary>
+  </indexterm>
+
   <para>For applications that expect a cookie from the login page to be sent
   in the login request form. This templates allows the login page request to
   go through to the target, intercepts the response, then creates the login
@@ -101,6 +119,12 @@
 
  <section xml:id="template-login-extract-cookie-filters">
   <title>Login Form With Extract Filter &amp; Cookie Filter</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Login with filter</secondary>
+  </indexterm>
+
   <para>For applications that return the login page when the user tries to
   access a page without a valid session. This template shows how to use the
   <literal>ExtractFilter</literal> to find the login page on the response and
@@ -130,6 +154,12 @@
 
  <section xml:id="template-login-hidden-value">
   <title>Login Which Requires a Hidden Value From the Login Page</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Login with hidden value</secondary>
+  </indexterm>
+
   <para>Extracts a hidden value from the login page and includes it in the
   login form POSTed to the target application.</para>
   
@@ -140,6 +170,12 @@
 
  <section xml:id="template-http-and-https">
   <title>HTTP &amp; HTTPS Application</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>HTTP &amp; HTTPS</secondary>
+  </indexterm>
+
   <para>Proxies traffic to an application listening on ports 80 and 443. The
   assumption is the application uses HTTPS for authentication and HTTP for the
   general application features. Assuming the login will all take place on
@@ -157,6 +193,12 @@
 
  <section xml:id="template-multiple-apps">
   <title>Multiple Applications</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Multiple applications</secondary>
+  </indexterm>
+
   <para>Shows how a single Gateway configuration can proxy to multiple
   applications on different IPs and ports. This template is setup to proxy to
   both the WordPress and MediaWiki hosted samples. The Gateway must be setup to
@@ -185,6 +227,12 @@
 
  <section xml:id="template-owa-online">
   <title>Microsoft Online Outlook Web Access</title>
+
+  <indexterm>
+   <primary>Configuration</primary>
+   <secondary>Microsoft Online Outlook Web Access</secondary>
+  </indexterm>
+
   <para>A sample template used to log a user into Microsoft Online Outlook Web
   Access. This template shows how you would use the Gateway and the OpenAM
   password capture feature to integrate with OWA. You can follow the
