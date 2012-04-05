@@ -30,7 +30,7 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>What's New in OpenIG</title>
-
+<!-- 
  <para>OpenIG <?eval ${docTargetVersion}?> fixes a number of issues, and
  provides the following additional features.</para>
 
@@ -39,4 +39,8 @@
    <para>TODO</para>
   </listitem>
  </itemizedlist>
-</chapter>
+ -->
+
+ <para>OpenIG <?eval ${docTargetVersion}?> is a patch release. It does not
+ introduce new features.</para>
+ </chapter>
