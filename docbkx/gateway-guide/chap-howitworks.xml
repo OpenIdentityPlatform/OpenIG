@@ -187,22 +187,21 @@
     <listitem>
      <para><link xlink:href="reference#StaticRequestFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
-     >StaticRequestFilter</link>: Create and send HTTP GET and POST requests.
+     >StaticRequestFilter</link>: Creates and sends HTTP GET and POST requests.
      The request can be formed using parameters from previous processing or
      statically configured values.</para>
     </listitem>
     <listitem>
      <para><link xlink:href="reference#EntityExtractFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
-     >EntityExtractFilter</link>: Can be configured to search for specific
-     content with the body of the requests. For example, it can be used to
-     extract hidden form parameters in a login page, which are needed in the
-     login request.</para>
+     >EntityExtractFilter</link>: Searches for specific content with the body
+     of the requests. For example, it can be used to extract hidden form
+     parameters in a login page, which are needed in the login request.</para>
     </listitem>
     <listitem>
      <para><link xlink:href="reference#ExceptionFilter"
      xlink:role="http://docbook.org/xlink/role/olink">ExceptionFilter</link>:
-     Send users to configured URLs when errors or exceptions occur during
+     Sends users to configured URLs when errors or exceptions occur during
      request processing or user interactions.</para>
     </listitem>
     <listitem>
