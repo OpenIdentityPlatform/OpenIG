@@ -57,12 +57,12 @@
             <plugin>
                 <groupId>org.forgerock.commons</groupId>
                 <artifactId>forgerock-doc-maven-plugin</artifactId>
-                <version>1.0.0</version>
                 <inherited>false</inherited>
                 <configuration>
                     <projectName>OpenIG</projectName>
                     <googleAnalyticsId>${gaId}</googleAnalyticsId>
                 </configuration>
+                <version>1.0.1-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>build-doc</id>
