@@ -38,8 +38,8 @@
  </indexterm>
 
  <itemizedlist>
-  <para>This section provides installation and configuration tips for the
-  following containers:</para>
+  <para>This section provides installation and configuration tips. The
+  following containers are supported.</para>
   <listitem>
    <para>Tomcat 6.x and 7.x</para>
   </listitem>
@@ -47,21 +47,19 @@
    <para>Jetty 6.x and 7.x</para>
   </listitem>
   <listitem>
-   <para>Glassfish 2.x and 3.x</para>
+   <para>Glassfish 2.0</para>
   </listitem>
   <listitem>
    <para>JBoss 5.x</para>
   </listitem>
-<!-- FIXME: Add instructions for Weblogic and WebSphere
   <listitem>
    <para>Weblogic 10.x</para>
   </listitem>
   <listitem>
    <para>WebSphere 7.x</para>
   </listitem>
--->
  </itemizedlist>
- 
+
  <section xml:id="tomcat">
   <title>Tomcat</title>
 
@@ -84,26 +82,26 @@
    </listitem>
    <listitem>
     <para><link xlink:href="http://www.owasp.org/index.php/Securing_tomcat"
-    xlink:show="new" >Hardening Tomcat for production</link></para>
+    xlink:show="new">Hardening Tomcat for production</link></para>
    </listitem>
   </itemizedlist>
 
   <para>Download and install <link xlink:show="new"
   xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time this is the only
-  version of any JDK that is supported with OpenIG.</para>
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
+  versions of any JDK supported with OpenIG.</para>
 
   <para>Download and install <link xlink:show="new"
   xlink:href="http://tomcat.apache.org/download-60.cgi">Tomcat 6</link> or
   <link xlink:show="new" xlink:href="http://tomcat.apache.org/download-70.cgi"
   >Tomcat 7</link>.</para>
 
-  <para><literal>$TOMCAT_HOME</literal> refer to the location where you have
+  <para><literal>$TOMCAT_HOME</literal> refers to the location where you have
   installed Tomcat.</para>
 
   <para>Configure Tomcat to listen on the same port and protocol of the
   application you are protecting with OpenIG. If your application listens on
-  both an  HTTP and an HTTPS port you must configure Tomcat to do so as well.
+  both an HTTP and an HTTPS port you must configure Tomcat to do so as well.
   If you are installing to run the samples you do not have to modify the Tomcat
   port configuration since both the Tomcat default and the samples use port
   8080.</para>
@@ -112,7 +110,6 @@
   in <filename>$TOMCAT_HOME/conf/server.xml</filename>. The quickest way to do
   this is to search for the default value of 8080 and replace it with the new
   port number.</para>
- </section>
 
   <section>
    <title>Tomcat &amp; MySQL/JNDI Configuration</title>
@@ -148,6 +145,7 @@
     &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
     &lt;res-auth&gt;Container&lt;res-auth&gt;
 &lt;resource-ref&gt;</programlisting>
+  </section>
 
   <section>
    <title>Tomcat &amp; Cookie Domains</title>
@@ -163,7 +161,7 @@
   </section>
 
   <section>
-   <title>Tomcat and SSL</title>
+   <title>Tomcat &amp; SSL</title>
    <para>To get Tomcat up quickly on an SSL port you can add an entry similar
    to the following in <filename>$TOMCAT_HOME/conf/server.xml</filename>.</para>
 
@@ -210,8 +208,8 @@
 
   <para>Download and install <link xlink:show="new"
   xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time this is the only
-  version of any JDK that is supported with OpenIG.</para>
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
+  versions of any JDK supported with OpenIG.</para>
 
   <para>Download and install <link xlink:show="new"
   xlink:href="http://wiki.eclipse.org/Jetty/Starting/Downloads">Jetty</link>.
@@ -265,7 +263,7 @@
 
   <programlisting language="xml"
   >&lt;New id="jdbc/apex" class="org.eclipse.jetty.plus.jndi.Resource"&gt;
-  &lt;Arg&gt;lt;Arg&gt;
+  &lt;Arg&gt;&lt;Arg&gt;
   &lt;Arg&gt;jdbc/apex&lt;Arg&gt;
   &lt;Arg&gt;
     &lt;New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"&gt;
@@ -316,8 +314,8 @@
 
   <para>Download and install <link xlink:show="new"
   xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time this is the only
-  version of any JDK that is supported with OpenIG.</para>
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
+  versions of any JDK supported with OpenIG.</para>
 
   <para>Download and install the community version of <link xlink:show="new"
   xlink:href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA"

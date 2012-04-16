@@ -67,8 +67,8 @@
  <section>
   <title>Detailed Flow</title>
 
-  <para>The figure and the steps below detail the flow between the Browser, the
-  Gateway and the Portal for a basic login sequence to the Portal.  The
+  <para>The figure and the steps below detail the flow between the browser,
+  OpenIG and the portal for a basic login sequence to the portal. The
   key concept to understand is all requests to the application are routed
   through OpenIG by modifying the DNS entry for the target application.
   OpenIG can then be configured to intercept specific pages, such as

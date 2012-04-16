@@ -59,7 +59,7 @@
                     "uri": "http://74.208.127.116:8181/mediawiki/index.php?title=Special:UserLogin&returnto=Main_Page"
                     "headers": {
                         "Host": [ "demo.forgerock.com:8181" ],
-                        "User-Agent": [ "Mozilla/5.0 (ApexIdentity Universal Gateway)" ],
+                        "User-Agent": [ "Mozilla/5.0 (ForgeRock OpenIG)" ],
                     }
                 }
             },
@@ -95,7 +95,7 @@
                     "uri": "http://74.208.127.116:8181/mediawiki/index.php?title=Special:UserLogin&action=submitlogin&type=login&returnto=Main_Page"
                     "headers": {
                         "Host": [ "demo.forgerock.com:8181" ],
-                        "User-Agent": [ "Mozilla/5.0 (ApexIdentity Universal Gateway)" ],
+                        "User-Agent": [ "Mozilla/5.0 (ForgeRock OpenIG)" ],
                     }
                     "form": {
                         "wpName": ["${exchange.request.headers['username'][0]}"],
