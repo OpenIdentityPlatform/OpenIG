@@ -52,8 +52,8 @@
   <para>Make sure you have the correct Java environment installed. If necessary,
   download and install <link xlink:show="new"
   xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time this is the only
-  version of any JDK that is supported with OpenIG.</para>
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
+  versions of any JDK supported with OpenIG.</para>
  </section>
 
  <section>

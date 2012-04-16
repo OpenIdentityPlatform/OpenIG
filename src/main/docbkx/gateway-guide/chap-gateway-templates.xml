@@ -38,8 +38,8 @@
  each template to find the right match for your application. If you are not
  sure about the characteristics of your application, start with the basic
  Application Capture template. This template allows you to setup basic proxying
- and capture the traffic of the login sequence in a flat file, which will then
- allow you to analyze the application and subsequently choose the right
+ and capture the traffic of the login sequence in a flat file, which then
+ allows you to analyze the application and subsequently choose the right
  template or add your own configuration.</para>
 
  <note>
@@ -74,9 +74,9 @@
   <para>Proxies all requests and captures them in a flat file. Use this
   template if you need to analyze the traffic for your application. Simply
   change the <literal>baseURI</literal> to be that of the target application,
-  restart the Gateway, and login to the application. The entire sequence will
-  be logged to the flat file.</para>
-  
+  restart OpenIG, and login to the application. The entire sequence is logged
+  to the flat file.</para>
+
   <programlisting language="javascript"
   ><?dbfo pgwide="1"?><xinclude:include parse="text" href="capture.json"
   /></programlisting>
@@ -141,10 +141,10 @@
    <literal>OutgoingChain</literal> the cookie set in the login page response
    would not get set in the browser since that request is intercepted before
    it gets to the browser. The simplest way to deal with this situation is to
-   let the Gateway manage all the cookies by enabling the
-   <literal>CookieFilter</literal>. The side effect of the Gateway managing
+   let OpenIG manage all the cookies by enabling the
+   <literal>CookieFilter</literal>. The side effect of OpenIG managing
    cookies is none of the cookies are sent to the browser, but are managed
-   locally by the Gateway.</para>
+   locally by OpenIG.</para>
   </note>
 
   <programlisting language="javascript"
@@ -199,9 +199,9 @@
    <secondary>Multiple applications</secondary>
   </indexterm>
 
-  <para>Shows how a single Gateway configuration can proxy to multiple
+  <para>Shows how a single OpenIG configuration can proxy to multiple
   applications on different IPs and ports. This template is setup to proxy to
-  both the WordPress and MediaWiki hosted samples. The Gateway must be setup to
+  both the WordPress and MediaWiki hosted samples. OpenIG must be setup to
   listen on both ports 8080 and 8181. The <literal>DispatchHandler</literal> is
   used to route each incoming request to either the WordPress chain or the
   MediaWiki chain.</para>
