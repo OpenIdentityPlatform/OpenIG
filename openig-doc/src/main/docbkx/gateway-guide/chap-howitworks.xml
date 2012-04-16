@@ -214,7 +214,8 @@
      <para><link xlink:href="reference#HttpBasicAuthFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
      >HttpBasicAuthFilter</link>: Performs HTTP basic authentication to the
-     target application per RFC 2617.</para>
+     target application per <link xlink:show="new"
+     xlink:href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</link>.</para>
     </listitem>
     <listitem>
      <para><link xlink:href="reference#FileAttributesFilter"
@@ -237,7 +238,7 @@
    <title>Configuration</title>
 
    <para>The configuration of OpenIG was designed to be very modular and
-   self-contained . Each module within OpenIG stores its configuration in JSON
+   self-contained. Each module within OpenIG stores its configuration in JSON
    representation, which is stored in flat files and managed via REST. The
    features of OpenIG can be configured by directly manipulating the JSON flat
    files, through REST, or through OpenIG management console.</para>
