@@ -44,7 +44,7 @@
   <?eval ${docTargetVersion}?>.</para>
 
   <itemizedlist>
-   <listitem><para>OpenIG-6: Missing relativePath in saas/pbworks module</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-6" xlink:show="new">OPENIG-6</link>: Missing relativePath in saas/pbworks module</para></listitem>
   </itemizedlist>
  </section>
 
@@ -62,8 +62,8 @@
   release <?eval ${docTargetVersion}?> became available.</para>
 
   <itemizedlist>
-   <listitem><para>OpenIG-4: boundary stripped off of multipart/form-data on POST operation</para></listitem>
-   <listitem><para>OpenIG-1: Federation Gateway 2.0.0 HTTPS file upload fails</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-4" xlink:show="new">OPENIG-4</link>: boundary stripped off of multipart/form-data on POST operation</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-1" xlink:show="new">OPENIG-1</link>: Federation Gateway 2.0.0 HTTPS file upload fails</para></listitem>
   </itemizedlist>
  </section>
 </chapter>

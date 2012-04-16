@@ -73,7 +73,7 @@
       See http://en.wikipedia.org/wiki/Man_page#Manual_sections for details.
  -->
 
- <reference>
+ <reference xml:id="required-conf">
   <title>Required Configuration</title>
   <partintro>
    <para>You must specify at least the entry point for incoming requests,
@@ -84,7 +84,7 @@
   <xinclude:include href="man-heap-objects.xml" />
  </reference>
 
- <reference>
+ <reference xml:id="servlets-conf">
   <title>Servlets</title>
   <partintro>
    <para>The gateway includes objects that can create, initialize and dispatch
@@ -96,7 +96,7 @@
   <xinclude:include href="man-ServletFilter.xml" />
  </reference>
 
- <reference>
+ <reference xml:id="handlers-conf">
   <title>Handlers</title>
   <partintro>
    <para>Handler objects process an HTTP exchange request by producing an
@@ -109,7 +109,7 @@
   <xinclude:include href="man-StaticResponseHandler.xml" />
  </reference>
 
- <reference>
+ <reference xml:id="filters-conf">
   <title>Filters</title>
   <partintro>
    <para>Filter objects perform filtering of the request and response of an
@@ -129,13 +129,13 @@
   <xinclude:include href="man-SwitchFilter.xml" />
  </reference>
 
- <reference>
+ <reference  xml:id="misc-conf">
   <title>Miscellaneous Heap Objects</title>
   <xinclude:include href="man-ConsoleLogSink.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
  </reference>
 
- <reference>
+ <reference xml:id="expressions-conf">
   <title>Expressions</title>
   <partintro>
    <para>Many configuration parameters support dynamic expressions.</para>
@@ -145,7 +145,7 @@
   <xinclude:include href="man-Patterns.xml" />
  </reference>
 
- <reference>
+ <reference xml:id="exchange-object-model-conf">
   <title>Exchange Object Model</title>
   <partintro>
    <para>Expressions are evaluated within an exchange object model scope.</para>

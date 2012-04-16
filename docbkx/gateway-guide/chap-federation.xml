@@ -72,7 +72,7 @@
    <para>This section is a summary of the steps needed to prepare OpenIG to
    act as a Federation endpoint for your target application.</para>
    <listitem>
-    <para>Install OpenIG.</para>
+    <para>Install OpenIG with Federation.</para>
    </listitem>
    <listitem>
     <para>Configure OpenIG to log users into the target application.
@@ -92,7 +92,7 @@
     </para>
    </listitem>
    <listitem>
-    <para>Import the Gateway metadata to your Identity Provider.</para>
+    <para>Import OpenIG metadata to your Identity Provider.</para>
    </listitem>
   </itemizedlist>
  </section>
@@ -145,7 +145,7 @@
    <varlistentry>
     <term><filename>$HOME_DIR/.ForgeRock/SAML/gateway.cot</filename></term>
     <listitem>
-     <para>Circle of trust for the Gateway and the Identity Provider.</para>
+     <para>Circle of trust for OpenIG and the Identity Provider.</para>
     </listitem>
    </varlistentry>
 
@@ -184,8 +184,8 @@
   <secondary>Federation</secondary>
  </indexterm>
 
-  <para>The simplest way to configure the Federation Gateway is to use the
-  OpenAM task wizard to generate a Fedlet and then use the Fedlet
+  <para>The simplest way to configure the OpenIG Federation Gateway is to use
+  the OpenAM task wizard to generate a Fedlet and then use the Fedlet
   configuration files in the Gateway configuration directory. If you use the
   Fedlet configuration files, simply unpack <filename>Fedlet.war</filename>
   and copy all the files listed above into
@@ -224,15 +224,15 @@
         "assertionMapping": {
             "userName":"uid",
             "password":"userPassword" 
-        },  
+        },
         "subjectMapping":"subjectName",
         "sessionIndexMapping":"sessionIndex",
         "redirectURI":"/login",
-        "logoutURI":"/logout" 
+        "logoutURI":"/logout"
         "assertionConsumerEndpoint":"fedletapplication",
         "SPinitiatedSSOEndpoint":"SPInitiatedSSO",
-        "singleLogoutEndpoint":"fedletSlo" 
-   }   
+        "singleLogoutEndpoint":"fedletSlo"
+   }
 }</programlisting>
 
   <variablelist>
@@ -364,7 +364,7 @@
     "config": {
             "assertionMapping": {
                  "userName":"mail",
-                 "password":"mailPassword" 
+                 "password":"mailPassword"
             }
             "redirectURI":"/myportal/login",
             "logoutURI":"/myportal/logout" 
