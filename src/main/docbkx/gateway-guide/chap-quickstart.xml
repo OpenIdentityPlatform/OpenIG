@@ -122,7 +122,7 @@
    </step>
 
    <step>
-    <para>If you are running the Simple SSO sample or are managing multiple
+    <para>If you are managing multiple
     applications in one domain you must turn on domain cookies in Jetty. This
     can be done by adding the following property to
     <filename>$JETTY_HOME/contexts/root.xml</filename> or to
@@ -178,7 +178,7 @@
    changing IP addresses of named hosts. The simplest way to make sure you have
    configured your DNS or host settings properly is to stop OpenIG and
    make sure you cannot reach the target application. If you can still reach
-   it, you must double check your host settings. You may also must make sure
+   it, you should double check your host settings. You should also make sure
    your name resolution is configured to check your host files before DNS.
    This configuration can be found in <filename>/etc/nsswitch.conf</filename>
    for most UNIX systems. Make sure <literal>files</literal> is listed before
@@ -206,7 +206,6 @@
   of the user. Since this is just a sample, the credentials for the user are
   hard coded in the gateway configuration file. In a real deployment, the
   credentials may come from a database, directory, flat file, HTTP headers,
-  SAML assertion, an OpenAM policy agent, or the gateway itself in simple
-  single sign-on mode.</para>
+  SAML assertion,or an OpenAM policy agent.</para>
  </section>
 </chapter>

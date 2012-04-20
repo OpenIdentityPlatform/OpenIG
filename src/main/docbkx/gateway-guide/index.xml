@@ -68,8 +68,6 @@
  <xinclude:include href='chap-container.xml' />
  <xinclude:include href='chap-usecases.xml' />
  <xinclude:include href='chap-gateway-tutorial.xml' />
- <xinclude:include href='chap-mediawiki-tutorial.xml' />
- <xinclude:include href='chap-am-integration-tutorial.xml' />
  <xinclude:include href='chap-password-capture-replay-tutorial.xml' />
  <xinclude:include href='chap-federation.xml' />
  <xinclude:include href='chap-federation-tutorial.xml' />
