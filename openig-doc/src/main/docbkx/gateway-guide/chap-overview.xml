@@ -39,8 +39,8 @@
   <title>Extend SSO To Any Application</title>
 
   <para>In today's enterprise, more than 30% of web applications are
-  incompatible with legacy web access management software. That is, unlike
-  OpenAM with OpenIG, most web access management (WAM) products lack the agent
+  incompatible with web access management (WAM) software. That is, unlike
+  OpenAM with OpenIG, most web access management products lack the agent
   to protect the web applications, or the application is a legacy solution that
   does not follow standard protocols for single sign-on. This limits the return
   on the enterprise WAM investment and constrains what types of web applications
@@ -65,8 +65,9 @@
   to a standard for exposing their applications to their customers see
   increased cost and maintenance due to the complexity of one-off proprietary
   integrations. They may also see a loss of business to those customers
-  requiring a Federation standard for authentication. Sometimes, deploying all
-  of OpenAM just to federate a few applications is too complex and costly, and
+  requiring a Federation standard for authentication. Sometimes, deploying
+  a full access mangaement solution just to federate a few applications is 
+  is too complex and costly, and
   building out their own solution by modifying their applications is just not
   possible.</para>
 

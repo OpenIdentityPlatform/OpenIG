@@ -131,7 +131,7 @@
    <para>Add a JNDI data source for your MySQL server and database in
    <filename>$TOMCAT_HOME/conf/context.xml</filename>.</para>
 
-   <programlisting language="xml">&lt;Resource name="jdbc/apex" auth="Container" type="javax.sql.DataSource"
+   <programlisting language="xml">&lt;Resource name="jdbc/forgerock" auth="Container" type="javax.sql.DataSource"
  maxActive="100" maxIdle="30" maxWait="10000"
  username="admin" password="11111111" driverClassName="com.mysql.jdbc.Driver"
  url="jdbc:mysql://localhost:3309/bitnami_drupal6"/&gt;</programlisting>
@@ -141,7 +141,7 @@
 
    <programlisting language="xml">&lt;resource-ref&gt;
     &lt;description&gt;MySQL Connection&lt;description&gt;
-    &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+    &lt;res-ref-name&gt;jdbc/forgerock&lt;res-ref-name&gt;
     &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
     &lt;res-auth&gt;Container&lt;res-auth&gt;
 &lt;resource-ref&gt;</programlisting>
@@ -262,9 +262,9 @@
   <filename>$JETTY_HOME/etc/jetty.xml</filename>.</para>
 
   <programlisting language="xml"
-  >&lt;New id="jdbc/apex" class="org.eclipse.jetty.plus.jndi.Resource"&gt;
+  >&lt;New id="jdbc/forgerock" class="org.eclipse.jetty.plus.jndi.Resource"&gt;
   &lt;Arg&gt;&lt;Arg&gt;
-  &lt;Arg&gt;jdbc/apex&lt;Arg&gt;
+  &lt;Arg&gt;jdbc/forgerock&lt;Arg&gt;
   &lt;Arg&gt;
     &lt;New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"&gt;
       &lt;Set name="Url"&gt;jdbc:mysql://localhost:3306/databasename&lt;Set&gt;
@@ -279,7 +279,7 @@
 
   <programlisting language="xml">&lt;resource-ref&gt;
     &lt;description&gt;My DataSource Reference&lt;description&gt;
-    &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+    &lt;res-ref-name&gt;jdbc/forgerock&lt;res-ref-name&gt;
     &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
     &lt;res-auth&gt;Container&lt;res-auth&gt;
  &lt;resource-ref&gt;</programlisting>
@@ -353,7 +353,7 @@
 
   <programlisting language="xml">&lt;datasources&gt;
   &lt;local-tx-datasource&gt;
-    &lt;jndi-name&gt;jdbc/apex&lt;jndi-name&gt;
+    &lt;jndi-name&gt;jdbc/forgerock&lt;jndi-name&gt;
     &lt;connection-url&gt;jdbc:mysql://localhost:3309/bitnami_drupal6&lt;connection-url&gt;
     &lt;driver-class&gt;com.mysql.jdbc.Driver&lt;driver-class&gt;
     &lt;user-name&gt;admin&lt;user-name&gt;
@@ -375,7 +375,7 @@ com.mysql.jdbc.integration.jboss.MysqlValidConnectionChecker
 
   <programlisting language="xml">&lt;resource-ref&gt;
     &lt;description&gt;MySQL Connection&lt;description&gt;
-    &lt;res-ref-name&gt;jdbc/apex&lt;res-ref-name&gt;
+    &lt;res-ref-name&gt;jdbc/forgerock&lt;res-ref-name&gt;
     &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
     &lt;res-auth&gt;Container&lt;res-auth&gt;
 &lt;resource-ref&gt;</programlisting>
