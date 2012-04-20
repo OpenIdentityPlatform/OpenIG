@@ -72,7 +72,7 @@
    <para>This section is a summary of the steps needed to prepare OpenIG to
    act as a Federation endpoint for your target application.</para>
    <listitem>
-    <para>Install OpenIG with Federation.</para>
+    <para>Install the OpenIG Federation .war.</para>
    </listitem>
    <listitem>
     <para>Configure OpenIG to log users into the target application.
@@ -88,7 +88,7 @@
    </listitem>
    <listitem>
     <para>Export the Identity Provider MetaData from the remote Identity
-     Provider.
+     Provider or use the meta data from the OpenAM generated fedlet.
     </para>
    </listitem>
    <listitem>

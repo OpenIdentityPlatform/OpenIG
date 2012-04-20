@@ -54,9 +54,9 @@
   and basic configuration, OpenIG is a Java-based reverse proxy which runs as
   a web application.  Enable the Form-Filter replay module and OpenIG
   automatically log users in when a timeout or authentication page is detected.
-  Additionally, enable the SAML2 or OpenID service and  OpenIG becomes a SAML2
-  or OpenID relying party endpoint. In this mode of operation, OpenIG receives
-  and verifies the SAML2 or OpenID request and then logs the user directly
+  Additionally, enable the SAML2 service and OpenIG becomes a SAML2
+  endpoint. In this mode of operation, OpenIG receives
+  and verifies the SAML2 request and then logs the user directly
   into the target application.</para>
  </section>
 
@@ -238,9 +238,9 @@
 
    <para>The configuration of OpenIG was designed to be very modular and
    self-contained. Each module within OpenIG stores its configuration in JSON
-   representation, which is stored in flat files and managed via REST. The
+   representation, which is stored in flat files. The
    features of OpenIG can be configured by directly manipulating the JSON flat
-   files, through REST, or through OpenIG management console.</para>
+   files.</para>
   </section>
 
   <section>
@@ -259,15 +259,15 @@
 
    <para>The Services model was designed to allow the integration of value
    added features, such as Federation, without requiring them to be tightly
-   bound to the OpenIG implementation. SAML2 and OpenID are the two add on
-   services shipping with OpenIG today.</para>
+   bound to the OpenIG implementation. SAML2 is the add on 
+   service shipping with OpenIG today.</para>
   </section>
 
   <section>
    <title>Federation Service (Federation Gateway)</title>
 
    <para>When the Federation Service is enabled, OpenIG acts as the
-   Service Provider in a Circle of Trust with  a SAML2 compliant Identity
+   Service Provider in a Circle of Trust with a SAML2 compliant Identity
    Provider. The Federation service supports both IDP and SP initiated SAML2
    profiles. The Federation Gateway may be a Service Provider in the classic
    Federation use case where the IDP and SP are different companies or domains.
