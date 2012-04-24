@@ -134,7 +134,7 @@
    <programlisting language="xml">&lt;Resource name="jdbc/forgerock" auth="Container" type="javax.sql.DataSource"
  maxActive="100" maxIdle="30" maxWait="10000"
  username="admin" password="11111111" driverClassName="com.mysql.jdbc.Driver"
- url="jdbc:mysql://localhost:3309/bitnami_drupal6"/&gt;</programlisting>
+ url="jdbc:mysql://localhost:3306/databasename"/&gt;</programlisting>
 
    <para>Add a resource reference to the data source in
    <filename>$TOMCAT_HOME/conf/web.xml</filename>.</para>
@@ -354,7 +354,7 @@
   <programlisting language="xml">&lt;datasources&gt;
   &lt;local-tx-datasource&gt;
     &lt;jndi-name&gt;jdbc/forgerock&lt;jndi-name&gt;
-    &lt;connection-url&gt;jdbc:mysql://localhost:3309/bitnami_drupal6&lt;connection-url&gt;
+    &lt;connection-url&gt;jdbc:mysql://localhost:3306/databasename&lt;connection-url&gt;
     &lt;driver-class&gt;com.mysql.jdbc.Driver&lt;driver-class&gt;
     &lt;user-name&gt;admin&lt;user-name&gt;
     &lt;password&gt;11111111&lt;password&gt;
