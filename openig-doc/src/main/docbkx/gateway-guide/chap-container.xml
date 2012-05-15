@@ -47,16 +47,13 @@
    <para>Jetty 6.x and 7.x</para>
   </listitem>
   <listitem>
-   <para>Glassfish 2.0</para>
+   <para>Glassfish 2.x and 3.x</para>
   </listitem>
   <listitem>
    <para>JBoss 5.x</para>
   </listitem>
   <listitem>
    <para>Weblogic 10.x</para>
-  </listitem>
-  <listitem>
-   <para>WebSphere 7.x</para>
   </listitem>
  </itemizedlist>
 
