@@ -45,12 +45,12 @@
                 "type": "CryptoHeaderFilter",
                 "config": {
                     "messageType":"REQUEST",
-                    "operationType":"DECRYPT",
+                    "operation":"DECRYPT",
                     "algorithm":"DES/ECB/NoPadding",
                     "key":"DESKEY",
                     "keyType":"DES",
                     "charSet":"utf-8",
-                    "headers": ["replaypassword"],
+                    "headers": ["password"],
                 },
             },
             {  
@@ -68,7 +68,7 @@
                         "forcedownlevel": ["0"],
                         "trusted": ["0"],
                         "username": ["${exchange.request.headers['username'][0]}"],
-                        "password": ["${exchange.request.headers['replaypassword'][0]}"],
+                        "password": ["${exchange.request.headers['password'][0]}"],
                         "isUtf8": ["1"],
                     }
                 }
@@ -86,7 +86,7 @@
                 "type": "HeaderFilter",
                 "config": {
                     "messageType":"REQUEST",
-                    "remove": ["replaypassword","username"],
+                    "remove": ["password","username"],
                  }
             },
             {
