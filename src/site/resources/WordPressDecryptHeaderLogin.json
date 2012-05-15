@@ -6,7 +6,7 @@
                 "type": "HandlerServlet",
                 "config": {
                     "handler": "DispatchHandler",
-                    "baseURI":"http://74.208.127.116:8080"
+                    "baseURI":"http://109.73.67.52:8080"
                 }
             },
             {
@@ -37,12 +37,12 @@
                 "type": "CryptoHeaderFilter",
                 "config": {
                     "messageType":"REQUEST",
-                    "operationType":"DECRYPT",
+                    "operation":"DECRYPT",
                     "algorithm":"DES/ECB/NoPadding",
                     "key":"DESKEY",
                     "keyType":"DES",
                     "charSet":"utf-8",
-                    "headers": ["replaypassword"],
+                    "headers": ["password"],
                 },
             },
             {
@@ -50,12 +50,12 @@
                 "type": "StaticRequestFilter",
                 "config": {
                     "method": "POST",
-                    "uri": "http://74.208.127.116:8080/wordpress/wp-login.php",
+                    "uri": "http://109.73.67.52:8080/wordpress/wp-login.php",
                     "form": {
                         "log": ["${exchange.request.headers['username'][0]}"],
-                        "pwd": ["${exchange.request.headers['replaypassword'][0]}"],,
+                        "pwd": ["${exchange.request.headers['password'][0]}"],,
                         "rememberme": ["forever"],
-                        "redirect_to" : ["http://demo.forgerock.com:8080/wordpress/wp-admin/"],
+                        "redirect_to" : ["http://109.73.67.52:8080/wordpress/wp-admin/"],
                         "testcookie": ["1"]
                     }
                 }
@@ -73,7 +73,7 @@
                 "type": "HeaderFilter",
                 "config": {
                     "messageType":"REQUEST",
-                    "remove": ["replaypassword","username"],
+                    "remove": ["password","username"],
                  }
             },
             {

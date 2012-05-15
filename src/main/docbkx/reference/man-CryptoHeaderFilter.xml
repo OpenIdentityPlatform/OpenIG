@@ -53,7 +53,7 @@
      "type": "CryptoHeaderFilter",
      "config": {
          "messageType": string,
-         "operationType": string,
+         "operation": string,
          "algorithm": string,
          "key": string,
          "keyType": string,
@@ -74,7 +74,7 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"operationType"</code>: <emphasis>string,
+    <term><code>"operation"</code>: <emphasis>string,
     required</emphasis></term>
     <listitem>
      <para>Indicates whether to encrypt or decrypt. Must be one of:
@@ -110,7 +110,7 @@
      "type": "CryptoHeaderFilter",
      "config": {
          "messageType": "REQUEST",
-         "operationType": "DECRYPT",
+         "operation": "DECRYPT",
          "algorithm": "DES/ECB/NoPadding",
          "keyType": "DES",
          "key": "oqdP3DJdE1Q=",
