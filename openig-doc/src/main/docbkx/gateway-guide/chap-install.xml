@@ -64,8 +64,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 19.1-b02-334, mixed mode)</screen>
   <title>Download, Install, &amp; Configure</title>
   <step>
    <para><link xlink:href="http://www.forgerock.org/openig.html"
-   xlink:show="new">Download</link> and if necessary unpack the gateway
-   .war file.</para>
+   xlink:show="new">Download</link> the OpenIG .war file.</para>
   </step>
   <step>
    <para>Deploy the .war to the root context of the web application
