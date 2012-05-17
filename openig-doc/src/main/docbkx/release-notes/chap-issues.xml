@@ -43,6 +43,8 @@
   <para>The following issues were fixed in release
   <?eval ${docTargetVersion}?>.</para>
 
+  <para>TODO: Update with fixes post 2.1.0</para>
+
   <itemizedlist>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-7" xlink:show="new">OPENIG-7</link>: Configuration option to set the user's sessionIndex from the IDP in the OpenIG session</para></listitem>
 
