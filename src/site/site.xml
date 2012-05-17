@@ -53,6 +53,10 @@
    <item name="Partners" href="http://forgerock.com/partners.html" />
   </menu>
   
+  <menu name="Released Documentation">
+   <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
+  </menu>
+  
   <menu name="Docs in progress">
    <item name="All Formats" href="docs.html" />
    <item name="Release Notes" href="./doc/release-notes/index.html" />
