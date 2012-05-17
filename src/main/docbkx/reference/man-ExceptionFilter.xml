@@ -75,7 +75,7 @@
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/ExceptionFilter.html"
+  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/ExceptionFilter.html"
   >org.forgerock.openig.filter.ExceptionFilter</link></para>
  </refsect1>
 </refentry>

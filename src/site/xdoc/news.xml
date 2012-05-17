@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011 ForgeRock AS
+  !      Copyright 2011-2012 ForgeRock AS
   !    
 -->
 <document
@@ -32,7 +32,12 @@
   <author email="openig@forgerock.org">ForgeRock AS</author>
  </properties>
  <body>
-  <section name="New Release">
+  <section name="New Releases">
+   <p>May 15, 2012. ForgeRock has released OpenIG 2.1.0. You can get the
+   release from the <a href="http://www.forgerock.org/openig.html">download
+   page</a>. Documentation for OpenIG 2.1.0 is available at <a
+   href="http://docs.forgerock.org/en/openig/2.1.0/">docs.forgerock.org</a>.</p>
+
    <p>ForgeRock Identity Gateway release 2.0 is here !
    <a href="http://www.forgerock.org/openig.html">Visit the download page</a> 
    to get started.
@@ -40,4 +45,3 @@
   </section>
  </body>
 </document>
-

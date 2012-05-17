@@ -74,7 +74,7 @@
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/HttpServletHeaplet.html"
+  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/servlet/HttpServletHeaplet.html"
   >org.forgerock.openig.servlet.HttpServletHeaplet</link></para>
  </refsect1>
 </refentry>
