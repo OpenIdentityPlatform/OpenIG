@@ -291,6 +291,14 @@
    </varlistentry>
 
    <varlistentry>
+    <term>sessionIndexMapping</term>
+    <listitem>
+     <para>The IDP's sessionIndex for the user is sent in the assertion. The value contained in the assertion is set as the value of the attribute sessionIndex in the session.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term>redirectURI</term>
     <listitem>
      <para>The <literal>redirectURI</literal> should be set to the page the

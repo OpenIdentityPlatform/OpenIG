@@ -52,6 +52,13 @@
   follows.</para>
 
   <programlisting language="javascript">"type" : "Chain"</programlisting>
+
+  <para>
+  The <literal>"operationType"</literal> field in the 
+  <literal>"CryptoHeaderFilter"</literal> has been
+  changed to <literal>"operation"</literal>
+  </para>
+  
  </section>
 
  <section xml:id="deprecated">
