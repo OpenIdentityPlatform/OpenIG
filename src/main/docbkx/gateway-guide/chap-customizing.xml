@@ -33,7 +33,7 @@
  <title>Customizing OpenIG</title>
 
  <para>OpenIG includes a complete, stable <link xlink:show="new"
- xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/index.html">application
+ xlink:href="http://openig.forgerock.org/apidocs/index.html">application
  programming interface</link>, designed to allow you to customize OpenIG
  as required. Customizing OpenIG can be necessary if you need to perform
  complex server interactions or intensive data transformations, and stock
@@ -50,18 +50,18 @@
  </indexterm>
 
   <para>The two primary extension points are the interfaces: <link
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/Filter.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html"
   xlink:show="new">Filter</link> (for processing a request and/or response en
   route) and <link
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/handler/Handler.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/Handler.html"
   xlink:show="new">Handler</link> (for generating responses from requests).
   These interfaces are similar to the Java Enterprise Edition
   <literal>Filter</literal> and <literal>Servlet</literal> interfaces, with
   some differences in the semantics of messages. While you can simply implement
   these interfaces, there are also included convenience classes: <link
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/GenericFilter.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/GenericFilter.html"
   xlink:show="new">GenericFilter</link> and <link
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/handler/GenericHandler.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/GenericHandler.html"
   xlink:show="new">GenericHandler</link> that you can use if you intend to make
   your extensions configurable through the OpenIG configuration
   resource.</para>
@@ -80,20 +80,20 @@
  </indexterm>
 
   <para>The <literal>Filter</literal> interface exposes a <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
   >filter</link> method, which takes an <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html"
   >Exchange</link> object and the <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/Chain.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html"
   >Chain</link> of remaining filters and handler to dispatch to. Initially,
   <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html#request"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#request"
   >exchange.request</link> contains the request to be filtered. To pass the
   request to the next filter or handler in the chain, the filter calls
   <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
   >chain.handle(exchange)</link>. After this call, <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html#response"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
   >exchange.response</link> contains the response that can be filtered.</para>
 
   <para>A filter might elect not to pass the request to the next filter or
@@ -110,9 +110,9 @@
    <para>If an existing response exists in the exchange object and the filter
    intends to replace it with its own, it must first check to see if the
    existing response has an <link xlink:show="new"
-   xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Message.html#entity"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Message.html#entity"
    >entity</link>, and if it does, must call its <link xlink:show="new"
-   xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/io/BranchingInputStream.html#close()"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/io/BranchingInputStream.html#close()"
    >close</link> method in order to signal that the processing of the response
    from a remote server is complete.</para>
   </note>
@@ -127,14 +127,14 @@
  </indexterm>
 
   <para>The <literal>Handler</literal> interface exposes a <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
   >handle</link> method, which takes an <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html#response"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
   >Exchange</link> object. It processes the request in
   <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html#request"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#request"
   >exchange.request</link> and produces a response in <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Exchange.html#response"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Exchange.html#response"
   >exchange.response</link>. A handler can elect to dispatch the exchange to
   another handler or chain.</para>
 
@@ -142,9 +142,9 @@
    <para>If an existing response exists in the exchange object and the filter
    intends to replace it with its own, it must first check to see if the
    existing response has an <link xlink:show="new"
-   xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/http/Message.html#entity"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/http/Message.html#entity"
    >entity</link>, and if it does, must call its <link xlink:show="new"
-   xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/io/BranchingInputStream.html#close()"
+   xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/io/BranchingInputStream.html#close()"
    >close</link> method in order to signal that the processing of the response
    from a remote server is complete.</para>
   </note>
@@ -161,18 +161,18 @@
   <para>Objects are added to the heap and supplied with configuration artifacts
   at initialization time. To be integrated with the configuration, a class must
   have an accompanying implementation of the <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/heap/Heaplet.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/Heaplet.html"
   >Heaplet</link> interface. The easiest and most common way of exposing the
   heaplet is to extend the <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/heap/NestedHeaplet.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/NestedHeaplet.html"
   >NestedHeaplet</link> class in a nested class in the class you want to create
   and initialize and implementing its <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/heap/GenericHeaplet.html#create()"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/GenericHeaplet.html#create()"
   >create</link> method.</para>
 
   <para>Within the <literal>create</literal> method, you can access the
   object's configuration through the <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/heap/GenericHeaplet.html#config"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/heap/GenericHeaplet.html#config"
   >config</link> field.</para>
  </section>
 
@@ -193,10 +193,10 @@
   xlink:role="http://docbook.org/xlink/role/olink"
   >javax.servlet.Filter</link> type, providing any appropriate initialization
   parameters. A servlet can be dispatched directly by the <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/gateway/GatewayServlet.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/gateway/GatewayServlet.html"
   >gateway servlet</link>, and servlets and filters can be flexibly dispatched
   to through a <link xlink:show="new"
-  xlink:href="http://docs.forgerock.org/en/openig/2.1.0/javadoc/org/forgerock/openig/servlet/DispatchServlet.html"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/servlet/DispatchServlet.html"
   >DispatchServlet</link>.</para>
  </section>
 
