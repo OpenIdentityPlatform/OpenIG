@@ -44,6 +44,8 @@
   <?eval ${docTargetVersion}?>.</para>
 
   <itemizedlist>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-7" xlink:show="new">OPENIG-7</link>: Configuration option to set the user's sessionIndex from the IDP in the OpenIG session</para></listitem>
+
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-6" xlink:show="new">OPENIG-6</link>: Missing relativePath in saas/pbworks module</para></listitem>
   </itemizedlist>
  </section>
@@ -62,8 +64,16 @@
   release <?eval ${docTargetVersion}?> became available.</para>
 
   <itemizedlist>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-4" xlink:show="new">OPENIG-4</link>: boundary stripped off of multipart/form-data on POST operation</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-1" xlink:show="new">OPENIG-1</link>: Federation Gateway 2.0.0 HTTPS file upload fails</para></listitem>
+
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-4" xlink:show="new">OPENIG-4</link>: boundary stripped off of multipart/form-data on POST operation</para></listitem>
+
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-8" xlink:show="new">OPENIG-8</link>: OpenIG gateway removes Content-Length: 0</para></listitem>
+
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-9" xlink:show="new">OPENIG-9</link>: There is no way to set the user's authnLevel and authNContext from the assertion in the OpenIG session</para></listitem>
+
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-10" xlink:show="new">OPENIG-10</link>: No support for SP initiated single logout</para></listitem>
+
   </itemizedlist>
  </section>
 </chapter>
