@@ -42,7 +42,8 @@
  <para>Fully baked core documentation is available at <link
  xlink:href='http://docs.forgerock.org/'>docs.forgerock.org</link>.</para>
 
- <para>The <link xlink:href='http://wikis.forgerock.org/openam/'
+ <para>The <link
+ xlink:href="https://wikis.forgerock.org/confluence/display/OPENAM/Home"
  xlink:show="new">OpenAM Wiki</link> offers additional content related to
  ForgeRock access management software. You are welcome to <link
  xlink:href='https://idp.forgerock.org/openam/UI/Login?service=register'
