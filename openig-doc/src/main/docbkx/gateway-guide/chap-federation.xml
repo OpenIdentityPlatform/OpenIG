@@ -386,8 +386,8 @@
         "method": "POST",
         "uri": "https://10.10.0.5/login",
         "form": {
-            "userName": [${exchange.session.userName}],
-            "password": [${exchange.session.password}],
+            "userName": [ "${exchange.session.userName}" ],
+            "password": [ "${exchange.session.password}" ],
         }   
     }   
 }</programlisting>
