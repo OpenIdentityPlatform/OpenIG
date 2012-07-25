@@ -115,6 +115,15 @@
   <filename>$HOME_DIR/.ForgeRock/SAML/</filename> for the Federation XML
   configuration.</para>
 
+  <para>On Windows, the configuration files belong in
+  <filename>%appdata%\ForgeRock\OpenIG</filename>, or
+  <filename>%appdata%\ForgeRock\SAML</filename>. To locate the
+  <filename>%appdata%</filename> folder for your version of Windows, open
+  Windows Explorer, type <literal>%appdata%</literal> as the file path, and
+  press Enter. You must create the <filename>ForgeRock\OpenIG\</filename> and
+  <filename>ForgeRock\SAML\</filename> folders there, and then copy the
+  configuration files.</para>
+
   <variablelist>
    <para>The following is a description of the files:</para>
 

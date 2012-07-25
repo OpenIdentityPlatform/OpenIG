@@ -210,6 +210,13 @@ PING demo.forgerock.com (10.0.1.1): 56 data bytes
  $HOME/.ForgeRock/OpenIG/config.json
 $ jetty.sh restart</screen>
 
+  <para>On Windows, the configuration files belong in
+  <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
+  <filename>%appdata%</filename> folder for your version of Windows, open
+  Windows Explorer, type <literal>%appdata%</literal> as the file path, and
+  press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
+  folder there, and then copy the configuration files.</para>
+
   <para>To try out the first sample browse to <link xlink:show="new"
   xlink:href="http://demo.forgerock.com:8080/wordpress"
   >http://demo.forgerock.com:8080/wordpress</link>. You should see the WordPress

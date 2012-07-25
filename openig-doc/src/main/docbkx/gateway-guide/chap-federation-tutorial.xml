@@ -100,6 +100,15 @@ $ cp conf/* $HOME/.ForgeRock/SAML
 $ ls $HOME/.ForgeRock/SAML
 FederationConfig.properties    idp-extended.xml        sp-extended.xml
 fedlet.cot                     idp.xml                 sp.xm</screen>
+
+  <para>On Windows, the configuration files belong in
+  <filename>%appdata%\ForgeRock\OpenIG</filename>, or
+  <filename>%appdata%\ForgeRock\SAML</filename>. To locate the
+  <filename>%appdata%</filename> folder for your version of Windows, open
+  Windows Explorer, type <literal>%appdata%</literal> as the file path, and
+  press Enter. You must create the <filename>ForgeRock\OpenIG\</filename> and
+  <filename>ForgeRock\SAML\</filename> folders there, and then copy the
+  configuration files.</para>
  </section>
 
  <section xml:id="fed-tutorial-testing">
