@@ -98,6 +98,13 @@
 
     <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
  $HOME/.ForgeRock/OpenIG/config.json</screen>
+
+    <para>On Windows, the configuration files belong in
+    <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
+    <filename>%appdata%</filename> folder for your version of Windows, open
+    Windows Explorer, type <literal>%appdata%</literal> as the file path, and
+    press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
+    folder there, and then copy the configuration files.</para>
    </step>
 
    <step>
