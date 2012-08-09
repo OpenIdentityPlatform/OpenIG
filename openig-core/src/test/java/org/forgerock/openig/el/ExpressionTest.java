@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.el;
 
+import java.net.URI;
 import java.util.HashMap;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -68,6 +69,16 @@ public class ExpressionTest {
         Expression expr = new Expression("${exchange.request.headers['Host'][0]}");
         String host = expr.eval(exchange, String.class);
         assertThat(host).isEqualTo("www.example.com");
+    }
+
+    @Test
+    public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
+        Object o = new Expression("${exchange.request.uri.path}").eval(exchange);
+        assertThat(o).isInstanceOf(String.class);
+        assertThat(o).isEqualTo("/path/to/resource.html");
     }
 
     @Test

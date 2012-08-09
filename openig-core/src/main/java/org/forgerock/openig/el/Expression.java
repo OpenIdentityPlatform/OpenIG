@@ -20,7 +20,9 @@ package org.forgerock.openig.el;
 // Java Standard Edition
 import java.beans.FeatureDescriptor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 // Java Enterprise Edition
 import javax.el.ELContext;
@@ -47,8 +49,8 @@ import org.forgerock.openig.resolver.Resolvers;
  */
 public class Expression {
 
-    /** The underlying EL expression that this object represents. */
-    private final ValueExpression valueExpression;
+    /** The underlying EL expression(s) that this object represents. */
+    private final List<ValueExpression> valueExpression;
 
     /**
      * Constructs an expression for later evaluation.
@@ -58,7 +60,12 @@ public class Expression {
      */
     public Expression(String expression) throws ExpressionException {
         try {
-            valueExpression = new ExpressionFactoryImpl().createValueExpression(new XLContext(null), expression, Object.class);
+            valueExpression = new ArrayList<ValueExpression>();
+            for (String component : expression.split("[\\\\]")) {
+                if (component.length() > 0)
+                    valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
+                            new XLContext(null), component, Object.class));
+            }
         } catch (ELException ele) {
             throw new ExpressionException(ele);
         }
@@ -73,7 +80,17 @@ public class Expression {
      */
     public Object eval(Object scope) {
         try {
-            return valueExpression.getValue(new XLContext(scope));
+            if (valueExpression.size() > 1) {
+                // return type must be a String
+                String result = "";
+                for (ValueExpression expression : valueExpression) {
+                    if (result.length() > 0)
+                        result += "\\";
+                    result += (String)expression.getValue(new XLContext(scope));
+                }
+                return result;
+            }
+            return valueExpression.get(0).getValue(new XLContext(scope));
         } catch (ELException ele) {
             return null; // unresolved element yields null value
         }
@@ -104,7 +121,10 @@ public class Expression {
      */
     public void set(Object scope, Object value) {
         try {
-            valueExpression.setValue(new XLContext(scope), value);
+            // cannot set multiple items, truncate the List
+            while (valueExpression.size() > 1)
+                valueExpression.remove(1);
+            valueExpression.get(0).setValue(new XLContext(scope), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }
