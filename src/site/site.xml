@@ -81,7 +81,7 @@
    <src>./images/openig-tagline-177x65.png</src>
    <alt>OpenIG</alt>
   </openproject>
-  <siteSearchFQDN>openig.forgerock.org</siteSearchFQDN>
+  <siteSearchFQDN>forgerock.org</siteSearchFQDN>
  </custom>
 
 </project>
