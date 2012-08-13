@@ -92,6 +92,9 @@ public class Expression {
                 }
                 return result;
             }
+            if (valueExpression.size() == 0) {
+                return null;
+            }
             return valueExpression.get(0).getValue(new XLContext(scope));
         } catch (ELException ele) {
             return null; // unresolved element yields null value
