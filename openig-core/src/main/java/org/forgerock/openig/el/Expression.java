@@ -62,9 +62,10 @@ public class Expression {
         try {
             valueExpression = new ArrayList<ValueExpression>();
             for (String component : expression.split("[\\\\]")) {
-                if (component.length() > 0)
+                if (component.length() > 0) {
                     valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
                             new XLContext(null), component, Object.class));
+                }
             }
         } catch (ELException ele) {
             throw new ExpressionException(ele);
@@ -84,8 +85,9 @@ public class Expression {
                 // return type must be a String
                 String result = "";
                 for (ValueExpression expression : valueExpression) {
-                    if (result.length() > 0)
+                    if (result.length() > 0) {
                         result += "\\";
+                    }
                     result += (String)expression.getValue(new XLContext(scope));
                 }
                 return result;
