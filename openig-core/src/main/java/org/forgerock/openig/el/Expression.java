@@ -122,9 +122,8 @@ public class Expression {
     public void set(Object scope, Object value) {
         try {
             // cannot set multiple items, truncate the List
-            while (valueExpression.size() > 1)
-                valueExpression.remove(1);
-            valueExpression.get(0).setValue(new XLContext(scope), value);
+            valueExpression.clear();
+            valueExpression.add(new XLContext(scope), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }
