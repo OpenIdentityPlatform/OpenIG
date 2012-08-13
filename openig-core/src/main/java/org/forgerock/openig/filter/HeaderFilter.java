@@ -63,6 +63,7 @@ public class HeaderFilter extends GenericFilter {
      * Removes all specified headers, then adds all specified headers.
      *
      * @param message the message to remove headers from and add headers to.
+     * @param exchange the context in which the message should be evaluated
      */
     private void process(Message message, Exchange exchange) {
         for (String s : this.remove) {
@@ -79,6 +80,9 @@ public class HeaderFilter extends GenericFilter {
     /**
      * Filters the request and/or response of an exchange by removing headers from and adding
      * headers to a message.
+     *
+     * @param exchange the context in which this filter should be evaluated
+     * @param next the handler chain for this filter
      */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
