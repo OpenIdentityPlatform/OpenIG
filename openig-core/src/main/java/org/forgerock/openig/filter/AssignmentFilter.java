@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 // JSON Fluent
+import org.apache.log4j.Logger;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -43,6 +44,8 @@ import org.forgerock.openig.util.JsonValueUtil;
  * @author Paul C. Bryan
  */
 public class AssignmentFilter extends GenericFilter {
+
+    static Logger log = Logger.getLogger(AssignmentFilter.class.getName());
 
     /** Defines assignment condition, target and value expressions. */
     public static class Binding {
@@ -79,6 +82,8 @@ public class AssignmentFilter extends GenericFilter {
 
     private void eval(Binding binding, Exchange exchange) {
         if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
+            log.debug("condition is "+(binding.condition == null ? "null" : "true")+", setting target");
+            log.debug("binding.value is "+(binding.value == null ? "null" : "non-null"));
             binding.target.set(exchange, binding.value != null ? binding.value.eval(exchange) : null);
         }
     }

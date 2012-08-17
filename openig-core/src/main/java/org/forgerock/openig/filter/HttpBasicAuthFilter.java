@@ -28,6 +28,7 @@ import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
 
 // JSON Fluent
+import org.apache.log4j.Logger;
 import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
@@ -64,6 +65,8 @@ import org.forgerock.openig.util.JsonValueUtil;
  * @author Paul C. Bryan
  */
 public class HttpBasicAuthFilter extends GenericFilter {
+
+    static Logger log = Logger.getLogger(HttpBasicAuthFilter.class.getName());
 
     /** Headers that are suppressed from incoming request. */
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS =
@@ -106,6 +109,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
         BranchingInputStream trunk = exchange.request.entity;
         // loop to retry for intitially retrieved (or refreshed) credentials
         for (int n = 0; n < 2; n++) {
+            log.debug("filter() executing loop #"+n);
+
             // put a branch of the trunk in the entity to allow retries
             if (trunk != null) {
                 exchange.request.entity = trunk.branch();
@@ -113,25 +118,33 @@ public class HttpBasicAuthFilter extends GenericFilter {
             // because credentials are sent in every request, this class caches them in the session
             String userpass = (String)exchange.session.get(attributeName(exchange.request));
             if (userpass != null) {
+                log.debug("injected Authorization Basic header with value "+userpass);
                 exchange.request.headers.add("Authorization", "Basic " + userpass);
             }
+            log.debug("processing handler chain");
             next.handle(exchange);
             // successful exchange from this filter's standpoint
             if (exchange.response.status != 401) {
                 exchange.response.headers.remove(SUPPRESS_RESPONSE_HEADERS);
+                log.debug("exchange successful, returning with http status code "+exchange.response.status);
                 timer.stop();
                 return;
             }
+            log.debug("exchange result is 401 Unauthorized, recycling with credentials");
+
             // credentials might be stale, so fetch them
             String user = username.eval(exchange, String.class);
             String pass = password.eval(exchange, String.class);
             // no credentials is equivalent to invalid credentials
             if (user == null || pass == null) {
+                log.debug("no credentials found, aborting");
                 break;
             }
             // ensure conformance with specification
             if (user.indexOf(':') > 0) {
-                throw new HandlerException("username must not contain a colon ':' character");
+                String msg = "username must not contain a colon ':' character";
+                log.error(msg);
+                throw new HandlerException(msg);
             }
             // set in session for fetch in next iteration of this loop
             exchange.session.put(attributeName(exchange.request),

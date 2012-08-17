@@ -37,6 +37,7 @@ import javax.el.VariableMapper;
 import de.odysseus.el.ExpressionFactoryImpl;
 
 // OpenIG Core
+import org.apache.log4j.Logger;
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
 
@@ -48,6 +49,8 @@ import org.forgerock.openig.resolver.Resolvers;
  * @author Paul C. Bryan
  */
 public class Expression {
+
+    static Logger log = Logger.getLogger(Expression.class.getName());
 
     /** The underlying EL expression(s) that this object represents. */
     private final List<ValueExpression> valueExpression;
@@ -90,13 +93,19 @@ public class Expression {
                     }
                     result += (String)expression.getValue(new XLContext(scope));
                 }
+                log.debug("returning eval() result: "+result);
                 return result;
             }
             if (valueExpression.size() == 0) {
+                log.debug("nothing to eval()");
                 return null;
             }
-            return valueExpression.get(0).getValue(new XLContext(scope));
+            Object result = valueExpression.get(0).getValue(new XLContext(scope));
+            log.debug("returning eval() of "+valueExpression.get(0).getExpressionString()+", result: "
+                    +(result == null ? "null" : result.toString()));
+            return result;
         } catch (ELException ele) {
+            log.debug("nothing to eval(): "+ele.getMessage());
             return null; // unresolved element yields null value
         }
     }
@@ -126,9 +135,14 @@ public class Expression {
      */
     public void set(Object scope, Object value) {
         try {
-            // cannot set multiple items, truncate the List
-            valueExpression.clear();
-            valueExpression.add(new XLContext(scope), value);
+            if (valueExpression.size() > 0) {
+                // cannot set multiple items, truncate the List
+                while (valueExpression.size() > 1) {
+                    valueExpression.remove(valueExpression.size() - 1);
+                }
+
+                valueExpression.get(0).setValue(new XLContext(scope), value);
+            }
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }

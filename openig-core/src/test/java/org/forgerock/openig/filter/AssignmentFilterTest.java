@@ -72,5 +72,6 @@ public class AssignmentFilterTest {
         assertThat(binding.target.eval(exchange)).isNull();
         chain.handle(exchange);
         assertThat(exchange.get("newAttr")).isEqualTo(200);
+        try { Thread.sleep(10); } catch (Exception e) {}
     }
 }

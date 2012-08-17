@@ -26,6 +26,7 @@ import java.net.URI;
 import javax.servlet.ServletContext;
 
 // JSON Fluent
+import org.apache.log4j.Logger;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -66,6 +67,8 @@ import org.forgerock.openig.resource.Resources;
  */
 public class ConfigResource implements Resource {
 
+    static Logger log = Logger.getLogger(ConfigResource.class.getName());
+
     /** The underlying resource that this object represents. */
     private final Resource resource;
 
@@ -94,19 +97,24 @@ public class ConfigResource implements Resource {
     public ConfigResource(String vendor, String product, String instance) throws ResourceException {
         File config = ConfigUtil.getFile(vendor, product, "config");
         if (config.exists()) { // simplistic config.json file
+            log.debug("configuration file found at "+config.getPath());
             this.resource = new FileResource(config);
         } else { // bootstrap location of instance-based configuration file
             File boot = ConfigUtil.getFile(vendor, product, instance != null ? instance : "bootstrap");
             if (!boot.exists()) {
-                throw new ResourceException("could not find local configuration file at " +
-                 config.getPath() + " or bootstrap file at " + boot.getPath());
+                String msg = "could not find local configuration file at " +
+                        config.getPath() + " or bootstrap file at " + boot.getPath();
+                log.fatal(msg);
+                throw new ResourceException(msg);
             }
+            log.debug("configuration file found at "+boot.getPath());
             FileResource bootResource = new FileResource(boot);
             JSONRepresentation representation = new JSONRepresentation();
             bootResource.read(representation);
             try {
                 this.resource = Resources.newInstance(new JsonValue(representation.object).get("configURI").required().asURI());
             } catch (JsonValueException jve) {
+                log.fatal("failure to load config found at "+boot.getPath()+", "+jve.getMessage());
                 throw new ResourceException(jve);
             }
         }
