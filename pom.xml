@@ -86,6 +86,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <docTargetVersion>2.1.0</docTargetVersion>
         <gaId>UA-23412190-11</gaId>
+        <!--
+          Release date is specified only when building the documentation
+          for publication. For example:
+              -D"releaseDate=Software release date: January 1, 1970"
+          Otherwise release date should remain empty.
+        -->
+        <releaseDate />
+        <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
     </properties>
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->
