@@ -12,32 +12,22 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock Inc.
  */
 
 package org.forgerock.openig.saml;
 
 // Java Standard Edition
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.logging.Level;
 
 // Java Enterprise Edition
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -50,40 +40,22 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.config.ConfigUtil;
-import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.HeaderFilter;
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.servlet.DispatchServlet;
-import org.forgerock.openig.servlet.GenericServletHeaplet;
-import org.forgerock.openig.servlet.HandlerServlet;
-import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.CaseInsensitiveSet;
 
 // OpenAM
-import com.sun.identity.federation.common.FSUtils;
-import com.sun.identity.plugin.session.SessionManager;
-import com.sun.identity.plugin.session.SessionProvider;
 import com.sun.identity.plugin.session.SessionException;
+import com.sun.identity.saml2.assertion.Assertion;
+import com.sun.identity.saml2.assertion.AuthnStatement;
 import com.sun.identity.saml2.assertion.Subject;
-import com.sun.identity.saml.common.SAMLUtils;
 import com.sun.identity.saml2.common.SAML2Constants;
 import com.sun.identity.saml2.common.SAML2Exception;
 import com.sun.identity.saml2.common.SAML2Utils;
 import com.sun.identity.saml2.logging.LogUtil;
-import com.sun.identity.saml2.meta.SAML2MetaException;
 import com.sun.identity.saml2.meta.SAML2MetaManager;
-import com.sun.identity.saml2.meta.SAML2MetaUtils;
-import com.sun.identity.saml2.profile.IDPProxyUtil;
-import com.sun.identity.saml2.profile.ResponseInfo; 
 import com.sun.identity.saml2.profile.SPACSUtils;
-import com.sun.identity.saml2.profile.SPCache;
 import com.sun.identity.saml2.profile.SPSingleLogout;
 import com.sun.identity.saml2.profile.SPSSOFederate;
-import com.sun.identity.saml2.protocol.Response;
-import com.sun.identity.shared.encode.URLEncDec;
 
 /**
  * Receives HTTP requests from the Dispatcher for all federation end points.
@@ -102,6 +74,12 @@ public class FederationServlet extends HttpServlet {
 
     /** TODO: Description. */
     private String subjectMapping;
+
+    /** The delimiter to use when there are multiple contexts in the assertion. */
+    private String authnContextDelimiter;
+
+    /** The name to use when placing context values into the session */
+    private String authnContext;
 
     /** TODO: Description. */
     private String sessionIndexMapping;
@@ -224,6 +202,28 @@ public class FederationServlet extends HttpServlet {
                System.out.println("FederationServlet adding session index: " + sessionIndexMapping + " = " + sessionIndexValue);
            }
         }
+
+        if (authnContext != null) {
+            @SuppressWarnings("unchecked")
+            List<AuthnStatement> authnStatements = ((Assertion)assertion.get(SAML2Constants.ASSERTION)).getAuthnStatements();
+            StringBuilder authnContextValues = new StringBuilder();
+            for (AuthnStatement authnStatement : authnStatements) {
+                String authnContextValue = authnStatement.getAuthnContext().getAuthnContextClassRef();
+                if (authnContextValue != null && !authnContextValue.isEmpty()) {
+                    authnContextValues.append(authnContextValue);
+                    authnContextValues.append(authnContextDelimiter);
+                }
+            }
+            if (authnContextValues.length() > 0) {
+                // remove the last delimiter as it is redundant
+                authnContextValues.deleteCharAt(authnContextValues.length() - 1);
+                httpSession.setAttribute(authnContext, authnContextValues.toString());
+                if (LogUtil.isAccessLoggable(Level.INFO)) {
+                    System.out.println("FederationServlet adding authentication contexts to session: "
+                            + authnContext + " = " + authnContextValues.toString());
+                }
+            }
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -281,6 +281,8 @@ public class FederationServlet extends HttpServlet {
             for (String key : mappings.keys()) {
                 servlet.attributeMapping.put(key, mappings.get(key).asString());
             }
+            servlet.authnContextDelimiter = config.get("authnContextDelimiter").defaultTo("|").asString();
+            servlet.authnContext = config.get("authnContext").asString();
             servlet.subjectMapping = config.get("subjectMapping").asString();
             servlet.sessionIndexMapping = config.get("sessionIndexMapping").asString();
             servlet.redirectURI = config.get("redirectURI").asString();
