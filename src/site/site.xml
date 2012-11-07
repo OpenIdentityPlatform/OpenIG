@@ -49,8 +49,8 @@
    <item name="Join" href="https://idp.forgerock.org/openam/UI/Login?service=register" />
    <item name="Downloads" href="http://www.forgerock.org/openig.html" />
    <item name="Mailing List" href="mail-lists.html" />
-   <item name="Support" href="http://forgerock.com/subscriptions.html" />
-   <item name="Partners" href="http://forgerock.com/partners.html" />
+   <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
+   <item name="Partners" href="http://forgerock.com/partners/" />
   </menu>
   
   <menu name="Released Documentation">
