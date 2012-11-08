@@ -13,7 +13,7 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock Inc.
  */
 
 // TODO: distinguish between basic and other schemes that use 401 (Digest, OAuth, ...)
@@ -41,6 +41,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.BranchingInputStream;
+import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.JsonValueUtil;
@@ -67,11 +68,11 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
     /** Headers that are suppressed from incoming request. */
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS =
-     new CaseInsensitiveSet(Arrays.asList("Authorization"));
+            new CaseInsensitiveSet(Arrays.asList("Authorization"));
 
     /** Headers that are suppressed for outgoing response. */
     private static final CaseInsensitiveSet SUPPRESS_RESPONSE_HEADERS =
-     new CaseInsensitiveSet(Arrays.asList("WWW-Authenticate"));
+            new CaseInsensitiveSet(Arrays.asList("WWW-Authenticate"));
 
     /** Expression that yields the username to supply during authentication. */
     public Expression username;
@@ -82,16 +83,19 @@ public class HttpBasicAuthFilter extends GenericFilter {
     /** Handler dispatch to if authentication fails. */
     public Handler failureHandler;
 
+    /** Decide if we cache the password header result **/
+    public boolean cacheHeader = true;
+
     /**
      * Resolves a session attribute name for the remote server specified in the specified
      * request.
      *
-     * @param name the name of the attribute to resolve.
+     * @param request the request of the attribute to resolve.
      * @return the session attribute name, fully qualified the request remote server.
      */
     private String attributeName(Request request) {
-        return this.getClass().getName() + ':' + request.uri.getScheme() + ':' + 
-         request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
+        return this.getClass().getName() + ':' + request.uri.getScheme() + ':' +
+                request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
     }
 
     /**
@@ -104,6 +108,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
         LogTimer timer = logger.getTimer().start();
         exchange.request.headers.remove(SUPPRESS_REQUEST_HEADERS);
         BranchingInputStream trunk = exchange.request.entity;
+        String userpass = null;
+
         // loop to retry for intitially retrieved (or refreshed) credentials
         for (int n = 0; n < 2; n++) {
             // put a branch of the trunk in the entity to allow retries
@@ -111,7 +117,12 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 exchange.request.entity = trunk.branch();
             }
             // because credentials are sent in every request, this class caches them in the session
-            String userpass = (String)exchange.session.get(attributeName(exchange.request));
+            if (cacheHeader) {
+                userpass = (String)exchange.session.get(attributeName(exchange.request));
+                if (logger.isLoggable(LogLevel.DEBUG) && userpass != null) {
+                    logger.debug("HttpBasicAuthFilter.filter: Using cached authentication header.");
+                }
+            }
             if (userpass != null) {
                 exchange.request.headers.add("Authorization", "Basic " + userpass);
             }
@@ -133,9 +144,19 @@ public class HttpBasicAuthFilter extends GenericFilter {
             if (user.indexOf(':') > 0) {
                 throw new HandlerException("username must not contain a colon ':' character");
             }
-            // set in session for fetch in next iteration of this loop
-            exchange.session.put(attributeName(exchange.request),
-             new Base64(0).encodeToString((user + ":" + pass).getBytes()));
+            if (cacheHeader) {
+                if (logger.isLoggable(LogLevel.DEBUG)) {
+                    logger.debug("HttpBasicAuthFilter.filter: Caching authentication header.");
+                }
+                // set in session for fetch in next iteration of this loop
+                exchange.session.put(attributeName(exchange.request),
+                        new Base64(0).encodeToString((user + ":" + pass).getBytes()));
+            } else {
+                if (logger.isLoggable(LogLevel.DEBUG)) {
+                    logger.debug("HttpBasicAuthFilter.filter: Not caching authentication header.");
+                }
+                userpass = new Base64(0).encodeToString((user + ":" + pass).getBytes());
+            }
         }
         // close the incoming response because it's about to be dereferenced
         if (exchange.response.entity != null) {
@@ -154,6 +175,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
             filter.username = JsonValueUtil.asExpression(config.get("username").required());
             filter.password = JsonValueUtil.asExpression(config.get("password").required());
             filter.failureHandler = HeapUtil.getObject(heap, config.get("failureHandler").required(), Handler.class); // required
+            filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean(); // optional
             return filter;
         }
     }
