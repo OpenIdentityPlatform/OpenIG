@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock Inc.
  */
 
 package org.forgerock.openig.header;
@@ -42,6 +42,9 @@ public class ContentTypeHeader implements Header {
 
     /** The character set used in encoding the message. */
     public String charset = null;
+
+    /** The boundary value provided in multipart messages. */
+    public String boundary = null;
 
     /**
      * Constructs a new empty header.
@@ -82,6 +85,7 @@ public class ContentTypeHeader implements Header {
     public void clear() {
         type = null;
         charset = null;
+        boundary = null;
     }
 
     @Override
@@ -103,6 +107,7 @@ public class ContentTypeHeader implements Header {
         if (parts.size() > 0) {
             this.type = parts.get(0);
             this.charset = HeaderUtil.parseParameters(parts).get("charset");
+            this.boundary = HeaderUtil.parseParameters(parts).get("boundary");
         }
     }
 
@@ -122,6 +127,9 @@ public class ContentTypeHeader implements Header {
             if (charset != null) {
                 sb.append("; charset=").append(charset);
             }
+            if (boundary != null) {
+                sb.append("; boundary=").append(boundary);
+            }
         }
         return (sb.length() > 0 ? sb.toString() : null);
     }
@@ -136,12 +144,14 @@ public class ContentTypeHeader implements Header {
         }
         ContentTypeHeader ct = (ContentTypeHeader)o;
         return (((this.type == null && ct.type == null) || (this.type != null && this.type.equals(ct.type))) &&
-         ((this.charset == null && ct.charset == null) || (this.charset != null && this.charset.equals(ct.charset))));
+         ((this.charset == null && ct.charset == null) || (this.charset != null && this.charset.equals(ct.charset))) &&
+         ((this.boundary == null && ct.boundary == null) || (this.boundary != null && this.boundary.equals(ct.boundary))));
     }
 
     @Override
     public int hashCode() {
         return ((type == null ? 0 : type.hashCode()) ^
-         (charset == null ? 0 : charset.hashCode()));
+         (charset == null ? 0 : charset.hashCode()) ^
+         (boundary == null ? 0 : boundary.hashCode()));
     }
 }
