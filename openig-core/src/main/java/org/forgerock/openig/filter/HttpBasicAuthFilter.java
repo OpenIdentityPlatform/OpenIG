@@ -110,7 +110,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
         BranchingInputStream trunk = exchange.request.entity;
         String userpass = null;
 
-        // loop to retry for intitially retrieved (or refreshed) credentials
+        // loop to retry for initially retrieved (or refreshed) credentials
         for (int n = 0; n < 2; n++) {
             // put a branch of the trunk in the entity to allow retries
             if (trunk != null) {
@@ -119,9 +119,6 @@ public class HttpBasicAuthFilter extends GenericFilter {
             // because credentials are sent in every request, this class caches them in the session
             if (cacheHeader) {
                 userpass = (String)exchange.session.get(attributeName(exchange.request));
-                if (logger.isLoggable(LogLevel.DEBUG) && userpass != null) {
-                    logger.debug("HttpBasicAuthFilter.filter: Using cached authentication header.");
-                }
             }
             if (userpass != null) {
                 exchange.request.headers.add("Authorization", "Basic " + userpass);
@@ -145,16 +142,10 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 throw new HandlerException("username must not contain a colon ':' character");
             }
             if (cacheHeader) {
-                if (logger.isLoggable(LogLevel.DEBUG)) {
-                    logger.debug("HttpBasicAuthFilter.filter: Caching authentication header.");
-                }
                 // set in session for fetch in next iteration of this loop
                 exchange.session.put(attributeName(exchange.request),
                         new Base64(0).encodeToString((user + ":" + pass).getBytes()));
             } else {
-                if (logger.isLoggable(LogLevel.DEBUG)) {
-                    logger.debug("HttpBasicAuthFilter.filter: Not caching authentication header.");
-                }
                 userpass = new Base64(0).encodeToString((user + ":" + pass).getBytes());
             }
         }
@@ -176,6 +167,11 @@ public class HttpBasicAuthFilter extends GenericFilter {
             filter.password = JsonValueUtil.asExpression(config.get("password").required());
             filter.failureHandler = HeapUtil.getObject(heap, config.get("failureHandler").required(), Handler.class); // required
             filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean(); // optional
+
+            if (logger!= null && logger.isLoggable(LogLevel.DEBUG)) {
+                logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);
+            }
+
             return filter;
         }
     }
