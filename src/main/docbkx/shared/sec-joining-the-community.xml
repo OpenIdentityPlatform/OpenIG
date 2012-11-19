@@ -40,7 +40,10 @@
  documentation, there is a mailing list which can be found at
  <link xlink:href='https://lists.forgerock.org/mailman/listinfo/openig'
  xlink:show="new">https://lists.forgerock.org/mailman/listinfo/openig</link>
- where you are likely to find an answer.</para>
+ where you are likely to find an answer. You can also make suggestions 
+ regarding updates at the documentation mailing list 
+ (<link xlink:href='https://lists.forgerock.org/mailman/listinfo/docs'
+ xlink:show="new">https://lists.forgerock.org/mailman/listinfo/docs</link>).</para>
 
  <para>Should you want to contribute a patch, test, or feature, or want to
  author part of the core documentation, first have a look on the ForgeRock site
