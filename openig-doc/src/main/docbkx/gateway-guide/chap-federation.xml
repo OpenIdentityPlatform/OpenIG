@@ -302,8 +302,9 @@
    <varlistentry>
     <term>sessionIndexMapping</term>
     <listitem>
-     <para>The IDP's sessionIndex for the user is sent in the assertion. The value contained in the assertion is set as the value of the attribute sessionIndex in the session.
-     </para>
+     <para>The IDP's <literal>sessionIndex</literal> for the user is sent in
+     the assertion. The value contained in the assertion is set as the value
+     of the attribute <literal>sessionIndex</literal> in the session.</para>
     </listitem>
    </varlistentry>
 
