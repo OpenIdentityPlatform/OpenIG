@@ -262,7 +262,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term>asertionMapping</term>
+    <term>assertionMapping</term>
     <listitem>
      <para>The <literal>assertionMapping</literal> defines how to transform the
      attributes from the incoming assertion to attribute value pairs in the
