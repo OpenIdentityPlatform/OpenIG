@@ -36,7 +36,16 @@
 
  <itemizedlist>
   <listitem>
-   <para>TODO</para>
+   <para>OpenIG HttpBasicAuthFilter now lets users change their passwords
+   during a session (<link
+   xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-32"
+   xlink:show="new">OPENIG-32</link>).</para>
+  </listitem>
+  <listitem>
+   <para>OpenIG Federation Servlet now supports SP-initiated single logout
+   and also supports single logout using the SOAP binding (<link
+   xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-10"
+   xlink:show="new">OPENIG-10</link>).</para>
   </listitem>
  </itemizedlist>
 

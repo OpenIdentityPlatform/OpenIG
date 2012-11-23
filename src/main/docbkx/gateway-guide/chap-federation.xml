@@ -222,8 +222,8 @@
   the assertion.</para>
 
   <para>The following excerpt of the Federation Service JSON is from the OpenIG
-  <filename>config.json</filename> file. All fields are mandatory except
-  <literal>logoutURI</literal>. The <literal>logoutURI</literal> is only
+  <filename>config.json</filename> file. All fields in the example are mandatory
+  except <literal>logoutURI</literal>. The <literal>logoutURI</literal> is only
   necessary if your configuration uses the single logout feature.</para>
 
   <programlisting language="javascript">{
@@ -357,6 +357,23 @@
      <para>The default value of <literal>fedletSLO</literal> is the same as the
      Fedlet. If you modify this attribute you must change the metadata to
      match.</para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>singleLogoutEndpointSoap</term>
+    <listitem>
+     <para>(Optional) The default value of <literal>fedletSloSoap</literal> is
+     the same as the Fedlet. If you modify this attribute you must change the
+     metadata to match.</para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>SPinitiatedSLOEndpoint</term>
+    <listitem>
+     <para>The default value is <literal>SPInitiatedSLO</literal>. If you
+     modify this attribute you must change the metadata to match.</para>
     </listitem>
    </varlistentry>
   </variablelist>
