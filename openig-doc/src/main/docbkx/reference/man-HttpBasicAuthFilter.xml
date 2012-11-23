@@ -66,7 +66,8 @@
      "config": {
          "username": expression,
          "password": expression,
-         "failureHandler": string
+         "failureHandler": string,
+         "cacheHeader": boolean
      }
 }</programlisting>
  </refsect1>
@@ -101,6 +102,19 @@
      fails.</para>
     </listitem>
    </varlistentry>
+   <varlistentry>
+    <term><code>"cacheHeader"</code>: <emphasis>boolean,
+    optional</emphasis></term>
+    <listitem>
+     <para>Whether to cache credentials in the session after the first
+     successful authentication, and then replay those credentials for
+     subsequent authentications in the same session.</para>
+     <para>With <literal>"cacheHeader": false</literal>, the filter generates
+     the header for each request. This is useful for example when users change
+     their passwords during a browser session.</para>
+     <para>Default: <literal>true</literal></para>
+    </listitem>
+   </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
@@ -111,7 +125,8 @@
      "config": {
          "username": "tomcat",
          "password": "tomcat",
-         "failureHandler": "TomcatAuthFailureHandler" 
+         "failureHandler": "TomcatAuthFailureHandler",
+         "cacheHeader": false
       }
 }</programlisting>
  </refsect1>
