@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock Inc.
  */
 
 package org.forgerock.openig.util;
@@ -55,6 +55,7 @@ public class JsonValueUtil {
         aliases.put("HandlerServlet", "org.forgerock.openig.servlet.HandlerServlet");
         aliases.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
         aliases.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
+        aliases.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
         aliases.put("SequenceHandler", "org.forgerock.openig.handler.SequenceHandler");
         aliases.put("SqlAttributesFilter", "org.forgerock.openig.filter.SqlAttributesFilter");
         aliases.put("StaticRequestFilter", "org.forgerock.openig.filter.StaticRequestFilter");
