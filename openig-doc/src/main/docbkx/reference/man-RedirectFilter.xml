@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='RedirectFilter'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>RedirectFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>RedirectFilter</refname>
+  <refpurpose>rewrites Location headers</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>RedirectFilter</secondary>
+  </indexterm>
+  <para>Rewrites Location headers on responses that generate a redirect that
+  would take the user directly to the application being proxied rather than
+  taking the user through OpenIG.</para>
+
+  <para>For example, if OpenIG listens on
+  <literal>https://openig.example.com:443/</literal> and the application it
+  protects listens on <literal>http://app.example.com:8080/</literal>, then
+  you can configure this filter to rewrite redirects that would take the user
+  to locations under <literal>http://app.example.com:8080/</literal> to go
+  instead to locations under
+  <literal>https://openig.example.com:443/</literal>.</para>
+
+  <para>The current implementation supports only HTTP 302 redirects.</para>
+
+ </refsect1>
+ <refsect1>
+  <title>Usage</title>
+  <programlisting language="javascript">{
+     "name": string,
+     "type": "RedirectFilter",
+     "config": {
+         "baseURI": string
+     }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Properties</title>
+  <variablelist>
+   <varlistentry>
+    <term><code>"baseURI"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The base URI of the OpenIG instance. This is used to rewrite the
+     Location header on the redirect response.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>Example</title>
+  <programlisting language="javascript">{
+     "name": "LocationRewriter",
+     "type": "RedirectFilter",
+     "config": {
+         "baseURI": "https://openig.example.com:443/"
+      }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Javadoc</title>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/RedirectFilter.html"
+  >org.forgerock.openig.filter.RedirectFilter</link></para>
+ </refsect1>
+</refentry>

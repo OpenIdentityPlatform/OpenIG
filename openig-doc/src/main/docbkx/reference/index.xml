@@ -124,6 +124,7 @@
   <xinclude:include href="man-HeaderFilter.xml" />
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
+  <xinclude:include href="man-RedirectFilter.xml" />
   <xinclude:include href="man-SqlAttributesFilter.xml" />
   <xinclude:include href="man-StaticRequestFilter.xml" />
   <xinclude:include href="man-SwitchFilter.xml" />
