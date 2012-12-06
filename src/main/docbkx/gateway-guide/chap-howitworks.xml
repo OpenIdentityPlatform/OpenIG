@@ -230,6 +230,13 @@
      configured parameters. The result is added to the exchange to be used by
      subsequent filters or handlers.</para>
     </listitem>
+    <listitem>
+     <para><link xlink:href="reference#RedirectFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >RedirectFilter</link>: Rewrites Location headers on responses that
+     generate a redirect that would take the user directly to the application
+     being proxied rather than taking the user through OpenIG.</para>
+    </listitem>
    </itemizedlist>
   </section>
 
