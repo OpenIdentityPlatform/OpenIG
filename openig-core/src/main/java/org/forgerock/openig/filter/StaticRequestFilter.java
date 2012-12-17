@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock, Inc.
  */
 
 package org.forgerock.openig.filter;
@@ -20,6 +20,7 @@ package org.forgerock.openig.filter;
 // Java Standard Edition
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -55,8 +56,8 @@ public class StaticRequestFilter extends GenericFilter {
     /** The HTTP method to be performed on the resource. */
     public String method;
 
-    /** The fully-qualified URI of the resource being accessed. */
-    public URI uri;
+    /** URI as an expression to allow dynamic URI construction */
+    public Expression uri;
 
     /** Protocol version (e.g.&nbsp{@code "HTTP/1.1"}). */
     public String version;
@@ -77,7 +78,16 @@ public class StaticRequestFilter extends GenericFilter {
         LogTimer timer = logger.getTimer().start();
         Request request = new Request();
         request.method = this.method;
-        request.uri = this.uri;
+        String value = this.uri.eval(exchange, String.class);
+        if (value != null) {
+            try {
+                request.uri = new URI(value);
+            } catch (URISyntaxException e) {
+                throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
+            }
+        } else {
+            throw logger.debug(new HandlerException("The URI expression evaluated to null"));
+        }
         if (this.version != null) { // default in Message class
             request.version = version;
         }
@@ -115,7 +125,7 @@ public class StaticRequestFilter extends GenericFilter {
         @Override public Object create() throws HeapException, JsonValueException {
             StaticRequestFilter filter = new StaticRequestFilter();
             filter.method = config.get("method").required().asString(); // required
-            filter.uri = config.get("uri").required().asURI(); // required
+            filter.uri = JsonValueUtil.asExpression(config.get("uri")); // required
             filter.version = config.get("version").asString(); // optional
             JsonValue headers = config.get("headers").expect(Map.class); // optional
             if (headers != null) {
