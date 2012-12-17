@@ -11,7 +11,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock, Inc.
  */
 
 package org.forgerock.openig.filter;
@@ -19,6 +19,7 @@ package org.forgerock.openig.filter;
 // Java Standard Edition
 import java.io.IOException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -40,7 +41,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.header.ContentLengthHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpUtil;
@@ -92,19 +92,29 @@ public class CaptureFilter extends GenericFilter {
     public synchronized void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
-        if (eval instanceof Boolean && (Boolean)eval) {
-            long id = sequence.incrementAndGet();
-            if (writer == null || !file.exists()) {
-                if (writer != null) { // file was removed while open
-                    writer.close();
-                }
-                writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
-            }
+        boolean doCapture = (eval instanceof Boolean && (Boolean)eval);
+        long id = 0;
+        if (doCapture) {
+            id = sequence.incrementAndGet();
+            checkWriter();
             captureRequest(exchange.request, id);
-            next.handle(exchange);
-            captureResponse(exchange.response, id);        
+        }
+        next.handle(exchange);
+        if (doCapture) {
+            checkWriter();
+            captureResponse(exchange.response, id);
         }
         timer.stop();
+    }
+
+    private void checkWriter() throws FileNotFoundException {
+
+        if (writer == null || !file.exists()) {
+            if (writer != null) { // file was removed while open
+                writer.close();
+            }
+            writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
+        }
     }
 
     private void captureRequest(Request request, long id) throws IOException {
