@@ -13,7 +13,7 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2012 ForgeRock Inc.
  */
 
 package org.forgerock.openig.handler;
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 import javax.net.ssl.SSLContext;
 
@@ -31,11 +30,9 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.HttpClientParams;
@@ -51,15 +48,11 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.RequestTargetHost;
-import org.apache.http.protocol.RequestUserAgent;
-
-// Forgerock Utilities
-import org.forgerock.util.Factory;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
@@ -76,11 +69,9 @@ import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.io.Buffer;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogLevel;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
 
 /**
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched
@@ -125,19 +116,15 @@ public class ClientHandler extends GenericHandler {
     protected TemporaryStorage storage;
 
     /**
-     * Creates a new client handler with a default maximum number of connections.
-     */
-    public ClientHandler(TemporaryStorage storage) {
-        this(DEFAULT_CONNECTIONS, storage);
-    }
-
-    /**
      * Creates a new client handler with the specified maximum number of
      * connections.
      *
      * @param connections the maximum number of connections to open.
+     * @param storage the TemporyStorage to use
+     * @param disableReuseConnection if true, connections will not be reused
+     * @param disableRetries if true, do not retry a failed request
      */
-    public ClientHandler(int connections, TemporaryStorage storage) {
+    public ClientHandler(int connections, TemporaryStorage storage, boolean disableReuseConnection, boolean disableRetries) {
         this.storage = storage;
         BasicHttpParams parameters = new BasicHttpParams();
         ConnManagerParams.setMaxTotalConnections(parameters, connections);
@@ -153,8 +140,13 @@ public class ClientHandler extends GenericHandler {
         httpClient.removeRequestInterceptorByClass(RequestProxyAuthentication.class);
         httpClient.removeRequestInterceptorByClass(RequestTargetAuthentication.class);
         httpClient.removeResponseInterceptorByClass(ResponseProcessCookies.class);
+        if (disableReuseConnection) {
+            httpClient.setReuseStrategy(new NoConnectionReuseStrategy());
+        }
+        if (disableRetries) {
+            httpClient.setHttpRequestRetryHandler(new NoRetryHttpRequestRetryHandler(logger));
+        }
 // TODO: set timeout to drop stalled connections?
-// FIXME: prevent automatic retry by apache httpclient
     }
 
     /**
@@ -261,8 +253,14 @@ public class ClientHandler extends GenericHandler {
     /** Creates and initializes a client handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
         @Override public Object create() throws HeapException, JsonValueException {
-            Integer connections = config.get("connections").asInteger(); // optional
-            return (connections != null ? new ClientHandler(connections.intValue(), this.storage) : new ClientHandler(this.storage));
+            Integer connections = config.get("connections").defaultTo(DEFAULT_CONNECTIONS).asInteger(); // optional, default to DEFAULT_CONNECTIONS number of connections
+            // determines if connections should be reused, disables keep-alive
+            Boolean disableReuseConnection = config.get("disableReuseConnection").defaultTo(false).asBoolean(); // optional, default false
+            // determines if requests should be retried on failure
+            Boolean disableRetries = config.get("disableRetries").defaultTo(false).asBoolean(); // optional, default false
+
+            return new ClientHandler(connections.intValue(), this.storage,
+                    disableReuseConnection.booleanValue(), disableRetries.booleanValue());
         }
     }
 }
