@@ -10,7 +10,7 @@
   ! Suite 900, Mountain View, California, 94041, USA.
   !
   ! You can also obtain a copy of the license at
-  ! trunk/opendj3/legal-notices/CC-BY-NC-ND.txt.
+  ! trunk/legal-notices/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -29,7 +29,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Accessing OpenAM Documentation Online</title>
+ <title>Accessing OpenIG Documentation Online</title>
 
  <para>Core documentation, such as what you are now reading, aims to
  be technically accurate and complete with respect to the software
@@ -44,9 +44,9 @@
 
  <para>The <link
  xlink:href="https://wikis.forgerock.org/confluence/display/OPENAM/Home"
- xlink:show="new">OpenAM Wiki</link> regularly brings you more, fresh content.
- In addition, you are welcome to <link xlink:show="new"
+ xlink:show="new">OpenAM Wiki</link> offers additional content related to
+ ForgeRock access management software. You are welcome to <link
  xlink:href='https://idp.forgerock.org/openam/UI/Login?service=register'
- >sign up</link> and then edit the Wiki if you notice an error, or if you
- have something to share.</para>
+ xlink:show="new">sign up</link> and then edit the Wiki if you notice an error,
+ or if you have something to share.</para>
 </section>
