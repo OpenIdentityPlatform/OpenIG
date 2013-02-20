@@ -42,15 +42,19 @@
    <item name="Developer Community" href="http://www.forgerock.org" />
    <item name="OpenIG" href="http://openig.forgerock.org" />
   </breadcrumbs>
- 
+
   <menu name="OpenIG">
    <item name="Welcome" href="index.html" />
    <item name="News" href="news.html" />
    <item name="Join" href="https://idp.forgerock.org/openam/UI/Login?service=register" />
-   <item name="Downloads" href="http://www.forgerock.org/openig.html" />
+   <item name="FAQ" href="faq.html" />
    <item name="Mailing List" href="mail-lists.html" />
    <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
    <item name="Partners" href="http://forgerock.com/partners/" />
+   <item name="Wiki" href="https://wikis.forgerock.org/confluence/display/OPENAM/Home" />
+   <item name="Builds" href="http://forgerock.org/openig.html" />
+   <item name="Archives" href="http://forgerock.org/openig-archive.html" />
+   <item name="Enterprise Downloads" href="http://forgerock.com/openam-downloads/"/>
   </menu>
   
   <menu name="Released Documentation">
