@@ -62,8 +62,15 @@
                     <projectName>OpenIG</projectName>
                     <googleAnalyticsId>${gaId}</googleAnalyticsId>
                 </configuration>
-                <version>1.1.0</version>
+                <version>1.2.0</version>
                 <executions>
+                    <execution>
+                        <id>copy-common</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>boilerplate</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>build-doc</id>
                         <phase>pre-site</phase>

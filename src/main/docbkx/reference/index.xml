@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2013 ForgeRock AS
   !    
 -->
 <book xml:id='reference'
@@ -38,7 +38,7 @@
    replay functionality.</para>
   </abstract>
   <copyright>
-   <year>2011-2012</year>
+   <year>2011-2013</year>
    <holder>ForgeRock AS</holder>
   </copyright>
   <authorgroup>
@@ -157,6 +157,16 @@
   <xinclude:include href="man-Response.xml" />
   <xinclude:include href="man-URI.xml" />
  </reference>
+
+ <appendix xml:id="appendix-interface-stability">
+  <title>Release Levels &amp; Interface Stability</title>
+
+  <para>This appendix includes ForgeRock definitions for product release levels
+  and interface stability.</para>
+
+  <xinclude:include href="../shared/sec-release-levels.xml" />
+  <xinclude:include href="../shared/sec-interface-stability.xml" />
+ </appendix>
 
  <index />
 </book>
