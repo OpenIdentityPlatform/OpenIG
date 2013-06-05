@@ -12,8 +12,11 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
+ */
+
+ /*
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011-2012 ForgeRock Inc.
+ * Portions Copyrighted 2011-2013 ForgeRock, Inc.
  */
 
 package org.forgerock.openig.handler;
@@ -244,6 +247,11 @@ public class ClientHandler extends GenericHandler {
         private final String method;
         public NonEntityRequest(Request request) {
             this.method = request.method;
+            Header contentLengthHeader[] = getHeaders(ContentLengthHeader.NAME);
+            if ((contentLengthHeader == null || contentLengthHeader.length == 0)
+                    && ("PUT".equals(method) || "POST".equals(method) || "PROPFIND".equals(method))) {
+                setHeader(ContentLengthHeader.NAME, "0");
+            }
         }
         @Override public String getMethod() {
             return method;
