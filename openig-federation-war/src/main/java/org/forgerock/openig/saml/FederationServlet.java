@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2012 ForgeRock Inc.
+ * Portions Copyrighted 2011-2013 ForgeRock AS.
  */
 
 package org.forgerock.openig.saml;
@@ -186,19 +186,25 @@ public class FederationServlet extends HttpServlet {
     private void addAttributesToSession(HttpServletRequest request, Map assertion) {
         HttpSession httpSession = request.getSession();
         Map attributeStatement = (Map)assertion.get(SAML2Constants.ATTRIBUTE_MAP);
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet attribute statement: " + attributeStatement);
-        }
-        for (String key : attributeMapping.keySet()) {
-            HashSet t = (HashSet)attributeStatement.get(attributeMapping.get(key));
-            if (t != null) {
-                String sessionValue = (String)t.iterator().next();
-                httpSession.setAttribute(key, sessionValue);
-                if (LogUtil.isAccessLoggable(Level.INFO)) {
-                    System.out.println("FederationServlet adding to session: " + key + " = " + sessionValue);
+        if (attributeStatement != null) {
+            if (LogUtil.isAccessLoggable(Level.INFO)) {
+                System.out.println("FederationServlet attribute statement: " + attributeStatement);
+            }
+            for (String key : attributeMapping.keySet()) {
+                HashSet t = (HashSet)attributeStatement.get(attributeMapping.get(key));
+                if (t != null) {
+                    String sessionValue = (String)t.iterator().next();
+                    httpSession.setAttribute(key, sessionValue);
+                    if (LogUtil.isAccessLoggable(Level.INFO)) {
+                        System.out.println("FederationServlet adding to session: " + key + " = " + sessionValue);
+                    }
+                } else {
+                     System.out.println("FederationServlet: Warning no assertion attribute found for:" + attributeMapping.get(key));
                 }
-            } else { 
-                 System.out.println("FederationServlet: Warning no assertion attribute found for:" + attributeMapping.get(key));
+            }
+        } else {
+            if (LogUtil.isAccessLoggable(Level.INFO)) {
+                System.out.println("FederationServlet attribute statement was not present in assertion");
             }
         }
         if (subjectMapping != null) {
@@ -443,9 +449,11 @@ public class FederationServlet extends HttpServlet {
     public static class Heaplet extends NestedHeaplet {
         @Override public Object create() throws HeapException, JsonValueException {
             FederationServlet servlet = new FederationServlet();
-            JsonValue mappings = config.get("assertionMapping").required().expect(Map.class);
-            for (String key : mappings.keys()) {
-                servlet.attributeMapping.put(key, mappings.get(key).asString());
+            JsonValue mappings = config.get("assertionMapping").expect(Map.class);
+            if (mappings != null) {
+                for (String key : mappings.keys()) {
+                    servlet.attributeMapping.put(key, mappings.get(key).asString());
+                }
             }
             servlet.authnContextDelimiter = config.get("authnContextDelimiter").defaultTo("|").asString();
             servlet.authnContext = config.get("authnContext").asString();
