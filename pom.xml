@@ -87,6 +87,24 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.forgerock.maven.plugins</groupId>
+                <artifactId>javadoc-updater-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>post-site</phase>
+                        <goals>
+                            <goal>fixjavadoc</goal>
+                        </goals>
+                        <configuration>
+                            <directory>${project.reporting.outputDirectory}</directory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
     <properties>
@@ -177,7 +195,7 @@
                 <version>2.8</version>
                 <configuration>
                     <author>false</author>
-                    <bottom>Copyright &#169; 2011-2012 ForgeRock AS. All rights reserved.</bottom>
+                    <bottom>Copyright &#169; 2011-2013 ForgeRock AS. All rights reserved.</bottom>
                     <links>
                         <link>http://java.sun.com/javase/6/docs/api/</link>
                     </links>
