@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2013 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-am-integration-tutorial'
@@ -115,7 +115,7 @@
 
    <listitem>
     <para>OpenIG on Tomcat at <link xlink:href="http://demo.forgerock.com:8585/"
-    xlink:show="new">http://demo.forgerock.com:8585/</link></para>
+    xlink:show="new" /></para>
    </listitem>
    <listitem>
     <para>OpenAM Policy Agent on Tomcat protecting OpenIG in SSO only mode
@@ -124,12 +124,11 @@
    </listitem>
    <listitem>
     <para>OpenAM at <link xlink:href="http://demo.forgerock.com:8888/openam/"
-    xlink:show="new">http://demo.forgerock.com:8888/openam/</link></para>
+    xlink:show="new" /></para>
    </listitem>
    <listitem>
     <para>MediaWiki at <link
-    xlink:href="http://demo.forgerock.com:8181/mediawiki/"
-    xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link></para>
+    xlink:href="http://demo.forgerock.com:8181/mediawiki/" xlink:show="new" /></para>
    </listitem>
   </itemizedlist>
 
@@ -138,8 +137,7 @@
 
    <listitem>
     <para>Installed on OpenIG host at <link
-    xlink:href="http://demo.forgerock.com:8585/"
-    xlink:show="new">http://demo.forgerock.com:8585/</link></para>
+    xlink:href="http://demo.forgerock.com:8585/" xlink:show="new" /></para>
    </listitem>
    <listitem>
     <para>Agent filter mode set to <literal>SSO_ONLY</literal></para>
@@ -172,8 +170,7 @@
 
    <listitem>
     <para>Proxying to <link
-    xlink:href="http://demo.forgerock.com:8181/mediawiki/"
-    xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link></para>
+    xlink:href="http://demo.forgerock.com:8181/mediawiki/" xlink:show="new" /></para>
    </listitem>
    <listitem>
     <para><link xlink:show="new"

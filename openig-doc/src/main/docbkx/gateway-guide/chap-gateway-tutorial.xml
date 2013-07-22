@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2013 ForgeRock AS
   !
 -->
 <chapter xml:id='chap-gateway-tutorial'
@@ -41,10 +41,9 @@
   <para>This tutorial gives you hands on experience with the basic features of
   OpenIG. You install the Gateway in your network and point it to an
   installation of the WordPress Portal hosted at <link xlink:show="new"
-  xlink:href="http://demo.forgerock.com:8080/wordpress"
-  >http://demo.forgerock.com:8080/wordpress</link>. The tutorial progresses
-  through the following steps and explains what is happening by walking you
-  through OpenIG configuration.</para>
+  xlink:href="http://demo.forgerock.com:8080/wordpress" />. The tutorial
+  progresses through the following steps and explains what is happening by
+  walking you through OpenIG configuration.</para>
   <listitem>
    <para>Pure reverse proxy mode to the Portal</para>
   </listitem>
@@ -218,13 +217,12 @@ $ jetty.sh restart</screen>
   folder there, and then copy the configuration files.</para>
 
   <para>To try out the first sample browse to <link xlink:show="new"
-  xlink:href="http://demo.forgerock.com:8080/wordpress"
-  >http://demo.forgerock.com:8080/wordpress</link>. You should see the WordPress
-  Portal home page. If you click on the login link you should be prompted to
-  login to the application as if you were accessing it directly. To verify you
-  are actually going through OpenIG, stop the OpenIG container, refresh your
-  browser and try to access the application again. If you still see the
-  application, make sure your DNS or host files are configured to point to
+  xlink:href="http://demo.forgerock.com:8080/wordpress" />. You should see the
+  WordPress Portal home page. If you click on the login link you should be
+  prompted to login to the application as if you were accessing it directly. To
+  verify you are actually going through OpenIG, stop the OpenIG container,
+  refresh your browser and try to access the application again. If you still see
+  the application, make sure your DNS or host files are configured to point to
   OpenIG instead of the Portal. You can login to the Portal with user name
   <literal>george</literal> and password <literal>costanza</literal>. The next
   section shows how to configure OpenIG to intercept the login page and
@@ -254,11 +252,10 @@ $ jetty.sh restart</screen>
 
   <para>As you changed the OpenIG configuration file, you must restart the
   OpenIG container. After restarting you should be able to go to <link
-  xlink:href="http://demo.forgerock.com:8080/wordpress"
-  >http://demo.forgerock.com:8080/wordpress</link>, click on the login link,
-  and be logged in as the user george without entering your credentials. OpenIG
-  has intercepted the request for the login page, created the login form, and
-  POSTed the request to the Portal.</para>
+  xlink:href="http://demo.forgerock.com:8080/wordpress" />, click on the login
+  link, and be logged in as the user george without entering your credentials.
+  OpenIG has intercepted the request for the login page, created the login form,
+  and POSTed the request to the Portal.</para>
 
   <para>To see what is happening behind the scenes, take a look at
   <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. This time you
@@ -300,14 +297,13 @@ $ jetty.sh restart</screen>
 $ jetty.sh restart</screen>
 
   <para>After restarting the container, check that you can go to <link
-  xlink:href="http://demo.forgerock.com:8080/wordpress" xlink:show="new"
-  >http://demo.forgerock.com:8080/wordpress</link> and be logged in as the user
-  <literal>george</literal> without seeing the login page. To verify the login
-  credentials are being picked up from the flat file, change george's password,
-  restart OpenIG, and try the login page again. You should get a login failed
-  page. If you would like to log in as a different user, look for the value
-  attribute in <filename>config.json</filename>, replace
-  <literal>george@seinfeld.com</literal> with
+  xlink:href="http://demo.forgerock.com:8080/wordpress" xlink:show="new"/> and
+  be logged in as the user <literal>george</literal> without seeing the login
+  page. To verify the login credentials are being picked up from the flat file,
+  change george's password, restart OpenIG, and try the login page again. You
+  should get a login failed page. If you would like to log in as a different
+  user, look for the value attribute in <filename>config.json</filename>,
+  replace <literal>george@seinfeld.com</literal> with
   <literal>kramer@seinfeld.com</literal>.  Both <literal>george</literal> and
   <literal>kramer</literal> have accounts on the Portal so you can log in with
   either.</para>

@@ -119,9 +119,9 @@ fedlet.cot                     idp.xml                 sp.xm</screen>
   </para>
 
   <para>For SP initiated SSO either browse to <link xlink:show="new"
-  xlink:href="http://demo.forgerock.com:8080/wordpress/"
-  >http://demo.forgerock.com:8080/wordpress/</link> and click the login link,
-  or <link xlink:show="new"  xlink:href="http://demo.forgerock.com:8080/saml/SPInitiatedSSO?metaAlias=/sp&amp;idpEntityID=http://www.idp.com:8888/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">click this link</link>
+  xlink:href="http://demo.forgerock.com:8080/wordpress/" /> and click the login
+  link, or <link xlink:show="new"
+  xlink:href="http://demo.forgerock.com:8080/saml/SPInitiatedSSO?metaAlias=/sp&amp;idpEntityID=http://www.idp.com:8888/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">click this link</link>
   </para>
 
   <para>To understand what is happening behind the scenes, take a look at
