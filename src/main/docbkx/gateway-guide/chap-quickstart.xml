@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2013 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-quickstart'
@@ -195,10 +195,9 @@
 
  <section>
   <title>Try It Out</title>
-  <para><link xlink:href="http://demo.forgerock.com:8080/wordpress/"
-  >http://demo.forgerock.com:8080/wordpress</link> should take you to the
-  WordPress portal hosted at ForgeRock. When you click the login link, you are
-  automatically logged in by OpenIG with the user name
+  <para><link xlink:href="http://demo.forgerock.com:8080/wordpress/" /> should
+  take you to the WordPress portal hosted at ForgeRock. When you click the login
+  link, you are automatically logged in by OpenIG with the user name
   <literal>george</literal>.</para>
 
   <para>What's happening behind the scenes?</para>

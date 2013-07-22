@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2013 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-mediawiki-tutorial'
@@ -41,9 +41,8 @@
   <para>MediaWiki is a good example of a login sequence that is a bit more
   complex and shows you how OpenIG can extract hidden values in order to create
   the required login form. This sample uses a hosted version of MediaWiki at
-  <link xlink:href="http://demo.forgerock.com:8181/mediawiki/" xlink:show="new"
-  >http://demo.forgerock.com:8181/mediawiki/</link>. The sample enables you
-  to do the following:</para>
+  <link xlink:href="http://demo.forgerock.com:8181/mediawiki/" xlink:show="new" />.
+  The sample enables you to do the following:</para>
 
   <listitem>
    <para>Register a user name and password on the MediaWiki server.</para>
@@ -65,8 +64,7 @@
   <title>Detailed Flow</title>
 
   <para>The figure below illustrates the flow of requests for a user accessing
-  the <link xlink:href="http://demo.forgerock.com:8181/mediawiki/"
-  xlink:show="new">http://demo.forgerock.com:8181/mediawiki/</link> site
+  the <link xlink:href="http://demo.forgerock.com:8181/mediawiki/" /> site
   through OpenIG.</para>
 
   <mediaobject xml:id="figure-mediawiki-tutorial">
@@ -186,8 +184,7 @@
 $ jetty.sh restart</screen>
 
   <para>To try out the first sample browse to <link xlink:show="new"
-  xlink:href="http://demo.forgerock.com:8181/mediawiki"
-  >http://demo.forgerock.com:8181/mediawiki</link>. As OpenIG is in pure
+  xlink:href="http://demo.forgerock.com:8181/mediawiki" />. As OpenIG is in pure
   proxy mode, you see all pages in the application as if you were directly
   connecting to it. You can verify this by stopping OpenIG and trying to
   connect to the application. After clearing out your browser cache this should
@@ -220,10 +217,9 @@ $ jetty.sh restart</screen>
   handler attribute. Once you have done that, restart OpenIG.</para>
 
   <para>Now browse to <link xlink:show="new"
-  xlink:href="http://demo.forgerock.com:8181/mediawiki"
-  >http://demo.forgerock.com:8181/mediawiki</link> and click the login link.
-  You should be logged in as the user <literal>george</literal>. OpenIG has
-  intercepted the login page, created the login form with the username
+  xlink:href="http://demo.forgerock.com:8181/mediawiki" /> and click the login
+  link. You should be logged in as the user <literal>george</literal>. OpenIG
+  has intercepted the login page, created the login form with the username
   <literal>george</literal> and password <literal>bosco</literal>, and POSTed
   the login form to the Wiki. If you created your own user in the previous step,
   you can replace the user name and password in the WikiLoginRequestFilter
