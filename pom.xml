@@ -109,7 +109,7 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <docTargetVersion>2.2.0</docTargetVersion>
+        <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before final publication -->
         <gaId>UA-23412190-11</gaId>
         <!--
           Release date is specified only when building the documentation
