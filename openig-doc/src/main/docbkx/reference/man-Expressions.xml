@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2013 ForgeRock AS
   !    
 -->
 <refentry xml:id='Expressions'
@@ -147,32 +147,28 @@
   <para>Lines are folded for readability in these example. In your JSON, keep
   the values on one line.</para>
   <programlisting language="javascript">
-"${exchange.request.uri.path == '/wordpress/wp-login.php' and
- exchange.request.form['action'][0] != 'logout'}"
+"${exchange.request.uri.path == '/wordpress/wp-login.php' and exchange.request.form['action'][0] != 'logout'}"
 
-"${exchange.request.uri.host 'wiki.example.com'}"
+"${exchange.request.uri.host == 'wiki.example.com'}"
 
-"${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0]
- .value}"
+"${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0].value}"
 
 "${toString(exchange.request.uri)}"
 
-"${exchange.request.uri.value}"
+"${exchange.request.method == 'POST' and exchange.request.uri.path == '/wordpress/wp-login.php'}"
 
-"${exchange.request.method 'POST' and exchange.request.uri.path
- '/wordpress/wp-login.php'}"
-
-"${exchange.request.method 'GET'}"
+"${exchange.request.method != 'GET'}"
 
 "${exchange.request.headers['cookie'][0]}"
 
-"${exchange.request.uri.scheme 'http'}"
+"${exchange.request.uri.scheme == 'http'}"
 
-"${not (exchange.response.status 302 and not empty exchange.session.gotoURL)}"
+"${not (exchange.response.status == 302 and not empty exchange.session.gotoURL)}"
 
 "${exchange.response.headers['Set-Cookie'][0]}"
 
-"${exchange.request.headers['host'][0]}"</programlisting>
+"${exchange.request.headers['host'][0]}"
+ </programlisting>
  </refsect1>
  <refsect1>
   <title>See Also</title>
