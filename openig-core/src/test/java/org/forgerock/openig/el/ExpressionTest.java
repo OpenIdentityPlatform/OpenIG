@@ -12,18 +12,17 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2013 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
 
+import java.net.URI;
 import java.util.HashMap;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
+import org.forgerock.openig.http.Response;
 import org.testng.annotations.Test;
 
 import org.forgerock.openig.http.Exchange;
@@ -79,5 +78,56 @@ public class ExpressionTest {
         expr.set(exchange, map);
         expr = new Expression("${exchange.testmap.foo}");
         assertThat(expr.eval(exchange, String.class)).isEqualTo("bar");
+    }
+
+    @Test
+    public void examples() throws Exception {
+
+        // The following are used as examples in the OpenIG documentation, they should all be valid
+        Request request = new Request();
+        request.uri = new URI("http://wiki.example.com/wordpress/wp-login.php?action=login");
+        request.method = "POST";
+        request.headers.putSingle("host", "wiki.example.com");
+        request.headers.putSingle("cookie", "SESSION=value; path=/");
+
+        Response response = new Response();
+        response.headers.putSingle("Set-Cookie", "MyCookie=example; path=/");
+
+        Exchange exchange = new Exchange();
+        exchange.request = request;
+        exchange.response = response;
+
+        Expression expr = new Expression("${exchange.request.uri.path == '/wordpress/wp-login.php' and exchange.request.form['action'][0] != 'logout'}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${toString(exchange.request.uri)}");
+        assertThat(expr.eval(exchange, String.class)).isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
+
+        expr = new Expression("${exchange.request.uri.host == 'wiki.example.com'}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${exchange.request.method == 'POST' and exchange.request.uri.path == '/wordpress/wp-login.php'}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${exchange.request.method != 'GET'}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${exchange.request.uri.scheme == 'http'}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${not (exchange.response.status == 302 and not empty exchange.session.gotoURL)}");
+        assertThat(expr.eval(exchange, Boolean.class)).isTrue();
+
+        expr = new Expression("${exchange.request.headers['host'][0]}");
+        assertThat(expr.eval(exchange, String.class)).isEqualTo("wiki.example.com");
+
+        expr = new Expression("${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0].value}");
+        assertThat(expr.eval(exchange, String.class)).isNotNull();
+
+        expr = new Expression("${exchange.request.headers['cookie'][0]}");
+        assertThat(expr.eval(exchange, String.class)).isNotNull();
+
+        expr = new Expression("${exchange.response.headers['Set-Cookie'][0]}");
+        assertThat(expr.eval(exchange, String.class)).isEqualTo("MyCookie=example; path=/");
     }
 }
