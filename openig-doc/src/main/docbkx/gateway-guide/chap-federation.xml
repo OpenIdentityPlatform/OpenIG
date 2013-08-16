@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2013 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-federation'
@@ -83,7 +83,7 @@
     <para>Add Federation configuration to the OpenIG configuration file.</para>
    </listitem>
    <listitem>
-    <para>Add the assertion and subject mappings, optional redirect URI and
+    <para>Add subject mapping, optional assertion mapping, optional redirect URI and
     optional logout URI to the Federation configuration.</para>
    </listitem>
    <listitem>
@@ -264,7 +264,7 @@
    <varlistentry>
     <term>assertionMapping</term>
     <listitem>
-     <para>The <literal>assertionMapping</literal> defines how to transform the
+     <para>(Optional) The <literal>assertionMapping</literal> defines how to transform the
      attributes from the incoming assertion to attribute value pairs in the
      session. Each entry in the <literal>assertionMapping</literal> is of the
      form <literal><replaceable>attributeName</replaceable>:<replaceable
