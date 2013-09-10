@@ -19,6 +19,7 @@ package org.forgerock.openig.filter;
 
 // Java Standard Edition
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +29,16 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
-import org.forgerock.openig.http.Message;
-import org.forgerock.openig.http.MessageType;
+import org.forgerock.openig.http.*;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Removes headers from and adds headers to a message.
@@ -60,11 +61,16 @@ public class HeaderFilter extends GenericFilter {
      *
      * @param message the message to remove headers from and add headers to.
      */
-    private void process(Message message) {
+    private void process(Message message, Exchange exchange) {
         for (String s : this.remove) {
             message.headers.remove(s);
         }
-        message.headers.addAll(this.add);
+        for (String key : this.add.keySet()) {
+            for (String value : this.add.get(key)) {
+                JsonValue jsonValue = new JsonValue(value);
+                message.headers.add(key, (String)JsonValueUtil.asExpression(jsonValue).eval(exchange));
+            }
+        }
     }
 
     /**
@@ -75,11 +81,11 @@ public class HeaderFilter extends GenericFilter {
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         if (messageType == MessageType.REQUEST) {
-            process(exchange.request);
+            process(exchange.request, exchange);
         }
         next.handle(exchange);
         if (messageType == MessageType.RESPONSE) {
-            process(exchange.response);
+            process(exchange.response, exchange);
         }
         timer.stop();
     }

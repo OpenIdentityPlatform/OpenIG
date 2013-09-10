@@ -70,6 +70,16 @@ public class ExpressionTest {
     }
 
     @Test
+    public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
+        Object o = new Expression("${exchange.request.uri.path}").eval(exchange);
+        assertThat(o).isInstanceOf(String.class);
+        assertThat(o).isEqualTo("/path/to/resource.html");
+    }
+
+    @Test
     public void exchangeSetAttribute() throws ExpressionException {
         Exchange exchange = new Exchange();
         HashMap<String, String> map = new HashMap<String, String>();
