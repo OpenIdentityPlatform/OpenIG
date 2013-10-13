@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2013 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -60,11 +60,13 @@ public class Expression {
      */
     public Expression(String expression) throws ExpressionException {
         try {
-            valueExpression = new ArrayList<ValueExpression>();
-            for (String component : expression.split("[\\\\]")) {
-                if (component.length() > 0)
-                    valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
-                            new XLContext(null), component, Object.class));
+            // An expression with no pattern will just return the original String so we will always have at least one
+            // item in the array.
+            String[] split = expression.split("[\\\\]");
+            valueExpression = new ArrayList<ValueExpression>(split.length);
+            for (String component : split) {
+                valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
+                        new XLContext(null), component, Object.class));
             }
         } catch (ELException ele) {
             throw new ExpressionException(ele);
@@ -79,18 +81,24 @@ public class Expression {
      * @return the result of the expression evaluation, or {@code null} if does not resolve a value.
      */
     public Object eval(Object scope) {
+
+        XLContext context = new XLContext(scope);
+
         try {
+            // When there are multiple expressions to evaluate it is because original expression had \'s so result
+            // should include them back in again, the result will always be a String.
             if (valueExpression.size() > 1) {
-                // return type must be a String
-                String result = "";
+                StringBuilder result = new StringBuilder();
                 for (ValueExpression expression : valueExpression) {
-                    if (result.length() > 0)
-                        result += "\\";
-                    result += (String)expression.getValue(new XLContext(scope));
+                    if (result.length() > 0) {
+                        result.append("\\");
+                    }
+                    result.append(expression.getValue(context));
                 }
-                return result;
+                return result.toString();
+            } else {
+                return valueExpression.get(0).getValue(context);
             }
-            return valueExpression.get(0).getValue(new XLContext(scope));
         } catch (ELException ele) {
             return null; // unresolved element yields null value
         }
