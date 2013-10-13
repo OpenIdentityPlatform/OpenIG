@@ -50,6 +50,26 @@ public class ExpressionTest {
     }
 
     @Test
+    public void emptyString() throws ExpressionException {
+        Expression expr = new Expression("");
+        Object o = expr.eval(null); // no scope required for non-resolving expression
+        assertThat(o).isInstanceOf(String.class);
+        assertThat(o).isEqualTo("");
+    }
+
+    @Test
+    public void backslash() throws ExpressionException {
+        HashMap<String, String> scope = new HashMap<String, String>();
+        scope.put("a", "bar");
+        scope.put("b", "bas");
+        Expression expr = new Expression("foo\\${a} ${a}${b} foo\\${b}");
+        Object o = expr.eval(scope);
+        assertThat(o).isInstanceOf(String.class);
+        assertThat(o).isEqualTo("foo\\bar barbas foo\\bas");
+    }
+
+
+    @Test
     public void scope() throws ExpressionException {
         HashMap<String, String> scope = new HashMap<String, String>();
         scope.put("a", "foo");
