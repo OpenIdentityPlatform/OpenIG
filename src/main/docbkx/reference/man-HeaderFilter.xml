@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2013 ForgeRock AS
   !    
 -->
 <refentry xml:id='HeaderFilter'
@@ -125,7 +125,7 @@
      "name": "SetCustomHeaders",
      "type": "HeaderFilter",
      "config": {
-         "messageType": "RESQUEST",
+         "messageType": "REQUEST",
          "add": {
              "custom1": [ "12345", "6789" ],
              "custom2": [ "abcd" ]
