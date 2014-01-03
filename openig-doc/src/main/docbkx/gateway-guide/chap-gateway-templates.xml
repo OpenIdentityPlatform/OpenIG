@@ -21,14 +21,15 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-gateway-templates'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Configuration Templates</title>
@@ -199,12 +200,15 @@
    <secondary>Multiple applications</secondary>
   </indexterm>
 
-  <para>Shows how a single OpenIG configuration can proxy to multiple
-  applications on different IPs and ports. This template is setup to proxy to
-  both the WordPress and MediaWiki hosted samples. OpenIG must be setup to
-  listen on both ports 8080 and 8181. The <literal>DispatchHandler</literal> is
-  used to route each incoming request to either the WordPress chain or the
-  MediaWiki chain.</para>
+  <para>
+   Shows how a single OpenIG configuration can proxy to
+   multiple applications on different ports with the same IP address.
+   This template is setup to proxy to
+   both the WordPress and MediaWiki hosted samples.
+   OpenIG must be setup to listen on both ports 8080 and 8181.
+   The <literal>DispatchHandler</literal> is used to route
+   each incoming request to either the WordPress chain or the MediaWiki chain.
+  </para>
   
   <programlisting language="javascript"
   ><?dbfo pgwide="1"?><xinclude:include parse="text"
