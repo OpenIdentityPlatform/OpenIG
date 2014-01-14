@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <refentry xml:id='StaticResponseHandler'
@@ -118,7 +118,7 @@
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/handler/StaticResponseHandler.html"
+  xlink:href="${javadocBase}/org/forgerock/openig/handler/StaticResponseHandler.html"
   >org.forgerock.openig.handler.StaticResponseHandler</link></para>
  </refsect1>
 </refentry>

@@ -21,14 +21,14 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012-2013 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <book xml:id='reference'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
   <title>OpenIG <?eval ${docTargetVersion}?> Reference</title>
@@ -38,7 +38,7 @@
    replay functionality.</para>
   </abstract>
   <copyright>
-   <year>2011-2013</year>
+   <year>2011-2014</year>
    <holder>ForgeRock AS</holder>
   </copyright>
   <authorgroup>
@@ -59,8 +59,9 @@
    </author>
   </authorgroup>
   <xinclude:include href="../legal.xml" />
-  <date><?dbtimestamp format="B d, Y"?></date>
-  <pubdate>Publication date: <?dbtimestamp format="B d, Y"?></pubdate>
+  <date>${publicationDate}</date>
+  <pubdate>${publicationDate}</pubdate>
+  <releaseinfo>${softwareReleaseDate}</releaseinfo>
  </info>
 
  <toc />

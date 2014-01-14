@@ -13,7 +13,7 @@
   information: "Portions Copyrighted [year] [name of copyright owner]".
 
   Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  Portions Copyrighted 2011 ForgeRock AS.
+  Portions Copyrighted 2011-2014 ForgeRock AS.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -57,18 +57,32 @@
             <plugin>
                 <groupId>org.forgerock.commons</groupId>
                 <artifactId>forgerock-doc-maven-plugin</artifactId>
+                <version>${frDocPluginVersion}</version>
                 <inherited>false</inherited>
                 <configuration>
                     <projectName>OpenIG</projectName>
                     <googleAnalyticsId>${gaId}</googleAnalyticsId>
                 </configuration>
-                <version>1.2.0</version>
                 <executions>
                     <execution>
                         <id>copy-common</id>
                         <phase>pre-site</phase>
                         <goals>
                             <goal>boilerplate</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>filter-sources</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>filter</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>prepare-sources</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>prepare</goal>
                         </goals>
                     </execution>
                     <execution>
@@ -109,16 +123,21 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset before final publication-->
         <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before final publication -->
         <gaId>UA-23412190-11</gaId>
         <!--
-          Release date is specified only when building the documentation
-          for publication. For example:
-              -D"releaseDate=Software release date: January 1, 1970"
-          Otherwise release date should remain empty.
+          Release date and publication date are set at release build time.
+            -D"releaseDate=Software release date: January 1, 1970"
+            -D"pubDate=Publication date: December 31, 1969"
+          At all other times, the dates should be empty.
         -->
-        <releaseDate />
+        <releaseDate/>
         <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
+        <pubDate/>
+        <publicationDate>${pubDate}</publicationDate>
+        <frDocPluginVersion>2.0.0</frDocPluginVersion>
     </properties>
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->
@@ -195,7 +214,7 @@
                 <version>2.8</version>
                 <configuration>
                     <author>false</author>
-                    <bottom>Copyright &#169; 2011-2013 ForgeRock AS. All rights reserved.</bottom>
+                    <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights reserved.</bottom>
                     <links>
                         <link>http://java.sun.com/javase/6/docs/api/</link>
                     </links>
