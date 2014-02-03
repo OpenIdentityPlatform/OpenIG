@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>StaticRequestFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -103,7 +103,7 @@
    </varlistentry>
    <varlistentry>
     <term><code>"form"</code>: <emphasis>array of objects,
-    required</emphasis></term>
+    optional</emphasis></term>
     <listitem>
      <para>A form to include in the request. The <literal>field</literal>
      specifies the field name, with an associated array of expressions to
