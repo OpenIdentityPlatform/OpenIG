@@ -26,14 +26,8 @@
     <artifactId>openig-federation-war</artifactId>
     <name>OpenIG Federation web application</name>
     <packaging>war</packaging>
-    <repositories>
-        <repository>
-            <id>forgerock</id>
-            <url>http://repo.forgerock.org</url>
-        </repository>
-    </repositories>
     <properties>
-        <openam.version>10.0.0</openam.version>
+        <openam.version>10.0.1</openam.version>
     </properties>
     <dependencies>
         <dependency>
@@ -61,13 +55,13 @@
             <scope>compile</scope>
         </dependency>
 	    <dependency>
-            <groupId>com.forgerock.openam</groupId>
+            <groupId>org.forgerock.openam</groupId>
             <artifactId>sharedlib</artifactId>
             <version>${openam.version}</version>
             <scope>compile</scope>
         </dependency>
 	    <dependency>
-            <groupId>com.forgerock.openam</groupId>
+            <groupId>org.forgerock.openam</groupId>
             <artifactId>fedlib</artifactId>
             <version>${openam.version}</version>
             <scope>compile</scope>
