@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2012 ForgeRock, Inc.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -99,7 +99,7 @@ public class StaticRequestFilter extends GenericFilter {
                 }
             }
         }
-        if (this.form != null) {
+        if (this.form != null && !this.form.isEmpty()) {
             Form f = new Form();
             for (String key : this.form.keySet()) {
                 for (Expression expression : this.form.get(key)) {
