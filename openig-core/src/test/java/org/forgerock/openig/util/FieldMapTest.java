@@ -17,9 +17,6 @@
 
 package org.forgerock.openig.util;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.testng.annotations.BeforeMethod;

@@ -20,7 +20,6 @@ package org.forgerock.openig.servlet;
 // Java Standard Edition
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,7 +28,6 @@ import java.util.regex.Pattern;
 // Java Enterprise Edition
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -42,8 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
-// OpenIG Core
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.log.Logger;

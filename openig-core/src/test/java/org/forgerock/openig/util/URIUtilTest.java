@@ -22,7 +22,6 @@ import java.net.URISyntaxException;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**

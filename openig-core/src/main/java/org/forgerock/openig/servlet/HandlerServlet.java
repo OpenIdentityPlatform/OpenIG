@@ -32,20 +32,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Session;
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.Streamer;

@@ -17,9 +17,6 @@
 
 package org.forgerock.openig.config;
 
-// Java Enterprise Edition
-import javax.servlet.ServletContext;
-
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;

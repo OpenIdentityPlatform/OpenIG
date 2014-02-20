@@ -23,9 +23,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-// Java Enterprise Edition
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 // JSON Fluent
@@ -42,7 +39,7 @@ import org.forgerock.openig.heap.NestedHeaplet;
  *
  * @author Paul C. Bryan
  */
-abstract class CommonHeaplet extends NestedHeaplet { 
+abstract class CommonHeaplet extends NestedHeaplet {
 
     /** Initialization parameters to supply to servlet or filter. */
     protected final Map<String, String> initParams = new HashMap<String, String>();
@@ -52,7 +49,7 @@ abstract class CommonHeaplet extends NestedHeaplet {
 
     /**
      * Returns the servlet context in which the caller is executing.
-     */ 
+     */
     public ServletContext getServletContext() { // FilterConfig, ServletConfig
         return servletContext;
     }
@@ -71,7 +68,7 @@ abstract class CommonHeaplet extends NestedHeaplet {
      * Returns the names of the initialization parameters, or an empty enumeration if there
      * are no initialization parameters.
      */
-    public Enumeration getInitParameterNames() { // FilterConfig, ServletConfig
+    public Enumeration<String> getInitParameterNames() { // FilterConfig, ServletConfig
         return Collections.enumeration(initParams.keySet());
     }
 

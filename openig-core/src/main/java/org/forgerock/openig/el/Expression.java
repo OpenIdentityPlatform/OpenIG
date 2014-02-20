@@ -19,7 +19,6 @@ package org.forgerock.openig.el;
 
 // Java Standard Edition
 import java.beans.FeatureDescriptor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,6 @@ import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.FunctionMapper;
-import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 

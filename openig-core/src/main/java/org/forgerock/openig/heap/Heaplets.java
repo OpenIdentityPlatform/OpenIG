@@ -21,6 +21,7 @@ package org.forgerock.openig.heap;
 import java.util.Collections;
 import java.util.Map;
 
+
 // OpenIG Core
 import org.forgerock.openig.util.Loader;
 
@@ -44,8 +45,9 @@ import org.forgerock.openig.util.Loader;
 public class Heaplets {
 
     /** Services mapped from class created to heaplet implementation. */
-    private static final Map<Class, Heaplet> SERVICES =
-     Collections.unmodifiableMap(Loader.loadMap(Class.class, Heaplet.class));
+    @SuppressWarnings("rawtypes")
+    private static final Map<Class, Heaplet> SERVICES = Collections.unmodifiableMap(Loader
+            .loadMap(Class.class, Heaplet.class));
 
     /** Static methods only. */
     private Heaplets() {
@@ -58,7 +60,7 @@ public class Heaplets {
      * @param c the class that the heaplet is responsible for creating.
      * @return the heaplet that creates the specified class, or {@code null} if not found.
      */
-    public static Heaplet getHeaplet(Class c) {
+    public static Heaplet getHeaplet(Class<?> c) {
         Heaplet heaplet = SERVICES.get(c); // try service loader
         if (heaplet == null) {
             heaplet = Loader.newInstance(c.getName() + "$Heaplet", Heaplet.class); // try nested class

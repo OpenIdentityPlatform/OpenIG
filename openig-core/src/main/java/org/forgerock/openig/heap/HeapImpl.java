@@ -30,7 +30,6 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.Loader;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.

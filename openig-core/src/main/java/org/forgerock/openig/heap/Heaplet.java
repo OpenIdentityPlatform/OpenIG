@@ -30,11 +30,12 @@ import org.forgerock.openig.util.Indexed;
  *
  * @author Paul C. Bryan
  */
+@SuppressWarnings("rawtypes")
 public interface Heaplet extends Indexed<Class> {
 
     /**
      * Returns the class of object that the heaplet will create.
-     */ 
+     */
     @Override
     Class<?> getKey();
 

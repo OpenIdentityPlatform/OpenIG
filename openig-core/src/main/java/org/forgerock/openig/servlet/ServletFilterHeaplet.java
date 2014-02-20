@@ -33,7 +33,7 @@ import org.forgerock.openig.util.JsonValueUtil;
  * @author Paul C. Bryan
  */
 public class ServletFilterHeaplet extends GenericFilterHeaplet {
-    @Override public Class getKey() {
+    @Override public Class<?> getKey() {
         return Filter.class;
     }
     @Override public Filter createFilter() throws HeapException, JsonValueException {
