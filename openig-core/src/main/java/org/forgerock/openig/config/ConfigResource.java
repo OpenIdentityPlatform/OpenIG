@@ -19,7 +19,6 @@ package org.forgerock.openig.config;
 
 // Java Standard Edition
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 
 // Java Enterprise Edition

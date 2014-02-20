@@ -35,7 +35,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.URIUtil;

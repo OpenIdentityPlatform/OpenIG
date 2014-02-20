@@ -17,12 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-// Java Standard Edition
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -32,18 +27,14 @@ import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.Loader;
 import org.forgerock.openig.util.MultiValueMap;
 
 /**

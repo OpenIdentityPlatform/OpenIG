@@ -44,7 +44,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
