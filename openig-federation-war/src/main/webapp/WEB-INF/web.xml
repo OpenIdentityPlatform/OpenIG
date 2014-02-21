@@ -13,11 +13,16 @@
   information: "Portions Copyrighted [year] [name of copyright owner]".
 
   Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  Portions Copyrighted 2011 ForgeRock AS.
+  Portions Copyrighted 2011-2014 ForgeRock AS.
 -->
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5"> 
     <display-name>ForgeRock OpenIG Federation Gateway</display-name>
+    <listener>
+     <listener-class>
+        com.sun.identity.common.ShutdownServletContextListener
+     </listener-class>
+    </listener>
     <servlet>
         <servlet-name>openig-federation-servlet</servlet-name>
         <servlet-class>org.forgerock.openig.federation.FederationGatewayServlet</servlet-class>
