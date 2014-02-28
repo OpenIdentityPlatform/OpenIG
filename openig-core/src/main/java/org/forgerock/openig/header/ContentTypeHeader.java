@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2012 ForgeRock Inc.
+ * Portions Copyrighted 2011-2014 ForgeRock Inc.
  */
 
 package org.forgerock.openig.header;
@@ -35,7 +35,7 @@ import org.forgerock.openig.http.Message;
 public class ContentTypeHeader implements Header {
 
     /** The name of the header that this object represents. */
-    public static final String NAME = "Content-Type"; 
+    public static final String NAME = "Content-Type";
 
     /** The type/subtype of the message. */
     public String type = null;
@@ -64,7 +64,7 @@ public class ContentTypeHeader implements Header {
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from. 
+     * @param string the value to initialize the header from.
      */
     public ContentTypeHeader(String string) {
         fromString(string);
@@ -81,8 +81,7 @@ public class ContentTypeHeader implements Header {
         return (charset != null ? Charset.forName(charset) : null);
     }
 
-    @Override
-    public void clear() {
+    private void clear() {
         type = null;
         charset = null;
         boundary = null;

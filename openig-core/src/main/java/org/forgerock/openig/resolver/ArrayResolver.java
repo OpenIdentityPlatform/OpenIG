@@ -12,20 +12,15 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
 import java.lang.reflect.Array;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Resolves native arrays of objects.
- *
- * @author Paul C. Bryan
  */
 public class ArrayResolver implements Resolver {
 
@@ -33,17 +28,17 @@ public class ArrayResolver implements Resolver {
      * Returns {@code null}, as arrays are not resolved through type discovery.
      */
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return null; // special resolver, doesn't need index
     }
 
     @Override
     public Object get(Object object, Object element) {
         if (element instanceof Number) {
-            int index = ((Number)element).intValue();
+            int index = ((Number) element).intValue();
             try {
                 if (object instanceof Object[]) { // for array of objects
-                    return ((Object[])object)[index];
+                    return ((Object[]) object)[index];
                 } else if (object.getClass().isArray()) { // for array of primitives
                     return Array.get(object, index);
                 }
@@ -58,10 +53,10 @@ public class ArrayResolver implements Resolver {
     public Object put(Object object, Object element, Object value) {
         Object original = get(object, element); // get original value first
         if (original != Resolver.UNRESOLVED && element instanceof Number) {
-            int index = ((Number)element).intValue();
+            int index = ((Number) element).intValue();
             try {
                 if (object instanceof Object[]) { // for array of objects
-                    ((Object[])object)[index] = value;
+                    ((Object[]) object)[index] = value;
                 } else if (object.getClass().isArray()) { // for array of primitives
                     Array.set(object, index, value);
                 }
@@ -75,31 +70,5 @@ public class ArrayResolver implements Resolver {
             }
         }
         return Resolver.UNRESOLVED;
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        return Resolver.UNRESOLVED; // we are not at liberty to change size of array
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        if (element instanceof Number) {
-            int index = ((Number)element).intValue();
-            if (index < 0) {
-                return false;
-            }
-            if (object instanceof Object[]) { // for array of objects
-                return ((Object[])object).length > index;
-            } else if (object.getClass().isArray()) { // for array of primitives
-                return Array.getLength(object) > index;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public Set<?> keySet(Object object) {
-        return (Collections.emptySet()); // arrays are not enumerable
     }
 }

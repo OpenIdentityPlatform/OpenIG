@@ -12,33 +12,30 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
 
-// OpenIG Core
 import org.forgerock.openig.http.Message;
-import org.forgerock.openig.util.Clearable;
 import org.forgerock.openig.util.Indexed;
 
 /**
  * An HTTP message header.
- *
- * @author Paul C. Bryan
  */
-public interface Header extends Clearable, Indexed<String> {
+public interface Header extends Indexed<String> {
 
     /**
-     * Returns the name of the header, as it would canonically appear within an HTTP message.
+     * Returns the name of the header, as it would canonically appear within an
+     * HTTP message.
      */
     @Override
     String getKey();
 
     /**
-     * Populates the content of the header from the specified message. If the message does
-     * not contain the appropriate header, callign this message has no effect (will not
-     * change the values of the header).
+     * Populates the content of the header from the specified message. If the
+     * message does not contain the appropriate header, callign this message has
+     * no effect (will not change the values of the header).
      */
     void fromMessage(Message message);
 
@@ -48,14 +45,15 @@ public interface Header extends Clearable, Indexed<String> {
     void fromString(String string);
 
     /**
-     * Sets the header in the specified message. If the header is empty, calling this method
-     * has no effect (will not erase existing instances of the header in the message).
+     * Sets the header in the specified message. If the header is empty, calling
+     * this method has no effect (will not erase existing instances of the
+     * header in the message).
      */
     void toMessage(Message message);
 
     /**
-     * Returns the header as a single string value. If the header is empty, this method will
-     * return {@code null}.
+     * Returns the header as a single string value. If the header is empty, this
+     * method will return {@code null}.
      */
     String toString();
 }

@@ -13,17 +13,15 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
 
 // Java Standard Edition
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -33,15 +31,13 @@ import java.util.List;
 // OpenIG Core
 import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.Streamer;
-import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.MultiValueMap;
 import org.forgerock.openig.util.URIUtil;
 
 /**
- * Form fields, a case-sensitive multi-string-valued map. The form can be read from and
- * written to request objects as query parameters (GET) and request entities (POST).
- *
- * @author Paul C. Bryan
+ * Form fields, a case-sensitive multi-string-valued map. The form can be read
+ * from and written to request objects as query parameters (GET) and request
+ * entities (POST).
  */
 public class Form extends MultiValueMap<String, String> {
 
@@ -53,10 +49,13 @@ public class Form extends MultiValueMap<String, String> {
     }
 
     /**
-     * Parses a URL-encoded string containing form parameters and stores them in this object.
-     * Malformed name-value pairs (missing the "=" delimiter) are simply ignored.
+     * Parses a URL-encoded string containing form parameters and stores them in
+     * this object. Malformed name-value pairs (missing the "=" delimiter) are
+     * simply ignored.
      *
-     * @param s the URL-encoded string to parse.
+     * @param s
+     *            the URL-encoded string to parse.
+     * @return this form object.
      */
     public Form fromString(String s) {
         for (String param : s.split("&")) {
@@ -81,12 +80,13 @@ public class Form extends MultiValueMap<String, String> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (String name : keySet()) {
-            for (String value: get(name)) {
+            for (String value : get(name)) {
                 if (sb.length() > 0) {
                     sb.append('&');
                 }
                 try {
-                    sb.append(URLEncoder.encode(name, "UTF-8")).append('=').append(URLEncoder.encode(value, "UTF-8"));
+                    sb.append(URLEncoder.encode(name, "UTF-8")).append('=').append(
+                            URLEncoder.encode(value, "UTF-8"));
                 } catch (UnsupportedEncodingException uee) {
                     throw new IllegalStateException(uee);
                 }
@@ -96,10 +96,12 @@ public class Form extends MultiValueMap<String, String> {
     }
 
     /**
-     * Parses the query parameters of a request and stores them in this object. The object
-     * is not cleared beforehand, so this adds to any fields already in place.
+     * Parses the query parameters of a request and stores them in this object.
+     * The object is not cleared beforehand, so this adds to any fields already
+     * in place.
      *
-     * @param request the request to be parsed.
+     * @param request
+     *            the request to be parsed.
      * @return this form object.
      */
     public Form fromRequestQuery(Request request) {
@@ -111,26 +113,29 @@ public class Form extends MultiValueMap<String, String> {
     }
 
     /**
-     * Sets a request URI with query parameters. This overwrites any query parameters that
-     * may already exist in the request URI.
+     * Sets a request URI with query parameters. This overwrites any query
+     * parameters that may already exist in the request URI.
      *
-     * @param request the request to set query parameters to.
+     * @param request
+     *            the request to set query parameters to.
      */
     public void toRequestQuery(Request request) {
         try {
-            request.uri = URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
-             request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
-             toString(), request.uri.getRawFragment());
+            request.uri =
+                    URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
+                            request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
+                            toString(), request.uri.getRawFragment());
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }
     }
 
     /**
-     * Appends the form as additional query parameters on an existing request URI. This leaves
-     * any existing query parameters intact.
+     * Appends the form as additional query parameters on an existing request
+     * URI. This leaves any existing query parameters intact.
      *
-     * @param request the request to append query parameters to.
+     * @param request
+     *            the request to append query parameters to.
      */
     public void appendRequestQuery(Request request) {
         StringBuilder sb = new StringBuilder();
@@ -150,25 +155,32 @@ public class Form extends MultiValueMap<String, String> {
             newQuery = null;
         }
         try {
-            request.uri = URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
-             request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
-             newQuery, request.uri.getRawFragment());
+            request.uri =
+                    URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
+                            request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
+                            newQuery, request.uri.getRawFragment());
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }
     }
 
     /**
-     * Parses the URL-encoded form entity of a request and stores them in this object. The
-     * object is not cleared beforehand, so this adds to any fields already in place.
+     * Parses the URL-encoded form entity of a request and stores them in this
+     * object. The object is not cleared beforehand, so this adds to any fields
+     * already in place.
      *
-     * @param request the request to be parsed.
+     * @param request
+     *            the request to be parsed.
      * @return this form object.
-     * @throws IOException if an I/O exception occurs.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     public Form fromRequestEntity(Request request) throws IOException {
-        if (request != null & request.entity != null && request.headers != null
-        && request.headers.getFirst("Content-Type").equalsIgnoreCase("application/x-www-form-urlencoded")) {
+        if (request != null
+                && request.entity != null
+                && request.headers != null
+                && request.headers.getFirst("Content-Type").equalsIgnoreCase(
+                        "application/x-www-form-urlencoded")) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             Streamer.stream(request.entity, bytes);
             fromString(bytes.toString());
@@ -177,11 +189,12 @@ public class Form extends MultiValueMap<String, String> {
     }
 
     /**
-     * Populates a request with the necessary headers and entity for the form
-     * to be submitted as a POST with application/x-www-form-urlencoded content
+     * Populates a request with the necessary headers and entity for the form to
+     * be submitted as a POST with application/x-www-form-urlencoded content
      * type. This overwrites any entity that may already be in the request.
      *
-     * @param request the request to add the form entity to.
+     * @param request
+     *            the request to add the form entity to.
      */
     public void toRequestEntity(Request request) {
         String form = toString();

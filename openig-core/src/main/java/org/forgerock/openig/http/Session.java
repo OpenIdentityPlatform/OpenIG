@@ -12,14 +12,12 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
 
-// OpenIG Core
-import org.forgerock.openig.util.ReadableMap;
-import org.forgerock.openig.util.WritableMap;
+import java.util.Map;
 
 /**
  * An interface for managing attributes across multiple requests from the same user agent.
@@ -31,5 +29,5 @@ import org.forgerock.openig.util.WritableMap;
  *
  * @author Paul C. Bryan
  */
-public interface Session extends ReadableMap<String, Object>, WritableMap<String, Object> {
+public interface Session extends Map<String, Object> {
 }

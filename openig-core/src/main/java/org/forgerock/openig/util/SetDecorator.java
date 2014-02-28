@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author Paul C. Bryan
  */
-public class SetDecorator<E> implements Set<E>, Clearable {
+public class SetDecorator<E> implements Set<E> {
 
     /** The set wrapped by this decorator. */
     protected final Set<E> set;

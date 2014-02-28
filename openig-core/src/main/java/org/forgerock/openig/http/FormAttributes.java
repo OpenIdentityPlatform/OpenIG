@@ -12,74 +12,114 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 // TODO: more permanent way to expose "exchange.request.form" parameters.
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-// OpenIG Core
 import org.forgerock.openig.io.BranchingInputStream;
-import org.forgerock.openig.util.ReadableMap;
+import org.forgerock.openig.util.UnmodifiableCollection;
 
 /**
  * Exposes query parameters and posted form entity as values.
- *
- * @author Paul C. Bryan
  */
-public class FormAttributes implements ReadableMap<String, List<String>> {
+public class FormAttributes extends AbstractMap<String, List<String>> implements
+        Map<String, List<String>>, UnmodifiableCollection {
 
     /** The request to read form attributes from. */
-    private Request request;
+    private final Request request;
 
     /**
-     * Constructs a new form attributes object that reads attributes from the specified
-     * request.
-     *
-     * @param request the request to read form attributes from.
+     * Constructs a new form attributes object that reads attributes from the
+     * specified request.
+     * 
+     * @param request
+     *            the request to read form attributes from.
      */
-    public FormAttributes(Request request) {
+    public FormAttributes(final Request request) {
         this.request = request;
     }
 
-    /**
-     * Returns a list of form values for the specified field name.
-     *
-     * @param name the field name to return the form value(s) for.
-     * @return a list of form values for the specified field name.
-     */
     @Override
-    public List<String> get(Object name) {
+    public boolean containsKey(final Object key) {
+        return form().containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(final Object value) {
+        return form().containsValue(value);
+    }
+
+    @Override
+    public Set<Entry<String, List<String>>> entrySet() {
+        return form().entrySet();
+    }
+
+    @Override
+    public List<String> get(final Object name) {
+        return form().get(name);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return form().isEmpty();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return form().keySet();
+    }
+
+    @Override
+    public int size() {
+        return form().size();
+    }
+
+    @Override
+    public String toString() {
+        return form().toString();
+    }
+
+    @Override
+    public Collection<List<String>> values() {
+        return form().values();
+    }
+
+    private Form form() {
         BranchingInputStream entity = null;
         if (request.entity != null) {
             entity = request.entity;
             try {
                 request.entity = entity.branch();
-            } catch (IOException ioe) {
+            } catch (final IOException ioe) {
                 throw new IllegalStateException(ioe);
             }
         }
+        final Form form = new Form();
         try {
-            Form form = new Form();
             form.fromRequestQuery(request);
             form.fromRequestEntity(request);
-            return form.get(name);
-        } catch (IOException ioe) {
-            return null;
+        } catch (final IOException ioe) {
+            // Ignore: return empty form.
         } finally {
             if (entity != null) {
                 try {
                     entity.closeBranches();
-                } catch (IOException ioe) {
+                } catch (final IOException ioe) {
                     throw new IllegalStateException(ioe);
                 }
             }
             request.entity = entity;
         }
+        return form;
     }
 }

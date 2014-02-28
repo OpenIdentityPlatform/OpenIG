@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 ForgeRock Inc. All rights reserved.
+ * Copyright 2012-2014 ForgeRock Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms
  * of the Common Development and Distribution License
@@ -29,7 +29,7 @@ import org.forgerock.openig.http.Message;
 /**
  * Processes the <strong>{@code Location}</strong> message header. For more information see
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.30.
- * 
+ *
  * @author Mark de Reeper
  */
 public final class LocationHeader implements Header {
@@ -64,8 +64,7 @@ public final class LocationHeader implements Header {
         fromString(string);
     }
 
-    @Override
-    public void clear() {
+    private void clear() {
         locationURI = "";
     }
 

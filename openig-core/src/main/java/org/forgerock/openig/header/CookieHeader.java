@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -28,7 +28,7 @@ import org.forgerock.openig.http.Message;
 /**
  * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original
  * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">Netscape specification<a>,
- * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and 
+ * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
  * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
  * <p>
  * Note: This implementation is designed to be forgiving when parsing malformed cookies.
@@ -61,14 +61,13 @@ public class CookieHeader implements Header {
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from. 
+     * @param string the value to initialize the header from.
      */
     public CookieHeader(String string) {
         fromString(string);
     }
 
-    @Override
-    public void clear() {
+    private void clear() {
         cookies.clear();
     }
 

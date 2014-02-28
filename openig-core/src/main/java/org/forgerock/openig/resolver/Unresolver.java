@@ -12,24 +12,18 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Unconditionally resolves to {@link Resolver#UNRESOLVED UNRESOLVED}.
- *
- * @author Paul C. Bryan
  */
 public class Unresolver implements Resolver {
 
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return Object.class;
     }
 
@@ -41,20 +35,5 @@ public class Unresolver implements Resolver {
     @Override
     public Object put(Object object, Object element, Object value) {
         return Resolver.UNRESOLVED;
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        return Resolver.UNRESOLVED;
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        return false;
-    }
-
-    @Override
-    public Set<?> keySet(Object object) {
-        return (Collections.emptySet());
     }
 }

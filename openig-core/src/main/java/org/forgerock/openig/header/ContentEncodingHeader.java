@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -60,7 +60,7 @@ public class ContentEncodingHeader implements Header {
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from. 
+     * @param string the value to initialize the header from.
      */
     public ContentEncodingHeader(String string) {
         fromString(string);
@@ -88,8 +88,7 @@ public class ContentEncodingHeader implements Header {
         return in;
     }
 
-    @Override
-    public void clear() {
+    private void clear() {
         codings.clear();
     }
 
