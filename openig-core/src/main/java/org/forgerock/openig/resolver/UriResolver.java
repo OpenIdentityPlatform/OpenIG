@@ -12,50 +12,54 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
-import java.util.Collections;
 import java.net.URI;
-import java.util.Set;
 
-// OpenIG Core
 import org.forgerock.openig.util.EnumUtil;
 
 /**
  * Resolves {@link URI} objects.
- *
- * @author Paul C. Bryan
  */
 public class UriResolver implements Resolver {
 
-    /** TODO: Description. */
-    private enum Element { scheme, schemeSpecificPart, authority, userInfo, host, port, path, query, fragment };
+    private enum Element {
+        scheme, schemeSpecificPart, authority, userInfo, host, port, path, query, fragment
+    };
 
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return URI.class;
     }
 
     @Override
     public Object get(Object object, Object element) {
         if (object instanceof URI) {
-            URI uri = (URI)object;
+            URI uri = (URI) object;
             Element e = EnumUtil.valueOf(Element.class, element);
             if (e != null) {
                 switch (e) {
-                case scheme: return uri.getScheme();
-                case schemeSpecificPart: return uri.getSchemeSpecificPart();
-                case authority: return uri.getAuthority();
-                case userInfo: return uri.getUserInfo();
-                case host: return uri.getHost();
-                case port: return (uri.getPort() == -1 ? null : Integer.valueOf(uri.getPort()));
-                case path: return uri.getPath();
-                case query: return uri.getQuery();
-                case fragment: return uri.getFragment();
+                case scheme:
+                    return uri.getScheme();
+                case schemeSpecificPart:
+                    return uri.getSchemeSpecificPart();
+                case authority:
+                    return uri.getAuthority();
+                case userInfo:
+                    return uri.getUserInfo();
+                case host:
+                    return uri.getHost();
+                case port:
+                    return (uri.getPort() == -1 ? null : Integer.valueOf(uri.getPort()));
+                case path:
+                    return uri.getPath();
+                case query:
+                    return uri.getQuery();
+                case fragment:
+                    return uri.getFragment();
                 }
             }
         }
@@ -65,20 +69,5 @@ public class UriResolver implements Resolver {
     @Override
     public Object put(Object object, Object element, Object value) {
         return Resolver.UNRESOLVED; // immutable
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        return Resolver.UNRESOLVED; // immutable
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        return (object instanceof URI ? EnumUtil.valueOf(Element.class, element) != null : false);
-    }
-
-    @Override
-    public Set<?> keySet(Object object) {
-        return (object instanceof URI ? EnumUtil.names(Element.class) : Collections.emptySet());
     }
 }

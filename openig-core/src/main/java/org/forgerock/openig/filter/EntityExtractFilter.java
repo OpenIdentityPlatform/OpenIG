@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -42,7 +42,6 @@ import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.regex.PatternTemplate;
-import org.forgerock.openig.util.EnumerableMap;
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**
@@ -64,7 +63,7 @@ import org.forgerock.openig.util.JsonValueUtil;
 public class EntityExtractFilter extends GenericFilter {
 
     /** Extracts regular expression patterns from entities. */
-    public final StreamPatternExtractor extractor = new StreamPatternExtractor(); 
+    public final StreamPatternExtractor extractor = new StreamPatternExtractor();
 
     /** The message type in the exchange to extract patterns from. */
     public MessageType messageType;
@@ -82,7 +81,6 @@ public class EntityExtractFilter extends GenericFilter {
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        HashMap<String, Object> map = new HashMap<String, Object>();
         if (messageType == MessageType.REQUEST) {
             process(exchange, exchange.request);
         }
@@ -99,9 +97,8 @@ public class EntityExtractFilter extends GenericFilter {
             try {
                 Reader reader = HttpUtil.entityReader(message, true, charset);
                 try {
-                    EnumerableMap<String, String> extract = extractor.extract(reader);
-                    for (String key : extract.keySet()) { // get 'em all now
-                        map.put(key, extract.get(key));
+                    for (Map.Entry<String, String> match : extractor.extract(reader)) { // get 'em all now
+                        map.put(match.getKey(), match.getValue());
                     }
                 } finally {
                     reader.close();

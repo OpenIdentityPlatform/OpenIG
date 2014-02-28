@@ -12,42 +12,38 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
 import java.security.Principal;
-import java.util.Collections;
-import java.util.Set;
 
-// OpenIG Core
 import org.forgerock.openig.util.EnumUtil;
 
 /**
  * Resolves {@link Principal} objects.
- *
- * @author Paul C. Bryan
  */
 public class PrincipalResolver implements Resolver {
 
-    /** TODO: Description. */
-    private enum Element { name }; 
+    private enum Element {
+        name
+    };
 
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return Principal.class;
     }
 
     @Override
     public Object get(Object object, Object element) {
         if (object instanceof Principal) {
-            Principal principal = (Principal)object;
+            Principal principal = (Principal) object;
             Element e = EnumUtil.valueOf(Element.class, element);
             if (e != null) {
                 switch (e) {
-                case name: return principal.getName();
+                case name:
+                    return principal.getName();
                 }
             }
         }
@@ -57,20 +53,5 @@ public class PrincipalResolver implements Resolver {
     @Override
     public Object put(Object object, Object element, Object value) {
         return Resolver.UNRESOLVED; // immutable
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        return Resolver.UNRESOLVED; // immutable
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        return (object instanceof Principal ? EnumUtil.valueOf(Element.class, element) != null : false);
-    }
-
-    @Override
-    public Set<?> keySet(Object object) {
-        return (object instanceof Principal ? EnumUtil.names(Element.class) : Collections.emptySet());
     }
 }

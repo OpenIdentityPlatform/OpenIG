@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author Paul C. Bryan
  */
-public class MapDecorator<K, V> implements Map<K, V>, FullMap<K, V> {
+public class MapDecorator<K, V> implements Map<K, V> {
 
     /** The map wrapped by this decorator. */
     protected final Map<K, V> map;
@@ -103,7 +103,7 @@ public class MapDecorator<K, V> implements Map<K, V>, FullMap<K, V> {
 
     /**
      * Associates the specified value with the specified key in the map (optional operation).
-     * 
+     *
      * @param key key with which the specified value is to be associated.
      * @param value value to be associated with the specified key.
      * @return the previous value associated with key, or {@code null} if there was no mapping for key.
@@ -133,7 +133,7 @@ public class MapDecorator<K, V> implements Map<K, V>, FullMap<K, V> {
 
     /**
      * Copies all of the mappings from the specified map to the map (optional operation).
-     * 
+     *
      * @param m mappings to be stored in the map.
      * @throws ClassCastException if the class of a key or value in the specified map prevents it from being stored in the map.
      * @throws IllegalArgumentException if some property of a key or value in the specified map prevents it from being stored in the map.

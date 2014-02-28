@@ -9,21 +9,15 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2014 ForgeRock AS.
  */
-
 package org.forgerock.openig.util;
 
 /**
- * Consolidates all discrete map interface operations into a single interface.
- *
- * @author Paul C. Bryan
+ * An marker interface for tagging collection implementations as read-only.
  */
-public interface FullMap<K, V> extends EnumerableMap<K, V>, WritableMap<K, V>, Clearable {
-
-    /** Used for duck typing full maps. */
-    public static final DuckType<FullMap> DUCK = new DuckType<FullMap>(FullMap.class);  
+public interface UnmodifiableCollection {
+    // No methods.
 }

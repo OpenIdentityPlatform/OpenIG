@@ -12,52 +12,42 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+
+import org.forgerock.openig.util.UnmodifiableCollection;
 
 /**
  * Resolves {@link Map} objects.
- *
- * @author Paul C. Bryan
  */
+@SuppressWarnings("rawtypes")
 public class MapResolver implements Resolver {
 
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return Map.class;
     }
 
     @Override
     public Object get(Object object, Object element) {
-        return (object instanceof Map ? ((Map)object).get(element) : Resolver.UNRESOLVED);
+        return (object instanceof Map ? ((Map) object).get(element) : Resolver.UNRESOLVED);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Object put(Object object, Object element, Object value) {
-        return (object instanceof Map ? ((Map)object).put(element, value) : Resolver.UNRESOLVED);
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        return (object instanceof Map ? ((Map)object).remove(element) : Resolver.UNRESOLVED);
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        return (object instanceof Map ? ((Map)object).containsKey(element) : false);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<? extends Object> keySet(Object object) {
-        return (object instanceof Map ? ((Map)object).keySet() : Collections.emptySet());
+        if (object instanceof Map && !(object instanceof UnmodifiableCollection)) {
+            Map map = (Map) object;
+            try {
+                return map.put(element, value);
+            } catch (UnsupportedOperationException uoe) {
+                // ignore failed attempts to write to read-only map
+            }
+        }
+        return Resolver.UNRESOLVED;
     }
 }

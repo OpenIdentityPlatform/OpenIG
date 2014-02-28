@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -29,7 +29,7 @@ import org.forgerock.openig.util.CaseInsensitiveMap;
 
 /**
  * Utility class for processing values in HTTP header fields.
- * 
+ *
  * @author Paul C. Bryan
  */
 public class HeaderUtil {
@@ -47,7 +47,7 @@ public class HeaderUtil {
      * Note: This method is liberal in its interpretation of malformed header values; namely
      * the incorrect use of string and character quoting mechanisms and unquoted white space.
      * If a {@code null} or empty string is supplied as a value, this method yields an empty
-     * list. 
+     * list.
      *
      * @param value the header value to be split.
      * @param separator the separator character to split headers around.
@@ -157,7 +157,7 @@ public class HeaderUtil {
                 if (quoted) {
                     escaped = true; // next character is literal
                 } else {
-                    sb.appendCodePoint(cp); // not quoted, push the backslash literal (header probably malformed) 
+                    sb.appendCodePoint(cp); // not quoted, push the backslash literal (header probably malformed)
                 }
             } else if (cp == '"') {
                 quoted = !quoted; // toggle quoted status
@@ -194,7 +194,7 @@ public class HeaderUtil {
      * outside of quoted-strings is removed. White space within quoted-strings is retained.
      * <p>
      * Note: This method is liberal in its interpretation of malformed header values; namely
-     * the incorrect use of string and character quoting mechanisms and unquoted white space. 
+     * the incorrect use of string and character quoting mechanisms and unquoted white space.
      *
      * @param values the HTTP header parameters.
      * @return a map of parameter name-value pairs.
@@ -202,7 +202,6 @@ public class HeaderUtil {
     public static Map<String, String> parseParameters(Collection<String> values) {
         CaseInsensitiveMap<String> map = new CaseInsensitiveMap<String>(new HashMap<String, String>());
         if (values != null) {
-            StringBuilder sb = new StringBuilder();
             for (String value : values) {
                 String[] param = parseParameter(value);
                 if (param[0] != null && param[0].length() > 0 && !map.containsKey(param[0])) {

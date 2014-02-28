@@ -12,83 +12,148 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * A {@link FieldMap} that can be extended with arbitrary keys. If the key maps to a key
- * exposed by the field map, the field map is used, otherwise the key is handled in this
- * implementation. The backing map is a {@link HashMap} with default initial capacity and
- * load factor. 
- *
- * @author Paul C. Bryan
+ * A {@link FieldMap} that can be extended with arbitrary keys. If the key maps
+ * to a key exposed by the field map, the field map is used, otherwise the key
+ * is handled in this implementation. The backing map is a {@link HashMap} with
+ * default initial capacity and load factor.
  */
-public class ExtensibleFieldMap extends FieldMap {
+public class ExtensibleFieldMap extends AbstractMap<String, Object> implements Map<String, Object> {
+
+    /** Map to store fields. */
+    private final FieldMap fields;
 
     /** Map to store extended keys. */
     private final HashMap<String, Object> extension = new HashMap<String, Object>();
 
     /**
-     * Constructs a new extensible field map, using this object's field members as keys. This
-     * is only useful in the case where a class subclasses {@code ExtensibleFieldMap}.
+     * Constructs a new extensible field map, using this object's field members
+     * as keys. This is only useful in the case where a class subclasses
+     * {@code ExtensibleFieldMap}.
      */
     public ExtensibleFieldMap() {
-        super();
+        fields = new FieldMap(this);
     }
 
+    /** The Map entrySet view. */
+    private final Set<Entry<String, Object>> entrySet = new AbstractSet<Entry<String, Object>>() {
+        @Override
+        public void clear() {
+            ExtensibleFieldMap.this.clear();
+        }
+
+        @Override
+        public boolean contains(final Object o) {
+            return (o instanceof Entry)
+                    && ExtensibleFieldMap.this.containsKey(((Entry<?, ?>) o).getKey());
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return ExtensibleFieldMap.this.isEmpty();
+        }
+
+        @Override
+        public Iterator<Entry<String, Object>> iterator() {
+            return new Iterator<Entry<String, Object>>() {
+                final Iterator<Entry<String, Object>> fieldIterator = fields.entrySet().iterator();
+                final Iterator<Entry<String, Object>> extensionIterator = extension.entrySet()
+                        .iterator();
+                Iterator<Entry<String, Object>> currentIterator = fieldIterator;
+
+                @Override
+                public boolean hasNext() {
+                    return fieldIterator.hasNext() || extensionIterator.hasNext();
+                }
+
+                @Override
+                public Entry<String, Object> next() {
+                    if (!currentIterator.hasNext() && currentIterator != extensionIterator) {
+                        currentIterator = extensionIterator;
+                    }
+                    return currentIterator.next();
+                }
+
+                @Override
+                public void remove() {
+                    currentIterator.remove();
+                }
+            };
+        }
+
+        @Override
+        public boolean remove(final Object o) {
+            return (o instanceof Entry)
+                    && ExtensibleFieldMap.this.remove(((Entry<?, ?>) o).getKey()) != null;
+        }
+
+        @Override
+        public int size() {
+            return ExtensibleFieldMap.this.size();
+        }
+    };
+
     /**
-     * Constructs a new extensible field map, using the specified object's field members as
-     * keys.
+     * Constructs a new extensible field map, using the specified object's field
+     * members as keys.
      *
-     * @param object the object whose field members are to be exposed in the map.
+     * @param object
+     *            the object whose field members are to be exposed in the map.
      */
     public ExtensibleFieldMap(Object object) {
-        super(object);
+        fields = new FieldMap(object);
     }
 
     @Override
     public Object get(Object key) {
-        return (super.containsKey(key) ? super.get(key) : extension.get(key));
+        return fields.containsKey(key) ? fields.get(key) : extension.get(key);
     }
 
     @Override
     public boolean containsKey(Object key) {
-        return (super.containsKey(key) || extension.containsKey(key));
-    }
-
-    @Override
-    public int size() {
-        return super.size() + extension.size();
-    }
-
-    @Override
-    public Set<String> keySet() {
-        HashSet<String> keys = new HashSet<String>(size());
-        keys.addAll(super.keySet());
-        keys.addAll(extension.keySet());
-        return keys;
-    }
-
-    @Override
-    public Object put(String key, Object value) {
-        return (super.containsKey(key) ? super.put(key, value) : extension.put(key, value));
+        return fields.containsKey(key) || extension.containsKey(key);
     }
 
     @Override
     public Object remove(Object key) {
-        return (super.containsKey(key) ? super.remove(key) : extension.remove(key));
+        return fields.containsKey(key) ? fields.remove(key) : extension.remove(key);
     }
 
     @Override
     public void clear() {
-        super.clear();
+        fields.clear();
         extension.clear();
+    }
+
+    @Override
+    public int size() {
+        return fields.size() + extension.size();
+    }
+
+    @Override
+    public Set<Map.Entry<String, Object>> entrySet() {
+        return entrySet;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return fields.isEmpty() && extension.isEmpty();
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return fields.containsKey(key) ? fields.put(key, value) : extension.put(key, value);
     }
 }

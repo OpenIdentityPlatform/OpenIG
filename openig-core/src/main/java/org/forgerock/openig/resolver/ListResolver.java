@@ -12,25 +12,23 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
 
-// Java Standard Edition
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+
+import org.forgerock.openig.util.UnmodifiableCollection;
 
 /**
  * Resolves {@link List} objects.
- *
- * @author Paul C. Bryan
  */
+@SuppressWarnings("rawtypes")
 public class ListResolver implements Resolver {
 
     @Override
-    public Class getKey() {
+    public Class<?> getKey() {
         return List.class;
     }
 
@@ -38,7 +36,7 @@ public class ListResolver implements Resolver {
     public Object get(Object object, Object element) {
         if (object instanceof List && element instanceof Number) {
             try {
-                return ((List)object).get(((Number)element).intValue());
+                return ((List) object).get(((Number) element).intValue());
             } catch (IndexOutOfBoundsException ioobe) {
                 // cannot resolve index
             }
@@ -49,11 +47,12 @@ public class ListResolver implements Resolver {
     @SuppressWarnings("unchecked")
     @Override
     public Object put(Object object, Object element, Object value) {
-        if (object instanceof List && element instanceof Number) {
-            List list = (List)object;
-            int index = ((Number)element).intValue();
+        if (object instanceof List && !(object instanceof UnmodifiableCollection)
+                && element instanceof Number) {
+            List list = (List) object;
+            int index = ((Number) element).intValue();
             try {
-                if (list.size() > index) { // within existing list 
+                if (list.size() > index) { // within existing list
                     list.set(index, value);
                 } else if (list.size() == index) { // appending to end of list
                     list.add(element);
@@ -64,35 +63,5 @@ public class ListResolver implements Resolver {
             }
         }
         return Resolver.UNRESOLVED;
-    }
-
-    @Override
-    public Object remove(Object object, Object element) {
-        if (object instanceof List && element instanceof Number) {
-            try {
-                List list = (List)object;
-                int index = ((Number)element).intValue();
-                if (index > 0 && index == list.size() - 1) { // removing end of list
-                    return list.remove(index);
-                }
-            } catch (UnsupportedOperationException uoe) {
-                // ignore failed attempts to write to read-only list
-            }
-        }
-        return Resolver.UNRESOLVED;
-    }
-
-    @Override
-    public boolean containsKey(Object object, Object element) {
-        if (object instanceof List && element instanceof Number) {
-            int index = ((Number)element).intValue();
-            return (index >= 0 && ((List)object).size() > index);
-        }
-        return false;
-    }
-
-    @Override
-    public Set<?> keySet(Object object) {
-        return (Collections.emptySet()); // lists aren't enumerable
     }
 }

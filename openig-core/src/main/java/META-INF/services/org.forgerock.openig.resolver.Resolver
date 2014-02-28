@@ -1,8 +1,4 @@
-org.forgerock.openig.resolver.EnumerableMapResolver
 org.forgerock.openig.resolver.ListResolver
 org.forgerock.openig.resolver.MapResolver
 org.forgerock.openig.resolver.PrincipalResolver
-org.forgerock.openig.resolver.ReadableListResolver
-org.forgerock.openig.resolver.ReadableMapResolver
-org.forgerock.openig.resolver.WritableMapResolver
 org.forgerock.openig.resolver.UriResolver

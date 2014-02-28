@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -31,7 +31,7 @@ import java.util.Set;
 public class EnumUtil {
 
     /** Cache of name sets for repeated call efficiency. */
-    private static final HashMap<Class, Set<String>> NAMESETS = new HashMap<Class, Set<String>>();
+    private static final HashMap<Class<?>, Set<String>> NAMESETS = new HashMap<Class<?>, Set<String>>();
 
     /** Static methods only. */
     private EnumUtil() {

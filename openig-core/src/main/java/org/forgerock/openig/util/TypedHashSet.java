@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -53,7 +53,7 @@ public class TypedHashSet<E> extends HashSet<E> {
      * @param type the type of objects that should be stored in the set.
      * @throws NullPointerException if the specified collection is {@code null}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public TypedHashSet(Collection c, Class<E> type) {
         this(c.size(), type);
         addAll(c);

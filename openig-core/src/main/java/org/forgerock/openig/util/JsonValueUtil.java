@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2012 ForgeRock Inc.
+ * Portions Copyrighted 2011-2014 ForgeRock Inc.
  */
 
 package org.forgerock.openig.util;
@@ -32,13 +32,13 @@ import org.forgerock.openig.el.ExpressionException;
  * Provides additional functionality to JsonValue.
  *
  * @author Paul C. Bryan
- */ 
+ */
 public class JsonValueUtil {
 
     /** TODO: Description. */
     private static final HashMap<String, String> aliases = new HashMap<String, String>();
 
-// TODO: allow aliases to be dynamically configured 
+// TODO: allow aliases to be dynamically configured
     static {
         aliases.put("AssignmentFilter", "org.forgerock.openig.filter.AssignmentFilter");
         aliases.put("CaptureFilter", "org.forgerock.openig.filter.CaptureFilter");
@@ -71,7 +71,7 @@ public class JsonValueUtil {
      * @return TODO.
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    private static Class classForName(JsonValue value) throws JsonValueException {
+    private static Class<?> classForName(JsonValue value) throws JsonValueException {
         String c = value.asString();
         String a = aliases.get(c);
         if (a != null) {
@@ -91,7 +91,7 @@ public class JsonValueUtil {
      * @return the class object with the specified name.
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    public static Class asClass(JsonValue value) throws JsonValueException {
+    public static Class<?> asClass(JsonValue value) throws JsonValueException {
         return (value == null || value.isNull()? null : classForName(value));
     }
 
@@ -111,9 +111,9 @@ public class JsonValueUtil {
         if (value == null || value.isNull()) {
             return null;
         }
-        Class c = asClass(value);
+        Class<?> c = asClass(value);
         if (!type.isAssignableFrom(c)) {
-            throw new JsonValueException(value, "expecting " + type.getName()); 
+            throw new JsonValueException(value, "expecting " + type.getName());
         }
         try {
             return (T)c.newInstance();

@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -52,14 +52,13 @@ public class ContentLengthHeader implements Header {
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from. 
+     * @param string the value to initialize the header from.
      */
     public ContentLengthHeader(String string) {
         fromString(string);
     }
 
-    @Override
-    public void clear() {
+    private void clear() {
         length = -1;
     }
 

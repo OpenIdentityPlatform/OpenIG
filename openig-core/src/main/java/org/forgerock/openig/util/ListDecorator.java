@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -31,7 +31,7 @@ import java.util.ListIterator;
  *
  * @author Paul C. Bryan
  */
-public class ListDecorator<E> implements List<E>, FullList<E> {
+public class ListDecorator<E> implements List<E> {
 
     /** The list wrapped by this decorator. */
     protected final List<E> list;
