@@ -21,7 +21,7 @@
     <parent>
       <groupId>org.forgerock</groupId>
       <artifactId>forgerock-parent</artifactId>
-      <version>1.0.0</version>
+      <version>1.2.1</version>
     </parent>
     <groupId>org.forgerock.openig</groupId>
     <artifactId>openig-project</artifactId>
