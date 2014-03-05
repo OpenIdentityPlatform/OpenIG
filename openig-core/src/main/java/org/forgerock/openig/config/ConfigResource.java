@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.config;
@@ -53,12 +53,12 @@ import org.forgerock.openig.resource.Resources;
  * <p>
  * This class first tries to locate the configuration file using simple mode by looking for
  * a file named <strong>{@code config.json}</strong> in the configuration directory specified
- * above. If the file does not exist, then this class reverts to boostrap mode.
+ * above. If the file does not exist, then this class reverts to bootstrap mode.
  * <p>
  * In bootstrap mode, the name of a bootstrap configuration resource is generated based on
- * the instance name supplied (or dervied from the servlet context) and takes the form
+ * the instance name supplied (or derived from the servlet context) and takes the form
  * <tt><em>instance</em><strong>.json</strong></tt>. This file is expected to contain a single
- * JSON object with a single value with the name <strong>{@code config-uri}</strong>. The
+ * JSON object with a single value with the name <strong>{@code configURI}</strong>. The
  * value is the URI of the configuration resource.
  *
  * @author Paul C. Bryan
@@ -104,7 +104,8 @@ public class ConfigResource implements Resource {
             JSONRepresentation representation = new JSONRepresentation();
             bootResource.read(representation);
             try {
-                this.resource = Resources.newInstance(new JsonValue(representation.object).get("configURI").required().asURI());
+                this.resource = Resources.newInstance(
+                        new JsonValue(representation.object).get("configURI").required().asURI());
             } catch (JsonValueException jve) {
                 throw new ResourceException(jve);
             }
