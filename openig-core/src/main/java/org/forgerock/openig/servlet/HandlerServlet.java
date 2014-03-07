@@ -52,7 +52,7 @@ import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.URIUtil;
 
 /**
- * Translates between the Servlet API and the exchange object model. 
+ * Translates between the Servlet API and the exchange object model.
  *
  * @author Paul C. Bryan
  */
@@ -99,8 +99,8 @@ public class HandlerServlet extends HttpServlet {
             throw new ServletException(use);
         }
         // request headers
-        for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
-            String name = (String)e.nextElement();
+        for (Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements();) {
+            String name = e.nextElement();
             exchange.request.headers.addAll(name, Collections.list(request.getHeaders(name)));
         }
         // include request entity if appears to be provided with request
@@ -153,7 +153,7 @@ public class HandlerServlet extends HttpServlet {
                     // ignore exception closing a stream
                 }
             }
-        }        
+        }
         timer.stop();
     }
 
