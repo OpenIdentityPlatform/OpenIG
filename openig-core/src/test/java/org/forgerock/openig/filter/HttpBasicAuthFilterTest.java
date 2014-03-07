@@ -131,6 +131,7 @@ public class HttpBasicAuthFilterTest {
             public boolean isRequestedSessionIdFromURL() { return false; }
 
             @Override
+            @Deprecated
             public boolean isRequestedSessionIdFromUrl() { return false; }
 
             @Override
@@ -206,6 +207,7 @@ public class HttpBasicAuthFilterTest {
             public RequestDispatcher getRequestDispatcher(String s) { return null; }
 
             @Override
+            @Deprecated
             public String getRealPath(String s) { return null; }
 
             @Override
