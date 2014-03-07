@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
@@ -26,6 +27,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.Logger;
 
 /**
@@ -33,8 +35,12 @@ import org.forgerock.openig.log.Logger;
  * wrapper around the scripting engine. Scripts are provided with the following
  * variable bindings:
  * <ul>
+ * <li>{@link Map globals} - the Map of global variables which persist across
+ * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
- * <li>{@link Logger logger} - the OpenIG logger for this filter
+ * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
+ * performing outbound HTTP requests
+ * <li>{@link Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - the next handler in the filter chain.
  * </ul>
  * Like Java based filters, Groovy scripts are free to choose whether or not
@@ -48,8 +54,9 @@ public class GroovyScriptFilter extends AbstractGroovyHeapObject implements Filt
      */
     public static class Heaplet extends AbstractGroovyHeaplet {
         @Override
-        public Object create() throws HeapException, JsonValueException {
-            return new GroovyScriptFilter(compile("script"));
+        public GroovyScriptFilter newInstance(CompiledScript script) throws HeapException,
+                JsonValueException {
+            return new GroovyScriptFilter(script);
         }
     }
 
