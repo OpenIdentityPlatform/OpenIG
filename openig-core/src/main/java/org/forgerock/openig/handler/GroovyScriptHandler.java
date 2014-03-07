@@ -16,16 +16,16 @@
 package org.forgerock.openig.handler;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.groovy.AbstractGroovyHeapObject;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.Logger;
 
 /**
@@ -33,8 +33,12 @@ import org.forgerock.openig.log.Logger;
  * wrapper around the scripting engine. Scripts are provided with the following
  * variable bindings:
  * <ul>
+ * <li>{@link Map globals} - the Map of global variables which persist across
+ * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
- * <li>{@link Logger logger} - the OpenIG logger for this filter.
+ * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
+ * performing outbound HTTP requests
+ * <li>{@link Logger logger} - the OpenIG logger.
  * </ul>
  */
 public class GroovyScriptHandler extends AbstractGroovyHeapObject implements Handler {
@@ -44,8 +48,9 @@ public class GroovyScriptHandler extends AbstractGroovyHeapObject implements Han
      */
     public static class Heaplet extends AbstractGroovyHeaplet {
         @Override
-        public Object create() throws HeapException, JsonValueException {
-            return new GroovyScriptHandler(compile("script"));
+        public GroovyScriptHandler newInstance(CompiledScript script) throws HeapException,
+                JsonValueException {
+            return new GroovyScriptHandler(script);
         }
     }
 

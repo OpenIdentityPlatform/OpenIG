@@ -15,12 +15,24 @@
  */
 package org.forgerock.openig.filter;
 
+import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
+import static com.xebialabs.restito.semantics.Action.status;
+import static com.xebialabs.restito.semantics.Action.stringContent;
+import static com.xebialabs.restito.semantics.Condition.get;
+import static com.xebialabs.restito.semantics.Condition.method;
+import static com.xebialabs.restito.semantics.Condition.uri;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.Mockito.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Collections;
+import java.util.logging.Level;
 
 import javax.script.ScriptException;
 
@@ -29,22 +41,34 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
+import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.util.HttpStatus;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.Stubber;
 import org.testng.annotations.Test;
+
+import com.xebialabs.restito.server.StubServer;
 
 /**
  * Tests the Groovy scripting filter.
  */
 @SuppressWarnings("javadoc")
 public class GroovyScriptFilterTest {
+
+    private static final String XML_CONTENT =
+            "<root><a a1='one'><b>3 &lt; 5</b><c a2='two'>blah</c></a></root>";
+    private static final String JSON_CONTENT = "{\"person\":{" + "\"firstName\":\"Tim\","
+            + "\"lastName\":\"Yates\"," + "\"address\":{\"city\":\"Manchester\","
+            + "\"country\":\"UK\",\"zip\":\"M1 2AB\"}}}";
 
     @Test
     public void testNextHandlerCanBeInvoked() throws Exception {
@@ -314,5 +338,128 @@ public class GroovyScriptFilterTest {
         verifyNoMoreInteractions(exchange.session);
     }
 
-    // TODO: entity interaction.
+    @Test
+    public void testGlobalsPersistedBetweenInvocations() throws Exception {
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "assert globals.x == null",
+                "globals.x = 'value'");
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+        try {
+            filter.filter(exchange, handler);
+            fail("Second iteration succeeded unexpectedly");
+        } catch (AssertionError e) {
+            // Expected.
+        }
+    }
+
+    @Test
+    public void testHttpClient() throws Exception {
+        // Create mock HTTP server.
+        final StubServer server = new StubServer().run();
+        whenHttp(server).match(get("/example")).then(status(HttpStatus.OK_200),
+                stringContent(JSON_CONTENT));
+        try {
+            final int port = server.getPort();
+            // @formatter:off
+            final GroovyScriptFilter filter = new GroovyScriptFilter(
+                    "import org.forgerock.openig.http.*",
+                    "Request request = new Request()",
+                    "request.method = 'GET'",
+                    "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
+                    "exchange.response = http.execute(request)");
+            filter.setHttpClient(new HttpClient(new TemporaryStorage()));
+
+            // @formatter:on
+            final Exchange exchange = new Exchange();
+            exchange.request = new Request();
+            final Handler handler = mock(Handler.class);
+            filter.filter(exchange, handler);
+
+            verifyHttp(server).once(method(Method.GET), uri("/example"));
+            assertThat(exchange.response.status).isEqualTo(200);
+            assertThat(s(exchange.response.entity)).isEqualTo(JSON_CONTENT);
+        } finally {
+            server.stop();
+        }
+    }
+
+    @Test(enabled = false)
+    public void testWriteJsonEntity() throws Exception {
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "exchange.request.jsonOut.person {",
+                    "firstName 'Tim'",
+                    "lastName 'Yates'",
+                    "address {",
+                        "city: 'Manchester'",
+                        "country: 'UK'",
+                        "zip: 'M1 2AB'",
+                    "}",
+                "}");
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+        assertThat(s(exchange.request.entity)).isEqualTo(JSON_CONTENT);
+    }
+
+    @Test(enabled = false)
+    public void testReadJsonEntity() throws Exception {
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "assert exchange.request.jsonIn.person.firstName == 'Tim'",
+                "assert exchange.request.jsonIn.person.lastName == 'Yates'",
+                "assert exchange.request.jsonIn.person.address.country == 'UK'");
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.entity = new ByteArrayBranchingStream(JSON_CONTENT.getBytes("UTF-8"));
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+    }
+
+    @Test(enabled = false)
+    public void testWriteXmlEntity() throws Exception {
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "exchange.request.xmlOut.root {",
+                    "a( a1:'one' ) {",
+                        "b { mkp.yield( '3 < 5' ) }",
+                        "c( a2:'two', 'blah' )",
+                    "}",
+                "}");
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+        assertThat(s(exchange.request.entity)).isEqualTo(XML_CONTENT);
+    }
+
+    @Test(enabled = false)
+    public void testReadXmlEntity() throws Exception {
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "assert exchange.request.xmlIn.root.a"); // TODO
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.entity = new ByteArrayBranchingStream(XML_CONTENT.getBytes("UTF-8"));
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+    }
+
+    private String s(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
+        }
+    }
 }

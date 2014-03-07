@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -41,6 +43,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 
@@ -51,8 +54,12 @@ import org.forgerock.openig.log.Logger;
  * the scripting engine. Scripts are provided with the following variable
  * bindings:
  * <ul>
+ * <li>{@link Map globals} - the Map of global variables which persist across
+ * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
- * <li>{@link Logger logger} - the OpenIG logger for this filter
+ * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
+ * performing outbound HTTP requests
+ * <li>{@link Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
@@ -62,17 +69,31 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
     /** Creates and initializes a capture filter in a heap environment. */
     protected static abstract class AbstractGroovyHeaplet extends NestedHeaplet {
         @Override
-        public abstract Object create() throws HeapException, JsonValueException;
+        public Object create() throws HeapException, JsonValueException {
+            CompiledScript script = compileScript();
+            AbstractGroovyHeapObject component = newInstance(script);
+            component.setHttpClient(new HttpClient(storage)); // TODO more config?
+            return component;
+        }
 
         /**
-         * Parses the configuration as a compiled Groovy script.
+         * Creates the new heap object instance using the provided script.
          *
          * @param script
-         *            The name of the configuration value to parse as the
-         *            script.
-         * @return The compiled Groovy script.
+         *            The compiled script.
+         * @return The new heap object instance using the provided script.
+         * @throws HeapException
+         *             if an exception occurred during creation of the heap
+         *             object or any of its dependencies.
+         * @throws JsonValueException
+         *             if the heaplet (or one of its dependencies) has a
+         *             malformed configuration.
          */
-        protected final CompiledScript compile(final String script) {
+        protected abstract AbstractGroovyHeapObject newInstance(final CompiledScript script)
+                throws HeapException, JsonValueException;
+
+        private final CompiledScript compileScript() {
+            final String script = "script";
             final String scriptFile = script + "File";
             if (config.isDefined(script)) {
                 if (config.isDefined(scriptFile)) {
@@ -109,12 +130,15 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
 
     // TODO: add support for periodically refreshing the Groovy script file.
     // TODO: json/xml/http/sql/crest/ldap bindings.
+    // TODO: shared state between successive requests.
 
     private static final String EOL = System.getProperty("line.separator");
     private static final ScriptEngineManager factory = new ScriptEngineManager();
     private static final ScriptEngine engine = factory.getEngineByName("groovy");
     private static final Compilable compiler = (Compilable) engine;
     private final CompiledScript compiledScript;
+    private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
+    private HttpClient httpClient;
 
     /**
      * Creates a new Groovy heap object using the provided Groovy compiled
@@ -138,6 +162,16 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
      */
     protected AbstractGroovyHeapObject(final String... scriptLines) throws ScriptException {
         this(compiler.compile(joinAsString(EOL, (Object[]) scriptLines)));
+    }
+
+    /**
+     * Sets the HTTP client which should be made available to scripts.
+     *
+     * @param client
+     *            The HTTP client which should be made available to scripts.
+     */
+    public void setHttpClient(HttpClient client) {
+        this.httpClient = client;
     }
 
     /**
@@ -192,6 +226,10 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
         final SimpleBindings bindings = new SimpleBindings();
         bindings.put("exchange", exchange);
         bindings.put("logger", logger);
+        bindings.put("globals", scriptGlobals);
+        if (httpClient != null) {
+            bindings.put("http", httpClient);
+        }
         if (next != null) {
             bindings.put("next", next);
         }
