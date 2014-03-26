@@ -32,11 +32,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Collections;
-import java.util.logging.Level;
 
 import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.opendj.ldap.Connections;
+import org.forgerock.opendj.ldap.LDAPClientContext;
+import org.forgerock.opendj.ldap.LDAPListener;
+import org.forgerock.opendj.ldap.MemoryBackend;
+import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -384,6 +388,78 @@ public class GroovyScriptFilterTest {
             assertThat(s(exchange.response.entity)).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
+        }
+    }
+
+    @Test
+    public void testLdapClient() throws Exception {
+        // Create mock LDAP server with a single user.
+        // @formatter:off
+        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
+                "dn: uid=bjensen,ou=people,dc=example,dc=com",
+                "objectClass: top",
+                "objectClass: person",
+                "objectClass: organizationalPerson",
+                "objectClass: inetOrgPerson",
+                "cn: Barbara",
+                "sn: Jensen",
+                "uid: bjensen",
+                "description: test user",
+                "userPassword: password"));
+        // @formatter:on
+        final LDAPListener listener =
+                new LDAPListener(0, Connections
+                        .<LDAPClientContext> newServerConnectionFactory(backend));
+        final int port = listener.getPort();
+        try {
+            // @formatter:off
+            final GroovyScriptFilter filter = new GroovyScriptFilter(
+                    "import org.forgerock.opendj.ldap.*",
+                    "import org.forgerock.openig.http.Response",
+                    "",
+                    "username = exchange.request.headers.Username[0]",
+                    "password = exchange.request.headers.Password[0].toCharArray()",
+                    "dn = DN.format('uid=%s,ou=people,dc=example,dc=com', username).toString()",
+                    "",
+                    "exchange.response = new Response()",
+                    "",
+                    "LDAPConnectionFactory factory = new LDAPConnectionFactory('0.0.0.0'," + port + ")",
+                    "Connection connection = factory.getConnection()",
+                    "try {",
+                    "  connection.bind(dn, password)",
+                    "  exchange.response.status = 200",
+                    "  exchange.response.reason = connection.readEntry(dn).parseAttribute('description').asString()",
+                    "} catch (AuthenticationException e) {",
+                    "  exchange.response.status = 403",
+                    "  exchange.response.reason = e.message",
+                    "} catch (Exception e) {",
+                    "  exchange.response.status = 500",
+                    "  exchange.response.reason = e.message",
+                    "} finally {",
+                    "  connection.close()",
+                    "  factory.close()",
+                    "}");
+            // @formatter:on
+
+            // Authenticate using correct password.
+            final Exchange exchange = new Exchange();
+            exchange.request = new Request();
+            exchange.request.headers.add("Username", "bjensen");
+            exchange.request.headers.add("Password", "password");
+            final Handler handler = mock(Handler.class);
+            filter.filter(exchange, handler);
+            assertThat(exchange.response.status).as(exchange.response.reason).isEqualTo(200);
+            assertThat(exchange.response.reason).isEqualTo("test user");
+
+            // Authenticate using wrong password.
+            exchange.request = new Request();
+            exchange.request.headers.add("Username", "bjensen");
+            exchange.request.headers.add("Password", "wrong");
+            filter.filter(exchange, handler);
+            assertThat(exchange.response.status).isEqualTo(403);
+            assertThat(exchange.response.reason).isNotNull();
+        } finally {
+            listener.close();
         }
     }
 
