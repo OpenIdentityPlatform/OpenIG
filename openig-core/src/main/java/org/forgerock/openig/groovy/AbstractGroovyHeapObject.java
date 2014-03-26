@@ -181,7 +181,9 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
          * accessed using the dot operator.
          */
         engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.getProperty ="
-                + "{ propertyName -> delegate.getAttribute(propertyName) }");
+                + "{ key -> delegate.getAttribute(key) }");
+        engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.setProperty ="
+                + "{ key, value -> delegate.replaceAttribute(key, value) }");
 
         return engine;
     }

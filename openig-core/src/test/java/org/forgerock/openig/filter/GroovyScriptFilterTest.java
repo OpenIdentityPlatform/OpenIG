@@ -448,7 +448,10 @@ public class GroovyScriptFilterTest {
                     "                                  ldap.filter('uid=%s', username))",
                     "  client.bind(user.name.toString(), password.toCharArray())",
                     "  exchange.response.status = 200",
-                    "  exchange.response.reason = user.description.parse().asString()", // MetaClass properties
+                    // Attributes as MetaClass properties
+                    "  exchange.response.reason = user.description.parse().asString()",
+                    "  user.description = 'some value'",
+                    "  assert user.description.parse().asString() == 'some value'",
                     "} catch (AuthenticationException e) {",
                     "  exchange.response.status = 403",
                     "  exchange.response.reason = e.message",
