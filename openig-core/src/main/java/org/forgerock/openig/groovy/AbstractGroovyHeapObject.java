@@ -44,6 +44,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 
@@ -101,7 +102,8 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
                             + " were specified, when at most one is allowed");
                 }
                 try {
-                    return compiler.compile(config.get(script).asString());
+                    final ScriptEngine engine = getGroovyScriptEngine();
+                    return ((Compilable) engine).compile(config.get(script).asString());
                 } catch (final ScriptException e) {
                     throw new JsonException("Unable to compile the Groovy script defined in '"
                             + script + "'", e);
@@ -111,7 +113,8 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
                 FileReader reader = null;
                 try {
                     reader = new FileReader(f);
-                    return compiler.compile(reader);
+                    final ScriptEngine engine = getGroovyScriptEngine();
+                    return ((Compilable) engine).compile(reader);
                 } catch (final ScriptException e) {
                     throw new JsonException("Unable to compile the Groovy script in file '" + f
                             + "'", e);
@@ -129,16 +132,15 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
     }
 
     // TODO: add support for periodically refreshing the Groovy script file.
-    // TODO: json/xml/http/sql/crest/ldap bindings.
-    // TODO: shared state between successive requests.
+    // TODO: json/xml/sql/crest bindings.
 
     private static final String EOL = System.getProperty("line.separator");
     private static final ScriptEngineManager factory = new ScriptEngineManager();
-    private static final ScriptEngine engine = factory.getEngineByName("groovy");
-    private static final Compilable compiler = (Compilable) engine;
+    private final ScriptEngine engine;
     private final CompiledScript compiledScript;
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
     private HttpClient httpClient;
+    private final LdapClient ldapClient = LdapClient.getInstance();
 
     /**
      * Creates a new Groovy heap object using the provided Groovy compiled
@@ -148,6 +150,7 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
      *            The compiled Groovy script.
      */
     protected AbstractGroovyHeapObject(final CompiledScript compiledScript) {
+        this.engine = compiledScript.getEngine();
         this.compiledScript = compiledScript;
     }
 
@@ -161,7 +164,26 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
      *             If the script cannot be compiled.
      */
     protected AbstractGroovyHeapObject(final String... scriptLines) throws ScriptException {
-        this(compiler.compile(joinAsString(EOL, (Object[]) scriptLines)));
+        this.engine = getGroovyScriptEngine();
+        this.compiledScript =
+                ((Compilable) engine).compile(joinAsString(EOL, (Object[]) scriptLines));
+    }
+
+    /**
+     * Returns the Groovy scripting engine and bootstraps language specific
+     * bindings.
+     */
+    private static ScriptEngine getGroovyScriptEngine() throws ScriptException {
+        final ScriptEngine engine = factory.getEngineByName("groovy");
+
+        /*
+         * Make LDAP attributes properties of an LDAP entry so that they can be
+         * accessed using the dot operator.
+         */
+        engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.getProperty ="
+                + "{ propertyName -> delegate.getAttribute(propertyName) }");
+
+        return engine;
     }
 
     /**
@@ -230,6 +252,7 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
         if (httpClient != null) {
             bindings.put("http", httpClient);
         }
+        bindings.put("ldap", ldapClient);
         if (next != null) {
             bindings.put("next", next);
         }
