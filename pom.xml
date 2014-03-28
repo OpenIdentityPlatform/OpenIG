@@ -128,7 +128,7 @@
 
         <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset before final publication-->
         <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before final publication -->
-        <frDocPluginVersion>2.1.0-SNAPSHOT</frDocPluginVersion>
+        <frDocPluginVersion>2.1.0</frDocPluginVersion>
         <gaId>UA-23412190-11</gaId>
         <!--
           Release date and publication date are set at release build time.
