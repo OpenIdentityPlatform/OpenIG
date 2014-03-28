@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012 ForgeRock AS
+  !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <document
@@ -41,21 +41,24 @@
     <a href="./doc/release-notes/index.html">HTML (single page)</a>,
     <a href="./doc/release-notes/index/index.html">HTML (1 page/chapter)</a>,
     <a href="./doc/OpenIG-Release-Notes.pdf">PDF</a>,
-    <a href="./doc/OpenIG-Release-Notes.rtf">RTF</a></dd>
+    <a href="./doc/OpenIG-Release-Notes.rtf">RTF</a>,
+    <a href="./doc/webhelp/release-notes/index.html">Webhelp</a></dd>
 
     <dt>Guide to OpenIG</dt>
     <dd><a href="./doc/OpenIG-Gateway-Guide.epub">EPUB</a>,
     <a href="./doc/gateway-guide/index.html">HTML (single page)</a>,
     <a href="./doc/gateway-guide/index/index.html">HTML (1 page/chapter)</a>,
     <a href="./doc/OpenIG-Gateway-Guide.pdf">PDF</a>,
-    <a href="./doc/OpenIG-Gateway-Guide.rtf">RTF</a></dd>
+    <a href="./doc/OpenIG-Gateway-Guide.rtf">RTF</a>,
+    <a href="./doc/webhelp/gateway-guide/index.html">Webhelp</a></dd>
 
     <dt>Configuration Reference</dt>
     <dd><a href="./doc/OpenIG-Reference.epub">EPUB</a>,
     <a href="./doc/reference/index.html">HTML (single page)</a>,
     <a href="./doc/reference/index/index.html">HTML (1 page/chapter)</a>,
     <a href="./doc/OpenIG-Reference.pdf">PDF</a>,
-    <a href="./doc/OpenIG-Reference.rtf">RTF</a></dd>
+    <a href="./doc/OpenIG-Reference.rtf">RTF</a>,
+    <a href="./doc/webhelp/reference/index.html">Webhelp</a></dd>
 
     <dt>API Specification (Javadoc)</dt>
     <dd><a href="./apidocs/index.html">HTML</a></dd>
