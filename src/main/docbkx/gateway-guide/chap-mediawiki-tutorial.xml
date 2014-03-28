@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-mediawiki-tutorial'
@@ -28,8 +28,7 @@
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Tutorial With MediaWiki</title>
 
  <indexterm>
@@ -179,9 +178,11 @@
   configuration. You must restart the OpenIG container when making any change
   to the configuration file.</para>
 
-  <screen>$ cp $HOME/forgerock-sample-configs/MediaWikiLogin.json
- $HOME/.ForgeRock/OpenIG/config.json
-$ jetty.sh restart</screen>
+  <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/MediaWikiLogin.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
+$ <userinput>jetty.sh restart</userinput>
+  </screen>
 
   <para>To try out the first sample browse to <link xlink:show="new"
   xlink:href="http://demo.forgerock.com:8181/mediawiki" />. As OpenIG is in pure

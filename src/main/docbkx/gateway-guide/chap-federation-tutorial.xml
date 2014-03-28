@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-federation-tutorial'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Tutorial For the Federation Gateway</title>
 
  <indexterm>
@@ -88,18 +88,22 @@
   found in <filename>$HOME/openam/myfedlets/Fedlet.zip</filename> extract the
   Fedlet configuration files using the following commands:</para>
 
-  <screen>$ cd $HOME/openam/myfedlets
-$ unzip Fedlet.zip
-$ jar xvf Fedlet.war conf</screen>
+  <screen>
+$ cd <userinput>$HOME/openam/myfedlets</userinput>
+$ <userinput>unzip Fedlet.zip</userinput>
+$ <userinput>jar xvf Fedlet.war conf</userinput>
+  </screen>
 
   <para>Create a <filename>$HOME/.ForgeRock/SAML/</filename> directory,
   and copy the Fedlet configuration to the new directory.</para>
 
-  <screen>$ mkdir $HOME/.ForgeRock/SAML
-$ cp conf/* $HOME/.ForgeRock/SAML
-$ ls $HOME/.ForgeRock/SAML
-FederationConfig.properties    idp-extended.xml        sp-extended.xml
-fedlet.cot                     idp.xml                 sp.xm</screen>
+  <screen>
+$ <userinput>mkdir $HOME/.ForgeRock/SAML</userinput>
+$ <userinput>cp conf/* $HOME/.ForgeRock/SAML</userinput>
+$ <userinput>ls $HOME/.ForgeRock/SAML</userinput>
+<computeroutput>FederationConfig.properties    idp-extended.xml        sp-extended.xml
+fedlet.cot                     idp.xml                 sp.xm</computeroutput>
+  </screen>
 
   <para>On Windows, the configuration files belong in
   <filename>%appdata%\ForgeRock\OpenIG</filename>, or

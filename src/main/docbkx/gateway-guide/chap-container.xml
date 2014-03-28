@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-container'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Configuring Deployment Containers</title>
 
  <indexterm>
@@ -172,7 +172,9 @@
    a self-signed certificate. You can do that with the following UNIX
    command:</para>
 
-   <screen>$ keytool -genkey -alias tomcat -keyalg RSA</screen>
+   <screen>
+$ <userinput>keytool -genkey -alias tomcat -keyalg RSA</userinput>
+   </screen>
   </section>
  </section>
 
