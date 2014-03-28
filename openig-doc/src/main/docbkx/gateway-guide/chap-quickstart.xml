@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-quickstart'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Getting Started</title>
 
  <para>This chapter provides instructions to get OpenIG up and running on
@@ -86,7 +86,9 @@
     <filename>root.xml</filename> file below, Jetty automatically deploys OpenIG
     on startup.</para>
 
-    <screen>$ cp $HOME/gateway-*.war $HOME/jetty-hightide-7.1.6/webapps/root.war</screen>
+    <screen>
+$ <userinput>cp $HOME/gateway-*.war $HOME/jetty-hightide-7.1.6/webapps/root.war</userinput>
+    </screen>
    </step>
 
    <step>
@@ -96,8 +98,10 @@
     OpenIG looks for <filename>config.json</filename> in the
     <filename>$HOME/.ForgeRock/OpenIG/</filename> directory.</para>
 
-    <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
- $HOME/.ForgeRock/OpenIG/config.json</screen>
+    <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
+    </screen>
 
     <para>On Windows, the configuration files belong in
     <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
@@ -147,11 +151,15 @@
    <step>
     <para>Start Jetty in the background:</para>
 
-    <screen>$ $HOME/jetty-hightide-7.1.6/bin/jetty.sh start</screen>
+    <screen>
+$ <userinput>$HOME/jetty-hightide-7.1.6/bin/jetty.sh start</userinput>
+    </screen>
 
     <para>Or start Jetty in the foreground:</para>
 
-    <screen>$ java -jar $HOME/jetty-hightide-7.1.6/start.jar</screen>
+    <screen>
+$ <userinput>java -jar $HOME/jetty-hightide-7.1.6/start.jar</userinput>
+    </screen>
    </step>
   </procedure>
  </section>

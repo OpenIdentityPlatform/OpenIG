@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-troubleshooting'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Troubleshooting</title>
 
  <indexterm>
@@ -41,12 +41,14 @@
  <section>
   <title>Object not found in heap</title>
 
-  <screen>HTTP ERROR 500
+  <programlisting language="none">
+HTTP ERROR 500
 org.forgerock.openig.model.NodeException:
  ['file:/Users/george/.ForgeRock/OpenIG/config.json'].heap.objects[2]
   .config.filterObjects[0]: object not found in heap
 at org.forgerock.openig.heaplet.HeapUtil.getRequiredObject(HeapUtil.java:54)
-at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)</screen>
+at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)
+  </programlisting>
 
   <para>You have a filter specified in the filterObjects list in the Chain
   object that is not in <filename>config.json</filename>.  Make sure you have
@@ -57,12 +59,14 @@ at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)</screen>
  <section>
   <title>Could not find local configuration file</title>
 
-  <screen>HTTP ERROR 500
+  <programlisting language="none">
+HTTP ERROR 500
 Problem accessing /. Reason:
 
  could not find local configuration file at
  /var/root/.ForgeRock/OpenIG/config.json or bootstrap file at
- /var/root/.ForgeRock/OpenIG/_private_var_folders_...webinf.json</screen>
+ /var/root/.ForgeRock/OpenIG/_private_var_folders_...webinf.json
+  </programlisting>
 
   <para>OpenIG could not find its configuration file in the home directory of
   the user running the container where OpenIG is deployed, in this case
@@ -75,10 +79,13 @@ Problem accessing /. Reason:
 
  <section>
   <title>Unexpected character (x) at position 1103</title>
-  <screen>HTTP ERROR 500
+
+  <programlisting language="none">
+HTTP ERROR 500
 Problem accessing /. Reason:
 
-Unexpected character (x) at position 1103</screen>
+Unexpected character (x) at position 1103
+  </programlisting>
 
   <para>This error usually means a missing double quote or a missing bracket
   in the configuration file.  Use a JSON editor or JSON validation tool
@@ -97,7 +104,8 @@ Unexpected character (x) at position 1103</screen>
  <section>
   <title>Problem accessing URL</title>
 
-  <screen>HTTP ERROR 500
+  <programlisting language="none">
+HTTP ERROR 500
 
 Problem accessing /myURL . Reason:
 
@@ -107,7 +115,8 @@ java.lang.ClassCastException: java.lang.String cannot be cast to java.util.List
 at org.forgerock.openig.filter.LoggingFilter.writeHeaders(LoggingFilter.java:132
 at org.forgerock.openig.filter.LoggingFilter.logResponse(LoggingFilter.java:119)
 at org.forgerock.openig.filter.LoggingFilter.filter(LoggingFilter.java:86)
-at org.forgerock.openig.filter.Chain.handle(Chain.java:54)</screen>
+at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
+  </programlisting>
 
   <para>This error is typically encountered when using the <link
   xlink:href="reference#AssignmentFilter"

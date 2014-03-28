@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !
 -->
 <chapter xml:id='chap-gateway-tutorial'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Tutorial With WordPress</title>
 
  <indexterm>
@@ -178,10 +178,12 @@
   <literal>demo.forgerock.com</literal>. You should see the following if you
   have properly configured your name to IP mapping:</para>
 
-  <screen>$ ping demo.forgerock.com
-ping demo.forgerock.com
+  <screen>
+$ <userinput>ping demo.forgerock.com</userinput>
+<computeroutput>ping demo.forgerock.com
 PING demo.forgerock.com (10.0.1.1): 56 data bytes
-64 bytes from 10.0.1.1: icmp_seq=0 ttl=64 time=0.053 ms</screen>
+64 bytes from 10.0.1.1: icmp_seq=0 ttl=64 time=0.053 ms</computeroutput>
+  </screen>
 
   <para>If the ping command returns the actual address of
   <literal>demo.forgerock.com</literal>, you need to recheck your
@@ -205,9 +207,11 @@ PING demo.forgerock.com (10.0.1.1): 56 data bytes
   configuration. You must restart the OpenIG container when making any change
   to the configuration file.</para>
 
-  <screen>$ cp $HOME/forgerock-sample-configs/WordPressProxyOnly.json
- $HOME/.ForgeRock/OpenIG/config.json
-$ jetty.sh restart</screen>
+  <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/WordPressProxyOnly.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
+$ <userinput>jetty.sh restart</userinput>
+  </screen>
 
   <para>On Windows, the configuration files belong in
   <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
@@ -246,9 +250,11 @@ $ jetty.sh restart</screen>
   next step is to configure OpenIG to intercept the login page, and POST the
   login form to the Portal.</para>
 
-  <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
- $HOME/.ForgeRock/OpenIG/config.json
-$ jetty.sh restart</screen>
+  <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
+$ <userinput>jetty.sh restart</userinput>
+  </screen>
 
   <para>As you changed the OpenIG configuration file, you must restart the
   OpenIG container. After restarting you should be able to go to <link
@@ -292,9 +298,11 @@ $ jetty.sh restart</screen>
   sample flat file. The location of the user file shipped with the samples is
   <filename>forgerock-sample-configs/userfile</filename>.</para>
 
-  <screen>$ cp $HOME/forgerock-sample-configs/WordPressLoginFile.json
- $HOME/.ForgeRock/OpenIG/config.json
-$ jetty.sh restart</screen>
+  <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/WordPressLoginFile.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
+$ <userinput>jetty.sh restart</userinput>
+  </screen>
 
   <para>After restarting the container, check that you can go to <link
   xlink:href="http://demo.forgerock.com:8080/wordpress" xlink:show="new"/> and
@@ -348,8 +356,9 @@ $ jetty.sh restart</screen>
   <literal>password</literal>. The parameter passed into the prepared statement
   is <literal>email=george@seinfeld.com</literal>.</para>
 
-  <screen>$ cp $HOME/forgerock-sample-configs/WordPressLoginSQL.json
- $HOME/.ForgeRock/OpenIG/config.json
+  <screen>
+$ <userinput>cp $HOME/forgerock-sample-configs/WordPressLoginSQL.json \
+ $HOME/.ForgeRock/OpenIG/config.json</userinput>
 $ jetty.sh restart</screen>
 
   <para>To see what is happening behind the scenes, take a look at
