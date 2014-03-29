@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>CryptoHeaderFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -68,9 +68,11 @@
     <term><code>"messageType"</code>: <emphasis>string,
     required</emphasis></term>
     <listitem>
-     <para>Indicates the type of message in the exchange to encrypt or decrypt
-     headers, form parameters or cookies. Must be one of:
-     <literal>"REQUEST"</literal>, <literal>"RESPONSE"</literal>.</para>
+     <para>
+      Indicates the type of message in the exchange
+      whose headers to encrypt or decrypt.
+      Must be one of: <literal>"REQUEST"</literal>, <literal>"RESPONSE"</literal>.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>
@@ -82,7 +84,7 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"algorithm"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"algorithm"</code>: <emphasis>string</emphasis></term>
     <listitem>
      <para>Algorithm used for encryption and decryption. Defaults to
      DES/ECB/NoPadding.</para>
