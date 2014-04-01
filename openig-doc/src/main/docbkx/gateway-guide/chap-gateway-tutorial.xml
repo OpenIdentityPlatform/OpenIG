@@ -359,7 +359,7 @@ $ <userinput>jetty.sh restart</userinput>
   <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLoginSQL.json \
  $HOME/.ForgeRock/OpenIG/config.json</userinput>
-$ jetty.sh restart</screen>
+$ <userinput>jetty.sh restart</userinput></screen>
 
   <para>To see what is happening behind the scenes, take a look at
   <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. For this sample, 
