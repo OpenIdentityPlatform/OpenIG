@@ -12,10 +12,10 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.federation;
+package org.forgerock.openig.servlet;
 
 // Java Standard Edition
 import java.io.IOException;
@@ -43,16 +43,13 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.resource.ResourceException;
 
 /**
- * TODO: Description.
- *
- * @author Paul C. Bryan
+ * The main OpenIG HTTP Servlet which is responsible for bootstrapping the
+ * configuration and delegating all request processing to the configured HTTP
+ * servlet implementation (e.g. HandlerServlet).
  */
-public class FederationGatewayServlet extends HttpServlet {
-
-    /** TODO: Description. */
+public class GatewayServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    /** TODO: Description. */
     private HttpServlet servlet;
 
     @Override
@@ -71,7 +68,7 @@ public class FederationGatewayServlet extends HttpServlet {
         } catch (JsonValueException jve) {
             throw new ServletException(jve);
         } catch (ResourceException re) {
-            throw new ServletException(re); 
+            throw new ServletException(re);
         }
     }
 
