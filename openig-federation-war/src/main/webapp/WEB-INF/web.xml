@@ -25,7 +25,7 @@
     </listener>
     <servlet>
         <servlet-name>openig-federation-servlet</servlet-name>
-        <servlet-class>org.forgerock.openig.federation.FederationGatewayServlet</servlet-class>
+        <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>openig-federation-servlet</servlet-name>
