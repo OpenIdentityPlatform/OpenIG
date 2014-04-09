@@ -178,12 +178,16 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
 
         /*
          * Make LDAP attributes properties of an LDAP entry so that they can be
-         * accessed using the dot operator.
+         * accessed using the dot operator. The setter explicitly constructs an
+         * Attribute in order to take advantage of the various overloaded
+         * constructors. In particular, it allows scripts to assign multiple
+         * values at once (see unit tests for examples).
          */
         engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.getProperty ="
                 + "{ key -> delegate.getAttribute(key) }");
         engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.setProperty ="
-                + "{ key, value -> delegate.replaceAttribute(key, value) }");
+                + "{ key, values -> delegate.replaceAttribute("
+                + "                 new org.forgerock.opendj.ldap.LinkedAttribute(key, values)) }");
 
         return engine;
     }
