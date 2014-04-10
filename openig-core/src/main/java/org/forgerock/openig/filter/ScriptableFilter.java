@@ -65,8 +65,8 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
     }
 
     // For unit testing.
-    ScriptableFilter(final String... scriptLines) throws ScriptException {
-        super(scriptLines);
+    ScriptableFilter(String mimeType, final String... scriptLines) throws ScriptException {
+        super(mimeType, scriptLines);
     }
 
     private ScriptableFilter(final CompiledScript compiledScript) {

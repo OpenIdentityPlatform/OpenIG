@@ -15,21 +15,16 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.Utils.joinAsString;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import javax.script.SimpleScriptContext;
@@ -72,6 +67,10 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected static abstract class AbstractScriptableHeaplet extends NestedHeaplet {
+        private static final String CONFIG_OPTION_TYPE = "type";
+        private static final String CONFIG_OPTION_SOURCE = "source";
+        private static final String CONFIG_OPTION_FILE = "file";
+
         @Override
         public Object create() throws HeapException, JsonValueException {
             CompiledScript script = compileScript();
@@ -97,38 +96,38 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 throws HeapException, JsonValueException;
 
         private final CompiledScript compileScript() {
-            final String script = "script";
-            final String scriptFile = script + "File";
-            if (config.isDefined(script)) {
-                if (config.isDefined(scriptFile)) {
-                    throw new JsonException("Both " + script + " and " + scriptFile
-                            + " were specified, when at most one is allowed");
+            if (!config.isDefined(CONFIG_OPTION_TYPE)) {
+                throw new JsonException("The configuration option '" + CONFIG_OPTION_TYPE
+                        + "' is required and must specify the script mime-type");
+            }
+            final String mimeType = config.get(CONFIG_OPTION_TYPE).asString();
+            if (config.isDefined(CONFIG_OPTION_SOURCE)) {
+                if (config.isDefined(CONFIG_OPTION_FILE)) {
+                    throw new JsonException("Both configuration options '" + CONFIG_OPTION_SOURCE
+                            + "' and '" + CONFIG_OPTION_FILE
+                            + "' were specified, when at most one is allowed");
                 }
+                final String source = config.get(CONFIG_OPTION_SOURCE).asString();
                 try {
-                    final ScriptEngine engine = getScriptEngine();
-                    return ((Compilable) engine).compile(config.get(script).asString());
+                    return Scripts.compileSource(mimeType, source);
                 } catch (final ScriptException e) {
                     throw new JsonException("Unable to compile the script defined in '"
-                            + script + "'", e);
+                            + CONFIG_OPTION_SOURCE + "'", e);
                 }
-            } else if (config.isDefined(scriptFile)) {
-                final File f = config.get(scriptFile).asFile();
-                FileReader reader = null;
+            } else if (config.isDefined(CONFIG_OPTION_FILE)) {
+                final String script = config.get(CONFIG_OPTION_FILE).asString();
                 try {
-                    reader = new FileReader(f);
-                    final ScriptEngine engine = getScriptEngine();
-                    return ((Compilable) engine).compile(reader);
+                    return Scripts.compileScript(mimeType, script);
                 } catch (final ScriptException e) {
-                    throw new JsonException("Unable to compile the script in file '" + f
-                            + "'", e);
+                    throw new JsonException(
+                            "Unable to compile the script in file '" + script + "'", e);
                 } catch (final FileNotFoundException e) {
-                    throw new JsonException("Unable to read the script in file '"
-                            + f.getAbsolutePath() + "'", e);
-                } finally {
-                    closeSilently(reader);
+                    throw new JsonException("Unable to read the script in file '" + script + "'", e);
                 }
             } else {
-                return null; // No script defined.
+                throw new JsonException("Neither of the configuration options '"
+                        + CONFIG_OPTION_SOURCE + "' and '" + CONFIG_OPTION_FILE
+                        + "' were specified");
             }
         }
 
@@ -138,8 +137,6 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     // TODO: json/xml/sql/crest bindings.
 
     private static final String EOL = System.getProperty("line.separator");
-    private static final ScriptEngineManager factory = new ScriptEngineManager();
-    private final ScriptEngine engine;
     private final CompiledScript compiledScript;
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
     private HttpClient httpClient;
@@ -152,7 +149,6 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      *            The compiled script.
      */
     protected AbstractScriptableHeapObject(final CompiledScript compiledScript) {
-        this.engine = compiledScript.getEngine();
         this.compiledScript = compiledScript;
     }
 
@@ -160,37 +156,18 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * Creates a new scriptable heap object using the provided lines of script.
      * This constructed is intended for unit tests.
      *
+     * @param mimeType
+     *            The script mime-type, e.g. "application/x-groovy".
      * @param scriptLines
      *            The lines of script.
      * @throws ScriptException
      *             If the script cannot be compiled.
      */
-    protected AbstractScriptableHeapObject(final String... scriptLines) throws ScriptException {
-        this.engine = getScriptEngine();
+    protected AbstractScriptableHeapObject(String mimeType, final String... scriptLines)
+            throws ScriptException {
         this.compiledScript =
-                ((Compilable) engine).compile(joinAsString(EOL, (Object[]) scriptLines));
-    }
-
-    /**
-     * Returns the scripting engine and bootstraps language specific bindings.
-     */
-    private static ScriptEngine getScriptEngine() throws ScriptException {
-        final ScriptEngine engine = factory.getEngineByName("groovy");
-
-        /*
-         * Make LDAP attributes properties of an LDAP entry so that they can be
-         * accessed using the dot operator. The setter explicitly constructs an
-         * Attribute in order to take advantage of the various overloaded
-         * constructors. In particular, it allows scripts to assign multiple
-         * values at once (see unit tests for examples).
-         */
-        engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.getProperty ="
-                + "{ key -> delegate.getAttribute(key) }");
-        engine.eval("org.forgerock.opendj.ldap.Entry.metaClass.setProperty ="
-                + "{ key, values -> delegate.replaceAttribute("
-                + "                 new org.forgerock.opendj.ldap.LinkedAttribute(key, values)) }");
-
-        return engine;
+                Scripts.compileSource(mimeType,
+                        joinAsString(EOL, (Object[]) scriptLines));
     }
 
     /**
@@ -221,7 +198,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             throws HandlerException, IOException {
         final LogTimer timer = logger.getTimer().start();
         try {
-            compiledScript.eval(scriptContext(exchange, next));
+            compiledScript.eval(scriptContext(compiledScript.getEngine(), exchange, next));
         } catch (final ScriptException e) {
             if (e.getCause() instanceof HandlerException) {
                 /*
@@ -243,7 +220,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
     }
 
-    private ScriptContext scriptContext(final Exchange exchange, final Handler next) {
+    private ScriptContext scriptContext(final ScriptEngine engine, final Exchange exchange,
+            final Handler next) {
         final SimpleScriptContext scriptContext = new SimpleScriptContext();
 
         // Copy global bindings.
