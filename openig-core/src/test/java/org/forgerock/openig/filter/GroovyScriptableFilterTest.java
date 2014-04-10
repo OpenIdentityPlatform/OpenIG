@@ -63,10 +63,10 @@ import org.testng.annotations.Test;
 import com.xebialabs.restito.server.StubServer;
 
 /**
- * Tests the Groovy scripting filter.
+ * Tests Groovy integration for the scriptable filter.
  */
 @SuppressWarnings("javadoc")
-public class GroovyScriptFilterTest {
+public class GroovyScriptableFilterTest {
 
     private static final String XML_CONTENT =
             "<root><a a1='one'><b>3 &lt; 5</b><c a2='two'>blah</c></a></root>";
@@ -76,7 +76,7 @@ public class GroovyScriptFilterTest {
 
     @Test
     public void testNextHandlerCanBeInvoked() throws Exception {
-        final GroovyScriptFilter filter = new GroovyScriptFilter("next.handle(exchange)");
+        final ScriptableFilter filter = new ScriptableFilter("next.handle(exchange)");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -86,7 +86,7 @@ public class GroovyScriptFilterTest {
 
     @Test
     public void testNextHandlerCanThrowHandlerException() throws Exception {
-        final GroovyScriptFilter filter = new GroovyScriptFilter("next.handle(exchange)");
+        final ScriptableFilter filter = new ScriptableFilter("next.handle(exchange)");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -103,7 +103,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testNextHandlerPreAndPostConditions() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.response == null",
                 "next.handle(exchange)",
                 "assert exchange.response != null");
@@ -132,7 +132,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testBindingsArePresent() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                         "assert exchange != null",
                         "assert exchange.request != null",
                         "assert exchange.response == null",
@@ -150,8 +150,8 @@ public class GroovyScriptFilterTest {
     public void testConstructFromFile() throws Exception {
         final HeapImpl heap = new HeapImpl();
         heap.put("TemporaryStorage", new TemporaryStorage());
-        final GroovyScriptFilter filter =
-                (GroovyScriptFilter) new GroovyScriptFilter.Heaplet().create("test", new JsonValue(
+        final ScriptableFilter filter =
+                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
                         Collections.singletonMap("scriptFile", "src/test/resources/test.groovy")),
                         heap);
         final Exchange exchange = new Exchange();
@@ -168,8 +168,8 @@ public class GroovyScriptFilterTest {
         heap.put("TemporaryStorage", new TemporaryStorage());
         final String script =
                 "import org.forgerock.openig.http.Response;exchange.response = new Response()";
-        final GroovyScriptFilter filter =
-                (GroovyScriptFilter) new GroovyScriptFilter.Heaplet().create("test", new JsonValue(
+        final ScriptableFilter filter =
+                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
                         Collections.singletonMap("script", script)), heap);
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -182,7 +182,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testThrowHandlerException() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "import org.forgerock.openig.handler.HandlerException",
                 "throw new HandlerException(\"test\")");
         // @formatter:on
@@ -200,7 +200,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testSetResponse() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "import org.forgerock.openig.http.Response",
                 "exchange.response = new Response()",
                 "exchange.response.status = 404");
@@ -215,7 +215,7 @@ public class GroovyScriptFilterTest {
 
     @Test
     public void testLogging() throws Exception {
-        final GroovyScriptFilter filter = new GroovyScriptFilter("logger.error('test')");
+        final ScriptableFilter filter = new ScriptableFilter("logger.error('test')");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -227,12 +227,12 @@ public class GroovyScriptFilterTest {
 
     @Test(expectedExceptions = ScriptException.class)
     public void testCompilationFailure() throws Exception {
-        new GroovyScriptFilter("import does.not.Exist");
+        new ScriptableFilter("import does.not.Exist");
     }
 
     @Test(expectedExceptions = ScriptException.class)
     public void testRunTimeFailure() throws Throwable {
-        final GroovyScriptFilter filter = new GroovyScriptFilter("dummy + 1");
+        final ScriptableFilter filter = new ScriptableFilter("dummy + 1");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -247,7 +247,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testAssignment() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "exchange.test = false",
                 "next.handle(exchange)",
                 "exchange.test = exchange.response.status == 302");
@@ -265,7 +265,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testRequestForm() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.form.username[0] == 'test'");
         // @formatter:on
         final Exchange exchange = new Exchange();
@@ -278,7 +278,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testRequestCookies() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.cookies.username[0].value == 'test'");
         // @formatter:on
         final Exchange exchange = new Exchange();
@@ -291,7 +291,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testRequestURI() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.uri.scheme == 'http'",
                 "assert exchange.request.uri.host == 'example.com'",
                 "assert exchange.request.uri.port == 8080",
@@ -308,7 +308,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testRequestHeaders() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.headers.Username[0] == 'test'",
                 "exchange.request.headers.Test = [ 'test' ]",
                 "assert exchange.request.headers.remove('Username')");
@@ -325,7 +325,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testSession() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.session.inKey == 'inValue'",
                 "exchange.session.outKey = 'outValue'",
                 "assert exchange.session.remove('inKey')");
@@ -345,7 +345,7 @@ public class GroovyScriptFilterTest {
     @Test
     public void testGlobalsPersistedBetweenInvocations() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert globals.x == null",
                 "globals.x = 'value'");
         // @formatter:on
@@ -369,7 +369,7 @@ public class GroovyScriptFilterTest {
         try {
             final int port = server.getPort();
             // @formatter:off
-            final GroovyScriptFilter filter = new GroovyScriptFilter(
+            final ScriptableFilter filter = new ScriptableFilter(
                     "import org.forgerock.openig.http.*",
                     "Request request = new Request()",
                     "request.method = 'GET'",
@@ -432,7 +432,7 @@ public class GroovyScriptFilterTest {
         final int port = listener.getPort();
         try {
             // @formatter:off
-            final GroovyScriptFilter filter = new GroovyScriptFilter(
+            final ScriptableFilter filter = new ScriptableFilter(
                     "import org.forgerock.opendj.ldap.*",
                     "import org.forgerock.openig.http.Response",
                     "",
@@ -499,7 +499,7 @@ public class GroovyScriptFilterTest {
          */
 
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "import org.forgerock.openig.http.*",
                 "import org.forgerock.openig.io.*",
                 "exchange.response = new Response()",
@@ -518,7 +518,7 @@ public class GroovyScriptFilterTest {
     @Test(enabled = false)
     public void testWriteJsonEntity() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "exchange.request.jsonOut.person {",
                     "firstName 'Tim'",
                     "lastName 'Yates'",
@@ -539,7 +539,7 @@ public class GroovyScriptFilterTest {
     @Test(enabled = false)
     public void testReadJsonEntity() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.jsonIn.person.firstName == 'Tim'",
                 "assert exchange.request.jsonIn.person.lastName == 'Yates'",
                 "assert exchange.request.jsonIn.person.address.country == 'UK'");
@@ -554,7 +554,7 @@ public class GroovyScriptFilterTest {
     @Test(enabled = false)
     public void testWriteXmlEntity() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "exchange.request.xmlOut.root {",
                     "a( a1:'one' ) {",
                         "b { mkp.yield( '3 < 5' ) }",
@@ -572,7 +572,7 @@ public class GroovyScriptFilterTest {
     @Test(enabled = false)
     public void testReadXmlEntity() throws Exception {
         // @formatter:off
-        final GroovyScriptFilter filter = new GroovyScriptFilter(
+        final ScriptableFilter filter = new ScriptableFilter(
                 "assert exchange.request.xmlIn.root.a"); // TODO
         // @formatter:on
         final Exchange exchange = new Exchange();

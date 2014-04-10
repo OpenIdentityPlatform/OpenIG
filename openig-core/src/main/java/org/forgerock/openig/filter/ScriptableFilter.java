@@ -13,7 +13,7 @@
  *
  * Copyright 2014 ForgeRock AS.
  */
-package org.forgerock.openig.handler;
+package org.forgerock.openig.filter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,52 +22,63 @@ import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.groovy.AbstractGroovyHeapObject;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.script.AbstractScriptableHeapObject;
 
 /**
- * A scriptable handler for the Groovy language. This handler acts as a simple
- * wrapper around the scripting engine. Scripts are provided with the following
- * variable bindings:
+ * A scriptable filter. This filter acts as a simple wrapper around the
+ * scripting engine. Scripts are provided with the following variable bindings:
  * <ul>
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
- * <li>{@link Logger logger} - the OpenIG logger.
+ * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
+ * performing LDAP requests such as LDAP authentication
+ * <li>{@link Logger logger} - the OpenIG logger
+ * <li>{@link Handler next} - the next handler in the filter chain.
  * </ul>
+ * Like Java based filters, scripts are free to choose whether or not they
+ * forward the request to the next handler or, instead, return a response
+ * immediately.
+ * <p>
+ * <b>NOTE:</b> at the moment only Groovy is supported.
  */
-public class GroovyScriptHandler extends AbstractGroovyHeapObject implements Handler {
+public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {
 
     /**
-     * Creates and initializes a Groovy handler in a heap environment.
+     * Creates and initializes a scriptable filter in a heap environment.
      */
-    public static class Heaplet extends AbstractGroovyHeaplet {
+    public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public GroovyScriptHandler newInstance(CompiledScript script) throws HeapException,
+        public ScriptableFilter newInstance(CompiledScript script) throws HeapException,
                 JsonValueException {
-            return new GroovyScriptHandler(script);
+            return new ScriptableFilter(script);
         }
     }
 
     // For unit testing.
-    GroovyScriptHandler(final String... scriptLines) throws ScriptException {
+    ScriptableFilter(final String... scriptLines) throws ScriptException {
         super(scriptLines);
     }
 
-    private GroovyScriptHandler(final CompiledScript compiledScript) {
+    private ScriptableFilter(final CompiledScript compiledScript) {
         super(compiledScript);
     }
 
     /**
-     * Delegates handling to the Groovy script.
+     * Delegates filtering to the script.
      */
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-        runScript(exchange, null);
+    public void filter(final Exchange exchange, final Handler next) throws HandlerException,
+            IOException {
+        runScript(exchange, next);
     }
 }
