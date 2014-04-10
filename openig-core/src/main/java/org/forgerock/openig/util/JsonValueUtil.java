@@ -56,6 +56,8 @@ public class JsonValueUtil {
         aliases.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
         aliases.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
         aliases.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
+        aliases.put("ScriptableFilter", "org.forgerock.openig.filter.ScriptableFilter");
+        aliases.put("ScriptableHandler", "org.forgerock.openig.handler.ScriptableHandler");
         aliases.put("SequenceHandler", "org.forgerock.openig.handler.SequenceHandler");
         aliases.put("SqlAttributesFilter", "org.forgerock.openig.filter.SqlAttributesFilter");
         aliases.put("StaticRequestFilter", "org.forgerock.openig.filter.StaticRequestFilter");

@@ -13,7 +13,7 @@
  *
  * Copyright 2014 ForgeRock AS.
  */
-package org.forgerock.openig.groovy;
+package org.forgerock.openig.script;
 
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.Utils.joinAsString;
@@ -49,30 +49,33 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 
 /**
- * A abstract scriptable heap object for the Groovy language which should be
- * used as the base class for implementing {@link Filter filters} and
- * {@link Handler handlers}. This heap object acts as a simple wrapper around
- * the scripting engine. Scripts are provided with the following variable
- * bindings:
+ * An abstract scriptable heap object which should be used as the base class for
+ * implementing {@link Filter filters} and {@link Handler handlers}. This heap
+ * object acts as a simple wrapper around the scripting engine. Scripts are
+ * provided with the following variable bindings:
  * <ul>
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
+ * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
+ * performing LDAP requests such as LDAP authentication
  * <li>{@link Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
+ * <p>
+ * <b>NOTE:</b> at the moment only Groovy is supported.
  */
-public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
+public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
-    protected static abstract class AbstractGroovyHeaplet extends NestedHeaplet {
+    protected static abstract class AbstractScriptableHeaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException, JsonValueException {
             CompiledScript script = compileScript();
-            AbstractGroovyHeapObject component = newInstance(script);
+            AbstractScriptableHeapObject component = newInstance(script);
             component.setHttpClient(new HttpClient(storage)); // TODO more config?
             return component;
         }
@@ -90,7 +93,7 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
          *             if the heaplet (or one of its dependencies) has a
          *             malformed configuration.
          */
-        protected abstract AbstractGroovyHeapObject newInstance(final CompiledScript script)
+        protected abstract AbstractScriptableHeapObject newInstance(final CompiledScript script)
                 throws HeapException, JsonValueException;
 
         private final CompiledScript compileScript() {
@@ -102,10 +105,10 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
                             + " were specified, when at most one is allowed");
                 }
                 try {
-                    final ScriptEngine engine = getGroovyScriptEngine();
+                    final ScriptEngine engine = getScriptEngine();
                     return ((Compilable) engine).compile(config.get(script).asString());
                 } catch (final ScriptException e) {
-                    throw new JsonException("Unable to compile the Groovy script defined in '"
+                    throw new JsonException("Unable to compile the script defined in '"
                             + script + "'", e);
                 }
             } else if (config.isDefined(scriptFile)) {
@@ -113,13 +116,13 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
                 FileReader reader = null;
                 try {
                     reader = new FileReader(f);
-                    final ScriptEngine engine = getGroovyScriptEngine();
+                    final ScriptEngine engine = getScriptEngine();
                     return ((Compilable) engine).compile(reader);
                 } catch (final ScriptException e) {
-                    throw new JsonException("Unable to compile the Groovy script in file '" + f
+                    throw new JsonException("Unable to compile the script in file '" + f
                             + "'", e);
                 } catch (final FileNotFoundException e) {
-                    throw new JsonException("Unable to read the Groovy script in file '"
+                    throw new JsonException("Unable to read the script in file '"
                             + f.getAbsolutePath() + "'", e);
                 } finally {
                     closeSilently(reader);
@@ -143,37 +146,35 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
     private final LdapClient ldapClient = LdapClient.getInstance();
 
     /**
-     * Creates a new Groovy heap object using the provided Groovy compiled
-     * script.
+     * Creates a new scriptable heap object using the provided compiled script.
      *
      * @param compiledScript
-     *            The compiled Groovy script.
+     *            The compiled script.
      */
-    protected AbstractGroovyHeapObject(final CompiledScript compiledScript) {
+    protected AbstractScriptableHeapObject(final CompiledScript compiledScript) {
         this.engine = compiledScript.getEngine();
         this.compiledScript = compiledScript;
     }
 
     /**
-     * Creates a new Groovy heap object using the provided lines of Groovy
-     * script. This constructed is intended for unit tests.
+     * Creates a new scriptable heap object using the provided lines of script.
+     * This constructed is intended for unit tests.
      *
      * @param scriptLines
-     *            The lines of Groovy script.
+     *            The lines of script.
      * @throws ScriptException
      *             If the script cannot be compiled.
      */
-    protected AbstractGroovyHeapObject(final String... scriptLines) throws ScriptException {
-        this.engine = getGroovyScriptEngine();
+    protected AbstractScriptableHeapObject(final String... scriptLines) throws ScriptException {
+        this.engine = getScriptEngine();
         this.compiledScript =
                 ((Compilable) engine).compile(joinAsString(EOL, (Object[]) scriptLines));
     }
 
     /**
-     * Returns the Groovy scripting engine and bootstraps language specific
-     * bindings.
+     * Returns the scripting engine and bootstraps language specific bindings.
      */
-    private static ScriptEngine getGroovyScriptEngine() throws ScriptException {
+    private static ScriptEngine getScriptEngine() throws ScriptException {
         final ScriptEngine engine = factory.getEngineByName("groovy");
 
         /*
@@ -203,7 +204,7 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
     }
 
     /**
-     * Runs the compiled Groovy script using the provided exchange and optional
+     * Runs the compiled script using the provided exchange and optional
      * forwarding handler.
      *
      * @param exchange
@@ -236,7 +237,7 @@ public abstract class AbstractGroovyHeapObject extends GenericHeapObject {
              * script exception. Let's throw the script exception because it may
              * contain useful line number information.
              */
-            throw new HandlerException("Groovy script failed unexpectedly", e);
+            throw new HandlerException("Script failed unexpectedly", e);
         } finally {
             timer.stop();
         }
