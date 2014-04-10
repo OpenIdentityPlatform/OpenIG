@@ -489,6 +489,32 @@ public class GroovyScriptFilterTest {
         }
     }
 
+    @Test
+    public void testResponseEntity() throws Exception {
+        /*
+         * FIXME: this usage is horrible! Better encapsulation of the HTTP
+         * message fields would allow for overloading of the entity setter as
+         * well as other setters, e.g. setEntity(String),
+         * setEntityAsJson(Object), etc.
+         */
+
+        // @formatter:off
+        final GroovyScriptFilter filter = new GroovyScriptFilter(
+                "import org.forgerock.openig.http.*",
+                "import org.forgerock.openig.io.*",
+                "exchange.response = new Response()",
+                "exchange.response.status = 200",
+                "exchange.response.entity = new ByteArrayBranchingStream('hello world'.getBytes())");
+        // @formatter:on
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+
+        assertThat(exchange.response.status).isEqualTo(200);
+        assertThat(s(exchange.response.entity)).isEqualTo("hello world");
+    }
+
     @Test(enabled = false)
     public void testWriteJsonEntity() throws Exception {
         // @formatter:off
