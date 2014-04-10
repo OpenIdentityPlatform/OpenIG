@@ -31,7 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.script.ScriptException;
 
@@ -53,6 +54,7 @@ import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.script.Scripts;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.mockito.invocation.InvocationOnMock;
@@ -76,7 +78,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testNextHandlerCanBeInvoked() throws Exception {
-        final ScriptableFilter filter = new ScriptableFilter("next.handle(exchange)");
+        final ScriptableFilter filter = new ScriptableFilter(Scripts.GROOVY_MIME_TYPE, "next.handle(exchange)");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -86,7 +88,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testNextHandlerCanThrowHandlerException() throws Exception {
-        final ScriptableFilter filter = new ScriptableFilter("next.handle(exchange)");
+        final ScriptableFilter filter = new ScriptableFilter(Scripts.GROOVY_MIME_TYPE, "next.handle(exchange)");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -104,6 +106,7 @@ public class GroovyScriptableFilterTest {
     public void testNextHandlerPreAndPostConditions() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.response == null",
                 "next.handle(exchange)",
                 "assert exchange.response != null");
@@ -133,6 +136,7 @@ public class GroovyScriptableFilterTest {
     public void testBindingsArePresent() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                        Scripts.GROOVY_MIME_TYPE,
                         "assert exchange != null",
                         "assert exchange.request != null",
                         "assert exchange.response == null",
@@ -150,10 +154,12 @@ public class GroovyScriptableFilterTest {
     public void testConstructFromFile() throws Exception {
         final HeapImpl heap = new HeapImpl();
         heap.put("TemporaryStorage", new TemporaryStorage());
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Scripts.GROOVY_MIME_TYPE);
+        config.put("file", "src/test/resources/test.groovy");
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                        Collections.singletonMap("scriptFile", "src/test/resources/test.groovy")),
-                        heap);
+                        config), heap);
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -168,9 +174,12 @@ public class GroovyScriptableFilterTest {
         heap.put("TemporaryStorage", new TemporaryStorage());
         final String script =
                 "import org.forgerock.openig.http.Response;exchange.response = new Response()";
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Scripts.GROOVY_MIME_TYPE);
+        config.put("source", script);
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                        Collections.singletonMap("script", script)), heap);
+                        config), heap);
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -183,6 +192,7 @@ public class GroovyScriptableFilterTest {
     public void testThrowHandlerException() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "import org.forgerock.openig.handler.HandlerException",
                 "throw new HandlerException(\"test\")");
         // @formatter:on
@@ -201,6 +211,7 @@ public class GroovyScriptableFilterTest {
     public void testSetResponse() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "import org.forgerock.openig.http.Response",
                 "exchange.response = new Response()",
                 "exchange.response.status = 404");
@@ -215,7 +226,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testLogging() throws Exception {
-        final ScriptableFilter filter = new ScriptableFilter("logger.error('test')");
+        final ScriptableFilter filter = new ScriptableFilter(Scripts.GROOVY_MIME_TYPE, "logger.error('test')");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -227,12 +238,12 @@ public class GroovyScriptableFilterTest {
 
     @Test(expectedExceptions = ScriptException.class)
     public void testCompilationFailure() throws Exception {
-        new ScriptableFilter("import does.not.Exist");
+        new ScriptableFilter(Scripts.GROOVY_MIME_TYPE, "import does.not.Exist");
     }
 
     @Test(expectedExceptions = ScriptException.class)
     public void testRunTimeFailure() throws Throwable {
-        final ScriptableFilter filter = new ScriptableFilter("dummy + 1");
+        final ScriptableFilter filter = new ScriptableFilter(Scripts.GROOVY_MIME_TYPE, "dummy + 1");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
@@ -248,6 +259,7 @@ public class GroovyScriptableFilterTest {
     public void testAssignment() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "exchange.test = false",
                 "next.handle(exchange)",
                 "exchange.test = exchange.response.status == 302");
@@ -266,6 +278,7 @@ public class GroovyScriptableFilterTest {
     public void testRequestForm() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.form.username[0] == 'test'");
         // @formatter:on
         final Exchange exchange = new Exchange();
@@ -279,6 +292,7 @@ public class GroovyScriptableFilterTest {
     public void testRequestCookies() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.cookies.username[0].value == 'test'");
         // @formatter:on
         final Exchange exchange = new Exchange();
@@ -292,6 +306,7 @@ public class GroovyScriptableFilterTest {
     public void testRequestURI() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.uri.scheme == 'http'",
                 "assert exchange.request.uri.host == 'example.com'",
                 "assert exchange.request.uri.port == 8080",
@@ -309,6 +324,7 @@ public class GroovyScriptableFilterTest {
     public void testRequestHeaders() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.headers.Username[0] == 'test'",
                 "exchange.request.headers.Test = [ 'test' ]",
                 "assert exchange.request.headers.remove('Username')");
@@ -326,6 +342,7 @@ public class GroovyScriptableFilterTest {
     public void testSession() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.session.inKey == 'inValue'",
                 "exchange.session.outKey = 'outValue'",
                 "assert exchange.session.remove('inKey')");
@@ -346,6 +363,7 @@ public class GroovyScriptableFilterTest {
     public void testGlobalsPersistedBetweenInvocations() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert globals.x == null",
                 "globals.x = 'value'");
         // @formatter:on
@@ -370,6 +388,7 @@ public class GroovyScriptableFilterTest {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = new ScriptableFilter(
+                    Scripts.GROOVY_MIME_TYPE,
                     "import org.forgerock.openig.http.*",
                     "Request request = new Request()",
                     "request.method = 'GET'",
@@ -433,6 +452,7 @@ public class GroovyScriptableFilterTest {
         try {
             // @formatter:off
             final ScriptableFilter filter = new ScriptableFilter(
+                    Scripts.GROOVY_MIME_TYPE,
                     "import org.forgerock.opendj.ldap.*",
                     "import org.forgerock.openig.http.Response",
                     "",
@@ -500,6 +520,7 @@ public class GroovyScriptableFilterTest {
 
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "import org.forgerock.openig.http.*",
                 "import org.forgerock.openig.io.*",
                 "exchange.response = new Response()",
@@ -519,15 +540,16 @@ public class GroovyScriptableFilterTest {
     public void testWriteJsonEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
-                "exchange.request.jsonOut.person {",
+                Scripts.GROOVY_MIME_TYPE,
+                    "exchange.request.jsonOut.person {",
                     "firstName 'Tim'",
                     "lastName 'Yates'",
-                    "address {",
-                        "city: 'Manchester'",
-                        "country: 'UK'",
-                        "zip: 'M1 2AB'",
-                    "}",
-                "}");
+                        "address {",
+                            "city: 'Manchester'",
+                            "country: 'UK'",
+                            "zip: 'M1 2AB'",
+                        "}",
+                    "}");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -540,6 +562,7 @@ public class GroovyScriptableFilterTest {
     public void testReadJsonEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.jsonIn.person.firstName == 'Tim'",
                 "assert exchange.request.jsonIn.person.lastName == 'Yates'",
                 "assert exchange.request.jsonIn.person.address.country == 'UK'");
@@ -555,12 +578,13 @@ public class GroovyScriptableFilterTest {
     public void testWriteXmlEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
-                "exchange.request.xmlOut.root {",
-                    "a( a1:'one' ) {",
-                        "b { mkp.yield( '3 < 5' ) }",
-                        "c( a2:'two', 'blah' )",
-                    "}",
-                "}");
+                Scripts.GROOVY_MIME_TYPE,
+                    "exchange.request.xmlOut.root {",
+                        "a( a1:'one' ) {",
+                            "b { mkp.yield( '3 < 5' ) }",
+                            "c( a2:'two', 'blah' )",
+                        "}",
+                    "}");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -573,6 +597,7 @@ public class GroovyScriptableFilterTest {
     public void testReadXmlEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = new ScriptableFilter(
+                Scripts.GROOVY_MIME_TYPE,
                 "assert exchange.request.xmlIn.root.a"); // TODO
         // @formatter:on
         final Exchange exchange = new Exchange();

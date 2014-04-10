@@ -59,8 +59,8 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
     }
 
     // For unit testing.
-    ScriptableHandler(final String... scriptLines) throws ScriptException {
-        super(scriptLines);
+    ScriptableHandler(String mimeType, final String... scriptLines) throws ScriptException {
+        super(mimeType, scriptLines);
     }
 
     private ScriptableHandler(final CompiledScript compiledScript) {
