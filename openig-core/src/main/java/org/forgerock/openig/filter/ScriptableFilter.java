@@ -18,9 +18,6 @@ package org.forgerock.openig.filter;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.script.CompiledScript;
-import javax.script.ScriptException;
-
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -30,6 +27,7 @@ import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
+import org.forgerock.openig.script.Script;
 
 /**
  * A scriptable filter. This filter acts as a simple wrapper around the
@@ -58,18 +56,12 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableFilter newInstance(CompiledScript script) throws HeapException,
-                JsonValueException {
+        public ScriptableFilter newInstance(Script script) throws HeapException, JsonValueException {
             return new ScriptableFilter(script);
         }
     }
 
-    // For unit testing.
-    ScriptableFilter(String mimeType, final String... scriptLines) throws ScriptException {
-        super(mimeType, scriptLines);
-    }
-
-    private ScriptableFilter(final CompiledScript compiledScript) {
+    ScriptableFilter(final Script compiledScript) {
         super(compiledScript);
     }
 

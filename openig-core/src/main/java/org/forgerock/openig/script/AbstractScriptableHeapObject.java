@@ -15,22 +15,15 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.util.Utils.joinAsString;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.script.CompiledScript;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-import javax.script.SimpleScriptContext;
 
-import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -67,21 +60,21 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected static abstract class AbstractScriptableHeaplet extends NestedHeaplet {
-        private static final String CONFIG_OPTION_TYPE = "type";
-        private static final String CONFIG_OPTION_SOURCE = "source";
         private static final String CONFIG_OPTION_FILE = "file";
+        private static final String CONFIG_OPTION_SOURCE = "source";
+        private static final String CONFIG_OPTION_TYPE = "type";
 
         @Override
         public Object create() throws HeapException, JsonValueException {
-            CompiledScript script = compileScript();
-            AbstractScriptableHeapObject component = newInstance(script);
+            final Script script = compileScript();
+            final AbstractScriptableHeapObject component = newInstance(script);
             component.setHttpClient(new HttpClient(storage)); // TODO more config?
             return component;
         }
 
         /**
          * Creates the new heap object instance using the provided script.
-         *
+         * 
          * @param script
          *            The compiled script.
          * @return The new heap object instance using the provided script.
@@ -92,40 +85,42 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
          *             if the heaplet (or one of its dependencies) has a
          *             malformed configuration.
          */
-        protected abstract AbstractScriptableHeapObject newInstance(final CompiledScript script)
+        protected abstract AbstractScriptableHeapObject newInstance(final Script script)
                 throws HeapException, JsonValueException;
 
-        private final CompiledScript compileScript() {
+        private final Script compileScript() throws HeapException, JsonValueException {
+            final Environment environment = (Environment) heap.get("Environment");
+
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {
-                throw new JsonException("The configuration option '" + CONFIG_OPTION_TYPE
+                throw new JsonValueException(config, "The configuration option '"
+                        + CONFIG_OPTION_TYPE
                         + "' is required and must specify the script mime-type");
             }
             final String mimeType = config.get(CONFIG_OPTION_TYPE).asString();
             if (config.isDefined(CONFIG_OPTION_SOURCE)) {
                 if (config.isDefined(CONFIG_OPTION_FILE)) {
-                    throw new JsonException("Both configuration options '" + CONFIG_OPTION_SOURCE
-                            + "' and '" + CONFIG_OPTION_FILE
+                    throw new JsonValueException(config, "Both configuration options '"
+                            + CONFIG_OPTION_SOURCE + "' and '" + CONFIG_OPTION_FILE
                             + "' were specified, when at most one is allowed");
                 }
                 final String source = config.get(CONFIG_OPTION_SOURCE).asString();
                 try {
-                    return Scripts.compileSource(mimeType, source);
+                    return Script.fromSource(environment, mimeType, source);
                 } catch (final ScriptException e) {
-                    throw new JsonException("Unable to compile the script defined in '"
-                            + CONFIG_OPTION_SOURCE + "'", e);
+                    throw new JsonValueException(config,
+                            "Unable to compile the script defined in '" + CONFIG_OPTION_SOURCE
+                                    + "'", e);
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
                 final String script = config.get(CONFIG_OPTION_FILE).asString();
                 try {
-                    return Scripts.compileScript(mimeType, script);
+                    return Script.fromFile(environment, mimeType, script);
                 } catch (final ScriptException e) {
-                    throw new JsonException(
-                            "Unable to compile the script in file '" + script + "'", e);
-                } catch (final FileNotFoundException e) {
-                    throw new JsonException("Unable to read the script in file '" + script + "'", e);
+                    throw new JsonValueException(config, "Unable to compile the script in file '"
+                            + script + "'", e);
                 }
             } else {
-                throw new JsonException("Neither of the configuration options '"
+                throw new JsonValueException(config, "Neither of the configuration options '"
                         + CONFIG_OPTION_SOURCE + "' and '" + CONFIG_OPTION_FILE
                         + "' were specified");
             }
@@ -136,54 +131,35 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     // TODO: add support for periodically refreshing the Groovy script file.
     // TODO: json/xml/sql/crest bindings.
 
-    private static final String EOL = System.getProperty("line.separator");
-    private final CompiledScript compiledScript;
-    private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
+    private final Script compiledScript;
     private HttpClient httpClient;
     private final LdapClient ldapClient = LdapClient.getInstance();
+    private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
 
     /**
      * Creates a new scriptable heap object using the provided compiled script.
-     *
+     * 
      * @param compiledScript
      *            The compiled script.
      */
-    protected AbstractScriptableHeapObject(final CompiledScript compiledScript) {
+    protected AbstractScriptableHeapObject(final Script compiledScript) {
         this.compiledScript = compiledScript;
     }
 
     /**
-     * Creates a new scriptable heap object using the provided lines of script.
-     * This constructed is intended for unit tests.
-     *
-     * @param mimeType
-     *            The script mime-type, e.g. "application/x-groovy".
-     * @param scriptLines
-     *            The lines of script.
-     * @throws ScriptException
-     *             If the script cannot be compiled.
-     */
-    protected AbstractScriptableHeapObject(String mimeType, final String... scriptLines)
-            throws ScriptException {
-        this.compiledScript =
-                Scripts.compileSource(mimeType,
-                        joinAsString(EOL, (Object[]) scriptLines));
-    }
-
-    /**
      * Sets the HTTP client which should be made available to scripts.
-     *
+     * 
      * @param client
      *            The HTTP client which should be made available to scripts.
      */
-    public void setHttpClient(HttpClient client) {
+    public void setHttpClient(final HttpClient client) {
         this.httpClient = client;
     }
 
     /**
      * Runs the compiled script using the provided exchange and optional
      * forwarding handler.
-     *
+     * 
      * @param exchange
      *            The HTTP exchange.
      * @param next
@@ -198,7 +174,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             throws HandlerException, IOException {
         final LogTimer timer = logger.getTimer().start();
         try {
-            compiledScript.eval(scriptContext(compiledScript.getEngine(), exchange, next));
+            compiledScript.run(createBindings(exchange, next));
         } catch (final ScriptException e) {
             if (e.getCause() instanceof HandlerException) {
                 /*
@@ -220,17 +196,9 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
     }
 
-    private ScriptContext scriptContext(final ScriptEngine engine, final Exchange exchange,
-            final Handler next) {
-        final SimpleScriptContext scriptContext = new SimpleScriptContext();
-
-        // Copy global bindings.
-        final ScriptContext globalContext = engine.getContext();
-        scriptContext.setBindings(globalContext.getBindings(ScriptContext.GLOBAL_SCOPE),
-                ScriptContext.GLOBAL_SCOPE);
-
+    private Map<String, Object> createBindings(final Exchange exchange, final Handler next) {
         // Set engine bindings.
-        final SimpleBindings bindings = new SimpleBindings();
+        final Map<String, Object> bindings = new HashMap<String, Object>();
         bindings.put("exchange", exchange);
         bindings.put("logger", logger);
         bindings.put("globals", scriptGlobals);
@@ -241,9 +209,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         if (next != null) {
             bindings.put("next", next);
         }
-        scriptContext.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 
         // Redirect streams? E.g. in = request entity, out = response entity?
-        return scriptContext;
+        return bindings;
     }
 }

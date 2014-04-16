@@ -18,9 +18,6 @@ package org.forgerock.openig.handler;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.script.CompiledScript;
-import javax.script.ScriptException;
-
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
@@ -28,6 +25,7 @@ import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
+import org.forgerock.openig.script.Script;
 
 /**
  * A scriptable handler. This handler acts as a simple wrapper around the
@@ -52,18 +50,13 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableHandler newInstance(CompiledScript script) throws HeapException,
+        public ScriptableHandler newInstance(Script script) throws HeapException,
                 JsonValueException {
             return new ScriptableHandler(script);
         }
     }
 
-    // For unit testing.
-    ScriptableHandler(String mimeType, final String... scriptLines) throws ScriptException {
-        super(mimeType, scriptLines);
-    }
-
-    private ScriptableHandler(final CompiledScript compiledScript) {
+    ScriptableHandler(final Script compiledScript) {
         super(compiledScript);
     }
 
