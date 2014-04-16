@@ -17,18 +17,12 @@
 
 package org.forgerock.openig.config;
 
-// Java Standard Edition
 import java.io.File;
 import java.net.URI;
+import java.util.regex.Pattern;
 
-// Java Enterprise Edition
-import javax.servlet.ServletContext;
-
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
-// OpenIG Core
 import org.forgerock.openig.json.JSONRepresentation;
 import org.forgerock.openig.resource.FileResource;
 import org.forgerock.openig.resource.Representation;
@@ -39,92 +33,71 @@ import org.forgerock.openig.resource.Resources;
 /**
  * A resource for accessing application configuration data.
  * <p>
- * There are two modes the configuration resource resolve: simple and bootstrap. Simple mode
- * is meant for single local deployments of a web application in a user account; bootstrap
- * mode supports remotely configured or multiple deployments of an application for a given
- * user account.
+ * There are two modes the configuration resource resolve: simple and bootstrap.
+ * Simple mode is meant for single local deployments of a web application in a
+ * user account; bootstrap mode supports remotely configured or multiple
+ * deployments of an application for a given user account.
  * <p>
  * In both cases, all file resources are located a directory that is either
- * <tt><strong>$AppData/</strong><em>vendor</em><strong>/</strong><em>product</em><strong>/</strong></tt>
- * if the <strong>{@code $AppData}</strong> environment variable is defined (typical in
+ * <tt><strong>$AppData/</strong><em>product</em><strong>/</strong></tt> if the
+ * <strong>{@code $AppData}</strong> environment variable is defined (typical in
  * Windows installations), or otherwise
- * <tt><em>user-home</em><strong>/.</strong><em>vendor</em><strong>/</strong><em>product</em><strong>/</strong></tt>
+ * <tt><em>user-home</em><strong>/.</strong><em>product</em><strong>/</strong></tt>
  * (typical in Unix installations).
  * <p>
- * This class first tries to locate the configuration file using simple mode by looking for
- * a file named <strong>{@code config.json}</strong> in the configuration directory specified
- * above. If the file does not exist, then this class reverts to bootstrap mode.
+ * This class first tries to locate the configuration file using simple mode by
+ * looking for a file named <strong>{@code config.json}</strong> in the
+ * configuration directory specified above. If the file does not exist, then
+ * this class reverts to bootstrap mode.
  * <p>
- * In bootstrap mode, the name of a bootstrap configuration resource is generated based on
- * the instance name supplied (or derived from the servlet context) and takes the form
- * <tt><em>instance</em><strong>.json</strong></tt>. This file is expected to contain a single
- * JSON object with a single value with the name <strong>{@code configURI}</strong>. The
- * value is the URI of the configuration resource.
+ * In bootstrap mode, the name of a bootstrap configuration resource is
+ * generated based on the instance name supplied (or derived from the servlet
+ * context) and takes the form <tt><em>instance</em><strong>.json</strong></tt>.
+ * This file is expected to contain a single JSON object with a single value
+ * with the name <strong>{@code configURI}</strong>. The value is the URI of the
+ * configuration resource.
  *
- * @author Paul C. Bryan
+ * @see Environment
  */
 public class ConfigResource implements Resource {
+
+    /**
+     * Characters to filter from filenames: (SP) ? < > | * [ ] = + " \ / , . : ;
+     */
+    private static final Pattern DIRTY = Pattern.compile("[ \\?<>|\\*\\[\\]=+\\\"\\\\/,\\.:;]");
 
     /** The underlying resource that this object represents. */
     private final Resource resource;
 
-    /**
-     * Constructs a new configuration resource, with a path based-on the specified vendor,
-     * product and servlet context.
-     *
-     * @param vendor the vendor name.
-     * @param product the product name.
-     * @param context the servlet context from which the product instance name can be derived.
-     * @throws ResourceException if the configuration (or bootstrap) resource could not be found.
-     */
-    public ConfigResource(String vendor, String product, ServletContext context) throws ResourceException {
-        this(vendor, product, context.getRealPath("/"));
-    }
-
-    /**
-     * Constructs a new configuration resource, with a path based-on the specified vendor,
-     * product and instance name.
-     *
-     * @param vendor the vendor name.
-     * @param product the product name.
-     * @param instance the product instance name.
-     * @throws ResourceException if the configuration (or bootstrap) resource could not be found.
-     */
-    public ConfigResource(String vendor, String product, String instance) throws ResourceException {
-        File config = ConfigUtil.getFile(vendor, product, "config");
+    // Called from Environment.
+    ConfigResource(final Environment environment, final String instance) throws ResourceException {
+        final File config = getFileInDirectory(environment.getConfigDir(), "config");
         if (config.exists()) { // simplistic config.json file
             this.resource = new FileResource(config);
         } else { // bootstrap location of instance-based configuration file
-            File boot = ConfigUtil.getFile(vendor, product, instance != null ? instance : "bootstrap");
+            final File boot =
+                    getFileInDirectory(environment.getConfigDir(), instance != null ? instance
+                            : "bootstrap");
             if (!boot.exists()) {
-                throw new ResourceException("could not find local configuration file at " +
-                 config.getPath() + " or bootstrap file at " + boot.getPath());
+                throw new ResourceException("could not find local configuration file at "
+                        + config.getPath() + " or bootstrap file at " + boot.getPath());
             }
-            FileResource bootResource = new FileResource(boot);
-            JSONRepresentation representation = new JSONRepresentation();
+            final FileResource bootResource = new FileResource(boot);
+            final JSONRepresentation representation = new JSONRepresentation();
             bootResource.read(representation);
             try {
-                this.resource = Resources.newInstance(
-                        new JsonValue(representation.object).get("configURI").required().asURI());
-            } catch (JsonValueException jve) {
+                this.resource =
+                        Resources.newInstance(new JsonValue(representation.object).get("configURI")
+                                .required().asURI());
+            } catch (final JsonValueException jve) {
                 throw new ResourceException(jve);
             }
         }
     }
 
     @Override
-    public void create(Representation representation) throws ResourceException {
+    public void create(final Representation representation) throws ResourceException {
         resource.create(representation);
-    }
-
-    @Override
-    public void read(Representation representation) throws ResourceException {
-        resource.read(representation);
-    }
-
-    @Override
-    public void update(Representation representation) throws ResourceException {
-        resource.update(representation);
     }
 
     @Override
@@ -135,5 +108,28 @@ public class ConfigResource implements Resource {
     @Override
     public URI getURI() throws ResourceException {
         return resource.getURI();
+    }
+
+    @Override
+    public void read(final Representation representation) throws ResourceException {
+        resource.read(representation);
+    }
+
+    @Override
+    public void update(final Representation representation) throws ResourceException {
+        resource.update(representation);
+    }
+
+    private File getFileInDirectory(final File directory, final String instance) {
+        return getFileInDirectory(directory, instance, JSONRepresentation.EXTENSION);
+    }
+
+    private File getFileInDirectory(final File directory, final String instance,
+            final String extension) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(DIRTY.matcher(instance).replaceAll("_"));
+        sb.append('.');
+        sb.append(extension);
+        return new File(directory, sb.toString());
     }
 }
