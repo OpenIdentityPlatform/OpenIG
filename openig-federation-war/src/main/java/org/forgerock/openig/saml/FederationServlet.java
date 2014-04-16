@@ -12,12 +12,13 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2013 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.saml;
 
 // Java Standard Edition
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.Properties;
 import java.util.HashSet;
 import java.util.logging.Level;
 
+
 // Java Enterprise Edition
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -34,14 +36,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
+import org.forgerock.openig.config.Environment;
 // OpenIG Core
-import org.forgerock.openig.config.ConfigUtil;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+
 
 // OpenAM
 import com.sun.identity.plugin.session.SessionException;
@@ -110,7 +113,7 @@ public class FederationServlet extends HttpServlet {
 
     /** SP Single Logout Endpoint */
     private String SPinitiatedSLOEndpoint;
-    
+
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
@@ -145,7 +148,7 @@ public class FederationServlet extends HttpServlet {
     private void errorResponse(HttpServletResponse response, String message) throws IOException {
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "SSO Failed:" +  message);
     }
-    
+
     /*
      * Whether IDP or SP initiated, the final request ends up here.  The assertion is
      * validated, attributes are retrieved from and set in the HttpSession where
@@ -158,7 +161,7 @@ public class FederationServlet extends HttpServlet {
         String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
         if (relayURI != null && !relayURI.equals("")) {
             redirectURI = relayURI;
-        }        
+        }
         addAttributesToSession(request, map);
         /*
          * Redirect back to the original target application's login page and let the filters
@@ -168,8 +171,8 @@ public class FederationServlet extends HttpServlet {
          */
         response.sendRedirect(redirectURI);
     }
-    
-    /** 
+
+    /**
      * Store attribute value pairs in the session based on the assertionMapping  found in
      * config.json. The intent is to have a filter use one of these attributes as the subject
      * and possibly the password. The presence of these attributes in the Session implies the
@@ -179,7 +182,7 @@ public class FederationServlet extends HttpServlet {
      * sessionAttributeName: attribute name added to the session.
      * assertionAttribute: Name of the attribute to fetch from the assertion, the value becomes
      * the value in the session.
-     * 
+     *
      * @param request TODO.
      * @param assertion TODO.
       */
@@ -245,7 +248,7 @@ public class FederationServlet extends HttpServlet {
             }
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void serviceSPInitiatedSSO (HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException, SAML2Exception, SessionException {
@@ -265,7 +268,7 @@ public class FederationServlet extends HttpServlet {
         // next line testing to see if we can change the name format
         paramsMap.put(SAML2Constants.NAMEID_POLICY_FORMAT, list);
 
-// TODO: add option to specify artifact 
+// TODO: add option to specify artifact
         if (paramsMap.get(SAML2Constants.BINDING) == null) {
             // use POST binding
             list = new ArrayList();
@@ -474,7 +477,8 @@ public class FederationServlet extends HttpServlet {
              * override the default openFed location. Federation config files will reside in
              * the SAML directory.
              */
-            String openFedConfigDir = ConfigUtil.getDirectory("ForgeRock", "SAML").getPath();
+            Environment environment = (Environment) heap.get("Environment");
+            String openFedConfigDir = new File(environment.getInstanceRoot(), "SAML").getPath();
             System.out.println("FederationServlet init: " + openFedConfigDir);
             Properties p = System.getProperties();
             p.setProperty("com.sun.identity.fedlet.home", openFedConfigDir);
