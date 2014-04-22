@@ -106,6 +106,7 @@
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
+  <xinclude:include href="man-ScriptableHandler.xml" />
   <xinclude:include href="man-SequenceHandler.xml" />
   <xinclude:include href="man-StaticResponseHandler.xml" />
  </reference>
@@ -126,6 +127,7 @@
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
   <xinclude:include href="man-RedirectFilter.xml" />
+  <xinclude:include href="man-ScriptableFilter.xml" />
   <xinclude:include href="man-SqlAttributesFilter.xml" />
   <xinclude:include href="man-StaticRequestFilter.xml" />
   <xinclude:include href="man-SwitchFilter.xml" />

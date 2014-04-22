@@ -65,7 +65,7 @@
 
   <para>The following modules make up OpenIG.</para>
 
-  <section>
+  <section xml:id="how-it-works-core">
    <title>OpenIG Core (Reverse Proxy)</title>
 
    <para>OpenIG core is a standard Java EE servlet implementation of a reverse
@@ -80,7 +80,7 @@
    application itself.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-exchange">
    <title>Exchange</title>
    <para>The <link xlink:href="reference#Exchange"
    xlink:role="http://docbook.org/xlink/role/olink">Exchange</link> is a
@@ -91,7 +91,7 @@
    filters and handlers.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-dispatcher">
    <title>Dispatcher</title>
    <para>The Dispatcher may be thought of as the internal router of OpenIG.
    Every request that comes into OpenIG is analyzed and forwarded on to the
@@ -100,7 +100,7 @@
    or any other component of the request.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-chain">
    <title>Chain</title>
    <para>A <link xlink:href="reference#Chain"
    xlink:role="http://docbook.org/xlink/role/olink">Chain</link> is a
@@ -112,7 +112,7 @@
    the target application or to another Chain for further processing.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-handlers">
    <title>Handlers</title>
 
    <para>The final processing of every Chain ends in a call to a Handler. A
@@ -125,22 +125,34 @@
      xlink:role="http://docbook.org/xlink/role/olink">ClientHandler</link>:
      Sends the final request to the target application.</para>
     </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#ScriptableHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >ScriptableHandler</link>: Handles a request by using a script.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#SequenceHandler"
+     xlink:role="http://docbook.org/xlink/role/olink">SequenceHandler</link>:
+     Links together multiple handlers or chains during request
+     processing.</para>
+    </listitem>
+
     <listitem>
      <para><link xlink:href="reference#StaticResponseHandler"
      xlink:role="http://docbook.org/xlink/role/olink"
      >StaticResponseHandler</link>: Used to send a response, such as a
      redirect, to a client during request processing.</para>
     </listitem>
-    <listitem>
-     <para><link xlink:href="reference#StaticResponseHandler"
-     xlink:role="http://docbook.org/xlink/role/olink">SequenceHandler</link>:
-     Links together multiple handlers or chains during request
-     processing.</para>
-    </listitem>
    </itemizedlist>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-filters">
    <title>Filters</title>
    <para>Filters are responsible for processing HTTP requests in OpenIG.
    Filters can be chained together to act on the input stream coming from the
@@ -154,12 +166,11 @@
 
    <itemizedlist>
     <listitem>
-     <para><link xlink:href="reference#CookieFilter"
-     xlink:role="http://docbook.org/xlink/role/olink">CookieFilter</link>:
-     The default behavior of OpenIG is to accept and forward all cookies.
-     Since this is not always the desirable behavior, the CookieFilter, when
-     configured, allows you to suppress, manage, and relay cookies.</para>
+     <para><link xlink:href="reference#AssignmentFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">AssignmentFilter</link>:
+     Sets values in the HTTP request and response.</para>
     </listitem>
+
     <listitem>
      <para><link xlink:href="reference#CaptureFilter"
      xlink:role="http://docbook.org/xlink/role/olink">CaptureFilter</link>:
@@ -168,6 +179,38 @@
      application or troubleshooting a misbehaving OpenIG. Logs are written to
      a flat file on the OpenIG host.</para>
     </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#CookieFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">CookieFilter</link>:
+     The default behavior of OpenIG is to accept and forward all cookies.
+     Since this is not always the desirable behavior, the CookieFilter, when
+     configured, allows you to suppress, manage, and relay cookies.</para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#EntityExtractFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >EntityExtractFilter</link>: Searches for specific content within the body
+     of the requests. For example, it can be used to extract hidden form
+     parameters in a login page, which are needed in the login request.</para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#ExceptionFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">ExceptionFilter</link>:
+     Sends users to configured URLs when errors or exceptions occur during
+     request processing or user interactions.</para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#FileAttributesFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >FileAttributesFilter</link>: Looks up attributes in a flat file with the
+     specified key. The attributes are added to the exchange to be used by
+     subsequent filters or handlers.</para>
+    </listitem>
+
     <listitem>
      <para><link xlink:href="reference#HeaderFilter"
      xlink:role="http://docbook.org/xlink/role/olink">HeaderFilter</link>:
@@ -179,36 +222,7 @@
      commonly when OpenIG is integrated with OpenAM and being fronted by a
      policy agent.</para>
     </listitem>
-    <listitem>
-     <para><link xlink:href="reference#AssignmentFilter"
-     xlink:role="http://docbook.org/xlink/role/olink">AssignmentFilter</link>:
-     Sets values in the HTTP request and response.</para>
-    </listitem>
-    <listitem>
-     <para><link xlink:href="reference#StaticRequestFilter"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >StaticRequestFilter</link>: Creates and sends HTTP GET and POST requests.
-     The request can be formed using parameters from previous processing or
-     statically configured values.</para>
-    </listitem>
-    <listitem>
-     <para><link xlink:href="reference#EntityExtractFilter"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >EntityExtractFilter</link>: Searches for specific content within the body
-     of the requests. For example, it can be used to extract hidden form
-     parameters in a login page, which are needed in the login request.</para>
-    </listitem>
-    <listitem>
-     <para><link xlink:href="reference#ExceptionFilter"
-     xlink:role="http://docbook.org/xlink/role/olink">ExceptionFilter</link>:
-     Sends users to configured URLs when errors or exceptions occur during
-     request processing or user interactions.</para>
-    </listitem>
-    <listitem>
-     <para><link xlink:href="reference#SwitchFilter"
-     xlink:role="http://docbook.org/xlink/role/olink">SwitchFilter</link>:
-     Conditionally diverts the exchange to another handler.</para>
-    </listitem>
+
     <listitem>
      <para><link xlink:href="reference#HttpBasicAuthFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
@@ -216,20 +230,7 @@
      target application per <link xlink:show="new"
      xlink:href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</link>.</para>
     </listitem>
-    <listitem>
-     <para><link xlink:href="reference#FileAttributesFilter"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >FileAttributesFilter</link>: Looks up attributes in a flat file with the
-     specified key. The attributes are added to the exchange to be used by
-     subsequent filters or handlers.</para>
-    </listitem>
-    <listitem>
-     <para><link xlink:href="reference#SqlAttributesFilter"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >SqlAttributesFilter</link>: Executes an SQL prepared statement with
-     configured parameters. The result is added to the exchange to be used by
-     subsequent filters or handlers.</para>
-    </listitem>
+
     <listitem>
      <para><link xlink:href="reference#RedirectFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
@@ -237,10 +238,42 @@
      generate a redirect that would take the user directly to the application
      being proxied rather than taking the user through OpenIG.</para>
     </listitem>
+
+    <listitem>
+     <para>
+      <link
+      xlink:show="new"
+      xlink:href="reference#ScriptableFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      >ScriptableFilter</link>: Processes the HTTP exchange by using a script.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#SqlAttributesFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >SqlAttributesFilter</link>: Executes an SQL prepared statement with
+     configured parameters. The result is added to the exchange to be used by
+     subsequent filters or handlers.</para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#StaticRequestFilter"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >StaticRequestFilter</link>: Creates and sends HTTP GET and POST requests.
+     The request can be formed using parameters from previous processing or
+     statically configured values.</para>
+    </listitem>
+
+    <listitem>
+     <para><link xlink:href="reference#SwitchFilter"
+     xlink:role="http://docbook.org/xlink/role/olink">SwitchFilter</link>:
+     Conditionally diverts the exchange to another handler.</para>
+    </listitem>
    </itemizedlist>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-configuration">
    <title>Configuration</title>
 
    <para>The configuration of OpenIG was designed to be very modular and
@@ -250,7 +283,7 @@
    files.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-heaplets">
    <title>Heaplets</title>
 
    <para>Every OpenIG module which has JSON configuration also has a Heaplet
@@ -261,7 +294,7 @@
    modules.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-services">
    <title>Services</title>
 
    <para>The Services model was designed to allow the integration of value
@@ -270,7 +303,7 @@
    service shipping with OpenIG today.</para>
   </section>
 
-  <section>
+  <section xml:id="how-it-works-saml2">
    <title>Federation Service (Federation Gateway)</title>
 
    <para>When the Federation Service is enabled, OpenIG acts as the

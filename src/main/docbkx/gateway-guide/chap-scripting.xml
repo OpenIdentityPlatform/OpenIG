@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id="chap-scripting"
+         xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation="http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xinclude="http://www.w3.org/2001/XInclude">
+ <title>Scripting Filters &amp; Handlers</title>
+
+ <indexterm>
+  <primary>Scripting</primary>
+ </indexterm>
+
+ <para>
+  To extend what you can do with Filters and Handlers,
+  OpenIG supports dynamic scripting languages like Groovy
+  through the use of <literal>ScriptableFilter</literal>
+  and <literal>ScriptableHandler</literal> objects.
+ </para>
+
+ <para>
+  You add these Filters and Handlers to your configuration in the same way
+  as for other Filters and Handlers.
+  Each takes as its configuration the script's Internet media "type"
+  and either a "source" script included in the JSON configuration,
+  or a "file" script that OpenIG reads from a file.
+ </para>
+
+ <para>
+  The following example defines a <literal>ScriptableFilter</literal>,
+  written in the Groovy language,
+  and stored in a file named <filename>SimpleFormLogin.groovy</filename>.
+ </para>
+
+ <programlisting language="java">
+{
+    "name": "SimpleFormLogin",
+    "type": "ScriptableFilter",
+    "config": {
+        "type": "application/x-groovy",
+        "file": "SimpleFormLogin.groovy"
+    }
+}
+ </programlisting>
+
+ <para>
+  Relative paths in the "file" field depend on how the gateway is installed.
+  If the gateway is installed in an application server,
+  then paths for Groovy scripts are relative to
+  <filename>$HOME/.openig/scripts/groovy/</filename>.
+  If the gateway is installed as a standalone application,
+  then paths for Groovy scripts are relative to
+  <filename><replaceable>install-dir</replaceable>/scripts/groovy/</filename>.
+ </para>
+
+ <para>
+  This base location
+  either <filename>$HOME/.openig/scripts/groovy/</filename>
+  or <filename><replaceable>install-dir</replaceable>/scripts/groovy/</filename>
+  is on the classpath when the scripts are executed.
+  If therefore some Groovy scripts are not in the default package,
+  but instead have their own package names,
+  they belong in the directory corresponding to their package name.
+  For example, a script in package <literal>com.example.groovy</literal>
+  belongs under <filename>scripts/groovy/com/example/groovy/</filename>.
+ </para>
+
+ <para>
+  OpenIG provides scripts with several global variables at run time,
+  enabling them to access the Exchange,
+  to store variables across executions,
+  to write messages to the logs,
+  and to make requests to a web service or to an LDAP directory service,
+  in addition to Groovy's built-in functionality.
+  For details, see the reference documentation for
+  <link
+   xlink:show="new"
+   xlink:href="reference#ScriptableFilter"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >ScriptableFilter</link>
+  and
+  <link
+   xlink:show="new"
+   xlink:href="reference#ScriptableHandler"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >ScriptableHandler</link>.
+ </para>
+
+ <para>
+  This chapter demonstrates some of what you might do using scripts.
+ </para>
+
+ <section xml:id="scripting-dispatch">
+  <title>Scripting Dispatch</title>
+
+  <para>
+   In order to route requests, especially when the conditions are complicated,
+   you can use a <literal>ScriptableHandler</literal> instead of a
+   <link
+    xlink:show="new"
+    xlink:href="reference#DispatchHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >DispatchHandler</link>.
+  </para>
+
+  <para>
+   The following script demonstrates a simple dispatch handler.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/DispatchHandler.groovy"
+ parse="text"
+>
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </section>
+
+ <section xml:id="scripting-capture">
+  <title>Scripting Proxy &amp; Capture</title>
+
+  <para>
+   The following script filters the HTTP exchange to log information
+   from the HTTP request and the HTTP response,
+   proxying the request as is to the server,
+   and returning the response as is to the client.
+  </para>
+
+  <programlisting language="java">
+// FixMe: need a Capture similar to CaptureFilter but without the condition
+capture = globals.get("capture", { -> new Capture("/tmp/gateway.log") })
+capture(exchange.request)
+http.execute(exchange) // next.handle(exchange) if this were a filter
+capture(exchange.response)
+  </programlisting>
+ </section>
+
+ <section xml:id="scripting-http-basic">
+  <title>Scripting HTTP Basic Authentication</title>
+
+  <para>
+   HTTP Basic authentication calls for the user agent such as a browser
+   to send a user name and password to the server in an Authorization header.
+   HTTP Basic authentication relies on an encrypted connection
+   to protect the user name and password credentials,
+   which are base64-encoded in the Authorization header, not encrypted.
+  </para>
+
+  <para>
+   The following script, for use in a <literal>ScriptableFilter</literal>,
+   adds an Authorization header based on a hard-coded username and password.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+href="${basedir}/openig-core/src/test/resources/scripts/groovy/BasicAuthFilter.groovy"
+parse="text"
+>
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </section>
+
+ <section xml:id="scripting-ldap-auth">
+  <title>Scripting LDAP Authentication</title>
+
+  <para>
+   Many organizations use an LDAP directory service to store user profiles
+   including authentication credentials.
+   The LDAP directory service securely stores user passwords
+   in a highly-available, central service capable of
+   handling thousands of authentications per second.
+  </para>
+
+  <para>
+   The following script, for use in a <literal>ScriptableFilter</literal>,
+   performs simple authentication against an LDAP server
+   based on request form fields
+   <literal>username</literal> and <literal>password</literal>.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+href="${basedir}/openig-core/src/test/resources/scripts/groovy/LdapAuthFilter.groovy"
+parse="text"
+>
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </section>
+
+<!--
+ <section xml:id="scripting-entity-access">
+  <title>Scripting &amp; Entity Access</title>
+
+  <para>
+   TODO - pending https://bugster.forgerock.org/jira/browse/OPENIG-84
+  </para>
+ </section>
+-->
+
+<!--
+ <section xml:id="scripting-sql">
+  <title>Scripting SQL Queries</title>
+
+  <para>
+   TODO - see https://bugster.forgerock.org/jira/browse/OPENIG-101
+  </para>
+ </section>
+-->
+
+</chapter>
