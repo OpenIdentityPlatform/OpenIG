@@ -125,7 +125,17 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!-- Start documentation properties -->
         <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset before final publication-->
+
+        <warConfigDir>$HOME/.openig/config</warConfigDir>
+        <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>
+        <warSamlDir>$HOME/.openig/SAML</warSamlDir>
+
+        <windowsWarConfigDir>%appdata%\.openig\config</windowsWarConfigDir>
+        <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
+        <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
+
         <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before final publication -->
         <frDocPluginVersion>2.1.0</frDocPluginVersion>
         <gaId>UA-23412190-11</gaId>
@@ -139,6 +149,8 @@
         <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
         <pubDate/>
         <publicationDate>${pubDate}</publicationDate>
+     <!-- End documentation properties -->
+
     </properties>
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->

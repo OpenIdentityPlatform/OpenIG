@@ -44,7 +44,7 @@
   <programlisting language="none">
 HTTP ERROR 500
 org.forgerock.openig.model.NodeException:
- ['file:/Users/george/.ForgeRock/OpenIG/config.json'].heap.objects[2]
+ ['file:/Users/george/.openig/config/config.json'].heap.objects[2]
   .config.filterObjects[0]: object not found in heap
 at org.forgerock.openig.heaplet.HeapUtil.getRequiredObject(HeapUtil.java:54)
 at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)
@@ -64,13 +64,13 @@ HTTP ERROR 500
 Problem accessing /. Reason:
 
  could not find local configuration file at
- /var/root/.ForgeRock/OpenIG/config.json or bootstrap file at
- /var/root/.ForgeRock/OpenIG/_private_var_folders_...webinf.json
+ /var/root/.openig/config/config.json or bootstrap file at
+ /var/root/.openig/config/_private_var_folders_...webinf.json
   </programlisting>
 
   <para>OpenIG could not find its configuration file in the home directory of
   the user running the container where OpenIG is deployed, in this case
-  <filename>/var/root/.ForgeRock/OpenIG/config.json</filename>.
+  <filename>/var/root/.openig/config/config.json</filename>.
   As you can see from the error message, OpenIG looks in a secondary location
   determined at runtime by the container. The secondary location is only
   necessary if you are running more than one OpenIG on a single host and your

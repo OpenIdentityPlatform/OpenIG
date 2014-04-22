@@ -83,16 +83,16 @@
 
   <step>
    <para>Copy the template to
-   <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. Replace the
+   <filename>${warConfigDir}/config.json</filename>. Replace the
    <literal>TARGETIP</literal> tag in <filename>config.json</filename> with
    the IP address and port number of your target application.</para>
 
    <para>On Windows, the configuration files belong in
-   <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
+   <filename>${windowsWarConfigDir}</filename>. To locate the
    <filename>%appdata%</filename> folder for your version of Windows, open
    Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-   press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
-   folder there, and then copy the configuration files.</para>
+   press Enter. You must create the <filename>${windowsWarConfigDir}</filename>
+   folder, and then copy the configuration files.</para>
   </step>
 
   <step>
