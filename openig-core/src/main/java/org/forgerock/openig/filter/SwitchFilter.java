@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -40,7 +40,7 @@ import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
- * handled, associated conditions are evaluated. If a condition evalutes to {@code true}, then
+ * handled, associated conditions are evaluated. If a condition evaluates to {@code true}, then
  * the exchange flow is diverted to the associated handler. If no condition evaluates to
  * {@code true}, then the exchange flows normally through the filter. 
  *

@@ -46,6 +46,7 @@ import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
@@ -139,6 +140,74 @@ public class GroovyScriptableFilterTest {
         filter.filter(exchange, handler);
         verifyZeroInteractions(handler);
         assertThat(exchange.response).isNotNull();
+    }
+
+    @Test
+    public void testDispatchFromFile() throws Exception {
+        final HeapImpl heap = new HeapImpl();
+        heap.put("TemporaryStorage", new TemporaryStorage());
+        heap.put("Environment", Environment.forStandaloneApp("."));
+
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", new File("src/test/resources/scripts/groovy/DispatchHandler.groovy")
+                .getAbsolutePath());
+
+        final ScriptableHandler handler =
+                (ScriptableHandler) new ScriptableHandler.Heaplet().create(
+                        "test", new JsonValue(config), heap);
+
+        // Try with valid credentials
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://test/login");
+        exchange.request.headers.add("Username", "bjensen");
+        exchange.request.headers.add("Password", "hifalutin");
+        exchange.response = new Response();
+        handler.handle(exchange);
+        assertThat(exchange.response.status).isEqualTo(200);
+
+        // Try with invalid credentials
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://test/login");
+        exchange.request.headers.add("Username", "bob");
+        exchange.request.headers.add("Password", "dobbs");
+        exchange.response = new Response();
+        handler.handle(exchange);
+        assertThat(exchange.response.status).isEqualTo(403);
+
+        // Try with different path
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://test/index.html");
+        exchange.response = new Response();
+        handler.handle(exchange);
+        assertThat(exchange.response.status).isEqualTo(401);
+    }
+
+    @Test
+    public void testBasicAuthFilterFromFile() throws Exception {
+        final HeapImpl heap = new HeapImpl();
+        heap.put("TemporaryStorage", new TemporaryStorage());
+        heap.put("Environment", Environment.forStandaloneApp("."));
+
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", new File("src/test/resources/scripts/groovy/BasicAuthFilter.groovy")
+                .getAbsolutePath());
+
+        final ScriptableFilter filter =
+                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
+                        config), heap);
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.uri = new URI("http://www.example.com/");
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+        // base64-encode "bjensen:hifalutin" -> "YmplbnNlbjpoaWZhbHV0aW4="
+        assertThat(exchange.request.headers.get("Authorization").toString())
+                .isEqualTo("[Basic YmplbnNlbjpoaWZhbHV0aW4=]");
+        assertThat(exchange.request.uri.getScheme()).isEqualTo("https");
     }
 
     @Test
@@ -304,6 +373,86 @@ public class GroovyScriptableFilterTest {
             exchange.request = new Request();
             exchange.request.headers.add("Username", "bjensen");
             exchange.request.headers.add("Password", "wrong");
+            filter.filter(exchange, handler);
+            assertThat(exchange.response.status).isEqualTo(403);
+            assertThat(exchange.response.reason).isNotNull();
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test(enabled = true)
+    public void testLdapAuthFromFile() throws Exception {
+        // Create mock LDAP server with a single user.
+        // @formatter:off
+        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
+                "dn:",
+                "objectClass: top",
+                "objectClass: extensibleObject",
+                "",
+                "dn: dc=com",
+                "objectClass: domain",
+                "objectClass: top",
+                "dc: com",
+                "",
+                "dn: dc=example,dc=com",
+                "objectClass: domain",
+                "objectClass: top",
+                "dc: example",
+                "",
+                "dn: ou=people,dc=example,dc=com",
+                "objectClass: organizationalUnit",
+                "objectClass: top",
+                "ou: people",
+                "",
+                "dn: uid=bjensen,ou=people,dc=example,dc=com",
+                "objectClass: top",
+                "objectClass: person",
+                "objectClass: organizationalPerson",
+                "objectClass: inetOrgPerson",
+                "cn: Barbara",
+                "sn: Jensen",
+                "uid: bjensen",
+                "description: test user",
+                "userPassword: hifalutin"));
+        // @formatter:on
+        final LDAPListener listener =
+                new LDAPListener(0, Connections
+                        .<LDAPClientContext> newServerConnectionFactory(backend));
+        final int port = listener.getPort();
+        try {
+            final HeapImpl heap = new HeapImpl();
+            heap.put("TemporaryStorage", new TemporaryStorage());
+            heap.put("Environment", Environment.forStandaloneApp("."));
+
+            final Map<String, Object> config = new HashMap<String, Object>();
+            config.put("type", Script.GROOVY_MIME_TYPE);
+            config.put("file",
+                    new File("src/test/resources/scripts/groovy/LdapAuthFilter.groovy")
+                            .getAbsolutePath());
+
+            final ScriptableFilter filter =
+                    (ScriptableFilter) new ScriptableFilter.Heaplet()
+                            .create("test", new JsonValue(config), heap);
+
+            // Authenticate using correct password.
+            final Exchange exchange = new Exchange();
+            exchange.request = new Request();
+            exchange.request.uri = new URI("http://test?username=bjensen&password=hifalutin");
+            // FixMe: Passing the LDAP host and port as headers is wrong.
+            exchange.put("ldapHost", "localhost");
+            exchange.put("ldapPort", "" + port);
+            final Handler handler = mock(Handler.class);
+            filter.filter(exchange, handler);
+            assertThat(exchange.request.headers.get("Ldap-User-Dn").toString())
+                    .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
+
+            // Authenticate using wrong password.
+            exchange.request = new Request();
+            exchange.request.uri = new URI("http://test?username=bjensen&password=wrong");
+            // FixMe: Passing the LDAP host and port as headers is wrong.
+            exchange.request.headers.add("LdapHost", "0.0.0.0");
+            exchange.request.headers.add("LdapPort", "" + port);
             filter.filter(exchange, handler);
             assertThat(exchange.response.status).isEqualTo(403);
             assertThat(exchange.response.reason).isNotNull();

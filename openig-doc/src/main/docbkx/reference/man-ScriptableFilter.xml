@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='ScriptableFilter'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <refmeta>
+  <refentrytitle>ScriptableFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>ScriptableFilter</refname>
+  <refpurpose>process exchange by using a script</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>ScriptableFilter</secondary>
+  </indexterm>
+
+  <para>
+   Processes an exchange by using a script.
+  </para>
+
+  <variablelist>
+   <para>
+    The script has access to the following global objects.
+   </para>
+
+   <varlistentry>
+    <term><literal>exchange</literal></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html"
+       xlink:show="new"
+      >exchange</link> provides access to the HTTP request and response.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>globals</literal></term>
+    <listitem>
+     <para>
+      This
+      <link
+       xlink:href="http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html"
+       xlink:show="new"
+      >Map</link> holds variables that persist across successive invocations.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>http</literal></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/HttpClient.html"
+       xlink:show="new"
+      >http</link> object provides an embedded HTTP client.
+     </para>
+
+     <para>
+      Use this client to perform outbound HTTP requests.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>ldap</literal></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/ldap/LdapClient.html"
+       xlink:show="new"
+      >ldap</link> object provides an embedded LDAP client.
+     </para>
+
+     <para>
+      Use this client to perform outbound LDAP requests,
+      such as LDAP authentication.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>logger</literal></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/Logger.html"
+       xlink:show="new"
+      >logger</link> object provides access to the server log sink.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>next</literal></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html"
+       xlink:show="new"
+      >next</link> object refers to the next handler in the filter chain.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   When finished processing the request,
+   call the <literal>next.handle(exchange)</literal> method
+   to call the next filter in the current chain.
+   Everything in the script subsequent to this method call
+   deals with the exchange response.
+  </para>
+
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">{
+    "name": string,
+    "type": "ScriptableFilter",
+    "config": {
+        "type": string,
+        "file": string,    // Use either "file"
+        "source": string   // or "source", but not both.
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+
+   <varlistentry>
+    <term><code>"type"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>
+      The Internet media type (formerly MIME type) of the script, either
+      <literal>"application/x-groovy"</literal> for Groovy
+      or <literal>"text/javascript"</literal> for JavaScript
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"file"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>
+      Path to the file containing the script;
+      mutually exclusive with <code>"source"</code>
+     </para>
+
+     <para>
+      Relative paths in the "file" field depend on how the gateway is installed.
+      If the gateway is installed in an application server,
+      then paths for Groovy scripts are relative to
+      <filename>$HOME/.openig/scripts/groovy/</filename>.
+      If the gateway is installed as a standalone application,
+      then paths for Groovy scripts are relative to
+      <filename><replaceable>install-dir</replaceable>/scripts/groovy/</filename>.
+     </para>
+
+     <para>
+      This base location
+      either <filename>$HOME/.openig/scripts/groovy/</filename>
+      or <filename><replaceable>install-dir</replaceable>/scripts/groovy/</filename>
+      is on the classpath when the scripts are executed.
+      If therefore some Groovy scripts are not in the default package,
+      but instead have their own package names,
+      they belong in the directory corresponding to their package name.
+      For example, a script in package <literal>com.example.groovy</literal>
+      belongs under <filename>scripts/groovy/com/example/groovy/</filename>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"source"</code>: <emphasis>string</emphasis></term>
+    <listitem>
+     <para>
+      The script as a string;
+      mutually exclusive with <code>"file"</code>
+     </para>
+    </listitem>
+   </varlistentry>
+
+  </variablelist>
+
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/filter/ScriptableFilter.html"
+   >org.forgerock.openig.filter.ScriptableFilter</link>
+  </para>
+ </refsect1>
+
+</refentry>

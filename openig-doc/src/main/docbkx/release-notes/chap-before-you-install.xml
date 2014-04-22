@@ -20,21 +20,24 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012 ForgeRock AS
+  !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-before-you-install'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Before You Install</title>
 
- <para>This chapter covers software and hardware prerequisites for installing
- and running OpenIG software. If you have a special request to support a
- component or combination not listed here, contact ForgeRock at <link
- xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.</para>
+ <para>
+  This chapter covers requirements for running OpenIG software.
+  If you have a special request to support
+  a component or combination not listed here,
+  contact ForgeRock at
+  <link xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.
+ </para>
 
  <section xml:id="which-gateway">
   <title>Which OpenIG to Use</title>
@@ -48,10 +51,12 @@
  <section xml:id="java-requirements">
   <title>JDK Version</title>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
-  versions of any JDK supported with OpenIG.</para>
+  <para>
+   This release of OpenIG requires
+   Java Development Kit 6 or Java Development Kit 7.
+   ForgeRock recommends the most recent update of Java 6 or 7
+   to ensure you have the latest security fixes.
+  </para>
  </section>
 
  <section xml:id="which-container">
@@ -62,5 +67,19 @@
   Deployment Containers</citetitle></link> in the <citetitle>Guide to
   OpenIG</citetitle> for details on setting up your web application
   container.</para>
+ </section>
+
+ <section xml:id="scripting-languages">
+  <title>Scripting Support</title>
+
+  <para>
+   This release of OpenIG supports the Groovy scripting language.
+   For examples using Groovy scripts for Filters and Handlers, see
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-scripting"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Scripting Filters &amp; Handlers</link>.
+  </para>
  </section>
 </chapter>

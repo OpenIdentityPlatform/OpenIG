@@ -20,27 +20,51 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012 ForgeRock AS
+  !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-whats-new'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>What's New in OpenIG</title>
 
- <para>OpenIG <?eval ${docTargetVersion}?> fixes a number of issues, and
- provides the following additional features.</para>
+ <para>
+  OpenIG ${docTargetVersion} fixes a number of issues,
+  and provides the following additional features.
+ </para>
 
  <itemizedlist>
+  <listitem>
+   <para>
+    OpenIG now supports use of scripts to process and to handle
+    the HTTP exchange (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-80"
+    >OPENIG-80</link>
+    ).
+    Use the <literal>ScriptableFilter</literal>
+    and <literal>ScriptableHandler</literal> objects
+    to the configuration in order to hook scripts into exchange processing.
+    For examples using Groovy scripts for Filters and Handlers, see
+    <link
+     xlink:show="new"
+     xlink:href="gateway-guide#chap-scripting"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >Scripting Filters &amp; Handlers</link>.
+   </para>
+  </listitem>
+
   <listitem>
    <para>OpenIG HttpBasicAuthFilter now lets users change their passwords
    during a session (<link
    xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-32"
    xlink:show="new">OPENIG-32</link>).</para>
   </listitem>
+
   <listitem>
    <para>OpenIG Federation Servlet now supports SP-initiated single logout
    and also supports single logout using the SOAP binding (<link

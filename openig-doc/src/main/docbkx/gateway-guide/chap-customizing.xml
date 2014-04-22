@@ -27,19 +27,51 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Customizing OpenIG</title>
 
- <para>OpenIG includes a complete, stable <link xlink:show="new"
- xlink:href="${javadocBase}/index.html">application
- programming interface</link>, designed to allow you to customize OpenIG
- as required. Customizing OpenIG can be necessary if you need to perform
- complex server interactions or intensive data transformations, and stock
- handlers, filters and <link xlink:href="reference#Expressions"
- xlink:role="http://docbook.org/xlink/role/olink">expressions</link> provided
- by the gateway are too basic to meet the task.</para>
+ <para>
+  With
+  <link
+   xlink:show="new"
+   xlink:href="reference#ScriptableFilter"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >ScriptableFilter</link>
+  and also
+  <link
+   xlink:show="new"
+   xlink:href="reference#ScriptableHandler"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >ScriptableHandler</link> objects,
+  you can often avoid customizing OpenIG Java code
+  by writing scripts instead.
+  For examples, see
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-scripting"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Scripting Filters &amp; Handlers</link>.
+ </para>
+
+ <para>
+  If scripting is not enough, be aware that
+  OpenIG includes a complete
+  <link
+   xlink:show="new"
+   xlink:href="${javadocBase}/index.html"
+  >application programming interface</link>,
+  designed to allow you to customize OpenIG as required.
+  Customizing OpenIG can be used to perform complex server interactions
+  or intensive data transformations
+  that you cannot achieve with scripts or existing handlers, filters and
+  <link
+   xlink:show="new"
+   xlink:href="reference#Expressions"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >expressions</link>.
+ </para>
 
  <section xml:id="extension-points">
   <title>Key Extension Points</title>
