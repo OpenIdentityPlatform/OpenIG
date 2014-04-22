@@ -94,13 +94,13 @@ $ <userinput>cp $HOME/gateway-*.war $HOME/jetty-hightide-7.1.6/webapps/root.war<
    <step>
     <para>Copy the <filename>WordPressLogin.json</filename> gateway
     configuration file to
-    <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default,
+    <filename>${warConfigDir}/config.json</filename>. By default,
     OpenIG looks for <filename>config.json</filename> in the
-    <filename>$HOME/.ForgeRock/OpenIG/</filename> directory.</para>
+    <filename>${warConfigDir}</filename> directory.</para>
 
     <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
- $HOME/.ForgeRock/OpenIG/config.json</userinput>
+ ${warConfigDir}/config.json</userinput>
     </screen>
 
     <para>On Windows, the configuration files belong in
@@ -108,7 +108,7 @@ $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
     <filename>%appdata%</filename> folder for your version of Windows, open
     Windows Explorer, type <literal>%appdata%</literal> as the file path, and
     press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
-    folder there, and then copy the configuration files.</para>
+    folder, and then copy the configuration files.</para>
    </step>
 
    <step>

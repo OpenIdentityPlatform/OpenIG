@@ -202,23 +202,23 @@ PING demo.forgerock.com (10.0.1.1): 56 data bytes
   have the configuration files downloaded and installed.</para>
 
   <para>Copy <filename>WordPressProxyOnly.json</filename> to
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default, OpenIG
-  looks for <filename>$HOME/.ForgeRock/OpenIG/config.json</filename> for its
+  <filename>${warConfigDir}/config.json</filename>. By default, OpenIG
+  looks for <filename>${warConfigDir}/config.json</filename> for its
   configuration. You must restart the OpenIG container when making any change
   to the configuration file.</para>
 
   <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressProxyOnly.json \
- $HOME/.ForgeRock/OpenIG/config.json</userinput>
+ ${warConfigDir}/config.json</userinput>
 $ <userinput>jetty.sh restart</userinput>
   </screen>
 
   <para>On Windows, the configuration files belong in
-  <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
+  <filename>${windowsWarConfigDir}</filename>. To locate the
   <filename>%appdata%</filename> folder for your version of Windows, open
   Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-  press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
-  folder there, and then copy the configuration files.</para>
+  press Enter. You must create the <filename>${windowsWarConfigDir}</filename>
+  folder, and then copy the configuration files.</para>
 
   <para>To try out the first sample browse to <link xlink:show="new"
   xlink:href="http://demo.forgerock.com:8080/wordpress" />. You should see the
@@ -234,7 +234,7 @@ $ <userinput>jetty.sh restart</userinput>
   link.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. Look for the
+  <filename>${warConfigDir}/config.json</filename>. Look for the
   HandlerServlet. This is the servlet entry point to OpenIG. The HandlerServlet
   passes the request off to another handler which may be a chain of filters
   and handlers. In the pure proxy case there is no special logic to execute so
@@ -252,7 +252,7 @@ $ <userinput>jetty.sh restart</userinput>
 
   <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
- $HOME/.ForgeRock/OpenIG/config.json</userinput>
+ ${warConfigDir}/config.json</userinput>
 $ <userinput>jetty.sh restart</userinput>
   </screen>
 
@@ -264,7 +264,7 @@ $ <userinput>jetty.sh restart</userinput>
   and POSTed the request to the Portal.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. This time you
+  <filename>${warConfigDir}/config.json</filename>. This time you
   notice the HandlerServlet is calling the DispatchHandler. The DispatchHandler
   has a condition which checks for the presence of
   <filename>wp-login.php</filename> (the login page) in the URI path. If the
@@ -300,7 +300,7 @@ $ <userinput>jetty.sh restart</userinput>
 
   <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLoginFile.json \
- $HOME/.ForgeRock/OpenIG/config.json</userinput>
+ ${warConfigDir}/config.json</userinput>
 $ <userinput>jetty.sh restart</userinput>
   </screen>
 
@@ -317,7 +317,7 @@ $ <userinput>jetty.sh restart</userinput>
   either.</para>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. For this sample,
+  <filename>${warConfigDir}/config.json</filename>. For this sample,
   you added one additional filter to the LoginChain and made a slight
   modification to the LoginRequestFilter. Take a look at the LoginChain and you
   can see the filters attribute now has the value of
@@ -358,11 +358,11 @@ $ <userinput>jetty.sh restart</userinput>
 
   <screen>
 $ <userinput>cp $HOME/forgerock-sample-configs/WordPressLoginSQL.json \
- $HOME/.ForgeRock/OpenIG/config.json</userinput>
+ ${warConfigDir}/config.json</userinput>
 $ <userinput>jetty.sh restart</userinput></screen>
 
   <para>To see what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. For this sample, 
+  <filename>${warConfigDir}/config.json</filename>. For this sample,
   you replaced the FileAttributesFilter with the SqlAttributesFilter. The only
   difference between the filters is how they retrieve the attribute value pairs
   to set in the <link xlink:href="reference#Exchange"

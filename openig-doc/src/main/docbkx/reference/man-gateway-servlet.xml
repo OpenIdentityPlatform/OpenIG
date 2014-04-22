@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Gateway Servlet</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -50,7 +50,7 @@
   dispatching all requests to a configured servlet (which is itself a heap
   object). The configuration of the gateway servlet is loaded from a
   JSON-encoded configuration file, typically located at
-  <filename>~/.ForgeRock/OpenIG/config.json</filename>.</para>
+  <filename>${warConfigDir}/config.json</filename>.</para>
  </refsect1>
  <refsect1>
   <title>Usage</title>

@@ -81,7 +81,7 @@
   <para>Download the <link xlink:show="new"
   xlink:href="http://openig.forgerock.org/FederationWordpress.json">Federation
   to WordPress Sample Config File</link> and copy it to
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>, overwriting the
+  <filename>${warConfigDir}/config.json</filename>, overwriting the
   <filename>config.json</filename> from the WordPress tutorial.</para>
 
   <para>Assuming <filename>Fedlet.zip</filename> from the previous step is
@@ -94,24 +94,24 @@ $ <userinput>unzip Fedlet.zip</userinput>
 $ <userinput>jar xvf Fedlet.war conf</userinput>
   </screen>
 
-  <para>Create a <filename>$HOME/.ForgeRock/SAML/</filename> directory,
+  <para>Create a <filename>${warSamlDir}</filename> directory,
   and copy the Fedlet configuration to the new directory.</para>
 
   <screen>
-$ <userinput>mkdir $HOME/.ForgeRock/SAML</userinput>
-$ <userinput>cp conf/* $HOME/.ForgeRock/SAML</userinput>
-$ <userinput>ls $HOME/.ForgeRock/SAML</userinput>
+$ <userinput>mkdir ${warSamlDir}</userinput>
+$ <userinput>cp conf/* ${warSamlDir}</userinput>
+$ <userinput>ls ${warSamlDir}</userinput>
 <computeroutput>FederationConfig.properties    idp-extended.xml        sp-extended.xml
 fedlet.cot                     idp.xml                 sp.xm</computeroutput>
   </screen>
 
   <para>On Windows, the configuration files belong in
-  <filename>%appdata%\ForgeRock\OpenIG</filename>, or
-  <filename>%appdata%\ForgeRock\SAML</filename>. To locate the
+  <filename>${windowsWarConfigDir}</filename>, or
+  <filename>${windowsWarSamlDir}</filename>. To locate the
   <filename>%appdata%</filename> folder for your version of Windows, open
   Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-  press Enter. You must create the <filename>ForgeRock\OpenIG\</filename> and
-  <filename>ForgeRock\SAML\</filename> folders there, and then copy the
+  press Enter. You must create the <filename>${windowsWarConfigDir}</filename> and
+  <filename>${windowsWarSamlDir}</filename> folders, and then copy the
   configuration files.</para>
  </section>
 
@@ -129,7 +129,7 @@ fedlet.cot                     idp.xml                 sp.xm</computeroutput>
   </para>
 
   <para>To understand what is happening behind the scenes, take a look at
-  <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. The HandlerServlet
+  <filename>${warConfigDir}/config.json</filename>. The HandlerServlet
   is no longer the entry point to OpenIG processing. If you look for the
   servletObject at the end of the file you see the HandlerServlet has been
   replaced by the DispatchServlet. The DispatchServlet provides an internal
