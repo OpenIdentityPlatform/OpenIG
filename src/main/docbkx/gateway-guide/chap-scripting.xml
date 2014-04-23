@@ -226,14 +226,51 @@ parse="text"
  </section>
 -->
 
-<!--
  <section xml:id="scripting-sql">
   <title>Scripting SQL Queries</title>
 
   <para>
-   TODO - see https://bugster.forgerock.org/jira/browse/OPENIG-101
+   You can use a <literal>ScriptableFilter</literal>
+   to look up information in a relational database
+   and include the results in the Exchange.
   </para>
+
+  <para>
+   The following filter looks up user credentials in a database
+   given the user's email address,
+   which is found in the form data of the request.
+   The script then sets the credentials in headers,
+   making sure the scheme is HTTPS to protect the request
+   when it leaves the gateway.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlAccessFilter.groovy"
+parse="text"
+>
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The previous script demonstrates a <literal>ScriptableFilter</literal>
+   that uses a <literal>SqlClient</literal> class defined in another script.
+   The following code listing shows the <literal>SqlClient</literal> class.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlClient.groovy"
+parse="text"
+>
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
  </section>
--->
 
 </chapter>
