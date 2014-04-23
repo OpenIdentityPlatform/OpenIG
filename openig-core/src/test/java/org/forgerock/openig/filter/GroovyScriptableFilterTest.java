@@ -31,6 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -419,6 +423,70 @@ public class GroovyScriptableFilterTest {
             assertThat(exchange.response.reason).isNotNull();
         } finally {
             listener.close();
+        }
+    }
+
+    @Test
+    public void testSqlClientFromFile() throws Exception {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            // Create an in-memory database with a table to hold credentials.
+            Class.forName("org.h2.Driver");
+            connection = DriverManager.getConnection("jdbc:h2:mem:test", "sa", "");
+
+            statement = connection.createStatement();
+
+            final String createTable = "CREATE TABLE CREDENTIALS("
+                    + "UID VARCHAR(255) PRIMARY KEY, "
+                    + "PASSWORD VARCHAR(255), "
+                    + "MAIL VARCHAR(255));";
+            statement.execute(createTable);
+
+            final String insertCredentials = "INSERT INTO CREDENTIALS "
+                    + "VALUES('bjensen', 'hifalutin', 'bjensen@example.com');";
+            statement.execute(insertCredentials);
+
+            // The script can do something like the following.
+            final String readTable =
+                    "SELECT UID, PASSWORD FROM CREDENTIALS WHERE MAIL='bjensen@example.com';";
+            resultSet = statement.executeQuery(readTable);
+            while (resultSet.next()) {
+                assertThat(resultSet.getString("UID")).isEqualTo("bjensen");
+                assertThat(resultSet.getString("PASSWORD")).isEqualTo("hifalutin");
+            }
+            // In-memory database disappears when the last connection is closed.
+
+            final Map<String, Object> config = newFileConfig("SqlAccessFilter.groovy");
+            final ScriptableFilter filter =
+                    (ScriptableFilter) new ScriptableFilter.Heaplet()
+                            .create("test", new JsonValue(config), getHeap());
+
+            final Exchange exchange = new Exchange();
+            exchange.request = new Request();
+            exchange.request.uri = new URI("http://test?mail=bjensen@example.com");
+            final Handler handler = mock(Handler.class);
+            filter.filter(exchange, handler);
+            assertThat(exchange.request.headers.get("Username").toString())
+                    .isEqualTo("[bjensen]");
+            assertThat(exchange.request.headers.get("Password").toString())
+                    .isEqualTo("[hifalutin]");
+            assertThat(exchange.request.uri.getScheme()).isEqualTo("https");
+        } finally {
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+            }
         }
     }
 
