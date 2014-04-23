@@ -27,7 +27,6 @@ import static org.fest.assertions.Fail.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -121,18 +120,10 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testConstructFromFile() throws Exception {
-        final HeapImpl heap = new HeapImpl();
-        heap.put("TemporaryStorage", new TemporaryStorage());
-        heap.put("Environment", Environment.forStandaloneApp("."));
-
-        final Map<String, Object> config = new HashMap<String, Object>();
-        config.put("type", Script.GROOVY_MIME_TYPE);
-        config.put("file", new File("src/test/resources/scripts/groovy/test.groovy")
-                .getAbsolutePath());
-
+        final Map<String, Object> config = newFileConfig("TestFileBasedScript.groovy");
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                        config), heap);
+                        config), getHeap());
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -144,18 +135,10 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testDispatchFromFile() throws Exception {
-        final HeapImpl heap = new HeapImpl();
-        heap.put("TemporaryStorage", new TemporaryStorage());
-        heap.put("Environment", Environment.forStandaloneApp("."));
-
-        final Map<String, Object> config = new HashMap<String, Object>();
-        config.put("type", Script.GROOVY_MIME_TYPE);
-        config.put("file", new File("src/test/resources/scripts/groovy/DispatchHandler.groovy")
-                .getAbsolutePath());
-
+        final Map<String, Object> config = newFileConfig("DispatchHandler.groovy");
         final ScriptableHandler handler =
                 (ScriptableHandler) new ScriptableHandler.Heaplet().create(
-                        "test", new JsonValue(config), heap);
+                        "test", new JsonValue(config), getHeap());
 
         // Try with valid credentials
         final Exchange exchange = new Exchange();
@@ -186,18 +169,10 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testBasicAuthFilterFromFile() throws Exception {
-        final HeapImpl heap = new HeapImpl();
-        heap.put("TemporaryStorage", new TemporaryStorage());
-        heap.put("Environment", Environment.forStandaloneApp("."));
-
-        final Map<String, Object> config = new HashMap<String, Object>();
-        config.put("type", Script.GROOVY_MIME_TYPE);
-        config.put("file", new File("src/test/resources/scripts/groovy/BasicAuthFilter.groovy")
-                .getAbsolutePath());
-
+        final Map<String, Object> config = newFileConfig("BasicAuthFilter.groovy");
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                        config), heap);
+                        config), getHeap());
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -212,19 +187,14 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testConstructFromString() throws Exception {
-        final HeapImpl heap = new HeapImpl();
-        heap.put("TemporaryStorage", new TemporaryStorage());
-        heap.put("Environment", Environment.forStandaloneApp("."));
-
         final String script =
                 "import org.forgerock.openig.http.Response;exchange.response = new Response()";
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
-
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                        config), heap);
+                        config), getHeap());
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -421,19 +391,10 @@ public class GroovyScriptableFilterTest {
                         .<LDAPClientContext> newServerConnectionFactory(backend));
         final int port = listener.getPort();
         try {
-            final HeapImpl heap = new HeapImpl();
-            heap.put("TemporaryStorage", new TemporaryStorage());
-            heap.put("Environment", Environment.forStandaloneApp("."));
-
-            final Map<String, Object> config = new HashMap<String, Object>();
-            config.put("type", Script.GROOVY_MIME_TYPE);
-            config.put("file",
-                    new File("src/test/resources/scripts/groovy/LdapAuthFilter.groovy")
-                            .getAbsolutePath());
-
+            final Map<String, Object> config = newFileConfig("LdapAuthFilter.groovy");
             final ScriptableFilter filter =
                     (ScriptableFilter) new ScriptableFilter.Heaplet()
-                            .create("test", new JsonValue(config), heap);
+                            .create("test", new JsonValue(config), getHeap());
 
             // Authenticate using correct password.
             final Exchange exchange = new Exchange();
@@ -738,8 +699,26 @@ public class GroovyScriptableFilterTest {
         assertThat(s(exchange.request.entity)).isEqualTo(XML_CONTENT);
     }
 
+    private HeapImpl getHeap() {
+        final HeapImpl heap = new HeapImpl();
+        heap.put("TemporaryStorage", new TemporaryStorage());
+        heap.put("Environment", getEnvironment());
+        return heap;
+    }
+
+    private Environment getEnvironment() {
+        return Environment.forStandaloneApp("src/test/resources");
+    }
+
+    private Map<String, Object> newFileConfig(final String groovyClass) {
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", groovyClass);
+        return config;
+    }
+
     private ScriptableFilter newGroovyFilter(final String... sourceLines) throws ScriptException {
-        final Environment environment = Environment.forStandaloneApp(".");
+        final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
         return new ScriptableFilter(script);
     }
