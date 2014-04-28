@@ -9,13 +9,13 @@ import org.forgerock.openig.io.ByteArrayBranchingStream
  * If there is a failure, send a response back to the user.
  */
 
-username = exchange.request.form.username[0]
-password = exchange.request.form.password[0]
+username = exchange.request.form?.username[0]
+password = exchange.request.form?.password[0]
 
 // For testing purposes, the LDAP host and port are provided in the exchange.
 // Edit as needed to match your directory service.
-host = exchange.ldapHost
-port = exchange.ldapPort
+host = exchange.ldapHost ?: "localhost"
+port = exchange.ldapPort ?: 1389
 
 client = ldap.connect(host, port as Integer)
 try {
@@ -29,7 +29,7 @@ try {
             ldap.scope.sub,
             ldap.filter(filter, username, username, username))
 
-    client.bind(user.name as String, password.toCharArray())
+    client.bind(user.name as String, password?.toCharArray())
 
     // Authentication succeeded.
 

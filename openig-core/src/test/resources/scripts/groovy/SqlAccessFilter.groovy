@@ -5,7 +5,7 @@
  */
 
 def client = new SqlClient()
-def credentials = client.getCredentials(exchange.request.form.mail[0])
+def credentials = client.getCredentials(exchange.request.form?.mail[0])
 exchange.request.headers.add("Username", credentials.Username)
 exchange.request.headers.add("Password", credentials.Password)
 
