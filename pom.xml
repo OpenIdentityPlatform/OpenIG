@@ -28,7 +28,7 @@
     <packaging>pom</packaging>
     <version>2.2.0-SNAPSHOT</version>
     <name>OpenIG Project</name>
-    <description>Test
+    <description>
        The Open Identity Gateway is a high-performance reverse proxy server with
        specialized session management and credential replay functionality.
     </description>
