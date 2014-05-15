@@ -17,7 +17,5 @@
 
 /**
  * Integrates with the Java Enterprise Edition Servlet API.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.servlet;

@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Enterprise Edition
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,8 +32,6 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * Generic heaplet base class for Java servlets and filters. Implements the
  * {@link ServletConfig} interface for initialization of the servlet.
- *
- * @author Paul C. Bryan
  */
 public abstract class GenericServletHeaplet extends CommonHeaplet implements ServletConfig {
 
@@ -46,7 +45,7 @@ public abstract class GenericServletHeaplet extends CommonHeaplet implements Ser
      * {@link HttpServlet#init(ServletConfig) init(ServletConfig)} method.
      */
     @Override // GenericHeaplet
-    public final Object create() throws HeapException, JsonValueException {
+    public final Object create() throws HeapException {
         configure();
         servlet = createServlet();
         try {
@@ -82,5 +81,5 @@ public abstract class GenericServletHeaplet extends CommonHeaplet implements Ser
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
      * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract HttpServlet createServlet() throws HeapException, JsonValueException;
+    public abstract HttpServlet createServlet() throws HeapException;
 }

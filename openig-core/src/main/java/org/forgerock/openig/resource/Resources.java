@@ -18,6 +18,7 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -28,14 +29,12 @@ import org.forgerock.openig.util.Loader;
 
 /**
  * Uses resource factory service providers to create resource instances.
- *
- * @author Paul C. Bryan
  */
- public class Resources {
- 
-     /** Loads the resource factories. */
+public final class Resources {
+
+    /** Loads the resource factories. */
     private static final List<ResourceFactory> FACTORIES =
-     Collections.unmodifiableList(Loader.loadList(ResourceFactory.class));
+            Collections.unmodifiableList(Loader.loadList(ResourceFactory.class));
 
     /** Exposes static methods only. Cannot be constructed. */
     private Resources() {
@@ -46,7 +45,8 @@ import org.forgerock.openig.util.Loader;
      *
      * @param uri the URI to create a resource access object for.
      * @return a resource object to access the URI.
-     * @throws ResourceException if no matching resource class is available, or there is an exception creating the object.
+     * @throws ResourceException if no matching resource class is available, or there is an exception creating
+     * the object.
      */
     public static Resource newInstance(URI uri) throws ResourceException {
         for (ResourceFactory factory : FACTORIES) {
@@ -63,7 +63,8 @@ import org.forgerock.openig.util.Loader;
      *
      * @param uri the URI to create a resource access object for.
      * @return a resource object to access the URI.
-     * @throws ResourceException if the URI is malformed, no matching resource class is available, or there is an exception creating the object.
+     * @throws ResourceException if the URI is malformed, no matching resource class is available, or there is an
+     * exception creating the object.
      */
     public static Resource newInstance(String uri) throws ResourceException {
         try {

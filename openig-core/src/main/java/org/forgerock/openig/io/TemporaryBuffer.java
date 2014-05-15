@@ -18,6 +18,7 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.IOException;
 
@@ -25,8 +26,6 @@ import java.io.IOException;
  * A buffer that fist uses memory, then a temporary file for data storage. Initially, a
  * {@link MemoryBuffer} is used; when the memory buffer limit is exceeded it promotes to
  * the use of a {@link FileBuffer}.
- *
- * @author Paul C. Bryan
  */
 public class TemporaryBuffer implements Buffer {
 
@@ -48,7 +47,8 @@ public class TemporaryBuffer implements Buffer {
      * @param initialLength the initial length of memory buffer byte array.
      * @param memoryLimit the length limit of the memory buffer.
      * @param fileLimit the length limit of the file buffer.
-     * @param directory the directory where temporary files are created, or {@code null} to use the system-dependent default temporary directory.
+     * @param directory the directory where temporary files are created, or {@code null} to use the system-dependent
+     * default temporary directory.
      */
     public TemporaryBuffer(int initialLength, int memoryLimit, int fileLimit, File directory) {
         buffer = new MemoryBuffer(initialLength, memoryLimit);
@@ -105,7 +105,7 @@ public class TemporaryBuffer implements Buffer {
 
     private void promote() throws IOException, OverflowException {
         if (buffer instanceof MemoryBuffer) {
-            MemoryBuffer membuf = (MemoryBuffer)buffer;
+            MemoryBuffer membuf = (MemoryBuffer) buffer;
             file = File.createTempFile("buf", null, directory);
             buffer = new FileBuffer(file, fileLimit);
             buffer.append(membuf.data, 0, membuf.length()); // accesses byte array directly

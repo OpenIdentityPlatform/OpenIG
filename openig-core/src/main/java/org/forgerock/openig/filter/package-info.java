@@ -17,7 +17,5 @@
 
 /**
  * Filters the requests and/or responses of HTTP exchanges.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.filter;

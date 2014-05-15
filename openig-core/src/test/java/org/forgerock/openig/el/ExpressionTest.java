@@ -28,9 +28,6 @@ import org.testng.annotations.Test;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 
-/**
- * @author Paul C. Bryan
- */
 public class ExpressionTest {
 
     @Test
@@ -127,16 +124,19 @@ public class ExpressionTest {
         exchange.request = request;
         exchange.response = response;
 
-        Expression expr = new Expression("${exchange.request.uri.path == '/wordpress/wp-login.php' and exchange.request.form['action'][0] != 'logout'}");
+        Expression expr = new Expression("${exchange.request.uri.path == '/wordpress/wp-login.php' "
+                        + "and exchange.request.form['action'][0] != 'logout'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
         expr = new Expression("${toString(exchange.request.uri)}");
-        assertThat(expr.eval(exchange, String.class)).isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
+        assertThat(expr.eval(exchange, String.class))
+                .isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
 
         expr = new Expression("${exchange.request.uri.host == 'wiki.example.com'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${exchange.request.method == 'POST' and exchange.request.uri.path == '/wordpress/wp-login.php'}");
+        expr = new Expression("${exchange.request.method == 'POST' "
+                + "and exchange.request.uri.path == '/wordpress/wp-login.php'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
         expr = new Expression("${exchange.request.method != 'GET'}");

@@ -18,7 +18,6 @@ package org.forgerock.openig.filter;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
@@ -46,7 +45,7 @@ import org.forgerock.openig.script.Script;
  * Like Java based filters, scripts are free to choose whether or not they
  * forward the request to the next handler or, instead, return a response
  * immediately.
- * <p>
+ * <p/>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {
@@ -56,7 +55,7 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableFilter newInstance(Script script) throws HeapException, JsonValueException {
+        public ScriptableFilter newInstance(Script script) throws HeapException {
             return new ScriptableFilter(script);
         }
     }

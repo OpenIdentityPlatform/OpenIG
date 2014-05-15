@@ -1,25 +1,17 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright 2012-2014 ForgeRock Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms
- * of the Common Development and Distribution License
- * (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at
- * http://forgerock.org/license/CDDLv1.0.html
- * See the License for the specific language governing
- * permission and limitations under the License.
- *
- * When distributing Covered Code, include this CDDL
- * Header Notice in each file and include the License file
- * at http://forgerock.org/license/CDDLv1.0.html
- * If applicable, add the following below the CDDL Header,
- * with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
  */
 
 package org.forgerock.openig.header;
@@ -29,8 +21,6 @@ import org.forgerock.openig.http.Message;
 /**
  * Processes the <strong>{@code Location}</strong> message header. For more information see
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.30.
- *
- * @author Mark de Reeper
  */
 public final class LocationHeader implements Header {
 
@@ -103,8 +93,8 @@ public final class LocationHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof LocationHeader &&
-         this.locationURI.equals(((LocationHeader)o).locationURI)));
+        return (o == this || (o != null && o instanceof LocationHeader
+                && this.locationURI.equals(((LocationHeader) o).locationURI)));
     }
 
     @Override

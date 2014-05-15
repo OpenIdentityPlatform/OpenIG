@@ -17,7 +17,5 @@
 
 /**
  * Matches, extracts and transforms text with regular expression patterns.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.regex;

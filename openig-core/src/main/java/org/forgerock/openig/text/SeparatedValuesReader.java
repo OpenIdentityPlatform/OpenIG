@@ -18,6 +18,7 @@
 package org.forgerock.openig.text;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -25,13 +26,11 @@ import java.util.List;
 
 /**
  * Reads records with delimiter-separated values from a character stream.
- *
- * @author Paul C. Bryan
  */
 public class SeparatedValuesReader {
 
-    private static int CR = '\r';
-    private static int LF = '\n';
+    private static final int CR = '\r';
+    private static final int LF = '\n';
 
     /** The character stream to read from. */
     private final Reader input;
@@ -73,7 +72,7 @@ public class SeparatedValuesReader {
         boolean escaped = false;
         while ((c = read()) != -1) {
             if (escaped) {
-                sb.append((char)c);
+                sb.append((char) c);
                 escaped = false;
             } else if (c == separator.escape) {
                 escaped = true;
@@ -82,7 +81,7 @@ public class SeparatedValuesReader {
             } else if (c == separator.quote && quoted) {
                 c = read();
                 if (c == separator.quote) {
-                    sb.append((char)c);
+                    sb.append((char) c);
                 } else {
                     next = c;
                     quoted = false;
@@ -93,7 +92,7 @@ public class SeparatedValuesReader {
             } else if (c == LF && !quoted) {
                 break;
             } else {
-                sb.append((char)c);
+                sb.append((char) c);
             }
         }
         if (list.size() > 0 || sb.length() > 0) {
@@ -132,7 +131,7 @@ public class SeparatedValuesReader {
             int n = input.read();
             if (n == LF) { // translate unquoted CR+LF into LF
                 c = LF;
-            } else { // CR not followed by LF; remember read value and return CR 
+            } else { // CR not followed by LF; remember read value and return CR
                 next = n;
             }
         }

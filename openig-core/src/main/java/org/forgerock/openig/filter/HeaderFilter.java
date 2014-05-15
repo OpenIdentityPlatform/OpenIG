@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -25,21 +26,21 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.*;
+import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Headers;
+import org.forgerock.openig.http.Message;
+import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Removes headers from and adds headers to a message.
- *
- * @author Paul C. Bryan
  */
 public class HeaderFilter extends GenericFilter {
 
@@ -64,7 +65,7 @@ public class HeaderFilter extends GenericFilter {
         for (String key : this.add.keySet()) {
             for (String value : this.add.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.headers.add(key, (String)JsonValueUtil.asExpression(jsonValue).eval(exchange));
+                message.headers.add(key, (String) JsonValueUtil.asExpression(jsonValue).eval(exchange));
             }
         }
     }
@@ -88,11 +89,18 @@ public class HeaderFilter extends GenericFilter {
 
     /** Creates and initializes a header filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             HeaderFilter filter = new HeaderFilter();
-            filter.messageType = config.get("messageType").required().asEnum(MessageType.class); // required
-            filter.remove.addAll(config.get("remove").defaultTo(Collections.emptyList()).asList(String.class)); // optional
-            JsonValue add = config.get("add").defaultTo(Collections.emptyMap()).expect(Map.class); // optional
+            filter.messageType = config.get("messageType")
+                    .required()
+                    .asEnum(MessageType.class); // required
+            filter.remove.addAll(config.get("remove")
+                    .defaultTo(Collections.emptyList())
+                    .asList(String.class)); // optional
+            JsonValue add = config.get("add")
+                    .defaultTo(Collections.emptyMap())
+                    .expect(Map.class); // optional
             for (String key : add.keys()) {
                 List<String> values = add.get(key).required().asList(String.class);
                 filter.add.addAll(key, values);

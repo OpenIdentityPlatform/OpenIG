@@ -18,6 +18,7 @@
 package org.forgerock.openig.decoder;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Collections;
@@ -30,14 +31,12 @@ import org.forgerock.openig.util.Loader;
 
 /**
  * Decodes an HTTP message entity input stream.
- *
- * @author Paul C. Bryan
  */
 public interface Decoder extends Indexed<String> {
 
     /** Mapping of supported codings to associated decoders. */
     public static final Map<String, Decoder> SERVICES = Collections.unmodifiableMap(
-     new CaseInsensitiveMap<Decoder>(Loader.loadMap(String.class, Decoder.class)));
+            new CaseInsensitiveMap<Decoder>(Loader.loadMap(String.class, Decoder.class)));
 
     /**
      * Returns the coding that the decoder supports, as it would appear in the

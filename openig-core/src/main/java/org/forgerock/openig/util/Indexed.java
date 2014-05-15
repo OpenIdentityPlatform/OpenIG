@@ -19,8 +19,6 @@ package org.forgerock.openig.util;
 
 /**
  * Interface of an object that can be indexed with a unique key.
- *
- * @author Paul C. Bryan
  */
 public interface Indexed<T> {
 

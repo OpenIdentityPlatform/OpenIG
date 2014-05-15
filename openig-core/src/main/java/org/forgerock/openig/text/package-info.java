@@ -17,7 +17,5 @@
 
 /**
  * Processes structured text in streams and files.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.text;

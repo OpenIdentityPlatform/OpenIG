@@ -18,6 +18,7 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,12 +26,10 @@ import java.io.RandomAccessFile;
 
 /**
  * A buffer that uses a local file for data storage.
- * <p>
+ * <p/>
  * <strong>Note:</strong> This implementation is not synchronized. If multiple threads access
  * a buffer concurrently, threads that append to the buffer should synchronize on the instance
  * of this object.
- *
- * @author Paul C. Bryan
  */
 public class FileBuffer implements Buffer {
 
@@ -61,7 +60,7 @@ public class FileBuffer implements Buffer {
         notClosed();
         int n = 0;
         if (pos < raf.length()) {
-            synchronized(raf) {
+            synchronized (raf) {
                 raf.seek(pos);
                 if ((n = raf.read(b, off, len)) == -1) {
                     n = 0; // obey the contract of buffer reads
@@ -77,8 +76,8 @@ public class FileBuffer implements Buffer {
             throw new IndexOutOfBoundsException();
         }
         notClosed();
-        synchronized(raf) {
-            int rafLength = (int)Math.min(Integer.MAX_VALUE, raf.length());
+        synchronized (raf) {
+            int rafLength = (int) Math.min(Integer.MAX_VALUE, raf.length());
             if (rafLength + len > limit) {
                 throw new OverflowException();
             }
@@ -90,7 +89,7 @@ public class FileBuffer implements Buffer {
     @Override
     public int length() throws IOException {
         notClosed();
-        return (int)Math.min(Integer.MAX_VALUE, raf.length());
+        return (int) Math.min(Integer.MAX_VALUE, raf.length());
     }
 
     @Override

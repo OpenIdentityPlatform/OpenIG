@@ -18,12 +18,11 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.IOException;
 
 /**
  * Wraps a byte array with a stream that can branch to perform divergent reads.
- *
- * @author Paul C. Bryan
  */
 public class ByteArrayBranchingStream extends BranchingInputStream {
 
@@ -65,7 +64,6 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      * Reads the next byte of data from the input stream.
      *
      * @return the next byte of data, or {@code -1} if the end of the stream is reached.
-     * @throws IOException if an I/O exception occurs.
      */
     @Override
     public synchronized int read() {
@@ -77,8 +75,8 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      * array {@code b}.
      *
      * @param b the buffer into which the data is read.
-     * @return the total number of bytes read into the buffer, or {@code -1} is there is no more data because the end of the stream has been reached. 
-     * @throws IOException if an I/O exception occurs.
+     * @return the total number of bytes read into the buffer, or {@code -1} is there is no more data because the
+     * end of the stream has been reached.
      */
     @Override
     public int read(byte[] b) {
@@ -91,11 +89,11 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      * @param b the buffer into which the data is read.
      * @param off the start offset in array {@code b} at which the data is written.
      * @param len the maximum number of bytes to read.
-     * @return the total number of bytes read into the buffer, or {@code -1} if there is no more data because the end of the stream has been reached.
-     * @throws IOException if an I/O exception occurs.
+     * @return the total number of bytes read into the buffer, or {@code -1} if there is no more data because the
+     * end of the stream has been reached.
      */
     @Override
-    public synchronized int read(byte b[], int off, int len) {
+    public synchronized int read(byte[] b, int off, int len) {
         if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
             throw new IndexOutOfBoundsException();
         }
@@ -113,7 +111,6 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      *
      * @param n the number of bytes to be skipped.
      * @return the actual number of bytes skipped.
-     * @throws IOException if an I/O exception occurs.
      */
     @Override
     public synchronized long skip(long n) {
@@ -129,8 +126,6 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      * Returns an estimate of the number of bytes that can be read (or skipped over) from
      * this input stream without blocking by the next invocation of a method for this input
      * stream.
-     *
-     * @throws IOException if an I/O exception occurs.
      */
     @Override
     public synchronized int available() {

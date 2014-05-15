@@ -19,12 +19,11 @@
 package org.forgerock.openig.http;
 
 // Java Standard Edition
+
 import java.net.URI;
 
 /**
  * A request message.
- *
- * @author Paul C. Bryan
  */
 public class Request extends Message {
 

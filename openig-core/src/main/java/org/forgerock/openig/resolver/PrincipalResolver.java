@@ -28,7 +28,7 @@ public class PrincipalResolver implements Resolver {
 
     private enum Element {
         name
-    };
+    }
 
     @Override
     public Class<?> getKey() {

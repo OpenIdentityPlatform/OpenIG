@@ -18,6 +18,7 @@
 package org.forgerock.openig.handler;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -40,8 +40,6 @@ import org.forgerock.openig.util.JsonValueUtil;
  * Processes an exchange through a sequence of handlers. This allows multi-request processing
  * such as retrieving a form, extracting form content (e.g. nonce) and submitting in a
  * subsequent request.
- *
- * @author Paul C. Bryan
  */
 public class SequenceHandler extends GenericHandler {
 
@@ -49,7 +47,9 @@ public class SequenceHandler extends GenericHandler {
     public static class Binding {
         /** Handler to dispatch exchange to. */
         Handler handler;
-        /** Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a.&nbspunconditional). */
+        /**
+         * Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a. unconditional).
+         */
         Expression postcondition;
     }
 
@@ -77,7 +77,8 @@ public class SequenceHandler extends GenericHandler {
 
     /** Creates and initializes a sequence handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             SequenceHandler handler = new SequenceHandler();
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);

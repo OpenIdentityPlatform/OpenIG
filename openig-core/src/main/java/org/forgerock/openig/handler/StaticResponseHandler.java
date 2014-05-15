@@ -23,7 +23,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -39,8 +38,6 @@ import org.forgerock.openig.util.MultiValueMap;
 
 /**
  * Creates a static response in an HTTP exchange.
- *
- * @author Paul C. Bryan
  */
 public class StaticResponseHandler extends GenericHandler {
 
@@ -55,13 +52,13 @@ public class StaticResponseHandler extends GenericHandler {
 
     /** Message header fields whose values are expressions that are evaluated. */
     public final MultiValueMap<String, Expression> headers =
-     new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
     /** The message entity. */
     public String entity = null;
 
     /**
-     * Handles an HTTP the exchange by creating a static response. 
+     * Handles an HTTP the exchange by creating a static response.
      */
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
@@ -97,7 +94,8 @@ public class StaticResponseHandler extends GenericHandler {
      * Creates and initializes a static response handler in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             StaticResponseHandler handler = new StaticResponseHandler();
             handler.status = config.get("status").required().asInteger(); // required
             handler.reason = config.get("reason").asString(); // optional

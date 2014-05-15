@@ -18,12 +18,11 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.IOException;
 
 /**
  * An exception that is thrown if a buffer would overflow as a result of a write operation.
- *
- * @author Paul C. Bryan
  */
 public class OverflowException extends IOException {
 
@@ -34,14 +33,14 @@ public class OverflowException extends IOException {
      */
     public OverflowException() {
     }
-    
+
     /**
      * Constructs a new exception with the specified detail message.
      */
     public OverflowException(String message) {
         super(message);
     }
-    
+
     /**
      * Constructs a new exception with the specified cause.
      */

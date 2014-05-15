@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +27,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -48,15 +48,13 @@ import org.forgerock.openig.util.MultiValueMap;
  * {@code form} field, which is included in an entity encoded in
  * {@code application/x-www-form-urlencoded} format if request method is {@code POST}, or
  * otherwise as (additional) query parameters in the URI.
- *
- * @author Paul C. Bryan
  */
 public class StaticRequestFilter extends GenericFilter {
 
     /** The HTTP method to be performed on the resource. */
     public String method;
 
-    /** URI as an expression to allow dynamic URI construction */
+    /** URI as an expression to allow dynamic URI construction. */
     public Expression uri;
 
     /** Protocol version (e.g.&nbsp{@code "HTTP/1.1"}). */
@@ -64,11 +62,11 @@ public class StaticRequestFilter extends GenericFilter {
 
     /** Message header fields whose values are expressions that are evaluated. */
     public final MultiValueMap<String, Expression> headers =
-     new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
     /** A form to include in the request, whose values are exchange-scoped expressions that are evaluated. */
     public final MultiValueMap<String, Expression> form =
-     new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
     /**
      * Filters the exchange by creating a new request, replacing any request in the exchange.
@@ -122,7 +120,8 @@ public class StaticRequestFilter extends GenericFilter {
 
     /** Creates and initializes a request filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             StaticRequestFilter filter = new StaticRequestFilter();
             filter.method = config.get("method").required().asString(); // required
             filter.uri = JsonValueUtil.asExpression(config.get("uri")); // required

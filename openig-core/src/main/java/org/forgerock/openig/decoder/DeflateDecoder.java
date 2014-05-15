@@ -18,6 +18,7 @@
 package org.forgerock.openig.decoder;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.zip.Inflater;
@@ -26,8 +27,6 @@ import java.util.zip.InflaterInputStream;
 /**
  * Decodes an entity encoded with <strong>{@code deflate}</strong> encoding. See
  * in <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §3.5 for more information.
- *
- * @author Paul C. Bryan
  */
 public class DeflateDecoder implements Decoder {
 

@@ -30,9 +30,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 
-/**
- * @author Paul C. Bryan
- */
 public class AssignmentFilterTest {
 
     @Test

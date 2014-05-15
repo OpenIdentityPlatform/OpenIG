@@ -17,7 +17,5 @@
 
 /**
  * Performs object resolution for dynamic expression and script integration.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.resolver;

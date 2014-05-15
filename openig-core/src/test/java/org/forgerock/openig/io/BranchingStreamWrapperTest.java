@@ -23,14 +23,12 @@ import java.util.Arrays;
 import java.util.Random;
 
 import static org.fest.assertions.Assertions.assertThat;
+
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-/**
- * @author Paul C. Bryan
- */
 public class BranchingStreamWrapperTest {
 
     /** The size of a read buffer. */
@@ -39,22 +37,25 @@ public class BranchingStreamWrapperTest {
     /** Number of concurrent branches to test against. */
     private static final int BRANCHES = 17; // prime number of branches
 
-    /** Read lengths, randomly generated and hard-coded here for deterministic results. */ 
-    private static final int LENGTHS[] = { 125, 42, 185, 249, 177, 74, 98, 124,
-     42, 160, 73, 176, 41, 110, 43, 2, 179, 151, 115, 117, 235, 15, 80, 219,
-     91, 38, 191, 154, 78, 146, 194 }; // prime number of lengths
+    /** Read lengths, randomly generated and hard-coded here for deterministic results. */
+    private static final int[] LENGTHS = {
+            // @Checkstyle:ignoreFor 3
+            125, 42, 185, 249, 177, 74, 98, 124,
+            42, 160, 73, 176, 41, 110, 43, 2, 179, 151, 115, 117, 235, 15, 80, 219,
+            91, 38, 191, 154, 78, 146, 194
+    }; // prime number of lengths
 
     /** Original bytes to use to read from branches. */
-    private static final byte[] bytes = new byte[BUFSIZE];
+    private static final byte[] BYTES = new byte[BUFSIZE];
 
     /** Buffer factory, which will switch from memory to file storage in each test. */
-    private static final TemporaryStorage storage = new TemporaryStorage();
+    private static final TemporaryStorage STORAGE = new TemporaryStorage();
 
     /** Stores content read in concurrent branches for comparison. */
-    private static final byte[][] buffers = new byte[BRANCHES][BUFSIZE];
+    private static final byte[][] BUFFERS = new byte[BRANCHES][BUFSIZE];
 
     /** Current read length offset. */
-    private static int currentLengthCounter = 0;  
+    private static int currentLengthCounter = 0;
 
     private ByteArrayInputStream in;
 
@@ -68,15 +69,15 @@ public class BranchingStreamWrapperTest {
 
     @BeforeClass
     public void beforeClass() {
-        new Random().nextBytes(bytes); // fill bytes with random data
+        new Random().nextBytes(BYTES); // fill bytes with random data
     }
 
     @BeforeMethod
     public void beforeMethod() {
-        in = new ByteArrayInputStream(bytes);
-        trunk = new BranchingStreamWrapper(in, storage);
+        in = new ByteArrayInputStream(BYTES);
+        trunk = new BranchingStreamWrapper(in, STORAGE);
         for (int n = 0; n < BRANCHES; n++) {
-            Arrays.fill(buffers[n], (byte)0);
+            Arrays.fill(BUFFERS[n], (byte) 0);
         }
     }
 
@@ -88,89 +89,89 @@ public class BranchingStreamWrapperTest {
     // ----- no branch ---------------------------------------------------------
 
     @Test
-    public void noBranch_byteAtATime() throws IOException {
+    public void noBranchByteAtATime() throws IOException {
         for (int n = 0; n < BUFSIZE; n++) {
-            assertThat(trunk.read()).isEqualTo(bytes[n] & 0xff); // identical content
-        }            
+            assertThat(trunk.read()).isEqualTo(BYTES[n] & 0xff); // identical content
+        }
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
     }
 
     @Test
-    public void noBranch_allBytes() throws IOException {
-        assertThat(trunk.read(buffers[0])).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0])).isEqualTo(-1); // end of stream
+    public void noBranchAllBytes() throws IOException {
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(-1); // end of stream
     }
 
     @Test
-    public void noBranch_bytesLength() throws IOException {
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
+    public void noBranchBytesLength() throws IOException {
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
     }
 
     @Test
-    public void noBranch_twoReads() throws IOException {
+    public void noBranchTwoReads() throws IOException {
         int length1 = BUFSIZE / 2;
         int length2 = BUFSIZE - length1;
-        assertThat(trunk.read(buffers[0], 0, length1)).isEqualTo(length1); // correct read length
-        assertThat(trunk.read(buffers[0], length1, length2)).isEqualTo(length2); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, length1)).isEqualTo(length1); // correct read length
+        assertThat(trunk.read(BUFFERS[0], length1, length2)).isEqualTo(length2); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
     }
 
     // ----- one branch, sequential reads --------------------------------------
 
     @Test
-    public void oneBranch_sequential_byteAtATime() throws IOException {
+    public void oneBranchSequentialByteAtATime() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
         for (int n = 0; n < BUFSIZE; n++) {
-            assertThat(trunk.read()).isEqualTo(bytes[n] & 0xff); // identical content
-        }            
+            assertThat(trunk.read()).isEqualTo(BYTES[n] & 0xff); // identical content
+        }
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
         for (int n = 0; n < BUFSIZE; n++) {
-            assertThat(branch.read()).isEqualTo(bytes[n] & 0xff); // identical content
-        }            
+            assertThat(branch.read()).isEqualTo(BYTES[n] & 0xff); // identical content
+        }
         assertThat(branch.read()).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_sequential_allBytes() throws IOException {
+    public void oneBranchSequentialAllBytes() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0])).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0])).isEqualTo(-1); // end of stream
-        assertThat(branch.read(buffers[1])).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[1]).isEqualTo(bytes); // identical content
-        assertThat(branch.read(buffers[1])).isEqualTo(-1); // end of stream
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(-1); // end of stream
+        assertThat(branch.read(BUFFERS[1])).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[1]).isEqualTo(BYTES); // identical content
+        assertThat(branch.read(BUFFERS[1])).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_sequential_bytesLength() throws IOException {
+    public void oneBranchSequentialBytesLength() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
-        assertThat(branch.read(buffers[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(branch.read(buffers[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
+        assertThat(branch.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(branch.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_sequential_twoReads() throws IOException {
+    public void oneBranchSequentialTwoReads() throws IOException {
         int length1 = BUFSIZE / 2;
         int length2 = BUFSIZE - length1;
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0], 0, length1)).isEqualTo(length1); // correct read length
-        assertThat(trunk.read(buffers[0], length1, length2)).isEqualTo(length2); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, length1)).isEqualTo(length1); // correct read length
+        assertThat(trunk.read(BUFFERS[0], length1, length2)).isEqualTo(length2); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
-        assertThat(branch.read(buffers[1], 0, length1)).isEqualTo(length1); // correct read length
-        assertThat(branch.read(buffers[1], length1, length2)).isEqualTo(length2); // correct read length
-        assertThat(buffers[1]).isEqualTo(bytes); // identical content
+        assertThat(branch.read(BUFFERS[1], 0, length1)).isEqualTo(length1); // correct read length
+        assertThat(branch.read(BUFFERS[1], length1, length2)).isEqualTo(length2); // correct read length
+        assertThat(BUFFERS[1]).isEqualTo(BYTES); // identical content
         assertThat(branch.read()).isEqualTo(-1); // end of stream
         branch.close();
     }
@@ -178,52 +179,52 @@ public class BranchingStreamWrapperTest {
     // ----- one branch, interleaved reads -------------------------------------
 
     @Test
-    public void oneBranch_interleaved_byteAtATime() throws IOException {
+    public void oneBranchInterleavedByteAtATime() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
         for (int n = 0; n < BUFSIZE; n++) {
-            assertThat(trunk.read()).isEqualTo(bytes[n] & 0xff); // identical content
-            assertThat(branch.read()).isEqualTo(bytes[n] & 0xff); // identical content
-        }            
+            assertThat(trunk.read()).isEqualTo(BYTES[n] & 0xff); // identical content
+            assertThat(branch.read()).isEqualTo(BYTES[n] & 0xff); // identical content
+        }
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
         assertThat(branch.read()).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_interleaved_allBytes() throws IOException {
+    public void oneBranchInterleavedAllBytes() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0])).isEqualTo(BUFSIZE); // correct read length
-        assertThat(branch.read(buffers[1])).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(buffers[1]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0])).isEqualTo(-1); // end of stream
-        assertThat(branch.read(buffers[1])).isEqualTo(-1); // end of stream
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(BUFSIZE); // correct read length
+        assertThat(branch.read(BUFFERS[1])).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(BUFFERS[1]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0])).isEqualTo(-1); // end of stream
+        assertThat(branch.read(BUFFERS[1])).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_interleaved_bytesLength() throws IOException {
+    public void oneBranchInterleavedBytesLength() throws IOException {
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
-        assertThat(branch.read(buffers[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(trunk.read(buffers[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
-        assertThat(branch.read(buffers[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
+        assertThat(branch.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(BUFSIZE); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
+        assertThat(branch.read(BUFFERS[0], 0, BUFSIZE)).isEqualTo(-1); // end of stream
         branch.close();
     }
 
     @Test
-    public void oneBranch_interleaved_twoReads() throws IOException {
+    public void oneBranchInterleavedTwoReads() throws IOException {
         int length1 = BUFSIZE / 2;
         int length2 = BUFSIZE - length1;
         BranchingStreamWrapper branch = trunk.branch();
-        assertThat(trunk.read(buffers[0], 0, length1)).isEqualTo(length1); // correct read length
-        assertThat(branch.read(buffers[1], 0, length1)).isEqualTo(length1); // correct read length
-        assertThat(trunk.read(buffers[0], length1, length2)).isEqualTo(length2); // correct read length
-        assertThat(branch.read(buffers[1], length1, length2)).isEqualTo(length2); // correct read length
-        assertThat(buffers[0]).isEqualTo(bytes); // identical content
-        assertThat(buffers[1]).isEqualTo(bytes); // identical content
+        assertThat(trunk.read(BUFFERS[0], 0, length1)).isEqualTo(length1); // correct read length
+        assertThat(branch.read(BUFFERS[1], 0, length1)).isEqualTo(length1); // correct read length
+        assertThat(trunk.read(BUFFERS[0], length1, length2)).isEqualTo(length2); // correct read length
+        assertThat(branch.read(BUFFERS[1], length1, length2)).isEqualTo(length2); // correct read length
+        assertThat(BUFFERS[0]).isEqualTo(BYTES); // identical content
+        assertThat(BUFFERS[1]).isEqualTo(BYTES); // identical content
         assertThat(trunk.read()).isEqualTo(-1); // end of stream
         assertThat(branch.read()).isEqualTo(-1); // end of stream
         branch.close();
@@ -232,9 +233,9 @@ public class BranchingStreamWrapperTest {
     // ----- n branches, interleaved reads -------------------------------------
 
     @Test
-    public void nBranches_readInterleaved_allFromTrunk() throws IOException {
-        int offsets[] = new int[BRANCHES];
-        BranchingStreamWrapper branches[] = new BranchingStreamWrapper[BRANCHES];
+    public void nBranchesReadInterleavedAllFromTrunk() throws IOException {
+        int[] offsets = new int[BRANCHES];
+        BranchingStreamWrapper[] branches = new BranchingStreamWrapper[BRANCHES];
         for (int b = 0; b < BRANCHES; b++) { // all branch at the beginning
             branches[b] = trunk.branch();
         }
@@ -244,9 +245,10 @@ public class BranchingStreamWrapperTest {
             for (int b = 0; b < BRANCHES; b++) {
                 if (offsets[b] < BUFSIZE) {
                     still = true; // there is work done, so loop again
-                    int length = branches[b].read(buffers[b], 0, nextReadLength());
+                    int length = branches[b].read(BUFFERS[b], 0, nextReadLength());
                     assertThat(length).isPositive();
-                    assertThat(Arrays.copyOfRange(buffers[b], 0, length)).isEqualTo(Arrays.copyOfRange(bytes, offsets[b], offsets[b] + length));
+                    assertThat(Arrays.copyOfRange(BUFFERS[b], 0, length))
+                            .isEqualTo(Arrays.copyOfRange(BYTES, offsets[b], offsets[b] + length));
                     offsets[b] += length;
                 } else {
                     assertThat(branches[b].read() < 0);
@@ -260,9 +262,9 @@ public class BranchingStreamWrapperTest {
     }
 
     @Test
-    public void nBranches_readInterleaved_branchAndCloseMany() throws IOException {
-        int offsets[] = new int[BRANCHES];
-        BranchingStreamWrapper branches[] = new BranchingStreamWrapper[BRANCHES];
+    public void nBranchesReadInterleavedBranchAndCloseMany() throws IOException {
+        int[] offsets = new int[BRANCHES];
+        BranchingStreamWrapper[] branches = new BranchingStreamWrapper[BRANCHES];
         boolean still = true;
         int counter = 0; // counts number of reads
         while (still) {
@@ -283,9 +285,10 @@ public class BranchingStreamWrapperTest {
                 }
                 if (offsets[b] < BUFSIZE) {
                     still = true; // there is work done, so loop again
-                    int length = branches[b].read(buffers[b], 0, nextReadLength());
+                    int length = branches[b].read(BUFFERS[b], 0, nextReadLength());
                     assertThat(length).isPositive();
-                    assertThat(Arrays.copyOfRange(buffers[b], 0, length)).isEqualTo(Arrays.copyOfRange(bytes, offsets[b], offsets[b] + length));
+                    assertThat(Arrays.copyOfRange(BUFFERS[b], 0, length))
+                            .isEqualTo(Arrays.copyOfRange(BYTES, offsets[b], offsets[b] + length));
                     offsets[b] += length;
                     if (++counter >= 51 && branches[b].getParent() != null) {
                         branches[b].close(); // every 51st read closes stream and its children

@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,11 +26,9 @@ import java.util.Map;
  * An implementation of a map whose keys are case-insensitive strings. All operations match
  * keys in a case-insensitive manner. The original cases of keys are retained, so the
  * {@link #keySet() keySet()} method for example returns the original keys.
- * <p>
+ * <p/>
  * <strong>Note:</strong> The behavior of this class is undefined when wrapping a map that
  * has keys that would result in duplicate case-insensitive keys.
- *
- * @author Paul C. Bryan
  */
 public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
 
@@ -60,7 +59,7 @@ public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
      */
     private Object translate(Object key) {
         if (key != null && key instanceof String) {
-            String k = lc.get(((String)key).toLowerCase());
+            String k = lc.get(((String) key).toLowerCase());
             if (k != null) { // found a mapped-equivalent
                 key = k;
             }
@@ -99,7 +98,7 @@ public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
         return removed;
     }
 
-    @Override 
+    @Override
     public void putAll(Map<? extends String, ? extends V> m) {
         for (String key : m.keySet()) {
             put(key, m.get(key));
@@ -115,7 +114,7 @@ public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
     public V remove(Object key) {
         V removed = super.remove(translate(key));
         if (key != null && key instanceof String) {
-            lc.remove(((String)key).toLowerCase());
+            lc.remove(((String) key).toLowerCase());
         }
         return removed;
     }

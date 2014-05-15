@@ -18,14 +18,13 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.HashSet;
 
 /**
  * A hash set that silently ignores operations on any elements other than those with a
  * specific type.
- *
- * @author Paul C. Bryan
  */
 public class TypedHashSet<E> extends HashSet<E> {
 

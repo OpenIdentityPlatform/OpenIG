@@ -18,6 +18,7 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,8 +30,6 @@ import java.net.URL;
 
 /**
  * Accesses resources via the HTTP(S) protocol.
- *
- * @author Paul C. Bryan
  */
 public class HttpResource implements Resource {
 
@@ -49,12 +48,12 @@ public class HttpResource implements Resource {
     /**
      * Opens and returns an HTTP connection to the URL.
      *
-     * @returns the newly opened HTTP connection.
      * @throws ResourceException if the URL is malformed.
+     * @returns the newly opened HTTP connection.
      */
     private HttpURLConnection openConnection() throws ResourceException {
         try {
-            return (HttpURLConnection)url.openConnection();
+            return (HttpURLConnection) url.openConnection();
         } catch (IOException ioe) {
             throw new ResourceException(ioe);
         } catch (ClassCastException cce) {
@@ -70,7 +69,7 @@ public class HttpResource implements Resource {
 
     @Override
     public void read(Representation representation) throws ResourceException {
-        HttpURLConnection connection = openConnection(); 
+        HttpURLConnection connection = openConnection();
         try {
             connection.setDoInput(true);
             connection.setRequestMethod("GET");
@@ -125,7 +124,7 @@ public class HttpResource implements Resource {
 
     @Override
     public void delete() throws ResourceException {
-        HttpURLConnection connection = openConnection(); 
+        HttpURLConnection connection = openConnection();
         try {
             connection.setRequestMethod("DELETE");
             connection.connect();

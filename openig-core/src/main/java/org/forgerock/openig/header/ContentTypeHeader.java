@@ -18,6 +18,7 @@
 package org.forgerock.openig.header;
 
 // Java Standard Edition
+
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -29,8 +30,6 @@ import org.forgerock.openig.http.Message;
 /**
  * Processes the <strong>{@code Content-Type}</strong> message header. For more information,
  * see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.17.
- *
- * @author Paul C. Bryan
  */
 public class ContentTypeHeader implements Header {
 
@@ -77,7 +76,7 @@ public class ContentTypeHeader implements Header {
      * @throws IllegalCharsetNameException if the given charset name is illegal.
      * @throws UnsupportedCharsetException if no support for the named charset is available.
      */
-    public Charset getCharset() throws IllegalCharsetNameException, UnsupportedCharsetException {
+    public Charset getCharset() {
         return (charset != null ? Charset.forName(charset) : null);
     }
 
@@ -93,7 +92,7 @@ public class ContentTypeHeader implements Header {
     }
 
     @Override
-    public void fromMessage(Message message) throws IllegalCharsetNameException, UnsupportedCharsetException {
+    public void fromMessage(Message message) {
         if (message != null && message.headers != null) {
             fromString(message.headers.getFirst(NAME));
         }
@@ -141,16 +140,19 @@ public class ContentTypeHeader implements Header {
         if (o == null || !(o instanceof ContentTypeHeader)) {
             return false;
         }
-        ContentTypeHeader ct = (ContentTypeHeader)o;
-        return (((this.type == null && ct.type == null) || (this.type != null && this.type.equals(ct.type))) &&
-         ((this.charset == null && ct.charset == null) || (this.charset != null && this.charset.equals(ct.charset))) &&
-         ((this.boundary == null && ct.boundary == null) || (this.boundary != null && this.boundary.equals(ct.boundary))));
+        ContentTypeHeader ct = (ContentTypeHeader) o;
+        return (((this.type == null && ct.type == null)
+                || (this.type != null && this.type.equals(ct.type)))
+                && ((this.charset == null && ct.charset == null)
+                || (this.charset != null && this.charset.equals(ct.charset)))
+                && ((this.boundary == null && ct.boundary == null)
+                || (this.boundary != null && this.boundary.equals(ct.boundary))));
     }
 
     @Override
     public int hashCode() {
-        return ((type == null ? 0 : type.hashCode()) ^
-         (charset == null ? 0 : charset.hashCode()) ^
-         (boundary == null ? 0 : boundary.hashCode()));
+        return ((type == null ? 0 : type.hashCode())
+                ^ (charset == null ? 0 : charset.hashCode())
+                ^ (boundary == null ? 0 : boundary.hashCode()));
     }
 }

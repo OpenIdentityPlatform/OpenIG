@@ -19,8 +19,6 @@ package org.forgerock.openig.http;
 
 /**
  * Indicates a type of HTTP message.
- *
- * @author Paul C. Bryan
  */
 public enum MessageType {
 

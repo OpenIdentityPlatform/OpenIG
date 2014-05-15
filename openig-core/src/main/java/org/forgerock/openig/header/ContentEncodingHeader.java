@@ -18,6 +18,7 @@
 package org.forgerock.openig.header;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -31,8 +32,6 @@ import org.forgerock.openig.decoder.Decoder;
 /**
  * Processes the <strong>{@code Content-Encoding}</strong> message header. For more information, see
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.11.
- *
- * @author Paul C. Bryan
  */
 public class ContentEncodingHeader implements Header {
 
@@ -76,8 +75,8 @@ public class ContentEncodingHeader implements Header {
      * @throws UnsupportedEncodingException if an unsupported content-encoding is specified.
      */
     public InputStream decode(InputStream in) throws IOException, UnsupportedEncodingException {
-         // decode in the reverse order that encoding was applied
-        for (ListIterator<String> i = codings.listIterator(codings.size()); i.hasPrevious(); ) {
+        // decode in the reverse order that encoding was applied
+        for (ListIterator<String> i = codings.listIterator(codings.size()); i.hasPrevious();) {
             String name = i.previous();
             Decoder decoder = Decoder.SERVICES.get(name);
             if (decoder == null) {
@@ -127,8 +126,9 @@ public class ContentEncodingHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof ContentEncodingHeader &&
-         this.codings.equals(((ContentEncodingHeader)o).codings)));
+        return (o == this || (o != null
+                && o instanceof ContentEncodingHeader
+                && this.codings.equals(((ContentEncodingHeader) o).codings)));
     }
 
     @Override

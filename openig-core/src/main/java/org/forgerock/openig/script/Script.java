@@ -16,6 +16,7 @@
 package org.forgerock.openig.script;
 
 import static org.forgerock.util.Utils.joinAsString;
+
 import groovy.lang.Binding;
 import groovy.util.GroovyScriptEngine;
 
@@ -36,7 +37,7 @@ public final class Script {
     /**
      * Groovy script implementation.
      */
-    private static class GroovyImpl implements Impl {
+    private final static class GroovyImpl implements Impl {
         private final GroovyScriptEngine engine;
         private final String fileName;
 
@@ -81,18 +82,15 @@ public final class Script {
     /**
      * Loads a script having the provided content type and file name.
      *
-     * @param environment
-     *            The application environment.
-     * @param mimeType
-     *            The script language mime-type.
-     * @param file
-     *            The location of the script to be loaded.
+     * @param environment The application environment.
+     * @param mimeType The script language mime-type.
+     * @param file The location of the script to be loaded.
      * @return The script.
-     * @throws ScriptException
-     *             If the script could not be loaded.
+     * @throws ScriptException If the script could not be loaded.
      */
-    public static Script fromFile(final Environment environment, final String mimeType,
-            final String file) throws ScriptException {
+    public static Script fromFile(final Environment environment,
+                                  final String mimeType,
+                                  final String file) throws ScriptException {
         if (GROOVY_MIME_TYPE.equals(mimeType)) {
             final GroovyScriptEngine engine = getGroovyScriptEngine(environment);
             final Impl impl = new GroovyImpl(engine, file);
@@ -106,36 +104,30 @@ public final class Script {
     /**
      * Loads a script having the provided content type and content.
      *
-     * @param environment
-     *            The application environment.
-     * @param mimeType
-     *            The script language mime-type.
-     * @param sourceLines
-     *            The script content.
+     * @param environment The application environment.
+     * @param mimeType The script language mime-type.
+     * @param sourceLines The script content.
      * @return The script.
-     * @throws ScriptException
-     *             If the script could not be loaded.
+     * @throws ScriptException If the script could not be loaded.
      */
-    public static Script fromSource(final Environment environment, final String mimeType,
-            final String... sourceLines) throws ScriptException {
+    public static Script fromSource(final Environment environment,
+                                    final String mimeType,
+                                    final String... sourceLines) throws ScriptException {
         return fromSource(environment, mimeType, joinAsString(EOL, (Object[]) sourceLines));
     }
 
     /**
      * Loads a script having the provided content type and content.
      *
-     * @param environment
-     *            The application environment.
-     * @param mimeType
-     *            The script language mime-type.
-     * @param source
-     *            The script content.
+     * @param environment The application environment.
+     * @param mimeType The script language mime-type.
+     * @param source The script content.
      * @return The script.
-     * @throws ScriptException
-     *             If the script could not be loaded.
+     * @throws ScriptException If the script could not be loaded.
      */
-    public static Script fromSource(final Environment environment, final String mimeType,
-            final String source) throws ScriptException {
+    public static Script fromSource(final Environment environment,
+                                    final String mimeType,
+                                    final String source) throws ScriptException {
         if (GROOVY_MIME_TYPE.equals(mimeType)) {
             final GroovyScriptEngine engine = getGroovyScriptEngine(environment);
             final File groovyScriptCacheDir = getGroovyScriptCacheDir();

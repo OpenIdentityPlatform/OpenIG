@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +28,6 @@ import java.util.Set;
  * data along the way. This class itself simply overrides all methods of {@link Map} with
  * versions that pass all requests to the contained map. Subclasses may further override
  * some of these methods and may also provide additional methods and fields.
- *
- * @author Paul C. Bryan
  */
 public class MapDecorator<K, V> implements Map<K, V> {
 
@@ -92,7 +91,8 @@ public class MapDecorator<K, V> implements Map<K, V> {
      * contains no mapping for the key.
      *
      * @param key the key whose associated value is to be returned.
-     * @return the value to which the specified key is mapped, or {@code null} if the map contains no mapping for the key.
+     * @return the value to which the specified key is mapped, or {@code null} if the map contains no mapping
+     * for the key.
      * @throws ClassCastException if the key is of an inappropriate type for the map (optional).
      * @throws NullPointerException if the specified key is null and the map does not permit null keys (optional).
      */
@@ -108,8 +108,10 @@ public class MapDecorator<K, V> implements Map<K, V> {
      * @param value value to be associated with the specified key.
      * @return the previous value associated with key, or {@code null} if there was no mapping for key.
      * @throws ClassCastException if the class of the specified key or value prevents it from being stored in the map.
-     * @throws IllegalArgumentException if some property of the specified key or value prevents it from being stored in the map.
-     * @throws NullPointerException if the specified key or value is {@code null} and the map does not permit null keys or values.
+     * @throws IllegalArgumentException if some property of the specified key or value prevents it from being stored
+     * in the map.
+     * @throws NullPointerException if the specified key or value is {@code null} and the map does not permit
+     * null keys or values.
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by the map.
      */
     @Override
@@ -123,7 +125,8 @@ public class MapDecorator<K, V> implements Map<K, V> {
      * @param key key whose mapping is to be removed from the map.
      * @return the previous value associated with key, or {@code null} if there was no mapping for key.
      * @throws ClassCastException if the key is of an inappropriate type for the map (optional).
-     * @throws NullPointerException if the specified key is {@code null} and the map does not permit null keys (optional).
+     * @throws NullPointerException if the specified key is {@code null} and the map does not permit null keys
+     * (optional).
      * @throws UnsupportedOperationException if the {@code remove} operation is not supported by the map.
      */
     @Override
@@ -135,13 +138,16 @@ public class MapDecorator<K, V> implements Map<K, V> {
      * Copies all of the mappings from the specified map to the map (optional operation).
      *
      * @param m mappings to be stored in the map.
-     * @throws ClassCastException if the class of a key or value in the specified map prevents it from being stored in the map.
-     * @throws IllegalArgumentException if some property of a key or value in the specified map prevents it from being stored in the map.
-     * @throws NullPointerException if the specified map is null, or if the map does not permit null keys or values, and the specified map contains null keys or values.
+     * @throws ClassCastException if the class of a key or value in the specified map prevents it from being stored
+     * in the map.
+     * @throws IllegalArgumentException if some property of a key or value in the specified map prevents it from
+     * being stored in the map.
+     * @throws NullPointerException if the specified map is null, or if the map does not permit null keys or values,
+     * and the specified map contains null keys or values.
      * @throws UnsupportedOperationException if the {@code putAll} operation is not supported by the map.
      */
     @Override
-    public void putAll(Map<? extends K,? extends V> m) {
+    public void putAll(Map<? extends K, ? extends V> m) {
         map.putAll(m);
     }
 
@@ -175,7 +181,7 @@ public class MapDecorator<K, V> implements Map<K, V> {
      * Returns a {@link Set} view of the mappings contained in the map.
      */
     @Override
-    public Set<Map.Entry<K,V>> entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         return map.entrySet();
     }
 

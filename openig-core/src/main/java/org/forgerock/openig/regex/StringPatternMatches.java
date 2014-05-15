@@ -18,6 +18,7 @@
 package org.forgerock.openig.regex;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
@@ -25,8 +26,6 @@ import java.util.regex.Pattern;
 
 /**
  * Iterates through multiple regular expression matches within a character sequence.
- *
- * @author Paul C. Bryan
  */
 public class StringPatternMatches {
 
@@ -39,7 +38,7 @@ public class StringPatternMatches {
     /** The character sequence to search. */
     private final CharSequence input;
 
-    /** Should patterns be discarded after they yield a match. */ 
+    /** Should patterns be discarded after they yield a match. */
     private boolean discard;
 
     /**
@@ -48,7 +47,7 @@ public class StringPatternMatches {
      *
      * @param input the character sequence to match regular expression patterns against.
      * @param patterns a collection of regular expression patterns to match.
-     * @param discard indicates patterns be discarded after they yield a match. 
+     * @param discard indicates patterns be discarded after they yield a match.
      */
     public StringPatternMatches(CharSequence input, Collection<Pattern> patterns, boolean discard) {
         this.input = input;
@@ -90,7 +89,8 @@ public class StringPatternMatches {
         Matcher next = matchers[matcherIndex]; // save match to return
         // reset matcher and set for next match (if applicable)
         matchers[matcherIndex] = (discard ? null : patterns[matcherIndex].matcher(input));
-        if (matchers[matcherIndex] != null && (charIndex == input.length() - 1 || !matchers[matcherIndex].find(charIndex + 1))) {
+        if (matchers[matcherIndex] != null
+                && (charIndex == input.length() - 1 || !matchers[matcherIndex].find(charIndex + 1))) {
             matchers[matcherIndex] = null; // matchers without any matches are not relevant
         }
         return next;

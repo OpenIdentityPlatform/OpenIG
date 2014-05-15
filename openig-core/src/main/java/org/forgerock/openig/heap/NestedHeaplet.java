@@ -21,8 +21,6 @@ package org.forgerock.openig.heap;
  * A generic base class for a heaplet nested within the class it creates. Using a nested
  * heaplet has the advantage of avoiding loading classes unless the requested class is
  * actually being created in a heap.
- *
- * @author Paul C. Bryan
  */
 public abstract class NestedHeaplet extends GenericHeaplet {
 

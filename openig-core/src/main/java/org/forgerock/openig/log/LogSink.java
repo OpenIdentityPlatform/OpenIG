@@ -19,8 +19,6 @@ package org.forgerock.openig.log;
 
 /**
  * Receives and handles log entries.
- *
- * @author Paul C. Bryan
  */
 public interface LogSink {
 
@@ -36,7 +34,7 @@ public interface LogSink {
      * does not guarantee that the entry will in fact be logged.
      *
      * @param source the object and/or event related to the log entry.
-     * @param level the logging level of the log entry. 
+     * @param level the logging level of the log entry.
      * @return {@code true} if the entry may be logged.
      */
     boolean isLoggable(String source, LogLevel level);

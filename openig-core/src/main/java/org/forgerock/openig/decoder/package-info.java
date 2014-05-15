@@ -17,7 +17,5 @@
 
 /**
  * Decodes HTTP entities that are compressed or encoded.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.decoder;

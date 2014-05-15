@@ -17,7 +17,5 @@
 
 /**
  * Processes HTTP message header fields.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.header;

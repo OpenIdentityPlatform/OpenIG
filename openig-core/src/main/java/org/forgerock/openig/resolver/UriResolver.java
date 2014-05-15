@@ -28,7 +28,7 @@ public class UriResolver implements Resolver {
 
     private enum Element {
         scheme, schemeSpecificPart, authority, userInfo, host, port, path, query, fragment
-    };
+    }
 
     @Override
     public Class<?> getKey() {

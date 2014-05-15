@@ -18,7 +18,6 @@ package org.forgerock.openig.handler;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
@@ -40,7 +39,7 @@ import org.forgerock.openig.script.Script;
  * performing LDAP requests such as LDAP authentication
  * <li>{@link Logger logger} - the OpenIG logger.
  * </ul>
- * <p>
+ * <p/>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public class ScriptableHandler extends AbstractScriptableHeapObject implements Handler {
@@ -50,8 +49,7 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableHandler newInstance(Script script) throws HeapException,
-                JsonValueException {
+        public ScriptableHandler newInstance(Script script) throws HeapException {
             return new ScriptableHandler(script);
         }
     }

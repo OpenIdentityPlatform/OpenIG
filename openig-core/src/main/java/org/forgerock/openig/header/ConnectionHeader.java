@@ -18,6 +18,7 @@
 package org.forgerock.openig.header;
 
 // Java Standard Edition
+
 import java.util.ArrayList;
 
 // OpenIG Core
@@ -26,8 +27,6 @@ import org.forgerock.openig.http.Message;
 /**
  * Processes the <strong>{@code Connection}</strong> message header. For more information, see
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.10.
- *
- * @author Paul C. Bryan
  */
 public class ConnectionHeader implements Header {
 
@@ -100,8 +99,9 @@ public class ConnectionHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof ConnectionHeader &&
-         this.tokens.equals(((ConnectionHeader)o).tokens)));
+        return (o == this || (o != null
+                && o instanceof ConnectionHeader
+                && this.tokens.equals(((ConnectionHeader) o).tokens)));
     }
 
     @Override

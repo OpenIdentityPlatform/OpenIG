@@ -20,8 +20,6 @@ package org.forgerock.openig.log;
 /**
  * Levels used for categorizing log entries. Constants are ordered from most verbose to
  * least verbose.
- *
- * @author Paul C. Bryan
  */
 public enum LogLevel {
 

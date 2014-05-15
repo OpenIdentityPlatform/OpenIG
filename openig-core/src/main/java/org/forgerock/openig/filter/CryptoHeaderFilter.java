@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -51,14 +52,13 @@ import org.forgerock.openig.util.CaseInsensitiveSet;
 
 /**
  * Encrypts and decrypts header fields.
- *
- * @author Jamie F. Nelson
- * @author Paul C. Bryan
  */
 public class CryptoHeaderFilter extends GenericFilter {
 
     /** TODO: Description. */
-    public enum Operation { ENCRYPT, DECRYPT };
+    public enum Operation {
+        ENCRYPT, DECRYPT
+    }
 
     /** TODO: Description. */
     protected Operation operation;
@@ -96,7 +96,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             }
         }
     }
- 
+
     /**
      * Decrypts a string value.
      *
@@ -181,7 +181,8 @@ public class CryptoHeaderFilter extends GenericFilter {
 
     /** Creates and initializes a header filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
             filter.operation = config.get("operation").required().asEnum(Operation.class);

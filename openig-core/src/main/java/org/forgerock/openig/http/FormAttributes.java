@@ -41,9 +41,8 @@ public class FormAttributes extends AbstractMap<String, List<String>> implements
     /**
      * Constructs a new form attributes object that reads attributes from the
      * specified request.
-     * 
-     * @param request
-     *            the request to read form attributes from.
+     *
+     * @param request the request to read form attributes from.
      */
     public FormAttributes(final Request request) {
         this.request = request;

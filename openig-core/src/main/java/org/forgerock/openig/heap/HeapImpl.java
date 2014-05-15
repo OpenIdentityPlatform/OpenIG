@@ -20,6 +20,7 @@ package org.forgerock.openig.heap;
 // TODO: consider detecting cyclic dependencies
 
 // Java Standard Edition
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,6 @@ import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
- *
- * @author Paul C. Bryan
  */
 public class HeapImpl implements Heap {
 
@@ -56,7 +55,7 @@ public class HeapImpl implements Heap {
      * @throws HeapException if an exception occurs allocating heaplets.
      * @throws JsonValueException if the configuration object is malformed.
      */
-    public synchronized void init(JsonValue config) throws HeapException, JsonValueException {
+    public synchronized void init(JsonValue config) throws HeapException {
         // process configuration object model structure
         for (JsonValue object : config.get("objects").required().expect(List.class)) {
             object.required().expect(Map.class);
@@ -79,7 +78,7 @@ public class HeapImpl implements Heap {
     }
 
     @Override
-    public synchronized Object get(String name) throws HeapException, JsonValueException {
+    public synchronized Object get(String name) throws HeapException {
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);

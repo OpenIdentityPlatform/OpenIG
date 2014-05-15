@@ -24,9 +24,6 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.testng.annotations.Test;
 
-/**
- * @author Paul C. Bryan
- */
 public class FormTest {
 
     @Test
@@ -35,7 +32,7 @@ public class FormTest {
         assertThat(f.get("x").get(0)).isEqualTo("=");
         assertThat(f.get("y").get(0)).isEqualTo("z");
     }
-    
+
     @Test
     public void fromStringAndBack() {
         String s1 = "x=%3D&y=%3F";
@@ -53,7 +50,8 @@ public class FormTest {
         assertThat(f.get("z").get(0)).isEqualTo("a");
     }
 
-    @Test void toRequestQuery() throws URISyntaxException {
+    @Test
+    void toRequestQuery() throws URISyntaxException {
         Request request = new Request();
         request.uri = new URI("http://www.example.com/?x=%3D&y=%3F&z=a");
         Form f = new Form();
@@ -66,7 +64,8 @@ public class FormTest {
         assertThat(request.uri.toString()).isEqualTo("http://www.example.com/?foo=bar");
     }
 
-    @Test void appendRequestQuery() throws URISyntaxException {
+    @Test
+    void appendRequestQuery() throws URISyntaxException {
         Request request = new Request();
         request.uri = new URI("http://www.example.com/?x=%3D&y=%3F&z=a");
         Form f = new Form();

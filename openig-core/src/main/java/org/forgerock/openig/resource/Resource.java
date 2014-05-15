@@ -18,14 +18,13 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.net.URI;
 
 /**
  * Exposes methods to access an addressable resource. The universal methods for all resources
  * are: create, read, update and delete (a.k.a. CRUD). Concrete resource implementations are
  * free to support additional methods as applicable.
- *
- * @author Paul C. Bryan
  */
 public interface Resource {
 

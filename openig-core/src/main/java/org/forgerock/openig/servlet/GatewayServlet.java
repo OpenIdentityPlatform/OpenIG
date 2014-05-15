@@ -64,8 +64,7 @@ public class GatewayServlet extends HttpServlet {
      * should be called when running the servlet as part of a standalone
      * application.
      *
-     * @param environment
-     *            The application environment.
+     * @param environment The application environment.
      */
     public GatewayServlet(Environment environment) {
         this.environment = environment;

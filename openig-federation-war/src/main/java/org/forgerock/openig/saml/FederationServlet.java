@@ -67,8 +67,6 @@ import com.sun.identity.saml2.servlet.SPSingleLogoutServiceSOAP;
  * Receives HTTP requests from the Dispatcher for all federation end points.
  * Requests are then diverted to the correct end point processing module.
  * Processing modules are for single sign-on and single logout.
- *
- * @author Jamie F. Nelson
  */
 public class FederationServlet extends HttpServlet {
 

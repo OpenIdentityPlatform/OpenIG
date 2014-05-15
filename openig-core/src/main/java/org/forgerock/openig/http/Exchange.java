@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 // Java Standard Edition
+
 import java.security.Principal;
 
 // OpenIG Core
@@ -30,17 +31,15 @@ import org.forgerock.openig.util.ExtensibleFieldMap;
  * The exchange object model parallels the document object model, exposing elements of the
  * exchange. It supports this by exposing its fixed attributes and allowing arbitrary
  * attributes via its {@code ExtensibleFieldMap} superclass.
- * <p>
+ * <p/>
  * The contract of an exchange is such that it is the responsibility of the caller of a
  * {@link Handler} object to create and populate the request object, and responsibility of the
  * handler to create and populate the response object.
- * <p>
+ * <p/>
  * If an existing response object exists in the exchange and the handler intends to replace
  * it with another response object, it must first check to see if the existing response
  * object has an entity, and if it does, must call its {@code close} method in order to signal
  * that the processing of the response from a remote server is complete.
- *
- * @author Paul C. Bryan
  */
 public class Exchange extends ExtensibleFieldMap {
 

@@ -18,15 +18,14 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 /**
  * Provides a representation of an object. Reads and writes binary octet-streams, consistent
- * with whatever media type(s) and character set(s) the representation supports. 
- *
- * @author Paul C. Bryan
+ * with whatever media type(s) and character set(s) the representation supports.
  */
 public interface Representation {
 

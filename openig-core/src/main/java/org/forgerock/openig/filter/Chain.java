@@ -18,13 +18,13 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.GenericHandler;
@@ -39,17 +39,16 @@ import org.forgerock.openig.log.LogTimer;
 /**
  * A chain of exchange zero or more filters and one handler. The chain is responsible for
  * dispatching the exchange to each filter in the chain, and finally the handler.
- * <p>
+ * <p/>
  * When a chain dispatches an exchange to a filter, it creates a "subchain" (a subset of this
  * chain, which contains the remaining downstream filters and handler), and passes it as a
  * parameter to the filter. For this reason, a filter should make no assumptions or
  * correlations using the chain it is supplied with when invoked.
- * <p>
+ * <p/>
  * A filter may elect to terminate dispatching of the exchange to the rest of the chain by not
  * calling {@code chain.handle(exchange)} and generate its own response or dispatch to a
  * completely different handler.
  *
- * @author Paul C. Bryan
  * @see Filter
  */
 public class Chain extends GenericHandler {
@@ -65,7 +64,9 @@ public class Chain extends GenericHandler {
         LogTimer timer = logger.getTimer().start();
         new Handler() {
             private int cursor = 0;
-            @Override public void handle(Exchange exchange) throws HandlerException, IOException {
+
+            @Override
+            public void handle(Exchange exchange) throws HandlerException, IOException {
                 int saved = cursor; // save position to restore after the call
                 try {
                     if (cursor < filters.size()) {
@@ -83,7 +84,8 @@ public class Chain extends GenericHandler {
 
     /** Creates and initializes a filter chain in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             Chain chain = new Chain();
             for (JsonValue filter : config.get("filters").required().expect(List.class)) {
                 chain.filters.add(HeapUtil.getRequiredObject(heap, filter, Filter.class));

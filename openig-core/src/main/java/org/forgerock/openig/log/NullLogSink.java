@@ -19,8 +19,6 @@ package org.forgerock.openig.log;
 
 /**
  * A sink that discards all log entries. GNDN.
- *
- * @author Paul C. Bryan
  */
 public class NullLogSink implements LogSink {
 

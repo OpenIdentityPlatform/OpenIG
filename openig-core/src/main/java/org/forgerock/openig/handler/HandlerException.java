@@ -19,8 +19,6 @@ package org.forgerock.openig.handler;
 
 /**
  * An exception that is thrown during handler operations.
- *
- * @author Paul C. Bryan
  */
 public class HandlerException extends Exception {
 
@@ -31,14 +29,14 @@ public class HandlerException extends Exception {
      */
     public HandlerException() {
     }
-    
+
     /**
      * Constructs a new exception with the specified detail message.
      */
     public HandlerException(String message) {
         super(message);
     }
-    
+
     /**
      * Constructs a new exception with the specified cause.
      */

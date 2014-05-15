@@ -19,8 +19,6 @@ package org.forgerock.openig.log;
 
 /**
  * Wraps a log sink and exposes a set of convenience methods for various logging activities.
- *
- * @author Paul C. Bryan
  */
 public class Logger implements LogSink {
 

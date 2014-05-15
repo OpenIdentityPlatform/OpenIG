@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -39,14 +39,13 @@ import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
- *
- * @author Paul C. Bryan
  */
 public class AssignmentFilter extends GenericFilter {
 
     /** Defines assignment condition, target and value expressions. */
     public static class Binding {
-        /** Condition to evaluate to determine if assignment should occur, or {@code null} if assignment is unconditional. */
+        /** Condition to evaluate to determine if assignment should occur, or {@code null} if assignment is
+         * unconditional. */
         public Expression condition;
         /** Expression that yields the target object whose value is to be set. */
         public Expression target;
@@ -85,13 +84,15 @@ public class AssignmentFilter extends GenericFilter {
 
     /** Creates and initializes an assignment filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             AssignmentFilter result = new AssignmentFilter();
             result.onRequest.addAll(asBindings("onRequest"));
             result.onResponse.addAll(asBindings("onResponse"));
             return result;
         }
-        private ArrayList<Binding> asBindings(String name) throws JsonValueException {
+
+        private ArrayList<Binding> asBindings(String name) {
             ArrayList<Binding> result = new ArrayList<Binding>();
             JsonValue bindings = config.get(name).expect(List.class); // optional
             for (JsonValue binding : bindings) {
@@ -99,7 +100,8 @@ public class AssignmentFilter extends GenericFilter {
             }
             return result;
         }
-        private Binding asBinding(JsonValue value) throws JsonValueException {
+
+        private Binding asBinding(JsonValue value) {
             Binding result = new Binding();
             result.condition = JsonValueUtil.asExpression(value.get("condition")); // optional
             result.target = JsonValueUtil.asExpression(value.get("target").required()); // required

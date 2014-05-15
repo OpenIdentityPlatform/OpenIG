@@ -19,8 +19,6 @@ package org.forgerock.openig.heap;
 
 /**
  * An exception that is thrown during heap operations.
- *
- * @author Paul C. Bryan
  */
 public class HeapException extends Exception {
 
@@ -31,14 +29,14 @@ public class HeapException extends Exception {
      */
     public HeapException() {
     }
-    
+
     /**
      * Constructs a new exception with the specified detail message.
      */
     public HeapException(String message) {
         super(message);
     }
-    
+
     /**
      * Constructs a new exception with the specified cause.
      */

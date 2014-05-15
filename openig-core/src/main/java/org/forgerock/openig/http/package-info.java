@@ -18,7 +18,5 @@
 /**
  * Models and manages elements of the Hypertext Transfer Protocol. For more information, see
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.http;

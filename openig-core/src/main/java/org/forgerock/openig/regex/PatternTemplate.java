@@ -18,6 +18,7 @@
 package org.forgerock.openig.regex;
 
 // Java Standard Edition
+
 import java.util.regex.MatchResult;
 
 /**
@@ -27,8 +28,6 @@ import java.util.regex.MatchResult;
  * dollar sign or numeral literal immediately following a capture group reference may be
  * included as a literal in the template by preceding it with a backslash ({@code \}).
  * Backslash itself must be also escaped in this manner.
- *
- * @author Paul C. Bryan
  */
 public class PatternTemplate {
 

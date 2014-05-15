@@ -18,13 +18,12 @@
 package org.forgerock.openig.header;
 
 // OpenIG Core
+
 import org.forgerock.openig.http.Message;
 
 /**
  * Processes the <strong>{@code Content-Length}</strong> message header. For more information,
  * see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.13.
- *
- * @author Paul C. Bryan
  */
 public class ContentLengthHeader implements Header {
 
@@ -101,12 +100,13 @@ public class ContentLengthHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof ContentLengthHeader &&
-         this.length == ((ContentLengthHeader)o).length));
+        return (o == this || (o != null
+                && o instanceof ContentLengthHeader
+                && this.length == ((ContentLengthHeader) o).length));
     }
 
     @Override
     public int hashCode() {
-        return (int)(length ^ (length >>> 32));
+        return (int) (length ^ (length >>> 32));
     }
 }

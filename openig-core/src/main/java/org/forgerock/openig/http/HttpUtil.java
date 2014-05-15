@@ -18,6 +18,7 @@
 package org.forgerock.openig.http;
 
 // Java Standard Edition
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,16 +29,13 @@ import java.nio.charset.Charset;
 // OpenIG Core
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
-import org.forgerock.openig.http.Message;
 import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.NullInputStream;
 
 /**
  * Utility class for processing HTTP messages.
- *
- * @author Paul C. Bryan
  */
-public class HttpUtil {
+public final class HttpUtil {
 
     /** Default character set to use if not specified, per RFC 2616. */
     private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
@@ -66,15 +64,15 @@ public class HttpUtil {
     /**
      * Sets the entity in the message to contain the content of the string with the specified
      * character set. Also sets the {@code Content-Length} header, overwriting any existing
-     * 
-     * <p>
+     * <p/>
+     * <p/>
      * If {@code charset} is not {@code null} then it will be used to encode the entity,
      * else the character set specified in the message's {@code Content-Type} header (if
      * present) will be used, otherwise the default {@code ISO-8859-1} character set.
-     * <p>
+     * <p/>
      * Note: This method replaces the entity without closing any previous one. The caller is
      * responsible for first closing any existing entity. This method also does not attempt to
-     * encode the entity based-on any codings specified in the {@code Content-Encoding} header. 
+     * encode the entity based-on any codings specified in the {@code Content-Encoding} header.
      *
      * @param message the message whose entity is to be set with the string value.
      * @param string the string whose value is to be set as the message entity.
@@ -88,14 +86,14 @@ public class HttpUtil {
 
     /**
      * Returns a new reader that decodes the entity of a message.
-     * <p>
+     * <p/>
      * The entity will be decoded and/or decompressed based-on any codings that are specified
      * in the {@code Content-Encoding} header.
-     * <p>
+     * <p/>
      * If {@code charset} is not {@code null} then it will be used to decode the entity,
      * else the character set specified in the message's {@code Content-Type} header (if
      * present) will be used, otherwise the default {@code ISO-8859-1} character set.
-     * <p>
+     * <p/>
      * Note: The caller is responsible for calling the reader's {@code close} method when it
      * is finished reading the entity.
      *
@@ -107,7 +105,7 @@ public class HttpUtil {
      * @throws UnsupportedEncodingException if content encoding or charset are not supported.
      */
     public static BufferedReader entityReader(Message message, boolean branch, Charset charset)
-    throws IOException, UnsupportedEncodingException {
+            throws IOException, UnsupportedEncodingException {
         InputStream in;
         if (message == null || message.entity == null) {
             in = new NullInputStream();
@@ -130,46 +128,86 @@ public class HttpUtil {
      */
     public static String getReason(int status) {
         switch (status) {
-        case 100: return "Continue";
-        case 101: return "Switching Protocols";
-        case 200: return "OK";
-        case 201: return "Created";
-        case 202: return "Accepted";
-        case 203: return "Non-Authoritative Information";
-        case 204: return "No Content";
-        case 205: return "Reset Content";
-        case 206: return "Partial Content";
-        case 300: return "Multiple Choices";
-        case 301: return "Moved Permanently";
-        case 302: return "Found";
-        case 303: return "See Other";
-        case 304: return "Not Modified";
-        case 305: return "Use Proxy";
-        case 307: return "Temporary Redirect";
-        case 400: return "Bad Request";
-        case 401: return "Unauthorized";
-        case 402: return "Payment Required";
-        case 403: return "Forbidden";
-        case 404: return "Not Found";
-        case 405: return "Method Not Allowed";
-        case 406: return "Not Acceptable";
-        case 407: return "Proxy Authentication Required";
-        case 408: return "Request Time-out";
-        case 409: return "Conflict";
-        case 410: return "Gone";
-        case 411: return "Length Required";
-        case 412: return "Precondition Failed";
-        case 413: return "Request Entity Too Large";
-        case 414: return "Request-URI Too Large";
-        case 415: return "Unsupported Media Type";
-        case 416: return "Requested range not satisfiable";
-        case 417: return "Expectation Failed";
-        case 500: return "Internal Server Error";
-        case 501: return "Not Implemented";
-        case 502: return "Bad Gateway";
-        case 503: return "Service Unavailable";
-        case 504: return "Gateway Time-out";
-        case 505: return "HTTP Version not supported";
+        case 100:
+            return "Continue";
+        case 101:
+            return "Switching Protocols";
+        case 200:
+            return "OK";
+        case 201:
+            return "Created";
+        case 202:
+            return "Accepted";
+        case 203:
+            return "Non-Authoritative Information";
+        case 204:
+            return "No Content";
+        case 205:
+            return "Reset Content";
+        case 206:
+            return "Partial Content";
+        case 300:
+            return "Multiple Choices";
+        case 301:
+            return "Moved Permanently";
+        case 302:
+            return "Found";
+        case 303:
+            return "See Other";
+        case 304:
+            return "Not Modified";
+        case 305:
+            return "Use Proxy";
+        case 307:
+            return "Temporary Redirect";
+        case 400:
+            return "Bad Request";
+        case 401:
+            return "Unauthorized";
+        case 402:
+            return "Payment Required";
+        case 403:
+            return "Forbidden";
+        case 404:
+            return "Not Found";
+        case 405:
+            return "Method Not Allowed";
+        case 406:
+            return "Not Acceptable";
+        case 407:
+            return "Proxy Authentication Required";
+        case 408:
+            return "Request Time-out";
+        case 409:
+            return "Conflict";
+        case 410:
+            return "Gone";
+        case 411:
+            return "Length Required";
+        case 412:
+            return "Precondition Failed";
+        case 413:
+            return "Request Entity Too Large";
+        case 414:
+            return "Request-URI Too Large";
+        case 415:
+            return "Unsupported Media Type";
+        case 416:
+            return "Requested range not satisfiable";
+        case 417:
+            return "Expectation Failed";
+        case 500:
+            return "Internal Server Error";
+        case 501:
+            return "Not Implemented";
+        case 502:
+            return "Bad Gateway";
+        case 503:
+            return "Service Unavailable";
+        case 504:
+            return "Gateway Time-out";
+        case 505:
+            return "HTTP Version not supported";
         }
         return null; // not specified per RFC 2616
     }

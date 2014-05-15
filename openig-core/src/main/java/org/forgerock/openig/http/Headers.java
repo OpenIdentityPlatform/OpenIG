@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 // Java Standard Edition
+
 import java.util.List;
 
 // OpenIG Core
@@ -27,8 +28,6 @@ import org.forgerock.openig.util.MultiValueMap;
 
 /**
  * Message headers, a case-insensitive multiple-value map.
- *
- * @author Paul C. Bryan
  */
 public class Headers extends MultiValueMap<String, String> {
 
