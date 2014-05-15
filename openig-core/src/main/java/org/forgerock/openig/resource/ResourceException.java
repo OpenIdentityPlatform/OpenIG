@@ -19,8 +19,6 @@ package org.forgerock.openig.resource;
 
 /**
  * An exception that is thrown during resource operations.
- *
- * @author Paul C. Bryan
  */
 public class ResourceException extends Exception {
 
@@ -32,14 +30,14 @@ public class ResourceException extends Exception {
      */
     public ResourceException() {
     }
-    
+
     /**
      * Constructs a new exception with the specified detail message.
      */
     public ResourceException(String message) {
         super(message);
     }
-    
+
     /**
      * Constructs a new exception with the specified cause.
      */

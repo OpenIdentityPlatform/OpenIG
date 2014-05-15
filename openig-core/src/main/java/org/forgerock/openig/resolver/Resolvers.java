@@ -31,7 +31,7 @@ import org.forgerock.openig.util.Loader;
  * one resolver, depending on what class it extends and/or interfaces it
  * implements, or what its superclasses and interfaces are.
  */
-public class Resolvers {
+public final class Resolvers {
 
     /**
      * Resolver that handles native arrays (not handled like the service-based
@@ -55,58 +55,57 @@ public class Resolvers {
      * class/interface to least. Resolvers are provided through an iterator
      * interface to avoid the overhead of determining all resolvers in advance.
      *
-     * @param object
-     *            the object for which a set of resolvers is being sought.
+     * @param object the object for which a set of resolvers is being sought.
      * @return an object that returns an iterator over the set of resolvers for
-     *         the object.
+     * the object.
      */
     public static Iterable<Resolver> resolvers(final Object object) {
         return new Iterable<Resolver>() {
             public Iterator<Resolver> iterator() {
                 return (object.getClass().isArray() ? ARRAY_RESOLVER.iterator()
                         : new Iterator<Resolver>() {
-                            Class<?> class1 = object.getClass();
-                            Class<?> class2 = class1;
-                            Iterator<Class<?>> interfaces = null;
-                            int n = 0;
+                    Class<?> class1 = object.getClass();
+                    Class<?> class2 = class1;
+                    Iterator<Class<?>> interfaces = null;
+                    int n = 0;
 
-                            public boolean hasNext() {
-                                return (class2 != null); // interface hierarchy not yet exhausted
+                    public boolean hasNext() {
+                        return (class2 != null); // interface hierarchy not yet exhausted
+                    }
+
+                    public Resolver next() {
+                        while (class1 != null && class1 != Object.class) { // class hierarchy
+                            Resolver resolver = SERVICES.get(class1);
+                            class1 = class1.getSuperclass();
+                            if (resolver != null) {
+                                return resolver;
                             }
-
-                            public Resolver next() {
-                                while (class1 != null && class1 != Object.class) { // class hierarchy
-                                    Resolver resolver = SERVICES.get(class1);
-                                    class1 = class1.getSuperclass();
-                                    if (resolver != null) {
-                                        return resolver;
-                                    }
+                        }
+                        class1 = null; // exhausted class hierarchy
+                        while (class2 != null && class2 != Object.class) { // interface hierarchy
+                            if (interfaces != null && interfaces.hasNext()) {
+                                Resolver resolver = SERVICES.get(interfaces.next());
+                                if (resolver != null) {
+                                    return resolver;
                                 }
-                                class1 = null; // exhausted class hierarchy
-                                while (class2 != null && class2 != Object.class) { // interface hierarchy
-                                    if (interfaces != null && interfaces.hasNext()) {
-                                        Resolver resolver = SERVICES.get(interfaces.next());
-                                        if (resolver != null) {
-                                            return resolver;
-                                        }
-                                    } else {
-                                        List<Class<?>> list = getInterfaces(class2, n++);
-                                        if (list.size() > 0) {
-                                            interfaces = list.iterator();
-                                        } else {
-                                            class2 = class2.getSuperclass();
-                                            n = 0;
-                                        }
-                                    }
+                            } else {
+                                List<Class<?>> list = getInterfaces(class2, n++);
+                                if (list.size() > 0) {
+                                    interfaces = list.iterator();
+                                } else {
+                                    class2 = class2.getSuperclass();
+                                    n = 0;
                                 }
-                                class2 = null; // exhausted interface hierarchy
-                                return new Unresolver();
                             }
+                        }
+                        class2 = null; // exhausted interface hierarchy
+                        return new Unresolver();
+                    }
 
-                            public void remove() {
-                                throw new UnsupportedOperationException();
-                            }
-                        });
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                });
             }
         };
     }
@@ -114,12 +113,10 @@ public class Resolvers {
     /**
      * Attempts to resolve an element of an object.
      *
-     * @param object
-     *            the object in which to resolve the specified element.
-     * @param element
-     *            the element to resolve within the specified object.
+     * @param object the object in which to resolve the specified element.
+     * @param element the element to resolve within the specified object.
      * @return the value of the resolved element, or {@link Resolver#UNRESOLVED
-     *         UNRESOLVED} if it cannot be resolved.
+     * UNRESOLVED} if it cannot be resolved.
      * @see Resolver#get(Object, Object)
      */
     public static Object get(Object object, Object element) {
@@ -135,16 +132,13 @@ public class Resolvers {
     /**
      * Attempts to set the value of an element of an object.
      *
-     * @param object
-     *            the object in which to resolve the specified element.
-     * @param element
-     *            the element within the specified object whose value is to be
-     *            set.
-     * @param value
-     *            the value to set the element to.
+     * @param object the object in which to resolve the specified element.
+     * @param element the element within the specified object whose value is to be
+     * set.
+     * @param value the value to set the element to.
      * @return the previous value of the element, {@code null} if no previous
-     *         value, or {@link Resolver#UNRESOLVED UNRESOLVED} if it cannot be
-     *         resolved.
+     * value, or {@link Resolver#UNRESOLVED UNRESOLVED} if it cannot be
+     * resolved.
      * @see Resolver#put(Object, Object, Object)
      */
     public static Object put(Object object, Object element, Object value) {

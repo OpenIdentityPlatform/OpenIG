@@ -53,7 +53,7 @@ import org.forgerock.openig.log.Logger;
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
- * <p>
+ * <p/>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
@@ -65,7 +65,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         private static final String CONFIG_OPTION_TYPE = "type";
 
         @Override
-        public Object create() throws HeapException, JsonValueException {
+        public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
             component.setHttpClient(new HttpClient(storage)); // TODO more config?
@@ -74,21 +74,18 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
         /**
          * Creates the new heap object instance using the provided script.
-         * 
-         * @param script
-         *            The compiled script.
+         *
+         * @param script The compiled script.
          * @return The new heap object instance using the provided script.
-         * @throws HeapException
-         *             if an exception occurred during creation of the heap
-         *             object or any of its dependencies.
-         * @throws JsonValueException
-         *             if the heaplet (or one of its dependencies) has a
-         *             malformed configuration.
+         * @throws HeapException if an exception occurred during creation of the heap
+         * object or any of its dependencies.
+         * @throws JsonValueException if the heaplet (or one of its dependencies) has a
+         * malformed configuration.
          */
         protected abstract AbstractScriptableHeapObject newInstance(final Script script)
-                throws HeapException, JsonValueException;
+                throws HeapException;
 
-        private final Script compileScript() throws HeapException, JsonValueException {
+        private final Script compileScript() throws HeapException {
             final Environment environment = (Environment) heap.get("Environment");
 
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {
@@ -109,7 +106,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 } catch (final ScriptException e) {
                     throw new JsonValueException(config,
                             "Unable to compile the script defined in '" + CONFIG_OPTION_SOURCE
-                                    + "'", e);
+                                    + "'", e
+                    );
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
                 final String script = config.get(CONFIG_OPTION_FILE).asString();
@@ -138,9 +136,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /**
      * Creates a new scriptable heap object using the provided compiled script.
-     * 
-     * @param compiledScript
-     *            The compiled script.
+     *
+     * @param compiledScript The compiled script.
      */
     protected AbstractScriptableHeapObject(final Script compiledScript) {
         this.compiledScript = compiledScript;
@@ -148,9 +145,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /**
      * Sets the HTTP client which should be made available to scripts.
-     * 
-     * @param client
-     *            The HTTP client which should be made available to scripts.
+     *
+     * @param client The HTTP client which should be made available to scripts.
      */
     public void setHttpClient(final HttpClient client) {
         this.httpClient = client;
@@ -159,16 +155,12 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     /**
      * Runs the compiled script using the provided exchange and optional
      * forwarding handler.
-     * 
-     * @param exchange
-     *            The HTTP exchange.
-     * @param next
-     *            The next handler in the chain if applicable, may be
-     *            {@code null}.
-     * @throws HandlerException
-     *             If an error occurred while evaluating the script.
-     * @throws IOException
-     *             If an I/O exception occurs.
+     *
+     * @param exchange The HTTP exchange.
+     * @param next The next handler in the chain if applicable, may be
+     * {@code null}.
+     * @throws HandlerException If an error occurred while evaluating the script.
+     * @throws IOException If an I/O exception occurs.
      */
     protected final void runScript(final Exchange exchange, final Handler next)
             throws HandlerException, IOException {

@@ -19,8 +19,6 @@ package org.forgerock.openig.log;
 
 /**
  * The log entry data structure.
- *
- * @author Paul C. Bryan
  */
 public class LogEntry {
 

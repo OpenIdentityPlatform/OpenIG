@@ -18,6 +18,7 @@
 package org.forgerock.openig.json;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -37,8 +38,6 @@ import org.forgerock.openig.resource.ResourceException;
 /**
  * Represents a JSON tree structure as a JSON-encoded stream. See
  * <a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a> for more information.
- *
- * @author Paul C. Bryan
  */
 public class JSONRepresentation implements Representation {
 
@@ -118,7 +117,7 @@ public class JSONRepresentation implements Representation {
 
     /**
      * Writes the object model value as JSON-encoded data to the output stream.
-     */ 
+     */
     @Override
     public void write(OutputStream out) throws IOException, ResourceException {
         JSONValue.writeJSONString(object, new OutputStreamWriter(out, CHARSET));

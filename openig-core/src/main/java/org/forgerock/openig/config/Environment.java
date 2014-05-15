@@ -31,7 +31,7 @@ import org.forgerock.openig.resource.ResourceException;
  * instance directory is the directory in which the application has been
  * installed. For web applications, the instance directory is computed by this
  * class as either
- * <tt><strong>$AppData/</strong><em>product</em></strong>/</strong></tt> if the
+ * <tt><strong>$AppData/</strong><em>product</em><strong>/</strong></tt> if the
  * <strong>{@code $AppData}</strong> environment variable is defined (typical in
  * Windows installations), or otherwise
  * <tt><em>user-home</em><strong>/.</strong><em>product</em><strong>/</strong></tt>
@@ -41,9 +41,8 @@ public final class Environment {
     /**
      * Creates a new environment for a standalone application which has been
      * installed in {@code instanceRoot}.
-     * 
-     * @param instanceRoot
-     *            The application installation directory.
+     *
+     * @param instanceRoot The application installation directory.
      * @return A new environment for a standalone application.
      */
     public static Environment forStandaloneApp(final String instanceRoot) {
@@ -53,9 +52,8 @@ public final class Environment {
     /**
      * Creates a new environment for a web application having the provided
      * product name.
-     * 
-     * @param productName
-     *            The name of the product.
+     *
+     * @param productName The name of the product.
      * @return A new environment for a web application.
      */
     public static Environment forWebApp(final String productName) {
@@ -91,7 +89,7 @@ public final class Environment {
      * Returns the name of the directory containing the configuration file. Note
      * that web applications may have per-instance configuration. See
      * {@link ConfigResource} for more information.
-     * 
+     *
      * @return The name of the directory containing the configuration file.
      */
     public File getConfigDir() {
@@ -101,14 +99,12 @@ public final class Environment {
     /**
      * Creates a new configuration resource, with a path based on the provided
      * servlet context.
-     * 
-     * @param context
-     *            The servlet context from which the product instance name can
-     *            be derived.
+     *
+     * @param context The servlet context from which the product instance name can
+     * be derived.
      * @return A new configuration resource.
-     * @throws ResourceException
-     *             If the configuration (or bootstrap) resource could not be
-     *             found.
+     * @throws ResourceException If the configuration (or bootstrap) resource could not be
+     * found.
      */
     public ConfigResource getConfigResource(final ServletContext context) throws ResourceException {
         return getConfigResource(context.getRealPath("/"));
@@ -117,13 +113,11 @@ public final class Environment {
     /**
      * Creates a new configuration resource, with a path based on the provided
      * instance name.
-     * 
-     * @param instance
-     *            The product instance name.
+     *
+     * @param instance The product instance name.
      * @return A new configuration resource.
-     * @throws ResourceException
-     *             If the configuration (or bootstrap) resource could not be
-     *             found.
+     * @throws ResourceException If the configuration (or bootstrap) resource could not be
+     * found.
      */
     public ConfigResource getConfigResource(final String instance) throws ResourceException {
         return new ConfigResource(this, instance);
@@ -132,9 +126,9 @@ public final class Environment {
     /**
      * Returns the application instance directory containing configuration and
      * scripts.
-     * 
+     *
      * @return The application instance directory containing configuration and
-     *         scripts.
+     * scripts.
      */
     public File getInstanceRoot() {
         return instanceRoot;
@@ -143,11 +137,10 @@ public final class Environment {
     /**
      * Returns the name of the directory containing scripts for the provided
      * scripting language.
-     * 
-     * @param language
-     *            The scripting language, e.g. "groovy".
+     *
+     * @param language The scripting language, e.g. "groovy".
      * @return The name of the directory containing scripts for the provided
-     *         scripting language.
+     * scripting language.
      */
     public File getScriptsDir(final String language) {
         return new File(scriptsDir, language);

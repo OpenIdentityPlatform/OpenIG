@@ -57,19 +57,18 @@ public class StreamPatternExtractor {
      * Extracts regular expression patterns from a character streams. Returns a
      * mapping of names to the results of pattern extraction (literal match or
      * applied template).
-     * <p>
+     * <p/>
      * Patterns are resolved lazily; only as much of the stream is read in order
      * to satisfy a request for a specific key in the returned map.
-     * <p>
+     * <p/>
      * <strong>Note:</strong> If an {@link IOException} is encountered when
      * accessing the stream, the exception is caught and suppressed. This
      * results in {@code null} values being returned for values not extracted
      * before the exception occurred.
      *
-     * @param reader
-     *            the character stream .
+     * @param reader the character stream .
      * @return a mapping of names to pattern match results (literal match or
-     *         applied template).
+     * applied template).
      */
     public Iterable<Map.Entry<String, String>> extract(final Reader reader) {
         return new Iterable<Map.Entry<String, String>>() {
@@ -102,7 +101,8 @@ public class StreamPatternExtractor {
                                     if (entries[n] != null) {
                                         String entryKey = (String) (entries[n].getKey());
                                         Pattern entryPattern = (Pattern) (entries[n].getValue());
-                                        if (entryPattern == pattern) { // identity equality for accurate (and quick) correlation
+                                        if (entryPattern == pattern) {
+                                            // identity equality for accurate (and quick) correlation
                                             PatternTemplate t = templates.get(entryKey);
                                             String v =
                                                     (t != null ? t.applyTo(matcher) : matcher

@@ -65,7 +65,7 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * Submits requests to remote servers. In this implementation, requests are
  * dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
- * <p>
+ * <p/>
  * <strong>Note:</strong> This implementation does not verify hostnames for
  * outgoing SSL connections. This is because the gateway will usually access the
  * SSL endpoint using a raw IP address rather than a fully-qualified hostname.
@@ -96,7 +96,7 @@ public class HttpClient {
 
         public NonEntityRequest(final Request request) {
             this.method = request.method;
-            final Header contentLengthHeader[] = getHeaders(ContentLengthHeader.NAME);
+            final Header[] contentLengthHeader = getHeaders(ContentLengthHeader.NAME);
             if ((contentLengthHeader == null || contentLengthHeader.length == 0)
                     && ("PUT".equals(method) || "POST".equals(method) || "PROPFIND".equals(method))) {
                 setHeader(ContentLengthHeader.NAME, "0");
@@ -120,14 +120,16 @@ public class HttpClient {
                     "Content-Encoding", "Content-Length", "Content-Type",
                     // hop-to-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
                     "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
-                    "Trailers", "Transfer-Encoding", "Upgrade"));
+                    "Trailers", "Transfer-Encoding", "Upgrade")
+    );
 
     /** Headers that are suppressed in response. */
     private static final CaseInsensitiveSet SUPPRESS_RESPONSE_HEADERS = new CaseInsensitiveSet(
             Arrays.asList(
                     // hop-to-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
                     "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
-                    "Trailers", "Transfer-Encoding", "Upgrade"));
+                    "Trailers", "Transfer-Encoding", "Upgrade")
+    );
 
     /**
      * Returns a new SSL socket factory that does not perform hostname
@@ -162,8 +164,7 @@ public class HttpClient {
     /**
      * Creates a new client handler which will cache at most 64 connections.
      *
-     * @param storage
-     *            the TemporyStorage to use
+     * @param storage the TemporyStorage to use
      */
     public HttpClient(final TemporaryStorage storage) {
         this(storage, DEFAULT_CONNECTIONS);
@@ -173,10 +174,8 @@ public class HttpClient {
      * Creates a new client handler with the specified maximum number of cached
      * connections.
      *
-     * @param storage
-     *            the TemporyStorage to use
-     * @param connections
-     *            the maximum number of connections to open.
+     * @param storage the TemporyStorage to use
+     * @param connections the maximum number of connections to open.
      */
     public HttpClient(final TemporaryStorage storage, final int connections) {
         this.storage = storage;
@@ -213,9 +212,8 @@ public class HttpClient {
     /**
      * Disables automatic retrying of failed requests.
      *
-     * @param logger
-     *            a logger which should be used for logging the reason that a
-     *            request failed.
+     * @param logger a logger which should be used for logging the reason that a
+     * request failed.
      * @return this HTTP client.
      */
     public HttpClient disableRetries(final Logger logger) {
@@ -227,11 +225,9 @@ public class HttpClient {
      * Submits the exchange request to the remote server. Creates and populates
      * the exchange response from that provided by the remote server.
      *
-     * @param exchange
-     *            The HTTP exchange containing the request to send and where the
-     *            response will be placed.
-     * @throws IOException
-     *             If an IO error occurred while performing the request.
+     * @param exchange The HTTP exchange containing the request to send and where the
+     * response will be placed.
+     * @throws IOException If an IO error occurred while performing the request.
      */
     public void execute(final Exchange exchange) throws IOException {
         // recover any previous response connection, if present
@@ -245,11 +241,9 @@ public class HttpClient {
      * Submits the request to the remote server. Creates and populates the
      * response from that provided by the remote server.
      *
-     * @param request
-     *            The HTTP request to send.
+     * @param request The HTTP request to send.
      * @return The HTTP response.
-     * @throws IOException
-     *             If an IO error occurred while performing the request.
+     * @throws IOException If an IO error occurred while performing the request.
      */
     public Response execute(final Request request) throws IOException {
         final HttpRequestBase clientRequest =

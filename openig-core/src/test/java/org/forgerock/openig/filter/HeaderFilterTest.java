@@ -23,15 +23,13 @@ import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * @author Jon Branch
- */
 public class HeaderFilterTest {
     private Exchange exchange;
 

@@ -17,7 +17,5 @@
 
 /**
  * Decouples representations of resources from underlying storage/access protocols.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.resource;

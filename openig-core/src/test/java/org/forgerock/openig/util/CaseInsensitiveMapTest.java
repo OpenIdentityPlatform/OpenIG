@@ -25,9 +25,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-/**
- * @author Paul C. Bryan
- */
 public class CaseInsensitiveMapTest {
 
     private CaseInsensitiveMap<String> map; // map to perform tests on
@@ -52,37 +49,37 @@ public class CaseInsensitiveMapTest {
     // ----- upper case --------------------------------------------------------
 
     @Test
-    public void upperPut_keyRetainsCase() {
+    public void upperPutKeyRetainsCase() {
         map.put(upper, value1);
         assertThat(map.keySet().iterator().next()).isEqualTo(upper);
     }
 
     @Test
-    public void upperPut_upperGet() {
+    public void upperPutUpperGet() {
         map.put(upper, value1);
         assertThat(map.get(upper)).isEqualTo(value1);
     }
 
     @Test
-    public void upperPut_upperContains() {
+    public void upperPutUpperContains() {
         map.put(upper, value1);
         assertThat(map.containsKey(upper)).isTrue();
     }
 
     @Test
-    public void upperPut_spuriousContains() {
+    public void upperPutSpuriousContains() {
         map.put(upper, value1);
         assertThat(map.containsKey(spurious)).isFalse();
     }
 
     @Test
-    public void upperPut_spuriousGet() {
+    public void upperPutSpuriousGet() {
         map.put(upper, value1);
         assertThat(map.get(spurious)).isNull();
     }
 
     @Test
-    public void upperPut_upperRemove_upperGet() {
+    public void upperPutUpperRemoveUpperGet() {
         map.put(upper, value1);
         map.remove(upper);
         assertThat(map.get(upper)).isNull();
@@ -91,37 +88,37 @@ public class CaseInsensitiveMapTest {
     // ----- lower case --------------------------------------------------------
 
     @Test
-    public void lowerPut_keyRetainsCase() {
+    public void lowerPutKeyRetainsCase() {
         map.put(lower, value1);
         assertThat(map.keySet().iterator().next()).isEqualTo(lower);
     }
 
     @Test
-    public void lowerPut_lowerGet() {
+    public void lowerPutLowerGet() {
         map.put(lower, value1);
         assertThat(map.get(lower)).isEqualTo(value1);
     }
 
     @Test
-    public void lowerPut_lowerContains() {
+    public void lowerPutLowerContains() {
         map.put(lower, value1);
         assertThat(map.containsKey(lower)).isTrue();
     }
 
     @Test
-    public void lowerPut_spuriousContains() {
+    public void lowerPutSpuriousContains() {
         map.put(lower, value1);
         assertThat(map.containsKey(spurious)).isFalse();
     }
 
     @Test
-    public void lowerPut_spuriousGet() {
+    public void lowerPutSpuriousGet() {
         map.put(lower, value1);
         assertThat(map.get(spurious)).isNull();
     }
 
     @Test
-    public void lowerPut_lowerRemove_lowerGet() {
+    public void lowerPutLowerRemoveLowerGet() {
         map.put(lower, value1);
         map.remove(lower);
         assertThat(map.get(lower)).isNull();
@@ -130,47 +127,47 @@ public class CaseInsensitiveMapTest {
     // ----- upper then lower case ---------------------------------------------
 
     @Test
-    public void upperPut_lowerGet() {
+    public void upperPutLowerGet() {
         map.put(upper, value1);
         assertThat(map.get(lower)).isEqualTo(value1);
     }
 
     @Test
-    public void upperPut_lowerContains() {
+    public void upperPutLowerContains() {
         map.put(upper, value1);
         assertThat(map.containsKey(lower)).isTrue();
     }
 
     @Test
-    public void upperPut_upperRemove_lowerGet() {
+    public void upperPutUpperRemoveLowerGet() {
         map.put(upper, value1);
         map.remove(upper);
         assertThat(map.get(lower)).isNull();
     }
 
     @Test
-    public void upperPut_lowerRemove_upperGet() {
+    public void upperPutLowerRemoveUpperGet() {
         map.put(upper, value1);
         map.remove(lower);
         assertThat(map.get(upper)).isNull();
     }
 
     @Test
-    public void upperPut_lowerRemove_lowerGet() {
+    public void upperPutLowerRemoveLowerGet() {
         map.put(upper, value1);
         map.remove(lower);
         assertThat(map.get(lower)).isNull();
     }
 
     @Test
-    public void upperPut_lowerPut_upperGet() {
+    public void upperPutLowerPutUpperGet() {
         map.put(upper, value1);
         map.put(lower, value2);
         assertThat(map.get(upper)).isEqualTo(value2);
     }
 
     @Test
-    public void upperPut_lowerPut_lowerGet() {
+    public void upperPutLowerPutLowerGet() {
         map.put(upper, value1);
         map.put(lower, value2);
         assertThat(map.get(lower)).isEqualTo(value2);
@@ -179,47 +176,47 @@ public class CaseInsensitiveMapTest {
     // ----- lower then upper case ---------------------------------------------
 
     @Test
-    public void lowerPut_upperGet() {
+    public void lowerPutUpperGet() {
         map.put(lower, value1);
         assertThat(map.get(upper)).isEqualTo(value1);
     }
 
     @Test
-    public void lowerPut_upperContains() {
+    public void lowerPutUpperContains() {
         map.put(lower, value1);
         assertThat(map.containsKey(upper)).isTrue();
     }
 
     @Test
-    public void lowerPut_lowerRemove_upperGet() {
+    public void lowerPutLowerRemoveUpperGet() {
         map.put(lower, value1);
         map.remove(lower);
         assertThat(map.get(upper)).isNull();
     }
 
     @Test
-    public void lowerPut_upperRemove_lowerGet() {
+    public void lowerPutUpperRemoveLowerGet() {
         map.put(lower, value1);
         map.remove(upper);
         assertThat(map.get(lower)).isNull();
     }
 
     @Test
-    public void lowerPut_upperRemove_upperGet() {
+    public void lowerPutUpperRemoveUpperGet() {
         map.put(lower, value1);
         map.remove(upper);
         assertThat(map.get(upper)).isNull();
     }
 
     @Test
-    public void lowerPut_upperPut_lowerGet() {
+    public void lowerPutUpperPutLowerGet() {
         map.put(lower, value1);
         map.put(upper, value2);
         assertThat(map.get(lower)).isEqualTo(value2);
     }
 
     @Test
-    public void lowerPut_upperPut_upperGet() {
+    public void lowerPutUpperPutUpperGet() {
         map.put(lower, value1);
         map.put(upper, value2);
         assertThat(map.get(upper)).isEqualTo(value2);

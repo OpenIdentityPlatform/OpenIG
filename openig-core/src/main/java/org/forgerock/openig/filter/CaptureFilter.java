@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,10 +31,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicLong; 
-
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
+import java.util.concurrent.atomic.AtomicLong;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -53,16 +51,15 @@ import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Captures request and response messages for further analysis.
- *
- * @author Paul C. Bryan
  */
 public class CaptureFilter extends GenericFilter {
 
     /** Set of common textual content with non-text content-types to capture. */
     private static final HashSet<String> TEXT_TYPES = new HashSet<String>(
-     Arrays.asList("application/atom+xml", "application/javascript", "application/json",
-     "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd", 
-     "application/x-www-form-urlencoded")); // make all entries lower case
+            Arrays.asList("application/atom+xml", "application/javascript", "application/json",
+                    "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
+                    "application/x-www-form-urlencoded")
+    ); // make all entries lower case
 
     /** File where captured output should be written. */
     public File file;
@@ -70,7 +67,9 @@ public class CaptureFilter extends GenericFilter {
     /** Character set to encode captured output with (default: UTF-8). */
     public Charset charset = Charset.forName("UTF-8");
 
-    /** Condition to evaluate to determine whether to capture an exchange (default: {@code null} a.k.a.&nbspunconditional). */
+    /**
+     * Condition to evaluate to determine whether to capture an exchange (default: {@code null} a.k.a. unconditional).
+     */
     public Expression condition = null;
 
     /** Indicates message entity should be captured (default: {@code true}). */
@@ -92,7 +91,7 @@ public class CaptureFilter extends GenericFilter {
     public synchronized void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
-        boolean doCapture = (eval instanceof Boolean && (Boolean)eval);
+        boolean doCapture = (eval instanceof Boolean && (Boolean) eval);
         long id = 0;
         if (doCapture) {
             id = sequence.incrementAndGet();
@@ -156,8 +155,8 @@ public class CaptureFilter extends GenericFilter {
             return;
         }
         String type = (contentType.type != null ? contentType.type.toLowerCase() : null);
-        if (!(contentType.charset != null || (type != null && // text or whitelisted type 
-        (TEXT_TYPES.contains(type) || type.startsWith("text/"))))) {
+        if (!(contentType.charset != null || (type != null && // text or whitelisted type
+                (TEXT_TYPES.contains(type) || type.startsWith("text/"))))) {
             writer.println("[binary entity]");
             return;
         }
@@ -184,7 +183,8 @@ public class CaptureFilter extends GenericFilter {
 
     /** Creates and initializes a capture filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.file = config.get("file").required().asFile(); // required
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset(); // optional

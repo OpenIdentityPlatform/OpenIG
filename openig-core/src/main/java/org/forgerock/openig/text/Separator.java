@@ -18,9 +18,7 @@
 package org.forgerock.openig.text;
 
 /**
- * A field separator specification, used to parse delimiter-separated values. 
- *
- * @author Paul C. Bryan
+ * A field separator specification, used to parse delimiter-separated values.
  */
 public class Separator {
 
@@ -60,10 +58,10 @@ public class Separator {
         if (this == o) {
             return true;
         }
-        return (this.character == ((Separator)o).character &&
-         this.quote == ((Separator)o).quote && this.escape == ((Separator)o).escape);
+        return (this.character == ((Separator) o).character
+                && this.quote == ((Separator) o).quote && this.escape == ((Separator) o).escape);
     }
-    
+
     /**
      * Returns a hash code value for the object.
      */

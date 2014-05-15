@@ -18,7 +18,5 @@
 /**
  * Manages collections or "heaps" of associated objects, initialized from
  * declarative configuration artfiacts.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.heap;

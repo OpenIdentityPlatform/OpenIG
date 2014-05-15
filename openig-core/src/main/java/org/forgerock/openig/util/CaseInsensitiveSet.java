@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,11 +28,9 @@ import java.util.Set;
  * An implementation of a set whose values are case-insensitive strings. All operations match
  * values in a case-insensitive manner. The original cases of values are retained, so the
  * {@link #iterator() iterator()} method for example returns the originally values.
- * <p>
+ * <p/>
  * <strong>Note:</strong> The behavior of this class is undefined when wrapping a set that
  * has keys that would result in duplicate case-insensitive values.
- *
- * @author Paul C. Bryan
  */
 public class CaseInsensitiveSet extends SetDecorator<String> {
 
@@ -57,7 +56,7 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
      */
     @SuppressWarnings("unchecked")
     public CaseInsensitiveSet(Collection<String> c) {
-        super(c instanceof Set ? (Set)c : new HashSet<String>(c)); 
+        super(c instanceof Set ? (Set) c : new HashSet<String>(c));
         lc = new HashMap<String, String>(c.size());
         for (String e : c) {
             lc.put(e.toLowerCase(), e);
@@ -91,7 +90,7 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
 
     private Object translate(Object element) {
         if (element != null && element instanceof String) {
-            String e = lc.get(((String)element).toLowerCase());
+            String e = lc.get(((String) element).toLowerCase());
             if (e != null) { // found a mapped-equivalent
                 element = e;
             }
@@ -117,7 +116,7 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
     public boolean remove(Object o) {
         boolean removed = super.remove(translate(o));
         if (o != null && o instanceof String) {
-            lc.remove(((String)o).toLowerCase());
+            lc.remove(((String) o).toLowerCase());
         }
         return removed;
     }

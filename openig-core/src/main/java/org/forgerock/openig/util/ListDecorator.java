@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -28,8 +29,6 @@ import java.util.ListIterator;
  * data along the way. This class itself simply overrides all methods of {@link List} with
  * versions that pass all requests to the contained list. Subclasses may further override
  * some of these methods and may also provide additional methods and fields.
- *
- * @author Paul C. Bryan
  */
 public class ListDecorator<E> implements List<E> {
 
@@ -70,7 +69,8 @@ public class ListDecorator<E> implements List<E> {
      * @param o element whose presence in the list is to be tested.
      * @return {@code true} if the list contains the specified element.
      * @throws ClassCastException if the type of the specified element is incompatible with the list (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the list does not
+     * permit {@code null} elements (optional).
      */
     @Override
     public boolean contains(Object o) {
@@ -99,9 +99,11 @@ public class ListDecorator<E> implements List<E> {
      * (from first to last element); the runtime type of the returned array is that of the
      * specified array.
      *
-     * @param a the array into which the elements of the list are to be stored, if it is big enough; otherwise, a new array of the same runtime type is allocated for this purpose.
+     * @param a the array into which the elements of the list are to be stored, if it is big enough; otherwise, a
+     * new array of the same runtime type is allocated for this purpose.
      * @return an array containing the elements of the list.
-     * @throws ArrayStoreException if the runtime type of the specified array is not a supertype of the runtime type of every element in the list.
+     * @throws ArrayStoreException if the runtime type of the specified array is not a supertype of the runtime type
+     * of every element in the list.
      * @throws NullPointerException if the specified array is {@code null}.
      */
     @Override
@@ -117,7 +119,8 @@ public class ListDecorator<E> implements List<E> {
      * @throws UnsupportedOperationException if the {@code add} operation is not supported by the list.
      * @throws ClassCastException if the class of the specified element prevents it from being added to the list.
      * @throws IllegalArgumentException if some property of the element prevents it from being added to the list.
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements.
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit
+     * {@code null} elements.
      */
     @Override
     public boolean add(E e) {
@@ -131,7 +134,8 @@ public class ListDecorator<E> implements List<E> {
      * @param o element to be removed from the list, if present.
      * @return {@code true} if the list contained the specified element.
      * @throws ClassCastException if the type of the specified element is incompatible with the list (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null}
+     * elements (optional).
      * @throws UnsupportedOperationException if the {@code remove} operation is not supported by the list.
      */
     @Override
@@ -144,8 +148,10 @@ public class ListDecorator<E> implements List<E> {
      *
      * @param c collection to be checked for containment in the list.
      * @return {@code true} if the list contains all of the elements of the specified collection.
-     * @throws ClassCastException if the types of one or more elements in the specified collection are incompatible with the list (optional).
-     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the list does not permit {@code null} elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the types of one or more elements in the specified collection are incompatible
+     * with the list (optional).
+     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the
+     * list does not permit {@code null} elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean containsAll(Collection<?> c) {
@@ -159,9 +165,12 @@ public class ListDecorator<E> implements List<E> {
      *
      * @param c collection containing elements to be added to the list.
      * @return {@code true} if the list changed as a result of the call.
-     * @throws ClassCastException if the class of an element of the specified collection prevents it from being added to the list.
-     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it from being added to the list.
-     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the list does not permit {@code null} elements, or if the specified collection is {@code null}.
+     * @throws ClassCastException if the class of an element of the specified collection prevents it from being
+     * added to the list.
+     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it from
+     * being added to the list.
+     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the
+     * list does not permit {@code null} elements, or if the specified collection is {@code null}.
      * @throws UnsupportedOperationException if the {@code addAll} operation is not supported by the list.
      */
     @Override
@@ -176,10 +185,13 @@ public class ListDecorator<E> implements List<E> {
      * @param index index at which to insert the first element from the specified collection.
      * @param c collection containing elements to be added to the list.
      * @return {@code true} if the list changed as a result of the call.
-     * @throws ClassCastException if the class of an element of the specified collection prevents it from being added to the list.
-     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it from being added to the list.
+     * @throws ClassCastException if the class of an element of the specified collection prevents it from being
+     * added to the list.
+     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it
+     * from being added to the list.
      * @throws IndexOutOfBoundsException if the index is out of range.
-     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the list does not permit {@code null} elements, or if the specified collection is {@code null}.
+     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and
+     * the list does not permit {@code null} elements, or if the specified collection is {@code null}.
      * @throws UnsupportedOperationException if the {@code addAll} operation is not supported by the list.
      */
     @Override
@@ -194,8 +206,10 @@ public class ListDecorator<E> implements List<E> {
      * @param c collection containing elements to be removed from the list.
      * @return {@code true} if the list changed as a result of the call.
      * @throws UnsupportedOperationException if the {@code removeAll} operation is not supported by the list.
-     * @throws ClassCastException if the class of an element of the list is incompatible with the specified collection (optional).
-     * @throws NullPointerException if the list contains a {@code null} element and the specified collection does not permit {@code null} elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the class of an element of the list is incompatible with the specified
+     * collection (optional).
+     * @throws NullPointerException if the list contains a {@code null} element and the specified collection does
+     * not permit {@code null} elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean removeAll(Collection<?> c) {
@@ -209,8 +223,10 @@ public class ListDecorator<E> implements List<E> {
      * @param c collection containing elements to be retained in the list.
      * @return {@code true} if the list changed as a result of the call.
      * @throws UnsupportedOperationException if the {@code retainAll} operation is not supported by the list.
-     * @throws ClassCastException if the class of an element of the list is incompatible with the specified collection (optional).
-     * @throws NullPointerException if the list contains a {@code null} element and the specified collection does not permit {@code null} elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the class of an element of the list is incompatible with the specified
+     * collection (optional).
+     * @throws NullPointerException if the list contains a {@code null} element and the specified collection
+     * does not permit {@code null} elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean retainAll(Collection<?> c) {
@@ -266,9 +282,11 @@ public class ListDecorator<E> implements List<E> {
      * @param element to be stored at the specified position.
      * @return the element previously at the specified position.
      * @throws ClassCastException if the class of the specified element prevents it from being added to the list.
-     * @throws IllegalArgumentException if some property of the specified element prevents it from being added to the list.
+     * @throws IllegalArgumentException if some property of the specified element prevents it from being added
+     * to the list.
      * @throws IndexOutOfBoundsException if the index is out of range.
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements.
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit
+     * {@code null} elements.
      * @throws UnsupportedOperationException if the {@code set} operation is not supported by the list.
      */
     @Override
@@ -283,9 +301,11 @@ public class ListDecorator<E> implements List<E> {
      * @param index index at which the specified element is to be inserted.
      * @param element element to be inserted.
      * @throws ClassCastException if the class of the specified element prevents it from being added to the list.
-     * @throws IllegalArgumentException if some property of the specified element prevents it from being added to the list.
+     * @throws IllegalArgumentException if some property of the specified element prevents it from being added
+     * to the list.
      * @throws IndexOutOfBoundsException if the index is out of range.
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements.
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit
+     * {@code null} elements.
      * @throws UnsupportedOperationException if the {@code add} operation is not supported by the list.
      */
     @Override
@@ -311,9 +331,11 @@ public class ListDecorator<E> implements List<E> {
      * {@code -1} if the list does not contain the element.
      *
      * @param o element to search for.
-     * @return the index of the first occurrence of the specified element in the list, or {@code -1} if the list does not contain the element.
+     * @return the index of the first occurrence of the specified element in the list, or {@code -1} if the list
+     * does not contain the element.
      * @throws ClassCastException if the type of the specified element is incompatible with the list (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit
+     * {@code null} elements (optional).
      */
     @Override
     public int indexOf(Object o) {
@@ -325,9 +347,11 @@ public class ListDecorator<E> implements List<E> {
      * {@code -1} if the list does not contain the element.
      *
      * @param o element to search for.
-     * @return the index of the last occurrence of the specified element in the list, or {@code -1} if the list does not contain the element.
+     * @return the index of the last occurrence of the specified element in the list, or {@code -1} if the list
+     * does not contain the element.
      * @throws ClassCastException if the type of the specified element is incompatible with the list (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the list does not permit {@code null} elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the list does not permit
+     * {@code null} elements (optional).
      */
     @Override
     public int lastIndexOf(Object o) {
@@ -347,7 +371,8 @@ public class ListDecorator<E> implements List<E> {
      * at the specified position in the list.
      *
      * @param index index of the first element to be returned from the list iterator.
-     * @return a list iterator over the elements in the list (in proper sequence), starting at the specified position in the list.
+     * @return a list iterator over the elements in the list (in proper sequence), starting at the specified
+     * position in the list.
      * @throws IndexOutOfBoundsException if the index is out of range.
      */
     @Override

@@ -18,6 +18,7 @@
 package org.forgerock.openig.heap;
 
 // JSON Fluent
+
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -27,8 +28,6 @@ import org.forgerock.openig.util.Indexed;
 /**
  * Creates and initializes an object that is stored in a {@link Heap}. A heaplet can retrieve
  * object(s) it depends on from the heap.
- *
- * @author Paul C. Bryan
  */
 @SuppressWarnings("rawtypes")
 public interface Heaplet extends Indexed<Class> {
@@ -49,7 +48,7 @@ public interface Heaplet extends Indexed<Class> {
      * @throws HeapException if an exception occurred during creation of the object or any of its dependencies.
      * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration object.
      */
-    Object create(String name, JsonValue config, Heap heap) throws HeapException, JsonValueException;
+    Object create(String name, JsonValue config, Heap heap) throws HeapException;
 
     /**
      * Called to indicate that the object created by the heaplet is going to be dereferenced.

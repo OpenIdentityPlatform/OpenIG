@@ -17,7 +17,5 @@
 
 /**
  * Miscellaneous utility classes.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.util;

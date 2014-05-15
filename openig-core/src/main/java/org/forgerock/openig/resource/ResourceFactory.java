@@ -18,12 +18,11 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.net.URI;
 
 /**
  * Creates objects that provide access to resources specified by uniform resource identifiers.
- *
- * @author Paul C. Bryan
  */
 public interface ResourceFactory {
 

@@ -109,8 +109,7 @@ public class ExtensibleFieldMap extends AbstractMap<String, Object> implements M
      * Constructs a new extensible field map, using the specified object's field
      * members as keys.
      *
-     * @param object
-     *            the object whose field members are to be exposed in the map.
+     * @param object the object whose field members are to be exposed in the map.
      */
     public ExtensibleFieldMap(Object object) {
         fields = new FieldMap(object);

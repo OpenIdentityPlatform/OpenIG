@@ -129,7 +129,7 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
                 @Override
                 public int size() {
                     return fields.size();
-                };
+                }
 
             };
 
@@ -147,8 +147,7 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
      * Constructs a new field map, using the specified object's field members as
      * keys.
      *
-     * @param object
-     *            the object whose field members are to be exposed in the map.
+     * @param object the object whose field members are to be exposed in the map.
      */
     public FieldMap(final Object object) {
         this.object = object;
@@ -206,8 +205,7 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
      * Stores the specified value in the field with the specified field name
      * key.
      *
-     * @throws UnsupportedOperationException
-     *             if the specified field name key does not exist.
+     * @throws UnsupportedOperationException if the specified field name key does not exist.
      */
     @Override
     public Object put(final String key, final Object value) {
@@ -221,8 +219,7 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
      * Sets the value of the field with the specified field name key to
      * {@code null}.
      *
-     * @throws UnsupportedOperationException
-     *             if the specified field name key does not exist.
+     * @throws UnsupportedOperationException if the specified field name key does not exist.
      */
     @Override
     public Object remove(final Object key) {

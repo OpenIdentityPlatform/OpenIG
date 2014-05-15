@@ -19,9 +19,7 @@ package org.forgerock.openig.log;
 
 /**
  * Records elapsed time in a log in milliseconds.
- *
- * @author Paul C. Bryan
- */ 
+ */
 public class LogTimer {
 
     /** The time that the timer was started. */

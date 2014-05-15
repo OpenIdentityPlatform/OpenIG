@@ -18,6 +18,7 @@
 package org.forgerock.openig.config;
 
 // JSON Fluent
+
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -28,8 +29,6 @@ import org.forgerock.openig.resource.ResourceException;
 
 /**
  * Reads and writes configuration data.
- *
- * @author Paul C. Bryan
  */
 public class Config {
 
@@ -52,7 +51,7 @@ public class Config {
      * @throws JsonValueException if either the bootstrap or configuration JSON resource is malformed.
      * @throws ResourceException if the configuration could not be read.
      */
-    public JsonValue read() throws JsonValueException, ResourceException {
+    public JsonValue read() throws ResourceException {
         JSONRepresentation representation = new JSONRepresentation();
         resource.read(representation);
         return new JsonValue(representation.object); // configuration files are JSON objects

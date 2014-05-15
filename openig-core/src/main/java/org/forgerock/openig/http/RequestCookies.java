@@ -41,9 +41,8 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
     /**
      * Constructs a new request cookies object that reads cookies from the
      * specified request.
-     * 
-     * @param request
-     *            the request to read cookies from.
+     *
+     * @param request the request to read cookies from.
      */
     public RequestCookies(final Request request) {
         this.request = request;

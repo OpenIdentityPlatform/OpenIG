@@ -17,7 +17,5 @@
 
 /**
  * Facility for logging and real-time performance monitoring.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.log;

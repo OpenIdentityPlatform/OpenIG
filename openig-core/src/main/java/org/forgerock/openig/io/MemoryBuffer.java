@@ -18,18 +18,17 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.Arrays;
 
 /**
  * A buffer that uses a byte array for data storage. The byte array starts at a prescribed
  * initial length, and grows exponentially up to the prescribed limit.
- * <p>
+ * <p/>
  * <strong>Note:</strong> This implementation is not synchronized. If multiple threads access
  * a buffer concurrently, threads that append to the buffer should synchronize on the instance
  * of this object.
- *
- * @author Paul C. Bryan
  */
 public class MemoryBuffer implements Buffer {
 

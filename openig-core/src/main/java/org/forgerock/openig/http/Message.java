@@ -19,13 +19,12 @@
 package org.forgerock.openig.http;
 
 // OpenIG Core
+
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.util.FieldMap;
 
 /**
  * Elements common to requests and responses.
- *
- * @author Paul C. Bryan
  */
 public abstract class Message extends FieldMap {
 

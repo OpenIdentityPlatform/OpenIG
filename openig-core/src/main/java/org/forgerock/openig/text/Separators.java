@@ -19,8 +19,6 @@ package org.forgerock.openig.text;
 
 /**
  * Commonly used field separator specifications.
- *
- * @author Paul C. Bryan
  */
 public enum Separators {
 

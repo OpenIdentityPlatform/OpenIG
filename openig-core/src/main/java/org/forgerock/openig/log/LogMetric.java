@@ -18,12 +18,11 @@
 package org.forgerock.openig.log;
 
 // OpenIG Core
+
 import org.forgerock.openig.util.FieldMap;
 
 /**
  * Log entry data that provides a measurement.
- *
- * @author Paul C. Bryan
  */
 public class LogMetric extends FieldMap {
 
@@ -48,7 +47,7 @@ public class LogMetric extends FieldMap {
      * Returns the metric in the form <em>value</em> SP <em>units</em>. For example, if
      * value is {@code 100} and units are {@code "ms"}, then the returned value would be
      * {@code "100 ms"}.
-     */ 
+     */
     @Override
     public String toString() {
         return value.toString() + ' ' + units;

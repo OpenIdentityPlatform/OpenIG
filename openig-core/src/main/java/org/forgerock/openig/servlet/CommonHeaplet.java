@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Standard Edition
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -36,8 +37,6 @@ import org.forgerock.openig.heap.NestedHeaplet;
 
 /**
  * Heaplet with methods common to servlets and filters.
- *
- * @author Paul C. Bryan
  */
 abstract class CommonHeaplet extends NestedHeaplet {
 
@@ -78,8 +77,9 @@ abstract class CommonHeaplet extends NestedHeaplet {
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
      * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    protected void configure() throws HeapException, JsonValueException {
-        servletContext = HeapUtil.getRequiredObject(heap, config.get("servletContext").defaultTo("ServletContext"), ServletContext.class);
+    protected void configure() throws HeapException {
+        JsonValue context = config.get("servletContext").defaultTo("ServletContext");
+        servletContext = HeapUtil.getRequiredObject(heap, context, ServletContext.class);
         JsonValue initParams = config.get("initParams").expect(Map.class); // optional
         for (String key : initParams.keys()) {
             this.initParams.put(key, initParams.get(key).asString());

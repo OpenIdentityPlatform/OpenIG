@@ -19,6 +19,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -32,8 +33,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
@@ -53,8 +52,6 @@ import org.forgerock.openig.util.URIUtil;
 
 /**
  * Translates between the Servlet API and the exchange object model.
- *
- * @author Paul C. Bryan
  */
 public class HandlerServlet extends HttpServlet {
 
@@ -74,7 +71,7 @@ public class HandlerServlet extends HttpServlet {
 
     /** Methods that should not include an entity body. */
     private static final CaseInsensitiveSet NON_ENTITY_METHODS =
-     new CaseInsensitiveSet(Arrays.asList("GET", "HEAD", "TRACE", "DELETE"));
+            new CaseInsensitiveSet(Arrays.asList("GET", "HEAD", "TRACE", "DELETE"));
 
     /**
      * Handles a servlet request by dispatching it to a handler. It receives a servlet request,
@@ -91,7 +88,7 @@ public class HandlerServlet extends HttpServlet {
         exchange.request.method = request.getMethod();
         try {
             exchange.request.uri = URIUtil.create(request.getScheme(), null, request.getServerName(),
-             request.getServerPort(), request.getRequestURI(), request.getQueryString(), null);
+                    request.getServerPort(), request.getRequestURI(), request.getQueryString(), null);
             if (baseURI != null) {
                 exchange.request.uri = URIUtil.rebase(exchange.request.uri, baseURI);
             }
@@ -105,7 +102,7 @@ public class HandlerServlet extends HttpServlet {
         }
         // include request entity if appears to be provided with request
         if ((request.getContentLength() > 0 || request.getHeader("Transfer-Encoding") != null)
-        && !NON_ENTITY_METHODS.contains(exchange.request.method)) {
+                && !NON_ENTITY_METHODS.contains(exchange.request.method)) {
             exchange.request.entity = new BranchingStreamWrapper(request.getInputStream(), storage);
         }
         // remember request entity so that it (and its children) can be properly closed
@@ -159,7 +156,8 @@ public class HandlerServlet extends HttpServlet {
 
     /** Creates and initializes a handler servlet in a heap environment. */
     public static class Heaplet extends GenericServletHeaplet {
-        @Override public HttpServlet createServlet() throws HeapException, JsonValueException {
+        @Override
+        public HttpServlet createServlet() throws HeapException {
             HandlerServlet servlet = new HandlerServlet();
             servlet.handler = HeapUtil.getRequiredObject(heap, config.get("handler").required(), Handler.class);
             servlet.baseURI = config.get("baseURI").asURI(); // optional

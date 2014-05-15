@@ -19,8 +19,6 @@ package org.forgerock.openig.util;
 
 /**
  * A factory interface for scoped objects.
- *
- * @author Paul C. Bryan
  */
 public interface ScopedFactory<S, T> {
 

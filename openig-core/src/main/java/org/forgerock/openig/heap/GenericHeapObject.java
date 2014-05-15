@@ -18,6 +18,7 @@
 package org.forgerock.openig.heap;
 
 // OpenIG Core
+
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
@@ -25,8 +26,6 @@ import org.forgerock.openig.log.NullLogSink;
 /**
  * A generic base class for heap objects with handy injected heap objects. This implementation
  * provides reasonable safe defaults, to be overriden by the concrete object's heaplet.
- *
- * @author Paul C. Bryan
  */
 public class GenericHeapObject {
 

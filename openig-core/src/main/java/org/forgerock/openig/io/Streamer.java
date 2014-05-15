@@ -19,6 +19,7 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,10 +28,8 @@ import java.io.Writer;
 
 /**
  * Utility class that can stream to and from streams.
- *
- * @author Paul C. Bryan
  */
-public class Streamer {
+public final class Streamer {
 
     /** Size of buffer to use during streaming. */
     private static final int BUF_SIZE = 8 * 1024;

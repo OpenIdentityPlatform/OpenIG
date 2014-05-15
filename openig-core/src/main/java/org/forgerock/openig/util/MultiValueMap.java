@@ -19,6 +19,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,8 +28,6 @@ import java.util.Map;
 /**
  * Wraps a map for which the values are lists, providing a set of convenience methods for
  * handling list values.
- *
- * @author Paul C. Bryan
  */
 public class MultiValueMap<K, V> extends MapDecorator<K, List<V>> {
 
@@ -106,8 +105,7 @@ public class MultiValueMap<K, V> extends MapDecorator<K, List<V>> {
         List<V> list = get(key);
         if (list == null || list.size() == 0) {
             return null;
-        }
-        else {
+        } else {
             return list.get(0);
         }
     }

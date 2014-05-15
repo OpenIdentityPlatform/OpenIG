@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 
 // OpenIG Core
@@ -27,9 +28,8 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.http.Exchange;
 
 /**
- * A generic base class for filters with handy injected heap objects. 
+ * A generic base class for filters with handy injected heap objects.
  *
- * @author Paul C. Bryan
  * @see GenericHeapObject
  */
 public abstract class GenericFilter extends GenericHeapObject implements Filter {

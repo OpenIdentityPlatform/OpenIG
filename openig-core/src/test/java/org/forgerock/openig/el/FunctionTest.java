@@ -28,9 +28,6 @@ import org.testng.annotations.Test;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 
-/**
- * @author Paul C. Bryan
- */
 public class FunctionTest {
 
     private Exchange exchange;
@@ -42,6 +39,7 @@ public class FunctionTest {
     }
 
     @Test
+    // @Checkstyle:ignore
     public void _toString() throws ExpressionException {
         exchange.request.uri = URI.create("http://www.forgerock.org/");
         Object o = new Expression("${toString(exchange.request.uri)}").eval(exchange);
@@ -81,7 +79,7 @@ public class FunctionTest {
 
     @Test
     public void join() throws ExpressionException {
-        String[] s = { "a", "b", "c" };
+        String[] s = {"a", "b", "c"};
         exchange.put("foo", s);
         Object o = new Expression("${join(exchange.foo, ',')}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
@@ -121,7 +119,7 @@ public class FunctionTest {
         exchange.put("s", s);
         Object o = new Expression("${matches(exchange.s, 'the (.*) model')}").eval(exchange);
         assertThat(o).isInstanceOf(String[].class);
-        String[] ss = (String[])o;
+        String[] ss = (String[]) o;
         assertThat(ss[0]).isEqualTo("the very model");
         assertThat(ss[1]).isEqualTo("very");
     }

@@ -77,13 +77,10 @@ public final class LdapClient {
      * connection must be closed once the caller has completed its transaction.
      * Connections are cached between calls using a connection pool.
      *
-     * @param host
-     *            The LDAP server host name.
-     * @param port
-     *            The LDAP server port.
+     * @param host The LDAP server host name.
+     * @param port The LDAP server port.
      * @return An LDAP connection for the specified LDAP server.
-     * @throws ErrorResultException
-     *             If an error occurred while connecting to the LDAP server.
+     * @throws ErrorResultException If an error occurred while connecting to the LDAP server.
      */
     public LdapConnection connect(final String host, final int port) throws ErrorResultException {
         return connect(host, port, new LDAPOptions());
@@ -95,20 +92,16 @@ public final class LdapClient {
      * caller has completed its transaction. Connections are cached between
      * calls using a connection pool. The LDAP options may be used for
      * configuring SSL parameters and timeouts.
-     * <p>
+     * <p/>
      * NOTE: if a connection has already been obtained to the specified LDAP
      * server then a cached connection will be returned and the LDAP options
      * will be ignored.
      *
-     * @param host
-     *            The LDAP server host name.
-     * @param port
-     *            The LDAP server port.
-     * @param options
-     *            The LDAP options.
+     * @param host The LDAP server host name.
+     * @param port The LDAP server port.
+     * @param options The LDAP options.
      * @return An LDAP connection for the specified LDAP server.
-     * @throws ErrorResultException
-     *             If an error occurred while connecting to the LDAP server.
+     * @throws ErrorResultException If an error occurred while connecting to the LDAP server.
      */
     public LdapConnection connect(final String host, final int port, final LDAPOptions options)
             throws ErrorResultException {
@@ -121,14 +114,11 @@ public final class LdapClient {
      * attribute values. Values will be safely escaped in order to avoid
      * potential injection attacks.
      *
-     * @param template
-     *            The DN template.
-     * @param attributeValues
-     *            The attribute values to be substituted into the template.
+     * @param template The DN template.
+     * @param attributeValues The attribute values to be substituted into the template.
      * @return The formatted template parsed as a {@code DN}.
-     * @throws LocalizedIllegalArgumentException
-     *             If the formatted template is not a valid LDAP string
-     *             representation of a DN.
+     * @throws LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
+     * representation of a DN.
      * @see DN#format(String, Object...)
      */
     public String dn(final String template, final Object... attributeValues) {
@@ -140,14 +130,11 @@ public final class LdapClient {
      * Values will be safely escaped in order to avoid potential injection
      * attacks.
      *
-     * @param template
-     *            The filter template.
-     * @param assertionValues
-     *            The assertion values to be substituted into the template.
+     * @param template The filter template.
+     * @param assertionValues The assertion values to be substituted into the template.
      * @return The formatted template parsed as a {@code Filter}.
-     * @throws LocalizedIllegalArgumentException
-     *             If the formatted template is not a valid LDAP string
-     *             representation of a filter.
+     * @throws LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
+     * representation of a filter.
      * @see Filter#format(String, Object...)
      */
     public String filter(final String template, final Object... assertionValues) {
@@ -155,7 +142,7 @@ public final class LdapClient {
     }
 
     private ConnectionFactory getConnectionFactory(final String host, final int port,
-            final LDAPOptions options) {
+                                                   final LDAPOptions options) {
         final String key = host + ":" + port;
         ConnectionFactory factory = factories.get(key);
         if (factory == null) {

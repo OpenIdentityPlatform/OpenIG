@@ -18,6 +18,7 @@
 package org.forgerock.openig.handler;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,7 +28,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -43,12 +43,10 @@ import org.forgerock.openig.util.URIUtil;
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
  * condition is evalated. If a condition expression yields {@code true}, then the exchange
  * is dispatched to the associated handler with no further processing.
- * <p>
+ * <p/>
  * If no condition yields {@code true} then the handler will throw a {@link HandlerException}.
  * Therefore, it's advisable to have a single "default" handler at the end of the list
- * with no condition (unconditional) to handle otherwise undispatched requests. 
- *
- * @author Paul C. Bryan
+ * with no condition (unconditional) to handle otherwise undispatched requests.
  */
 public class DispatchHandler extends GenericHandler {
 
@@ -95,7 +93,8 @@ public class DispatchHandler extends GenericHandler {
      * Creates and initializes a dispatch handler in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             DispatchHandler handler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);

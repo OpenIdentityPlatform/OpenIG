@@ -18,6 +18,7 @@
 package org.forgerock.openig.text;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -34,8 +35,6 @@ import java.util.Map;
  * constructed, an instance of this class is thread-safe, meaning the object can be long-lived,
  * and multiple concurrent calls to {@link #getRecord(String, String) getRecord} is fully
  * supported.
- *
- * @author Paul C. Bryan
  */
 public class SeparatedValuesFile {
 
@@ -51,7 +50,10 @@ public class SeparatedValuesFile {
     /** Does the first line of the file contain the set of defined field keys. */
     public boolean header;
 
-    /** Explicit field keys in the order they appear in a record, overriding any existing field header, or {@code null} to use field header. */
+    /**
+     * Explicit field keys in the order they appear in a record, overriding any existing field header,
+     * or {@code null} to use field header.
+     */
     public List<String> fields = new ArrayList<String>();
 
     /**
@@ -64,7 +66,10 @@ public class SeparatedValuesFile {
      */
     public Map<String, String> getRecord(String key, String value) throws IOException {
         Map<String, String> map = null;
-        SeparatedValuesReader reader = new SeparatedValuesReader(new InputStreamReader(new FileInputStream(file), charset), separator);
+        SeparatedValuesReader reader = new SeparatedValuesReader(
+                new InputStreamReader(new FileInputStream(file), charset),
+                separator
+        );
         try {
             List<String> fields = this.fields;
             if (header) { // first line in the file is the field header

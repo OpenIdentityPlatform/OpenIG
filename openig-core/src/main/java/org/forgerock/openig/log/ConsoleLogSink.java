@@ -17,9 +17,6 @@
 
 package org.forgerock.openig.log;
 
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
-
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
@@ -27,8 +24,6 @@ import org.forgerock.openig.util.ISO8601;
 
 /**
  * A sink that writes log entries to the standard error stream.
- *
- * @author Paul C. Bryan
  */
 public class ConsoleLogSink implements LogSink {
 
@@ -38,7 +33,7 @@ public class ConsoleLogSink implements LogSink {
     @Override
     public void log(LogEntry entry) {
         if (isLoggable(entry.source, entry.level)) {
-            synchronized(this) {
+            synchronized (this) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(ISO8601.format(entry.time)).append(':').append(entry.source).append(':');
                 sb.append(entry.level).append(':').append(entry.message);
@@ -60,7 +55,8 @@ public class ConsoleLogSink implements LogSink {
      * Creates and initializes a console sink in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             ConsoleLogSink sink = new ConsoleLogSink();
             sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
             return sink;

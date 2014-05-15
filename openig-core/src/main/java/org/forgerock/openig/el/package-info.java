@@ -17,7 +17,5 @@
 
 /**
  * Integrates with the Java Enterprise Edition Unified Expression Language API.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.el;

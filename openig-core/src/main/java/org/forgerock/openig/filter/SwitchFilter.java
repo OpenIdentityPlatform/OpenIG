@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.Map;
 
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -42,9 +42,7 @@ import org.forgerock.openig.util.JsonValueUtil;
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
  * handled, associated conditions are evaluated. If a condition evaluates to {@code true}, then
  * the exchange flow is diverted to the associated handler. If no condition evaluates to
- * {@code true}, then the exchange flows normally through the filter. 
- *
- * @author Paul C. Bryan
+ * {@code true}, then the exchange flows normally through the filter.
  */
 public class SwitchFilter extends GenericFilter {
 
@@ -57,10 +55,10 @@ public class SwitchFilter extends GenericFilter {
     }
 
     /** Switch cases to test before the exchange is handled. */
-    public final List<Case> onRequest = new ArrayList<Case>(); 
+    public final List<Case> onRequest = new ArrayList<Case>();
 
     /** Switch cases to test after the exchange is handled. */
-    public final List<Case> onResponse = new ArrayList<Case>(); 
+    public final List<Case> onResponse = new ArrayList<Case>();
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -75,7 +73,7 @@ public class SwitchFilter extends GenericFilter {
     private boolean doSwitch(Exchange exchange, List<Case> cases) throws HandlerException, IOException {
         for (Case c : cases) {
             Object o = (c.condition != null ? c.condition.eval(exchange) : Boolean.TRUE);
-            if (o instanceof Boolean && ((Boolean)o)) {
+            if (o instanceof Boolean && ((Boolean) o)) {
                 c.handler.handle(exchange);
                 return true; // switched flow
             }
@@ -87,13 +85,15 @@ public class SwitchFilter extends GenericFilter {
      * Creates and initializes an expect filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             SwitchFilter result = new SwitchFilter();
             result.onRequest.addAll(asCases("onRequest"));
             result.onResponse.addAll(asCases("onResponse"));
             return result;
         }
-        private List<Case> asCases(String name) throws HeapException, JsonValueException {
+
+        private List<Case> asCases(String name) throws HeapException {
             ArrayList<Case> result = new ArrayList<Case>();
             JsonValue cases = config.get(name).expect(List.class); // optional
             for (JsonValue _case : cases) {
@@ -101,7 +101,8 @@ public class SwitchFilter extends GenericFilter {
             }
             return result;
         }
-        private Case asCase(JsonValue _case) throws HeapException, JsonValueException {
+
+        private Case asCase(JsonValue _case) throws HeapException {
             Case result = new Case();
             result.condition = JsonValueUtil.asExpression(_case.get("condition")); // optional
             result.handler = HeapUtil.getRequiredObject(heap, _case.get("handler"), Handler.class);

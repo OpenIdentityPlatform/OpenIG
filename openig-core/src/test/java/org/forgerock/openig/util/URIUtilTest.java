@@ -24,23 +24,20 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.testng.annotations.Test;
 
-/**
- * @author Paul C. Bryan
- */
 public class URIUtilTest {
 
     @Test
     public void toURIandBack() throws URISyntaxException {
         URI u1 = URIUtil.create("a", "b", "c", 4, "/e%3D", "x=%3D", "g%3D");
         URI u2 = URIUtil.create(u1.getScheme(), u1.getRawUserInfo(), u1.getHost(),
-         u1.getPort(), u1.getRawPath(), u1.getRawQuery(), u1.getRawFragment());
+                u1.getPort(), u1.getRawPath(), u1.getRawQuery(), u1.getRawFragment());
         assertThat(u1).isEqualTo(u2);
     }
 
     @Test
     public void rawParams() throws URISyntaxException {
         URI uri = URIUtil.create("http", "user", "example.com", 80, "/raw%3Dpath",
-         "x=%3D", "frag%3Dment");
+                "x=%3D", "frag%3Dment");
         assertThat(uri.toString()).isEqualTo("http://user@example.com:80/raw%3Dpath?x=%3D#frag%3Dment");
     }
 

@@ -19,8 +19,6 @@ package org.forgerock.openig.el;
 
 /**
  * An exception that is thrown during expression operations.
- *
- * @author Paul C. Bryan
  */
 public class ExpressionException extends Exception {
 
@@ -31,14 +29,14 @@ public class ExpressionException extends Exception {
      */
     public ExpressionException() {
     }
-    
+
     /**
      * Constructs a new exception with the specified detail message.
      */
     public ExpressionException(String message) {
         super(message);
     }
-    
+
     /**
      * Constructs a new exception with the specified cause.
      */

@@ -18,6 +18,7 @@
 package org.forgerock.openig.el;
 
 // Java Standard Edition
+
 import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,8 +43,6 @@ import org.forgerock.openig.resolver.Resolvers;
  * An Unified Expression Language expression. Creating an expression is the equivalent to
  * compiling it. Once created, an expression can be evaluated within a supplied scope. An
  * expression can safely be evaluated concurrently in multiple threads.
- *
- * @author Paul C. Bryan
  */
 public class Expression {
 
@@ -113,7 +112,7 @@ public class Expression {
     @SuppressWarnings("unchecked")
     public <T> T eval(Object scope, Class<T> type) {
         Object value = eval(scope);
-        return (value != null && type.isInstance(value) ? (T)value : null);
+        return (value != null && type.isInstance(value) ? (T) value : null);
     }
 
     /**
@@ -128,8 +127,9 @@ public class Expression {
     public void set(Object scope, Object value) {
         try {
             // cannot set multiple items, truncate the List
-            while (valueExpression.size() > 1)
+            while (valueExpression.size() > 1) {
                 valueExpression.remove(1);
+            }
             valueExpression.get(0).setValue(new XLContext(scope), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
@@ -139,46 +139,66 @@ public class Expression {
     private static class XLContext extends ELContext {
         private final ELResolver elResolver;
         private final FunctionMapper fnMapper = new Functions();
+
         public XLContext(Object scope) {
             elResolver = new XLResolver(scope);
         }
-        @Override public ELResolver getELResolver() {
+
+        @Override
+        public ELResolver getELResolver() {
             return elResolver;
         }
-        @Override public FunctionMapper getFunctionMapper() {
+
+        @Override
+        public FunctionMapper getFunctionMapper() {
             return fnMapper;
         }
-        @Override public VariableMapper getVariableMapper() {
+
+        @Override
+        public VariableMapper getVariableMapper() {
             return null;
         }
     }
 
     private static class XLResolver extends ELResolver {
         private final Object scope;
+
         public XLResolver(Object scope) {
             this.scope = scope;
         }
-        @Override public Object getValue(ELContext context, Object base, Object property) {
+
+        @Override
+        public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
             Object value = Resolvers.get((base == null ? scope : base), property);
             return (value != Resolver.UNRESOLVED ? value : null);
         }
-        @Override public Class<?> getType(ELContext context, Object base, Object property) {
+
+        @Override
+        public Class<?> getType(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
             return Object.class;
         }
-        @Override public void setValue(ELContext context, Object base, Object property, Object value) {
+
+        @Override
+        public void setValue(ELContext context, Object base, Object property, Object value) {
             context.setPropertyResolved(true);
             Resolvers.put((base == null ? scope : base), property, value);
         }
-        @Override public boolean isReadOnly(ELContext context, Object base, Object property) {
+
+        @Override
+        public boolean isReadOnly(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
             return false; // attempts to write to read-only values are merely ignored
         }
-        @Override public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
+
+        @Override
+        public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
             return null;
         }
-        @Override public Class<?> getCommonPropertyType(ELContext context, Object base) {
+
+        @Override
+        public Class<?> getCommonPropertyType(ELContext context, Object base) {
             return (base == null ? String.class : Object.class);
         }
     }

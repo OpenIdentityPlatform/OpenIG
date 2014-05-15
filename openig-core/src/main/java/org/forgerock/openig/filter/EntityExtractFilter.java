@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -49,13 +50,11 @@ import org.forgerock.openig.util.JsonValueUtil;
  * before the exchange is handled if {@code messageType} is {@link MessageType#REQUEST}, or
  * after the exchange is handled if it is {@link MessageType#RESPONSE}. Each pattern can have
  * an associated template, which is applied to its match result.
- * <p>
+ * <p/>
  * The extraction results are contained in a {@link Map} object, whose location is specified
  * by the {@code target} expression. For a given matched pattern, the value stored in the map
  * is either the result of applying its associated pattern template (if specified) or the
  * match result itself otherwise.
- *
- * @author Paul C. Bryan
  *
  * @see StreamPatternExtractor
  * @see PatternTemplate
@@ -112,7 +111,8 @@ public class EntityExtractFilter extends GenericFilter {
 
     /** Creates and initializes an entity extract handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             EntityExtractFilter filter = new EntityExtractFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
             filter.charset = config.get("charset").asCharset(); // optional

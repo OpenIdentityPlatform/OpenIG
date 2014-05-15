@@ -19,15 +19,19 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * Miscellaneous string utility methods.
- *
- * @author Paul C. Bryan
  */
-public class StringUtil {
+public final class StringUtil {
+
+    /**
+     * Static methods only.
+     */
+    private StringUtil() { }
 
     /**
      * Joins a collection of elements into a single string value, with a specified separator.

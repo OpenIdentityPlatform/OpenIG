@@ -18,16 +18,15 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
 /**
  * TODO: Description.
- *
- * @author Paul C. Bryan
  */
-public class ISO8601 {
+public final class ISO8601 {
 
     /** Format to output dates in. Must be used in synchronized block. */
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -37,13 +36,18 @@ public class ISO8601 {
     }
 
     /**
+     * Private constructor for utility class.
+     */
+    private ISO8601() { }
+
+    /**
      * TODO: Description.
      *
      * @param date TODO.
      * @return TODO.
      */
     public static String format(Date date) {
-        synchronized(SDF) {
+        synchronized (SDF) {
             return SDF.format(date);
         }
     }

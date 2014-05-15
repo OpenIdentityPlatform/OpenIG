@@ -18,15 +18,14 @@
 package org.forgerock.openig.decoder;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Decodes an entity encoded with <strong>{@code gzip}</strong> encoding. See 
+ * Decodes an entity encoded with <strong>{@code gzip}</strong> encoding. See
  * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §3.5 for more information.
- *
- * @author Paul C. Bryan
  */
 public class GzipDecoder implements Decoder {
 

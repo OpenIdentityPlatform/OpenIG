@@ -20,7 +20,6 @@ package org.forgerock.openig.handler;
 
 import java.io.IOException;
 
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.HttpClient;
@@ -31,7 +30,7 @@ import org.forgerock.openig.log.LogTimer;
  * Submits exchange requests to remote servers. In this implementation, requests
  * are dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
- * <p>
+ * <p/>
  * <strong>Note:</strong> This handler does not verify hostnames for outgoing
  * SSL connections. This is because the gateway will usually access the SSL
  * endpoint using a raw IP address rather than a fully-qualified hostname.
@@ -44,8 +43,7 @@ public class ClientHandler extends GenericHandler {
     /**
      * Creates a new client handler.
      *
-     * @param client
-     *            The HTTP client implementation.
+     * @param client The HTTP client implementation.
      */
     public ClientHandler(HttpClient client) {
         this.client = client;
@@ -68,13 +66,15 @@ public class ClientHandler extends GenericHandler {
     /** Creates and initializes a client handler in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
         @Override
-        public Object create() throws HeapException, JsonValueException {
-            Integer connections = config.get("connections").defaultTo(0).asInteger(); // optional, default to DEFAULT_CONNECTIONS number of connections
+        public Object create() throws HeapException {
+            // optional, default to DEFAULT_CONNECTIONS number of connections
+            Integer connections = config.get("connections").defaultTo(0).asInteger();
             // determines if connections should be reused, disables keep-alive
-            Boolean disableReuseConnection =
-                    config.get("disableReuseConnection").defaultTo(false).asBoolean(); // optional, default false
+            Boolean disableReuseConnection = config.get("disableReuseConnection")
+                    .defaultTo(false).asBoolean(); // optional, default false
             // determines if requests should be retried on failure
-            Boolean disableRetries = config.get("disableRetries").defaultTo(false).asBoolean(); // optional, default false
+            Boolean disableRetries = config.get("disableRetries")
+                    .defaultTo(false).asBoolean(); // optional, default false
 
             HttpClient client = new HttpClient(storage, connections);
             if (disableRetries) {

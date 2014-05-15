@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Enterprise Edition
+
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -31,8 +32,6 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * Generic heaplet base class for Java servlets and filters. Implements the
  * {@link FilterConfig} interface for initialization of the filter.
- *
- * @author Paul C. Bryan
  */
 public abstract class GenericFilterHeaplet extends CommonHeaplet implements FilterConfig {
 
@@ -45,7 +44,7 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
      * initialized through a call to its {@link Filter#init(FilterConfig)} method.
      */
     @Override // GenericHeaplet
-    public Object create() throws HeapException, JsonValueException {
+    public Object create() throws HeapException {
         configure();
         filter = createFilter();
         try {
@@ -81,5 +80,5 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
      * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract Filter createFilter() throws HeapException, JsonValueException;
+    public abstract Filter createFilter() throws HeapException;
 }

@@ -19,6 +19,7 @@
 package org.forgerock.openig.handler;
 
 // Java Standard Edition
+
 import java.io.IOException;
 
 // OpenIG Core
@@ -26,17 +27,15 @@ import org.forgerock.openig.http.Exchange;
 
 /**
  * Handles an HTTP exchange request by producing an associated response.
- *
- * @author Paul C. Bryan
  */
 public interface Handler {
 
     /**
      * Called to request the handler respond to the request.
-     * <p>
+     * <p/>
      * A handler that doesn't hand-off an exchange to another handler downstream is
      * responsible for creating the response in the exchange object.
-     * <p>
+     * <p/>
      * <strong>Important note:</strong> If an existing response exists in the exchange object
      * and the handler intends to replace it with its own, it must first check to see if the
      * existing response has an entity, and if it does, must call its {@code close} method in

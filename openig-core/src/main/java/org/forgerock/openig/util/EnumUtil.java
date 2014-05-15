@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -25,10 +26,8 @@ import java.util.Set;
 
 /**
  * Utility class for accessing Java enum types.
- *
- * @author Paul C. Bryan
  */
-public class EnumUtil {
+public final class EnumUtil {
 
     /** Cache of name sets for repeated call efficiency. */
     private static final HashMap<Class<?>, Set<String>> NAMESETS = new HashMap<Class<?>, Set<String>>();

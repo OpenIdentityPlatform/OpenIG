@@ -9,15 +9,12 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2014 ForgeRock AS.
  */
 
 /**
- * Tranforms Java object model structures to and from JSON encoded values. Encapsulates an
- * underlying JSON toolkit, which is subject to change. This implementation currently uses
- * the <a href="http://code.google.com/p/json-simple/">JSON.simple</a> toolkit.
+ * Scripting support.
  */
-package org.forgerock.openig.json;
+package org.forgerock.openig.script;

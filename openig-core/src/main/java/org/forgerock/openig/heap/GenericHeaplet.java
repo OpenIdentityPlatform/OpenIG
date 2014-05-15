@@ -18,6 +18,7 @@
 package org.forgerock.openig.heap;
 
 // Java Standard Edition
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,14 +34,12 @@ import org.forgerock.openig.log.LogSink;
 
 /**
  * A generic base class for heaplets with automatically injected fields.
- *
- * @author Paul C. Bryan
  */
 public abstract class GenericHeaplet implements Heaplet {
 
     /** Heap objects to avoid dependency injection (prevents circular dependencies). */
     private static final HashSet<String> SPECIAL_OBJECTS =
-     new HashSet<String>(Arrays.asList("LogSink", "TemporaryStorage"));
+            new HashSet<String>(Arrays.asList("LogSink", "TemporaryStorage"));
 
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;
@@ -66,20 +65,28 @@ public abstract class GenericHeaplet implements Heaplet {
     /**
      * Initializes protected field members and calls the abstract {@link #create()} method. If
      * the object created is an instance of {@link GenericHeapObject}, it is then
-     * automatically injected with {@code logger} and {@code storage} objects. 
+     * automatically injected with {@code logger} and {@code storage} objects.
      */
     @Override
-    public Object create(String name, JsonValue config, Heap heap) throws HeapException, JsonValueException {
+    public Object create(String name, JsonValue config, Heap heap) throws HeapException {
         this.name = name;
         this.config = config.required().expect(Map.class);
         this.heap = heap;
         if (!SPECIAL_OBJECTS.contains(name)) {
-            this.logger = new Logger(HeapUtil.getObject(heap, config.get("logSink").defaultTo("LogSink"), LogSink.class), name);
-            this.storage = HeapUtil.getRequiredObject(heap, config.get("temporaryStorage").defaultTo("TemporaryStorage"), TemporaryStorage.class);
+            this.logger = new Logger(
+                    HeapUtil.getObject(
+                            heap,
+                            config.get("logSink").defaultTo("LogSink"),
+                            LogSink.class),
+                    name);
+            this.storage = HeapUtil.getRequiredObject(
+                    heap,
+                    config.get("temporaryStorage").defaultTo("TemporaryStorage"),
+                    TemporaryStorage.class);
         }
         this.object = create();
         if (this.object instanceof GenericHeapObject) { // instrument object if possible
-            GenericHeapObject ghObject = (GenericHeapObject)this.object;
+            GenericHeapObject ghObject = (GenericHeapObject) this.object;
             ghObject.logger = this.logger;
             ghObject.storage = this.storage;
         }
@@ -99,5 +106,5 @@ public abstract class GenericHeaplet implements Heaplet {
      * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
      * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
      */
-    public abstract Object create() throws HeapException, JsonValueException;
+    public abstract Object create() throws HeapException;
 }

@@ -18,6 +18,7 @@
 package org.forgerock.openig.resource;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,8 +27,6 @@ import java.net.URI;
 
 /**
  * Accesses local file resources.
- *
- * @author Paul C. Bryan
  */
 public class FileResource implements Resource {
 
@@ -73,7 +72,7 @@ public class FileResource implements Resource {
             if (in != null) {
                 try {
                     in.close();
-                }catch (IOException ioe) {
+                } catch (IOException ioe) {
                     // ignore exception
                 }
             }
@@ -125,7 +124,8 @@ public class FileResource implements Resource {
      * {@code "file://"} or {@code null} scheme.
      */
     public static class Factory implements ResourceFactory {
-        @Override public Resource newInstance(URI uri) throws ResourceException {
+        @Override
+        public Resource newInstance(URI uri) throws ResourceException {
             String scheme = uri.getScheme();
             if (scheme == null || "file".equalsIgnoreCase(scheme)) {
                 return new FileResource(new File(uri.getPath()));

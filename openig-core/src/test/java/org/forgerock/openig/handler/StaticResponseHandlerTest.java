@@ -27,9 +27,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
 
-/**
- * @author Paul C. Bryan
- */
 public class StaticResponseHandlerTest {
 
     @Test

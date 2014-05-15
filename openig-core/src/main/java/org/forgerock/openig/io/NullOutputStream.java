@@ -18,12 +18,11 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.OutputStream;
 
 /**
  * An output stream that discards all data written to it. GNDN.
- *
- * @author Paul C. Bryan
  */
 public class NullOutputStream extends OutputStream {
 

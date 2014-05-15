@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,15 +59,14 @@ import org.forgerock.openig.util.JsonValueUtil;
  * in the prepared statement are derived from exchange-scoped expressions. The query result is
  * exposed in a {@link Map} object, whose location is specified by the {@code target}
  * expression. If the query yields no result, then the resulting map will be empty.
- * <p>
+ * <p/>
  * The execution of the query is performed lazily; it does not occur until the first attempt
  * to access a value in the target. This defers the overhead of connection pool, network
  * and database query processing until a value is first required. This also means that the
  * {@code parameters} expressions will not be evaluated until the map is first accessed.
  *
- * @author Paul C. Bryan
  * @see PreparedStatement
- */ 
+ */
 public class SqlAttributesFilter extends GenericFilter {
 
     /** Expression that yields the target object that will contain the mapped results. */
@@ -79,7 +79,7 @@ public class SqlAttributesFilter extends GenericFilter {
     public String preparedStatement;
 
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
-    public final List<Expression> parameters = new ArrayList<Expression>(); 
+    public final List<Expression> parameters = new ArrayList<Expression>();
 
     /**
      * Filters the exchange by putting a lazily initialized map in the object referenced by
@@ -89,7 +89,8 @@ public class SqlAttributesFilter extends GenericFilter {
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         target.set(exchange, new LazyMap<String, Object>(new Factory<Map<String, Object>>() {
-            @Override public Map<String, Object> newInstance() {
+            @Override
+            public Map<String, Object> newInstance() {
                 HashMap<String, Object> result = new HashMap<String, Object>();
                 Connection c = null;
                 try {
@@ -148,7 +149,8 @@ public class SqlAttributesFilter extends GenericFilter {
 
     /** Creates and initializes a static attribute provider in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             SqlAttributesFilter filter = new SqlAttributesFilter();
             filter.target = JsonValueUtil.asExpression(config.get("target").required());
             InitialContext ctx;
@@ -159,7 +161,7 @@ public class SqlAttributesFilter extends GenericFilter {
             }
             JsonValue dataSource = config.get("dataSource").required();
             try {
-                filter.dataSource = (DataSource)ctx.lookup(dataSource.asString());
+                filter.dataSource = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
                 throw new JsonValueException(dataSource, ne);
             } catch (ClassCastException ne) {

@@ -52,22 +52,20 @@ public interface Resolver extends Indexed<Class> {
      * references an object for which a named or indexed element is being
      * requested. The {@code element} argument specifies the element that is
      * being requested from the referenced object.
-     * <p>
+     * <p/>
      * The {@code element} argument can be either a {@link String} or an
      * {@link Integer} object. A string represents a named element of an
      * associative array; an integer represents the index of an ordered array.
-     * <p>
+     * <p/>
      * If the resolver cannot resolve the requested element, then
      * {@link #UNRESOLVED} should be returned. This allows other resovlers of
      * more generic classes or interfaces to potentially resolve the requested
      * element.
      *
-     * @param object
-     *            the object in which to resolve the specified element.
-     * @param element
-     *            the element to resolve within the specified object.
+     * @param object the object in which to resolve the specified element.
+     * @param element the element to resolve within the specified object.
      * @return the value of the resolved element, or {@link #UNRESOLVED} if it
-     *         cannot be resolved.
+     * cannot be resolved.
      */
     Object get(Object object, Object element);
 
@@ -76,25 +74,22 @@ public interface Resolver extends Indexed<Class> {
      * argument references an object for which a named or indexed element is to
      * be set. The {@code element} argument specifies which element value is to
      * be set. The {@code value} argument specifies the value to be set.
-     * <p>
+     * <p/>
      * The {@code element} argument can be either a {@link String} or an
      * {@link Integer} object. A string represents a named element of an
      * associative array; an integer represents the index of an ordered array.
-     * <p>
+     * <p/>
      * If the resolver cannot resolve the requested element or set its value,
      * then {@link #UNRESOLVED} should be returned. This allows other resovlers
      * of more generic classes or interfaces to potentially resolve the
      * requested element.
      *
-     * @param object
-     *            the object in which to resolve the specified element.
-     * @param element
-     *            the element within the specified object whose value is to be
-     *            set.
-     * @param value
-     *            the value to set the element to.
+     * @param object the object in which to resolve the specified element.
+     * @param element the element within the specified object whose value is to be
+     * set.
+     * @param value the value to set the element to.
      * @return the previous value of the element, {@code null} if no previous
-     *         value, or {@link #UNRESOLVED} if it cannot be resolved.
+     * value, or {@link #UNRESOLVED} if it cannot be resolved.
      */
     Object put(Object object, Object element, Object value);
 }

@@ -18,12 +18,11 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.InputStream;
 
 /**
  * An input stream that holds no data. GNDN.
- *
- * @author Paul C. Bryan
  */
 public class NullInputStream extends InputStream {
 

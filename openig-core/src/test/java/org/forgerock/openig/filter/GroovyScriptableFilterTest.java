@@ -104,11 +104,11 @@ public class GroovyScriptableFilterTest {
     public void testBindingsArePresent() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                        "assert exchange != null",
-                        "assert exchange.request != null",
-                        "assert exchange.response == null",
-                        "assert logger != null",
-                        "assert next != null");
+                "assert exchange != null",
+                "assert exchange.request != null",
+                "assert exchange.response == null",
+                "assert logger != null",
+                "assert next != null");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -294,7 +294,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final LDAPListener listener =
                 new LDAPListener(0, Connections
-                        .<LDAPClientContext> newServerConnectionFactory(backend));
+                        .<LDAPClientContext>newServerConnectionFactory(backend));
         final int port = listener.getPort();
         try {
             // @formatter:off
@@ -392,7 +392,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final LDAPListener listener =
                 new LDAPListener(0, Connections
-                        .<LDAPClientContext> newServerConnectionFactory(backend));
+                        .<LDAPClientContext>newServerConnectionFactory(backend));
         final int port = listener.getPort();
         try {
             final Map<String, Object> config = newFileConfig("LdapAuthFilter.groovy");
@@ -486,6 +486,7 @@ public class GroovyScriptableFilterTest {
                     connection.close();
                 }
             } catch (Exception e) {
+                // Ignored
             }
         }
     }
@@ -733,14 +734,14 @@ public class GroovyScriptableFilterTest {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
                 "exchange.request.jsonOut.person {",
-                    "firstName 'Tim'",
-                    "lastName 'Yates'",
-                    "address {",
-                        "city: 'Manchester'",
-                            "country: 'UK'",
-                            "zip: 'M1 2AB'",
-                            "}",
-                        "}");
+                "firstName 'Tim'",
+                "lastName 'Yates'",
+                "address {",
+                "city: 'Manchester'",
+                "country: 'UK'",
+                "zip: 'M1 2AB'",
+                "}",
+                "}");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -754,11 +755,11 @@ public class GroovyScriptableFilterTest {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
                 "exchange.request.xmlOut.root {",
-                    "a( a1:'one' ) {",
-                        "b { mkp.yield( '3 < 5' ) }",
-                            "c( a2:'two', 'blah' )",
-                            "}",
-                        "}");
+                "a( a1:'one' ) {",
+                "b { mkp.yield( '3 < 5' ) }",
+                "c( a2:'two', 'blah' )",
+                "}",
+                "}");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();

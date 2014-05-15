@@ -20,13 +20,11 @@ package org.forgerock.openig.http;
 
 /**
  * A response message.
- *
- * @author Paul C. Bryan
  */
 public class Response extends Message {
     /** The response status code. */
     public Integer status;
-    
+
     /** The response status reason. */
     public String reason;
 }

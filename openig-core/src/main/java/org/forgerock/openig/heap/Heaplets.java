@@ -18,6 +18,7 @@
 package org.forgerock.openig.heap;
 
 // Java Standard Edition
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -39,10 +40,8 @@ import org.forgerock.openig.util.Loader;
  * {@code com.example.Foo} would search for a heaplet class named
  * {@code com.example.FooHeaplet}. </li>
  * </ol>
- *
- * @author Paul C. Bryan
  */
-public class Heaplets {
+public final class Heaplets {
 
     /** Services mapped from class created to heaplet implementation. */
     @SuppressWarnings("rawtypes")

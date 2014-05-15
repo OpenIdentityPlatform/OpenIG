@@ -18,10 +18,8 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
-import java.io.IOException;
 
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
+import java.io.IOException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
@@ -37,13 +35,11 @@ import org.forgerock.openig.log.LogTimer;
  * Catches any exceptions thrown during handing of a request. This allows friendlier error
  * pages to be displayed than would otherwise be displayed by the container. Caught exceptions
  * are logged with a log level of {@link LogLevel#WARNING} and the exchange is diverted to
- * the specified exception handler. 
- * <p>
+ * the specified exception handler.
+ * <p/>
  * Note: While the response object will be retained in the exchange object, this class will
  * close any open entity within the response object prior to dispatching the exchange to the
  * exception handler.
- *
- * @author Paul C. Bryan
  */
 public class ExceptionFilter extends GenericFilter {
 
@@ -52,7 +48,7 @@ public class ExceptionFilter extends GenericFilter {
 
     /**
      * Filters the request and/or response of an exchange by catching any exceptions thrown
-     * during handing of a request. 
+     * during handing of a request.
      */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -77,7 +73,8 @@ public class ExceptionFilter extends GenericFilter {
      * Creates and initializes an exception filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             ExceptionFilter filter = new ExceptionFilter();
             filter.handler = HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class);
             return filter;

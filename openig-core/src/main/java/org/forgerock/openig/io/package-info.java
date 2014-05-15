@@ -17,7 +17,5 @@
 
 /**
  * Provides stream buffering, branching, and storage functions.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.io;

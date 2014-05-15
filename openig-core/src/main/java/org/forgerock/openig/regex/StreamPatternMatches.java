@@ -18,6 +18,7 @@
 package org.forgerock.openig.regex;
 
 // Java Standard Edition
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -30,8 +31,6 @@ import java.util.regex.Pattern;
 
 /**
  * Iterates through multiple regular expression matches within a character stream.
- *
- * @author Paul C. Bryan
  */
 public class StreamPatternMatches implements Closeable {
 
@@ -53,10 +52,10 @@ public class StreamPatternMatches implements Closeable {
      *
      * @param input the character stream to match regular expression patterns against.
      * @param patterns a collection of regular expression patterns to match.
-     * @param discard indicates patterns be discarded after they yield a match. 
+     * @param discard indicates patterns be discarded after they yield a match.
      */
     public StreamPatternMatches(Reader input, Collection<Pattern> patterns, boolean discard) {
-        this.input = (BufferedReader)(input instanceof BufferedReader ? input : new BufferedReader(input));
+        this.input = (BufferedReader) (input instanceof BufferedReader ? input : new BufferedReader(input));
         this.patterns = patterns.toArray(new Pattern[patterns.size()]);
         this.discard = discard;
     }

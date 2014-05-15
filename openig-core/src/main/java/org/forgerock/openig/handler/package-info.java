@@ -17,7 +17,5 @@
 
 /**
  * Handles HTTP exchange requests by generating responses.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.handler;

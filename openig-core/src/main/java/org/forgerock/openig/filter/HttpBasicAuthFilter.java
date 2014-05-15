@@ -3,8 +3,8 @@
  * Distribution License (the License). You may not use this file except in compliance with the
  * License.
  *
- * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the specific
- * language governing permission and limitations under the License.
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
  *
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
@@ -21,14 +21,12 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.Arrays;
 
 // Apache Commons Codec
 import org.apache.commons.codec.binary.Base64;
-
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -49,20 +47,18 @@ import org.forgerock.openig.util.JsonValueUtil;
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
  * see <a href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</a>.
- * <p>
+ * <p/>
  * If challenged for authentication via a {@code 401 Unauthorized} status code by the server,
  * this filter will retry the request with credentials attached. Therefore, the request entity
  * will be branched and stored for the duration of the exchange.
- * <p>
+ * <p/>
  * Once an HTTP authentication challenge (status code 401) is issued from the remote server,
  * all subsequent requests to that remote server that pass through the filter will include the
  * user credentials.
- * <p>
+ * <p/>
  * If authentication fails (including the case of no credentials yielded from the
  * {@code username} or {@code password} expressions, then the exchange is diverted to the
  * authentication failure handler.
- *
- * @author Paul C. Bryan
  */
 public class HttpBasicAuthFilter extends GenericFilter {
 
@@ -83,7 +79,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
     /** Handler dispatch to if authentication fails. */
     public Handler failureHandler;
 
-    /** Decide if we cache the password header result **/
+    /** Decide if we cache the password header result. */
     public boolean cacheHeader = true;
 
     /**
@@ -94,8 +90,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
      * @return the session attribute name, fully qualified the request remote server.
      */
     private String attributeName(Request request) {
-        return this.getClass().getName() + ':' + request.uri.getScheme() + ':' +
-                request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
+        return this.getClass().getName() + ':' + request.uri.getScheme() + ':'
+                + request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
     }
 
     /**
@@ -118,7 +114,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
             }
             // because credentials are sent in every request, this class caches them in the session
             if (cacheHeader) {
-                userpass = (String)exchange.session.get(attributeName(exchange.request));
+                userpass = (String) exchange.session.get(attributeName(exchange.request));
             }
             if (userpass != null) {
                 exchange.request.headers.add("Authorization", "Basic " + userpass);
@@ -161,14 +157,18 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
     /** Creates and initializes an HTTP basic authentication filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
             filter.username = JsonValueUtil.asExpression(config.get("username").required());
             filter.password = JsonValueUtil.asExpression(config.get("password").required());
-            filter.failureHandler = HeapUtil.getObject(heap, config.get("failureHandler").required(), Handler.class); // required
+            filter.failureHandler = HeapUtil.getObject(
+                    heap,
+                    config.get("failureHandler").required(),
+                    Handler.class); // required
             filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean(); // optional
 
-            if (logger!= null && logger.isLoggable(LogLevel.DEBUG)) {
+            if (logger != null && logger.isLoggable(LogLevel.DEBUG)) {
                 logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);
             }
 

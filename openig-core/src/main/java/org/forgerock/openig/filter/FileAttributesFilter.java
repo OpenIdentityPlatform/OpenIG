@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -25,9 +26,6 @@ import java.util.Map;
 // ForgeRock Utilities
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
-
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -47,13 +45,12 @@ import org.forgerock.openig.util.JsonValueUtil;
  * The resulting record is exposed in a {@link Map} object, whose location is specified by the
  * {@code target} expression. If a matching record cannot be found, then the resulting map
  * will be empty.
- * <p>
+ * <p/>
  * The retrieval of the record is performed lazily; it does not occur until the first attempt
  * to access a value in the target. This defers the overhead of file operations and text
  * processing until a value is first required. This also means that the {@code value}
  * expression will not be evaluated until the map is first accessed.
  *
- * @author Paul C. Bryan
  * @see SeparatedValuesFile
  */
 public class FileAttributesFilter extends GenericFilter {
@@ -78,7 +75,8 @@ public class FileAttributesFilter extends GenericFilter {
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
-            @Override public Map<String, String> newInstance() {
+            @Override
+            public Map<String, String> newInstance() {
                 try {
                     return file.getRecord(key, value.eval(exchange).toString());
                 } catch (IOException ioe) {
@@ -93,7 +91,8 @@ public class FileAttributesFilter extends GenericFilter {
 
     /** Creates and initializes a separated values file attribute provider in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             FileAttributesFilter filter = new FileAttributesFilter();
             filter.target = JsonValueUtil.asExpression(config.get("target").required());
             filter.file.file = new File(config.get("file").required().asString());

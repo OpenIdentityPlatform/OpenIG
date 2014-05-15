@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.HashMap;
 
 // JSON Fluent
@@ -30,15 +31,13 @@ import org.forgerock.openig.el.ExpressionException;
 
 /**
  * Provides additional functionality to JsonValue.
- *
- * @author Paul C. Bryan
  */
-public class JsonValueUtil {
+public final class JsonValueUtil {
 
     /** TODO: Description. */
     private static final HashMap<String, String> aliases = new HashMap<String, String>();
 
-// TODO: allow aliases to be dynamically configured
+    // TODO: allow aliases to be dynamically configured
     static {
         aliases.put("AssignmentFilter", "org.forgerock.openig.filter.AssignmentFilter");
         aliases.put("CaptureFilter", "org.forgerock.openig.filter.CaptureFilter");
@@ -67,13 +66,18 @@ public class JsonValueUtil {
     }
 
     /**
+     * Private constructor for utility class.
+     */
+    private JsonValueUtil() { }
+
+    /**
      * TODO: Description.
      *
      * @param value TODO.
      * @return TODO.
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    private static Class<?> classForName(JsonValue value) throws JsonValueException {
+    private static Class<?> classForName(JsonValue value) {
         String c = value.asString();
         String a = aliases.get(c);
         if (a != null) {
@@ -93,8 +97,8 @@ public class JsonValueUtil {
      * @return the class object with the specified name.
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
-    public static Class<?> asClass(JsonValue value) throws JsonValueException {
-        return (value == null || value.isNull()? null : classForName(value));
+    public static Class<?> asClass(JsonValue value) {
+        return (value == null || value.isNull() ? null : classForName(value));
     }
 
     /**
@@ -109,7 +113,7 @@ public class JsonValueUtil {
      * @throws JsonValueException if the requested class could not be instantiated.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T asNewInstance(JsonValue value, Class<T> type) throws JsonValueException {
+    public static <T> T asNewInstance(JsonValue value, Class<T> type) {
         if (value == null || value.isNull()) {
             return null;
         }
@@ -118,7 +122,7 @@ public class JsonValueUtil {
             throw new JsonValueException(value, "expecting " + type.getName());
         }
         try {
-            return (T)c.newInstance();
+            return (T) c.newInstance();
         } catch (ExceptionInInitializerError eiie) {
             throw new JsonValueException(value, eiie);
         } catch (IllegalAccessException iae) {
@@ -136,7 +140,7 @@ public class JsonValueUtil {
      * @return the expression represented by the string value.
      * @throws JsonValueException if the value is not a string or the value is not a valid expression.
      */
-    public static Expression asExpression(JsonValue value) throws JsonValueException {
+    public static Expression asExpression(JsonValue value) {
         try {
             return (value == null || value.isNull() ? null : new Expression(value.asString()));
         } catch (ExpressionException ee) {

@@ -17,7 +17,5 @@
 
 /**
  * Performs dynamic configuration bootstrap, discovery and input/output functions.
- *
- * @author Paul C. Bryan
  */
 package org.forgerock.openig.config;

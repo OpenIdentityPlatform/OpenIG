@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,20 +51,21 @@ import org.forgerock.openig.log.LogTimer;
  * The extra path information is the path that follows the path of the dispatch servlet itself,
  * but precedes the query string. It is guaranteed to be a value that always begins with a
  * {@code "/"} character.
- * <p>
+ * <p/>
  * All filters that match the pattern will be invoked in the order they are expressed in the
  * bindings list until a matching servlet is encountered. The first matching servlet object in
  * the bindings list will be invoked, and terminates any further processing of the request. If
  * no matching servlet is found, a {@link ServletException} is thrown. To avoid this, a final
  * "catch-all" servlet binding with a pattern of {@code ".*"} is recommended.
- *
- * @author Paul C. Bryan
  */
 public class DispatchServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    /** Regular expression patterns to match against request path information, bound to filters and/or servlets to dispatch to. */
+    /**
+     * Regular expression patterns to match against request path information, bound to filters and/or servlets
+     * to dispatch to.
+     */
     public final List<Binding> bindings = new ArrayList<Binding>();
 
     /** Provides methods for logging activities. */
@@ -76,7 +78,7 @@ public class DispatchServlet extends HttpServlet {
      * @param response object that contains the response the servlet returns to the client.
      * @throws IOException if an I/O exception occurs.
      * @throws ServletException if the HTTP request cannot be handled.
-     */ 
+     */
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         LogTimer timer = logger.getTimer().start();
@@ -127,38 +129,45 @@ public class DispatchServlet extends HttpServlet {
     private class DispatchChain implements FilterChain {
         private ArrayList<Object> objects = new ArrayList<Object>();
         private int cursor = 0;
+
         public void doFilter(ServletRequest request, ServletResponse response)
-        throws IOException, ServletException {
+                throws IOException, ServletException {
             if (cursor >= objects.size()) {
                 throw new ServletException("no more objects in chain to dispatch to");
             }
             Object object = objects.get(cursor++);
             if (object instanceof Filter) {
-                Filter filter = (Filter)object;
+                Filter filter = (Filter) object;
                 LogTimer timer = logger.getTimer(filter.getClass().getName() + ".service").start();
                 filter.doFilter(request, response, this);
-                timer.stop();       
+                timer.stop();
             } else if (object instanceof HttpServlet) {
-                HttpServlet servlet = (HttpServlet)object;
+                HttpServlet servlet = (HttpServlet) object;
                 //LogTimer timer = logger.getTimer(servlet.getServletConfig().getServletName() + ".service").start();
                 servlet.service(request, response);
                 //timer.stop();
             } else {
-                throw new ServletException("object in chain is not a " + Filter.class.getName() + " or " + HttpServlet.class.getName());
+                throw new ServletException("object in chain is not a " + Filter.class.getName()
+                        + " or " + HttpServlet.class.getName());
             }
         }
     }
 
-    private class Wrapper extends HttpServletRequestWrapper {
+    private final class Wrapper extends HttpServletRequestWrapper {
         private String servletPath;
         private String pathInfo;
+
         private Wrapper(HttpServletRequest request) {
             super(request);
         }
-        @Override public String getServletPath() {
+
+        @Override
+        public String getServletPath() {
             return servletPath;
         }
-        @Override public String getPathInfo() {
+
+        @Override
+        public String getPathInfo() {
             return pathInfo;
         }
     }
@@ -177,7 +186,8 @@ public class DispatchServlet extends HttpServlet {
      * Creates and initializes a dispatch servlet in a heap environment.
      */
     public static class Heaplet extends GenericServletHeaplet {
-        @Override public HttpServlet createServlet() throws HeapException, JsonValueException {
+        @Override
+        public HttpServlet createServlet() throws HeapException {
             DispatchServlet servlet = new DispatchServlet();
             for (JsonValue bindingValue : config.get("bindings").required().expect(List.class)) { // required
                 bindingValue.required().expect(Map.class); // object, required
@@ -185,7 +195,10 @@ public class DispatchServlet extends HttpServlet {
                 binding.pattern = bindingValue.get("pattern").required().asPattern();
                 binding.object = HeapUtil.getRequiredObject(heap, bindingValue.get("object"), Object.class);
                 if (!(binding.object instanceof HttpServlet) && !(binding.object instanceof Filter)) {
-                    throw new JsonValueException(bindingValue.get("object"), "must be " + Filter.class.getName() + " or " + HttpServlet.class.getName());
+                    throw new JsonValueException(
+                            bindingValue.get("object"),
+                            "must be " + Filter.class.getName() + " or " + HttpServlet.class.getName()
+                    );
                 }
                 servlet.bindings.add(binding);
             }

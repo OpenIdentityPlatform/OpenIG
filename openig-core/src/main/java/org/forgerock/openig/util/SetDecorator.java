@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,8 +28,6 @@ import java.util.Set;
  * data along the way. This class itself simply overrides all methods of {@link Set} with
  * versions that pass all requests to the contained set. Subclasses may further override
  * some of these methods and may also provide additional methods and fields.
- *
- * @author Paul C. Bryan
  */
 public class SetDecorator<E> implements Set<E> {
 
@@ -69,7 +68,8 @@ public class SetDecorator<E> implements Set<E> {
      * @param o element whose presence in the set is to be tested.
      * @return {@code true} if the set contains the specified element.
      * @throws ClassCastException if the type of the specified element is incompatible with the set (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the set does not permit null elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the set does not permit null
+     * elements (optional).
      */
     @Override
     public boolean contains(Object o) {
@@ -96,9 +96,11 @@ public class SetDecorator<E> implements Set<E> {
      * Returns an array containing all of the elements in the set; the runtime type of the
      * returned array is that of the specified array.
      *
-     * @param a the array into which the elements of the set are to be stored, if it is big enough; otherwise, a new array of the same runtime type is allocated for this purpose.
+     * @param a the array into which the elements of the set are to be stored, if it is big enough; otherwise, a new
+     * array of the same runtime type is allocated for this purpose.
      * @return an array containing all the elements in the set.
-     * @throws ArrayStoreException if the runtime type of the specified array is not a supertype of the runtime type of every element in the set.
+     * @throws ArrayStoreException if the runtime type of the specified array is not a supertype of the runtime type
+     * of every element in the set.
      * @throws NullPointerException if the specified array is {@code null}.
      */
     @Override
@@ -115,7 +117,8 @@ public class SetDecorator<E> implements Set<E> {
      * @throws UnsupportedOperationException if the {@code add} operation is not supported by the set.
      * @throws ClassCastException if the class of the specified element prevents it from being added to the set.
      * @throws NullPointerException if the specified element is {@code null} and the set does not permit null elements.
-     * @throws IllegalArgumentException if some property of the specified element prevents it from being added to the set.
+     * @throws IllegalArgumentException if some property of the specified element prevents it from being added to
+     * the set.
      */
     @Override
     public boolean add(E e) {
@@ -128,7 +131,8 @@ public class SetDecorator<E> implements Set<E> {
      * @param o object to be removed from the set, if present.
      * @return {@code true} if the set contained the specified element.
      * @throws ClassCastException if the type of the specified element is incompatible with the set (optional).
-     * @throws NullPointerException if the specified element is {@code null} and the set does not permit null elements (optional).
+     * @throws NullPointerException if the specified element is {@code null} and the set does not permit null
+     * elements (optional).
      * @throws UnsupportedOperationException if the {@code remove} operation is not supported by the set.
      */
     @Override
@@ -142,8 +146,10 @@ public class SetDecorator<E> implements Set<E> {
      *
      * @param c collection to be checked for containment in the set.
      * @return {@code true} if the set contains all of the elements of the specified collection.
-     * @throws ClassCastException if the types of one or more elements in the specified collection are incompatible with the set (optional).
-     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the set does not permit null elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the types of one or more elements in the specified collection are incompatible
+     * with the set (optional).
+     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the
+     * set does not permit null elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean containsAll(Collection<?> c) {
@@ -157,9 +163,12 @@ public class SetDecorator<E> implements Set<E> {
      * @param c collection containing elements to be added to the set.
      * @return {@code true} if the set changed as a result of the call.
      * @throws UnsupportedOperationException if the {@code addAll} operation is not supported by the set.
-     * @throws ClassCastException if the class of an element of the specified collection prevents it from being added to the set.
-     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the set does not permit null elements, or if the specified collection is {@code null}.
-     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it from being added to the set.
+     * @throws ClassCastException if the class of an element of the specified collection prevents it from being
+     * added to the set.
+     * @throws NullPointerException if the specified collection contains one or more {@code null} elements and the
+     * set does not permit null elements, or if the specified collection is {@code null}.
+     * @throws IllegalArgumentException if some property of an element of the specified collection prevents it from
+     * being added to the set.
      */
     @Override
     public boolean addAll(Collection<? extends E> c) {
@@ -173,8 +182,10 @@ public class SetDecorator<E> implements Set<E> {
      * @param c collection containing elements to be retained in the set.
      * @return {@code true} if the set changed as a result of the call.
      * @throws UnsupportedOperationException if the retainAll operation is not supported by the set.
-     * @throws ClassCastException if the class of an element of the set is incompatible with the specified collection (optional).
-     * @throws NullPointerException if the set contains a {@code null} element and the specified collection does not permit null elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the class of an element of the set is incompatible with the specified
+     * collection (optional).
+     * @throws NullPointerException if the set contains a {@code null} element and the specified collection does
+     * not permit null elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean retainAll(Collection<?> c) {
@@ -188,8 +199,10 @@ public class SetDecorator<E> implements Set<E> {
      * @param c collection containing elements to be removed from the set.
      * @return {@code true} if the set changed as a result of the call.
      * @throws UnsupportedOperationException if the {@code removeAll} operation is not supported by the set.
-     * @throws ClassCastException if the class of an element of the set is incompatible with the specified collection (optional).
-     * @throws NullPointerException if the set contains a {@code null} element and the specified collection does not permit null elements (optional), or if the specified collection is {@code null}.
+     * @throws ClassCastException if the class of an element of the set is incompatible with the specified
+     * collection (optional).
+     * @throws NullPointerException if the set contains a {@code null} element and the specified collection does
+     * not permit null elements (optional), or if the specified collection is {@code null}.
      */
     @Override
     public boolean removeAll(Collection<?> c) {

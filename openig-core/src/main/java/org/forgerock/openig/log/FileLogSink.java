@@ -18,6 +18,7 @@
 package org.forgerock.openig.log;
 
 // Java Standard Edition
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,8 +36,6 @@ import org.forgerock.openig.util.ISO8601;
 
 /**
  * A sink that writes log entries to a file.
- *
- * @author Paul C. Bryan
  */
 public class FileLogSink implements LogSink {
 
@@ -55,14 +54,14 @@ public class FileLogSink implements LogSink {
     @Override
     public void log(LogEntry entry) {
         if (isLoggable(entry.source, entry.level)) {
-            synchronized(this) {
+            synchronized (this) {
                 try {
                     if (!file.exists() || writer == null) {
                         if (writer != null) {
                             writer.close();
                         }
                         writer = new PrintWriter(new OutputStreamWriter(
-                         new FileOutputStream(file, true), charset), true);
+                                new FileOutputStream(file, true), charset), true);
                     }
                     StringBuilder sb = new StringBuilder();
                     sb.append(ISO8601.format(entry.time)).append(':').append(entry.source).append(':');
@@ -85,7 +84,8 @@ public class FileLogSink implements LogSink {
 
     /** Creates and initializes a console sink in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             FileLogSink sink = new FileLogSink();
             sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
             sink.file = config.get("file").required().asFile();

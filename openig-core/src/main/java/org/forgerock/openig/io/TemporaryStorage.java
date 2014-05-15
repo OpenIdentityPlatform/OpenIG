@@ -18,13 +18,11 @@
 package org.forgerock.openig.io;
 
 // Java SE
+
 import java.io.File;
 
 // ForgeRock Utilities
 import org.forgerock.util.Factory;
-
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.heap.HeapException;
@@ -33,8 +31,6 @@ import org.forgerock.openig.heap.NestedHeaplet;
 
 /**
  * Allocates temporary buffers for caching streamed content during request processing.
- *
- * @author Paul C. Bryan
  */
 public class TemporaryStorage implements Factory<Buffer> {
 
@@ -74,7 +70,8 @@ public class TemporaryStorage implements Factory<Buffer> {
      * Creates and initializes a temporary storage object in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             TemporaryStorage storage = new TemporaryStorage();
             storage.initialLength = config.get("initialLength").defaultTo(storage.initialLength).asInteger();
             storage.memoryLimit = config.get("memoryLimit").defaultTo(storage.memoryLimit).asInteger();

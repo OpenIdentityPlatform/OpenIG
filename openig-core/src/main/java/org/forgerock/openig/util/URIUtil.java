@@ -18,15 +18,14 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
  * Utility class for performing operations on universal resource identifiers.
- *
- * @author Paul C. Bryan
  */
-public class URIUtil {
+public final class URIUtil {
 
     /** Static methods only. */
     private URIUtil() {
@@ -47,7 +46,7 @@ public class URIUtil {
      * @throws URISyntaxException if the resulting URI would be malformed per RFC 2396.
      */
     public static URI create(String scheme, String rawUserInfo, String host, int port,
-    String rawPath, String rawQuery, String rawFragment) throws URISyntaxException {
+                             String rawPath, String rawQuery, String rawFragment) throws URISyntaxException {
         StringBuilder sb = new StringBuilder();
         if (scheme != null) {
             sb.append(scheme).append(':');
@@ -62,7 +61,7 @@ public class URIUtil {
             sb.append(host);
             if (port != -1) {
                 sb.append(':').append(Integer.toString(port));
-            } 
+            }
         }
         if (rawPath != null) {
             sb.append(rawPath);
@@ -97,6 +96,6 @@ public class URIUtil {
             return uri;
         }
         return create(scheme, uri.getRawUserInfo(), host, port, uri.getRawPath(),
-         uri.getRawQuery(), uri.getRawFragment());
+                uri.getRawQuery(), uri.getRawFragment());
     }
 }

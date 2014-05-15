@@ -18,13 +18,12 @@
 package org.forgerock.openig.io;
 
 // Java SE
+
 import java.io.InputStream;
 import java.io.IOException;
 
 /**
  * An input stream that can branch into separate input streams to perform divergent reads.
- *
- * @author Paul C. Bryan
  */
 public abstract class BranchingInputStream extends InputStream {
 
@@ -59,5 +58,5 @@ public abstract class BranchingInputStream extends InputStream {
      * Returns the parent branching input stream from which is branch was created, or
      * {@code null} if this is the trunk.
      */
-     public abstract BranchingInputStream getParent();
+    public abstract BranchingInputStream getParent();
 }

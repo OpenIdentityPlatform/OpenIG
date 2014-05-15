@@ -18,6 +18,7 @@
 package org.forgerock.openig.header;
 
 // Java Standard Edition
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +28,12 @@ import org.forgerock.openig.http.Message;
 
 /**
  * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original
- * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">Netscape specification<a>,
+ * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">
+ *     Netscape specification<a>,
  * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
  * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
- * <p>
+ * <p/>
  * Note: This implementation is designed to be forgiving when parsing malformed cookies.
- *
- * @author Paul C. Bryan
  */
 public class CookieHeader implements Header {
 
@@ -133,8 +133,7 @@ public class CookieHeader implements Header {
         for (Cookie cookie : cookies) {
             if (cookie.version != null && (version == null || cookie.version > version)) {
                 version = cookie.version;
-            }
-            else if (version == null && (cookie.path != null || cookie.domain != null)) {
+            } else if (version == null && (cookie.path != null || cookie.domain != null)) {
                 version = 1; // presence of extended fields makes it version 1 at minimum
             }
         }
@@ -166,8 +165,8 @@ public class CookieHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof CookieHeader &&
-         this.cookies.equals(((CookieHeader)o).cookies)));
+        return (o == this || (o != null && o instanceof CookieHeader
+                && this.cookies.equals(((CookieHeader) o).cookies)));
     }
 
     @Override

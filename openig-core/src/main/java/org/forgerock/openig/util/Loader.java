@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 // Java Standard Edition
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,10 +28,8 @@ import java.util.ServiceLoader;
 
 /**
  * Provides methods for dynamically loading classes.
- *
- * @author Paul C. Bryan
  */
-public class Loader {
+public final class Loader {
 
     /** Static methods only. */
     private Loader() {
@@ -89,7 +88,7 @@ public class Loader {
         if (object != null && !type.isInstance(object)) {
             object = null;
         }
-        return (T)object;
+        return (T) object;
     }
 
     /**

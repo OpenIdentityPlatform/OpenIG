@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 // Java Enterprise Edition
+
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -118,9 +119,8 @@ public class ServletSession extends AbstractMap<String, Object> implements Sessi
      * Creates a new session object which manages sessions through the provided
      * servlet request object.
      *
-     * @param request
-     *            the servlet request object through which servlet sessions are
-     *            managed.
+     * @param request the servlet request object through which servlet sessions are
+     * managed.
      */
     public ServletSession(final HttpServletRequest request) {
         this.request = request;

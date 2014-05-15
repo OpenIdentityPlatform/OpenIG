@@ -18,14 +18,13 @@
 package org.forgerock.openig.io;
 
 // Java Standard Edition
+
 import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * A dynamically growing data buffer. Data can be read from any point within the buffer,
  * and written to the end of a buffer.
- *
- * @author Paul C. Bryan
  */
 public interface Buffer extends Closeable {
 
@@ -42,7 +41,7 @@ public interface Buffer extends Closeable {
      * @throws IOException if an I/O exception occurs.
      */
     int read(int pos, byte[] b, int off, int len) throws IOException;
-    
+
     /**
      * Appends {@code len} bytes from the specified byte array starting at offset {@code off}
      * to the end of the buffer.
@@ -68,7 +67,7 @@ public interface Buffer extends Closeable {
      * cannot perform input or output operations and cannot be reopened.
      *
      * @throws IOException if an I/O exception occurs.
-     */ 
+     */
     @Override
     void close() throws IOException;
 }

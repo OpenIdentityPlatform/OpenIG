@@ -18,16 +18,15 @@
 package org.forgerock.openig.heap;
 
 // JSON Fluent
+
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
 
 /**
  * Utility methods for managing objects in the heap.
- *
- * @author Paul C. Bryan
  */
-public class HeapUtil {
+public final class HeapUtil {
 
     /** Static methods only. */
     private HeapUtil() {
@@ -41,15 +40,16 @@ public class HeapUtil {
      * @param type the expected type of the heap object.
      * @return the specified heap object.
      * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
-     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object has the wrong type.
+     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
+     * has the wrong type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getObject(Heap heap, JsonValue name, Class<T> type) throws HeapException, JsonValueException {
+    public static <T> T getObject(Heap heap, JsonValue name, Class<T> type) throws HeapException {
         Object o = heap.get(name.required().asString());
         if (o != null && !(type.isInstance(o))) {
             throw new JsonValueException(name, "expecting heap object of type " + type.getName());
         }
-        return (T)o;
+        return (T) o;
     }
 
     /**
@@ -61,9 +61,10 @@ public class HeapUtil {
      * @param type the expected type of the heap object.
      * @return the specified heap object.
      * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
-     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object could not be retrieved or has the wrong type.
+     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
+     * could not be retrieved or has the wrong type.
      */
-    public static <T> T getRequiredObject(Heap heap, JsonValue name, Class<T> type) throws HeapException, JsonValueException {
+    public static <T> T getRequiredObject(Heap heap, JsonValue name, Class<T> type) throws HeapException {
         T t = getObject(heap, name, type);
         if (t == null) {
             throw new JsonValueException(name, "object " + name.asString() + " not found in heap");

@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 // Java Standard Edition
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -53,8 +54,7 @@ public class Form extends MultiValueMap<String, String> {
      * this object. Malformed name-value pairs (missing the "=" delimiter) are
      * simply ignored.
      *
-     * @param s
-     *            the URL-encoded string to parse.
+     * @param s the URL-encoded string to parse.
      * @return this form object.
      */
     public Form fromString(String s) {
@@ -100,8 +100,7 @@ public class Form extends MultiValueMap<String, String> {
      * The object is not cleared beforehand, so this adds to any fields already
      * in place.
      *
-     * @param request
-     *            the request to be parsed.
+     * @param request the request to be parsed.
      * @return this form object.
      */
     public Form fromRequestQuery(Request request) {
@@ -116,8 +115,7 @@ public class Form extends MultiValueMap<String, String> {
      * Sets a request URI with query parameters. This overwrites any query
      * parameters that may already exist in the request URI.
      *
-     * @param request
-     *            the request to set query parameters to.
+     * @param request the request to set query parameters to.
      */
     public void toRequestQuery(Request request) {
         try {
@@ -134,8 +132,7 @@ public class Form extends MultiValueMap<String, String> {
      * Appends the form as additional query parameters on an existing request
      * URI. This leaves any existing query parameters intact.
      *
-     * @param request
-     *            the request to append query parameters to.
+     * @param request the request to append query parameters to.
      */
     public void appendRequestQuery(Request request) {
         StringBuilder sb = new StringBuilder();
@@ -169,18 +166,15 @@ public class Form extends MultiValueMap<String, String> {
      * object. The object is not cleared beforehand, so this adds to any fields
      * already in place.
      *
-     * @param request
-     *            the request to be parsed.
+     * @param request the request to be parsed.
      * @return this form object.
-     * @throws IOException
-     *             if an I/O exception occurs.
+     * @throws IOException if an I/O exception occurs.
      */
     public Form fromRequestEntity(Request request) throws IOException {
         if (request != null
                 && request.entity != null
                 && request.headers != null
-                && request.headers.getFirst("Content-Type").equalsIgnoreCase(
-                        "application/x-www-form-urlencoded")) {
+                && request.headers.getFirst("Content-Type").equalsIgnoreCase("application/x-www-form-urlencoded")) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             Streamer.stream(request.entity, bytes);
             fromString(bytes.toString());
@@ -193,8 +187,7 @@ public class Form extends MultiValueMap<String, String> {
      * be submitted as a POST with application/x-www-form-urlencoded content
      * type. This overwrites any entity that may already be in the request.
      *
-     * @param request
-     *            the request to add the form entity to.
+     * @param request the request to add the form entity to.
      */
     public void toRequestEntity(Request request) {
         String form = toString();

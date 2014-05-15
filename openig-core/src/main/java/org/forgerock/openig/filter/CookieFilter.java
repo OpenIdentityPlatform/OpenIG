@@ -19,6 +19,7 @@
 package org.forgerock.openig.filter;
 
 // Java Standard Edition
+
 import java.io.IOException;
 import java.net.CookiePolicy;
 import java.net.CookieManager;
@@ -31,9 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
-
-// JSON Fluent
-import org.forgerock.json.fluent.JsonValueException;
 
 // OpenIG Core
 import org.forgerock.openig.handler.Handler;
@@ -52,32 +50,33 @@ import org.forgerock.openig.util.StringUtil;
  * Suppresses, relays and manages cookies. The names of filtered cookies are stored in one of
  * three action set variables: {@code suppressed}, {@code relayed} and {@code managed}. If a
  * cookie is not found in any of the action sets, then a default action is selected.
- * <p>
+ * <p/>
  * The default action is controlled by setting the {@code defaultAction} field. The default
  * action at initialization is to manage all cookies. In the event a cookie appears in more
  * than one action set, then it will be selected in order of precedence: managed, suppressed,
  * relayed.
- * <p>
+ * <p/>
  * Managed cookies are intercepted by the cookie filter itself and stored in the request
  * {@link Session} object. The default {@code policy} is to accept all incoming cookies, but
  * can be changed to others as appropriate.
- *
- * @author Paul C. Bryan
  */
 public class CookieFilter extends GenericFilter {
 
     /** Action to be performed for a cookie. */
     public enum Action {
-        /** Intercept and manage the cookie within the proxy. */ MANAGE,
-        /** Remove the cookie from request and response. */ SUPPRESS,
-        /** Relay the cookie between remote client and remote host. */ RELAY
+        /** Intercept and manage the cookie within the proxy. */
+        MANAGE,
+        /** Remove the cookie from request and response. */
+        SUPPRESS,
+        /** Relay the cookie between remote client and remote host. */
+        RELAY
     }
 
 // TODO: Use the org.forgerock.openig.header framework now for parsing, not regexes anymore.
 
     /** Splits string using comma delimiter, outside of quotes. */
     private static final Pattern DELIM_COMMA = Pattern.compile(",(?=([^\"]*\"[^\"]*\")*(?![^\"]*\"))");
-    
+
     /** Splits string using equals sign delimiter, outside of quotes. */
     private static final Pattern DELIM_EQUALS = Pattern.compile("=(?=([^\"]*\"[^\"]*\")*(?![^\"]*\"))");
 
@@ -88,7 +87,7 @@ public class CookieFilter extends GenericFilter {
     private static final Pattern DELIM_COLON = Pattern.compile(":");
 
     /** Response headers to parse. */
-    private static final String[] RESPONSE_HEADERS = { "Set-Cookie", "Set-Cookie2" };
+    private static final String[] RESPONSE_HEADERS = {"Set-Cookie", "Set-Cookie2"};
 
     /** Action to perform for cookies that do not match an action set. Default: manage. */
     public Action defaultAction = Action.MANAGE;
@@ -101,7 +100,7 @@ public class CookieFilter extends GenericFilter {
 
     /** Action set for cookies to be relayed. */
     public final CaseInsensitiveSet relayed = new CaseInsensitiveSet();
-    
+
     /** Action set for cookies that filter should intercept and manage. */
     public final CaseInsensitiveSet managed = new CaseInsensitiveSet();
 
@@ -110,7 +109,7 @@ public class CookieFilter extends GenericFilter {
      * Host header. This allows the request URI to contain a raw IP address,
      * while the Host header resolves the hostname and port that the remote
      * client used to access it.
-     * <p>
+     * <p/>
      * Note: This method returns a normalized URI, as though returned by the
      * {@link URI#normalize} method.
      *
@@ -130,7 +129,7 @@ public class CookieFilter extends GenericFilter {
             }
             try {
                 uri = new URI(uri.getScheme(), null, hostport[0], port, "/", null, null).resolve(
-                new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), null, null, null).relativize(uri));
+                        new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), null, null, null).relativize(uri));
             } catch (URISyntaxException use) {
                 // suppress exception
             }
@@ -206,8 +205,8 @@ public class CookieFilter extends GenericFilter {
      */
     private CookieManager getManager(Session session) {
         CookieManager manager = null;
-        synchronized(session) { // prevent a race for the cookie manager
-            manager = (CookieManager)session.get(CookieManager.class.getName());
+        synchronized (session) { // prevent a race for the cookie manager
+            manager = (CookieManager) session.get(CookieManager.class.getName());
             if (manager == null) {
                 manager = new CookieManager(null, new CookiePolicy() {
                     public boolean shouldAccept(URI uri, HttpCookie cookie) {
@@ -300,12 +299,21 @@ public class CookieFilter extends GenericFilter {
      * Creates and initializes a cookie filter in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
-        @Override public Object create() throws HeapException, JsonValueException {
+        @Override
+        public Object create() throws HeapException {
             CookieFilter filter = new CookieFilter();
-            filter.suppressed.addAll(config.get("suppressed").defaultTo(Collections.emptyList()).asList(String.class));
-            filter.relayed.addAll(config.get("relayed").defaultTo(Collections.emptyList()).asList(String.class));
-            filter.managed.addAll(config.get("managed").defaultTo(Collections.emptyList()).asList(String.class));
-            filter.defaultAction = config.get("defaultAction").defaultTo(filter.defaultAction.toString()).asEnum(Action.class);
+            filter.suppressed.addAll(config.get("suppressed")
+                    .defaultTo(Collections.emptyList())
+                    .asList(String.class));
+            filter.relayed.addAll(config.get("relayed")
+                    .defaultTo(Collections.emptyList())
+                    .asList(String.class));
+            filter.managed.addAll(config.get("managed")
+                    .defaultTo(Collections.emptyList())
+                    .asList(String.class));
+            filter.defaultAction = config.get("defaultAction")
+                    .defaultTo(filter.defaultAction.toString())
+                    .asEnum(Action.class);
             return filter;
         }
     }

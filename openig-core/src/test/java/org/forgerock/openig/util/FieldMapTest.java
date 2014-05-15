@@ -22,9 +22,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-/**
- * @author Paul C. Bryan
- */
 public class FieldMapTest {
 
     public static class Fields {
