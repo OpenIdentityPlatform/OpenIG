@@ -16,231 +16,233 @@
   Portions Copyrighted 2011-2014 ForgeRock AS.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-      <groupId>org.forgerock</groupId>
-      <artifactId>forgerock-parent</artifactId>
-      <version>1.2.1</version>
-    </parent>
-    <groupId>org.forgerock.openig</groupId>
-    <artifactId>openig-project</artifactId>
-    <packaging>pom</packaging>
-    <version>2.2.0-SNAPSHOT</version>
-    <name>OpenIG Project</name>
-    <description>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.forgerock</groupId>
+    <artifactId>forgerock-parent</artifactId>
+    <version>1.2.1</version>
+  </parent>
+  <groupId>org.forgerock.openig</groupId>
+  <artifactId>openig-project</artifactId>
+  <packaging>pom</packaging>
+  <version>2.2.0-SNAPSHOT</version>
+  <name>OpenIG Project</name>
+  <description>
        The Open Identity Gateway is a high-performance reverse proxy server with
        specialized session management and credential replay functionality.
     </description>
-    <url>http://openig.forgerock.org</url>
-    <modules>
-        <module>openig-core</module>
-        <module>openig-war</module>
-        <module>openig-federation-war</module>
-    </modules>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <inherited>true</inherited>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                    <compilerArgument>-Xlint:all</compilerArgument>
-                    <showWarnings>true</showWarnings>
-                    <showDeprecation>true</showDeprecation>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.forgerock.commons</groupId>
-                <artifactId>forgerock-doc-maven-plugin</artifactId>
-                <version>${frDocPluginVersion}</version>
-                <inherited>false</inherited>
-                <configuration>
-                    <projectName>OpenIG</projectName>
-                    <projectVersion>${docTargetVersion}</projectVersion>
-                    <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary workaround pending #QOZ-985-23233 -->
-                    <googleAnalyticsId>${gaId}</googleAnalyticsId>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>copy-common</id>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>boilerplate</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>filter-sources</id>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>filter</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>prepare-sources</id>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>prepare</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>build-doc</id>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>layout-doc</id>
-                        <phase>site</phase>
-                        <goals>
-                            <goal>layout</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+  <url>http://openig.forgerock.org</url>
+  <modules>
+    <module>openig-core</module>
+    <module>openig-war</module>
+    <module>openig-federation-war</module>
+  </modules>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <inherited>true</inherited>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <compilerArgument>-Xlint:all</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-doc-maven-plugin</artifactId>
+        <version>${frDocPluginVersion}</version>
+        <inherited>false</inherited>
+        <configuration>
+          <projectName>OpenIG</projectName>
+          <projectVersion>${docTargetVersion}</projectVersion>
+          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary 
+            workaround pending #QOZ-985-23233 -->
+          <googleAnalyticsId>${gaId}</googleAnalyticsId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>copy-common</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>boilerplate</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>filter-sources</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>filter</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>prepare-sources</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>prepare</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>build-doc</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>layout-doc</id>
+            <phase>site</phase>
+            <goals>
+              <goal>layout</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-            <plugin>
-                <groupId>org.forgerock.maven.plugins</groupId>
-                <artifactId>javadoc-updater-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>post-site</phase>
-                        <goals>
-                            <goal>fixjavadoc</goal>
-                        </goals>
-                        <configuration>
-                            <directory>${project.reporting.outputDirectory}</directory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugin>
+        <groupId>org.forgerock.maven.plugins</groupId>
+        <artifactId>javadoc-updater-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <phase>post-site</phase>
+            <goals>
+              <goal>fixjavadoc</goal>
+            </goals>
+            <configuration>
+              <directory>${project.reporting.outputDirectory}</directory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-        </plugins>
-    </build>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </plugins>
+  </build>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Start documentation properties -->
-        <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset before final publication-->
+    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset 
+      before final publication -->
 
-        <warConfigDir>$HOME/.openig/config</warConfigDir>
-        <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>
-        <warSamlDir>$HOME/.openig/SAML</warSamlDir>
+    <warConfigDir>$HOME/.openig/config</warConfigDir>
+    <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>
+    <warSamlDir>$HOME/.openig/SAML</warSamlDir>
 
-        <windowsWarConfigDir>%appdata%\.openig\config</windowsWarConfigDir>
-        <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
-        <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
+    <windowsWarConfigDir>%appdata%\.openig\config</windowsWarConfigDir>
+    <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
+    <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
 
-        <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before final publication -->
-        <frDocPluginVersion>2.1.0</frDocPluginVersion>
-        <gaId>UA-23412190-11</gaId>
-        <!--
-          Release date and publication date are set at release build time.
-            -D"releaseDate=Software release date: January 1, 1970"
-            -D"pubDate=Publication date: December 31, 1969"
-          At all other times, the dates should be empty.
-        -->
-        <releaseDate/>
-        <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
-        <pubDate/>
-        <publicationDate>${pubDate}</publicationDate>
-     <!-- End documentation properties -->
+    <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before 
+      final publication -->
+    <frDocPluginVersion>2.1.0</frDocPluginVersion>
+    <gaId>UA-23412190-11</gaId>
+    <!-- Release date and publication date are set at release build time. 
+      -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication 
+      date: December 31, 1969" At all other times, the dates should be empty. -->
+    <releaseDate />
+    <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
+    <pubDate />
+    <publicationDate>${pubDate}</publicationDate>
+    <!-- End documentation properties -->
 
-    </properties>
-    <repositories>
-<!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->
-        <repository>
-            <id>forgerock-staging-repository</id>
-            <name>ForgeRock Release Repository</name>
-            <url>http://maven.forgerock.org/repo/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-<!-- /may-be-temporary -->
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2/</url>
-        </repository>
-    </repositories>
-    <issueManagement>
-        <system>jira</system>
-        <url>https://bugster.forgerock.org/jira/browse/OPENIG</url>
-    </issueManagement>
-    <licenses>
-        <license>
-            <name>CDDL-1.0</name>
-            <url>http://www.opensource.org/licenses/CDDL-1.0</url>
-            <comments>Common Development and Distribution License (CDDL) 1.0.
+  </properties>
+  <repositories>
+    <!-- may-be-temporary, based-on our decisions around the content and 
+      release of forgerock-parent -->
+    <repository>
+      <id>forgerock-staging-repository</id>
+      <name>ForgeRock Release Repository</name>
+      <url>http://maven.forgerock.org/repo/releases</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <!-- /may-be-temporary -->
+    <repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>
+  </repositories>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://bugster.forgerock.org/jira/browse/OPENIG</url>
+  </issueManagement>
+  <licenses>
+    <license>
+      <name>CDDL-1.0</name>
+      <url>http://www.opensource.org/licenses/CDDL-1.0</url>
+      <comments>Common Development and Distribution License (CDDL) 1.0.
             This license applies to OpenIG source code as indicated in the
             source code.</comments>
-            <distribution>repo</distribution>
-        </license>
-        <license>
-            <name>CC BY-NC-ND 3.0</name>
-            <url>http://creativecommons.org/licenses/by-nc-nd/3.0/</url>
-            <comments>Creative Commons Attribution-NonCommercial-NoDerivs 3.0
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>CC BY-NC-ND 3.0</name>
+      <url>http://creativecommons.org/licenses/by-nc-nd/3.0/</url>
+      <comments>Creative Commons Attribution-NonCommercial-NoDerivs 3.0
             Unported. This license applies to the site content, and to the
             documentation as indicated in the documentation source code.</comments>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    <scm>
-        <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
-        <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
-        <url>http://sources.forgerock.org/browse/openig/trunk</url>
-    </scm>
-    <mailingLists>
-        <mailingList>
-            <name>OpenIG: Users</name>
-            <post>openig@forgerock.org</post>
-            <subscribe>http://lists.forgerock.org/mailman/listinfo/openig</subscribe>
-            <unsubscribe>http://lists.forgerock.org/mailman/listinfo/openig</unsubscribe>
-            <archive>http://lists.forgerock.org/pipermail/openig/</archive>
-        </mailingList>
-        <mailingList>
-            <name>OpenIG: Commit Notifications</name>
-            <post>commitopenig@forgerock.org</post>
-            <subscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</subscribe>
-            <unsubscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</unsubscribe>
-            <archive>http://lists.forgerock.org/pipermail/commitopenig/</archive>
-        </mailingList>
-    </mailingLists>
-    <distributionManagement>
-        <site>
-            <id>forgerock.org</id>
-            <name>ForgeRock Community Server</name>
-            <url>scp://forgerock.org/var/www/vhosts/openig.forgerock.org/httpdocs</url>
-        </site>
-    </distributionManagement>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8</version>
-                <configuration>
-                    <author>false</author>
-                    <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights reserved.</bottom>
-                    <links>
-                        <link>http://java.sun.com/javase/6/docs/api/</link>
-                    </links>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
+    <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
+    <url>http://sources.forgerock.org/browse/openig/trunk</url>
+  </scm>
+  <mailingLists>
+    <mailingList>
+      <name>OpenIG: Users</name>
+      <post>openig@forgerock.org</post>
+      <subscribe>http://lists.forgerock.org/mailman/listinfo/openig</subscribe>
+      <unsubscribe>http://lists.forgerock.org/mailman/listinfo/openig</unsubscribe>
+      <archive>http://lists.forgerock.org/pipermail/openig/</archive>
+    </mailingList>
+    <mailingList>
+      <name>OpenIG: Commit Notifications</name>
+      <post>commitopenig@forgerock.org</post>
+      <subscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</subscribe>
+      <unsubscribe>http://lists.forgerock.org/mailman/listinfo/commitopenig</unsubscribe>
+      <archive>http://lists.forgerock.org/pipermail/commitopenig/</archive>
+    </mailingList>
+  </mailingLists>
+  <distributionManagement>
+    <site>
+      <id>forgerock.org</id>
+      <name>ForgeRock Community Server</name>
+      <url>scp://forgerock.org/var/www/vhosts/openig.forgerock.org/httpdocs</url>
+    </site>
+  </distributionManagement>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.8</version>
+        <configuration>
+          <author>false</author>
+          <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights
+            reserved.</bottom>
+          <links>
+            <link>http://java.sun.com/javase/6/docs/api/</link>
+          </links>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
