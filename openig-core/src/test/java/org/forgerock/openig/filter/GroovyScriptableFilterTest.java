@@ -150,7 +150,6 @@ public class GroovyScriptableFilterTest {
         exchange.request.uri = new URI("http://test/login");
         exchange.request.headers.add("Username", "bjensen");
         exchange.request.headers.add("Password", "hifalutin");
-        exchange.response = new Response();
         handler.handle(exchange);
         assertThat(exchange.response.status).isEqualTo(200);
 
@@ -159,14 +158,12 @@ public class GroovyScriptableFilterTest {
         exchange.request.uri = new URI("http://test/login");
         exchange.request.headers.add("Username", "bob");
         exchange.request.headers.add("Password", "dobbs");
-        exchange.response = new Response();
         handler.handle(exchange);
         assertThat(exchange.response.status).isEqualTo(403);
 
         // Try with different path
         exchange.request = new Request();
         exchange.request.uri = new URI("http://test/index.html");
-        exchange.response = new Response();
         handler.handle(exchange);
         assertThat(exchange.response.status).isEqualTo(401);
     }
