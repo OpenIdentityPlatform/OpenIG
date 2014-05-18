@@ -1,3 +1,4 @@
+import org.forgerock.openig.http.Response
 import org.forgerock.openig.io.ByteArrayBranchingStream
 
 /*
@@ -6,6 +7,10 @@ import org.forgerock.openig.io.ByteArrayBranchingStream
  * accepting bjensen:hifalutin, and returning HTTP 403 Forbidden to others.
  * Otherwise it returns HTTP 401 Unauthorized.
  */
+
+// Rather than get the response from an external source,
+// this handler produces the response itself.
+exchange.response = new Response();
 
 switch (exchange.request.uri.path) {
 
