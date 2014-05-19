@@ -223,7 +223,7 @@ public final class HeaderUtil {
         if (value == null) {
             return null;
         }
-        StringBuilder sb = new StringBuilder('"');
+        StringBuilder sb = new StringBuilder("\"");
         int length = value.length();
         for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
             cp = value.codePointAt(n);
