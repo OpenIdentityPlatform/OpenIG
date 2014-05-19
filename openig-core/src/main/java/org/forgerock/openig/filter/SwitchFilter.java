@@ -96,16 +96,16 @@ public class SwitchFilter extends GenericFilter {
         private List<Case> asCases(String name) throws HeapException {
             ArrayList<Case> result = new ArrayList<Case>();
             JsonValue cases = config.get(name).expect(List.class); // optional
-            for (JsonValue _case : cases) {
-                result.add(asCase(_case.required().expect(Map.class)));
+            for (JsonValue value : cases) {
+                result.add(asCase(value.required().expect(Map.class)));
             }
             return result;
         }
 
-        private Case asCase(JsonValue _case) throws HeapException {
+        private Case asCase(JsonValue value) throws HeapException {
             Case result = new Case();
-            result.condition = JsonValueUtil.asExpression(_case.get("condition")); // optional
-            result.handler = HeapUtil.getRequiredObject(heap, _case.get("handler"), Handler.class);
+            result.condition = JsonValueUtil.asExpression(value.get("condition")); // optional
+            result.handler = HeapUtil.getRequiredObject(heap, value.get("handler"), Handler.class);
             return result;
         }
     }

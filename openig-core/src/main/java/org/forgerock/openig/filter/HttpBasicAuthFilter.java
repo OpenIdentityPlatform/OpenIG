@@ -13,7 +13,7 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011-2012 ForgeRock Inc.
+ * Portions Copyrighted 2011-2012 ForgeRock AS.
  */
 
 // TODO: distinguish between basic and other schemes that use 401 (Digest, OAuth, ...)
