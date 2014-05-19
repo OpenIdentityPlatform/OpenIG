@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
- * Copyright 2012 ForgeRock Inc. All rights reserved.
+ * Copyright 2012 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
