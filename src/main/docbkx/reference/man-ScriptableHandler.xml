@@ -66,6 +66,12 @@
        xlink:show="new"
       >exchange</link> provides access to the HTTP request and response.
      </para>
+
+     <para>
+      The request is created and populated before calling the handler.
+      The handler is responsible for creating
+      and for populating the response in the exchange.
+     </para>
     </listitem>
    </varlistentry>
 
