@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter;
 
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
@@ -24,11 +24,9 @@ import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.fest.assertions.Assertions.assertThat;
-
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
+
+import static org.fest.assertions.Assertions.*;
 
 public class HeaderFilterTest {
     private Exchange exchange;
@@ -40,7 +38,7 @@ public class HeaderFilterTest {
     }
 
     @Test
-    public void filterTest() throws URISyntaxException, HandlerException, IOException {
+    public void testAddHeaderToTheResponse() throws Exception {
         HeaderFilter filter = new HeaderFilter();
         filter.messageType = MessageType.RESPONSE;
         filter.remove.add("Location");
@@ -55,6 +53,25 @@ public class HeaderFilterTest {
         chain.handler = handler;
         chain.handle(exchange);
 
-        assertThat(exchange.response.headers.get("Location").equals("http://newtest.com:321/path/to/resource.html"));
+        assertThat(exchange.response.headers.get("Location"))
+                .containsOnly("http://newtest.com:321/path/to/resource.html");
+    }
+
+    @Test
+    public void testRemoveHeaderFromTheResponse() throws Exception {
+        HeaderFilter filter = new HeaderFilter();
+        filter.messageType = MessageType.RESPONSE;
+        filter.remove.add("Location");
+
+        // Prepare a static response handler that provision a response header
+        StaticResponseHandler handler = new StaticResponseHandler();
+        handler.headers.putSingle("Location", new Expression("http://openig.forgerock.com"));
+        handler.status = 200;
+
+        // Execute the filter
+        filter.filter(exchange, handler);
+
+        // Verify that the response header has been removed
+        assertThat(exchange.response.headers.get("Location")).isNull();
     }
 }
