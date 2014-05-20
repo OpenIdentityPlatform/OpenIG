@@ -328,7 +328,7 @@ public class CookieFilterTest {
         cookie.domain = domain;
         cookie.path = "/";
         CookieHeader header = new CookieHeader(exchange.request);
-        header.cookies.add(cookie);
+        header.getCookies().add(cookie);
 
         // Serialize the newly created Cookie inside the request
         header.toMessage(exchange.request);
