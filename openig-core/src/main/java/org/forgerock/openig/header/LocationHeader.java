@@ -28,34 +28,38 @@ public final class LocationHeader implements Header {
     public static final String NAME = "Location";
 
     /** The location URI value from the header, or empty string if not specified. */
-    public String locationURI = "";
+    private String locationURI = "";
 
-    /**
-     * Constructs a new empty <strong>{@code LocationHeader}</strong>.
-     */
+    /** Constructs a new empty <strong>{@code LocationHeader}</strong>. **/
     public LocationHeader() {
+        // Nothing to do.
     }
 
     /**
-     * Constructs a new <strong>{@code LocationHeader}</strong>, initialised from the specified message.
+     * Constructs a new <strong>{@code LocationHeader}</strong>, initialized from the specified message.
      *
-     * @param message the message to initialise the header from.
+     * @param message The message to initialize the header from.
      */
     public LocationHeader(Message message) {
         fromMessage(message);
     }
 
     /**
-     * Constructs a new <strong>{@code LocationHeader}</strong>, initialised from the specified String value.
+     * Constructs a new <strong>{@code LocationHeader}</strong>, initialized from the specified String value.
      *
-     * @param string the value to initialise the header from.
+     * @param string The value to initialize the header from.
      */
     public LocationHeader(String string) {
         fromString(string);
     }
 
-    private void clear() {
-        locationURI = "";
+    /**
+     * Returns the location URI or {@code null} if empty.
+     *
+     * @return The location URI or {@code null} if empty.
+     */
+    public String getLocationURI() {
+        return "".equals(locationURI) ? null : locationURI;
     }
 
     @Override
@@ -72,7 +76,7 @@ public final class LocationHeader implements Header {
 
     @Override
     public void fromString(String string) {
-        clear();
+        locationURI = "";
         if (string != null) {
             locationURI = string;
         }
@@ -80,7 +84,7 @@ public final class LocationHeader implements Header {
 
     @Override
     public void toMessage(Message message) {
-        String value = toString();
+        final String value = toString();
         if (value != null) {
             message.headers.putSingle(NAME, value);
         }
@@ -88,13 +92,14 @@ public final class LocationHeader implements Header {
 
     @Override
     public String toString() {
-        return ("".equals(locationURI) ? null : locationURI);
+        return getLocationURI();
     }
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof LocationHeader
-                && this.locationURI.equals(((LocationHeader) o).locationURI)));
+        return o == this
+            || (o instanceof LocationHeader
+                && locationURI.equals(((LocationHeader) o).locationURI));
     }
 
     @Override
