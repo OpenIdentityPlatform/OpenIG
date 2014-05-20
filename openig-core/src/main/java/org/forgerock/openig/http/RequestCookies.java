@@ -68,7 +68,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
         final ArrayList<Cookie> list = new ArrayList<Cookie>();
         if (key instanceof String) {
             final String s = (String) key;
-            for (final Cookie cookie : new CookieHeader(request).cookies) {
+            for (final Cookie cookie : new CookieHeader(request).getCookies()) {
                 if (s.equalsIgnoreCase(cookie.name)) {
                     list.add(cookie);
                 }
@@ -79,7 +79,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
 
     @Override
     public boolean isEmpty() {
-        return new CookieHeader(request).cookies.isEmpty();
+        return new CookieHeader(request).getCookies().isEmpty();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
 
     @Override
     public int size() {
-        return new CookieHeader(request).cookies.size();
+        return new CookieHeader(request).getCookies().size();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
     private Map<String, List<Cookie>> cookies() {
         final Map<String, List<Cookie>> cookies =
                 new TreeMap<String, List<Cookie>>(String.CASE_INSENSITIVE_ORDER);
-        for (final Cookie cookie : new CookieHeader(request).cookies) {
+        for (final Cookie cookie : new CookieHeader(request).getCookies()) {
             List<Cookie> list = cookies.get(cookie.name);
             if (list == null) {
                 cookies.put(cookie.name, list = new ArrayList<Cookie>(1));

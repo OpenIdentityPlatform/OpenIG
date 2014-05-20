@@ -34,7 +34,7 @@ public interface Header extends Indexed<String> {
 
     /**
      * Populates the content of the header from the specified message. If the
-     * message does not contain the appropriate header, callign this message has
+     * message does not contain the appropriate header, calling this message has
      * no effect (will not change the values of the header).
      */
     void fromMessage(Message message);

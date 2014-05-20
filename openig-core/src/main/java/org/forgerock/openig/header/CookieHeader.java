@@ -27,9 +27,9 @@ import org.forgerock.openig.http.Cookie;
 import org.forgerock.openig.http.Message;
 
 /**
- * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original
+ * Processes the <strong>{@code Cookie}</strong> request message header. For more information, @see the original
  * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">
- *     Netscape specification<a>,
+ *     Netscape specification</a>,
  * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
  * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
  * <p/>
@@ -41,12 +41,13 @@ public class CookieHeader implements Header {
     public static final String NAME = "Cookie";
 
     /** Request message cookies. */
-    public final ArrayList<Cookie> cookies = new ArrayList<Cookie>();
+    private final ArrayList<Cookie> cookies = new ArrayList<Cookie>();
 
     /**
      * Constructs a new empty header.
      */
     public CookieHeader() {
+        // Nothing to do.
     }
 
     /**
@@ -65,6 +66,15 @@ public class CookieHeader implements Header {
      */
     public CookieHeader(String string) {
         fromString(string);
+    }
+
+    /**
+     * Returns the cookies' request list.
+     *
+     * @return The cookies' request list.
+     */
+    public ArrayList<Cookie> getCookies() {
+        return cookies;
     }
 
     private void clear() {
@@ -100,13 +110,13 @@ public class CookieHeader implements Header {
                         cookie.version = version; // inherit previous parsed version
                         cookie.name = nvp[0];
                         cookie.value = nvp[1];
-                    } else if (nvp[0].equalsIgnoreCase("$Version")) {
+                    } else if ("$Version".equalsIgnoreCase(nvp[0])) {
                         cookie.version = version = parseInteger(nvp[1]);
-                    } else if (nvp[0].equalsIgnoreCase("$Path")) {
+                    } else if ("$Path".equalsIgnoreCase(nvp[0])) {
                         cookie.path = nvp[1];
-                    } else if (nvp[0].equalsIgnoreCase("$Domain")) {
+                    } else if ("$Domain".equalsIgnoreCase(nvp[0])) {
                         cookie.domain = nvp[1];
-                    } else if (nvp[0].equalsIgnoreCase("$Port")) {
+                    } else if ("$Port".equalsIgnoreCase(nvp[0])) {
                         cookie.port.clear();
                         parsePorts(cookie.port, nvp[1]);
                     }
@@ -160,13 +170,14 @@ public class CookieHeader implements Header {
                 }
             }
         }
-        return (sb.length() > 0 ? sb.toString() : null); // return null if empty
+        return sb.length() > 0 ? sb.toString() : null; // return null if empty
     }
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null && o instanceof CookieHeader
-                && this.cookies.equals(((CookieHeader) o).cookies)));
+        return o == this
+            || (o instanceof CookieHeader && this.cookies
+                .equals(((CookieHeader) o).cookies));
     }
 
     @Override
