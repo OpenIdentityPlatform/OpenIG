@@ -36,7 +36,7 @@ public class ContentTypeHeader implements Header {
     /** The name of the header that this object represents. */
     public static final String NAME = "Content-Type";
 
-    /** The type/subtype of the message. */
+    /** The type/sub-type of the message. */
     public String type = null;
 
     /** The character set used in encoding the message. */

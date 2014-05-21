@@ -35,6 +35,7 @@ public final class HeaderUtil {
 
     /** Static methods only. */
     private HeaderUtil() {
+        // No implementation required.
     }
 
     /**
@@ -50,15 +51,16 @@ public final class HeaderUtil {
      *
      * @param value the header value to be split.
      * @param separator the separator character to split headers around.
+     * @return A list of string representing the split values of the header.
      */
-    public static List<String> split(String value, char separator) {
+    public static List<String> split(final String value, final char separator) {
         if (separator == '"' || separator == '\\') {
             throw new IllegalArgumentException("invalid separator: " + separator);
         }
-        ArrayList<String> values = new ArrayList<String>();
+        final ArrayList<String> values = new ArrayList<String>();
         if (value != null) {
             int length = value.length();
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             boolean escaped = false;
             boolean quoted = false;
             for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
@@ -84,7 +86,7 @@ public final class HeaderUtil {
                     sb.appendCodePoint(cp);
                 }
             }
-            String s = sb.toString().trim();
+            final String s = sb.toString().trim();
             if (s.length() > 0) {
                 values.add(s);
             }
@@ -101,13 +103,13 @@ public final class HeaderUtil {
      * @param separator the separator to separate values within the returned value.
      * @return a single header value, with values separated by the separator.
      */
-    public static String join(Collection<String> values, char separator) {
+    public static String join(final Collection<String> values, final char separator) {
         if (separator == '"' || separator == '\\') {
             throw new IllegalArgumentException("invalid separator: " + separator);
         }
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (values != null) {
-            for (String s : values) {
+            for (final String s : values) {
                 if (s != null) {
                     if (sb.length() > 0) {
                         sb.append(separator).append(' ');
@@ -116,7 +118,7 @@ public final class HeaderUtil {
                 }
             }
         }
-        return (sb.length() > 0 ? sb.toString() : null);
+        return sb.length() > 0 ? sb.toString() : null;
     }
 
     /**
@@ -140,13 +142,13 @@ public final class HeaderUtil {
      * @param value the string to parse the name-value parameter from.
      * @return the name-value pair split into a {@code String} array.
      */
-    public static String[] parseParameter(String value) {
+    public static String[] parseParameter(final String value) {
         String[] ss = new String[2];
         boolean inValue = false;
         boolean quoted = false;
         boolean escaped = false;
         int length = value.length();
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
             cp = value.codePointAt(n);
             if (escaped) { // single-character quoting mechanism per RFC 2616 §2.2
@@ -198,11 +200,11 @@ public final class HeaderUtil {
      * @param values the HTTP header parameters.
      * @return a map of parameter name-value pairs.
      */
-    public static Map<String, String> parseParameters(Collection<String> values) {
-        CaseInsensitiveMap<String> map = new CaseInsensitiveMap<String>(new HashMap<String, String>());
+    public static Map<String, String> parseParameters(final Collection<String> values) {
+        final CaseInsensitiveMap<String> map = new CaseInsensitiveMap<String>(new HashMap<String, String>());
         if (values != null) {
-            for (String value : values) {
-                String[] param = parseParameter(value);
+            for (final String value : values) {
+                final String[] param = parseParameter(value);
                 if (param[0] != null && param[0].length() > 0 && !map.containsKey(param[0])) {
                     map.put(param[0], param[1]);
                 }
@@ -219,11 +221,11 @@ public final class HeaderUtil {
      * @param value the value to be enclosed in quotation marks.
      * @return the value enclosed in quotation marks.
      */
-    public static String quote(String value) {
+    public static String quote(final String value) {
         if (value == null) {
             return null;
         }
-        StringBuilder sb = new StringBuilder("\"");
+        final StringBuilder sb = new StringBuilder("\"");
         int length = value.length();
         for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
             cp = value.codePointAt(n);

@@ -27,7 +27,7 @@ import org.forgerock.openig.http.Cookie;
 import org.forgerock.openig.http.Message;
 
 /**
- * Processes the <strong>{@code Cookie}</strong> request message header. For more information, @see the original
+ * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original
  * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">
  *     Netscape specification</a>,
  * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
@@ -41,7 +41,7 @@ public class CookieHeader implements Header {
     public static final String NAME = "Cookie";
 
     /** Request message cookies. */
-    private final ArrayList<Cookie> cookies = new ArrayList<Cookie>();
+    private final List<Cookie> cookies = new ArrayList<Cookie>();
 
     /**
      * Constructs a new empty header.
@@ -73,7 +73,7 @@ public class CookieHeader implements Header {
      *
      * @return The cookies' request list.
      */
-    public ArrayList<Cookie> getCookies() {
+    public List<Cookie> getCookies() {
         return cookies;
     }
 

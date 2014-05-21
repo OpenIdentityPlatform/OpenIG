@@ -21,6 +21,7 @@ import static org.forgerock.openig.header.LocationHeader.NAME;
 
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -31,33 +32,48 @@ import org.testng.annotations.Test;
  */
 public class LocationHeaderTest {
 
-    private static String locationHeader = "http://www.example.org/index.php";
-    private static String locationHeader2 = "http://www.sample.org/index.php";
+    @DataProvider(name = "locationHeaders")
+    public Object[][] locationHeadersProvider() {
+        return new Object[][] {
+            new Object[] { "http://www.example.org/index.php" },
+            /* This example, is incorrect according to the RFC, however,
+             * all popular browsers will accept a relative URL, and it is correct
+             * according to the current revision of HTTP/1.1*/
+            new Object[] { "/blog/" }
+        };
+    }
 
-    @Test()
-    public void locationHeaderAllowsEmptyString() {
+    @DataProvider(name = "nullOrEmptyConnectionHeaderString")
+    public Object[][] nullOrEmptyDataProvider() {
+        return new Object[][] {
+            new Object[] { "" },
+            new Object[] { null } };
+    }
+
+    @Test
+    public void locationHeaderAllowsEmptyOrNullString() {
         final LocationHeader lh = new LocationHeader();
         assertNull(lh.getLocationURI());
     }
 
-    @Test()
-    public void locationHeaderDoesAllowNullString() {
-        final LocationHeader lh = new LocationHeader((String) null);
+    @Test(dataProvider = "nullOrEmptyConnectionHeaderString")
+    public void locationHeaderAllowsNullOrEmptyString(final String lHeader) {
+        final LocationHeader lh = new LocationHeader(lHeader);
         assertNull(lh.getLocationURI());
     }
 
-    @Test()
-    public void locationHeaderFromMessage() {
+    @Test(dataProvider = "locationHeaders")
+    public void locationHeaderFromMessage(final String lHeader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, locationHeader);
+        response.headers.putSingle(NAME, lHeader);
         assertNotNull(response.headers.get(NAME));
 
         final LocationHeader lh = new LocationHeader(response);
-        assertEquals(lh.getLocationURI(), locationHeader);
+        assertEquals(lh.getLocationURI(), lHeader);
     }
 
-    @Test()
+    @Test
     public void locationHeaderFromEmptyMessage() {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
@@ -66,64 +82,64 @@ public class LocationHeaderTest {
         assertNull(lh.getLocationURI());
     }
 
-    @Test()
-    public void locationHeaderFromString() {
-        final LocationHeader lh = new LocationHeader(locationHeader);
-        assertEquals(lh.getLocationURI(), "http://www.example.org/index.php");
+    @Test(dataProvider = "locationHeaders")
+    public void locationHeaderFromString(final String lHeader) {
+        final LocationHeader lh = new LocationHeader(lHeader);
+        assertEquals(lh.getLocationURI(), lHeader);
         assertEquals(lh.getKey(), NAME);
     }
 
-    @Test()
-    public void locationHeaderToMessageRequest() {
+    @Test(dataProvider = "locationHeaders")
+    public void locationHeaderToMessageRequest(final String lHeader) {
         final Request request = new Request();
         assertNull(request.headers.get(NAME));
-        final LocationHeader lh = new LocationHeader(locationHeader);
+        final LocationHeader lh = new LocationHeader(lHeader);
         lh.toMessage(request);
         assertNotNull(request.headers.get(NAME));
-        assertEquals(request.headers.get(NAME).get(0), locationHeader);
+        assertEquals(request.headers.getFirst(NAME), lHeader);
     }
 
-    @Test()
-    public void locationHeaderToMessageResponse() {
+    @Test(dataProvider = "locationHeaders")
+    public void locationHeaderToMessageResponse(final String lHeader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
-        final LocationHeader lh = new LocationHeader(locationHeader);
+        final LocationHeader lh = new LocationHeader(lHeader);
         lh.toMessage(response);
 
         assertNotNull(response.headers.get(NAME));
-        assertEquals(response.headers.get(NAME).get(0), locationHeader);
+        assertEquals(response.headers.get(NAME).get(0), lHeader);
     }
 
-    @Test()
-    public void equalitySucceed() {
-        final LocationHeader lh = new LocationHeader(locationHeader);
+    @Test(dataProvider = "locationHeaders")
+    public void equalitySucceed(final String lHeader) {
+        final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
         assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, "http://www.example.org/index.php");
+        response.headers.putSingle(NAME, lHeader);
 
         final LocationHeader lh2 = new LocationHeader(response);
         assertEquals(lh2.getLocationURI(), lh.getLocationURI());
         assertEquals(lh2, lh);
     }
 
-    @Test()
-    public void equalityFails() {
-        final LocationHeader lh = new LocationHeader(locationHeader);
+    @Test(dataProvider = "locationHeaders")
+    public void equalityFails(final String lHeader) {
+        final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
         assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, locationHeader2);
+        response.headers.putSingle(NAME, "");
 
         final LocationHeader lh2 = new LocationHeader(response);
         assertThat(lh2.getLocationURI()).isNotEqualTo(lh.getLocationURI());
         assertThat(lh2).isNotEqualTo(lh);
     }
 
-    @Test()
-    public void locationHeaderToString() {
-        final LocationHeader lh = new LocationHeader(locationHeader);
-        assertEquals(lh.getLocationURI(), locationHeader);
+    @Test(dataProvider = "locationHeaders")
+    public void locationHeaderToString(final String lHeader) {
+        final LocationHeader lh = new LocationHeader(lHeader);
+        assertEquals(lh.toString(), lHeader);
     }
 }

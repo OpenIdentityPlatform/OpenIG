@@ -95,18 +95,16 @@ public class ContentLengthHeader implements Header {
 
     @Override
     public String toString() {
-        return (length >= 0 ? Long.toString(length) : null);
+        return length >= 0 ? Long.toString(length) : null;
     }
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null
-                && o instanceof ContentLengthHeader
-                && this.length == ((ContentLengthHeader) o).length));
+        return o == this || (o instanceof ContentLengthHeader && this.length == ((ContentLengthHeader) o).length);
     }
 
     @Override
     public int hashCode() {
-        return (int) (length ^ (length >>> 32));
+        return (int) (length ^ length >>> 32);
     }
 }

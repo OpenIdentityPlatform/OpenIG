@@ -18,8 +18,8 @@
 package org.forgerock.openig.header;
 
 // Java Standard Edition
-
 import java.util.ArrayList;
+import java.util.List;
 
 // OpenIG Core
 import org.forgerock.openig.http.Message;
@@ -34,12 +34,13 @@ public class ConnectionHeader implements Header {
     public static final String NAME = "Connection";
 
     /** A list of connection-tokens. */
-    public final ArrayList<String> tokens = new ArrayList<String>();
+    private final List<String> tokens = new ArrayList<String>();
 
     /**
      * Constructs a new empty header.
      */
     public ConnectionHeader() {
+        // Nothing to do.
     }
 
     /**
@@ -62,6 +63,15 @@ public class ConnectionHeader implements Header {
 
     private void clear() {
         tokens.clear();
+    }
+
+    /**
+     * Returns the list of connection-tokens.
+     *
+     * @return The list of connection-tokens.
+     */
+    public List<String> getTokens() {
+        return tokens;
     }
 
     @Override
@@ -99,9 +109,8 @@ public class ConnectionHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null
-                && o instanceof ConnectionHeader
-                && this.tokens.equals(((ConnectionHeader) o).tokens)));
+        return o == this || (o instanceof ConnectionHeader
+                && this.tokens.equals(((ConnectionHeader) o).tokens));
     }
 
     @Override
