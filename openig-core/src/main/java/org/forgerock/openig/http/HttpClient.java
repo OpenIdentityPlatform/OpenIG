@@ -252,7 +252,7 @@ public class HttpClient {
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
         // parse request connection headers to be suppressed in request
-        suppressConnection.addAll(new ConnectionHeader(request).tokens);
+        suppressConnection.addAll(new ConnectionHeader(request).getTokens());
         // request headers
         for (final String name : request.headers.keySet()) {
             if (!SUPPRESS_REQUEST_HEADERS.contains(name) && !suppressConnection.contains(name)) {
@@ -277,7 +277,7 @@ public class HttpClient {
         response.reason = statusLine.getReasonPhrase();
         // parse response connection headers to be suppressed in response
         suppressConnection.clear();
-        suppressConnection.addAll(new ConnectionHeader(response).tokens);
+        suppressConnection.addAll(new ConnectionHeader(response).getTokens());
         // response headers
         for (final HeaderIterator i = clientResponse.headerIterator(); i.hasNext();) {
             final Header header = i.nextHeader();

@@ -126,9 +126,9 @@ public class ContentEncodingHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return (o == this || (o != null
-                && o instanceof ContentEncodingHeader
-                && this.codings.equals(((ContentEncodingHeader) o).codings)));
+        return o == this
+                || (o instanceof ContentEncodingHeader 
+                        && this.codings.equals(((ContentEncodingHeader) o).codings));
     }
 
     @Override
