@@ -146,7 +146,7 @@ public class CaptureFilter extends GenericFilter {
 
     private void writeEntity(Message message) throws IOException {
         ContentTypeHeader contentType = new ContentTypeHeader(message);
-        if (message.entity == null || contentType.type == null) {
+        if (message.entity == null || contentType.getType() == null) {
             return;
         }
         writer.println();
@@ -154,8 +154,8 @@ public class CaptureFilter extends GenericFilter {
             writer.println("[entity]");
             return;
         }
-        String type = (contentType.type != null ? contentType.type.toLowerCase() : null);
-        if (!(contentType.charset != null || (type != null && // text or whitelisted type
+        String type = (contentType.getType() != null ? contentType.getType().toLowerCase() : null);
+        if (!(contentType.getCharset() != null || (type != null && // text or whitelisted type
                 (TEXT_TYPES.contains(type) || type.startsWith("text/"))))) {
             writer.println("[binary entity]");
             return;

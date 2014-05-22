@@ -78,7 +78,7 @@ public class HttpClient {
         public EntityRequest(final Request request) {
             this.method = request.method;
             final InputStreamEntity entity =
-                    new InputStreamEntity(request.entity, new ContentLengthHeader(request).length);
+                    new InputStreamEntity(request.entity, new ContentLengthHeader(request).getLength());
             entity.setContentType(new ContentTypeHeader(request).toString());
             entity.setContentEncoding(new ContentEncodingHeader(request).toString());
             setEntity(entity);
