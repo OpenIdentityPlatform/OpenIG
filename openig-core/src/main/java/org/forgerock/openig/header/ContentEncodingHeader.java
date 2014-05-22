@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
+
 
 // OpenIG Core
 import org.forgerock.openig.http.Message;
@@ -39,7 +41,7 @@ public class ContentEncodingHeader implements Header {
     public static final String NAME = "Content-Encoding";
 
     /** The content-coding(s), in the order they are applied to the entity. */
-    public final ArrayList<String> codings = new ArrayList<String>();
+    private final List<String> codings = new ArrayList<String>();
 
     /**
      * Constructs a new empty header.
@@ -91,6 +93,15 @@ public class ContentEncodingHeader implements Header {
         codings.clear();
     }
 
+    /**
+     * Returns the content-coding(s).
+     *
+     * @return The list of the content-coding(s).
+     */
+    public List<String> getCodings() {
+        return codings;
+    }
+
     @Override
     public String getKey() {
         return NAME;
@@ -127,8 +138,8 @@ public class ContentEncodingHeader implements Header {
     @Override
     public boolean equals(Object o) {
         return o == this
-                || (o instanceof ContentEncodingHeader 
-                        && this.codings.equals(((ContentEncodingHeader) o).codings));
+                || (o instanceof ContentEncodingHeader
+                        && codings.equals(((ContentEncodingHeader) o).codings));
     }
 
     @Override

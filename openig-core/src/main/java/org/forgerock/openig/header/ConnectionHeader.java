@@ -110,7 +110,7 @@ public class ConnectionHeader implements Header {
     @Override
     public boolean equals(Object o) {
         return o == this || (o instanceof ConnectionHeader
-                && this.tokens.equals(((ConnectionHeader) o).tokens));
+                && tokens.equals(((ConnectionHeader) o).tokens));
     }
 
     @Override

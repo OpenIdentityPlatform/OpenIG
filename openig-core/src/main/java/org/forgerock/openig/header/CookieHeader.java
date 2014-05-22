@@ -175,9 +175,7 @@ public class CookieHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return o == this
-            || (o instanceof CookieHeader && this.cookies
-                .equals(((CookieHeader) o).cookies));
+        return o == this || (o instanceof CookieHeader && cookies.equals(((CookieHeader) o).cookies));
     }
 
     @Override

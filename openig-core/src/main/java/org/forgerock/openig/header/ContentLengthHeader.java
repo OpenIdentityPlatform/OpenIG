@@ -31,7 +31,7 @@ public class ContentLengthHeader implements Header {
     public static final String NAME = "Content-Length";
 
     /** The content length, or {@code -1} if not specified. */
-    public long length = -1;
+    private long length = -1;
 
     /**
      * Constructs a new empty header.
@@ -59,6 +59,15 @@ public class ContentLengthHeader implements Header {
 
     private void clear() {
         length = -1;
+    }
+
+    /**
+     * Returns the content length.
+     *
+     * @return The content length.
+     */
+    public long getLength() {
+        return length;
     }
 
     @Override
@@ -100,7 +109,7 @@ public class ContentLengthHeader implements Header {
 
     @Override
     public boolean equals(Object o) {
-        return o == this || (o instanceof ContentLengthHeader && this.length == ((ContentLengthHeader) o).length);
+        return o == this || (o instanceof ContentLengthHeader && length == ((ContentLengthHeader) o).length);
     }
 
     @Override

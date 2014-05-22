@@ -37,13 +37,13 @@ public class ContentTypeHeader implements Header {
     public static final String NAME = "Content-Type";
 
     /** The type/sub-type of the message. */
-    public String type = null;
+    private String type = null;
 
     /** The character set used in encoding the message. */
-    public String charset = null;
+    private String charset = null;
 
     /** The boundary value provided in multipart messages. */
-    public String boundary = null;
+    private String boundary = null;
 
     /**
      * Constructs a new empty header.
@@ -70,14 +70,34 @@ public class ContentTypeHeader implements Header {
     }
 
     /**
-     * Returns the character set encoding used to encode the message, or {@code null} if no
-     * character set was specified.
+     * Returns the media type of the underlying data or {@code null} if none specified.
      *
-     * @throws IllegalCharsetNameException if the given charset name is illegal.
-     * @throws UnsupportedCharsetException if no support for the named charset is available.
+     * @return The media type of the underlying data or {@code null} if none specified.
+     */
+    public String getType() {
+        return type != null ? type : null;
+    }
+
+    /**
+     * Returns the character set encoding used to encode the message, or {@code null} if no character set was specified.
+     *
+     * @throws IllegalCharsetNameException
+     *             if the given charset name is illegal.
+     * @throws UnsupportedCharsetException
+     *             if no support for the named charset is available.
+     * @return The character set encoding used to encode the message or {@code null} if empty.
      */
     public Charset getCharset() {
-        return (charset != null ? Charset.forName(charset) : null);
+        return charset != null ? Charset.forName(charset) : null;
+    }
+
+    /**
+     * Returns the encapsulation boundary or {@code null} if none specified.
+     *
+     * @return The encapsulation boundary or {@code null} if none specified.
+     */
+    public String getBoundary() {
+        return boundary != null ? boundary : null;
     }
 
     private void clear() {
@@ -103,9 +123,9 @@ public class ContentTypeHeader implements Header {
         clear();
         List<String> parts = HeaderUtil.split(string, ';');
         if (parts.size() > 0) {
-            this.type = parts.get(0);
-            this.charset = HeaderUtil.parseParameters(parts).get("charset");
-            this.boundary = HeaderUtil.parseParameters(parts).get("boundary");
+            type = parts.get(0);
+            charset = HeaderUtil.parseParameters(parts).get("charset");
+            boundary = HeaderUtil.parseParameters(parts).get("boundary");
         }
     }
 
@@ -129,7 +149,7 @@ public class ContentTypeHeader implements Header {
                 sb.append("; boundary=").append(boundary);
             }
         }
-        return (sb.length() > 0 ? sb.toString() : null);
+        return sb.length() > 0 ? sb.toString() : null;
     }
 
     @Override
@@ -141,18 +161,18 @@ public class ContentTypeHeader implements Header {
             return false;
         }
         ContentTypeHeader ct = (ContentTypeHeader) o;
-        return (((this.type == null && ct.type == null)
-                || (this.type != null && this.type.equals(ct.type)))
-                && ((this.charset == null && ct.charset == null)
-                || (this.charset != null && this.charset.equals(ct.charset)))
-                && ((this.boundary == null && ct.boundary == null)
-                || (this.boundary != null && this.boundary.equals(ct.boundary))));
+        return ((type == null && ct.type == null)
+                || (type != null && type.equals(ct.type)))
+                && ((charset == null && ct.charset == null)
+                || (charset != null && charset.equals(ct.charset)))
+                && ((boundary == null && ct.boundary == null)
+                || (boundary != null && boundary.equals(ct.boundary)));
     }
 
     @Override
     public int hashCode() {
-        return ((type == null ? 0 : type.hashCode())
+        return (type == null ? 0 : type.hashCode())
                 ^ (charset == null ? 0 : charset.hashCode())
-                ^ (boundary == null ? 0 : boundary.hashCode()));
+                ^ (boundary == null ? 0 : boundary.hashCode());
     }
 }

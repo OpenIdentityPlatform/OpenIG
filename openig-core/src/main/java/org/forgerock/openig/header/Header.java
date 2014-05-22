@@ -26,34 +26,43 @@ import org.forgerock.openig.util.Indexed;
 public interface Header extends Indexed<String> {
 
     /**
-     * Returns the name of the header, as it would canonically appear within an
-     * HTTP message.
+     * Returns the name of the header, as it would canonically appear within an HTTP message.
+     *
+     * @return The name of the header, as it would canonically appear within an HTTP message.
      */
     @Override
     String getKey();
 
     /**
-     * Populates the content of the header from the specified message. If the
-     * message does not contain the appropriate header, calling this message has
-     * no effect (will not change the values of the header).
+     * Populates the content of the header from the specified message. If the message does not contain the appropriate
+     * header, calling this message has no effect (will not change the values of the header).
+     *
+     * @param message
+     *            The message to get the content of the header from.
      */
     void fromMessage(Message message);
 
     /**
      * Populates the content of the header from the specified string value.
+     *
+     * @param string
+     *            The string to populate the content of the header from.
      */
     void fromString(String string);
 
     /**
-     * Sets the header in the specified message. If the header is empty, calling
-     * this method has no effect (will not erase existing instances of the
-     * header in the message).
+     * Sets the header in the specified message. If the header is empty, calling this method has no effect (will not
+     * erase existing instances of the header in the message).
+     *
+     * @param message
+     *            The message to which add the current header.
      */
     void toMessage(Message message);
 
     /**
-     * Returns the header as a single string value. If the header is empty, this
-     * method will return {@code null}.
+     * Returns the header as a single string value. If the header is empty, this method will return {@code null}.
+     *
+     * @return The header as a single string value or {@code null} if empty.
      */
     String toString();
 }
