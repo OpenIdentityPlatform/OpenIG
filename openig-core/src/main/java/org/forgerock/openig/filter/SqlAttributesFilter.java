@@ -75,7 +75,7 @@ public class SqlAttributesFilter extends GenericFilter {
     /** The factory for connections to the physical data source. */
     public DataSource dataSource;
 
-    /** The parameterized SQL query to execute, with ? parmameter placeholders. */
+    /** The parametrized SQL query to execute, with ? parameter placeholders. */
     public String preparedStatement;
 
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
