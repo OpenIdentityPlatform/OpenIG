@@ -21,65 +21,72 @@
   ! CCPL HEADER END
   !
   !      Copyright 2011-2012 ForgeRock AS
-  !    
+  !
 -->
-<document
- xmlns="http://maven.apache.org/XDOC/2.0"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
- <properties>
-  <title>About OpenIG</title>
-  <author email="openig-dev@forgerock.org">ForgeRock AS</author>
- </properties>
- <body>
-  <section name="About OpenIG">
-   <p>The Open Identity Gateway is a high-performance reverse proxy server with
-   specialized session management and credential replay functionality.
-   OpenIG works together with <a href="http://openam.forgerock.org"
-   >OpenAM</a> to integrate Web applications without the need to modify the
-   target application or the container that it runs in.</p>
-  </section>
-  <section name="Welcome Users">
-   <p>The OpenIG community shares an interest in improving and extending
-   OpenIG software, and in adapting OpenIG to best fit our needs.</p>
-   <p>You are welcome to join us. Here are some ways to get started.</p>
-   <ul>
-    <li>Join the <a
-    href="https://lists.forgerock.org/mailman/listinfo/openig">OpenIG
-    mailing list</a> to ask questions, make suggestions, and tell us what
-    you think of OpenIG.</li>
-    <li><a
-    href="https://idp.forgerock.org/openam/UI/Login?service=register">Register
-    to join the community</a>.</li>
-    <li>Read the <a href="docs.html">OpenIG documentation</a>.</li>
-   </ul>
-   <p>Looking forward to hearing from you.</p>
-  </section>
-  <section name="Welcome Developers">
-   <p>If you are a developer interested in OpenIG, there are plenty of
-   ways you can get actively involved in the community in addition to joining
-   as an OpenIG user.</p>
-   <ul>
-    <li>Get the source. See instructions in <a
-    href="http://openig.forgerock.org/source-repository.html"
-    >How to Use OpenIG Subversion</a>.</li>   
-    <li>Make sure you <a
-    href="https://idp.forgerock.org/openam/UI/Login?service=register">register
-    to join the community</a>, thus also registering to <a
-    href="https://bugster.forgerock.org/jira/browse/OPENIG">report issues, and
-    describe requests for enhancements</a>.</li>
-    <li>Participate and discuss your work on the 
-      <a href="https://lists.forgerock.org/mailman/listinfo/openig">OpenIG mailing list</a>.</li>
-   </ul>
-  </section>
-  <section name="Welcome Partners">
-   <p>Want to partner with other OpenIG community members to bring solutions
-   based on OpenIG to your customers?</p>
-   <ul>
-    <li>Come show off your expertise or post your success stories on the <a
-    href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
-    list</a>.</li>
-   </ul>
-  </section>
- </body>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+  <properties>
+    <title>About OpenIG</title>
+    <author email="openig-dev@forgerock.org">ForgeRock AS</author>
+  </properties>
+  <body>
+    <section name="About OpenIG">
+      <p>The Open Identity Gateway is a high-performance reverse proxy server with
+        specialized session management and credential replay functionality.
+        OpenIG works together with
+        <a href="http://openam.forgerock.org">OpenAM</a>
+        to integrate Web applications without the need to modify the
+        target application or the container that it runs in.
+      </p>
+    </section>
+    <section name="Welcome Users">
+      <p>The OpenIG community shares an interest in improving and extending
+        OpenIG software, and in adapting OpenIG to best fit our needs.
+      </p>
+      <p>You are welcome to join us. Here are some ways to get started.</p>
+      <ul>
+        <li>Join the
+          <a href="https://lists.forgerock.org/mailman/listinfo/openig">OpenIG mailing list</a>
+          to ask questions, make suggestions, and tell us what
+          you think of OpenIG.
+        </li>
+        <li><a href="https://idp.forgerock.org/openam/UI/Login?service=register">Register to join the community</a>.
+        </li>
+        <li>Read the<a href="docs.html">OpenIG documentation</a>.
+        </li>
+      </ul>
+      <p>Looking forward to hearing from you.</p>
+    </section>
+    <section name="Welcome Developers">
+      <p>If you are a developer interested in OpenIG, there are plenty of
+        ways you can get actively involved in the community in addition to joining
+        as an OpenIG user.
+      </p>
+      <ul>
+        <li>Get the source. See instructions in
+          <a href="http://openig.forgerock.org/source-repository.html">How to Use OpenIG Subversion</a>.
+        </li>
+        <li>Make sure you
+          <a href="https://idp.forgerock.org/openam/UI/Login?service=register">register to join the community</a>
+          , thus also registering to
+          <a href="https://bugster.forgerock.org/jira/browse/OPENIG">report issues, and describe requests
+            for enhancements</a>.
+        </li>
+        <li>Participate and discuss your work on the
+          <a href="https://lists.forgerock.org/mailman/listinfo/openig">OpenIG mailing list</a>.
+        </li>
+      </ul>
+    </section>
+    <section name="Welcome Partners">
+      <p>Want to partner with other OpenIG community members to bring solutions
+        based on OpenIG to your customers?
+      </p>
+      <ul>
+        <li>Come show off your expertise or post your success stories on the
+          <a href="https://lists.forgerock.org/mailman/listinfo/openig">mailing list</a>.
+        </li>
+      </ul>
+    </section>
+  </body>
 </document>
