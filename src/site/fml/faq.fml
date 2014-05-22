@@ -21,58 +21,59 @@
   ! CCPL HEADER END
   !
   !      Copyright 2013 ForgeRock AS
-  !    
+  !
 -->
-<faqs
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns="http://maven.apache.org/FML/1.0"
- xsi:schemaLocation="http://maven.apache.org/FML/1.0 http://maven.apache.org/xsd/fml-1.0.xsd"
- id="OpenIG FAQ">
- <part id="General">
-  <faq id="what">
-   <question>What is OpenIG?</question>
-   <answer>
-    <p>OpenIG is a high-performance reverse proxy server with specialized
-    session management and credential replay functionality. OpenIG works
-    together with OpenAM to integrate Web applications without the need to
-    modify the target application or the container that it runs in.</p>
-   </answer>
-  </faq>
-  <faq id="roadmap">
-   <question>What's the OpenIG roadmap? Is OpenIG actively developed?</question>
-   <answer>
-    <p>
-      OpenIG is actively developed as part of OpenAM, see <a
-      href="https://bugster.forgerock.org/jira/browse/OPENIG">the OpenIG bug
-      database activity</a>. Also see the <a
-      href="https://wikis.forgerock.org/confluence/display/openam/OpenAM+Roadmap"
-      >OpenAM Roadmap</a>.
-    </p>
-   </answer>
-  </faq>
-  <faq id="develop">
-   <question>I want to contribute a patch (a feature, a test, a plug-in)
-   to OpenIG. How do I get involved?</question>
-   <answer>
-    <p>
-      Come discuss your work on the <a
-      href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
-      list</a>. <a
-      href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
-      the project</a>, too.
-    </p>
-   </answer>
-  </faq>
-  <faq id="test">
-   <question>I want to help test OpenIG. How do I get started?</question>
-   <answer>
-    <p>
-      <a href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
-      the project</a>. Come discuss your work on the <a
-      href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
-      list</a>. 
-    </p>
-   </answer>
-  </faq>
- </part>
+<faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://maven.apache.org/FML/1.0"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0 http://maven.apache.org/xsd/fml-1.0.xsd"
+      id="OpenIG FAQ">
+  <part id="General">
+    <faq id="what">
+      <question>What is OpenIG?</question>
+      <answer>
+        <p>OpenIG is a high-performance reverse proxy server with specialized
+          session management and credential replay functionality. OpenIG works
+          together with OpenAM to integrate Web applications without the need to
+          modify the target application or the container that it runs in.
+        </p>
+      </answer>
+    </faq>
+    <faq id="roadmap">
+      <question>What's the OpenIG roadmap? Is OpenIG actively developed?</question>
+      <answer>
+        <p>
+          OpenIG is actively developed as part of OpenAM, see<a
+            href="https://bugster.forgerock.org/jira/browse/OPENIG">the OpenIG bug
+          database activity</a>. Also see the<a
+            href="https://wikis.forgerock.org/confluence/display/openam/OpenAM+Roadmap"
+            >OpenAM Roadmap</a>.
+        </p>
+      </answer>
+    </faq>
+    <faq id="develop">
+      <question>I want to contribute a patch (a feature, a test, a plug-in)
+        to OpenIG. How do I get involved?
+      </question>
+      <answer>
+        <p>
+          Come discuss your work on the<a
+            href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
+          list</a>.<a
+            href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
+          the project</a>, too.
+        </p>
+      </answer>
+    </faq>
+    <faq id="test">
+      <question>I want to help test OpenIG. How do I get started?</question>
+      <answer>
+        <p>
+          <a href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
+            the project</a>. Come discuss your work on the<a
+            href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
+          list</a>.
+        </p>
+      </answer>
+    </faq>
+  </part>
 </faqs>

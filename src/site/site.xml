@@ -21,71 +21,71 @@
   ! CCPL HEADER END
   !
   !      Copyright 2011-2013 ForgeRock AS
-  !    
+  !
 -->
 <project name="${project.name}"
- xmlns="http://maven.apache.org/DECORATION/1.0.1"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1 http://maven.apache.org/xsd/decoration-1.0.1.xsd">
+         xmlns="http://maven.apache.org/DECORATION/1.0.1"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1 http://maven.apache.org/xsd/decoration-1.0.1.xsd">
 
- <skin>
-  <groupId>org.forgerock.commons</groupId>
-  <artifactId>forgerock-community-skin</artifactId>
-  <version>1.0.0</version>
- </skin>
- <publishDate position="right" format="yyyy.MM.dd" />
- <version position="right" />
+  <skin>
+    <groupId>org.forgerock.commons</groupId>
+    <artifactId>forgerock-community-skin</artifactId>
+    <version>1.0.0</version>
+  </skin>
+  <publishDate position="right" format="yyyy.MM.dd" />
+  <version position="right" />
 
- <body>
- 
-  <breadcrumbs>
-   <item name="Developer Community" href="http://www.forgerock.org" />
-   <item name="OpenIG" href="http://openig.forgerock.org" />
-  </breadcrumbs>
+  <body>
 
-  <menu name="OpenIG">
-   <item name="Welcome" href="index.html" />
-   <item name="News" href="news.html" />
-   <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
-   <item name="FAQ" href="faq.html" />
-   <item name="Mailing List" href="mail-lists.html" />
-   <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
-   <item name="Partners" href="http://forgerock.com/partners/" />
-   <item name="Wiki" href="https://wikis.forgerock.org/confluence/display/OPENAM/Home" />
-   <item name="Builds" href="http://forgerock.org/openig.html" />
-   <item name="Archives" href="http://forgerock.org/openig-archive.html" />
-   <item name="Enterprise Downloads" href="http://forgerock.com/openam-downloads/"/>
-  </menu>
-  
-  <menu name="Released Documentation">
-   <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
-  </menu>
-  
-  <menu name="Docs in progress">
-   <item name="All Formats" href="docs.html" />
-   <item name="Release Notes" href="./doc/release-notes/index.html" />
-   <item name="Guide to OpenIG" href="./doc/gateway-guide/index.html" />
-   <item name="Config Reference" href="./doc/reference/index.html" />
-   <item name="Javadoc" href="./apidocs/index.html" />
-  </menu>
+    <breadcrumbs>
+      <item name="Developer Community" href="http://www.forgerock.org" />
+      <item name="OpenIG" href="http://openig.forgerock.org" />
+    </breadcrumbs>
 
-  <menu name="OpenIG Development">
-   <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
-   <item name="Issue Tracking" href="issue-tracking.html" />
-   <item name="License" href="license.html" />
-   <item name="Source Repository" href="source-repository.html" />
-  </menu>
-  
- </body>
- 
- <custom>
-  <googleAnalytics>UA-23412190-11</googleAnalytics>
-  <openproject>
-   <href>http://openig.forgerock.org/</href>
-   <src>./images/openig-tagline-177x65.png</src>
-   <alt>OpenIG</alt>
-  </openproject>
-  <siteSearchFQDN>forgerock.org</siteSearchFQDN>
- </custom>
+    <menu name="OpenIG">
+      <item name="Welcome" href="index.html" />
+      <item name="News" href="news.html" />
+      <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
+      <item name="FAQ" href="faq.html" />
+      <item name="Mailing List" href="mail-lists.html" />
+      <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
+      <item name="Partners" href="http://forgerock.com/partners/" />
+      <item name="Wiki" href="https://wikis.forgerock.org/confluence/display/OPENAM/Home" />
+      <item name="Builds" href="http://forgerock.org/openig.html" />
+      <item name="Archives" href="http://forgerock.org/openig-archive.html" />
+      <item name="Enterprise Downloads" href="http://forgerock.com/openam-downloads/" />
+    </menu>
+
+    <menu name="Released Documentation">
+      <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
+    </menu>
+
+    <menu name="Docs in progress">
+      <item name="All Formats" href="docs.html" />
+      <item name="Release Notes" href="./doc/release-notes/index.html" />
+      <item name="Guide to OpenIG" href="./doc/gateway-guide/index.html" />
+      <item name="Config Reference" href="./doc/reference/index.html" />
+      <item name="Javadoc" href="./apidocs/index.html" />
+    </menu>
+
+    <menu name="OpenIG Development">
+      <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
+      <item name="Issue Tracking" href="issue-tracking.html" />
+      <item name="License" href="license.html" />
+      <item name="Source Repository" href="source-repository.html" />
+    </menu>
+
+  </body>
+
+  <custom>
+    <googleAnalytics>UA-23412190-11</googleAnalytics>
+    <openproject>
+      <href>http://openig.forgerock.org/</href>
+      <src>./images/openig-tagline-177x65.png</src>
+      <alt>OpenIG</alt>
+    </openproject>
+    <siteSearchFQDN>forgerock.org</siteSearchFQDN>
+  </custom>
 
 </project>
