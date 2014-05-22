@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !
 -->
 <project name="${project.name}"
@@ -51,7 +51,7 @@
       <item name="Mailing List" href="mail-lists.html" />
       <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
       <item name="Partners" href="http://forgerock.com/partners/" />
-      <item name="Wiki" href="https://wikis.forgerock.org/confluence/display/OPENAM/Home" />
+      <item name="Wiki" href="https://wikis.forgerock.org/confluence/display/OPENIG" />
       <item name="Builds" href="http://forgerock.org/openig.html" />
       <item name="Archives" href="http://forgerock.org/openig-archive.html" />
       <item name="Enterprise Downloads" href="http://forgerock.com/openam-downloads/" />
