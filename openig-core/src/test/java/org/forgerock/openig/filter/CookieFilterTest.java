@@ -72,9 +72,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.managed.add("Test-Managed");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // As the terminal handler is a mock, prepare an empty Response in the exchange
                 exchange.response = new Response();
 
@@ -113,9 +113,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.managed.add("Test-Managed");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // As the terminal handler is a mock, prepare an empty Response in the exchange
                 exchange.response = new Response();
 
@@ -143,9 +143,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.suppressed.add("Will-Be-Deleted");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // As the terminal handler is a mock, prepare an empty Response in the exchange
                 exchange.response = new Response();
 
@@ -173,9 +173,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.relayed.add("Will-Be-Relayed");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // As the terminal handler is a mock, prepare an empty Response in the exchange
                 exchange.response = new Response();
 
@@ -204,9 +204,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.managed.add("Hidden-Cookie");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
                 exchange.response.headers.putSingle("Set-cookie2", "Hidden-Cookie=value");
@@ -226,9 +226,9 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.suppressed.add("Suppressed-Cookie");
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
                 exchange.response.headers.putSingle("Set-cookie2", "Suppressed-Cookie=value");
@@ -276,9 +276,9 @@ public class CookieFilterTest {
 
         // Step #4
         // Mock the first 'next handler' invocation (returns the cookie)
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
                 exchange.response.headers.putSingle("Set-cookie2", "Managed=value");
@@ -300,9 +300,9 @@ public class CookieFilterTest {
         exchange2.request.uri = new URI("http://openig.example.org");
         exchange2.response = null;
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
 
                 // Ensure the next handler have the cookie
                 String cookie = exchange2.request.headers.getFirst("Cookie");
