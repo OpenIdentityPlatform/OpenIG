@@ -46,7 +46,7 @@
     <menu name="OpenIG">
       <item name="Welcome" href="index.html" />
       <item name="News" href="news.html" />
-      <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
+      <item name="Join" href="https://backstage.forgerock.com/#/account/register" />
       <item name="FAQ" href="faq.html" />
       <item name="Mailing List" href="mail-lists.html" />
       <item name="Support" href="http://forgerock.com/what-we-offer/subscriptions/" />
