@@ -16,12 +16,12 @@
 
 package org.forgerock.openig.filter;
 
-import org.apache.commons.codec.binary.Base64;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
+import org.forgerock.util.encode.Base64;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -141,7 +141,7 @@ public class CryptoHeaderFilterTest {
      * 12345678 -> MTIzNDU2Nzg=
      */
     private static SecretKeySpec buildKey() {
-        return new SecretKeySpec(new Base64(0).decode(B64_ENCODED_KEY), "DES");
+        return new SecretKeySpec(Base64.decode(B64_ENCODED_KEY), "DES");
     }
 
 }

@@ -13,7 +13,7 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011-2012 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 // TODO: distinguish between basic and other schemes that use 401 (Digest, OAuth, ...)
@@ -24,9 +24,6 @@ package org.forgerock.openig.filter;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-// Apache Commons Codec
-import org.apache.commons.codec.binary.Base64;
 
 // OpenIG Core
 import org.forgerock.openig.el.Expression;
@@ -43,6 +40,7 @@ import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.util.encode.Base64;
 
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
@@ -140,9 +138,9 @@ public class HttpBasicAuthFilter extends GenericFilter {
             if (cacheHeader) {
                 // set in session for fetch in next iteration of this loop
                 exchange.session.put(attributeName(exchange.request),
-                        new Base64(0).encodeToString((user + ":" + pass).getBytes()));
+                        Base64.encode((user + ":" + pass).getBytes()));
             } else {
-                userpass = new Base64(0).encodeToString((user + ":" + pass).getBytes());
+                userpass = Base64.encode((user + ":" + pass).getBytes());
             }
         }
         // close the incoming response because it's about to be dereferenced

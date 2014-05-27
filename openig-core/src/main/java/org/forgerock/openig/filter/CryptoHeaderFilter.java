@@ -34,9 +34,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-// Apache Commons Codec
-import org.apache.commons.codec.binary.Base64;
-
 // JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
 
@@ -50,6 +47,7 @@ import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.util.encode.Base64;
 
 /**
  * Encrypts and decrypts header fields.
@@ -145,7 +143,7 @@ public class CryptoHeaderFilter extends GenericFilter {
     private String decrypt(String in) {
         String result = null;
         try {
-            byte[] ciphertext = new Base64(0).decode(in);
+            byte[] ciphertext = Base64.decode(in);
             Cipher cipher = Cipher.getInstance(this.algorithm);
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] plaintext = cipher.doFinal(ciphertext);
@@ -181,7 +179,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             Cipher cipher = Cipher.getInstance(this.algorithm);
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] ciphertext = cipher.doFinal(in.getBytes());
-            result = new Base64(0).encodeToString(ciphertext).trim();
+            result = Base64.encode(ciphertext).trim();
         } catch (IllegalBlockSizeException ibse) {
 // TODO: proper logging
             System.err.println(ibse);
@@ -227,7 +225,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             filter.operation = config.get("operation").required().asEnum(Operation.class);
             filter.algorithm = config.get("algorithm").defaultTo(DEFAULT_ALGORITHM).asString();
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset();
-            byte[] key = new Base64(0).decode(config.get("key").required().asString());
+            byte[] key = Base64.decode(config.get("key").required().asString());
             if (key.length == 0) {
                 throw new JsonValueException(config.get("key"), "Empty key is not allowed");
             }
