@@ -139,7 +139,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <author>false</author>
-          <bottom>Copyright 2011 ForgeRock AS. All rights reserved.</bottom>
+          <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights reserved.</bottom>
           <links>
             <link>http://docs.oracle.com/javase/6/docs/api/</link>
           </links>
