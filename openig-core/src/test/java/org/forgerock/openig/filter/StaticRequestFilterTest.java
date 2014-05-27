@@ -20,7 +20,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
-import org.forgerock.openig.io.Streamer;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -29,12 +28,9 @@ import org.testng.annotations.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 
-import static java.util.Arrays.asList;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.testng.Assert.*;
 
 public class StaticRequestFilterTest {
 
