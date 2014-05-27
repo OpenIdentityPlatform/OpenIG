@@ -137,13 +137,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version><!--$NO-MVN-MAN-VER$ -->
         <configuration>
           <author>false</author>
           <bottom>Copyright 2011 ForgeRock AS. All rights reserved.</bottom>
           <links>
             <link>http://java.sun.com/javase/6/docs/api/</link>
-            <!-- <link>http://java.sun.com/products/servlet/2.5/docs/servlet-2_5-mr2/</link> -->
           </links>
         </configuration>
         <executions>
