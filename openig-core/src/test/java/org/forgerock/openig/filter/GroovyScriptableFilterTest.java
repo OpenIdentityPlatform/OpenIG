@@ -27,10 +27,12 @@ import static org.fest.assertions.Fail.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -765,15 +767,36 @@ public class GroovyScriptableFilterTest {
         assertThat(s(exchange.request.entity)).isEqualTo(XML_CONTENT);
     }
 
-    private HeapImpl getHeap() {
+    private HeapImpl getHeap() throws Exception {
         final HeapImpl heap = new HeapImpl();
         heap.put("TemporaryStorage", new TemporaryStorage());
         heap.put("Environment", getEnvironment());
         return heap;
     }
 
-    private Environment getEnvironment() {
-        return Environment.forStandaloneApp("src/test/resources");
+    private Environment getEnvironment() throws Exception {
+        return Environment.forStandaloneApp(getTestBaseDirectory());
+    }
+
+    /**
+     * Implements a strategy to find the directory where groovy scripts are loadable.
+     */
+    private String getTestBaseDirectory() throws Exception {
+        // relative path to our-self
+        String name = resource(getClass());
+        // find the complete URL pointing to our path
+        URL resource = getClass().getClassLoader().getResource(name);
+
+        // Strip out the 'file' scheme
+        File f = new File(resource.toURI());
+        String path = f.getPath();
+
+        // Strip out the resource path to actually get the base directory
+        return path.substring(0, path.length() - name.length());
+    }
+
+    private static String resource(final Class<?> type) {
+        return type.getName().replace('.', '/').concat(".class");
     }
 
     private Map<String, Object> newFileConfig(final String groovyClass) {
@@ -783,7 +806,7 @@ public class GroovyScriptableFilterTest {
         return config;
     }
 
-    private ScriptableFilter newGroovyFilter(final String... sourceLines) throws ScriptException {
+    private ScriptableFilter newGroovyFilter(final String... sourceLines) throws Exception {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
         return new ScriptableFilter(script);
