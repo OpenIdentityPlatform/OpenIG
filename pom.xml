@@ -15,29 +15,34 @@
   Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
   Portions Copyrighted 2011-2014 ForgeRock AS.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.forgerock</groupId>
     <artifactId>forgerock-parent</artifactId>
     <version>1.2.1</version>
   </parent>
+
   <groupId>org.forgerock.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
   <version>2.2.0-SNAPSHOT</version>
+
   <name>OpenIG Project</name>
   <description>
        The Open Identity Gateway is a high-performance reverse proxy server with
        specialized session management and credential replay functionality.
     </description>
   <url>http://openig.forgerock.org</url>
+
   <modules>
     <module>openig-core</module>
     <module>openig-war</module>
     <module>openig-federation-war</module>
   </modules>
+
   <build>
     <plugins>
       <plugin>
@@ -53,6 +58,7 @@
           <showDeprecation>true</showDeprecation>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-doc-maven-plugin</artifactId>
@@ -61,7 +67,7 @@
         <configuration>
           <projectName>OpenIG</projectName>
           <projectVersion>${docTargetVersion}</projectVersion>
-          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary 
+          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary
             workaround pending #QOZ-985-23233 -->
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
         </configuration>
@@ -123,11 +129,12 @@
 
     </plugins>
   </build>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Start documentation properties -->
-    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset 
+    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- Reset
       before final publication -->
 
     <warConfigDir>$HOME/.openig/config</warConfigDir>
@@ -138,22 +145,22 @@
     <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
     <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
 
-    <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before 
+    <docTargetVersion>${project.version}</docTargetVersion><!-- Reset before
       final publication -->
     <frDocPluginVersion>2.1.0</frDocPluginVersion>
     <gaId>UA-23412190-11</gaId>
-    <!-- Release date and publication date are set at release build time. 
-      -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication 
+    <!-- Release date and publication date are set at release build time.
+      -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication
       date: December 31, 1969" At all other times, the dates should be empty. -->
     <releaseDate />
     <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
     <pubDate />
     <publicationDate>${pubDate}</publicationDate>
     <!-- End documentation properties -->
-
   </properties>
+
   <repositories>
-    <!-- may-be-temporary, based-on our decisions around the content and 
+    <!-- may-be-temporary, based-on our decisions around the content and
       release of forgerock-parent -->
     <repository>
       <id>forgerock-staging-repository</id>
@@ -170,10 +177,12 @@
       <url>http://download.java.net/maven/2/</url>
     </repository>
   </repositories>
+
   <issueManagement>
     <system>jira</system>
     <url>https://bugster.forgerock.org/jira/browse/OPENIG</url>
   </issueManagement>
+
   <licenses>
     <license>
       <name>CDDL-1.0</name>
@@ -192,11 +201,13 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
   <scm>
     <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
     <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
     <url>http://sources.forgerock.org/browse/openig/trunk</url>
   </scm>
+
   <mailingLists>
     <mailingList>
       <name>OpenIG: Users</name>
@@ -213,6 +224,7 @@
       <archive>http://lists.forgerock.org/pipermail/commitopenig/</archive>
     </mailingList>
   </mailingLists>
+
   <distributionManagement>
     <site>
       <id>forgerock.org</id>
@@ -220,6 +232,7 @@
       <url>scp://forgerock.org/var/www/vhosts/openig.forgerock.org/httpdocs</url>
     </site>
   </distributionManagement>
+
   <reporting>
     <plugins>
       <plugin>
@@ -228,8 +241,7 @@
         <version>2.8</version>
         <configuration>
           <author>false</author>
-          <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights
-            reserved.</bottom>
+          <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights reserved.</bottom>
           <links>
             <link>http://java.sun.com/javase/6/docs/api/</link>
           </links>
