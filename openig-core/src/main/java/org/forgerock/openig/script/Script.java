@@ -217,7 +217,16 @@ public final class Script {
         this.impl = impl;
     }
 
-    Object run(final Map<String, Object> bindings) throws ScriptException {
+    /**
+     * Runs this script using the provided named variable bindings.
+     *
+     * @param bindings
+     *            The set of bindings to inject into the script.
+     * @return The result returned by the script.
+     * @throws ScriptException
+     *             If the script failed to execute.
+     */
+    public Object run(final Map<String, Object> bindings) throws ScriptException {
         return impl.run(bindings);
     }
 }
