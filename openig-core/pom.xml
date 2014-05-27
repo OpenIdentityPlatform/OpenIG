@@ -141,7 +141,7 @@
           <author>false</author>
           <bottom>Copyright 2011 ForgeRock AS. All rights reserved.</bottom>
           <links>
-            <link>http://java.sun.com/javase/6/docs/api/</link>
+            <link>http://docs.oracle.com/javase/6/docs/api/</link>
           </links>
         </configuration>
         <executions>
