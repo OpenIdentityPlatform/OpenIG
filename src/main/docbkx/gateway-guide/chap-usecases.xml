@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-usecases'
@@ -28,8 +28,7 @@
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Detailed Use Cases</title>
 
  <para>This chapter diagrams and describes common use case request and
@@ -116,8 +115,9 @@
     <imagedata fileref="images/am-integration.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>This image diagrams eight steps comprising a login integrated
-    with OpenAM.</para>
+    <para>
+     This image diagrams the steps comprising a login integrated with OpenAM.
+    </para>
    </textobject>
   </mediaobject>
 
@@ -125,13 +125,31 @@
    <listitem>
     <para>User browses to the Portal.</para>
    </listitem>
+
    <listitem>
-    <para>OpenAM plugin intercepts the request, finds no valid
-    OpenAM session, redirects the user to the OpenAM login pages.</para>
+    <para>
+     OpenAM policy agent intercepts the request,
+     finds no valid OpenAM session, redirects the browser to...
+    </para>
    </listitem>
+
    <listitem>
-    <para>OpenAM logs in the user and redirects back to the Portal.</para>
+    <para>
+     ...an OpenAM login page.</para>
    </listitem>
+
+   <listitem>
+    <para>
+     OpenAM logs in the user and redirects...
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     ...back to the Portal.
+    </para>
+   </listitem>
+
    <listitem>
     <para>OpenAM plugin finds a valid session, request goes through, OpenIG
     passes the request through to the Portal.
@@ -180,8 +198,10 @@
     <imagedata fileref="images/sp-initiated-sso.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>This image diagrams the nine steps of service provider initiated
-    SAML2 single sign on.</para>
+    <para>
+     This image diagrams the steps of service provider-initiated
+     SAML 2.0 single sign-on.
+    </para>
    </textobject>
   </mediaobject>
 
@@ -190,38 +210,67 @@
     <para>The user accesses the HR application through a bookmark in the
     browser.</para>
    </listitem>
+
    <listitem>
     <para>Federation Gateway inspects the request, no match is found for the
     HR application's login page so the request goes through.</para>
    </listitem>
+
    <listitem>
     <para>HR application finds no HR session, sends a redirect to its login
     page.</para>
    </listitem>
+
    <listitem>
-    <para>Federation Gateway intercepts the redirect, finds a match for the
-    login page, issues an SP initiated SSO SAML2 request to Company.com's
-    IDP.</para>
+    <para>
+     Federation Gateway intercepts the redirect,
+     finds a match for the login page, and...
+    </para>
    </listitem>
+
    <listitem>
-    <para>The IDP at Company.com receives the SAML2 AuthN request and
-    authenticates the user.</para>
+    <para>
+     ...issues an SP-initiated SSO SAML 2.0 request to the organization's IDP.
+    </para>
    </listitem>
+
    <listitem>
-    <para>After authenticating the user the IDP sends a SAML2 POST to
-    OpenIG.</para>
+    <para>
+     The IDP receives the SAML 2.0 AuthN request and authenticates the user.
+    </para>
    </listitem>
+
    <listitem>
-    <para>Federation Gateway validates the assertion and makes the assertion
-    attributes available to the OpenIG login chain.</para>
+    <para>
+     After authenticating the user the IDP sends a SAML 2.0 POST...
+    </para>
    </listitem>
+
+   <listitem>
+    <para>
+     ...to the Federation Gateway using an auto-submitting form in the browser.
+    </para>
+
+    <para>
+     Federation Gateway validates the assertion
+     and makes the assertion attributes available to the OpenIG login chain.
+    </para>
+   </listitem>
+
    <listitem>
     <para>OpenIG login chain gets the user credentials and POSTs the login form
     to the application.</para>
    </listitem>
+
    <listitem>
     <para>The HR application verifies the credentials and redirects to its
     home page.</para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Federation gateway passes the HR application's redirect to the browser.
+    </para>
    </listitem>
   </orderedlist>
  </section>
@@ -286,8 +335,10 @@
     <imagedata fileref="images/saml2-pep.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>This image diagrams the nine steps showing how OpenIG Federation
-    Gateway works as a SAML2 based policy enforcement point.</para>
+    <para>
+     This image diagrams the steps showing how OpenIG Federation Gateway works
+     as a SAML2 based policy enforcement point.
+    </para>
    </textobject>
   </mediaobject>
 
@@ -303,30 +354,57 @@
     <para>Payroll application finds no Payroll session, sends a redirect to its
     login page.</para>
    </listitem>
+
    <listitem>
-    <para>Federation Gateway intercepts the redirect, finds a match for the
-    login page, issues an SP initiated SSO SAML2 request to OpenAM at
-    Company.com.</para>
+    <para>
+     Federation Gateway intercepts the redirect,
+     finds a match for the login page, and...
+    </para>
    </listitem>
+
    <listitem>
-    <para>OpenAM at Company.com receives the SAML2 AuthN and authenticates
-    the user.</para>
+    <para>
+     ...issues an SP initiated SSO SAML 2.0 request to OpenAM.
+    </para>
    </listitem>
+
    <listitem>
-    <para>After authenticating the user OpenAM sends a SAML2 POST to
-    OpenIG.</para>
+    <para>
+     OpenAM receives the SAML2 AuthN and authenticates the user.
+    </para>
    </listitem>
+
    <listitem>
-    <para>Federation Gateway validates the assertion and makes the assertion
-    attributes available to the OpenIG login chain.</para>
+    <para>
+     After authenticating the user the IDP sends a SAML 2.0 POST...
+    </para>
    </listitem>
+
+   <listitem>
+    <para>
+     ...to the Federation Gateway using an auto-submitting form in the browser.
+    </para>
+
+    <para>
+     Federation Gateway validates the assertion
+     and makes the assertion attributes available to the OpenIG login chain.
+    </para>
+   </listitem>
+
    <listitem>
     <para>OpenIG login chain gets the user credentials and POSTs the login
     form to the application.</para>
    </listitem>
+
    <listitem>
     <para>The Payroll application verifies the credentials and redirects to its
     home page.</para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Federation Gateway passes the Payroll application's redirect to the browser.
+    </para>
    </listitem>
   </orderedlist>
  </section>

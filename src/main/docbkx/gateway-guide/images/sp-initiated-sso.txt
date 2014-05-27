@@ -1,0 +1,60 @@
+@startuml sp-initiated-sso.png
+
+/'
+    CCPL HEADER START
+   
+    This work is licensed under the Creative Commons
+    Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+    To view a copy of this license, visit
+    http://creativecommons.org/licenses/by-nc-nd/3.0/
+    or send a letter to Creative Commons, 444 Castro Street,
+    Suite 900, Mountain View, California, 94041, USA.
+   
+    You can also obtain a copy of the license at
+    src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+    See the License for the specific language governing permissions
+    and limitations under the License.
+   
+    If applicable, add the following below this CCPL HEADER, with the fields
+    enclosed by brackets "[]" replaced with your own identifying information:
+         Portions Copyright [yyyy] [name of copyright owner]
+   
+    CCPL HEADER END
+   
+         Copyright 2014 ForgeRock AS
+
+    To generate a sequence diagram from this file, process
+    it with PlantUML, http://plantuml.sourceforge.net/sequence.html
+'/
+
+title SAML 2.0 SP-Initiated Single Sign-On
+autonumber
+
+participant "Browser" as Browser
+participant "Identity Provider" as IDP
+participant "Gateway" as Gateway
+participant "HR App" as Portal
+
+Browser->Gateway: Request to HR App
+
+Gateway->Portal: Pass request through
+
+Portal->Gateway: No session, redirect to login
+
+Gateway->Browser: Intercept login request &...
+
+Browser->IDP: ...send SAML 2.0 AuthN request
+
+IDP<->Browser: Authenticate user
+
+IDP->Browser: SAML 2.0 POST AuthN...
+
+Browser->Gateway: ...auto-submitting form
+
+Gateway->Portal: POST HR app login form
+
+Portal->Gateway: Redirect to HR App
+
+Gateway->Browser: Pass through redirect from HR App
+
+@enduml
