@@ -24,8 +24,6 @@ import org.forgerock.openig.http.Response;
 import org.forgerock.util.encode.Base64;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -34,8 +32,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.Charset;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
-import static org.testng.Assert.*;
 
 public class CryptoHeaderFilterTest {
 
