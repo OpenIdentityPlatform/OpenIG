@@ -102,8 +102,8 @@ public class StringPatternMatches {
      * @return {@code true} if the character sequence has more matches.
      */
     public boolean hasNext() {
-        for (int n = 0; n < matchers.length; n++) {
-            if (matchers[n] != null) {
+        for (Matcher matcher : matchers) {
+            if (matcher != null) {
                 return true; // any existing matcher means another match exists
             }
         }
