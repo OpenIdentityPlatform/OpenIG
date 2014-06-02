@@ -28,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// OpenIG Core
-
 /**
  * Extracts regular expression patterns and/or applied templates from character
  * streams. If a pattern has a corresponding template, then the template will be

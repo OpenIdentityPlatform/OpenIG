@@ -84,6 +84,7 @@ public class PatternTemplate {
 
     /**
      * Returns the literal template value.
+     * @return the literal template value.
      */
     @Override
     public String toString() {

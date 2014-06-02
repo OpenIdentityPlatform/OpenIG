@@ -32,7 +32,7 @@ public class StringPatternMatches {
     /** The patterns to match. */
     private final Pattern[] patterns;
 
-    /** Matches found, with {@null} elements indicating no match for pattern. */
+    /** Matches found, with {@literal null} elements indicating no match for pattern. */
     private final Matcher[] matchers;
 
     /** The character sequence to search. */
@@ -49,7 +49,7 @@ public class StringPatternMatches {
      * @param patterns a collection of regular expression patterns to match.
      * @param discard indicates patterns be discarded after they yield a match.
      */
-    public StringPatternMatches(CharSequence input, Collection<Pattern> patterns, boolean discard) {
+    public StringPatternMatches(final CharSequence input, final Collection<Pattern> patterns, final boolean discard) {
         this.input = input;
         this.patterns = patterns.toArray(new Pattern[patterns.size()]);
         this.matchers = new Matcher[this.patterns.length];
@@ -69,6 +69,7 @@ public class StringPatternMatches {
      * they are encountered in the character sequence, then by the order they are expressed in
      * the supplied patterns collection.
      *
+     * @return the next {@link java.util.regex.Matcher} from the character sequence.
      * @throws NoSuchElementException if the reader has no more matches.
      */
     public Matcher next() {
@@ -98,6 +99,7 @@ public class StringPatternMatches {
 
     /**
      * Returns {@code true} if the character sequence has more matches.
+     * @return {@code true} if the character sequence has more matches.
      */
     public boolean hasNext() {
         for (int n = 0; n < matchers.length; n++) {
