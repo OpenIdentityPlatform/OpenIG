@@ -32,14 +32,14 @@ import java.util.regex.MatchResult;
 public class PatternTemplate {
 
     /** The transformation template to apply to regular expression pattern matches. */
-    public final String value;
+    private final String value;
 
     /**
      * Constructs a new template with the specified value.
      *
      * @param value the template to apply to regular expression pattern matches.
      */
-    public PatternTemplate(String value) {
+    public PatternTemplate(final String value) {
         this.value = value;
     }
 
@@ -50,7 +50,7 @@ public class PatternTemplate {
      * @param result the match result to apply the template to.
      * @return the value of the matching result with the template applied.
      */
-    public String applyTo(MatchResult result) {
+    public String applyTo(final MatchResult result) {
         int len = value.length();
         int groups = result.groupCount();
         StringBuilder sb = new StringBuilder();
