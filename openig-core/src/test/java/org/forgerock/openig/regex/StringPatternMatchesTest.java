@@ -17,6 +17,7 @@
 package org.forgerock.openig.regex;
 
 import static java.util.Arrays.asList;
+import static java.util.regex.Pattern.compile;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.NoSuchElementException;
@@ -29,7 +30,7 @@ public class StringPatternMatchesTest {
 
     @Test
     public void testWithNoMatchingMatchers() throws Exception {
-        Pattern pattern = Pattern.compile("c");
+        Pattern pattern = compile("c");
         StringPatternMatches matches = new StringPatternMatches("aaab", asList(pattern), true);
 
         assertThat(matches.hasNext()).isFalse();
@@ -37,7 +38,7 @@ public class StringPatternMatchesTest {
 
     @Test(expectedExceptions = NoSuchElementException.class)
     public void testWithNoMatchingMatchersThrowException() throws Exception {
-        Pattern pattern = Pattern.compile("c");
+        Pattern pattern = compile("c");
         StringPatternMatches matches = new StringPatternMatches("aaab", asList(pattern), true);
 
         matches.next();
@@ -45,7 +46,7 @@ public class StringPatternMatchesTest {
 
     @Test
     public void testMatchingMatchersAreDiscarded() throws Exception {
-        Pattern pattern = Pattern.compile("a*b");
+        Pattern pattern = compile("a*b");
         StringPatternMatches matches = new StringPatternMatches("aaab", asList(pattern), true);
 
         Matcher matcher = matches.next();
@@ -56,7 +57,7 @@ public class StringPatternMatchesTest {
 
     @Test
     public void testMatchingMatchersAreNotDiscarded() throws Exception {
-        Pattern pattern = Pattern.compile("a+b");
+        Pattern pattern = compile("a+b");
         StringPatternMatches matches = new StringPatternMatches("aaab", asList(pattern), false);
 
         Matcher matcher = matches.next();
@@ -66,6 +67,23 @@ public class StringPatternMatchesTest {
         assertThat(matcher.group()).isEqualTo("aab");
 
         matcher = matches.next();
+        assertThat(matcher.group()).isEqualTo("ab");
+
+        assertThat(matches.hasNext()).isFalse();
+    }
+
+    @Test
+    public void testDiscardedPatternsAreIgnoredInMultiPatternExpression() throws Exception {
+        StringPatternMatches matches = new StringPatternMatches(
+                "ab",
+                asList(compile("c"),compile("a+b")),
+                true
+        );
+
+        assertThat(matches.hasNext()).isTrue();
+
+        // Consume the matcher
+        Matcher matcher = matches.next();
         assertThat(matcher.group()).isEqualTo("ab");
 
         assertThat(matches.hasNext()).isFalse();
