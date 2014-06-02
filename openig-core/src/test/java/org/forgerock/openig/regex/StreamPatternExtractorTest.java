@@ -30,8 +30,8 @@ public class StreamPatternExtractorTest {
     @Test
     public void testSimple() throws Exception {
         StreamPatternExtractor extractor = new StreamPatternExtractor();
-        extractor.patterns.put("extra-header", Pattern.compile("^X-(.*): "));
-        extractor.templates.put("extra-header", new PatternTemplate("Found header '$1'"));
+        extractor.getPatterns().put("extra-header", Pattern.compile("^X-(.*): "));
+        extractor.getTemplates().put("extra-header", new PatternTemplate("Found header '$1'"));
 
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"", "Not-Extra: Hi")));
         assertThat(actual)
@@ -42,10 +42,10 @@ public class StreamPatternExtractorTest {
     @Test
     public void testMultiPatternsMatching() throws Exception {
         StreamPatternExtractor extractor = new StreamPatternExtractor();
-        extractor.patterns.put("header", Pattern.compile("(.*): \\\"(.*)\\\""));
-        extractor.templates.put("header", new PatternTemplate("$2"));
-        extractor.patterns.put("name", Pattern.compile("(.*): "));
-        extractor.templates.put("name", new PatternTemplate("$1"));
+        extractor.getPatterns().put("header", Pattern.compile("(.*): \\\"(.*)\\\""));
+        extractor.getTemplates().put("header", new PatternTemplate("$2"));
+        extractor.getPatterns().put("name", Pattern.compile("(.*): "));
+        extractor.getTemplates().put("name", new PatternTemplate("$1"));
 
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"")));
         assertThat(actual)

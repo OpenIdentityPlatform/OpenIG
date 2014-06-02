@@ -51,9 +51,9 @@ public class EntityExtractFilterTest {
         EntityExtractFilter filter = new EntityExtractFilter();
         filter.messageType = MessageType.REQUEST;
         filter.target = new Expression("${exchange.result}");
-        filter.extractor.patterns.put("hello", Pattern.compile("Hello(.*)"));
-        filter.extractor.patterns.put("none", Pattern.compile("Cannot match"));
-        filter.extractor.templates.put("hello", new PatternTemplate("$1"));
+        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
+        filter.extractor.getPatterns().put("none", Pattern.compile("Cannot match"));
+        filter.extractor.getTemplates().put("hello", new PatternTemplate("$1"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -78,8 +78,8 @@ public class EntityExtractFilterTest {
         EntityExtractFilter filter = new EntityExtractFilter();
         filter.messageType = MessageType.REQUEST;
         filter.target = new Expression("${exchange.result}");
-        filter.extractor.patterns.put("hello", Pattern.compile("Hello(.*)"));
-        filter.extractor.patterns.put("none", Pattern.compile("Cannot match"));
+        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
+        filter.extractor.getPatterns().put("none", Pattern.compile("Cannot match"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -105,7 +105,7 @@ public class EntityExtractFilterTest {
         EntityExtractFilter filter = new EntityExtractFilter();
         filter.messageType = MessageType.RESPONSE;
         filter.target = new Expression("${exchange.result}");
-        filter.extractor.patterns.put("hello", Pattern.compile("Hello(.*)"));
+        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();

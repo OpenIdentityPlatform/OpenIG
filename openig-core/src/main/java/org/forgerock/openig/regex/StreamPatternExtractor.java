@@ -40,18 +40,25 @@ import java.util.regex.Pattern;
  */
 public class StreamPatternExtractor {
 
-    /**
-     * Mapping of names to regular expression patterns to extract from the
-     * stream.
-     */
-    public final LinkedHashMap<String, Pattern> patterns = new LinkedHashMap<String, Pattern>();
+    private final Map<String, Pattern> patterns = new LinkedHashMap<String, Pattern>();
+
+    private final Map<String, PatternTemplate> templates = new HashMap<String, PatternTemplate>();
 
     /**
-     * Mapping of names to optional templates to use for yielding pattern match
-     * results.
+     * Mapping of names to regular expression patterns to extract from the stream.
+     * @return the patterns' Map keyed with an identifier that may be reused in the templates' Map.
      */
-    public final HashMap<String, PatternTemplate> templates =
-            new HashMap<String, PatternTemplate>();
+    public Map<String, Pattern> getPatterns() {
+        return patterns;
+    }
+
+    /**
+     * Mapping of names to optional templates to use for yielding pattern match results.
+     * @return the templates' Map keyed with an identifier that has to match a pattern's key.
+     */
+    public Map<String, PatternTemplate> getTemplates() {
+        return templates;
+    }
 
     /**
      * Extracts regular expression patterns from a character streams. Returns a
