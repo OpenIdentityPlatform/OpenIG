@@ -120,13 +120,13 @@ public class EntityExtractFilter extends GenericFilter {
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
                 String key = jv.get("key").required().asString();
-                if (filter.extractor.patterns.containsKey(key)) {
+                if (filter.extractor.getPatterns().containsKey(key)) {
                     throw new JsonValueException(jv.get("key"), "Key already defined");
                 }
-                filter.extractor.patterns.put(key, jv.get("pattern").required().asPattern());
+                filter.extractor.getPatterns().put(key, jv.get("pattern").required().asPattern());
                 String template = jv.get("template").asString(); // optional
                 if (template != null) {
-                    filter.extractor.templates.put(key, new PatternTemplate(template));
+                    filter.extractor.getTemplates().put(key, new PatternTemplate(template));
                 }
             }
             return filter;
