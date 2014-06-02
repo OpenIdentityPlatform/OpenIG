@@ -78,7 +78,7 @@ public class SqlAttributesFilterTest {
         // The expression has stored the Map result as an entry in the Exchange's backing map
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map) exchange.get("result");
-        assertThat(result).contains(entry("password", "secret"));
+        assertThat(result).containsOnly(entry("password", "secret"));
     }
 
     @Test

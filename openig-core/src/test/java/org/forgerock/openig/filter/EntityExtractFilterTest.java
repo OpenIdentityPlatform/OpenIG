@@ -64,12 +64,10 @@ public class EntityExtractFilterTest {
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
-                .hasSize(2)
-                .contains(
-                        entry("hello", " OpenIG")
-                        //entry("none", null) Cannot assert a value is null, bug in fest-assert
+                .containsOnly(
+                        entry("hello", " OpenIG"),
+                        entry("none", null)
                 );
-        assertThat(results.get("none")).isNull();
         verify(terminalHandler).handle(exchange);
     }
 
@@ -91,12 +89,10 @@ public class EntityExtractFilterTest {
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
-                .hasSize(2)
-                .contains(
-                        entry("hello", "Hello OpenIG")
-                        //entry("none", null) Cannot assert a value is null, bug in fest-assert
+                .containsOnly(
+                        entry("hello", "Hello OpenIG"),
+                        entry("none", null)
                 );
-        assertThat(results.get("none")).isNull();
         verify(terminalHandler).handle(exchange);
     }
 
