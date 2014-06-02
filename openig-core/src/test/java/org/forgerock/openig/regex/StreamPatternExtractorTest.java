@@ -34,9 +34,7 @@ public class StreamPatternExtractorTest {
         extractor.getTemplates().put("extra-header", new PatternTemplate("Found header '$1'"));
 
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"", "Not-Extra: Hi")));
-        assertThat(actual)
-                .hasSize(1)
-                .contains(entry("extra-header", "Found header 'Hello'"));
+        assertThat(actual).containsOnly(entry("extra-header", "Found header 'Hello'"));
     }
 
     @Test
@@ -48,11 +46,8 @@ public class StreamPatternExtractorTest {
         extractor.getTemplates().put("name", new PatternTemplate("$1"));
 
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"")));
-        assertThat(actual)
-                .hasSize(2)
-                .contains(
-                    entry("header", "World"),
-                    entry("name", "X-Hello"));
+        assertThat(actual).containsOnly(entry("header", "World"),
+                                        entry("name", "X-Hello"));
     }
 
     public static <K, V> Map<K, V> asMap(Iterable<Map.Entry<K, V>> iterable) {
