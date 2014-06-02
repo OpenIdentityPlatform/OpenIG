@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.header;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.header.ContentLengthHeader.*;
 
 import org.forgerock.openig.http.Request;

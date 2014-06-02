@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 
 import java.net.URI;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class HeaderFilterTest {
     private Exchange exchange;

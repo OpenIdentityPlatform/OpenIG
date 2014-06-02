@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.filter;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.MapAssert.entry;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
@@ -65,7 +65,7 @@ public class EntityExtractFilterTest {
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
                 .hasSize(2)
-                .includes(
+                .contains(
                         entry("hello", " OpenIG")
                         //entry("none", null) Cannot assert a value is null, bug in fest-assert
                 );
@@ -92,7 +92,7 @@ public class EntityExtractFilterTest {
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
                 .hasSize(2)
-                .includes(
+                .contains(
                         entry("hello", "Hello OpenIG")
                         //entry("none", null) Cannot assert a value is null, bug in fest-assert
                 );

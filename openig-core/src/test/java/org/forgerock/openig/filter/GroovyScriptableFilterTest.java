@@ -22,8 +22,8 @@ import static com.xebialabs.restito.semantics.Action.stringContent;
 import static com.xebialabs.restito.semantics.Condition.get;
 import static com.xebialabs.restito.semantics.Condition.method;
 import static com.xebialabs.restito.semantics.Condition.uri;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.BufferedReader;
@@ -512,20 +512,15 @@ public class GroovyScriptableFilterTest {
         verify(handler).handle(exchange);
     }
 
-    @Test
+    @Test(expectedExceptions = HandlerException.class)
     public void testNextHandlerCanThrowHandlerException() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("next.handle(exchange)");
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
-        final HandlerException expected = new HandlerException();
-        doThrow(expected).when(handler).handle(exchange);
-        try {
-            filter.filter(exchange, handler);
-            fail();
-        } catch (final HandlerException e) {
-            assertThat(e).isSameAs(expected);
-        }
+        doThrow(new HandlerException()).when(handler).handle(exchange);
+
+        filter.filter(exchange, handler);
     }
 
     @Test
@@ -668,7 +663,7 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         try {
             filter.filter(exchange, handler);
-            fail();
+            fail("Script exception expected");
         } catch (final HandlerException e) {
             throw e.getCause();
         }
@@ -710,7 +705,7 @@ public class GroovyScriptableFilterTest {
         assertThat(exchange.response.status).isEqualTo(404);
     }
 
-    @Test
+    @Test(expectedExceptions = HandlerException.class, expectedExceptionsMessageRegExp = "test")
     public void testThrowHandlerException() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
@@ -720,12 +715,8 @@ public class GroovyScriptableFilterTest {
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
-        try {
-            filter.filter(exchange, handler);
-            fail();
-        } catch (final HandlerException e) {
-            assertThat(e.getMessage()).isEqualTo("test");
-        }
+
+        filter.filter(exchange, handler);
     }
 
     @Test(enabled = false)

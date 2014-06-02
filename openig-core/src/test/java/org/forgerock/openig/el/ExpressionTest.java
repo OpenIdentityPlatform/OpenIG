@@ -20,7 +20,7 @@ package org.forgerock.openig.el;
 import java.net.URI;
 import java.util.HashMap;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.openig.http.Response;
 import org.testng.annotations.Test;

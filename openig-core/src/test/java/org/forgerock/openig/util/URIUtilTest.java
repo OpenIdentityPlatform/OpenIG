@@ -20,7 +20,7 @@ package org.forgerock.openig.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.testng.annotations.Test;
 

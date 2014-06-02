@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.header;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.header.ContentTypeHeader.*;
 
 import java.nio.charset.Charset;
