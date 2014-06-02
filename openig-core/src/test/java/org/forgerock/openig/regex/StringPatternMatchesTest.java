@@ -18,7 +18,7 @@ package org.forgerock.openig.regex;
 
 import static java.util.Arrays.asList;
 import static java.util.regex.Pattern.compile;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;

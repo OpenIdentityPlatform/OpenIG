@@ -36,7 +36,7 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.util.HashMap;
 
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class CookieFilterTest {

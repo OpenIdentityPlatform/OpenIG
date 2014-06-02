@@ -114,8 +114,8 @@ public class RedirectFilterTest {
         filter.filter(exchange, handler);
 
         LocationHeader header = new LocationHeader(exchange.response);
-        org.fest.assertions.Assertions.assertThat(header.toString()).isNotNull();
-        org.fest.assertions.Assertions.assertThat(expectedResult.equals(header.toString())).isTrue();
+        org.assertj.core.api.Assertions.assertThat(header.toString()).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(expectedResult.equals(header.toString())).isTrue();
     }
 
     private class DummyHander extends GenericHandler {

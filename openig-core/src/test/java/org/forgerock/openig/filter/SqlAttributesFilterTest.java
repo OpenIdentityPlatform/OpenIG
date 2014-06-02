@@ -33,8 +33,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static org.fest.assertions.Assertions.*;
-import static org.fest.assertions.MapAssert.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.MapAssert.*;
 import static org.mockito.Mockito.*;
 
 public class SqlAttributesFilterTest {
@@ -78,7 +78,7 @@ public class SqlAttributesFilterTest {
         // The expression has stored the Map result as an entry in the Exchange's backing map
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map) exchange.get("result");
-        assertThat(result).includes(entry("password", "secret"));
+        assertThat(result).contains(entry("password", "secret"));
     }
 
     @Test

@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.regex;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.MapAssert.entry;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.forgerock.openig.regex.Readers.reader;
 
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public class StreamPatternExtractorTest {
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"", "Not-Extra: Hi")));
         assertThat(actual)
                 .hasSize(1)
-                .includes(entry("extra-header", "Found header 'Hello'"));
+                .contains(entry("extra-header", "Found header 'Hello'"));
     }
 
     @Test
@@ -50,7 +50,7 @@ public class StreamPatternExtractorTest {
         Map<String, String> actual = asMap(extractor.extract(reader("X-Hello: \"World\"")));
         assertThat(actual)
                 .hasSize(2)
-                .includes(
+                .contains(
                     entry("header", "World"),
                     entry("name", "X-Hello"));
     }

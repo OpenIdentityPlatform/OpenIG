@@ -16,7 +16,7 @@
 package org.forgerock.openig.header;
 
 import static com.forgerock.opendj.util.StaticUtils.closeSilently;
-import static org.fest.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.header.ContentEncodingHeader.*;
 
 import java.io.BufferedReader;
