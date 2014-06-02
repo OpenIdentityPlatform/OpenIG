@@ -119,7 +119,9 @@ public class SqlAttributesFilterTest {
 
         // There should be a 'result' entry that is an empty map
         // And the logger should have been invoked with the caught exception
-        assertThat((Map) exchange.get("result")).isEmpty();
+        @SuppressWarnings("unchecked")
+        Map<String, String> result = (Map<String, String>) exchange.get("result");
+        assertThat(result).isEmpty();
         verify(filter.logger).warning(unexpected);
     }
 
