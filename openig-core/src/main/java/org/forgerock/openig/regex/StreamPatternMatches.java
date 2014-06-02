@@ -65,6 +65,7 @@ public class StreamPatternMatches implements Closeable {
      * they are encountered in the character stream, then by the order they are expressed in
      * the supplied patterns collection.
      *
+     * @return the next {@link java.util.regex.Matcher} from the character stream.
      * @throws IOException if an I/O exception occurs.
      * @throws NoSuchElementException if the reader has no more matches.
      */
@@ -89,6 +90,7 @@ public class StreamPatternMatches implements Closeable {
     /**
      * Returns {@code true} if the character stream has more matches.
      *
+     * @return {@code true} if the character stream has more matches.
      * @throws IOException if an I/O exception occurs.
      */
     public boolean hasNext() throws IOException {
