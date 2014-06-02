@@ -15,9 +15,9 @@
  */
 package org.forgerock.openig.header;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Assertions.*;
+import static org.forgerock.openig.header.LocationHeader.*;
 import static org.testng.Assert.*;
-import static org.forgerock.openig.header.LocationHeader.NAME;
 
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -28,42 +28,38 @@ import org.testng.annotations.Test;
  * Unit tests for the location header class.
  * <p>
  * See <link>http://www.ietf.org/rfc/rfc2616.txt</link>
- * </p>
+ * </p>. Header field example :
+ * <pre>
+ * Location: http://www.example.org/index.php
+ * </pre>
  */
 public class LocationHeaderTest {
 
-    @DataProvider(name = "locationHeaders")
-    public Object[][] locationHeadersProvider() {
+    @DataProvider
+    private Object[][] locationHeaderProvider() {
         return new Object[][] {
-            new Object[] { "http://www.example.org/index.php" },
+            { "http://www.example.org/index.php" },
             /* This example, is incorrect according to the RFC, however,
              * all popular browsers will accept a relative URL, and it is correct
              * according to the current revision of HTTP/1.1*/
-            new Object[] { "/blog/" }
+            { "/blog/" }
         };
     }
 
-    @DataProvider(name = "nullOrEmptyConnectionHeaderString")
-    public Object[][] nullOrEmptyDataProvider() {
-        return new Object[][] {
-            new Object[] { "" },
-            new Object[] { null } };
-    }
-
     @Test
-    public void locationHeaderAllowsEmptyOrNullString() {
+    public void testLocationHeaderAllowsEmptyOrNullString() {
         final LocationHeader lh = new LocationHeader();
         assertNull(lh.getLocationURI());
     }
 
-    @Test(dataProvider = "nullOrEmptyConnectionHeaderString")
-    public void locationHeaderAllowsNullOrEmptyString(final String lHeader) {
+    @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
+    public void testLocationHeaderAllowsNullOrEmptyString(final String lHeader) {
         final LocationHeader lh = new LocationHeader(lHeader);
         assertNull(lh.getLocationURI());
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void locationHeaderFromMessage(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testLocationHeaderFromMessage(final String lHeader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
         response.headers.putSingle(NAME, lHeader);
@@ -74,7 +70,7 @@ public class LocationHeaderTest {
     }
 
     @Test
-    public void locationHeaderFromEmptyMessage() {
+    public void testLocationHeaderFromEmptyMessage() {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
@@ -82,15 +78,15 @@ public class LocationHeaderTest {
         assertNull(lh.getLocationURI());
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void locationHeaderFromString(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testLocationHeaderFromString(final String lHeader) {
         final LocationHeader lh = new LocationHeader(lHeader);
         assertEquals(lh.getLocationURI(), lHeader);
         assertEquals(lh.getKey(), NAME);
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void locationHeaderToMessageRequest(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testLocationHeaderToMessageRequest(final String lHeader) {
         final Request request = new Request();
         assertNull(request.headers.get(NAME));
         final LocationHeader lh = new LocationHeader(lHeader);
@@ -99,8 +95,8 @@ public class LocationHeaderTest {
         assertEquals(request.headers.getFirst(NAME), lHeader);
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void locationHeaderToMessageResponse(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testLocationHeaderToMessageResponse(final String lHeader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
@@ -111,8 +107,8 @@ public class LocationHeaderTest {
         assertEquals(response.headers.get(NAME).get(0), lHeader);
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void equalitySucceed(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testEqualitySucceed(final String lHeader) {
         final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
@@ -124,8 +120,8 @@ public class LocationHeaderTest {
         assertEquals(lh2, lh);
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void equalityFails(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testEqualityFails(final String lHeader) {
         final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
@@ -137,8 +133,8 @@ public class LocationHeaderTest {
         assertThat(lh2).isNotEqualTo(lh);
     }
 
-    @Test(dataProvider = "locationHeaders")
-    public void locationHeaderToString(final String lHeader) {
+    @Test(dataProvider = "locationHeaderProvider")
+    public void testLocationHeaderToString(final String lHeader) {
         final LocationHeader lh = new LocationHeader(lHeader);
         assertEquals(lh.toString(), lHeader);
     }

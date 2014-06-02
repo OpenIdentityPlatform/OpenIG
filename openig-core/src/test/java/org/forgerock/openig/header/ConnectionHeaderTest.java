@@ -15,9 +15,9 @@
  */
 package org.forgerock.openig.header;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Assertions.*;
+import static org.forgerock.openig.header.ConnectionHeader.*;
 import static org.testng.Assert.*;
-import static org.forgerock.openig.header.ConnectionHeader.NAME;
 
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -26,43 +26,43 @@ import org.testng.annotations.Test;
 
 /**
  * Unit tests for the connection header class.
+ * Header field example :<pre>
+ * Connection: close
+ * </pre>
  */
 public class ConnectionHeaderTest {
 
-    @DataProvider(name = "connectionHeaders")
-    public Object[][] connectionHeadersProvider() {
+    private static final String ESCAPED_KEEP_ALIVE_VALUE = "\\\"Keep-Alive\\\"";
+    private static final String QUOTED_KEEP_ALIVE_VALUE = "'Keep-Alive'";
+
+    @DataProvider
+    private Object[][] connectionHeaders() {
         return new Object[][] {
-            new Object[] { "Keep-Alive" },
-            new Object[] { "close" } };
+            { "Keep-Alive" },
+            { "close" } };
     }
 
-    @DataProvider(name = "nullOrEmptyConnectionHeaderString")
-    public Object[][] nullOrEmptyDataProvider() {
-        return new Object[][] {
-            new Object[] { "" },
-            new Object[] { null } };
-    }
-
-    @Test(dataProvider = "nullOrEmptyConnectionHeaderString")
-    public void connectionHeaderAllowsNullOrEmptyString(final String cheader) {
+    @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
+    public void testConnectionHeaderAllowsNullOrEmptyString(final String cheader) {
         final ConnectionHeader ch = new ConnectionHeader(cheader);
         assertEquals(ch.getTokens().size(), 0);
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void connectionHeaderFromMessageResponse(final String cheader) {
+    public void testConnectionHeaderFromMessageResponse(final String cheader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
         response.headers.putSingle(NAME, cheader);
         assertNotNull(response.headers.get(NAME));
 
         final ConnectionHeader ch = new ConnectionHeader(response);
+        assertThat(ch.getKey()).isEqualTo(NAME);
         assertEquals(ch.getTokens().size(), 1);
         assertEquals(ch.getTokens().get(0), cheader);
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void connectionHeaderFromMessageRequest(final String cheader) {
+    public void testConnectionHeaderFromMessageRequest(final String cheader) {
         final Request request = new Request();
         assertNull(request.headers.get(NAME));
         request.headers.putSingle(NAME, cheader);
@@ -74,7 +74,7 @@ public class ConnectionHeaderTest {
     }
 
     @Test
-    public void connectionHeaderFromEmptyMessage() {
+    public void testConnectionHeaderFromEmptyMessage() {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
@@ -83,25 +83,41 @@ public class ConnectionHeaderTest {
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void connectionHeaderFromString(final String connectionHeader) {
+    public void testConnectionHeaderFromString(final String connectionHeader) {
         final ConnectionHeader ch = new ConnectionHeader(connectionHeader);
         assertEquals(ch.getTokens().size(), 1);
         assertEquals(ch.getTokens().get(0), connectionHeader);
         assertEquals(ch.getKey(), NAME);
     }
 
+    @Test
+    public void testConnectionHeaderFromEscapedString() {
+        final ConnectionHeader ch = new ConnectionHeader(ESCAPED_KEEP_ALIVE_VALUE);
+        assertEquals(ch.getTokens().size(), 1);
+        assertEquals(ch.getTokens().get(0), ESCAPED_KEEP_ALIVE_VALUE);
+        assertEquals(ch.getKey(), NAME);
+    }
+
+    @Test
+    public void testConnectionHeaderFromQuotedString() {
+        final ConnectionHeader ch = new ConnectionHeader(QUOTED_KEEP_ALIVE_VALUE);
+        assertEquals(ch.getTokens().size(), 1);
+        assertEquals(ch.getTokens().get(0), QUOTED_KEEP_ALIVE_VALUE);
+        assertEquals(ch.getKey(), NAME);
+    }
+
     @Test(dataProvider = "connectionHeaders")
-    public void connectionHeaderToMessageRequest(final String connectionHeader) {
+    public void testConnectionHeaderToMessageRequest(final String connectionHeader) {
         final Request request = new Request();
         assertNull(request.headers.get(NAME));
-        final ConnectionHeader lh = new ConnectionHeader(connectionHeader);
-        lh.toMessage(request);
+        final ConnectionHeader ch = new ConnectionHeader(connectionHeader);
+        ch.toMessage(request);
         assertNotNull(request.headers.get(NAME));
         assertEquals(request.headers.getFirst(NAME), connectionHeader);
     }
 
-    @Test(dataProvider = "nullOrEmptyConnectionHeaderString")
-    public void connectionHeaderToMessageNullOrEmptyDoesNothing(final String cheader) {
+    @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
+    public void testConnectionHeaderToMessageNullOrEmptyDoesNothing(final String cheader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
@@ -112,42 +128,42 @@ public class ConnectionHeaderTest {
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void connectionHeaderToMessageResponse(final String connectionHeader) {
+    public void testConnectionHeaderToMessageResponse(final String connectionHeader) {
         final Response response = new Response();
         assertNull(response.headers.get(NAME));
 
-        final ConnectionHeader lh = new ConnectionHeader(connectionHeader);
-        lh.toMessage(response);
+        final ConnectionHeader ch = new ConnectionHeader(connectionHeader);
+        ch.toMessage(response);
 
         assertNotNull(response.headers.get(NAME));
         assertEquals(response.headers.getFirst(NAME), connectionHeader);
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void equalitySucceed(final String connectionHeader) {
+    public void testEqualitySucceed(final String connectionHeader) {
         final ConnectionHeader lh = new ConnectionHeader(connectionHeader);
         final Response response = new Response();
 
         assertNull(response.headers.get(NAME));
         response.headers.putSingle(NAME, connectionHeader);
 
-        final ConnectionHeader lh2 = new ConnectionHeader();
-        lh2.fromMessage(response);
-        assertEquals(lh2.getTokens(), lh.getTokens());
-        assertEquals(lh2, lh);
+        final ConnectionHeader ch2 = new ConnectionHeader();
+        ch2.fromMessage(response);
+        assertEquals(ch2.getTokens(), lh.getTokens());
+        assertEquals(ch2, lh);
     }
 
     @Test(dataProvider = "connectionHeaders")
-    public void equalityFails(final String connectionHeader) {
-        final ConnectionHeader lh = new ConnectionHeader(connectionHeader);
+    public void testEqualityFails(final String connectionHeader) {
+        final ConnectionHeader ch = new ConnectionHeader(connectionHeader);
         final Response response = new Response();
 
         assertNull(response.headers.get(NAME));
         response.headers.putSingle(NAME, "Connection");
 
-        final ConnectionHeader lh2 = new ConnectionHeader();
-        lh2.fromMessage(response);
-        assertThat(lh2.getTokens()).isNotEqualTo(lh.getTokens());
-        assertThat(lh2).isNotEqualTo(lh);
+        final ConnectionHeader ch2 = new ConnectionHeader();
+        ch2.fromMessage(response);
+        assertThat(ch2.getTokens()).isNotEqualTo(ch.getTokens());
+        assertThat(ch2).isNotEqualTo(ch);
     }
 }
