@@ -334,5 +334,7 @@ public class CookieFilterTest {
         header.toMessage(exchange.request);
     }
 
-    private static class SimpleMapSession extends HashMap<String, Object> implements Session { }
+    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
+        private static final long serialVersionUID = 1L;
+    }
 }

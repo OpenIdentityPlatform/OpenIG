@@ -61,6 +61,7 @@ public class EntityExtractFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
+        @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
                 .hasSize(2)
@@ -87,6 +88,7 @@ public class EntityExtractFilterTest {
         filter.filter(exchange, terminalHandler);
 
         // The entry has a non-null value if it matches or a null value if it does not match
+        @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results)
                 .hasSize(2)
@@ -111,6 +113,7 @@ public class EntityExtractFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
+        @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results).isEmpty();
         verify(terminalHandler).handle(exchange);
