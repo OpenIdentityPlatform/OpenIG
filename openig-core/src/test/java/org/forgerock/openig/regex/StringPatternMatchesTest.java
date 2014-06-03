@@ -76,7 +76,7 @@ public class StringPatternMatchesTest {
     public void testDiscardedPatternsAreIgnoredInMultiPatternExpression() throws Exception {
         StringPatternMatches matches = new StringPatternMatches(
                 "ab",
-                asList(compile("c"),compile("a+b")),
+                asList(compile("c"), compile("a+b")),
                 true
         );
 
