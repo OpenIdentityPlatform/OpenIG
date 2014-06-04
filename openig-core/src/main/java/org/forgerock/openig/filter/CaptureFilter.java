@@ -11,16 +11,15 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2012 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -33,7 +32,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
 
-// OpenIG Core
+import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -54,18 +53,70 @@ import org.forgerock.openig.util.JsonValueUtil;
  */
 public class CaptureFilter extends GenericFilter {
 
+    /**
+     * Provides an abstraction to make PrintWriter plugable.
+     */
+    public static interface WriterProvider {
+        /**
+         * Returns a valid PrintWriter.
+         * @return a valid PrintWriter.
+         * @throws IOException when a writer cannot be produced.
+         */
+        PrintWriter getWriter() throws IOException;
+    }
+
+    /**
+     * Provides a {@link java.io.PrintWriter} instance based on a {@link java.io.File}.
+     */
+    public static class FileWriterProvider implements WriterProvider {
+        /** File where captured output should be written. */
+        private final File file;
+
+        /** Character set to encode captured output with (default: UTF-8). */
+        private final Charset charset;
+
+        private PrintWriter writer;
+
+        /**
+         * Construct a new {@code FileWriterProvider} using the given file as destination.
+         * Calling this constructor is equivalent to
+         * calling {@link #FileWriterProvider(java.io.File, java.nio.charset.Charset)}
+         * with {@literal UTF-8} as {@link java.nio.charset.Charset}.
+         * @param file specify where the output will be flushed.
+         */
+        public FileWriterProvider(final File file) {
+            this(file, Charset.forName("UTF-8"));
+        }
+
+        /**
+         * Construct a new {@code FileWriterProvider} using the given file as destination and the given Charset.
+         * @param file specify where the output will be flushed.
+         * @param charset specify the {@link java.nio.charset.Charset} to use.
+         */
+        public FileWriterProvider(final File file, final Charset charset) {
+            this.file = file;
+            this.charset = charset;
+        }
+
+        @Override
+        public PrintWriter getWriter() throws IOException {
+            if (writer == null || !file.exists()) {
+                if (writer != null) { // file was removed while open
+                    closeSilently(writer);
+                }
+                writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
+            }
+            return writer;
+        }
+    }
+
+
     /** Set of common textual content with non-text content-types to capture. */
     private static final HashSet<String> TEXT_TYPES = new HashSet<String>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
                     "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
                     "application/x-www-form-urlencoded")
     ); // make all entries lower case
-
-    /** File where captured output should be written. */
-    public File file;
-
-    /** Character set to encode captured output with (default: UTF-8). */
-    public Charset charset = Charset.forName("UTF-8");
 
     /**
      * Condition to evaluate to determine whether to capture an exchange (default: {@code null} a.k.a. unconditional).
@@ -81,62 +132,57 @@ public class CaptureFilter extends GenericFilter {
     /** Used to assign each exchange a monotonically increasing number. */
     private AtomicLong sequence = new AtomicLong(0L);
 
-    /** Used to write captured output to file. */
-    private PrintWriter writer;
+    /** Used to write captured output to a target destination (file, ...). */
+    private WriterProvider provider;
 
     /**
-     * Filters the exchange by capturing request and response messages.
+     * Assign the given provider.
+     * @param provider provider to be used.
      */
+    public void setWriterProvider(final WriterProvider provider) {
+        this.provider = provider;
+    }
+
     @Override
-    public synchronized void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
+    public synchronized void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
         boolean doCapture = (eval instanceof Boolean && (Boolean) eval);
         long id = 0;
         if (doCapture) {
             id = sequence.incrementAndGet();
-            checkWriter();
             captureRequest(exchange.request, id);
         }
         next.handle(exchange);
         if (doCapture) {
-            checkWriter();
             captureResponse(exchange.response, id);
         }
         timer.stop();
     }
 
-    private void checkWriter() throws FileNotFoundException {
-
-        if (writer == null || !file.exists()) {
-            if (writer != null) { // file was removed while open
-                writer.close();
-            }
-            writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
-        }
-    }
-
     private void captureRequest(Request request, long id) throws IOException {
+        PrintWriter writer = provider.getWriter();
         writer.println();
         writer.println("--- REQUEST " + id + " --->");
         writer.println();
         writer.println(request.method + " " + request.uri + " " + request.version);
-        writeHeaders(request);
-        writeEntity(request);
+        writeHeaders(writer, request);
+        writeEntity(writer, request);
         writer.flush();
     }
 
     private void captureResponse(Response response, long id) throws IOException {
+        PrintWriter writer = provider.getWriter();
         writer.println();
         writer.println("<--- RESPONSE " + id + " ---");
         writer.println();
         writer.println(response.version + " " + response.status + " " + response.reason);
-        writeHeaders(response);
-        writeEntity(response);
+        writeHeaders(writer, response);
+        writeEntity(writer, response);
         writer.flush();
     }
 
-    private void writeHeaders(Message message) throws IOException {
+    private void writeHeaders(final PrintWriter writer, Message message) throws IOException {
         for (String key : message.headers.keySet()) {
             for (String value : message.headers.get(key)) {
                 writer.println(key + ": " + value);
@@ -144,7 +190,7 @@ public class CaptureFilter extends GenericFilter {
         }
     }
 
-    private void writeEntity(Message message) throws IOException {
+    private void writeEntity(final PrintWriter writer, Message message) throws IOException {
         ContentTypeHeader contentType = new ContentTypeHeader(message);
         if (message.entity == null || contentType.getType() == null) {
             return;
@@ -154,9 +200,7 @@ public class CaptureFilter extends GenericFilter {
             writer.println("[entity]");
             return;
         }
-        String type = (contentType.getType() != null ? contentType.getType().toLowerCase() : null);
-        if (!(contentType.getCharset() != null || (type != null && // text or whitelisted type
-                (TEXT_TYPES.contains(type) || type.startsWith("text/"))))) {
+        if (!isTextualContent(contentType)) {
             writer.println("[binary entity]");
             return;
         }
@@ -165,11 +209,7 @@ public class CaptureFilter extends GenericFilter {
             try {
                 Streamer.stream(reader, writer);
             } finally {
-                try {
-                    reader.close();
-                } catch (IOException ioe) {
-                    // suppress this exception
-                }
+                closeSilently(reader);
             }
         } catch (UnsupportedEncodingException uee) {
             writer.println("[entity contains data in unsupported encoding]");
@@ -181,17 +221,39 @@ public class CaptureFilter extends GenericFilter {
         writer.println(); // entity may not terminate with new line, so here it is
     }
 
+    /**
+     * The entity represents a textual/printable content if:
+     * <ul>
+     *     <li>there is a charset associated to the content-type, we'll be able to print it correctly</li>
+     *     <li>the content type is in the category 'text' or it is an accepted type</li>
+     * </ul>
+     *
+     * @param contentType the message's content-type
+     * @return {@literal true} if the content-type represents a textual content
+     */
+    private boolean isTextualContent(final ContentTypeHeader contentType) {
+        String type = (contentType.getType() != null ? contentType.getType().toLowerCase() : null);
+        return contentType.getCharset() != null
+                // text or white-listed type
+                || (type != null && (TEXT_TYPES.contains(type) || type.startsWith("text/")));
+    }
+
     /** Creates and initializes a capture filter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
-            filter.file = config.get("file").required().asFile(); // required
-            filter.charset = config.get("charset").defaultTo("UTF-8").asCharset(); // optional
+            filter.provider = buildFileProvider(config);
             filter.condition = JsonValueUtil.asExpression(config.get("condition")); // optional
             filter.captureEntity = config.get("captureEntity").defaultTo(filter.captureEntity).asBoolean(); // optional
             filter.instance = super.name;
             return filter;
+        }
+
+        private WriterProvider buildFileProvider(final JsonValue config) {
+            File file = config.get("file").required().asFile(); // required
+            Charset charset = config.get("charset").defaultTo("UTF-8").asCharset(); // optional
+            return new FileWriterProvider(file, charset);
         }
     }
 }
