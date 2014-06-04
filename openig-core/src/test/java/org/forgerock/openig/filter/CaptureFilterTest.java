@@ -78,7 +78,7 @@ public class CaptureFilterTest {
     public void testCaptureIsDisabledUnderCondition() throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.condition = new Expression("${false}");
+        filter.setCondition(new Expression("${false}"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -121,7 +121,7 @@ public class CaptureFilterTest {
     public void testIgnoreEntityCapture() throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.captureEntity = false;
+        filter.setCaptureEntity(false);
 
         // We only prepare the request writer
         StringWriter req = setupProviderForRequestWriter();
@@ -140,7 +140,7 @@ public class CaptureFilterTest {
     public void testBinaryEntityAreOnlyMarkedAndNotFullyCaptured(final String mimeType) throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.captureEntity = true;
+        filter.setCaptureEntity(true);
 
         // We only prepare the request writer
         StringWriter req = setupProviderForRequestWriter();
@@ -160,7 +160,7 @@ public class CaptureFilterTest {
     public void testAcceptedMimeTypesForEntitiesAreCaptured(final String mimeType) throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.captureEntity = true;
+        filter.setCaptureEntity(true);
 
         // We only prepare the request writer
         StringWriter req = setupProviderForRequestWriter();

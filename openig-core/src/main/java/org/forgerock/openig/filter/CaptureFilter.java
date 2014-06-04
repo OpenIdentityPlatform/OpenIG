@@ -119,15 +119,10 @@ public class CaptureFilter extends GenericFilter {
                     "application/x-www-form-urlencoded")
     ); // make all entries lower case
 
-    /**
-     * Condition to evaluate to determine whether to capture an exchange (default: {@code null} a.k.a. unconditional).
-     */
-    public Expression condition = null;
+    private Expression condition = null;
 
-    /** Indicates message entity should be captured (default: {@code true}). */
-    public boolean captureEntity = true;
+    private boolean captureEntity = true;
 
-    /** Name of this capture filter instance. */
     public String instance = getClass().getSimpleName();
 
     /** Used to assign each exchange a monotonically increasing number. */
@@ -142,6 +137,25 @@ public class CaptureFilter extends GenericFilter {
      */
     public void setWriterProvider(final WriterProvider provider) {
         this.provider = provider;
+    }
+
+    /**
+     * Used to conditionally capture the exchange. If the given expression evaluates to {@literal true},
+     * both the request and the response will be captured.
+     * Notice that the condition is evaluated when the request flows in this filter.
+     * @param condition expression that evaluates to a {@link java.lang.Boolean}
+     */
+    public void setCondition(final Expression condition) {
+        this.condition = condition;
+    }
+
+    /**
+     * If set to {@literal true}, the message's entity will be captured as part of the output.
+     * Notice that only entities with a text-based {@literal Content-Type} will be captured.
+     * @param captureEntity capture the entity if possible
+     */
+    public void setCaptureEntity(final boolean captureEntity) {
+        this.captureEntity = captureEntity;
     }
 
     @Override
@@ -223,6 +237,7 @@ public class CaptureFilter extends GenericFilter {
     }
 
     /**
+     * Decide if the given content-type is printable or not.
      * The entity represents a textual/printable content if:
      * <ul>
      *     <li>there is a charset associated to the content-type, we'll be able to print it correctly</li>
@@ -244,9 +259,10 @@ public class CaptureFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
-            filter.provider = buildFileProvider(config);
-            filter.condition = JsonValueUtil.asExpression(config.get("condition")); // optional
-            filter.captureEntity = config.get("captureEntity").defaultTo(filter.captureEntity).asBoolean(); // optional
+            filter.setWriterProvider(buildFileProvider(config));
+            filter.setCondition(JsonValueUtil.asExpression(config.get("condition"))); // optional
+            JsonValue capture = config.get("captureEntity");
+            filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean()); // optional
             filter.instance = super.name;
             return filter;
         }
