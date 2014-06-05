@@ -23,6 +23,7 @@ package org.forgerock.openig.filter;
 // Java Standard Edition
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 // OpenIG Core
@@ -138,9 +139,9 @@ public class HttpBasicAuthFilter extends GenericFilter {
             if (cacheHeader) {
                 // set in session for fetch in next iteration of this loop
                 exchange.session.put(attributeName(exchange.request),
-                        Base64.encode((user + ":" + pass).getBytes()));
+                        Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset())));
             } else {
-                userpass = Base64.encode((user + ":" + pass).getBytes());
+                userpass = Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset()));
             }
         }
         // close the incoming response because it's about to be dereferenced
