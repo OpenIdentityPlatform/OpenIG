@@ -13,12 +13,10 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.servlet;
-
-// Java Standard Edition
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,13 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 
-// Java Enterprise Edition
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-// OpenIG Core
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
@@ -45,8 +41,8 @@ import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.LogTimer;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.URIUtil;
 
@@ -74,9 +70,18 @@ public class HandlerServlet extends HttpServlet {
             new CaseInsensitiveSet(Arrays.asList("GET", "HEAD", "TRACE", "DELETE"));
 
     /**
-     * Handles a servlet request by dispatching it to a handler. It receives a servlet request,
-     * translates it into an exchange object, dispatches the exchange to a handler, then
-     * translates the exchange response into an servlet response.
+     * Handles a servlet request by dispatching it to a handler. It receives a servlet request, translates it into an
+     * exchange object, dispatches the exchange to a handler, then translates the exchange response into an servlet
+     * response.
+     *
+     * @param request
+     *            the {@link HttpServletRequest} object that contains the request the client made of the servlet
+     * @param response
+     *            the {@link HttpServletResponse} object that contains the response the servlet returns to the client
+     * @exception IOException
+     *                if an input or output error occurs while the servlet is handling the HTTP request
+     * @exception ServletException
+     *                if the HTTP request cannot be handled
      */
     @Override
     @SuppressWarnings("unchecked")
