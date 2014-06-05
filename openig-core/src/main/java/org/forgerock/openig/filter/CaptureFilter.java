@@ -145,7 +145,7 @@ public class CaptureFilter extends GenericFilter {
      * Notice that the condition is evaluated when the request flows in this filter.
      * @param condition expression that evaluates to a {@link java.lang.Boolean}
      */
-    public void setCondition(final Expression condition) {
+    public synchronized void setCondition(final Expression condition) {
         this.condition = condition;
     }
 
