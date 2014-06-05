@@ -116,16 +116,7 @@ public class SqlAttributesFilter extends GenericFilter {
                         }
                     }
                     if (logger.isLoggable(LogLevel.DEBUG)) {
-                        StringBuilder sb = new StringBuilder("Result: { ");
-                        for (Iterator<String> i = result.keySet().iterator(); i.hasNext();) {
-                            String key = i.next();
-                            sb.append(key).append(": ").append(result.get(key));
-                            if (i.hasNext()) {
-                                sb.append(", ");
-                            }
-                        }
-                        sb.append(" }");
-                        logger.debug(sb.toString());
+                        logger.debug("Result: " + result);
                     }
                     rs.close();
                     ps.close();
