@@ -81,7 +81,7 @@ public class CaptureFilter extends GenericFilter {
         /**
          * Construct a new {@code FileWriterProvider} using the given file as destination.
          * Calling this constructor is equivalent to
-         * calling {@link #FileWriterProvider(java.io.File, java.nio.charset.Charset)}
+         * calling {@link #CaptureFilter.FileWriterProvider(java.io.File, java.nio.charset.Charset)}
          * with {@literal UTF-8} as {@link java.nio.charset.Charset}.
          * @param file specify where the output will be flushed.
          */
