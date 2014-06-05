@@ -178,7 +178,7 @@ public class CryptoHeaderFilter extends GenericFilter {
         try {
             Cipher cipher = Cipher.getInstance(this.algorithm);
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] ciphertext = cipher.doFinal(in.getBytes());
+            byte[] ciphertext = cipher.doFinal(in.getBytes(Charset.defaultCharset()));
             result = Base64.encode(ciphertext).trim();
         } catch (IllegalBlockSizeException ibse) {
 // TODO: proper logging
