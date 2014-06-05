@@ -123,8 +123,6 @@ public class CaptureFilter extends GenericFilter {
 
     private boolean captureEntity = true;
 
-    public String instance = getClass().getSimpleName();
-
     /** Used to assign each exchange a monotonically increasing number. */
     private AtomicLong sequence = new AtomicLong(0L);
 
@@ -263,7 +261,6 @@ public class CaptureFilter extends GenericFilter {
             filter.setCondition(JsonValueUtil.asExpression(config.get("condition"))); // optional
             JsonValue capture = config.get("captureEntity");
             filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean()); // optional
-            filter.instance = super.name;
             return filter;
         }
 
