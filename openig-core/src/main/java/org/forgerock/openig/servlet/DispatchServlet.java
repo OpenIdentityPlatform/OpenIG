@@ -12,12 +12,11 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
+ *
  */
 
 package org.forgerock.openig.servlet;
-
-// Java Standard Edition
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Java Enterprise Edition
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -37,14 +35,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.LogTimer;
+import org.forgerock.openig.log.Logger;
 
 /**
  * Dispatches requests to mapped filters and servlets based on request extra path information.
@@ -66,10 +62,48 @@ public class DispatchServlet extends HttpServlet {
      * Regular expression patterns to match against request path information, bound to filters and/or servlets
      * to dispatch to.
      */
-    public final List<Binding> bindings = new ArrayList<Binding>();
+    private List<Binding> bindings = new ArrayList<Binding>();
 
     /** Provides methods for logging activities. */
-    public Logger logger;
+    private Logger logger;
+
+    /**
+     * Returns the regular expression patterns.
+     *
+     * @return The regular expression patterns.
+     */
+    public List<Binding> getBindings() {
+        return bindings;
+    }
+
+    /**
+     * Returns the logger.
+     *
+     * @return The logger used in this class.
+     */
+    public Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * Sets the regular expression patterns to match against request path information.
+     *
+     * @param bindings
+     *            The regular expression patterns to match against request path information.
+     */
+    public void setBindings(List<Binding> bindings) {
+        this.bindings = bindings;
+    }
+
+    /**
+     * Sets the logger used for this class.
+     *
+     * @param logger
+     *            The logger to use.
+     */
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
 
     /**
      * Handles client requests by dispatching requests to mapped filters and servlets.
@@ -84,39 +118,37 @@ public class DispatchServlet extends HttpServlet {
         LogTimer timer = logger.getTimer().start();
         String path = request.getPathInfo();
         if (path == null) {
-            path = "/"; // for our purposes, absense of path is equivalent to root
+            path = "/"; // for our purposes, absence of path is equivalent to root
         }
         Wrapper wrapper = null;
         DispatchChain chain = new DispatchChain();
         for (Binding binding : bindings) {
             Matcher matcher = binding.pattern.matcher(path);
-            if (matcher.find()) {
-                if (binding.object instanceof HttpServlet) {
-                    String servletPath;
-                    String pathInfo;
-                    if (matcher.groupCount() > 0) { // explicit capture group denoting servlet path
-                        servletPath = matcher.group(1);
-                        pathInfo = path.substring(matcher.end(1));
-                    } else { // implicit servlet path pattern
-                        servletPath = path.substring(0, matcher.end());
-                        pathInfo = path.substring(matcher.end());
-                    }
-                    if (servletPath.length() > 0 && servletPath.charAt(servletPath.length() - 1) == '/') {
-                        servletPath = servletPath.substring(0, servletPath.length() - 1);
-                        pathInfo = '/' + pathInfo; // move trailing slash from servletPath to pathInfo
-                    }
-                    if (pathInfo.length() > 0 && pathInfo.charAt(0) != '/') {
-                        continue; // not a real match
-                    }
-                    if (pathInfo.length() == 0) {
-                        pathInfo = null; // spec calls for null if no pathInfo
-                    }
-                    wrapper = new Wrapper(request);
-                    wrapper.servletPath = servletPath;
-                    wrapper.pathInfo = pathInfo;
-                    chain.objects.add(binding.object);
-                    break; // first matching servlet is chain's terminus
+            if (matcher.find() && binding.object instanceof HttpServlet) {
+                String servletPath;
+                String pathInfo;
+                if (matcher.groupCount() > 0) { // explicit capture group denoting servlet path
+                    servletPath = matcher.group(1);
+                    pathInfo = path.substring(matcher.end(1));
+                } else { // implicit servlet path pattern
+                    servletPath = path.substring(0, matcher.end());
+                    pathInfo = path.substring(matcher.end());
                 }
+                if (servletPath.length() > 0 && servletPath.charAt(servletPath.length() - 1) == '/') {
+                    servletPath = servletPath.substring(0, servletPath.length() - 1);
+                    pathInfo = '/' + pathInfo; // move trailing slash from servletPath to pathInfo
+                }
+                if (pathInfo.length() > 0 && pathInfo.charAt(0) != '/') {
+                    continue; // not a real match
+                }
+                if (pathInfo.length() == 0) {
+                    pathInfo = null; // spec calls for null if no pathInfo
+                }
+                wrapper = new Wrapper(request);
+                wrapper.servletPath = servletPath;
+                wrapper.pathInfo = pathInfo;
+                chain.objects.add(binding.object);
+                break; // first matching servlet is chain's terminus
             }
         }
         if (wrapper == null) {
@@ -127,7 +159,7 @@ public class DispatchServlet extends HttpServlet {
     }
 
     private class DispatchChain implements FilterChain {
-        private ArrayList<Object> objects = new ArrayList<Object>();
+        private List<Object> objects = new ArrayList<Object>();
         private int cursor = 0;
 
         public void doFilter(ServletRequest request, ServletResponse response)
@@ -177,9 +209,48 @@ public class DispatchServlet extends HttpServlet {
      */
     public static class Binding {
         /** The regular expression pattern to match against the incoming request extra path information. */
-        public Pattern pattern;
+        private Pattern pattern;
+
         /** The servlet or filter to dispatch to if the regular expression pattern matches. */
-        public Object object;
+        private Object object;
+
+        /**
+         * Returns the regular expression pattern.
+         *
+         * @return The regular expression pattern.
+         */
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        /**
+         * Returns the servlet or filter to dispatch.
+         *
+         * @return The servlet or filter to dispatch.
+         */
+        public Object getObject() {
+            return object;
+        }
+
+        /**
+         * Sets the regular expression pattern.
+         *
+         * @param pattern
+         *            The regular expression pattern.
+         */
+        public void setPattern(Pattern pattern) {
+            this.pattern = pattern;
+        }
+
+        /**
+         * The servlet or filter to dispatch.
+         *
+         * @param object
+         *            The servlet or filter to dispatch.
+         */
+        public void setObject(Object object) {
+            this.object = object;
+        }
     }
 
     /**
