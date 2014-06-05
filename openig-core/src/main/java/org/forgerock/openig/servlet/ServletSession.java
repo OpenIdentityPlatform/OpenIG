@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.servlet;
 
-// Java Enterprise Edition
-
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -31,7 +29,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-// OpenIG Core
 import org.forgerock.openig.http.Session;
 
 /**

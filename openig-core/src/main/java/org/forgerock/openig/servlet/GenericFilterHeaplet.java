@@ -12,21 +12,16 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.servlet;
-
-// Java Enterprise Edition
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValueException;
-
-// OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 
 /**
@@ -39,9 +34,13 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
     private Filter filter;
 
     /**
-     * Initializes the heaplet and creates the filter. The filter is created through a call
-     * to the abstract {@link #createFilter()} method. Once created, the filter is
-     * initialized through a call to its {@link Filter#init(FilterConfig)} method.
+     * Initializes the heaplet and creates the filter. The filter is created through a call to the abstract
+     * {@link #createFilter()} method. Once created, the filter is initialized through a call to its
+     * {@link Filter#init(FilterConfig)} method.
+     *
+     * @throws HeapException
+     *             If an exception occurs during initialization.
+     * @return The created filter heaplet.
      */
     @Override // GenericHeaplet
     public Object create() throws HeapException {
@@ -68,6 +67,8 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
 
     /**
      * Returns the name of the filter.
+     *
+     * @return The name of the filter.
      */
     @Override // FilterConfig
     public String getFilterName() {
@@ -77,8 +78,11 @@ public abstract class GenericFilterHeaplet extends CommonHeaplet implements Filt
     /**
      * Called to request the heaplet create a filter object. Called by {@link #create()}.
      *
-     * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @throws HeapException
+     *             if an exception occurred during creation of the heap object or any of its dependencies.
+     * @throws JsonValueException
+     *             if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @return The created filter.
      */
     public abstract Filter createFilter() throws HeapException;
 }

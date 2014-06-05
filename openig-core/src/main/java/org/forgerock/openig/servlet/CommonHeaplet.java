@@ -12,13 +12,10 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.servlet;
-
-// Java Standard Edition
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -26,11 +23,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
-// OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
