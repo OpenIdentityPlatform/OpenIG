@@ -17,11 +17,8 @@
 
 package org.forgerock.openig.handler;
 
-// Java Standard Edition
-
 import java.io.IOException;
 
-// OpenIG Core
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.http.Exchange;
 

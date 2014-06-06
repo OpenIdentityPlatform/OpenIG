@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.decoder;
 
-// Java Standard Edition
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-// OpenIG Core
 import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.Indexed;
 import org.forgerock.openig.util.Loader;

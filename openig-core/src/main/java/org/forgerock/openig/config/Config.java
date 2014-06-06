@@ -17,12 +17,9 @@
 
 package org.forgerock.openig.config;
 
-// JSON Fluent
-
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
-// OpenIG Core
 import org.forgerock.openig.json.JSONRepresentation;
 import org.forgerock.openig.resource.Resource;
 import org.forgerock.openig.resource.ResourceException;

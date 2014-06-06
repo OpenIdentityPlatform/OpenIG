@@ -18,11 +18,8 @@
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
-
 import java.security.Principal;
 
-// OpenIG Core
 import org.forgerock.openig.util.ExtensibleFieldMap;
 
 /**

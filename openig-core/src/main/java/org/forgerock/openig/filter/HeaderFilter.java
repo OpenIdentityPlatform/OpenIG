@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 
 import org.forgerock.openig.handler.Handler;

@@ -20,13 +20,10 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-// OpenIG Core
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

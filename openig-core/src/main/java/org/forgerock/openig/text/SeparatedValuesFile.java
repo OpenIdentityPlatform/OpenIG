@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.text;
 
-// Java Standard Edition
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;

@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.saml;
 
-// Java Standard Edition
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,24 +28,18 @@ import java.util.HashSet;
 import java.util.logging.Level;
 
 
-// Java Enterprise Edition
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
-// OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 
-
-// OpenAM
 import com.sun.identity.plugin.session.SessionException;
 import com.sun.identity.saml2.assertion.Assertion;
 import com.sun.identity.saml2.assertion.AuthnStatement;

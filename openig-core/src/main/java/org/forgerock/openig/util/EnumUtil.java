@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;

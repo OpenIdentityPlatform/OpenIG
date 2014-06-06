@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.resource;
 
-// Java Standard Edition
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.util.Loader;
 
 /**

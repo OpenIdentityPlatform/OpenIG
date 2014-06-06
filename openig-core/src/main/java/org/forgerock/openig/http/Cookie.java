@@ -17,13 +17,10 @@
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.util.FieldMap;
 
 /**

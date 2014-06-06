@@ -17,15 +17,12 @@
 
 package org.forgerock.openig.header;
 
-// Java Standard Edition
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// OpenIG Core
 import org.forgerock.openig.util.CaseInsensitiveMap;
 
 /**

@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.io;
 
-// Java Standard Edition
-
 import java.io.File;
 import java.io.IOException;
 

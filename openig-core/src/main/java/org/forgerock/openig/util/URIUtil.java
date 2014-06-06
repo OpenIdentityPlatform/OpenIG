@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
-
 import java.net.URI;
 import java.net.URISyntaxException;
 

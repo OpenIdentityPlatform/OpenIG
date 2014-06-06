@@ -19,17 +19,13 @@ package org.forgerock.openig.heap;
 
 // TODO: consider detecting cyclic dependencies
 
-// Java Standard Edition
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
-// OpenIG Core
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**

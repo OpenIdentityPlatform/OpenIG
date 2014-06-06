@@ -18,8 +18,6 @@
 
 package org.forgerock.openig.io;
 
-// Java Standard Edition
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;

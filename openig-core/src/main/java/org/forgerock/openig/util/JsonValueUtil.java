@@ -17,15 +17,11 @@
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
-
 import java.util.HashMap;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
-// OpenIG Core
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 

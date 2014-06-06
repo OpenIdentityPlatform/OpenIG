@@ -21,11 +21,9 @@ package org.forgerock.openig.util;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.protocol.HttpContext;
 
-// OpenIG Core
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.Logger;
 
-// Java SE
 import java.io.IOException;
 
 /**

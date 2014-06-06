@@ -17,11 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.IOException;
 
-// OpenIG Core
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;

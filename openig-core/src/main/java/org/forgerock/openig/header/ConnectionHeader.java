@@ -17,11 +17,9 @@
 
 package org.forgerock.openig.header;
 
-// Java Standard Edition
 import java.util.ArrayList;
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.http.Message;
 
 /**

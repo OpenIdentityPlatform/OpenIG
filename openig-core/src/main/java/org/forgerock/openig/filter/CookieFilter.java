@@ -18,8 +18,6 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.IOException;
 import java.net.CookiePolicy;
 import java.net.CookieManager;
@@ -33,7 +31,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 
-// OpenIG Core
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;

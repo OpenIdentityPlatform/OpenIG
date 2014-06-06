@@ -18,8 +18,6 @@
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
-
 import java.util.Arrays;
 import java.util.Iterator;
 

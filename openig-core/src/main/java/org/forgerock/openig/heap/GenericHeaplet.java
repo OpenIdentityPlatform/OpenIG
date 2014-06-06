@@ -17,17 +17,13 @@
 
 package org.forgerock.openig.heap;
 
-// Java Standard Edition
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 
-// OpenIG Core
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.LogSink;

@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.log;
 
-// OpenIG Core
-
 import org.forgerock.openig.util.FieldMap;
 
 /**

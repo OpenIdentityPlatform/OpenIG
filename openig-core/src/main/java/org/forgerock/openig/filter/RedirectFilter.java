@@ -16,13 +16,10 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-// OpenIG Core
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.header.LocationHeader;

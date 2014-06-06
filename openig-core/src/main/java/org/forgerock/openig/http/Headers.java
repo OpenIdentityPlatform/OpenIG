@@ -18,11 +18,8 @@
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
-
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.MultiValueMap;
 

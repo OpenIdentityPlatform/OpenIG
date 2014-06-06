@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.regex;
 
-// Java Standard Edition
-
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;

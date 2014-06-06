@@ -17,13 +17,10 @@
 
 package org.forgerock.openig.heap;
 
-// Java Standard Edition
-
 import java.util.Collections;
 import java.util.Map;
 
 
-// OpenIG Core
 import org.forgerock.openig.util.Loader;
 
 /**

@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.util;
 
-// Java Standard Edition
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;

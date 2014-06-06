@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.regex;
 
-// Java Standard Edition
-
 import java.util.regex.MatchResult;
 
 /**
