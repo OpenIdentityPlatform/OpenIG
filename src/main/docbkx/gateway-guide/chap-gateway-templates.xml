@@ -204,8 +204,7 @@
    Shows how a single OpenIG configuration can proxy to
    multiple applications on different ports with the same IP address.
    This template is setup to proxy to
-   both the WordPress and MediaWiki hosted samples.
-   OpenIG must be setup to listen on both ports 8080 and 8181.
+   both WordPress and MediaWiki hosted on the same web server.
    The <literal>DispatchHandler</literal> is used to route
    each incoming request to either the WordPress chain or the MediaWiki chain.
   </para>
