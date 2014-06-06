@@ -34,19 +34,19 @@
         }   
     },
     {
-	"name": "HiddenValueExtract",
-	"type": "EntityExtractFilter",
-	"config": {
-	    "messageType": "response",
-	    "target": "${exchange.hiddenValue}",
-	    "bindings": [
-		{
-		    "key": "value",
-		    "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
-		    "template": "$1"
-		}
-	    ]
-	}
+    "name": "HiddenValueExtract",
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": "response",
+        "target": "${exchange.hiddenValue}",
+        "bindings": [
+        {
+            "key": "value",
+            "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
+            "template": "$1"
+        }
+        ]
+    }
     },
     {   
         "name": "LoginRequest",
