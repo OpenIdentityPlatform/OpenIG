@@ -16,12 +16,12 @@
                 {                       
                     "condition": "${exchange.request.uri.path.indexOf('/wordpress') == 0}",
                     "handler": "WordPressLoginChain",
-                    "baseURI":"http://109.73.67.52:8080"
+                    "baseURI":"http://TARGETIP"
                 },  
                 {                       
                     "condition": "${exchange.request.uri.path.indexOf('/mediawiki') == 0}",
                     "handler": "MediaWikiLoginChain",
-                    "baseURI":"http://109.73.67.52:8181"
+                    "baseURI":"http://TARGETIP"
                 }
             ]   
         }   
