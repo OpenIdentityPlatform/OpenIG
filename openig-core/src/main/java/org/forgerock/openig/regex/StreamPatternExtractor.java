@@ -113,10 +113,12 @@ public class StreamPatternExtractor {
                                                     (t != null ? t.applyTo(matcher) : matcher
                                                             .group());
                                             values.put(entryKey, value);
-                                            if (entryKey.equals(key)) { // found the value we were looking for
+                                            if (entryKey.equals(key)) {
+                                                // found the value we were looking for
                                                 value = v;
                                             }
-                                            entries[n] = null; // used entry; deference for efficiency
+                                            // used entry; deference for efficiency
+                                            entries[n] = null;
                                         }
                                     }
                                 }

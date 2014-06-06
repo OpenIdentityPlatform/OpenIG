@@ -58,13 +58,16 @@ public class HeapImpl implements Heap {
             if (heaplet == null) {
                 throw new JsonValueException(object.get("type"), "no heaplet available to initialize object");
             }
-            String name = object.get("name").required().asString(); // objects[n].name (string)
+            // objects[n].name (string)
+            String name = object.get("name").required().asString();
             if (heaplets.get(name) != null) {
                 throw new JsonValueException(object.get("name"), "object already defined");
             }
-            objects.remove(name); // remove pre-allocated objects to be replaced
+            // remove pre-allocated objects to be replaced
+            objects.remove(name);
             heaplets.put(name, heaplet);
-            configs.put(name, object.get("config").required().expect(Map.class)); // objects[n].config (object)
+            // objects[n].config (object)
+            configs.put(name, object.get("config").required().expect(Map.class));
         }
         // instantiate all objects, recursively allocating dependencies
         for (String name : heaplets.keySet()) {
@@ -105,10 +108,14 @@ public class HeapImpl implements Heap {
      * chance for system resources to be freed.
      */
     public synchronized void destroy() {
-        HashMap<String, Heaplet> h = heaplets; // save the heaplets locally to send destroy notifications
-        heaplets = new HashMap<String, Heaplet>(); // prevent any further (inadvertent) object allocations
-        objects.clear(); // all allocated objects are no longer in this heap
-        for (String name : h.keySet()) { // iterate through saved heaplets, notifying about destruction
+        // save the heaplets locally to send destroy notifications
+        HashMap<String, Heaplet> h = heaplets;
+        // prevent any further (inadvertent) object allocations
+        heaplets = new HashMap<String, Heaplet>();
+        // all allocated objects are no longer in this heap
+        objects.clear();
+        // iterate through saved heaplets, notifying about destruction
+        for (String name : h.keySet()) {
             h.get(name).destroy();
         }
     }

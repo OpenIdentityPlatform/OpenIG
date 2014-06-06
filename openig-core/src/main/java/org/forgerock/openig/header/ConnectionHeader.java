@@ -102,7 +102,8 @@ public class ConnectionHeader implements Header {
 
     @Override
     public String toString() {
-        return HeaderUtil.join(tokens, ','); // will return null if empty
+        // will return null if empty
+        return HeaderUtil.join(tokens, ',');
     }
 
     @Override

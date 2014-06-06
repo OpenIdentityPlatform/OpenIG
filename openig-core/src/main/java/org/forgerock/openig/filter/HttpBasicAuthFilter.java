@@ -143,7 +143,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
         }
         // close the incoming response because it's about to be dereferenced
         if (exchange.response.entity != null) {
-            exchange.response.entity.close(); // important!
+            // important!
+            exchange.response.entity.close();
         }
         // credentials were missing or invalid; let failure handler deal with it
         exchange.response = new Response();
@@ -161,8 +162,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
             filter.failureHandler = HeapUtil.getObject(
                     heap,
                     config.get("failureHandler").required(),
-                    Handler.class); // required
-            filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean(); // optional
+                    Handler.class);
+            filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean();
 
             if (logger != null && logger.isLoggable(LogLevel.DEBUG)) {
                 logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);

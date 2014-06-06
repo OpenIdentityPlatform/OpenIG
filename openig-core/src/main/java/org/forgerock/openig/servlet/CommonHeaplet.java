@@ -74,7 +74,7 @@ abstract class CommonHeaplet extends NestedHeaplet {
     protected void configure() throws HeapException {
         JsonValue context = config.get("servletContext").defaultTo("ServletContext");
         servletContext = HeapUtil.getRequiredObject(heap, context, ServletContext.class);
-        JsonValue initParams = config.get("initParams").expect(Map.class); // optional
+        JsonValue initParams = config.get("initParams").expect(Map.class);
         for (String key : initParams.keys()) {
             this.initParams.put(key, initParams.get(key).asString());
         }

@@ -90,13 +90,13 @@ public class HeaderFilter extends GenericFilter {
             HeaderFilter filter = new HeaderFilter();
             filter.messageType = config.get("messageType")
                     .required()
-                    .asEnum(MessageType.class); // required
+                    .asEnum(MessageType.class);
             filter.remove.addAll(config.get("remove")
                     .defaultTo(Collections.emptyList())
-                    .asList(String.class)); // optional
+                    .asList(String.class));
             JsonValue add = config.get("add")
                     .defaultTo(Collections.emptyMap())
-                    .expect(Map.class); // optional
+                    .expect(Map.class);
             for (String key : add.keys()) {
                 List<String> values = add.get(key).required().asList(String.class);
                 filter.add.addAll(key, values);

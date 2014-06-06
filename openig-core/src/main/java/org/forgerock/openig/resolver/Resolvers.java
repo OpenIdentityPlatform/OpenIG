@@ -70,19 +70,23 @@ public final class Resolvers {
                     int n = 0;
 
                     public boolean hasNext() {
-                        return (class2 != null); // interface hierarchy not yet exhausted
+                        // interface hierarchy not yet exhausted
+                        return (class2 != null);
                     }
 
                     public Resolver next() {
-                        while (class1 != null && class1 != Object.class) { // class hierarchy
+                        while (class1 != null && class1 != Object.class) {
+                            // class hierarchy
                             Resolver resolver = SERVICES.get(class1);
                             class1 = class1.getSuperclass();
                             if (resolver != null) {
                                 return resolver;
                             }
                         }
-                        class1 = null; // exhausted class hierarchy
-                        while (class2 != null && class2 != Object.class) { // interface hierarchy
+                        // exhausted class hierarchy
+                        class1 = null;
+                        while (class2 != null && class2 != Object.class) {
+                            // interface hierarchy
                             if (interfaces != null && interfaces.hasNext()) {
                                 Resolver resolver = SERVICES.get(interfaces.next());
                                 if (resolver != null) {
@@ -98,7 +102,8 @@ public final class Resolvers {
                                 }
                             }
                         }
-                        class2 = null; // exhausted interface hierarchy
+                        // exhausted interface hierarchy
+                        class2 = null;
                         return new Unresolver();
                     }
 
@@ -123,7 +128,8 @@ public final class Resolvers {
         for (Resolver resolver : resolvers(object)) {
             Object value = resolver.get(object, element);
             if (value != Resolver.UNRESOLVED) {
-                return value; // first hit wins
+                // first hit wins
+                return value;
             }
         }
         return Resolver.UNRESOLVED;
@@ -145,7 +151,8 @@ public final class Resolvers {
         for (Resolver resolver : resolvers(object)) {
             Object resolved = resolver.put(object, element, value);
             if (resolved != Resolver.UNRESOLVED) {
-                return resolved; // first hit wins
+                // first hit wins
+                return resolved;
             }
         }
         return Resolver.UNRESOLVED;
@@ -158,7 +165,8 @@ public final class Resolvers {
         } else {
             interfaces = new ArrayList<Class<?>>();
             for (Class<?> iface : c.getInterfaces()) {
-                interfaces.addAll(getInterfaces(iface, level - 1)); // recursion
+                // recursion
+                interfaces.addAll(getInterfaces(iface, level - 1));
             }
         }
         return interfaces;

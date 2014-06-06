@@ -50,7 +50,8 @@ public class Config {
     public JsonValue read() throws ResourceException {
         JSONRepresentation representation = new JSONRepresentation();
         resource.read(representation);
-        return new JsonValue(representation.object); // configuration files are JSON objects
+        // Configuration files are JSON objects
+        return new JsonValue(representation.object);
     }
 
     /**
@@ -63,8 +64,10 @@ public class Config {
         JSONRepresentation representation = new JSONRepresentation(config.getObject());
         try {
             resource.update(representation);
-        } catch (ResourceException re) { // assume update failure is due to non-existence
-            resource.create(representation); // attempt to create instead
+        } catch (ResourceException re) {
+            // assume update failure is due to non-existence
+            // attempt to create instead
+            resource.create(representation);
         }
     }
 }

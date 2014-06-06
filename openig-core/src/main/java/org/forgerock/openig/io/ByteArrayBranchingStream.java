@@ -92,10 +92,11 @@ public class ByteArrayBranchingStream extends BranchingInputStream {
      */
     @Override
     public synchronized int read(byte[] b, int off, int len) {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
-        if (position >= data.length) { // end of stream has been reached
+        if (position >= data.length) {
+            // end of stream has been reached
             return -1;
         }
         len = Math.min(len, data.length - position);

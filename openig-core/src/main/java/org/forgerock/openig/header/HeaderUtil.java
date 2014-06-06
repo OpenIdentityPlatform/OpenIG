@@ -62,23 +62,28 @@ public final class HeaderUtil {
             boolean quoted = false;
             for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
                 cp = value.codePointAt(n);
-                if (escaped) { // single-character quoting mechanism per RFC 2616 §2.2
+                if (escaped) {
+                    // single-character quoting mechanism per RFC 2616 §2.2
                     sb.appendCodePoint(cp);
                     escaped = false;
                 } else if (cp == '\\') {
                     sb.appendCodePoint(cp);
-                    if (quoted) { // single-character quoting mechanism per RFC 2616 §2.2
+                    if (quoted) {
+                        // single-character quoting mechanism per RFC 2616 §2.2
                         escaped = true;
                     }
                 } else if (cp == '"') {
-                    sb.appendCodePoint(cp); // quotation marks remain intact here
+                    // quotation marks remain intact here
+                    sb.appendCodePoint(cp);
                     quoted = !quoted;
-                } else if (cp == separator && !quoted) { // only separator if not in quoted string
+                } else if (cp == separator && !quoted) {
+                    // only separator if not in quoted string
                     String s = sb.toString().trim();
                     if (s.length() > 0) {
                         values.add(s);
                     }
-                    sb.setLength(0); // reset for next token
+                    // reset for next token
+                    sb.setLength(0);
                 } else {
                     sb.appendCodePoint(cp);
                 }
@@ -148,20 +153,26 @@ public final class HeaderUtil {
         final StringBuilder sb = new StringBuilder();
         for (int n = 0, cp; n < length; n += Character.charCount(cp)) {
             cp = value.codePointAt(n);
-            if (escaped) { // single-character quoting mechanism per RFC 2616 §2.2
+            if (escaped) {
+                // single-character quoting mechanism per RFC 2616 §2.2
                 sb.appendCodePoint(cp);
                 escaped = false;
             } else if (cp == '\\') {
                 if (quoted) {
-                    escaped = true; // next character is literal
+                    // next character is literal
+                    escaped = true;
                 } else {
-                    sb.appendCodePoint(cp); // not quoted, push the backslash literal (header probably malformed)
+                    // not quoted, push the backslash literal (header probably malformed)
+                    sb.appendCodePoint(cp);
                 }
             } else if (cp == '"') {
-                quoted = !quoted; // toggle quoted status
-            } else if (!quoted && !inValue && cp == '=') { // only separator if in key and not in quoted-string
+                // toggle quoted status
+                quoted = !quoted;
+            } else if (!quoted && !inValue && cp == '=') {
+                // only separator if in key and not in quoted-string
                 ss[0] = sb.toString().trim();
-                sb.setLength(0); // reset for next token
+                // reset for next token
+                sb.setLength(0);
                 inValue = true;
             } else if (!quoted && Character.isWhitespace(cp)) {
                 // drop unquoted white space (header probably malformed if not at beginning or end)

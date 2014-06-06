@@ -76,9 +76,12 @@ public class GatewayServlet extends HttpServlet {
             ServletContext context = getServletConfig().getServletContext();
             JsonValue config = new Config(environment.getConfigResource(context)).read();
             HeapImpl heap = new HeapImpl();
-            heap.put("ServletContext", context); // can be overridden in config
-            heap.put("TemporaryStorage", new TemporaryStorage()); // can be overridden in config
-            heap.put("LogSink", new ConsoleLogSink()); // can be overridden in config
+            // can be overridden in config
+            heap.put("ServletContext", context);
+            // can be overridden in config
+            heap.put("TemporaryStorage", new TemporaryStorage());
+            // can be overridden in config
+            heap.put("LogSink", new ConsoleLogSink());
             heap.put("Environment", environment);
             heap.init(config.get("heap").required().expect(Map.class));
             servlet = HeapUtil.getRequiredObject(heap, config.get("servletObject").required(), HttpServlet.class);

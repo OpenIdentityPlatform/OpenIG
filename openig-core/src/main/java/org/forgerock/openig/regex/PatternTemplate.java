@@ -67,7 +67,8 @@ public class PatternTemplate {
                     if (digit < 0 || digit > 9) {
                         break;
                     }
-                    group = (group == -1 ? 0 : group) * 10 + digit; // add digit
+                    // add digit
+                    group = (group == -1 ? 0 : group) * 10 + digit;
                     n++;
                 }
                 if (group >= 0 && group <= groups) {

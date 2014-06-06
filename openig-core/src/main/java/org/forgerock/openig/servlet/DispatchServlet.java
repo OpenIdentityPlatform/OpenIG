@@ -118,7 +118,8 @@ public class DispatchServlet extends HttpServlet {
         LogTimer timer = logger.getTimer().start();
         String path = request.getPathInfo();
         if (path == null) {
-            path = "/"; // for our purposes, absence of path is equivalent to root
+            // for our purposes, absence of path is equivalent to root
+            path = "/";
         }
         Wrapper wrapper = null;
         DispatchChain chain = new DispatchChain();
@@ -127,28 +128,34 @@ public class DispatchServlet extends HttpServlet {
             if (matcher.find() && binding.object instanceof HttpServlet) {
                 String servletPath;
                 String pathInfo;
-                if (matcher.groupCount() > 0) { // explicit capture group denoting servlet path
+                if (matcher.groupCount() > 0) {
+                    // explicit capture group denoting servlet path
                     servletPath = matcher.group(1);
                     pathInfo = path.substring(matcher.end(1));
-                } else { // implicit servlet path pattern
+                } else {
+                    // implicit servlet path pattern
                     servletPath = path.substring(0, matcher.end());
                     pathInfo = path.substring(matcher.end());
                 }
                 if (servletPath.length() > 0 && servletPath.charAt(servletPath.length() - 1) == '/') {
                     servletPath = servletPath.substring(0, servletPath.length() - 1);
-                    pathInfo = '/' + pathInfo; // move trailing slash from servletPath to pathInfo
+                    // move trailing slash from servletPath to pathInfo
+                    pathInfo = '/' + pathInfo;
                 }
                 if (pathInfo.length() > 0 && pathInfo.charAt(0) != '/') {
-                    continue; // not a real match
+                    // not a real match
+                    continue;
                 }
                 if (pathInfo.length() == 0) {
-                    pathInfo = null; // spec calls for null if no pathInfo
+                    // spec calls for null if no pathInfo
+                    pathInfo = null;
                 }
                 wrapper = new Wrapper(request);
                 wrapper.servletPath = servletPath;
                 wrapper.pathInfo = pathInfo;
                 chain.objects.add(binding.object);
-                break; // first matching servlet is chain's terminus
+                // first matching servlet is chain's terminus
+                break;
             }
         }
         if (wrapper == null) {
@@ -260,8 +267,8 @@ public class DispatchServlet extends HttpServlet {
         @Override
         public HttpServlet createServlet() throws HeapException {
             DispatchServlet servlet = new DispatchServlet();
-            for (JsonValue bindingValue : config.get("bindings").required().expect(List.class)) { // required
-                bindingValue.required().expect(Map.class); // object, required
+            for (JsonValue bindingValue : config.get("bindings").required().expect(List.class)) {
+                bindingValue.required().expect(Map.class);
                 Binding binding = new Binding();
                 binding.pattern = bindingValue.get("pattern").required().asPattern();
                 binding.object = HeapUtil.getRequiredObject(heap, bindingValue.get("object"), Object.class);

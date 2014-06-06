@@ -52,7 +52,7 @@ public class MemoryBuffer implements Buffer {
 
     @Override
     public int read(int pos, byte[] b, int off, int len) throws IOException {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
         notClosed();
@@ -66,7 +66,7 @@ public class MemoryBuffer implements Buffer {
 
     @Override
     public void append(byte[] b, int off, int len) throws IOException {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
         notClosed();
@@ -74,7 +74,8 @@ public class MemoryBuffer implements Buffer {
         if (end > limit) {
             throw new OverflowException();
         }
-        if (data.length < end) { // buffer grows exponentially (up to limit)
+        if (data.length < end) {
+            // buffer grows exponentially (up to limit)
             data = Arrays.copyOf(data, Math.max(end, Math.min(limit, data.length << 1)));
         }
         System.arraycopy(b, off, data, this.length, len);

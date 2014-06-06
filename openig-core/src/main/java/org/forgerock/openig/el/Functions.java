@@ -55,7 +55,8 @@ public class Functions extends FunctionMapper {
         if (prefix != null && localName != null && prefix.length() == 0) {
             return METHODS.get(localName);
         }
-        return null; // no match was found
+        // no match was found
+        return null;
     }
 
     /**
@@ -73,13 +74,15 @@ public class Functions extends FunctionMapper {
             return (object.toString().contains(value.toString()));
         } else if (object instanceof Collection) {
             return ((Collection<?>) object).contains(value);
-        } else if (object instanceof Object[]) { // doesn't handle primitives (but is cheap)
+        } else if (object instanceof Object[]) {
+            // doesn't handle primitives (but is cheap)
             for (Object o : (Object[]) object) {
                 if (o.equals(value)) {
                     return true;
                 }
             }
-        } else if (object.getClass().isArray()) { // handles primitives (slightly more expensive)
+        } else if (object.getClass().isArray()) {
+            // handles primitives (slightly more expensive)
             int length = Array.getLength(object);
             for (int n = 0; n < length; n++) {
                 if (Array.get(object, n).equals(value)) {
@@ -87,11 +90,12 @@ public class Functions extends FunctionMapper {
                 }
             }
         }
-        return false; // value not contained in object
+        // value not contained in object
+        return false;
     }
 
     /**
-     * Returns the index within a string of the first occurance of a specified
+     * Returns the index within a string of the first occurrence of a specified
      * substring.
      *
      * @param string the string to be searched.
@@ -124,12 +128,15 @@ public class Functions extends FunctionMapper {
      * @return the first matching key, or {@code null} if no match found.
      */
     public static String _keyMatch(Object map, String pattern) {
-        if (map instanceof Map) { // avoid unnecessary proxying via duck typing
+        if (map instanceof Map) {
+            // avoid unnecessary proxying via duck typing
             Pattern p = null;
             try {
-                p = Pattern.compile(pattern); // TODO: cache oft-used patterns?
+                // TODO: cache oft-used patterns?
+                p = Pattern.compile(pattern);
             } catch (PatternSyntaxException pse) {
-                return null; // invalid pattern results in no match
+                // invalid pattern results in no match
+                return null;
             }
             for (Object key : ((Map<?, ?>) map).keySet()) {
                 if (key instanceof String) {
@@ -139,7 +146,8 @@ public class Functions extends FunctionMapper {
                 }
             }
         }
-        return null; // no match
+        // no match
+        return null;
     }
 
     /**
@@ -159,12 +167,15 @@ public class Functions extends FunctionMapper {
             return ((Collection<?>) object).size();
         } else if (object instanceof Map) {
             return ((Map<?, ?>) object).size();
-        } else if (object instanceof Object[]) { // doesn't handle primitives (but is cheap)
+        } else if (object instanceof Object[]) {
+            // doesn't handle primitives (but is cheap)
             return ((Object[]) object).length;
-        } else if (object.getClass().isArray()) { // handles primitives (slightly more expensive)
+        } else if (object.getClass().isArray()) {
+            // handles primitives (slightly more expensive)
             return Array.getLength(object);
         }
-        return 0; // no items
+        // no items
+        return 0;
     }
 
     /**

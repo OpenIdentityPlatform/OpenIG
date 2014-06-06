@@ -58,7 +58,8 @@ public class SwitchFilter extends GenericFilter {
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        if (!doSwitch(exchange, onRequest)) { // not intercepted
+        if (!doSwitch(exchange, onRequest)) {
+            // not intercepted
             next.handle(exchange);
             doSwitch(exchange, onResponse);
         }
@@ -70,10 +71,12 @@ public class SwitchFilter extends GenericFilter {
             Object o = (c.condition != null ? c.condition.eval(exchange) : Boolean.TRUE);
             if (o instanceof Boolean && ((Boolean) o)) {
                 c.handler.handle(exchange);
-                return true; // switched flow
+                // switched flow
+                return true;
             }
         }
-        return false; // no interception
+        // no interception
+        return false;
     }
 
     /**
@@ -90,7 +93,7 @@ public class SwitchFilter extends GenericFilter {
 
         private List<Case> asCases(String name) throws HeapException {
             ArrayList<Case> result = new ArrayList<Case>();
-            JsonValue cases = config.get(name).expect(List.class); // optional
+            JsonValue cases = config.get(name).expect(List.class);
             for (JsonValue value : cases) {
                 result.add(asCase(value.required().expect(Map.class)));
             }
@@ -99,7 +102,7 @@ public class SwitchFilter extends GenericFilter {
 
         private Case asCase(JsonValue value) throws HeapException {
             Case result = new Case();
-            result.condition = JsonValueUtil.asExpression(value.get("condition")); // optional
+            result.condition = JsonValueUtil.asExpression(value.get("condition"));
             result.handler = HeapUtil.getRequiredObject(heap, value.get("handler"), Handler.class);
             return result;
         }

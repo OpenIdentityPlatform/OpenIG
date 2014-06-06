@@ -140,7 +140,8 @@ public class HandlerServlet extends HttpServlet {
                 Streamer.stream(exchange.response.entity, out);
                 out.flush();
             }
-        } finally { // final cleanup
+        } finally {
+            // final cleanup
             if (requestEntityTrunk != null) {
                 try {
                     requestEntityTrunk.close();
@@ -150,7 +151,8 @@ public class HandlerServlet extends HttpServlet {
             }
             if (exchange.response != null && exchange.response.entity != null) {
                 try {
-                    exchange.response.entity.close(); // important!
+                    // important!
+                    exchange.response.entity.close();
                 } catch (IOException ioe) {
                     // ignore exception closing a stream
                 }
@@ -165,7 +167,7 @@ public class HandlerServlet extends HttpServlet {
         public HttpServlet createServlet() throws HeapException {
             HandlerServlet servlet = new HandlerServlet();
             servlet.handler = HeapUtil.getRequiredObject(heap, config.get("handler").required(), Handler.class);
-            servlet.baseURI = config.get("baseURI").asURI(); // optional
+            servlet.baseURI = config.get("baseURI").asURI();
             servlet.storage = this.storage;
             servlet.logger = this.logger;
             return servlet;

@@ -121,7 +121,8 @@ public class ServletSession extends AbstractMap<String, Object> implements Sessi
      */
     public ServletSession(final HttpServletRequest request) {
         this.request = request;
-        this.httpSession = request.getSession(false); // get session if already allocated
+        // get session if already allocated
+        this.httpSession = request.getSession(false);
     }
 
     @Override
@@ -168,7 +169,8 @@ public class ServletSession extends AbstractMap<String, Object> implements Sessi
     public synchronized Object put(final String key, final Object value) {
         final Object old = get(key);
         if (httpSession == null) {
-            httpSession = request.getSession(true); // create session just-in-time
+            // create session just-in-time
+            httpSession = request.getSession(true);
         }
         httpSession.setAttribute(key, value);
         return old;

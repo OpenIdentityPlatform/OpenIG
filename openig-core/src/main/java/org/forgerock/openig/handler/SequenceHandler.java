@@ -59,9 +59,11 @@ public class SequenceHandler extends GenericHandler {
         LogTimer timer = logger.getTimer().start();
         for (Binding binding : bindings) {
             if (exchange.response != null && exchange.response.entity != null) {
-                exchange.response.entity.close(); // important!
+                // important!
+                exchange.response.entity.close();
             }
-            exchange.response = null; // avoid downstream filters/handlers inadvertently using response
+            // avoid downstream filters/handlers inadvertently using response
+            exchange.response = null;
             binding.handler.handle(exchange);
             if (binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(exchange))) {
                 break;
@@ -79,7 +81,7 @@ public class SequenceHandler extends GenericHandler {
                 jv.required().expect(Map.class);
                 Binding binding = new Binding();
                 binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
-                binding.postcondition = JsonValueUtil.asExpression(jv.get("postcondition")); // optional
+                binding.postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
                 handler.bindings.add(binding);
             }
             return handler;

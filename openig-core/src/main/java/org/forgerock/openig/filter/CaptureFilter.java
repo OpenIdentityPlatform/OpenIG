@@ -102,7 +102,8 @@ public class CaptureFilter extends GenericFilter {
         @Override
         public PrintWriter getWriter() throws IOException {
             if (writer == null || !file.exists()) {
-                if (writer != null) { // file was removed while open
+                if (writer != null) {
+                    // file was removed while open
                     closeSilently(writer);
                 }
                 writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
@@ -209,7 +210,8 @@ public class CaptureFilter extends GenericFilter {
             return;
         }
         writer.println();
-        if (!captureEntity) { // simply show presence of an entity
+        if (!captureEntity) {
+            // simply show presence of an entity
             writer.println("[entity]");
             return;
         }
@@ -231,7 +233,8 @@ public class CaptureFilter extends GenericFilter {
         } catch (IllegalCharsetNameException icne) {
             writer.println("[entity contains characters in illegal character set]");
         }
-        writer.println(); // entity may not terminate with new line, so here it is
+        // entity may not terminate with new line, so here it is
+        writer.println();
     }
 
     /**
@@ -258,15 +261,15 @@ public class CaptureFilter extends GenericFilter {
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.setWriterProvider(buildFileProvider(config));
-            filter.setCondition(JsonValueUtil.asExpression(config.get("condition"))); // optional
+            filter.setCondition(JsonValueUtil.asExpression(config.get("condition")));
             JsonValue capture = config.get("captureEntity");
-            filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean()); // optional
+            filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean());
             return filter;
         }
 
         private WriterProvider buildFileProvider(final JsonValue config) {
-            File file = config.get("file").required().asFile(); // required
-            Charset charset = config.get("charset").defaultTo("UTF-8").asCharset(); // optional
+            File file = config.get("file").required().asFile();
+            Charset charset = config.get("charset").defaultTo("UTF-8").asCharset();
             return new FileWriterProvider(file, charset);
         }
     }

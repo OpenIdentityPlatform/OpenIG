@@ -52,6 +52,7 @@ public class PrincipalResolver implements Resolver {
 
     @Override
     public Object put(Object object, Object element, Object value) {
-        return Resolver.UNRESOLVED; // immutable
+        // immutable
+        return Resolver.UNRESOLVED;
     }
 }

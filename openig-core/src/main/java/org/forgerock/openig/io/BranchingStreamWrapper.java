@@ -52,13 +52,15 @@ public class BranchingStreamWrapper extends BranchingInputStream {
      * @param bufferFactory an object that can create new temporary buffers (e.g. @link TemporaryStorage}).
      */
     public BranchingStreamWrapper(InputStream in, Factory<Buffer> bufferFactory) {
-        if (in instanceof BranchingStreamWrapper) { // branch off of existing trunk
+        if (in instanceof BranchingStreamWrapper) {
+            // branch off of existing trunk
             BranchingStreamWrapper bsw = (BranchingStreamWrapper) in;
             this.parent = bsw;
             this.trunk = bsw.trunk;
             this.position = bsw.position;
             this.trunk.branches.add(this);
-        } else { // wrapping a non-wrapping stream; sprout a new trunk
+        } else {
+            // wrapping a non-wrapping stream; sprout a new trunk
             parent = null;
             trunk = new Trunk();
             trunk.branches.add(this);
@@ -70,7 +72,8 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     @Override
     public BranchingStreamWrapper branch() throws IOException {
         notClosed();
-        return new BranchingStreamWrapper(this, null); // constructor will branch
+        // constructor will branch
+        return new BranchingStreamWrapper(this, null);
     }
 
     @Override
@@ -121,14 +124,17 @@ public class BranchingStreamWrapper extends BranchingInputStream {
      */
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
         notClosed();
         int n;
-        if ((n = readBuffer(b, off, len)) == 0) { // try reading from buffer first
-            if ((n = trunk.in.read(b, off, len)) >= 0) { // not buffered; cascade the call
-                writeBuffer(b, off, n); // write result to buffer if necessary
+        // try reading from buffer first
+        if ((n = readBuffer(b, off, len)) == 0) {
+            // not buffered; cascade the call
+            if ((n = trunk.in.read(b, off, len)) >= 0) {
+                // write result to buffer if necessary
+                writeBuffer(b, off, n);
             }
         }
         return n;
@@ -148,7 +154,8 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         }
         notClosed();
         if (trunk.buffer == null && trunk.branches.size() == 1) {
-            return trunk.in.skip(n); // not buffering; safely cascade call
+            // not buffering; safely cascade call
+            return trunk.in.skip(n);
         }
         // stream nowhere, just to buffer (or unbuffer) the result skipped
         return Streamer.stream(this, new NullOutputStream(), (int) Math.min(Integer.MAX_VALUE, n));
@@ -166,8 +173,10 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         notClosed();
         if (trunk.buffer != null) {
             int length = trunk.buffer.length();
-            if (position < length) { // this branch is still reading from buffer
-                return length - position; // report buffer availability
+            if (position < length) {
+                // this branch is still reading from buffer
+                // report buffer availability
+                return length - position;
             }
         }
         return trunk.in.available();
@@ -175,15 +184,19 @@ public class BranchingStreamWrapper extends BranchingInputStream {
 
     @Override
     public void close() throws IOException {
-        if (trunk != null) { // multiple calls to close are harmless
+        // multiple calls to close are harmless
+        if (trunk != null) {
             try {
                 closeBranches();
                 trunk.branches.remove(this);
-                reviewBuffer(); // close buffer if applicable
-                if (trunk.branches.size() == 0) { // last one out turn off the lights
+                // close buffer if applicable
+                reviewBuffer();
+                if (trunk.branches.size() == 0) {
+                    // last one out turn off the lights
                     trunk.in.close();
                 }
-            } finally { // if all else fails, this branch thinks it's closed
+            } finally {
+                // if all else fails, this branch thinks it's closed
                 trunk = null;
             }
         }
@@ -191,11 +204,13 @@ public class BranchingStreamWrapper extends BranchingInputStream {
 
     @Override
     public void closeBranches() throws IOException {
-        if (trunk != null) { // multiple calls are harmless
+        // multiple calls are harmless
+        if (trunk != null) {
             ArrayList<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>(trunk.branches);
             for (BranchingStreamWrapper branch : branches) {
                 if (branch.parent == this) {
-                    branch.close(); // recursively closes its children
+                    // recursively closes its children
+                    branch.close();
                 }
             }
         }
@@ -221,14 +236,17 @@ public class BranchingStreamWrapper extends BranchingInputStream {
      */
     private void reviewBuffer() throws IOException {
         if (trunk.buffer == null) {
-            return; // no buffer to review
+            // no buffer to review
+            return;
         }
         int length = trunk.buffer.length();
         for (BranchingStreamWrapper branch : trunk.branches) {
             if (branch.position < length) {
-                return; // branch is still using buffer; leave it alone
+                // branch is still using buffer; leave it alone
+                return;
             }
-        } // any remaining branches are non-divergent and outside buffer
+        }
+        // any remaining branches are non-divergent and outside buffer
         trunk.buffer.close();
         trunk.buffer = null;
     }
@@ -248,15 +266,18 @@ public class BranchingStreamWrapper extends BranchingInputStream {
             n = trunk.buffer.read(position, b, off, len);
         }
         position += n;
-        reviewBuffer(); // see if the buffer can be closed after this operation
+        // see if the buffer can be closed after this operation
+        reviewBuffer();
         return n;
     }
 
     private void writeBuffer(byte[] b, int off, int len) throws IOException {
         if (trunk.buffer == null && trunk.branches.size() > 1) {
-            trunk.buffer = trunk.bufferFactory.newInstance(); // diverging branches; allocate new buffer
+            // diverging branches; allocate new buffer
+            trunk.buffer = trunk.bufferFactory.newInstance();
             for (BranchingStreamWrapper branch : trunk.branches) {
-                branch.position = 0; // set each branch position to beginning of new buffer
+                // set each branch position to beginning of new buffer
+                branch.position = 0;
             }
         }
         if (trunk.buffer != null) {

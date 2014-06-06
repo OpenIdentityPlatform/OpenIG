@@ -80,7 +80,8 @@ public abstract class GenericHeaplet implements Heaplet {
                     TemporaryStorage.class);
         }
         this.object = create();
-        if (this.object instanceof GenericHeapObject) { // instrument object if possible
+        if (this.object instanceof GenericHeapObject) {
+            // instrument object if possible
             GenericHeapObject ghObject = (GenericHeapObject) this.object;
             ghObject.logger = this.logger;
             ghObject.storage = this.storage;

@@ -44,7 +44,8 @@ public final class EnumUtil {
      */
     public static <T extends Enum<T>> Set<String> names(Class<T> enumType) {
         Set<String> set = NAMESETS.get(enumType);
-        if (set == null) { // cached for repeated call efficiency
+        if (set == null) {
+            // cached for repeated call efficiency
             set = new LinkedHashSet<String>();
             for (T constant : enumType.getEnumConstants()) {
                 set.add(constant.toString());

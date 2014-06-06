@@ -66,8 +66,10 @@ public class TemporaryBuffer implements Buffer {
         try {
             buffer.append(b, off, len);
         } catch (OverflowException oe) {
-            promote(); // may throw OverflowException to indicate no promotion possible
-            append(b, off, len); // recursively retry after promotion
+            // may throw OverflowException to indicate no promotion possible
+            promote();
+            // recursively retry after promotion
+            append(b, off, len);
         }
     }
 
@@ -106,9 +108,11 @@ public class TemporaryBuffer implements Buffer {
             MemoryBuffer membuf = (MemoryBuffer) buffer;
             file = File.createTempFile("buf", null, directory);
             buffer = new FileBuffer(file, fileLimit);
-            buffer.append(membuf.data, 0, membuf.length()); // accesses byte array directly
+            // accesses byte array directly
+            buffer.append(membuf.data, 0, membuf.length());
             membuf.close();
-        } else { // no further promotion possible
+        } else {
+            // no further promotion possible
             throw new OverflowException();
         }
     }

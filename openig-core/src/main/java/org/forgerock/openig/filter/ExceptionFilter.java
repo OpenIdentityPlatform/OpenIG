@@ -52,10 +52,12 @@ public class ExceptionFilter extends GenericFilter {
         try {
             next.handle(exchange);
         } catch (Throwable t) {
-            logger.warning(t); // user-impacting
+            // user-impacting
+            logger.warning(t);
             if (exchange.response != null && exchange.response.entity != null) {
                 try {
-                    exchange.response.entity.close(); // important!
+                    // important!
+                    exchange.response.entity.close();
                 } catch (IOException ioe) {
                     logger.debug(ioe);
                 }

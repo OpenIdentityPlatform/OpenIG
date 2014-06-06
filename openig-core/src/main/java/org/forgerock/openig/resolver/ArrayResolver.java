@@ -37,9 +37,11 @@ public class ArrayResolver implements Resolver {
         if (element instanceof Number) {
             int index = ((Number) element).intValue();
             try {
-                if (object instanceof Object[]) { // for array of objects
+                if (object instanceof Object[]) {
+                    // for array of objects
                     return ((Object[]) object)[index];
-                } else if (object.getClass().isArray()) { // for array of primitives
+                } else if (object.getClass().isArray()) {
+                    // for array of primitives
                     return Array.get(object, index);
                 }
             } catch (IndexOutOfBoundsException ioobe) {
@@ -51,13 +53,16 @@ public class ArrayResolver implements Resolver {
 
     @Override
     public Object put(Object object, Object element, Object value) {
-        Object original = get(object, element); // get original value first
+        // get original value first
+        Object original = get(object, element);
         if (original != Resolver.UNRESOLVED && element instanceof Number) {
             int index = ((Number) element).intValue();
             try {
-                if (object instanceof Object[]) { // for array of objects
+                if (object instanceof Object[]) {
+                    // for array of objects
                     ((Object[]) object)[index] = value;
-                } else if (object.getClass().isArray()) { // for array of primitives
+                } else if (object.getClass().isArray()) {
+                    // for array of primitives
                     Array.set(object, index, value);
                 }
                 return original;

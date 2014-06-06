@@ -38,13 +38,13 @@ import org.forgerock.openig.util.MultiValueMap;
  */
 public class StaticResponseHandler extends GenericHandler {
 
-    /** The response status code (e.g.&nbsp200). */
+    /** The response status code (e.g. 200). */
     public Integer status;
 
-    /** The response status reason (e.g.&nbsp"OK"). */
+    /** The response status reason (e.g. "OK"). */
     public String reason;
 
-    /** Protocol version (e.g.&nbsp{@code "HTTP/1.1"}. */
+    /** Protocol version (e.g. {@code "HTTP/1.1"}. */
     public String version = null;
 
     /** Message header fields whose values are expressions that are evaluated. */
@@ -63,10 +63,12 @@ public class StaticResponseHandler extends GenericHandler {
         Response response = new Response();
         response.status = this.status;
         response.reason = this.reason;
-        if (response.reason == null) { // not explicit, derive from status
+        if (response.reason == null) {
+            // not explicit, derive from status
             response.reason = HttpUtil.getReason(response.status);
         }
-        if (response.reason == null) { // couldn't derive from status; say something
+        if (response.reason == null) {
+            // couldn't derive from status; say something
             response.reason = "Uncertain";
         }
         if (this.version != null) { // default in Message class
@@ -81,9 +83,11 @@ public class StaticResponseHandler extends GenericHandler {
             }
         }
         if (this.entity != null) {
-            HttpUtil.toEntity(response, entity, null); // use content-type charset (or default)
+            // use content-type charset (or default)
+            HttpUtil.toEntity(response, entity, null);
         }
-        exchange.response = response; // finally replace response in the exchange
+        // finally replace response in the exchange
+        exchange.response = response;
         timer.stop();
     }
 
@@ -94,9 +98,9 @@ public class StaticResponseHandler extends GenericHandler {
         @Override
         public Object create() throws HeapException {
             StaticResponseHandler handler = new StaticResponseHandler();
-            handler.status = config.get("status").required().asInteger(); // required
-            handler.reason = config.get("reason").asString(); // optional
-            handler.version = config.get("version").asString(); // optional
+            handler.status = config.get("status").required().asInteger();
+            handler.reason = config.get("reason").asString();
+            handler.version = config.get("version").asString();
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
                 for (String key : headers.keys()) {
@@ -105,7 +109,7 @@ public class StaticResponseHandler extends GenericHandler {
                     }
                 }
             }
-            handler.entity = config.get("entity").asString(); // optional
+            handler.entity = config.get("entity").asString();
             return handler;
         }
     }

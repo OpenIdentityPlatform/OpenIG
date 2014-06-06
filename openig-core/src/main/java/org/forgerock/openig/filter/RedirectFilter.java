@@ -73,7 +73,7 @@ public class RedirectFilter extends GenericFilter {
             try {
                 URI currentURI = new URI(header.toString());
                 URI rebasedURI = URIUtil.rebase(currentURI, baseURI);
-                // Only rewite header if it has changed
+                // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
                     message.headers.remove(LocationHeader.NAME);
                     message.headers.add(LocationHeader.NAME, rebasedURI.toString());
@@ -90,7 +90,7 @@ public class RedirectFilter extends GenericFilter {
         public Object create() throws HeapException {
 
             RedirectFilter filter = new RedirectFilter();
-            filter.baseURI = config.get("baseURI").required().asURI(); // required
+            filter.baseURI = config.get("baseURI").required().asURI();
 
             return filter;
         }

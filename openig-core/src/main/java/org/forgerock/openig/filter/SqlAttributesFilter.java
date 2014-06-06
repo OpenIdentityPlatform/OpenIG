@@ -88,8 +88,10 @@ public class SqlAttributesFilter extends GenericFilter {
                 Connection c = null;
                 try {
                     c = dataSource.getConnection();
-                    PreparedStatement ps = c.prepareStatement(preparedStatement); // probably cached in connection pool
-                    ps.clearParameters(); // probably unnecessary but a safety precaution
+                    // probably cached in connection pool
+                    PreparedStatement ps = c.prepareStatement(preparedStatement);
+                    // probably unnecessary but a safety precaution
+                    ps.clearParameters();
                     Object[] p = new Object[parameters.size()];
                     for (int n = 0; n < p.length; n++) {
                         p[n] = parameters.get(n).eval(exchange);
@@ -114,13 +116,15 @@ public class SqlAttributesFilter extends GenericFilter {
                     rs.close();
                     ps.close();
                 } catch (SQLException sqle) {
-                    logger.warning(sqle); // probably a config issue
+                    // probably a config issue
+                    logger.warning(sqle);
                 } finally {
                     if (c != null) {
                         try {
                             c.close();
                         } catch (SQLException sqle) {
-                            logger.warning(sqle); // probably a network issue
+                            // probably a network issue
+                            logger.warning(sqle);
                         }
                     }
                 }

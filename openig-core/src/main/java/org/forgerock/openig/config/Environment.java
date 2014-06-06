@@ -63,10 +63,12 @@ public final class Environment {
     private static File getProductHomeDirectory(final String productName) {
         final StringBuilder sb = new StringBuilder();
         final String appData = System.getenv("AppData");
-        if (appData != null) { // windoze
+        if (appData != null) {
+            // windoze
             sb.append(appData);
             sb.append(File.separatorChar);
-        } else { // eunuchs
+        } else {
+            // eunuchs
             sb.append(System.getProperty("user.home"));
             sb.append(File.separatorChar);
             sb.append('.');

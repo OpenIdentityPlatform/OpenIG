@@ -89,7 +89,8 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
     private Object translate(Object element) {
         if (element != null && element instanceof String) {
             String e = lc.get(((String) element).toLowerCase());
-            if (e != null) { // found a mapped-equivalent
+            if (e != null) {
+                // found a mapped-equivalent
                 element = e;
             }
         }
