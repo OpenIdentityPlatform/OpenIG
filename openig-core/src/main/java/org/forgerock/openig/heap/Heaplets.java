@@ -56,12 +56,15 @@ public final class Heaplets {
      * @return the heaplet that creates the specified class, or {@code null} if not found.
      */
     public static Heaplet getHeaplet(Class<?> c) {
-        Heaplet heaplet = SERVICES.get(c); // try service loader
+        // try service loader
+        Heaplet heaplet = SERVICES.get(c);
         if (heaplet == null) {
-            heaplet = Loader.newInstance(c.getName() + "$Heaplet", Heaplet.class); // try nested class
+            // try nested class
+            heaplet = Loader.newInstance(c.getName() + "$Heaplet", Heaplet.class);
         }
         if (heaplet == null) {
-            heaplet = Loader.newInstance(c.getName() + "Heaplet", Heaplet.class); // try standalone class
+            // try standalone class
+            heaplet = Loader.newInstance(c.getName() + "Heaplet", Heaplet.class);
         }
         return heaplet;
     }

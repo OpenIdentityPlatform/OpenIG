@@ -92,7 +92,8 @@ public class Expression {
                 return valueExpression.get(0).getValue(context);
             }
         } catch (ELException ele) {
-            return null; // unresolved element yields null value
+            // unresolved element yields null value
+            return null;
         }
     }
 
@@ -102,7 +103,7 @@ public class Expression {
      *
      * @param scope the scope to evaluate the expression within.
      * @param type the type of object the evaluation is expected to yield.
-     * @return the result of the expression evaliation, or {@code null} if it does not resolve or match the type.
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
     @SuppressWarnings("unchecked")
     public <T> T eval(Object scope, Class<T> type) {
@@ -184,7 +185,8 @@ public class Expression {
         @Override
         public boolean isReadOnly(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
-            return false; // attempts to write to read-only values are merely ignored
+            // attempts to write to read-only values are merely ignored
+            return false;
         }
 
         @Override

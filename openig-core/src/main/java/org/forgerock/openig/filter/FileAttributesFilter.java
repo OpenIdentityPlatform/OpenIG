@@ -76,7 +76,8 @@ public class FileAttributesFilter extends GenericFilter {
                     return file.getRecord(key, value.eval(exchange).toString());
                 } catch (IOException ioe) {
                     logger.warning(ioe);
-                    return null; // results in an empty map
+                    // results in an empty map
+                    return null;
                 }
             }
         }));

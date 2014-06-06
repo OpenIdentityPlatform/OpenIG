@@ -89,7 +89,8 @@ public class AssignmentFilter extends GenericFilter {
 
         private ArrayList<Binding> asBindings(String name) {
             ArrayList<Binding> result = new ArrayList<Binding>();
-            JsonValue bindings = config.get(name).expect(List.class); // optional
+            // optional
+            JsonValue bindings = config.get(name).expect(List.class);
             for (JsonValue binding : bindings) {
                 result.add(asBinding(binding.required().expect(Map.class)));
             }
@@ -98,9 +99,9 @@ public class AssignmentFilter extends GenericFilter {
 
         private Binding asBinding(JsonValue value) {
             Binding result = new Binding();
-            result.condition = JsonValueUtil.asExpression(value.get("condition")); // optional
-            result.target = JsonValueUtil.asExpression(value.get("target").required()); // required
-            result.value = JsonValueUtil.asExpression(value.get("value")); // optional
+            result.condition = JsonValueUtil.asExpression(value.get("condition"));
+            result.target = JsonValueUtil.asExpression(value.get("target").required());
+            result.value = JsonValueUtil.asExpression(value.get("value"));
             return result;
         }
     }

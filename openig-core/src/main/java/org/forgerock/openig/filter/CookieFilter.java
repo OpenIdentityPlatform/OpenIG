@@ -155,7 +155,8 @@ public class CookieFilter extends GenericFilter {
             sb.append(cookie);
         }
         if (sb.length() > 0) {
-            request.headers.putSingle("Cookie", sb.toString()); // replace any existing header(s)
+            // replace any existing header(s)
+            request.headers.putSingle("Cookie", sb.toString());
         }
     }
 
@@ -166,13 +167,20 @@ public class CookieFilter extends GenericFilter {
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        URI resolved = resolveHostURI(exchange.request); // resolve to client-supplied host header
-        CookieManager manager = getManager(exchange.session); // session cookie jar
-        suppress(exchange.request); // remove cookies that are suppressed or managed
-        addRequestCookies(manager, resolved, exchange.request); // add any request cookies to header
-        next.handle(exchange); // pass exchange to next handler in chain
-        manager.put(resolved, exchange.response.headers); // manage cookie headers in response
-        suppress(exchange.response); // remove cookies that are suppressed or managed
+        // resolve to client-supplied host header
+        URI resolved = resolveHostURI(exchange.request);
+        // session cookie jar
+        CookieManager manager = getManager(exchange.session);
+        // remove cookies that are suppressed or managed
+        suppress(exchange.request);
+        // add any request cookies to header
+        addRequestCookies(manager, resolved, exchange.request);
+        // pass exchange to next handler in chain
+        next.handle(exchange);
+        // manage cookie headers in response
+        manager.put(resolved, exchange.response.headers);
+        // remove cookies that are suppressed or managed
+        suppress(exchange.response);
         timer.stop();
     }
 
@@ -202,7 +210,8 @@ public class CookieFilter extends GenericFilter {
      */
     private CookieManager getManager(Session session) {
         CookieManager manager = null;
-        synchronized (session) { // prevent a race for the cookie manager
+        // prevent a race for the cookie manager
+        synchronized (session) {
             manager = (CookieManager) session.get(CookieManager.class.getName());
             if (manager == null) {
                 manager = new CookieManager(null, new CookiePolicy() {
@@ -268,9 +277,11 @@ public class CookieFilter extends GenericFilter {
                 for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                     String header = hi.next();
                     ArrayList<String> parts;
-                    if (name.equals("Set-Cookie2")) {  // RFC 2965 cookie
+                    if (name.equals("Set-Cookie2")) {
+                        // RFC 2965 cookie
                         parts = new ArrayList<String>(Arrays.asList(DELIM_COMMA.split(header, 0)));
-                    } else { // Netscape cookie
+                    } else {
+                        // Netscape cookie
                         parts = new ArrayList<String>();
                         parts.add(header);
                     }

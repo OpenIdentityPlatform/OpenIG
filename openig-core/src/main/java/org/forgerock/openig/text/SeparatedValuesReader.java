@@ -97,9 +97,11 @@ public class SeparatedValuesReader {
             list.add(sb.toString());
         }
         if (list.size() == 0 && c == -1) {
-            return null; // end of stream
+            // end of stream
+            return null;
         } else {
-            this.fields = Math.max(this.fields, list.size()); // more efficient array allocation for next record
+            // more efficient array allocation for next record
+            this.fields = Math.max(this.fields, list.size());
             return list;
         }
     }
@@ -127,9 +129,11 @@ public class SeparatedValuesReader {
         }
         if (c == CR && !quoted) {
             int n = input.read();
-            if (n == LF) { // translate unquoted CR+LF into LF
+            if (n == LF) {
+                // translate unquoted CR+LF into LF
                 c = LF;
-            } else { // CR not followed by LF; remember read value and return CR
+            } else {
+                // CR not followed by LF; remember read value and return CR
                 next = n;
             }
         }

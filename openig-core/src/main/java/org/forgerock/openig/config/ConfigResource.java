@@ -72,9 +72,11 @@ public class ConfigResource implements Resource {
     // Called from Environment.
     ConfigResource(final Environment environment, final String instance) throws ResourceException {
         final File config = getFileInDirectory(environment.getConfigDir(), "config");
-        if (config.exists()) { // simplistic config.json file
+        if (config.exists()) {
+            // simplistic config.json file
             this.resource = new FileResource(config);
-        } else { // bootstrap location of instance-based configuration file
+        } else {
+            // bootstrap location of instance-based configuration file
             final File boot =
                     getFileInDirectory(environment.getConfigDir(), instance != null ? instance
                             : "bootstrap");

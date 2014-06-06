@@ -41,7 +41,7 @@ import org.forgerock.openig.util.URIUtil;
  * <p/>
  * If no condition yields {@code true} then the handler will throw a {@link HandlerException}.
  * Therefore, it's advisable to have a single "default" handler at the end of the list
- * with no condition (unconditional) to handle otherwise undispatched requests.
+ * with no condition (unconditional) to handle otherwise un-dispatched requests.
  */
 public class DispatchHandler extends GenericHandler {
 
@@ -94,9 +94,9 @@ public class DispatchHandler extends GenericHandler {
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
                 Binding binding = new Binding();
-                binding.condition = JsonValueUtil.asExpression(jv.get("condition")); // default: unconditional
+                binding.condition = JsonValueUtil.asExpression(jv.get("condition"));
                 binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
-                binding.baseURI = jv.get("baseURI").asURI(); // optional
+                binding.baseURI = jv.get("baseURI").asURI();
                 handler.bindings.add(binding);
             }
             return handler;

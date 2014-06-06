@@ -70,7 +70,8 @@ public final class LocationHeader implements Header {
     @Override
     public void fromMessage(Message message) {
         if (message != null && message.headers != null) {
-            fromString(message.headers.getFirst(NAME)); // expect only one header value
+            // expect only one header value
+            fromString(message.headers.getFirst(NAME));
         }
     }
 

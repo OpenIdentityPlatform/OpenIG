@@ -44,7 +44,8 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
     private static HashMap<String, Field> getFields(final Object o) {
         final Class<?> c = o.getClass();
         HashMap<String, Field> fields = MAPPINGS.get(c);
-        if (fields == null) { // lazy initialization
+        if (fields == null) {
+            // lazy initialization
             fields = new HashMap<String, Field>();
             for (final Field f : c.getFields()) {
                 final int modifiers = f.getModifiers();
@@ -238,14 +239,16 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
         try {
             return field != null ? field.get(object) : null;
         } catch (final IllegalAccessException iae) {
-            throw new IllegalStateException(iae); // unexpected
+            // unexpected
+            throw new IllegalStateException(iae);
         }
     }
 
     private void putField(final Field field, final Object value) {
         try {
             field.set(object, value);
-        } catch (final Exception e) { // invalid field, invalid type or illegal access
+        } catch (final Exception e) {
+            // invalid field, invalid type or illegal access
             throw new UnsupportedOperationException(e);
         }
     }

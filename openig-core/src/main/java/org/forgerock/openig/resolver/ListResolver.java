@@ -52,9 +52,11 @@ public class ListResolver implements Resolver {
             List list = (List) object;
             int index = ((Number) element).intValue();
             try {
-                if (list.size() > index) { // within existing list
+                if (list.size() > index) {
+                    // within existing list
                     list.set(index, value);
-                } else if (list.size() == index) { // appending to end of list
+                } else if (list.size() == index) {
+                    // appending to end of list
                     list.add(element);
                 }
                 // otherwise, ignore out-of-range index

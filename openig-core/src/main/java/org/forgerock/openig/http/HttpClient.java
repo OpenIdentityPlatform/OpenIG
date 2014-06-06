@@ -164,7 +164,7 @@ public class HttpClient {
     /**
      * Creates a new client handler which will cache at most 64 connections.
      *
-     * @param storage the TemporyStorage to use
+     * @param storage the TemporaryStorage to use
      */
     public HttpClient(final TemporaryStorage storage) {
         this(storage, DEFAULT_CONNECTIONS);

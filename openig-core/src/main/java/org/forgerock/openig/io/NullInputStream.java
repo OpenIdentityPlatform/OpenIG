@@ -29,7 +29,8 @@ public class NullInputStream extends InputStream {
      */
     @Override
     public int read() {
-        return -1; // always at end of stream
+        // always at end of stream
+        return -1;
     }
 
     /**

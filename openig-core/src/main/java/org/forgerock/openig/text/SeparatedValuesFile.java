@@ -70,15 +70,18 @@ public class SeparatedValuesFile {
         );
         try {
             List<String> fields = this.fields;
-            if (header) { // first line in the file is the field header
+            if (header) {
+                // first line in the file is the field header
                 List<String> record = reader.next();
-                if (record != null && fields.size() == 0) { // explicit fields not specified
-                    fields = record; // use header fields
+                if (record != null && fields.size() == 0) {
+                    // use header fields
+                    fields = record;
                 }
             }
             if (fields.size() > 0) {
                 int index = fields.indexOf(key);
-                if (index >= 0) { // requested key exists
+                if (index >= 0) {
+                    // requested key exists
                     List<String> record;
                     while ((record = reader.next()) != null) {
                         if (record.get(index).equals(value)) {
@@ -86,7 +89,8 @@ public class SeparatedValuesFile {
                             Iterator<String> fi = fields.iterator();
                             Iterator<String> ri = record.iterator();
                             while (fi.hasNext() && ri.hasNext()) {
-                                map.put(fi.next(), ri.next()); // assign field-value pairs in map
+                                // assign field-value pairs in map
+                                map.put(fi.next(), ri.next());
                             }
                             break;
                         }

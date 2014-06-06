@@ -61,7 +61,8 @@ public class LogTimer {
      * @param event the event being timed.
      */
     public LogTimer(LogSink sink, LogLevel level, String event) {
-        System.nanoTime(); // avoid call to nanoTime improbably yielding Long.MIN_VALUE
+        // avoid call to nanoTime improbably yielding Long.MIN_VALUE
+        System.nanoTime();
         this.sink = sink;
         this.event = event;
         this.level = level;

@@ -49,10 +49,12 @@ public final class HttpUtil {
      * @return TODO.
      */
     private static Charset cs(Message message, Charset charset) {
-        if (charset == null) { // use Content-Type charset if not explicitly specified
+        if (charset == null) {
+            // use Content-Type charset if not explicitly specified
             charset = new ContentTypeHeader(message).getCharset();
         }
-        if (charset == null) { // use default per RFC 2616 if not resolved
+        if (charset == null) {
+            // use default per RFC 2616 if not resolved
             charset = ISO_8859_1;
         }
         return charset;

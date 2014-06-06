@@ -128,7 +128,8 @@ public class ContentEncodingHeader implements Header {
 
     @Override
     public String toString() {
-        return HeaderUtil.join(codings, ','); // will return null if empty
+        // will return null if empty
+        return HeaderUtil.join(codings, ',');
     }
 
     @Override

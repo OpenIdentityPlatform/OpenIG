@@ -66,7 +66,8 @@ public class FileLogSink implements LogSink {
                     }
                     writer.println(sb.toString());
                 } catch (IOException ioe) {
-                    System.err.println(ioe); // not much else we can do
+                    // not much else we can do
+                    System.err.println(ioe);
                 }
             }
         }
@@ -84,7 +85,8 @@ public class FileLogSink implements LogSink {
             FileLogSink sink = new FileLogSink();
             sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
             sink.file = config.get("file").required().asFile();
-            try { // try opening file to ensure it's writable at config time
+            try {
+                // try opening file to ensure it's writable at config time
                 FileOutputStream out = new FileOutputStream(sink.file, true);
                 out.close();
             } catch (IOException ioe) {

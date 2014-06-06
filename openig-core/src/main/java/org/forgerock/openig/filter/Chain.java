@@ -62,7 +62,8 @@ public class Chain extends GenericHandler {
 
             @Override
             public void handle(Exchange exchange) throws HandlerException, IOException {
-                int saved = cursor; // save position to restore after the call
+                // save position to restore after the call
+                int saved = cursor;
                 try {
                     if (cursor < filters.size()) {
                         filters.get(cursor++).filter(exchange, this);

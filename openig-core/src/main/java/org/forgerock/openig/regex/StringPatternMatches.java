@@ -52,9 +52,11 @@ public class StringPatternMatches {
         this.patterns = patterns.toArray(new Pattern[patterns.size()]);
         this.matchers = new Matcher[this.patterns.length];
         for (int n = 0; n < this.patterns.length; n++) {
-            if (this.patterns[n] != null) { // null pattern means already discarded; simply ignore
+            // null pattern means already discarded; simply ignore
+            if (this.patterns[n] != null) {
                 Matcher matcher = this.patterns[n].matcher(input);
-                if (matcher.find()) { // matchers without any matches are not used
+                // matchers without any matches are not used
+                if (matcher.find()) {
                     matchers[n] = matcher;
                 }
             }
@@ -71,9 +73,12 @@ public class StringPatternMatches {
      * @throws NoSuchElementException if the reader has no more matches.
      */
     public Matcher next() {
-        int matcherIndex = -1; // index of matcher with smallest start index
-        int charIndex = Integer.MAX_VALUE; // smallest start index encountered
-        for (int n = 0; n < matchers.length; n++) { // find first matcher with smallest start index
+        // index of matcher with smallest start index
+        int matcherIndex = -1;
+        // smallest start index encountered
+        int charIndex = Integer.MAX_VALUE;
+        // find first matcher with smallest start index
+        for (int n = 0; n < matchers.length; n++) {
             if (matchers[n] != null) {
                 int start = matchers[n].start();
                 if (start < charIndex) {
@@ -82,15 +87,18 @@ public class StringPatternMatches {
                 }
             }
         }
-        if (matcherIndex == -1) { // no active matchers found
+        if (matcherIndex == -1) {
+            // no active matchers found
             throw new NoSuchElementException();
         }
-        Matcher next = matchers[matcherIndex]; // save match to return
+        // save match to return
+        Matcher next = matchers[matcherIndex];
         // reset matcher and set for next match (if applicable)
         matchers[matcherIndex] = (discard ? null : patterns[matcherIndex].matcher(input));
         if (matchers[matcherIndex] != null
                 && (charIndex == input.length() - 1 || !matchers[matcherIndex].find(charIndex + 1))) {
-            matchers[matcherIndex] = null; // matchers without any matches are not relevant
+            // matchers without any matches are not relevant
+            matchers[matcherIndex] = null;
         }
         return next;
     }
@@ -102,7 +110,8 @@ public class StringPatternMatches {
     public boolean hasNext() {
         for (Matcher matcher : matchers) {
             if (matcher != null) {
-                return true; // any existing matcher means another match exists
+                // any existing matcher means another match exists
+                return true;
             }
         }
         return false;

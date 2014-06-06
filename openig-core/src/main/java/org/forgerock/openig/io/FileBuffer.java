@@ -52,7 +52,7 @@ public class FileBuffer implements Buffer {
 
     @Override
     public int read(int pos, byte[] b, int off, int len) throws IOException {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
         notClosed();
@@ -61,7 +61,8 @@ public class FileBuffer implements Buffer {
             synchronized (raf) {
                 raf.seek(pos);
                 if ((n = raf.read(b, off, len)) == -1) {
-                    n = 0; // obey the contract of buffer reads
+                    // obey the contract of buffer reads
+                    n = 0;
                 }
             }
         }
@@ -70,7 +71,7 @@ public class FileBuffer implements Buffer {
 
     @Override
     public void append(byte[] b, int off, int len) throws IOException, OverflowException {
-        if (off < 0 || len < 0 || len > b.length - off) { // throws NullPointerException
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
         notClosed();

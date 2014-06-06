@@ -71,10 +71,10 @@ public class ClientHandler extends GenericHandler {
             Integer connections = config.get("connections").defaultTo(0).asInteger();
             // determines if connections should be reused, disables keep-alive
             Boolean disableReuseConnection = config.get("disableReuseConnection")
-                    .defaultTo(false).asBoolean(); // optional, default false
+                    .defaultTo(false).asBoolean();
             // determines if requests should be retried on failure
             Boolean disableRetries = config.get("disableRetries")
-                    .defaultTo(false).asBoolean(); // optional, default false
+                    .defaultTo(false).asBoolean();
 
             HttpClient client = new HttpClient(storage, connections);
             if (disableRetries) {

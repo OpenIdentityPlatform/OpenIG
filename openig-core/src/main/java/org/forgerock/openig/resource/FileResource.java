@@ -128,7 +128,8 @@ public class FileResource implements Resource {
             if (scheme == null || "file".equalsIgnoreCase(scheme)) {
                 return new FileResource(new File(uri.getPath()));
             }
-            return null; // scheme not supported
+            // scheme not supported
+            return null;
         }
     }
 }

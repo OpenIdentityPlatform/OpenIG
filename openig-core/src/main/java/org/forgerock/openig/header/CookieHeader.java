@@ -100,11 +100,13 @@ public class CookieHeader implements Header {
                 for (String s2 : HeaderUtil.split(s1, ';')) {
                     String[] nvp = HeaderUtil.parseParameter(s2);
                     if (nvp[0].length() > 0 && nvp[0].charAt(0) != '$') {
-                        if (cookie.name != null) { // existing cookie was being parsed
+                        if (cookie.name != null) {
+                            // existing cookie was being parsed
                             cookies.add(cookie);
                         }
                         cookie = new Cookie();
-                        cookie.version = version; // inherit previous parsed version
+                        // inherit previous parsed version
+                        cookie.version = version;
                         cookie.name = nvp[0];
                         cookie.value = nvp[1];
                     } else if ("$Version".equalsIgnoreCase(nvp[0])) {
@@ -119,7 +121,8 @@ public class CookieHeader implements Header {
                     }
                 }
             }
-            if (cookie.name != null) { // last cookie being parsed
+            if (cookie.name != null) {
+                // last cookie being parsed
                 cookies.add(cookie);
             }
         }
@@ -141,7 +144,8 @@ public class CookieHeader implements Header {
             if (cookie.version != null && (version == null || cookie.version > version)) {
                 version = cookie.version;
             } else if (version == null && (cookie.path != null || cookie.domain != null)) {
-                version = 1; // presence of extended fields makes it version 1 at minimum
+                // presence of extended fields makes it version 1 at minimum
+                version = 1;
             }
         }
         StringBuilder sb = new StringBuilder();
@@ -167,7 +171,8 @@ public class CookieHeader implements Header {
                 }
             }
         }
-        return sb.length() > 0 ? sb.toString() : null; // return null if empty
+        // return null if empty
+        return sb.length() > 0 ? sb.toString() : null;
     }
 
     @Override

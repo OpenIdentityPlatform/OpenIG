@@ -91,7 +91,8 @@ public class EntityExtractFilter extends GenericFilter {
             try {
                 Reader reader = HttpUtil.entityReader(message, true, charset);
                 try {
-                    for (Map.Entry<String, String> match : extractor.extract(reader)) { // get 'em all now
+                    // get 'em all now
+                    for (Map.Entry<String, String> match : extractor.extract(reader)) {
                         map.put(match.getKey(), match.getValue());
                     }
                 } finally {
@@ -110,7 +111,7 @@ public class EntityExtractFilter extends GenericFilter {
         public Object create() throws HeapException {
             EntityExtractFilter filter = new EntityExtractFilter();
             filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
-            filter.charset = config.get("charset").asCharset(); // optional
+            filter.charset = config.get("charset").asCharset();
             filter.target = JsonValueUtil.asExpression(config.get("target").required());
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
@@ -119,7 +120,7 @@ public class EntityExtractFilter extends GenericFilter {
                     throw new JsonValueException(jv.get("key"), "Key already defined");
                 }
                 filter.extractor.getPatterns().put(key, jv.get("pattern").required().asPattern());
-                String template = jv.get("template").asString(); // optional
+                String template = jv.get("template").asString();
                 if (template != null) {
                     filter.extractor.getTemplates().put(key, new PatternTemplate(template));
                 }

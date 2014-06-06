@@ -138,7 +138,8 @@ public class HttpResource implements Resource {
         try {
             return url.toURI();
         } catch (URISyntaxException use) {
-            throw new ResourceException(use); // shouldn't happen
+            // shouldn't happen
+            throw new ResourceException(use);
         }
     }
 
@@ -154,10 +155,12 @@ public class HttpResource implements Resource {
                 try {
                     return new HttpResource(uri.toURL());
                 } catch (MalformedURLException mue) {
-                    throw new ResourceException(mue); // shouldn't happen
+                    // shouldn't happen
+                    throw new ResourceException(mue);
                 }
             }
-            return null; // scheme not supported
+            // scheme not supported
+            return null;
         }
     }
 }

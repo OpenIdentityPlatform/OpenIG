@@ -81,7 +81,8 @@ public class StaticRequestFilter extends GenericFilter {
         } else {
             throw logger.debug(new HandlerException("The URI expression evaluated to null"));
         }
-        if (this.version != null) { // default in Message class
+        if (this.version != null) {
+            // default in Message class
             request.version = version;
         }
         for (String key : this.headers.keySet()) {
@@ -118,10 +119,10 @@ public class StaticRequestFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             StaticRequestFilter filter = new StaticRequestFilter();
-            filter.method = config.get("method").required().asString(); // required
-            filter.uri = JsonValueUtil.asExpression(config.get("uri")); // required
-            filter.version = config.get("version").asString(); // optional
-            JsonValue headers = config.get("headers").expect(Map.class); // optional
+            filter.method = config.get("method").required().asString();
+            filter.uri = JsonValueUtil.asExpression(config.get("uri"));
+            filter.version = config.get("version").asString();
+            JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).required().expect(List.class)) {
@@ -129,7 +130,7 @@ public class StaticRequestFilter extends GenericFilter {
                     }
                 }
             }
-            JsonValue form = config.get("form").expect(Map.class); // optional
+            JsonValue form = config.get("form").expect(Map.class);
             if (form != null) {
                 for (String key : form.keys()) {
                     for (JsonValue value : form.get(key).required().expect(List.class)) {
