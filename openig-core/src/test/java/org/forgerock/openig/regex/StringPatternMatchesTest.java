@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.regex;
 
-import static java.util.Arrays.asList;
-import static java.util.regex.Pattern.compile;
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Arrays.*;
+import static java.util.regex.Pattern.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;

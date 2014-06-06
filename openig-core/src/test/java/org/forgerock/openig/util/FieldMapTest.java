@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

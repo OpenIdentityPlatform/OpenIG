@@ -15,10 +15,7 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.util.Utils.joinAsString;
-
-import groovy.lang.Binding;
-import groovy.util.GroovyScriptEngine;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -29,6 +26,9 @@ import java.util.Map;
 import javax.script.ScriptException;
 
 import org.forgerock.openig.config.Environment;
+
+import groovy.lang.Binding;
+import groovy.util.GroovyScriptEngine;
 
 /**
  * A compiled script.

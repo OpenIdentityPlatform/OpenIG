@@ -17,16 +17,15 @@
 
 package org.forgerock.openig.el;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.net.URI;
 import java.util.HashMap;
 
-import static org.assertj.core.api.Assertions.*;
-
-import org.forgerock.openig.http.Response;
-import org.testng.annotations.Test;
-
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
+import org.forgerock.openig.http.Response;
+import org.testng.annotations.Test;
 
 public class ExpressionTest {
 

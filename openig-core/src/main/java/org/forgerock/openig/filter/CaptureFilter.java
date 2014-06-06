@@ -17,11 +17,11 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.*;
 
-import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -37,9 +37,9 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Message;

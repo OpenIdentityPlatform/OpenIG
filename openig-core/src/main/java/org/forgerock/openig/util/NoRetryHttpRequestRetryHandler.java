@@ -18,13 +18,12 @@ package org.forgerock.openig.util;
 
 // Apache HttpComponents
 
+import java.io.IOException;
+
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.protocol.HttpContext;
-
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.Logger;
-
-import java.io.IOException;
 
 /**
  * A very simple implementation that always returns false for every exception which effectively turns off any

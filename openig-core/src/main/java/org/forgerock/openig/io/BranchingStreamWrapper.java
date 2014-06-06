@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.io;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.forgerock.util.Factory;

@@ -17,16 +17,15 @@
 
 package org.forgerock.openig.header;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-
-import org.forgerock.openig.http.Message;
 import org.forgerock.openig.decoder.Decoder;
+import org.forgerock.openig.http.Message;
 
 /**
  * Processes the <strong>{@code Content-Encoding}</strong> message header. For more information, see

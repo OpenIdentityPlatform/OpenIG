@@ -23,10 +23,9 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
 
 /**
  * A generic base class for heaplets with automatically injected fields.

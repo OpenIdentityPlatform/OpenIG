@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.io;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An input stream that can branch into separate input streams to perform divergent reads.

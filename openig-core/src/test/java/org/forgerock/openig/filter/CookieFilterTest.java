@@ -16,6 +16,15 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.util.HashMap;
+
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.header.CookieHeader;
 import org.forgerock.openig.http.Cookie;
@@ -29,15 +38,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.HashMap;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class CookieFilterTest {
 

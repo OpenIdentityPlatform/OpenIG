@@ -22,8 +22,8 @@ import java.io.IOException;
 
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.LogTimer;
 
 /**

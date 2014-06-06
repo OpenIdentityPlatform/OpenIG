@@ -21,12 +21,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Properties;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
-
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -52,8 +51,8 @@ import com.sun.identity.saml2.logging.LogUtil;
 import com.sun.identity.saml2.meta.SAML2MetaManager;
 import com.sun.identity.saml2.profile.LogoutUtil;
 import com.sun.identity.saml2.profile.SPACSUtils;
-import com.sun.identity.saml2.profile.SPSingleLogout;
 import com.sun.identity.saml2.profile.SPSSOFederate;
+import com.sun.identity.saml2.profile.SPSingleLogout;
 import com.sun.identity.saml2.servlet.SPSingleLogoutServiceSOAP;
 
 /**

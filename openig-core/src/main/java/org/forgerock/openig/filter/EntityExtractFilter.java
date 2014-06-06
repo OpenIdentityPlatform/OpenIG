@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -37,8 +36,8 @@ import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.regex.PatternTemplate;
+import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**

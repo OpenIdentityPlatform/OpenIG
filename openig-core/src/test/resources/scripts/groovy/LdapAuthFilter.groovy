@@ -1,4 +1,4 @@
-import org.forgerock.opendj.ldap.*
+import org.forgerock.opendj.ldap.AuthenticationException
 import org.forgerock.openig.http.Response
 import org.forgerock.openig.io.ByteArrayBranchingStream
 

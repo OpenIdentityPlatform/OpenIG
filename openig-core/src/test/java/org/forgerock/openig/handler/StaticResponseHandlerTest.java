@@ -17,15 +17,14 @@
 
 package org.forgerock.openig.handler;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.testng.annotations.Test;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
+import org.testng.annotations.Test;
 
 public class StaticResponseHandlerTest {
 

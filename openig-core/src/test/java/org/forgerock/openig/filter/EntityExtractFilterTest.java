@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.regex.Pattern;

@@ -29,10 +29,10 @@ import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
-import de.odysseus.el.ExpressionFactoryImpl;
-
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
+
+import de.odysseus.el.ExpressionFactoryImpl;
 
 /**
  * An Unified Expression Language expression. Creating an expression is the equivalent to

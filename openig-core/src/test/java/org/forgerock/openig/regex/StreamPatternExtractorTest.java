@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.regex;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.forgerock.openig.regex.Readers.reader;
+import static org.forgerock.openig.regex.Readers.*;
 
 import java.util.HashMap;
 import java.util.Map;

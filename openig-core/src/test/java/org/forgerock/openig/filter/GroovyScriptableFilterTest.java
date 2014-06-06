@@ -15,14 +15,11 @@
  */
 package org.forgerock.openig.filter;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
-import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
-import static com.xebialabs.restito.semantics.Action.status;
-import static com.xebialabs.restito.semantics.Action.stringContent;
-import static com.xebialabs.restito.semantics.Condition.get;
-import static com.xebialabs.restito.semantics.Condition.method;
-import static com.xebialabs.restito.semantics.Condition.uri;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.xebialabs.restito.builder.stub.StubHttp.*;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.*;
+import static com.xebialabs.restito.semantics.Action.*;
+import static com.xebialabs.restito.semantics.Condition.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 import static org.mockito.Mockito.*;
 

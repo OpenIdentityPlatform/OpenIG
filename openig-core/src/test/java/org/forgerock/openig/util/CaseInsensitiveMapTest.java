@@ -17,10 +17,10 @@
 
 package org.forgerock.openig.util;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.HashMap;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
