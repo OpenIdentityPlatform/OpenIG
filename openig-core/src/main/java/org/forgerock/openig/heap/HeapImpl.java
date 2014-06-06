@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**

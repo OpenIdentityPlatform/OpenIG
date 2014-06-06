@@ -16,7 +16,7 @@
 package org.forgerock.openig.header;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.header.LocationHeader.NAME;
+import static org.forgerock.openig.header.LocationHeader.*;
 import static org.testng.Assert.*;
 
 import org.forgerock.openig.http.Request;

@@ -17,10 +17,10 @@
 
 package org.forgerock.openig.http;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.testng.annotations.Test;
 

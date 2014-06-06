@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.regex;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -19,10 +19,9 @@ package org.forgerock.openig.io;
 
 import java.io.File;
 
-import org.forgerock.util.Factory;
-
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.util.Factory;
 
 
 /**

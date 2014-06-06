@@ -17,12 +17,12 @@
 
 package org.forgerock.openig.io;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;

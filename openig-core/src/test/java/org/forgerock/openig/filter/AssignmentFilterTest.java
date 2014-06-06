@@ -17,18 +17,17 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.testng.annotations.Test;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
+import org.testng.annotations.Test;
 
 public class AssignmentFilterTest {
 

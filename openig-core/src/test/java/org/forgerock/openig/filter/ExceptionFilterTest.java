@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.mockito.Mockito.*;
+
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
@@ -25,8 +27,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import static org.mockito.Mockito.*;
 
 public class ExceptionFilterTest {
 

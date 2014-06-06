@@ -20,7 +20,6 @@ package org.forgerock.openig.heap;
 import java.util.Collections;
 import java.util.Map;
 
-
 import org.forgerock.openig.util.Loader;
 
 /**

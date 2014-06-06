@@ -19,7 +19,6 @@ package org.forgerock.openig.heap;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.util.Indexed;
 
 /**

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

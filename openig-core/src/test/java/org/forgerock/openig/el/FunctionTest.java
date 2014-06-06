@@ -17,16 +17,15 @@
 
 package org.forgerock.openig.el;
 
-import java.util.Arrays;
+import static org.assertj.core.api.Assertions.*;
+
 import java.net.URI;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import java.util.Arrays;
 
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 public class FunctionTest {
 

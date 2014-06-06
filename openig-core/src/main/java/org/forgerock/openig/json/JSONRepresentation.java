@@ -17,19 +17,18 @@
 
 package org.forgerock.openig.json;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
+import org.forgerock.openig.resource.Representation;
+import org.forgerock.openig.resource.ResourceException;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-import org.forgerock.openig.resource.Representation;
-import org.forgerock.openig.resource.ResourceException;
 
 /**
  * Represents a JSON tree structure as a JSON-encoded stream. See

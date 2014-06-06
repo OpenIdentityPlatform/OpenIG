@@ -16,6 +16,12 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.nio.charset.Charset;
+
+import javax.crypto.spec.SecretKeySpec;
+
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
@@ -26,12 +32,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import javax.crypto.spec.SecretKeySpec;
-
-import java.nio.charset.Charset;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class CryptoHeaderFilterTest {
 

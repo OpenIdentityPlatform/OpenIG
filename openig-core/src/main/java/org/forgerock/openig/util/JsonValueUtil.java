@@ -21,7 +21,6 @@ import java.util.HashMap;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 

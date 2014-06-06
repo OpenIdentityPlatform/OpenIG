@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.regex;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
+import static java.util.Arrays.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Reader;
 import java.util.regex.Matcher;

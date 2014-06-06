@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.decoder;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
 /**

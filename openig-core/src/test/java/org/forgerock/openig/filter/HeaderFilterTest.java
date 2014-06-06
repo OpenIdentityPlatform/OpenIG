@@ -16,6 +16,10 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.net.URI;
+
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -23,10 +27,6 @@ import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.net.URI;
-
-import static org.assertj.core.api.Assertions.*;
 
 public class HeaderFilterTest {
     private Exchange exchange;

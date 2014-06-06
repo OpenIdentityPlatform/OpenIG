@@ -21,9 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.util.Factory;
-import org.forgerock.util.LazyMap;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -31,9 +28,11 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.text.Separators;
 import org.forgerock.openig.text.SeparatedValuesFile;
+import org.forgerock.openig.text.Separators;
 import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.util.Factory;
+import org.forgerock.util.LazyMap;
 
 /**
  * Retrieves and exposes a record from a delimier-separated file. Lookup of the record is

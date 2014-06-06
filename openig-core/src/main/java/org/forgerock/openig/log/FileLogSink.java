@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 
 import org.forgerock.json.fluent.JsonValueException;
-
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.util.ISO8601;
