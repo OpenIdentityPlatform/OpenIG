@@ -25,13 +25,12 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogLevel; // Javadoc
 import org.forgerock.openig.log.LogTimer;
 
 /**
  * Catches any exceptions thrown during handing of a request. This allows friendlier error
  * pages to be displayed than would otherwise be displayed by the container. Caught exceptions
- * are logged with a log level of {@link LogLevel#WARNING} and the exchange is diverted to
+ * are logged with a log level of {@link org.forgerock.openig.log.LogLevel#WARNING} and the exchange is diverted to
  * the specified exception handler.
  * <p/>
  * Note: While the response object will be retained in the exchange object, this class will
