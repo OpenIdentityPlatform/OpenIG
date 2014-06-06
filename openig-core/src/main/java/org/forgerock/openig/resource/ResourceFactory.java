@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.resource;
 
-// Java Standard Edition
-
 import java.net.URI;
 
 /**

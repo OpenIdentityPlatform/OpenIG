@@ -17,14 +17,10 @@
 
 package org.forgerock.openig.io;
 
-// Java SE
-
 import java.io.File;
 
-// ForgeRock Utilities
 import org.forgerock.util.Factory;
 
-// OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 

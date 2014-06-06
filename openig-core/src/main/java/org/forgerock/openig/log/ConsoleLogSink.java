@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.log;
 
-// OpenIG Core
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.util.ISO8601;

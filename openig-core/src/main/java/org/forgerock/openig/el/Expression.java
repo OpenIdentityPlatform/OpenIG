@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.el;
 
-// Java Standard Edition
-
 import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-// Java Enterprise Edition
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
@@ -32,10 +29,8 @@ import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
-// JUEL
 import de.odysseus.el.ExpressionFactoryImpl;
 
-// OpenIG Core
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
 

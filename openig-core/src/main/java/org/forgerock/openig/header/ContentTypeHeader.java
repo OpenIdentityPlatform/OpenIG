@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.header;
 
-// Java Standard Edition
-
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.http.Message;
 
 /**

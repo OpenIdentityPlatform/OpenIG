@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.heap;
 
-// OpenIG Core
-
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;

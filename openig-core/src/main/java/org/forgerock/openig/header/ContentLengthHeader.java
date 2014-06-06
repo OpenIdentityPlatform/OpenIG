@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.header;
 
-// OpenIG Core
-
 import org.forgerock.openig.http.Message;
 
 /**

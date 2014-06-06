@@ -17,17 +17,13 @@
 
 package org.forgerock.openig.filter;
 
-// Java Standard Edition
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-// ForgeRock Utilities
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 
-// OpenIG Core
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

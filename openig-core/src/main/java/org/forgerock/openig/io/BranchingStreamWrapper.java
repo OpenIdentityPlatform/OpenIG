@@ -17,13 +17,10 @@
 
 package org.forgerock.openig.io;
 
-// Java SE
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// ForgeRock Utilities
 import org.forgerock.util.Factory;
 
 /**

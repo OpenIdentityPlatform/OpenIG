@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-// JSON Fluent
 import org.forgerock.json.fluent.JsonValue;
 
-// OpenIG Core
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;

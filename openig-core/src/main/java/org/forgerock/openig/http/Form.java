@@ -18,8 +18,6 @@
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,7 +27,6 @@ import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-// OpenIG Core
 import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.util.MultiValueMap;

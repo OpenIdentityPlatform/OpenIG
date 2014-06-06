@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.header;
 
-// Java Standard Edition
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,7 +25,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 
-// OpenIG Core
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.decoder.Decoder;
 

@@ -17,8 +17,6 @@
 
 package org.forgerock.openig.regex;
 
-// Java Standard Edition
-
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
