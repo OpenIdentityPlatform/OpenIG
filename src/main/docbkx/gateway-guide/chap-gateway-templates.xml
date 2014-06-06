@@ -78,10 +78,14 @@
   restart OpenIG, and login to the application. The entire sequence is logged
   to the flat file.</para>
 
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="capture.json"
-  /></programlisting>
-</section>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="capture.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
+ </section>
 
  <section xml:id="template-simple-login">
   <title>Simple Login Form</title>
@@ -95,9 +99,13 @@
   and password. This template intercepts the login page request and replaces
   it with the login form.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginSimple.json"
-  /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginSimple.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-login-cookie">
@@ -113,9 +121,13 @@
   go through to the target, intercepts the response, then creates the login
   form and adds the intercepted cookie to the POST.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text"
-  href="loginWithCookie.json" /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginWithCookie.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-login-extract-cookie-filters">
@@ -148,9 +160,13 @@
    locally by OpenIG.</para>
   </note>
 
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text"
-  href="loginWithCookieExtract.json" /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginWithCookieExtract.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-login-hidden-value">
@@ -164,9 +180,13 @@
   <para>Extracts a hidden value from the login page and includes it in the
   login form POSTed to the target application.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text"
-  href="loginHiddenValue.json" /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginHiddenValue.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-http-and-https">
@@ -187,9 +207,13 @@
   application. Then add the logic for the <literal>LoginChain</literal> using
   the flow from one of the login templates.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginMixed.json"
-  /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginMixed.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-multiple-apps">
@@ -209,9 +233,13 @@
    each incoming request to either the WordPress chain or the MediaWiki chain.
   </para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text"
-  href="multipleApplications.json" /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="multipleApplications.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-am-integration-headers">
@@ -223,9 +251,13 @@
   an external data source, you must add an attribute filter to the chain to
   retrieve the credentials.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="loginAMHeaders.json"
-  /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="loginAMHeaders.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 
  <section xml:id="template-owa-online">
@@ -243,8 +275,12 @@
   xlink:role="http://docbook.org/xlink/role/olink">Tutorial On Password Capture
   &amp; Replay</link> tutorial and substitute this template.</para>
   
-  <programlisting language="javascript"
-  ><?dbfo pgwide="1"?><xinclude:include parse="text" href="OWAOnline.json"
-  /></programlisting>
+  <programlisting language="javascript"><?dbfo pgwide="1"?>
+   <xinclude:include parse="text" href="OWAOnline.json">
+    <xinclude:fallback>
+     Failed to include JSON
+    </xinclude:fallback>
+   </xinclude:include>
+  </programlisting>
  </section>
 </chapter>
