@@ -3,7 +3,7 @@
  */
 
 def credentials = "bjensen:hifalutin".getBytes().encodeBase64().toString()
-exchange.request.headers.add("Authorization", "Basic ${credentials}")
+exchange.request.headers.add("Authorization", "Basic ${credentials}" as String)
 
 // Credentials are only base64-encoded, not encrypted: Set scheme to HTTPS.
 
