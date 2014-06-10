@@ -262,6 +262,9 @@ public class CookieFilter extends GenericFilter {
                     hi.set(StringUtil.join(";", parts));
                 }
             }
+            if (headers.isEmpty()) {
+                request.headers.remove("Cookie");
+            }
         }
     }
 
