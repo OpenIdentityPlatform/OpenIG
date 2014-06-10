@@ -31,7 +31,9 @@
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
-  <title>OpenIG <?eval ${docTargetVersion}?> Reference</title>
+  <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
+  <title>OpenIG Reference</title>
+  <subtitle>Version ${docTargetVersion}</subtitle>
   <abstract>
    <para>Reference documentation for OpenIG. OpenIG provides a high-performance
    reverse proxy server with specialized session management and credential
@@ -56,6 +58,7 @@
     <personname>
      <firstname>Jamie</firstname><surname>Nelson</surname>
     </personname>
+    <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
   </authorgroup>
   <xinclude:include href="../legal.xml" />
