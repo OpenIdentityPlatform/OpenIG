@@ -185,11 +185,10 @@ public class HttpBasicAuthFilterTest {
         // Mock cache content for credentials
         when(session.get(endsWith(":userpass")))
                 .thenReturn(
-                        null,
-                        INITIAL_CREDENTIALS,
-                        INITIAL_CREDENTIALS,
-                        REFRESHED_CREDENTIALS
-                );
+                    null,
+                    INITIAL_CREDENTIALS,
+                    INITIAL_CREDENTIALS,
+                    REFRESHED_CREDENTIALS);
 
         // Scenario:
         //  first request (cache the value after initial round-trip)
@@ -247,10 +246,9 @@ public class HttpBasicAuthFilterTest {
     @DataProvider
     public static Object[][] invalidUserNames() {
         return new Object[][] {
-                //{ ":starting-with-colon" }, //BUG
-                { "colon-:-in-the-middle" },
-                { "ending-with-colon:" }
-        };
+            //{ ":starting-with-colon" }, //BUG
+            { "colon-:-in-the-middle" },
+            { "ending-with-colon:" } };
     }
 
     private void basicAuthServerAnswersUnauthorizedThenSuccess(final String credentials) throws Exception {
