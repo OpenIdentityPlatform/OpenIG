@@ -120,8 +120,7 @@ public class CookieFilterTest {
                 exchange.response = new Response();
 
                 // As the cookie should have been removed, we should not have any Cookie header now
-                // Refers to OPENIG-124 (empty 'Cookie' header or no header at all)
-                assertThat(exchange.request.headers.get("Cookie")).isEmpty();
+                assertThat(exchange.request.headers.get("Cookie")).isNull();
 
                 return null;
             }
@@ -150,8 +149,7 @@ public class CookieFilterTest {
                 exchange.response = new Response();
 
                 // As the cookie should have been removed, we should not have any Cookie header now
-                // Refers to OPENIG-124 (empty 'Cookie' header or no header at all)
-                assertThat(exchange.request.headers.get("Cookie")).isEmpty();
+                assertThat(exchange.request.headers.get("Cookie")).isNull();
 
                 return null;
             }
