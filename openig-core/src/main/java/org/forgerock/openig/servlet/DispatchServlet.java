@@ -62,7 +62,7 @@ public class DispatchServlet extends HttpServlet {
      * Regular expression patterns to match against request path information, bound to filters and/or servlets
      * to dispatch to.
      */
-    private List<Binding> bindings = new ArrayList<Binding>();
+    private final List<Binding> bindings = new ArrayList<Binding>();
 
     /** Provides methods for logging activities. */
     private Logger logger;
@@ -83,16 +83,6 @@ public class DispatchServlet extends HttpServlet {
      */
     public Logger getLogger() {
         return logger;
-    }
-
-    /**
-     * Sets the regular expression patterns to match against request path information.
-     *
-     * @param bindings
-     *            The regular expression patterns to match against request path information.
-     */
-    public void setBindings(List<Binding> bindings) {
-        this.bindings = bindings;
     }
 
     /**
@@ -192,7 +182,7 @@ public class DispatchServlet extends HttpServlet {
         }
     }
 
-    private final class Wrapper extends HttpServletRequestWrapper {
+    private static final class Wrapper extends HttpServletRequestWrapper {
         private String servletPath;
         private String pathInfo;
 
@@ -215,47 +205,21 @@ public class DispatchServlet extends HttpServlet {
      * Binds a regular expression pattern to an servlet or filter to dispatch to.
      */
     public static class Binding {
-        /** The regular expression pattern to match against the incoming request extra path information. */
-        private Pattern pattern;
 
-        /** The servlet or filter to dispatch to if the regular expression pattern matches. */
-        private Object object;
+        private final Pattern pattern;
+        private final Object object;
 
         /**
-         * Returns the regular expression pattern.
-         *
-         * @return The regular expression pattern.
-         */
-        public Pattern getPattern() {
-            return pattern;
-        }
-
-        /**
-         * Returns the servlet or filter to dispatch.
-         *
-         * @return The servlet or filter to dispatch.
-         */
-        public Object getObject() {
-            return object;
-        }
-
-        /**
-         * Sets the regular expression pattern.
+         * Constructor.
          *
          * @param pattern
-         *            The regular expression pattern.
-         */
-        public void setPattern(Pattern pattern) {
-            this.pattern = pattern;
-        }
-
-        /**
-         * The servlet or filter to dispatch.
-         *
+         *            The regular expression pattern to match against the incoming request extra path information.
          * @param object
-         *            The servlet or filter to dispatch.
+         *            The servlet or filter to dispatch to if the regular expression pattern matches.
          */
-        public void setObject(Object object) {
+        Binding(Pattern pattern, Object object) {
+            super();
+            this.pattern = pattern;
             this.object = object;
         }
     }
@@ -269,9 +233,8 @@ public class DispatchServlet extends HttpServlet {
             DispatchServlet servlet = new DispatchServlet();
             for (JsonValue bindingValue : config.get("bindings").required().expect(List.class)) {
                 bindingValue.required().expect(Map.class);
-                Binding binding = new Binding();
-                binding.pattern = bindingValue.get("pattern").required().asPattern();
-                binding.object = HeapUtil.getRequiredObject(heap, bindingValue.get("object"), Object.class);
+                final Binding binding = new Binding(bindingValue.get("pattern").required().asPattern(),
+                        HeapUtil.getRequiredObject(heap, bindingValue.get("object"), Object.class));
                 if (!(binding.object instanceof HttpServlet) && !(binding.object instanceof Filter)) {
                     throw new JsonValueException(
                             bindingValue.get("object"),
