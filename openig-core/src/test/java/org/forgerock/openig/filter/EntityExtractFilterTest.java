@@ -63,11 +63,9 @@ public class EntityExtractFilterTest {
 
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
-        assertThat(results)
-                .containsOnly(
-                        entry("hello", " OpenIG"),
-                        entry("none", null)
-                );
+        assertThat(results).containsOnly(
+                entry("hello", " OpenIG"),
+                entry("none", null));
         verify(terminalHandler).handle(exchange);
     }
 
@@ -88,11 +86,9 @@ public class EntityExtractFilterTest {
         // The entry has a non-null value if it matches or a null value if it does not match
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
-        assertThat(results)
-                .containsOnly(
-                        entry("hello", "Hello OpenIG"),
-                        entry("none", null)
-                );
+        assertThat(results).containsOnly(
+                entry("hello", "Hello OpenIG"),
+                entry("none", null));
         verify(terminalHandler).handle(exchange);
     }
 

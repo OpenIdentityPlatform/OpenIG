@@ -62,8 +62,7 @@ public final class Resolvers {
     public static Iterable<Resolver> resolvers(final Object object) {
         return new Iterable<Resolver>() {
             public Iterator<Resolver> iterator() {
-                return (object.getClass().isArray() ? ARRAY_RESOLVER.iterator()
-                        : new Iterator<Resolver>() {
+                return (object.getClass().isArray() ? ARRAY_RESOLVER.iterator() : new Iterator<Resolver>() {
                     Class<?> class1 = object.getClass();
                     Class<?> class2 = class1;
                     Iterator<Class<?>> interfaces = null;
