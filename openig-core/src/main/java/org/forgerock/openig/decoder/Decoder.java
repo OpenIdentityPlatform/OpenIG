@@ -32,7 +32,7 @@ import org.forgerock.openig.util.Loader;
 public interface Decoder extends Indexed<String> {
 
     /** Mapping of supported codings to associated decoders. */
-    public static final Map<String, Decoder> SERVICES = Collections.unmodifiableMap(
+    Map<String, Decoder> SERVICES = Collections.unmodifiableMap(
             new CaseInsensitiveMap<Decoder>(Loader.loadMap(String.class, Decoder.class)));
 
     /**
