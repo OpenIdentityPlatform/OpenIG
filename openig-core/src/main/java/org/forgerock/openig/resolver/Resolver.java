@@ -30,7 +30,7 @@ public interface Resolver extends Indexed<Class> {
      * Singleton that is returned to indicate an element is not resolved by a
      * resolver.
      */
-    public static final Object UNRESOLVED = new Object() {
+    Object UNRESOLVED = new Object() {
         @Override
         public String toString() {
             return null;
