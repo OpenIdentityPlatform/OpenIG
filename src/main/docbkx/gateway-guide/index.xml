@@ -30,7 +30,9 @@
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
-  <title>Guide to OpenIG <?eval ${docTargetVersion}?></title>
+  <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
+  <title>Guide to OpenIG</title>
+  <subtitle>Version ${docTargetVersion}</subtitle>
   <copyright>
    <year>2011-2014</year>
    <holder>ForgeRock AS</holder>
@@ -38,18 +40,19 @@
   <authorgroup>
    <author>
     <personname>
-     <firstname>Paul</firstname><surname>Bryan</surname>
+     <firstname>Paul </firstname><surname>Bryan</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Mark</firstname><surname>Craig</surname>
+     <firstname>Mark </firstname><surname>Craig</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Jamie</firstname><surname>Nelson</surname>
+     <firstname>Jamie </firstname><surname>Nelson</surname>
     </personname>
+    <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
   </authorgroup>
   <xinclude:include href="../legal.xml" />
