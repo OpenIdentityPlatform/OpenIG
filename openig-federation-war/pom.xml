@@ -27,7 +27,7 @@
   <name>OpenIG Federation web application</name>
   <packaging>war</packaging>
   <properties>
-    <openam.version>10.0.1</openam.version>
+    <openam.version>10.0.2</openam.version>
   </properties>
   <dependencies>
     <dependency>
