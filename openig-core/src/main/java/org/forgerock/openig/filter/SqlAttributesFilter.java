@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -74,10 +74,6 @@ public class SqlAttributesFilter extends GenericFilter {
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
     public final List<Expression> parameters = new ArrayList<Expression>();
 
-    /**
-     * Filters the exchange by putting a lazily initialized map in the object referenced by
-     * the {@code target} expression.
-     */
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

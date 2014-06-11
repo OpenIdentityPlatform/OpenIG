@@ -49,10 +49,6 @@ public class ClientHandler extends GenericHandler {
         this.client = client;
     }
 
-    /**
-     * Submits the exchange request to the remote server. Creates and populates
-     * the exchange response from that provided by the remote server.
-     */
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

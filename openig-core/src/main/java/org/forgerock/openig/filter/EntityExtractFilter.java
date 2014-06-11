@@ -68,10 +68,6 @@ public class EntityExtractFilter extends GenericFilter {
     /** Expression that yields the target object that will contain the mapped extraction results. */
     public Expression target;
 
-    /**
-     * Filters the request and/or response of an exchange by extracting regular expression
-     * patterns from a message entity.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

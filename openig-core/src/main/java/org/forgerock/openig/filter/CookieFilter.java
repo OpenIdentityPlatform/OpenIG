@@ -13,7 +13,7 @@
  *
  * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
  * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -160,10 +160,6 @@ public class CookieFilter extends GenericFilter {
         }
     }
 
-    /**
-     * Filters the request and/or response of an exchange by suppressing, relayign and
-     * managing cookies.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -54,10 +54,6 @@ public class AssignmentFilter extends GenericFilter {
     /** Assignment bindings to apply after the request is handled. */
     public final List<Binding> onResponse = new ArrayList<Binding>();
 
-    /**
-     * Filters the request and/or response of an exchange by conditionally assigning values
-     * to expressions before and after the exchange is handled.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -32,6 +32,9 @@ public class ExpressionException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message.
+     *
+     * @param message
+     *            The message that explains the problem that occurred.
      */
     public ExpressionException(String message) {
         super(message);
@@ -39,6 +42,7 @@ public class ExpressionException extends Exception {
 
     /**
      * Constructs a new exception with the specified cause.
+     * @param cause The exception that was caught to trigger this exception.
      */
     public ExpressionException(Throwable cause) {
         super(cause);
@@ -46,6 +50,11 @@ public class ExpressionException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message
+     *            The message that explains the problem that occurred.
+     * @param cause
+     *            The exception that was caught to trigger this exception.
      */
     public ExpressionException(String message, Throwable cause) {
         super(message, cause);

@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -42,10 +42,6 @@ public class ExceptionFilter extends GenericFilter {
     /** Handler to dispatch to in the event of caught exceptions. */
     public Handler handler;
 
-    /**
-     * Filters the request and/or response of an exchange by catching any exceptions thrown
-     * during handing of a request.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

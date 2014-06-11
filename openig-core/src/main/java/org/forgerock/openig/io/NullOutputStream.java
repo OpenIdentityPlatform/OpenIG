@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -24,25 +24,16 @@ import java.io.OutputStream;
  */
 public class NullOutputStream extends OutputStream {
 
-    /**
-     * Has no effect.
-     */
     @Override
     public void write(int b) {
         // goes nowhere, does nothing
     }
 
-    /**
-     * Has no effect.
-     */
     @Override
     public void write(byte[] b) {
         // goes nowhere, does nothing
     }
 
-    /**
-     * Has no effect.
-     */
     @Override
     public void write(byte[] b, int off, int len) {
         // goes nowhere, does nothing

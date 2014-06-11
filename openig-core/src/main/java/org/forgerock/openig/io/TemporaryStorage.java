@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -56,6 +56,8 @@ public class TemporaryStorage implements Factory<Buffer> {
 
     /**
      * Creates and returns a new instance of a temporary buffer.
+     *
+     * @return a new instance of a temporary buffer.
      */
     public Buffer newInstance() {
         return new TemporaryBuffer(initialLength, memoryLimit, fileLimit, directory);

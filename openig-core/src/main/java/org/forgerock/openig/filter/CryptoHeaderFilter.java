@@ -87,26 +87,61 @@ public class CryptoHeaderFilter extends GenericFilter {
     /** The names of the headers whose values should be processed for encryption or decryption. */
     private final Set<String> headers = new CaseInsensitiveSet();
 
+    /**
+     * Sets the operation (encryption/decryption) to apply to the headers.
+     *
+     * @param operation
+     *            The encryption/decryption) to apply to the headers.
+     */
     public void setOperation(final Operation operation) {
         this.operation = operation;
     }
 
+    /**
+     * Sets the type of message in the exchange to process headers for.
+     *
+     * @param messageType
+     *            The type of message in the exchange to process headers for.
+     */
     public void setMessageType(final MessageType messageType) {
         this.messageType = messageType;
     }
 
+    /**
+     * Sets the cryptographic algorithm.
+     *
+     * @param algorithm
+     *            The cryptographic algorithm.
+     */
     public void setAlgorithm(final String algorithm) {
         this.algorithm = algorithm;
     }
 
+    /**
+     * Sets the encryption key.
+     *
+     * @param key
+     *            The encryption key to set.
+     */
     public void setKey(final Key key) {
         this.key = key;
     }
 
+    /**
+     * The {@link Charset} to use for decrypted values.
+     *
+     * @param charset
+     *            The charset used for decrypted values.
+     */
     public void setCharset(final Charset charset) {
         this.charset = charset;
     }
 
+    /**
+     * Returns the headers whose values should be processed for encryption or decryption.
+     *
+     * @return The headers whose values should be processed for encryption or decryption.
+     */
     public Set<String> getHeaders() {
         return headers;
     }
@@ -195,10 +230,6 @@ public class CryptoHeaderFilter extends GenericFilter {
         return result;
     }
 
-    /**
-     * Filters the request and/or response of an exchange by removing headers from and adding
-     * headers to a message.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

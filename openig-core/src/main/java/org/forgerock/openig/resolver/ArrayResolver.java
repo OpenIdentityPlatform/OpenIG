@@ -26,6 +26,8 @@ public class ArrayResolver implements Resolver {
 
     /**
      * Returns {@code null}, as arrays are not resolved through type discovery.
+     *
+     * @return {@code null}, as arrays are not resolved through type discovery.
      */
     @Override
     public Class<?> getKey() {

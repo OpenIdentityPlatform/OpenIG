@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -24,9 +24,6 @@ package org.forgerock.openig.heap;
  */
 public abstract class NestedHeaplet extends GenericHeaplet {
 
-    /**
-     * Returns the the enclosing class.
-     */
     @Override
     public Class<?> getKey() {
         return getClass().getEnclosingClass();

@@ -43,6 +43,8 @@ public interface Resolver extends Indexed<Class> {
      * this is how a resolver specifies what type of object it may resolve.
      * Resolvers for more specific classes and interfaces are called earlier
      * than those of more general classes and interfaces.
+     *
+     * @return the type of object that the resolver supports.
      */
     @Override
     Class<?> getKey();

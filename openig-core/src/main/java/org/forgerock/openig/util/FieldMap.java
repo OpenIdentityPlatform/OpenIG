@@ -165,25 +165,16 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
         }
     }
 
-    /**
-     * Returns {@code true} if the object contains the specified field name key.
-     */
     @Override
     public boolean containsKey(final Object key) {
         return fields.containsKey(key);
     }
 
-    /**
-     * Returns an entry set view of this field map.
-     */
     @Override
     public Set<Map.Entry<String, Object>> entrySet() {
         return entrySet;
     }
 
-    /**
-     * Returns the value for the specified field name key.
-     */
     @Override
     public Object get(final Object key) {
         return getField(fields.get(key));
@@ -194,20 +185,11 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
         return fields.isEmpty();
     }
 
-    /**
-     * Returns a {@link Set} of the field name keys.
-     */
     @Override
     public Set<String> keySet() {
         return fields.keySet();
     }
 
-    /**
-     * Stores the specified value in the field with the specified field name
-     * key.
-     *
-     * @throws UnsupportedOperationException if the specified field name key does not exist.
-     */
     @Override
     public Object put(final String key, final Object value) {
         final Field field = fields.get(key);
@@ -216,12 +198,6 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
         return old;
     }
 
-    /**
-     * Sets the value of the field with the specified field name key to
-     * {@code null}.
-     *
-     * @throws UnsupportedOperationException if the specified field name key does not exist.
-     */
     @Override
     public Object remove(final Object key) {
         return key instanceof String ? put((String) key, null) : null;
@@ -229,6 +205,8 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
 
     /**
      * Returns the number of fields.
+     *
+     * @return The number of fields.
      */
     @Override
     public int size() {

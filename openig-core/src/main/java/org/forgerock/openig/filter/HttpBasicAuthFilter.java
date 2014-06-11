@@ -52,9 +52,10 @@ import org.forgerock.util.encode.Base64;
  * all subsequent requests to that remote server that pass through the filter will include the
  * user credentials.
  * <p/>
- * If authentication fails (including the case of no credentials yielded from the
- * {@code username} or {@code password} expressions, then the exchange is diverted to the
- * authentication failure handler.
+ * Credentials are cached in the session to allow subsequent requests to automatically include
+ * authentication credentials. If authentication fails (including the case of no credentials
+ * yielded from the {@code username} or {@code password} expressions, then the exchange is diverted
+ * to the authentication failure handler.
  */
 public class HttpBasicAuthFilter extends GenericFilter {
 
@@ -90,11 +91,6 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 + request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
     }
 
-    /**
-     * Handles the message exchange by authenticating via HTTP basic scheme. Credentials are
-     * cached in the session to allow subsequent requests to automatically include
-     * authentication credentials.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

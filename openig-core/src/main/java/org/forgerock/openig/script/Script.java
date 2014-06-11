@@ -74,9 +74,17 @@ public final class Script {
     private static final String EOL = System.getProperty("line.separator");
 
     private static final Object initializationLock = new Object();
-    /** @GuardedBy initializationLock */
+    /**
+     * The groovy script cache directory.
+     *
+     * @GuardedBy initializationLock
+     */
     private static volatile File groovyScriptCacheDir = null;
-    /** @GuardedBy initializationLock */
+    /**
+     * The groovy script engine.
+     *
+     * @GuardedBy initializationLock
+     */
     private static volatile GroovyScriptEngine groovyScriptEngine = null;
 
     /**

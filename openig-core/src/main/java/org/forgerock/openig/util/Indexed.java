@@ -12,18 +12,22 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
 
 /**
  * Interface of an object that can be indexed with a unique key.
+ * @param <T>
+ *            The type of referenced object.
  */
 public interface Indexed<T> {
 
     /**
      * Returns the unique key to index the object by.
+     *
+     * @return the unique key to index the object by.
      */
     T getKey();
 }

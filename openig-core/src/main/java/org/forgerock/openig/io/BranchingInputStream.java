@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -42,6 +42,8 @@ public abstract class BranchingInputStream extends InputStream {
 
     /**
      * Returns {@code true} if this branching input stream is closed.
+     *
+     * @return {@code true} if this branching input stream is closed.
      */
     public abstract boolean isClosed();
 
@@ -53,8 +55,9 @@ public abstract class BranchingInputStream extends InputStream {
     public abstract void closeBranches() throws IOException;
 
     /**
-     * Returns the parent branching input stream from which is branch was created, or
-     * {@code null} if this is the trunk.
+     * Returns the parent branching input stream from which is branch was created, or {@code null} if this is the trunk.
+     *
+     * @return The parent branching input stream from which is branch was created, or {@code null} if this is the trunk.
      */
     public abstract BranchingInputStream getParent();
 }

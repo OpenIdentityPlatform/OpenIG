@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -32,6 +32,9 @@ public class HandlerException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message.
+     *
+     * @param message
+     *            The specified detail message.
      */
     public HandlerException(String message) {
         super(message);
@@ -39,6 +42,9 @@ public class HandlerException extends Exception {
 
     /**
      * Constructs a new exception with the specified cause.
+     *
+     * @param cause
+     *            the specified cause of this exception.
      */
     public HandlerException(Throwable cause) {
         super(cause);
@@ -46,6 +52,11 @@ public class HandlerException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message
+     *            The specified detail message.
+     * @param cause
+     *            the specified cause of this exception.
      */
     public HandlerException(String message, Throwable cause) {
         super(message, cause);

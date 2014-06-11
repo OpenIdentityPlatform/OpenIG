@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -34,6 +34,9 @@ public class OverflowException extends IOException {
 
     /**
      * Constructs a new exception with the specified detail message.
+     *
+     * @param message
+     *            The specified detail message.
      */
     public OverflowException(String message) {
         super(message);
@@ -41,6 +44,9 @@ public class OverflowException extends IOException {
 
     /**
      * Constructs a new exception with the specified cause.
+     *
+     * @param cause
+     *            The specified cause of this exception.
      */
     public OverflowException(Throwable cause) {
         super(cause);
@@ -48,6 +54,11 @@ public class OverflowException extends IOException {
 
     /**
      * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message
+     *            The specified detail message.
+     * @param cause
+     *            The specified cause of this exception.
      */
     public OverflowException(String message, Throwable cause) {
         super(message, cause);

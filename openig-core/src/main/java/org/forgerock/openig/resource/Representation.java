@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resource;
@@ -28,13 +28,17 @@ import java.io.OutputStream;
 public interface Representation {
 
     /**
-     * Returns the MIME type of the representation. This method should support the media type
-     * (and parameters, as appropriate) specified in of RFC 2616 §3.7.
+     * Returns the MIME type of the representation. This method should support the media type (and parameters, as
+     * appropriate) specified in of RFC 2616 §3.7.
+     *
+     * @return the MIME type of the representation.
      */
     String getContentType();
 
     /**
      * Returns the file extension that is used when storing the representation.
+     *
+     * @return the file extension that is used when storing the representation.
      */
     String getExtension();
 
@@ -50,6 +54,8 @@ public interface Representation {
 
     /**
      * Returns the content-length of the representation, or -1 if unknown.
+     *
+     * @return the content-length of the representation, or -1 if unknown.
      */
     int getLength();
 

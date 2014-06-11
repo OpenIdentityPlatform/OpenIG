@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -27,6 +27,7 @@ import java.util.Map;
  * <p/>
  * <strong>Note:</strong> The behavior of this class is undefined when wrapping a map that
  * has keys that would result in duplicate case-insensitive keys.
+ * @param <V> The type of the case insensitive map.
  */
 public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
 
