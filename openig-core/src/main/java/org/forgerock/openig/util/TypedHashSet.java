@@ -23,6 +23,7 @@ import java.util.HashSet;
 /**
  * A hash set that silently ignores operations on any elements other than those with a
  * specific type.
+ * @param <E> The type of the hash set.
  */
 public class TypedHashSet<E> extends HashSet<E> {
 
@@ -75,6 +76,7 @@ public class TypedHashSet<E> extends HashSet<E> {
      * initial capacity and default load factor.
      *
      * @param initialCapacity the initial capacity of the hash set.
+     * @param type The type of objects that should be stored in the set.
      * @throws IllegalArgumentException if the initial capacity is less than zero.
      */
     public TypedHashSet(int initialCapacity, Class<E> type) {

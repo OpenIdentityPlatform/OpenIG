@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.json;
@@ -65,24 +65,20 @@ public class JSONRepresentation implements Representation {
     }
 
     /**
-     * Returns filename extension for JSON content.
+     * Returns filename extension "json".
+     *
+     * @return "json".
      */
     @Override
     public String getExtension() {
         return EXTENSION;
     }
 
-    /**
-     * Returns the MIME type for JSON content.
-     */
     @Override
     public String getContentType() {
         return CONTENT_TYPE;
     }
 
-    /**
-     * Returns {@code -1}, as length is unknown until encoding occurs.
-     */
     @Override
     public int getLength() {
         return -1;
@@ -90,6 +86,11 @@ public class JSONRepresentation implements Representation {
 
     /**
      * Accepts any type; always assumes {@code application/json} encoded in UTF-8.
+     *
+     * @param type
+     *            the media type that the representation will be requested to read.
+     * @throws ResourceException
+     *             if the representation cannot handle the specified media type.
      */
     @Override
     public void setContentType(String type) throws ResourceException {
@@ -98,6 +99,13 @@ public class JSONRepresentation implements Representation {
 
     /**
      * Reads JSON-encoded data from the input stream into an object model value.
+     *
+     * @param in
+     *            The input stream to read.
+     * @throws IOException
+     *             if an I/O exception occurs.
+     * @throws ResourceException
+     *             if an exception occurs processing the representation.
      */
     @Override
     public void read(InputStream in) throws IOException, ResourceException {
@@ -112,6 +120,13 @@ public class JSONRepresentation implements Representation {
 
     /**
      * Writes the object model value as JSON-encoded data to the output stream.
+     *
+     * @param out
+     *            The output stream where the object model is written.
+     * @throws IOException
+     *             if an I/O exception occurs.
+     * @throws ResourceException
+     *             if an exception occurs processing the representation.
      */
     @Override
     public void write(OutputStream out) throws IOException, ResourceException {

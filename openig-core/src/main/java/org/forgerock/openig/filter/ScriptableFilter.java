@@ -64,12 +64,10 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
         super(compiledScript);
     }
 
-    /**
-     * Delegates filtering to the script.
-     */
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException,
             IOException {
+        // Delegates filtering to the script.
         runScript(exchange, next);
     }
 }

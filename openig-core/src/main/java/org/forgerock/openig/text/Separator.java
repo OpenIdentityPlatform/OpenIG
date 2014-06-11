@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.text;
@@ -62,9 +62,6 @@ public class Separator {
                 && this.quote == ((Separator) o).quote && this.escape == ((Separator) o).escape);
     }
 
-    /**
-     * Returns a hash code value for the object.
-     */
     @Override
     public int hashCode() {
         return character ^ quote ^ escape;

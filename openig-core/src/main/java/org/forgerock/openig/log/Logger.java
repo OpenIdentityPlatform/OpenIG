@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -186,6 +186,7 @@ public class Logger implements LogSink {
     /**
      * Returns a new timer to measure elapsed time. Entries are written to the log with a
      * {@code STAT} log level.
+     * @return A timer to measure elapsed time.
      */
     public LogTimer getTimer() {
         return new LogTimer(this, LogLevel.STAT);
@@ -197,6 +198,7 @@ public class Logger implements LogSink {
      * {@code STAT} log level.
      *
      * @param event the event that is being timed.
+     * @return A timer to measure elapsed time for a specified event.
      */
     public LogTimer getTimer(String event) {
         return new LogTimer(this, LogLevel.STAT, event);

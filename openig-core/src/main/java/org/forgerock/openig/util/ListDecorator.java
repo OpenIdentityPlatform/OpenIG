@@ -27,6 +27,9 @@ import java.util.ListIterator;
  * data along the way. This class itself simply overrides all methods of {@link List} with
  * versions that pass all requests to the contained list. Subclasses may further override
  * some of these methods and may also provide additional methods and fields.
+ *
+ * @param <E>
+ *            The type of the list decorator.
  */
 public class ListDecorator<E> implements List<E> {
 
@@ -36,7 +39,8 @@ public class ListDecorator<E> implements List<E> {
     /**
      * Constructs a new list decorator, wrapping the specified list.
      *
-     * @param list the list to wrap with the decorator.
+     * @param list
+     *            the list to wrap with the decorator.
      */
     public ListDecorator(List<E> list) {
         if (list == null) {
@@ -45,17 +49,11 @@ public class ListDecorator<E> implements List<E> {
         this.list = list;
     }
 
-    /**
-     * Returns the number of elements in the list.
-     */
     @Override
     public int size() {
         return list.size();
     }
 
-    /**
-     * Returns {@code true} if the list contains no elements.
-     */
     @Override
     public boolean isEmpty() {
         return list.isEmpty();
@@ -75,18 +73,11 @@ public class ListDecorator<E> implements List<E> {
         return list.contains(o);
     }
 
-    /**
-     * Returns an iterator over the elements in the list in proper sequence.
-     */
     @Override
     public Iterator<E> iterator() {
         return list.iterator();
     }
 
-    /**
-     * Returns an array containing all of the elements in the list in proper sequence (from
-     * first to last element).
-     */
     @Override
     public Object[] toArray() {
         return list.toArray();
@@ -252,21 +243,11 @@ public class ListDecorator<E> implements List<E> {
         return list.equals(o);
     }
 
-    /**
-     * Returns the hash code value for the list.
-     */
     @Override
     public int hashCode() {
         return list.hashCode();
     }
 
-    /**
-     * Returns the element at the specified position in the list.
-     *
-     * @param index index of the element to return.
-     * @return the element at the specified position in the list.
-     * @throws IndexOutOfBoundsException if the index is out of range.
-     */
     @Override
     public E get(int index) {
         return list.get(index);
@@ -358,6 +339,8 @@ public class ListDecorator<E> implements List<E> {
 
     /**
      * Returns a list iterator over the elements in the list (in proper sequence).
+     *
+     * @return a list iterator over the elements in the list (in proper sequence).
      */
     @Override
     public ListIterator<E> listIterator() {

@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resource;
@@ -22,7 +22,6 @@ package org.forgerock.openig.resource;
  */
 public class ResourceException extends Exception {
 
-    /** TODO: Description. */
     private static final long serialVersionUID = 1L;
 
     /**
@@ -33,6 +32,9 @@ public class ResourceException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message.
+     *
+     * @param message
+     *            The specified detail message of this exception.
      */
     public ResourceException(String message) {
         super(message);
@@ -40,6 +42,9 @@ public class ResourceException extends Exception {
 
     /**
      * Constructs a new exception with the specified cause.
+     *
+     * @param cause
+     *            The specified cause of this exception.
      */
     public ResourceException(Throwable cause) {
         super(cause);
@@ -47,6 +52,11 @@ public class ResourceException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message
+     *            The specified detail message of this exception.
+     * @param cause
+     *            The specified detail cause of this exception.
      */
     public ResourceException(String message, Throwable cause) {
         super(message, cause);

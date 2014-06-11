@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -29,6 +29,9 @@ import org.forgerock.openig.log.Logger;
 
 /**
  * A generic base class for heaplets with automatically injected fields.
+ * <p>
+ * If the object created is an instance of {@link GenericHeapObject}, it is then automatically injected with
+ * {@code logger} and {@code storage} objects.
  */
 public abstract class GenericHeaplet implements Heaplet {
 
@@ -57,11 +60,6 @@ public abstract class GenericHeaplet implements Heaplet {
     @Override
     public abstract Class<?> getKey();
 
-    /**
-     * Initializes protected field members and calls the abstract {@link #create()} method. If
-     * the object created is an instance of {@link GenericHeapObject}, it is then
-     * automatically injected with {@code logger} and {@code storage} objects.
-     */
     @Override
     public Object create(String name, JsonValue config, Heap heap) throws HeapException {
         this.name = name;
@@ -95,12 +93,14 @@ public abstract class GenericHeaplet implements Heaplet {
     }
 
     /**
-     * Called to request the heaplet create an object. Called by
-     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after initializing the
-     * protected field members.
+     * Called to request the heaplet create an object. Called by {@link GenericHeaplet#create(String, JsonValue, Heap)}
+     * after initializing the protected field members.
      *
-     * @throws HeapException if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration.
+     * @return The created object.
+     * @throws HeapException
+     *             if an exception occurred during creation of the heap object or any of its dependencies.
+     * @throws JsonValueException
+     *             if the heaplet (or one of its dependencies) has a malformed configuration.
      */
     public abstract Object create() throws HeapException;
 }

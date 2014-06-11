@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -54,9 +54,6 @@ public class StaticResponseHandler extends GenericHandler {
     /** The message entity. */
     public String entity = null;
 
-    /**
-     * Handles an HTTP the exchange by creating a static response.
-     */
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

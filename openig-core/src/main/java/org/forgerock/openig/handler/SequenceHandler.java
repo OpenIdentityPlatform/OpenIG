@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -51,9 +51,6 @@ public class SequenceHandler extends GenericHandler {
     /** Handlers and associated sequence processing postconditions. */
     public final List<Binding> bindings = new ArrayList<Binding>();
 
-    /**
-     * Handles an HTTP the exchange by processing it through a sequence of handlers.
-     */
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

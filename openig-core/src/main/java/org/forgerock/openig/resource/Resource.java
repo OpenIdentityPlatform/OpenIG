@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.resource;
@@ -27,10 +27,13 @@ import java.net.URI;
 public interface Resource {
 
     /**
-     * Creates the resource with the specified representation. If the resource already
-     * exists, this method will indicate failure by throwing a {@code ResourceException}.
+     * Creates the resource with the specified representation. If the resource already exists, this method will indicate
+     * failure by throwing a {@code ResourceException}.
      *
-     * @throws ResourceException if the resource could not be created.
+     * @param representation
+     *            The specified representation to create the resource.
+     * @throws ResourceException
+     *             if the resource could not be created.
      */
     void create(Representation representation) throws ResourceException;
 
@@ -61,7 +64,9 @@ public interface Resource {
     /**
      * Returns the URI that the resource addresses.
      *
-     * @throws ResourceException if an exception occurred establishing the URI of the resource.
+     * @return the URI that the resource addresses.
+     * @throws ResourceException
+     *             if an exception occurred establishing the URI of the resource.
      */
     URI getURI() throws ResourceException;
 }

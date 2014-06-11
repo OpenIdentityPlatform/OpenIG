@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -45,6 +45,7 @@ public class LogMetric extends FieldMap {
      * Returns the metric in the form <em>value</em> SP <em>units</em>. For example, if
      * value is {@code 100} and units are {@code "ms"}, then the returned value would be
      * {@code "100 ms"}.
+     * @return the metric in the form <em>value</em> SP <em>units</em>.
      */
     @Override
     public String toString() {

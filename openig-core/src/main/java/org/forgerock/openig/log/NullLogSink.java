@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -22,17 +22,11 @@ package org.forgerock.openig.log;
  */
 public class NullLogSink implements LogSink {
 
-    /**
-     * This implementation discards the log entry.
-     */
     @Override
     public void log(LogEntry entry) {
         // ignore
     }
 
-    /**
-     * This implementation unconditionally returns {@code false}.
-     */
     @Override
     public boolean isLoggable(String source, LogLevel level) {
         return false;

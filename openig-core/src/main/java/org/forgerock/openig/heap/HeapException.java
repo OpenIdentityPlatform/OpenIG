@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -32,6 +32,9 @@ public class HeapException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message.
+     *
+     * @param message
+     *            The specified detail message of this exception.
      */
     public HeapException(String message) {
         super(message);
@@ -39,6 +42,9 @@ public class HeapException extends Exception {
 
     /**
      * Constructs a new exception with the specified cause.
+     *
+     * @param cause
+     *            The specified cause of this exception.
      */
     public HeapException(Throwable cause) {
         super(cause);
@@ -46,6 +52,11 @@ public class HeapException extends Exception {
 
     /**
      * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message
+     *            The specified detail message of this exception.
+     * @param cause
+     *            The specified cause of this exception.
      */
     public HeapException(String message, Throwable cause) {
         super(message, cause);

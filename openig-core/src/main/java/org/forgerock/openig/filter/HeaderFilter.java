@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -66,10 +66,6 @@ public class HeaderFilter extends GenericFilter {
         }
     }
 
-    /**
-     * Filters the request and/or response of an exchange by removing headers from and adding
-     * headers to a message.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

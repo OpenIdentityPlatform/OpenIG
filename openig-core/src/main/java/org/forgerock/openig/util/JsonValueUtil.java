@@ -89,6 +89,7 @@ public final class JsonValueUtil {
      * Returns the class object associated with a named class or interface, using the thread
      * context class loader. If the value is {@code null}, this method returns {@code null}.
      *
+     * @param value the value containing the class name string.
      * @return the class object with the specified name.
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
@@ -102,6 +103,7 @@ public final class JsonValueUtil {
      * not already been initialized. If the value is {@code null}, this method returns
      * {@code null}.
      *
+     * @param <T> the type of the new instance.
      * @param value the value containing the class name string.
      * @param type the type that the instantiated class should to resolve to.
      * @return a new instance of the requested class.

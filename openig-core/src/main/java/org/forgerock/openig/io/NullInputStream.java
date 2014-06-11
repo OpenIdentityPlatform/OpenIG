@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -26,6 +26,8 @@ public class NullInputStream extends InputStream {
 
     /**
      * Unconditionally returns {@code -1} to indicate the end of stream has been reached.
+     *
+     * @return {@code -1} to indicate the end of stream has been reached.
      */
     @Override
     public int read() {
@@ -35,6 +37,10 @@ public class NullInputStream extends InputStream {
 
     /**
      * Unconditionally returns {@code -1} to indicate the end of stream has been reached.
+     *
+     * @param b
+     *            The byte to read.
+     * @return {@code -1} to indicate the end of stream has been reached.
      */
     @Override
     public int read(byte[] b) {
@@ -43,6 +49,14 @@ public class NullInputStream extends InputStream {
 
     /**
      * Unconditionally returns {@code -1} to indicate the end of stream has been reached.
+     *
+     * @param b
+     *            the buffer into which the data is read.
+     * @param off
+     *            the start offset in array b at which the data is written.
+     * @param len
+     *            the maximum number of bytes to read.
+     * @return {@code -1} to indicate the end of stream has been reached.
      */
     @Override
     public int read(byte[] b, int off, int len) {
@@ -51,6 +65,10 @@ public class NullInputStream extends InputStream {
 
     /**
      * Always returns 0 to indicate that no bytes were skipped.
+     *
+     * @param n
+     *            the number of bytes to be skipped.
+     * @return 0 to indicate that no bytes were skipped.
      */
     @Override
     public long skip(long n) {
@@ -59,6 +77,8 @@ public class NullInputStream extends InputStream {
 
     /**
      * Always returns 0 to indicate that no bytes are available.
+     *
+     * @return 0 to indicate that no bytes are available.
      */
     @Override
     public int available() {

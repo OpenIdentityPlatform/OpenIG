@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -162,11 +162,12 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     }
 
     /**
-     * Returns an estimate of the number of bytes that can be read (or skipped over) from
-     * this input stream without blocking by the next invocation of a method for this input
-     * stream.
+     * Returns an estimate of the number of bytes that can be read (or skipped over) from this input stream without
+     * blocking by the next invocation of a method for this input stream.
      *
-     * @throws IOException if an I/O exception occurs.
+     * @return an estimate of the number of bytes that can be read (or skipped over) from this input stream.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     @Override
     public int available() throws IOException {

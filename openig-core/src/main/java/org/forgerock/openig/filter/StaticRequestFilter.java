@@ -63,9 +63,6 @@ public class StaticRequestFilter extends GenericFilter {
     public final MultiValueMap<String, Expression> form =
             new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
-    /**
-     * Filters the exchange by creating a new request, replacing any request in the exchange.
-     */
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();

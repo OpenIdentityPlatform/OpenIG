@@ -58,9 +58,6 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
         super(compiledScript);
     }
 
-    /**
-     * Delegates handling to the script.
-     */
     @Override
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         runScript(exchange, null);

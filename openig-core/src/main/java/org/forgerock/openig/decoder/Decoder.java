@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoder;
@@ -32,12 +32,13 @@ import org.forgerock.openig.util.Loader;
 public interface Decoder extends Indexed<String> {
 
     /** Mapping of supported codings to associated decoders. */
-    Map<String, Decoder> SERVICES = Collections.unmodifiableMap(
-            new CaseInsensitiveMap<Decoder>(Loader.loadMap(String.class, Decoder.class)));
+    Map<String, Decoder> SERVICES = Collections.unmodifiableMap(new CaseInsensitiveMap<Decoder>(Loader.loadMap(
+            String.class, Decoder.class)));
 
     /**
-     * Returns the coding that the decoder supports, as it would appear in the
-     * {@code Content-Encoding} header.
+     * Returns the coding that the decoder supports, as it would appear in the {@code Content-Encoding} header.
+     *
+     * @return The coding that the decoder supports, as it would appear in the {@code Content-Encoding} header.
      */
     @Override
     String getKey();
@@ -45,9 +46,11 @@ public interface Decoder extends Indexed<String> {
     /**
      * Returns an instance of an input stream that decodes the specified input.
      *
-     * @param in the input stream to be decoded.
+     * @param in
+     *            The input stream to be decoded.
      * @return an input stream exposing the decoded content.
-     * @throws IOException if an I/O exception occurs during decoding.
+     * @throws IOException
+     *             If an I/O exception occurs during decoding.
      */
     InputStream decode(InputStream in) throws IOException;
 }

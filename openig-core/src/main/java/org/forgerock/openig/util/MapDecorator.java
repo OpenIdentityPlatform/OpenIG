@@ -46,6 +46,8 @@ public class MapDecorator<K, V> implements Map<K, V> {
 
     /**
      * Returns the number of key-value mappings in the map.
+     *
+     * @return the number of key-value mappings in the map.
      */
     @Override
     public int size() {
@@ -54,6 +56,8 @@ public class MapDecorator<K, V> implements Map<K, V> {
 
     /**
      * Returns {@code true} if the map contains no key-value mappings.
+     *
+     * @return {@code true} if the map contains no key-value mappings.
      */
     @Override
     public boolean isEmpty() {
@@ -63,8 +67,12 @@ public class MapDecorator<K, V> implements Map<K, V> {
     /**
      * Returns {@code true} if the map contains a mapping for the specified key.
      *
-     * @throws ClassCastException if the key is of an inappropriate type for the map (optional).
-     * @throws NullPointerException if the specified key is null and the map does not permit null keys (optional).
+     * @param key The specified key to search for.
+     * @return {@code true} if the map contains a mapping for the specified key.
+     * @throws ClassCastException
+     *             if the key is of an inappropriate type for the map (optional).
+     * @throws NullPointerException
+     *             if the specified key is null and the map does not permit null keys (optional).
      */
     @Override
     public boolean containsKey(Object key) {
@@ -159,33 +167,21 @@ public class MapDecorator<K, V> implements Map<K, V> {
         map.clear();
     }
 
-    /**
-     * Returns a {@link Set} view of the keys contained in the map.
-     */
     @Override
     public Set<K> keySet() {
         return map.keySet();
     }
 
-    /**
-     * Returns a {@link Collection} view of the values contained in the map.
-     */
     @Override
     public Collection<V> values() {
         return map.values();
     }
 
-    /**
-     * Returns a {@link Set} view of the mappings contained in the map.
-     */
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
         return map.entrySet();
     }
 
-    /**
-     * Returns the hash code value for the map.
-     */
     @Override
     public int hashCode() {
         return map.hashCode();

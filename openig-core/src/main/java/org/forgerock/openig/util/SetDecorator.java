@@ -26,6 +26,9 @@ import java.util.Set;
  * data along the way. This class itself simply overrides all methods of {@link Set} with
  * versions that pass all requests to the contained set. Subclasses may further override
  * some of these methods and may also provide additional methods and fields.
+ *
+ * @param <E>
+ *            The type of the set decorator.
  */
 public class SetDecorator<E> implements Set<E> {
 
@@ -44,17 +47,11 @@ public class SetDecorator<E> implements Set<E> {
         this.set = set;
     }
 
-    /**
-     * Returns the number of elements in the set (its cardinality).
-     */
     @Override
     public int size() {
         return set.size();
     }
 
-    /**
-     * Returns {@code true} if the set contains no elements.
-     */
     @Override
     public boolean isEmpty() {
         return set.isEmpty();
@@ -74,17 +71,11 @@ public class SetDecorator<E> implements Set<E> {
         return set.contains(o);
     }
 
-    /**
-     * Returns an iterator over the elements in the set.
-     */
     @Override
     public Iterator<E> iterator() {
         return set.iterator();
     }
 
-    /**
-     * Returns an array containing all of the elements in the set.
-     */
     @Override
     public Object[] toArray() {
         return set.toArray();
@@ -228,9 +219,6 @@ public class SetDecorator<E> implements Set<E> {
         return set.equals(o);
     }
 
-    /**
-     * Returns the hash code value for the set.
-     */
     @Override
     public int hashCode() {
         return set.hashCode();
