@@ -36,6 +36,7 @@ public final class HeapUtil {
      * @param heap the heap to retrieve the object from.
      * @param name a JSON value containing the name of the heap object to retrieve.
      * @param type the expected type of the heap object.
+     * @param <T> expected instance type
      * @return the specified heap object.
      * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
      * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
@@ -57,6 +58,7 @@ public final class HeapUtil {
      * @param heap the heap to retrieve the object from.
      * @param name a JSON value containing the name of the heap object to retrieve.
      * @param type the expected type of the heap object.
+     * @param <T> expected instance type
      * @return the specified heap object.
      * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
      * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object

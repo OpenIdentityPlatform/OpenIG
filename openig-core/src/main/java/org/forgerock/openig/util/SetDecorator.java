@@ -87,6 +87,7 @@ public class SetDecorator<E> implements Set<E> {
      *
      * @param a the array into which the elements of the set are to be stored, if it is big enough; otherwise, a new
      * array of the same runtime type is allocated for this purpose.
+     * @param <T> runtime type of the array
      * @return an array containing all the elements in the set.
      * @throws ArrayStoreException if the runtime type of the specified array is not a supertype of the runtime type
      * of every element in the set.

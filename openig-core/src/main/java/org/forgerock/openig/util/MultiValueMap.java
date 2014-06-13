@@ -28,6 +28,9 @@ import org.forgerock.util.MapDecorator;
 /**
  * Wraps a map for which the values are lists, providing a set of convenience methods for
  * handling list values.
+ *
+ * @param <K> Key type
+ * @param <V> Value type (of the list)
  */
 public class MultiValueMap<K, V> extends MapDecorator<K, List<V>> {
 

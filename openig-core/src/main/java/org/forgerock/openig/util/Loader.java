@@ -80,6 +80,7 @@ public final class Loader {
      *
      * @param name the fully qualified name of the class to instantiate.
      * @param type the class of the type of object to instantiate.
+     * @param <T> class type
      * @return the newly instantiated object, or {@code null} if it could not be instantiated.
      */
     @SuppressWarnings("unchecked")
@@ -97,6 +98,8 @@ public final class Loader {
      *
      * @param keyType the class type of the key to be indexed in the map.
      * @param serviceType the class type of services to load.
+     * @param <K> key type
+     * @param <V> service type
      * @return a map containing the loaded services, indexed by the services' keys.
      */
     public static <K, V extends Indexed<K>> Map<K, V> loadMap(Class<K> keyType, Class<V> serviceType) {
@@ -111,6 +114,7 @@ public final class Loader {
      * Loads services of a particualr type into a list.
      *
      * @param serviceType the class type of services to load.
+     * @param <E> service type
      * @return a list containing the loaded services.
      */
     public static <E> List<E> loadList(Class<E> serviceType) {

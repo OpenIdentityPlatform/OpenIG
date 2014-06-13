@@ -58,6 +58,7 @@ public class Logger implements LogSink {
      *
      * @param level the log level to set in the log entry.
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T logException(LogLevel level, T throwable) {
@@ -82,6 +83,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code ERROR} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T error(T throwable) {
@@ -101,6 +103,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code WARNING} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T warning(T throwable) {
@@ -120,6 +123,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code INFO} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T info(T throwable) {
@@ -139,6 +143,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code CONFIG} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T config(T throwable) {
@@ -158,6 +163,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code DEBUG} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T debug(T throwable) {
@@ -177,6 +183,7 @@ public class Logger implements LogSink {
      * Logs the specified exception at the {@code TRACE} log level.
      *
      * @param throwable the exception to be logged.
+     * @param <T> type of logged throwable
      * @return the exception being logged.
      */
     public <T extends Throwable> T trace(T throwable) {

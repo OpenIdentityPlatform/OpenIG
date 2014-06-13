@@ -40,6 +40,7 @@ public final class EnumUtil {
      * in the enum type.
      *
      * @param enumType the class of the enum type from which to return the names.
+     * @param <T> enumeration type
      * @return a set of the names of the enum constants in the specified enum.
      */
     public static <T extends Enum<T>> Set<String> names(Class<T> enumType) {
@@ -62,6 +63,7 @@ public final class EnumUtil {
      *
      * @param enumType the class of the enum type from which to return a constant.
      * @param name the name of the constant to return.
+     * @param <T> enumeration type
      * @return the matching enum constant or {@code null} if no match found.
      */
     public static <T extends Enum<T>> T valueOf(Class<T> enumType, Object name) {
