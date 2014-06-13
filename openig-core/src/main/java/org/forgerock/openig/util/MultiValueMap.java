@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.util.MapDecorator;
+
 /**
  * Wraps a map for which the values are lists, providing a set of convenience methods for
  * handling list values.
