@@ -28,6 +28,8 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -43,6 +45,7 @@ public class HttpBasicAuthFilterTest {
     public static final int HTTP_UNAUTHORIZED = 401;
     public static final String INITIAL_CREDENTIALS = "YmplbnNlbjpoaWZhbHV0aW4=";
     public static final String REFRESHED_CREDENTIALS = "YmplbnNlbjpoaWZhbHV0aW4y";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     @Mock
     private Handler terminalHandler;
@@ -73,6 +76,38 @@ public class HttpBasicAuthFilterTest {
 
         assertThat(user).isEqualTo("realm\\Myname");
         assertThat(pass).isEqualTo("Mypass");
+    }
+
+    @Test
+    public void testHeadersAreRemoved() throws Exception {
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
+        filter.cacheHeader = false;
+
+        Exchange exchange = newExchange();
+        exchange.request.headers.putSingle(AUTHORIZATION_HEADER, "Basic azerty");
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(final InvocationOnMock invocation) throws Throwable {
+                Exchange exchange = (Exchange) invocation.getArguments()[0];
+
+                // Produce a valid response with an authentication challenge
+                exchange.response = new Response();
+                exchange.response.status = HTTP_SUCCESS;
+                exchange.response.headers.putSingle(AUTHENTICATE_HEADER, "Realm toto");
+                return null;
+
+            }
+        }).when(terminalHandler).handle(exchange);
+
+        filter.filter(exchange, terminalHandler);
+
+        // Verify that the terminal handler has been called with an exchange that does
+        // not have the original authorization header
+        verify(terminalHandler).handle(argThat(new AbsenceOfHeaderInRequest(AUTHORIZATION_HEADER)));
+        // Verify that the outgoing message has no authenticate header
+        assertThat(exchange.response.headers.get(AUTHENTICATE_HEADER))
+                .isNull();
     }
 
     @Test
@@ -290,13 +325,37 @@ public class HttpBasicAuthFilterTest {
             Exchange exchange = (Exchange) invocation.getArguments()[0];
 
             // Verify the authorization header: base64(user:pass)
-            assertThat(exchange.request.headers.getFirst("Authorization"))
+            assertThat(exchange.request.headers.getFirst(AUTHORIZATION_HEADER))
                     .isEqualTo("Basic " + credentials);
 
             // Produce a valid response, no special headers are required
             exchange.response = new Response();
             exchange.response.status = HTTP_SUCCESS;
             return null;
+        }
+    }
+
+    private class AbsenceOfHeaderInRequest extends BaseMatcher<Exchange> {
+
+        private final String headerName;
+
+        private AbsenceOfHeaderInRequest(final String headerName) {
+            this.headerName = headerName;
+        }
+
+        @Override
+        public boolean matches(final Object o) {
+            if (!(o instanceof Exchange)) {
+                return false;
+            }
+
+            Exchange exchange = (Exchange) o;
+            return exchange.request.headers.get(headerName) == null;
+        }
+
+        @Override
+        public void describeTo(final Description description) {
+            description.appendText("headers[" + headerName + "] is not null");
         }
     }
 }
