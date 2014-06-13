@@ -94,7 +94,12 @@ public class HttpBasicAuthFilter extends GenericFilter {
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        exchange.request.headers.remove(SUPPRESS_REQUEST_HEADERS);
+
+        // Remove existing headers from incoming message
+        for (String header : SUPPRESS_REQUEST_HEADERS) {
+            exchange.request.headers.remove(header);
+        }
+
         BranchingInputStream trunk = exchange.request.entity;
         String userpass = null;
 
@@ -114,7 +119,12 @@ public class HttpBasicAuthFilter extends GenericFilter {
             next.handle(exchange);
             // successful exchange from this filter's standpoint
             if (exchange.response.status != 401) {
-                exchange.response.headers.remove(SUPPRESS_RESPONSE_HEADERS);
+
+                // Remove headers from outgoing message
+                for (String header : SUPPRESS_RESPONSE_HEADERS) {
+                    exchange.response.headers.remove(header);
+                }
+
                 timer.stop();
                 return;
             }
