@@ -87,19 +87,61 @@ public class CookieFilter extends GenericFilter {
     private static final String[] RESPONSE_HEADERS = {"Set-Cookie", "Set-Cookie2"};
 
     /** Action to perform for cookies that do not match an action set. Default: manage. */
-    public Action defaultAction = Action.MANAGE;
+    private Action defaultAction = Action.MANAGE;
 
     /** The policy for managed cookies. Default: accept all cookies. */
-    public CookiePolicy policy = CookiePolicy.ACCEPT_ALL;
+    private CookiePolicy policy = CookiePolicy.ACCEPT_ALL;
 
     /** Action set for cookies to be suppressed. */
-    public final CaseInsensitiveSet suppressed = new CaseInsensitiveSet();
+    private final CaseInsensitiveSet suppressed = new CaseInsensitiveSet();
 
     /** Action set for cookies to be relayed. */
-    public final CaseInsensitiveSet relayed = new CaseInsensitiveSet();
+    private final CaseInsensitiveSet relayed = new CaseInsensitiveSet();
 
     /** Action set for cookies that filter should intercept and manage. */
-    public final CaseInsensitiveSet managed = new CaseInsensitiveSet();
+    private final CaseInsensitiveSet managed = new CaseInsensitiveSet();
+
+    /**
+     * Set the action to perform for cookies that do not match an action set. Default: {@link Action#MANAGE}.
+     * @param defaultAction the action to perform for cookies that do not match an action set.
+     */
+    public void setDefaultAction(final Action defaultAction) {
+        this.defaultAction = defaultAction;
+    }
+
+    /**
+     * Set the policy for managed cookies. Default: accept all cookies ({@link CookiePolicy#ACCEPT_ALL}).
+     * @param policy the policy for managed cookies.
+     */
+    public void setPolicy(final CookiePolicy policy) {
+        this.policy = policy;
+    }
+
+    /**
+     * Returns the set of cookie names that will be suppressed from the request and from the response.
+     * @return the set of suppressed cookie identifiers.
+     */
+    public CaseInsensitiveSet getSuppressed() {
+        return suppressed;
+    }
+
+    /**
+     * Returns the set of cookie names that will be relayed ({@literal Cookie} transmitted from the
+     * client to the next handler in the context of a request, and {@literal Set-Cookie2} transmitted
+     * from the next handler to the client in the context of a response).
+     * @return the set of relayed cookie identifiers.
+     */
+    public CaseInsensitiveSet getRelayed() {
+        return relayed;
+    }
+
+    /**
+     * Returns the set of cookie names that will be managed.
+     * @return the set of managed cookie identifiers.
+     */
+    public CaseInsensitiveSet getManaged() {
+        return managed;
+    }
 
     /**
      * Resolves the request URI based on the request URI variable and optional

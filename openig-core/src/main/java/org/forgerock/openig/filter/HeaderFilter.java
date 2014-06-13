@@ -41,13 +41,39 @@ import org.forgerock.openig.util.JsonValueUtil;
 public class HeaderFilter extends GenericFilter {
 
     /** Indicates the type of message in the exchange to filter headers for. */
-    MessageType messageType;
+    private final MessageType messageType;
 
     /** The names of header fields to remove from the message. */
-    public final CaseInsensitiveSet remove = new CaseInsensitiveSet();
+    private final CaseInsensitiveSet removedHeaders = new CaseInsensitiveSet();
 
     /** Header fields to add to the message. */
-    public final Headers add = new Headers();
+    private final Headers addedHeaders = new Headers();
+
+    /**
+     * Builds a HeaderFilter processing either the incoming or outgoing message.
+     * @param messageType {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
+     */
+    public HeaderFilter(final MessageType messageType) {
+        this.messageType = messageType;
+    }
+
+    /**
+     * Returns the names of header fields to remove from the message.
+     * @return the names of header fields to remove from the message.
+     */
+    public CaseInsensitiveSet getRemovedHeaders() {
+        return removedHeaders;
+    }
+
+    /**
+     * Returns the header fields to add to the message.
+     * This is a essentially a Map of String to a List of String, each listed value representing
+     * an expression that will be evaluated.
+     * @return the header fields to add to the message.
+     */
+    public Headers getAddedHeaders() {
+        return addedHeaders;
+    }
 
     /**
      * Removes all specified headers, then adds all specified headers.
@@ -55,11 +81,11 @@ public class HeaderFilter extends GenericFilter {
      * @param message the message to remove headers from and add headers to.
      */
     private void process(Message message, Exchange exchange) {
-        for (String s : this.remove) {
+        for (String s : this.removedHeaders) {
             message.headers.remove(s);
         }
-        for (String key : this.add.keySet()) {
-            for (String value : this.add.get(key)) {
+        for (String key : this.addedHeaders.keySet()) {
+            for (String value : this.addedHeaders.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
                 message.headers.add(key, (String) JsonValueUtil.asExpression(jsonValue).eval(exchange));
             }
@@ -83,19 +109,18 @@ public class HeaderFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            HeaderFilter filter = new HeaderFilter();
-            filter.messageType = config.get("messageType")
-                    .required()
-                    .asEnum(MessageType.class);
-            filter.remove.addAll(config.get("remove")
-                    .defaultTo(Collections.emptyList())
-                    .asList(String.class));
+            HeaderFilter filter = new HeaderFilter(config.get("messageType")
+                                                         .required()
+                                                         .asEnum(MessageType.class));
+            filter.removedHeaders.addAll(config.get("remove")
+                                         .defaultTo(Collections.emptyList())
+                                         .asList(String.class));
             JsonValue add = config.get("add")
                     .defaultTo(Collections.emptyMap())
                     .expect(Map.class);
             for (String key : add.keys()) {
                 List<String> values = add.get(key).required().asList(String.class);
-                filter.add.addAll(key, values);
+                filter.addedHeaders.addAll(key, values);
             }
             return filter;
         }

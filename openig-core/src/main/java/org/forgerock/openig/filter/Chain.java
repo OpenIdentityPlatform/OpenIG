@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -49,10 +49,27 @@ import org.forgerock.openig.log.LogTimer;
 public class Chain extends GenericHandler {
 
     /** A list of filters, in the order they are to be dispatched by the chain. */
-    public final List<Filter> filters = new ArrayList<Filter>();
+    private final List<Filter> filters = new ArrayList<Filter>();
 
     /** The handler dispatch the exchange to; terminus of the chain. */
-    public Handler handler;
+    private final Handler handler;
+
+    /**
+     * Builds a chain of filters that will finally dispatch to the given handler.
+     * List of Filters is empty by default.
+     * @param handler terminus of the chain
+     */
+    public Chain(final Handler handler) {
+        this.handler = handler;
+    }
+
+    /**
+     * Returns the list of filters, in the order they are to be dispatched by the chain.
+     * @return the list of filters, in the order they are to be dispatched by the chain.
+     */
+    public List<Filter> getFilters() {
+        return filters;
+    }
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
@@ -82,11 +99,10 @@ public class Chain extends GenericHandler {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            Chain chain = new Chain();
+            Chain chain = new Chain(HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class));
             for (JsonValue filter : config.get("filters").required().expect(List.class)) {
                 chain.filters.add(HeapUtil.getRequiredObject(heap, filter, Filter.class));
             }
-            chain.handler = HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class);
             return chain;
         }
     }

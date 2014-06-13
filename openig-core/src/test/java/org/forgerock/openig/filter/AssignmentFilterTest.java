@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -41,11 +41,10 @@ public class AssignmentFilterTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.method = "DELETE";
-        Chain chain = new Chain();
-        chain.filters.add(filter);
         StaticResponseHandler handler = new StaticResponseHandler();
         handler.status = 200;
-        chain.handler = handler;
+        Chain chain = new Chain(handler);
+        chain.getFilters().add(filter);
         assertThat(binding.target.eval(exchange)).isNull();
         chain.handle(exchange);
         assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
@@ -59,11 +58,10 @@ public class AssignmentFilterTest {
         binding.value = new Expression("${exchange.response.status}");
         filter.onResponse.add(binding);
         Exchange exchange = new Exchange();
-        Chain chain = new Chain();
-        chain.filters.add(filter);
         StaticResponseHandler handler = new StaticResponseHandler();
         handler.status = 200;
-        chain.handler = handler;
+        Chain chain = new Chain(handler);
+        chain.getFilters().add(filter);
         assertThat(binding.target.eval(exchange)).isNull();
         chain.handle(exchange);
         assertThat(exchange.get("newAttr")).isEqualTo(200);

@@ -40,7 +40,15 @@ import org.forgerock.openig.log.LogTimer;
 public class ExceptionFilter extends GenericFilter {
 
     /** Handler to dispatch to in the event of caught exceptions. */
-    public Handler handler;
+    private final Handler handler;
+
+    /**
+     * Build a new exception filter that will divert the flow to the given handler in case of exception.
+     * @param handler exception handler
+     */
+    public ExceptionFilter(final Handler handler) {
+        this.handler = handler;
+    }
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -69,9 +77,7 @@ public class ExceptionFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            ExceptionFilter filter = new ExceptionFilter();
-            filter.handler = HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class);
-            return filter;
+            return new ExceptionFilter(HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class));
         }
     }
 }
