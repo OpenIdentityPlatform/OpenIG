@@ -20,6 +20,8 @@ package org.forgerock.openig.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.forgerock.util.MapDecorator;
+
 /**
  * An implementation of a map whose keys are case-insensitive strings. All operations match
  * keys in a case-insensitive manner. The original cases of keys are retained, so the
