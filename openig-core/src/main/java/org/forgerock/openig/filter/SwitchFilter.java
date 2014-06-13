@@ -42,26 +42,59 @@ import org.forgerock.openig.util.JsonValueUtil;
 public class SwitchFilter extends GenericFilter {
 
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
-    public static class Case {
+    private static class Case {
         /** Condition to evaluate if exchange should be diverted to handler. */
-        public Expression condition;
+        private final Expression condition;
+
         /** Handler to divert to if condition yields {@code true}. */
-        public Handler handler;
+        private final Handler handler;
+
+        /**
+         * Build a switch case from a condition and the handler to execute if condition yields.
+         * @param condition expression to evaluate
+         * @param handler handler to be executed if the condition yields
+         */
+        public Case(final Expression condition, final Handler handler) {
+            this.condition = condition;
+            this.handler = handler;
+        }
     }
 
     /** Switch cases to test before the exchange is handled. */
-    public final List<Case> onRequest = new ArrayList<Case>();
+    private final List<Case> requestCases = new ArrayList<Case>();
 
     /** Switch cases to test after the exchange is handled. */
-    public final List<Case> onResponse = new ArrayList<Case>();
+    private final List<Case> responseCases = new ArrayList<Case>();
+
+    /**
+     * Add a request switch case with a condition and the handler to execute if condition yields.
+     * @param condition expression to evaluate
+     * @param handler handler to be executed if the condition yields
+     * @return this filter for fluent invocation.
+     */
+    public SwitchFilter addRequestCase(final Expression condition, final Handler handler) {
+        requestCases.add(new Case(condition, handler));
+        return this;
+    }
+
+    /**
+     * Add a response switch case with a condition and the handler to execute if condition yields.
+     * @param condition expression to evaluate
+     * @param handler handler to be executed if the condition yields
+     * @return this filter for fluent invocation.
+     */
+    public SwitchFilter addResponseCase(final Expression condition, final Handler handler) {
+        responseCases.add(new Case(condition, handler));
+        return this;
+    }
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
-        if (!doSwitch(exchange, onRequest)) {
+        if (!doSwitch(exchange, requestCases)) {
             // not intercepted
             next.handle(exchange);
-            doSwitch(exchange, onResponse);
+            doSwitch(exchange, responseCases);
         }
         timer.stop();
     }
@@ -86,8 +119,8 @@ public class SwitchFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             SwitchFilter result = new SwitchFilter();
-            result.onRequest.addAll(asCases("onRequest"));
-            result.onResponse.addAll(asCases("onResponse"));
+            result.requestCases.addAll(asCases("onRequest"));
+            result.responseCases.addAll(asCases("onResponse"));
             return result;
         }
 
@@ -101,10 +134,8 @@ public class SwitchFilter extends GenericFilter {
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            Case result = new Case();
-            result.condition = JsonValueUtil.asExpression(value.get("condition"));
-            result.handler = HeapUtil.getRequiredObject(heap, value.get("handler"), Handler.class);
-            return result;
+            return new Case(JsonValueUtil.asExpression(value.get("condition")),
+                            HeapUtil.getRequiredObject(heap, value.get("handler"), Handler.class));
         }
     }
 }

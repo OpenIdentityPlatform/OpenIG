@@ -41,7 +41,7 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.baseURI = new URI("https://proxy.example.com:443/");
+        filter.setBaseURI(new URI("https://proxy.example.com:443/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -55,7 +55,7 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.baseURI = new URI("http://proxy.example.com:8080/");
+        filter.setBaseURI(new URI("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -69,7 +69,7 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.baseURI = new URI("http://app.example.com:9090/");
+        filter.setBaseURI(new URI("http://app.example.com:9090/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -83,7 +83,7 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.baseURI = new URI("https://app.example.com/");
+        filter.setBaseURI(new URI("https://app.example.com/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -96,7 +96,7 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.baseURI = new URI("http://app.example.com:8080/");
+        filter.setBaseURI(new URI("http://app.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }

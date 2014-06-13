@@ -54,7 +54,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnRequestOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.onRequest.add(buildCase("${true}", handler1));
+        filter.addRequestCase(new Expression("${true}"), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -66,7 +66,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnResponseOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.onResponse.add(buildCase("${true}", handler1));
+        filter.addResponseCase(new Expression("${true}"), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -82,8 +82,8 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Expect the request's case to divert the flow and ignore the response's case
-        filter.onRequest.add(buildCase("${true}", handler1));
-        filter.onResponse.add(buildCase("${true}", handler2));
+        filter.addRequestCase(new Expression("${true}"), handler1);
+        filter.addResponseCase(new Expression("${true}"), handler2);
 
         filter.filter(exchange, terminalHandler);
 
@@ -99,10 +99,10 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Build a chain where only the first matching case should be executed
-        filter.onRequest.add(buildCase("${false}", handler1));
-        filter.onRequest.add(buildCase("${true}", handler2)); // <- This one matches and is executed
-        filter.onRequest.add(buildCase("${false}", handler3));
-        filter.onRequest.add(buildCase("${true}", handler4));
+        filter.addRequestCase(new Expression("${false}"), handler1);
+        filter.addRequestCase(new Expression("${true}"), handler2); // <- This one matches and is executed
+        filter.addRequestCase(new Expression("${false}"), handler3);
+        filter.addRequestCase(new Expression("${true}"), handler4);
 
         filter.filter(exchange, terminalHandler);
 
@@ -110,12 +110,5 @@ public class SwitchFilterTest {
         // Other cases in the chain will never be tested
         verifyZeroInteractions(handler1, handler3, handler4);
         verify(handler2).handle(exchange);
-    }
-
-    private static SwitchFilter.Case buildCase(String expression, Handler handler) throws Exception {
-        SwitchFilter.Case aCase = new SwitchFilter.Case();
-        aCase.condition = new Expression(expression);
-        aCase.handler = handler;
-        return aCase;
     }
 }

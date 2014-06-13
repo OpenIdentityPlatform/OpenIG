@@ -51,6 +51,9 @@ public class HttpBasicAuthFilterTest {
     private Handler terminalHandler;
 
     @Mock
+    private Handler failureHandler;
+
+    @Mock
     private Session session;
 
     @BeforeMethod
@@ -61,9 +64,8 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testExpressionEvaluation() throws Exception {
         // TODO Move this test out of here, it has nothing to do with testing the behavior of this filter
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.username = new Expression("realm\\${exchange.request.headers['username'][0]}");
-        filter.password = new Expression("${exchange.request.headers['password'][0]}");
+        Expression username = new Expression("realm\\${exchange.request.headers['username'][0]}");
+        Expression password = new Expression("${exchange.request.headers['password'][0]}");
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.method = "GET";
@@ -71,8 +73,8 @@ public class HttpBasicAuthFilterTest {
         exchange.request.headers.add("username", "Myname");
         exchange.request.headers.add("password", "Mypass");
 
-        String user = filter.username.eval(exchange, String.class);
-        String pass = filter.password.eval(exchange, String.class);
+        String user = username.eval(exchange, String.class);
+        String pass = password.eval(exchange, String.class);
 
         assertThat(user).isEqualTo("realm\\Myname");
         assertThat(pass).isEqualTo("Mypass");
@@ -80,8 +82,8 @@ public class HttpBasicAuthFilterTest {
 
     @Test
     public void testHeadersAreRemoved() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.cacheHeader = false;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(null, null, failureHandler);
+        filter.setCacheHeader(false);
 
         Exchange exchange = newExchange();
         exchange.request.headers.putSingle(AUTHORIZATION_HEADER, "Basic azerty");
@@ -112,10 +114,10 @@ public class HttpBasicAuthFilterTest {
 
     @Test
     public void testNominalInteraction() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.username = new Expression("bjensen");
-        filter.password = new Expression("hifalutin");
-        filter.cacheHeader = false;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression("bjensen"),
+                                                             new Expression("hifalutin"),
+                                                             failureHandler);
+        filter.setCacheHeader(false);
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 
@@ -130,11 +132,10 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testNoCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.failureHandler = mock(Handler.class);
-        filter.username = new Expression("${null}");
-        filter.password = new Expression("${null}");
-        filter.cacheHeader = false;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression("${null}"),
+                                                             new Expression("${null}"),
+                                                             failureHandler);
+        filter.setCacheHeader(false);
 
         // Always answer with 401
         doAnswer(new UnauthorizedAnswer())
@@ -144,7 +145,7 @@ public class HttpBasicAuthFilterTest {
         filter.filter(exchange, terminalHandler);
 
         verify(terminalHandler, times(1)).handle(exchange);
-        verify(filter.failureHandler).handle(exchange);
+        verify(failureHandler).handle(exchange);
     }
 
     /**
@@ -154,11 +155,10 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testInvalidCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.failureHandler = mock(Handler.class);
-        filter.username = new Expression("bjensen");
-        filter.password = new Expression("hifalutin");
-        filter.cacheHeader = false;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression("bjensen"),
+                                                             new Expression("hifalutin"),
+                                                             failureHandler);
+        filter.setCacheHeader(false);
 
         // Always answer with 401
         doAnswer(new UnauthorizedAnswer())
@@ -169,7 +169,7 @@ public class HttpBasicAuthFilterTest {
 
         // if credentials were rejected all the times, the failure Handler is invoked
         verify(terminalHandler, times(2)).handle(exchange);
-        verify(filter.failureHandler).handle(exchange);
+        verify(failureHandler).handle(exchange);
     }
 
     /**
@@ -181,10 +181,10 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void tesAuthorizationHeaderCaching() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.username = new Expression("bjensen");
-        filter.password = new Expression("hifalutin");
-        filter.cacheHeader = true;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression("bjensen"),
+                                                             new Expression("hifalutin"),
+                                                             failureHandler);
+        filter.setCacheHeader(true);
 
         // No value cached for the first call
         // Subsequent invocations get the cached value
@@ -212,10 +212,10 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testRefreshAuthenticationHeader() throws Exception {
 
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.username = new Expression("bjensen");
-        filter.password = new Expression("hifalutin");
-        filter.cacheHeader = true;
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression("bjensen"),
+                                                             new Expression("${exchange.password}"),
+                                                             failureHandler);
+        filter.setCacheHeader(true);
 
         // Mock cache content for credentials
         when(session.get(endsWith(":userpass")))
@@ -238,6 +238,7 @@ public class HttpBasicAuthFilterTest {
 
         // Initial round-trip
         Exchange first = newExchange();
+        first.put("password", "hifalutin");
         filter.filter(first, terminalHandler);
 
         // Usage of cached value
@@ -246,7 +247,7 @@ public class HttpBasicAuthFilterTest {
 
         // Cached value is no longer valid, trigger a user/pass refresh
         Exchange third = newExchange();
-        filter.password = new Expression("hifalutin2");
+        third.put("password", "hifalutin2");
         filter.filter(third, terminalHandler);
 
         // Terminal handler should be called 5 times, not 6
@@ -268,10 +269,10 @@ public class HttpBasicAuthFilterTest {
           expectedExceptions = HandlerException.class,
           expectedExceptionsMessageRegExp = "username must not contain a colon ':' character")
     public void testConformanceErrorIsProducedWhenUsernameContainsColon(final String username) throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-        filter.cacheHeader = false;
-        filter.username = new Expression(username);
-        filter.password = new Expression("dont-care");
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(new Expression(username),
+                                                             new Expression("dont-care"),
+                                                             failureHandler);
+        filter.setCacheHeader(false);
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 

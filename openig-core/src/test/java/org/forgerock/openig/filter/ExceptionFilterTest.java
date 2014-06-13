@@ -46,8 +46,7 @@ public class ExceptionFilterTest {
 
     @Test
     public void testExceptionHandlerNotInvokedWhenNoExceptionIsThrown() throws Exception {
-        ExceptionFilter filter = new ExceptionFilter();
-        filter.handler = exceptionHandler;
+        ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
         filter.filter(null, nextHandler);
 
@@ -63,8 +62,7 @@ public class ExceptionFilterTest {
 
         doThrow(new HandlerException("Boom")).when(nextHandler).handle(exchange);
 
-        ExceptionFilter filter = new ExceptionFilter();
-        filter.handler = exceptionHandler;
+        ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
         filter.filter(exchange, nextHandler);
 

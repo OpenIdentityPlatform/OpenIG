@@ -70,7 +70,7 @@ public class CookieFilterTest {
     public void testManagedCookiesAreOverridingTheOriginalCookieValueFromTheClient() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.managed.add("Test-Managed");
+        filter.getManaged().add("Test-Managed");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -111,7 +111,7 @@ public class CookieFilterTest {
     public void testClientCookiesThatAreManagedAreNotTransmittedToTheUserAgent() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.managed.add("Test-Managed");
+        filter.getManaged().add("Test-Managed");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -140,7 +140,7 @@ public class CookieFilterTest {
     public void testSuppressedClientCookiesAreNotTransmittedToTheUserAgent() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.suppressed.add("Will-Be-Deleted");
+        filter.getSuppressed().add("Will-Be-Deleted");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -169,7 +169,7 @@ public class CookieFilterTest {
     public void testRelayedClientCookiesAreTransmittedUnchangedToTheUserAgent() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.relayed.add("Will-Be-Relayed");
+        filter.getRelayed().add("Will-Be-Relayed");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -200,7 +200,7 @@ public class CookieFilterTest {
     public void testManagedCookiesInResponseAreNotPropagatedBackToTheClient() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.managed.add("Hidden-Cookie");
+        filter.getManaged().add("Hidden-Cookie");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -222,7 +222,7 @@ public class CookieFilterTest {
     public void testSuppressedCookiesInResponseAreNotPropagatedBackToTheClient() throws Exception {
 
         CookieFilter filter = new CookieFilter();
-        filter.suppressed.add("Suppressed-Cookie");
+        filter.getSuppressed().add("Suppressed-Cookie");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -268,7 +268,7 @@ public class CookieFilterTest {
 
         // Step #1
         CookieFilter filter = new CookieFilter();
-        filter.managed.add("Managed");
+        filter.getManaged().add("Managed");
 
         // Step #2: by default, no cookies are provisioned in the request
 

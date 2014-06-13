@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
- * Copyright 2012 ForgeRock AS.
+ * Copyright 2012-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -43,7 +43,15 @@ public class RedirectFilter extends GenericFilter {
     public static final Integer REDIRECT_STATUS_302 = Integer.valueOf(302);
 
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
-    public URI baseURI;
+    private URI baseURI;
+
+    /**
+     * Returns the base URI of the OpenIG instance, used to rewrite Location headers.
+     * @param baseURI base URI of this OpenIG instance
+     */
+    public void setBaseURI(final URI baseURI) {
+        this.baseURI = baseURI;
+    }
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {

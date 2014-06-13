@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
- * Copyright © 2012 ForgeRock AS. All rights reserved.
+ * Copyright © 2012-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -39,18 +39,16 @@ public class HeaderFilterTest {
 
     @Test
     public void testAddHeaderToTheResponse() throws Exception {
-        HeaderFilter filter = new HeaderFilter();
-        filter.messageType = MessageType.RESPONSE;
-        filter.remove.add("Location");
-        filter.add.add("Location", "http://newtest.com:321${exchange.request.uri.path}");
+        HeaderFilter filter = new HeaderFilter(MessageType.RESPONSE);
+        filter.getRemovedHeaders().add("Location");
+        filter.getAddedHeaders().add("Location", "http://newtest.com:321${exchange.request.uri.path}");
 
         exchange.request.method = "DELETE";
         exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
-        Chain chain = new Chain();
-        chain.filters.add(filter);
         StaticResponseHandler handler = new StaticResponseHandler();
         handler.status = 200;
-        chain.handler = handler;
+        Chain chain = new Chain(handler);
+        chain.getFilters().add(filter);
         chain.handle(exchange);
 
         assertThat(exchange.response.headers.get("Location"))
@@ -59,9 +57,8 @@ public class HeaderFilterTest {
 
     @Test
     public void testRemoveHeaderFromTheResponse() throws Exception {
-        HeaderFilter filter = new HeaderFilter();
-        filter.messageType = MessageType.RESPONSE;
-        filter.remove.add("Location");
+        HeaderFilter filter = new HeaderFilter(MessageType.RESPONSE);
+        filter.getRemovedHeaders().add("Location");
 
         // Prepare a static response handler that provision a response header
         StaticResponseHandler handler = new StaticResponseHandler();

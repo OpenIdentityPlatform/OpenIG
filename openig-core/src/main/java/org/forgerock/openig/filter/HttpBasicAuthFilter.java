@@ -20,6 +20,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.asExpression;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -37,7 +39,6 @@ import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.util.encode.Base64;
 
 /**
@@ -68,16 +69,36 @@ public class HttpBasicAuthFilter extends GenericFilter {
             new CaseInsensitiveSet(Arrays.asList("WWW-Authenticate"));
 
     /** Expression that yields the username to supply during authentication. */
-    public Expression username;
+    private final Expression username;
 
     /** Expression that yields the password to supply during authentication. */
-    public Expression password;
+    private final Expression password;
 
     /** Handler dispatch to if authentication fails. */
-    public Handler failureHandler;
+    private final Handler failureHandler;
 
     /** Decide if we cache the password header result. */
-    public boolean cacheHeader = true;
+    private boolean cacheHeader = true;
+
+    /**
+     * Builds a {@code HttpBasicAuthFilter} with required expressions and error handler.
+     * @param username the expression that yields the username to supply during authentication.
+     * @param password the expression that yields the password to supply during authentication.
+     * @param failureHandler the Handler to dispatch to if authentication fails.
+     */
+    public HttpBasicAuthFilter(final Expression username, final Expression password, final Handler failureHandler) {
+        this.username = username;
+        this.password = password;
+        this.failureHandler = failureHandler;
+    }
+
+    /**
+     * Decide if we cache the password header result (defaults to {@literal true}).
+     * @param cacheHeader cache (or not) the {@literal Authorization} header
+     */
+    public void setCacheHeader(final boolean cacheHeader) {
+        this.cacheHeader = cacheHeader;
+    }
 
     /**
      * Resolves a session attribute name for the remote server specified in the specified
@@ -162,13 +183,14 @@ public class HttpBasicAuthFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            HttpBasicAuthFilter filter = new HttpBasicAuthFilter();
-            filter.username = JsonValueUtil.asExpression(config.get("username").required());
-            filter.password = JsonValueUtil.asExpression(config.get("password").required());
-            filter.failureHandler = HeapUtil.getObject(
-                    heap,
-                    config.get("failureHandler").required(),
-                    Handler.class);
+            Handler failureHandler = HeapUtil.getObject(heap,
+                                                        config.get("failureHandler").required(),
+                                                        Handler.class);
+
+            HttpBasicAuthFilter filter = new HttpBasicAuthFilter(asExpression(config.get("username").required()),
+                                                                 asExpression(config.get("password").required()),
+                                                                 failureHandler);
+
             filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean();
 
             if (logger != null && logger.isLoggable(LogLevel.DEBUG)) {
