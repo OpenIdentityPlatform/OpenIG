@@ -281,7 +281,7 @@ public class HttpBasicAuthFilterTest {
     @DataProvider
     public static Object[][] invalidUserNames() {
         return new Object[][] {
-            //{ ":starting-with-colon" }, //BUG
+            { ":starting-with-colon" },
             { "colon-:-in-the-middle" },
             { "ending-with-colon:" } };
     }
