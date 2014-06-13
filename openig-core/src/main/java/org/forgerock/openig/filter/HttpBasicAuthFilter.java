@@ -136,7 +136,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 break;
             }
             // ensure conformance with specification
-            if (user.indexOf(':') > 0) {
+            if (user.indexOf(':') >= 0) {
                 throw new HandlerException("username must not contain a colon ':' character");
             }
             if (cacheHeader) {
