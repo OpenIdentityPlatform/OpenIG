@@ -103,6 +103,7 @@ public class Expression {
      *
      * @param scope the scope to evaluate the expression within.
      * @param type the type of object the evaluation is expected to yield.
+     * @param <T> expected result type
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
     @SuppressWarnings("unchecked")
