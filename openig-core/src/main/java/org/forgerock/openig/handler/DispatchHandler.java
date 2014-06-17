@@ -36,7 +36,7 @@ import org.forgerock.openig.util.URIUtil;
 
 /**
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
- * condition is evalated. If a condition expression yields {@code true}, then the exchange
+ * condition is evaluated. If a condition expression yields {@code true}, then the exchange
  * is dispatched to the associated handler with no further processing.
  * <p/>
  * If no condition yields {@code true} then the handler will throw a {@link HandlerException}.
@@ -45,21 +45,41 @@ import org.forgerock.openig.util.URIUtil;
  */
 public class DispatchHandler extends GenericHandler {
 
-    /** Binds an expression with a handler to dispatch to. */
-    public static class Binding {
+    /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
+    private final List<Binding> bindings = new ArrayList<Binding>();
 
-        /** Condition to dispatch to handler or {@code null} if unconditional. */
-        public Expression condition;
-
-        /** Handler to dispatch to. */
-        public Handler handler;
-
-        /** Overrides scheme/host/port of the request with a base URI. */
-        public URI baseURI;
+    /**
+     * Binds an expression to the current handler to dispatch to.
+     *
+     * @param condition
+     *            Condition to evaluate to determine if associated handler should be dispatched to. If omitted, then
+     *            dispatch is unconditional.
+     * @param handler
+     *            The name of the handler heap object to dispatch to if the associated condition yields true.
+     * @param baseURI
+     *            Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host and
+     *            port are used in the supplied URI. Default: leave URI untouched.
+     * @return The current dispatch handler.
+     */
+    public DispatchHandler addBinding(Expression condition, Handler handler, URI baseURI) {
+        bindings.add(new Binding(condition, handler, baseURI));
+        return this;
     }
 
-    /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
-    public final List<Binding> bindings = new ArrayList<Binding>();
+    /**
+     * Adds an unconditional bindings to the handler.
+     *
+     * @param handler
+     *            The name of the handler heap object to dispatch to if the associated condition yields true.
+     * @param baseURI
+     *            Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host and
+     *            port are used in the supplied URI. Default: leave URI untouched.
+     * @return The current dispatch handler.
+     */
+    public DispatchHandler addUnconditionalBinding(Handler handler, URI baseURI) {
+        bindings.add(new Binding(null, handler, baseURI));
+        return this;
+    }
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
@@ -81,22 +101,53 @@ public class DispatchHandler extends GenericHandler {
         throw logger.debug(new HandlerException("no handler to dispatch to"));
     }
 
+    /** Binds an expression with a handler to dispatch to. */
+    private static class Binding {
+
+        /** Condition to dispatch to handler or {@code null} if unconditional. */
+        private Expression condition;
+
+        /** Handler to dispatch to. */
+        private Handler handler;
+
+        /** Overrides scheme/host/port of the request with a base URI. */
+        private URI baseURI;
+
+        /**
+         * Constructor.
+         *
+         * @param condition
+         *            Condition to evaluate to determine if associated handler should be dispatched to. If omitted, then
+         *            dispatch is unconditional.
+         * @param handler
+         *            The name of the handler heap object to dispatch to if the associated condition yields true.
+         * @param baseURI
+         *            Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host
+         *            and port are used in the supplied URI. Default: leave URI untouched.
+         */
+        public Binding(Expression condition, Handler handler, URI baseURI) {
+            super();
+            this.condition = condition;
+            this.handler = handler;
+            this.baseURI = baseURI;
+        }
+    }
+
     /**
      * Creates and initializes a dispatch handler in a heap environment.
      */
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            DispatchHandler handler = new DispatchHandler();
+            DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
-                Binding binding = new Binding();
-                binding.condition = JsonValueUtil.asExpression(jv.get("condition"));
-                binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
-                binding.baseURI = jv.get("baseURI").asURI();
-                handler.bindings.add(binding);
+                final Expression expression = JsonValueUtil.asExpression(jv.get("condition"));
+                final Handler handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                final URI uri = jv.get("baseURI").asURI();
+                dispatchHandler.addBinding(expression, handler, uri);
             }
-            return handler;
+            return dispatchHandler;
         }
     }
 }
