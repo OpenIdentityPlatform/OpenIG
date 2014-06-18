@@ -1,0 +1,15 @@
+<filter>
+  <filter-name>Agent</filter-name>
+  <display-name>Agent</display-name>
+  <description>OpenAM Policy Agent Filter</description>
+  <filter-class>com.sun.identity.agents.filter.AmAgentFilter</filter-class>
+</filter>
+
+<filter-mapping>
+  <filter-name>Agent</filter-name>
+  <url-pattern>/*</url-pattern>
+  <dispatcher>REQUEST</dispatcher>
+  <dispatcher>INCLUDE</dispatcher>
+  <dispatcher>FORWARD</dispatcher>
+  <dispatcher>ERROR</dispatcher>
+</filter-mapping>

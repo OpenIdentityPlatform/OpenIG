@@ -32,33 +32,96 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Using the Federation Gateway</title>
 
- <para>The Federation component of OpenIG is a standards based
- authentication service used by OpenIG to validate a user and retrieve
- key attributes of the user in order to log them into the target
- applications.</para>
+ <para>
+  The Federation component of OpenIG is a standards based authentication service
+  used by OpenIG to validate a user and retrieve key attributes of the user
+  in order to log them in to applications that OpenIG protects.
+  The Federation component implements Security Assertion Markup Language 2.0.
+ </para>
+
+ <para>
+  Security Assertion Markup Language (SAML) 2.0 is a standard
+  for exchanging security information across organizational boundaries.
+  SAML 2.0 enables web single sign-on (SSO), for example,
+  where the service managing the user's identity
+  does not necessarily belong to the same organization
+  and does not necessarily use the same software
+  as the service that the user wants to access.
+ </para>
+
+ <para>
+  In SAML 2.0, the service managing the user's identity
+  is called the <firstterm>Identity Provider</firstterm> (IDP).
+  The service that the user wants to access
+  is called the <firstterm>Service Provider</firstterm> (SP).
+  Provider organizations agree on the security information they want to exchange,
+  and then they mutually configure access to each others' services,
+  so that the SAML 2.0 federation capability is ready for use.
+  The group of providers sets up a <firstterm>circle of trust</firstterm>,
+  which is a list of services participating in the federation.
+  In order to be able to configure access to services in the circle of trust,
+  the providers share SAML 2.0 <firstterm>metadata</firstterm>
+  describing their services in an XML format defined by the SAML 2.0 standard.
+ </para>
+
+ <para>
+  OpenIG plays the role of SAML 2.0 SP.
+  You must therefore configure OpenIG as SP to access IDP services
+  in order for the Federation component to be operational.
+ </para>
+
+ <para>
+  For SAML 2.0 web SSO, the user authenticates with the IDP.
+  This can start either with the user visiting the IDP site and logging in,
+  or with the user visiting the SP site and being directed to the IDP to log in.
+  On successful authentication, the IDP sends
+  an assertion statement about the authentication to the SP.
+  This assertion statement attests which user the IDP authenticated,
+  when the authentication succeeded, how long the assertion is valid, and so forth.
+  It can optionally contain attribute values for the user who authenticated.
+  (OpenIG can then, for example, use the attribute values
+  to log a user into a protected application.)
+  The assertion can optionally be signed and encrypted.
+ </para>
 
  <orderedlist>
-  <para>There are two ways the Federation Service can be invoked:</para>
+  <para>
+   There are two ways that the OpenIG federation component can be invoked:
+  </para>
+
   <listitem>
-   <para>IDP initiated SSO, where the remote Identity Provider sends an
-    unsolicited Authentication statement to OpenIG
+   <para>
+    IDP initiated SSO,
+    where the remote Identity Provider sends
+    an unsolicited authentication statement to OpenIG
    </para>
   </listitem>
+
   <listitem>
-   <para>SP initiated SSO where OpenIG calls the Federation Service to
-    initiate Federated SSO with the Identity provider
+   <para>
+    SP initiated SSO,
+    where OpenIG calls the Federation component to
+    initiate federated SSO with the Identity Provider
    </para>
   </listitem>
  </orderedlist>
 
- <para>In either case, the job of the Federation Service is to validate the
- user and pass the required attributes to OpenIG to log the user into
- target applications.</para>
+ <para>
+  In both cases, the job of the Federation component is
+  to validate the user
+  and to pass the required attributes to OpenIG
+  so that it can log the user into protected applications.
+ </para>
 
- <para>See the <link xlink:href="gateway-guide#chap-federation-tutorial"
- xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial For the
- Federation Gateway</citetitle></link> for hands on experience with the
- Federation Gateway.</para>
+ <para>
+  See the
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-federation-tutorial"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Tutorial For the Federation Gateway</citetitle></link>
+  in order to try this out with OpenAM playing the role of Identity Provider.
+ </para>
 
  <section xml:id="federation-installation">
   <title>Installation Overview</title>
@@ -69,30 +132,52 @@
  </indexterm>
 
   <itemizedlist>
-   <para>This section is a summary of the steps needed to prepare OpenIG to
-   act as a Federation endpoint for your target application.</para>
+   <para>
+    This section summarizes the steps needed to prepare OpenIG
+    to act as a SAML 2.0 SP for your target application.
+   </para>
+
    <listitem>
-    <para>Install the OpenIG Federation .war.</para>
-   </listitem>
-   <listitem>
-    <para>Configure OpenIG to log users into the target application.
-    Getting this to work before configuring Federation makes the
-    process much simpler to troubleshoot if anything goes wrong.</para>
-   </listitem>
-   <listitem>
-    <para>Add Federation configuration to the OpenIG configuration file.</para>
-   </listitem>
-   <listitem>
-    <para>Add subject mapping, optional assertion mapping, optional redirect URI and
-    optional logout URI to the Federation configuration.</para>
-   </listitem>
-   <listitem>
-    <para>Export the Identity Provider MetaData from the remote Identity
-     Provider or use the meta data from the OpenAM generated fedlet.
+    <para>
+     Install the OpenIG Federation .war.
     </para>
    </listitem>
+
    <listitem>
-    <para>Import OpenIG metadata to your Identity Provider.</para>
+    <para>
+     Configure OpenIG to proxy successfully, and even log a user in,
+     to the target application.
+     Getting this to work before configuring Federation
+     makes the process much simpler to troubleshoot if anything goes wrong.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add Federation configuration to the OpenIG configuration.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add subject mapping, optional assertion mapping,
+     optional redirect URI and optional logout URI configuration
+     to the Federation configuration.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Export the Identity Provider metadata from the remote IDP,
+     or use the metadata from an OpenAM-generated Fedlet.
+     (An OpenAM Fedlet is a small web application that can act as SP.)
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Import OpenIG metadata to your Identity Provider.
+    </para>
    </listitem>
   </itemizedlist>
  </section>
@@ -105,24 +190,45 @@
   <secondary>Federation</secondary>
  </indexterm>
 
-  <para>The Federation service is configured by modifying the OpenIG
-  <filename>config.json</filename> and Federation specific XML files located
-  in the home directory of the effective user running the web application
-  container housing OpenIG. The home directory of this user is referred to as
-  <filename>$HOME</filename> in this document. By default, the
-  Federation service looks in <filename>${warConfigDir}</filename>
-  for <filename>config.json</filename> and
-  <filename>${warSamlDir}</filename> for the Federation XML
-  configuration.</para>
+  <para>
+   You configure the Federation component by modifying
+   both the OpenIG <filename>config.json</filename> file
+   and also by including Federation-specific XML files with the configuration.
+  </para>
 
-  <para>On Windows, the configuration files belong in
-  <filename>${windowsWarConfigDir}</filename>, or
-  <filename>${windowsWarSamlDir}</filename>. To locate the
-  <filename>%appdata%</filename> folder for your version of Windows, open
-  Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-  press Enter. You must create the <filename>${windowsWarConfigDir}</filename> and
-  <filename>${windowsWarSamlDir}</filename> folders, and then copy the
-  configuration files.</para>
+  <itemizedlist>
+   <para>
+    The location of configuration information depends on
+    the operating system where OpenIG runs,
+    and on the user who runs the application server where OpenIG runs.
+   </para>
+
+   <listitem>
+    <para>
+     On UNIX, Linux, and similar systems,
+     where this user's home directory is referred to as <filename>$HOME</filename>,
+     by default the Federation component looks
+     in <filename>${warConfigDir}</filename> for <filename>config.json</filename>
+     and in <filename>${warSamlDir}</filename> for the Federation XML configuration.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     On Windows, by default the Federation component looks
+     in <filename>${windowsWarConfigDir}</filename>,
+     and in <filename>${windowsWarSamlDir}</filename>.
+     To locate the <filename>%appdata%</filename> folder for your version of Windows,
+     open Windows Explorer,
+     type <literal>%appdata%</literal> as the file path,
+     and press Enter.
+     You must create
+     the <filename>${windowsWarConfigDir}</filename>
+     and <filename>${windowsWarSamlDir}</filename> folders,
+     and then copy the configuration files into the folders.
+    </para>
+   </listitem>
+  </itemizedlist>
 
   <variablelist>
    <para>The following is a description of the files:</para>
@@ -130,47 +236,56 @@
    <varlistentry>
     <term><filename>${warConfigDir}/config.json</filename></term>
     <listitem>
-     <para>This is the core configuration file for OpenIG. You must configure
-     both this file and the XML files specific to the Federation Service.
-     The reason there are two sets of configuration files is the Federation
-     Service is based on the openFed library from the OpenAM open source
-     project. The openFed library and the Federation configuration files are
-     taken directly from the OpenFM release. In order to get the Federation
-     Service configured you must tag swap the XML files. If you are familiar
-     with the workflow in the OpenAM console you can generate a Fedlet and
-     directly copy the configuration files into
-     <filename>${warSamlDir}</filename>.</para>
+     <para>
+      This is the core configuration file for OpenIG.
+      You must configure both this file
+      and also the XML files specific to the Federation component.
+      The reason there are two sets of configuration files
+      is that the Federation component includes a federation library from OpenAM.
+      In order to configure the Federation component you must tag swap the XML files.
+      If you are familiar with the workflow in the OpenAM console
+      you can instead generate a Fedlet and directly copy the configuration files
+      into <filename>${warSamlDir}</filename>.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
     <term><filename>${warSamlDir}/FederationConfig.properties</filename></term>
     <listitem>
-     <para>Advanced features of the openFed library. The defaults suffice in
-     most deployments.</para>
+     <para>
+      Advanced features of the federation library from OpenAM.
+      The defaults suffice in most deployments.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
     <term><filename>${warSamlDir}/gateway.cot</filename></term>
     <listitem>
-     <para>Circle of trust for OpenIG and the Identity Provider.</para>
+     <para>
+      Circle of trust for OpenIG and the Identity Provider.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
     <term><filename>${warSamlDir}/idp.xml</filename></term>
     <listitem>
-     <para>This file is not included with the Federation Service XML. It must
-     be generated by the Identity Provider and copied into the configuration
-     directory.</para>
+     <para>
+      This metadata file is not included with the Federation Service XML.
+      This is generated by the Identity Provider.
+      You must copy the generated metadata file into the configuration directory.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
     <term><filename>${warSamlDir}/idp-extended.xml</filename></term>
     <listitem>
-     <para>Standard extensions for the Identity Provider.</para>
+     <para>
+      Standard metadata extensions generated by the Identity Provider.
+     </para>
     </listitem>
    </varlistentry>
 
@@ -178,8 +293,10 @@
     <term><filename>${warSamlDir}/sp.xml</filename></term>
     <term><filename>${warSamlDir}/sp-extended.xml</filename></term>
     <listitem>
-     <para>These are the standard metadata and metadata extensions for the
-     OpenIG Federation Service.</para>
+     <para>
+      These are the standard metadata and metadata extensions
+      for the OpenIG Federation component.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -193,187 +310,247 @@
   <secondary>Federation</secondary>
  </indexterm>
 
-  <para>The simplest way to configure the OpenIG Federation Gateway is to use
-  the OpenAM task wizard to generate a Fedlet and then use the Fedlet
-  configuration files in the Gateway configuration directory. If you use the
-  Fedlet configuration files, simply unpack <filename>Fedlet.war</filename>
-  and copy all the files listed above into
-  <filename>${warSamlDir}</filename>. You do not have to modify
-  the files to do basic IDP and SP initiated SSO with OpenIG. Note that the
-  sample Federation Gateway <filename>config.json</filename> templates uses
-  <literal>/saml</literal> as the URI so your Fedlet endpoint should be
-  specified as <literal><replaceable>protocol</replaceable>://<replaceable
-  >host</replaceable>.<replaceable>domain</replaceable>:<replaceable
-  >port</replaceable>/saml</literal>.</para>
+  <para>
+   The simplest way to configure the Federation component
+   is to use the OpenAM task wizard to generate a Fedlet,
+   and then copy the Fedlet configuration files to the correct locations.
+   If you use the Fedlet configuration files,
+   simply unpack <filename>Fedlet.war</filename>
+   and copy all the files listed above into <filename>${warSamlDir}</filename>.
+   You do not have to modify the files
+   to do basic IDP and SP initiated SSO with OpenIG.
+   When generating a Fedlet,
+   know that the sample <filename>config.json</filename> templates
+   uses <literal>/saml</literal> as the URI
+   so your Fedlet end point should be specified as
+   <literal><replaceable>protocol</replaceable>://<replaceable
+    >host</replaceable>.<replaceable>domain</replaceable>:<replaceable
+    >port</replaceable>/saml</literal>.
+  </para>
 
-  <para>If you do not use the Fedlet wizard, then follow the instructions for
-  the unconfigured Fedlet and then copy the Fedlet configuration files to the
-  <filename>${warSamlDir}</filename> directory. You must also
-  export the metadata from the IDP and copy it to <filename>idp.xml</filename>
-  in the same directory.</para>
+  <para>
+   If you do not use the Fedlet wizard,
+   edit the configuration files for the unconfigured Fedlet,
+   and then copy the Fedlet configuration files
+   to the <filename>${warSamlDir}</filename> directory.
+   You must still nevertheless get the metadata from the IDP,
+   and then copy it to <filename>idp.xml</filename> in the same directory.
+  </para>
  </section>
 
  <section xml:id="federation-config-json">
   <title>Config.json Sample</title>
 
-  <para>The following sample configuration is from the tutorial on federating
-  WordPress. The sample configuration receives a SAML assertion from OpenAM
-  and then logs the user into WordPress using the user name and password from
-  the assertion.</para>
+  <para>
+   The following sample configuration is corresponds to a scenario
+   where OpenIG receives a SAML assertion from OpenAM,
+   and then logs the user in to the protected application
+   using the username and password from the assertion.
+   Descriptions of the fields follow the example.
+  </para>
 
-  <para>The following excerpt of the Federation Service JSON is from the OpenIG
-  <filename>config.json</filename> file. All fields in the example are mandatory
-  except <literal>logoutURI</literal>. The <literal>logoutURI</literal> is only
-  necessary if your configuration uses the single logout feature.</para>
-
-  <programlisting language="javascript">{
+  <programlisting language="javascript">
+{
     "name": "FederationServlet",
     "type": "org.forgerock.openig.saml.FederationServlet",
     "config": {
         "assertionMapping": {
-            "userName":"uid",
-            "password":"userPassword" 
+            "username": "mail",
+            "password": "mailPassword"
         },
-        "subjectMapping":"subjectName",
-        "sessionIndexMapping":"sessionIndex",
-        "redirectURI":"/login",
-        "logoutURI":"/logout"
-        "assertionConsumerEndpoint":"fedletapplication",
-        "SPinitiatedSSOEndpoint":"SPInitiatedSSO",
-        "singleLogoutEndpoint":"fedletSlo"
-   }
-}</programlisting>
+        "subjectMapping": "subjectName",
+        "sessionIndexMapping": "sessionIndex",
+        "redirectURI": "/login",
+        "logoutURI": "/logout",
+        "assertionConsumerEndpoint": "fedletapplication",
+        "SPinitiatedSSOEndpoint": "SPInitiatedSSO",
+        "singleLogoutEndpoint": "fedletSlo"
+    }
+}
+  </programlisting>
 
   <variablelist>
    <varlistentry>
-    <term>name</term>
+    <term>"name" (required)</term>
     <listitem>
-     <para>Name of the Federation Service within the OpenIG runtime.
-     This value should not be modified.</para>
+     <para>
+      Name of the Federation component of OpenIG.
+      Do not modify this value.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>type</term>
+    <term>"type" (required)</term>
     <listitem>
-     <para>Classname of the Federation Servlet. This value should not be
-     modified.</para>
+     <para>
+      Class name of the Federation servlet.
+      Do not modify this value.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>assertionMapping</term>
+    <term>"assertionMapping" (optional)</term>
     <listitem>
-     <para>(Optional) The <literal>assertionMapping</literal> defines how to transform the
-     attributes from the incoming assertion to attribute value pairs in the
-     session. Each entry in the <literal>assertionMapping</literal> is of the
-     form <literal><replaceable>attributeName</replaceable>:<replaceable
-     >assertionName</replaceable></literal>. The
-     <replaceable>attributeName</replaceable> represents the name of the
-     attribute set in the session. The <replaceable>assertionName</replaceable>
-     is used to fetch the value from the incoming assertion, which becomes the
-     value in the session. The following statements correspond to the sample
-     shown above.</para>
+     <para>
+      The "assertionMapping" defines how to transform attributes
+      from the incoming assertion to attribute value pairs in OpenIG.
+      Each entry in the <literal>assertionMapping</literal> is of the form
+      <literal><replaceable>localName</replaceable>:
+       <replaceable>incomingName</replaceable></literal>,
+      where <replaceable>incomingName</replaceable>
+      is used to fetch the value from the incoming assertion,
+      and <replaceable>localName</replaceable>
+      is the name of the attribute set in the session.
+     </para>
 
-     <para>If the incoming assertion contains the statement:</para>
+     <para>
+      The following statements correspond to the sample shown above.
+     </para>
+
+     <para>
+      If the incoming assertion contains the statement:</para>
      
-     <literallayout class="monospaced">uid = jojo</literallayout>
-     <literallayout class="monospaced">userPassword = 123456789</literallayout>
+     <literallayout class="monospaced">mail = george@example.com</literallayout>
+     <literallayout class="monospaced">mailPassword = costanza</literallayout>
 
      <para>Then the following values are set in the session:</para>
 
-     <literallayout class="monospaced">userName = jojo</literallayout>
-     <literallayout class="monospaced">password = 123456789</literallayout>
+     <literallayout class="monospaced">username = george@example.com</literallayout>
+     <literallayout class="monospaced">password = costanza</literallayout>
 
-     <para>Notice that you must also modify attributeMap in the
-     <filename>${warSamlDir}/sp-extended.xml</filename> to match
-     the assertion mapping configured in the IDP metadata.</para>
+     <para>
+      For this to work,
+      you must edit the &lt;Attribute name="attributeMap"> element
+      in the SP extended metadata file,
+      <filename>${warSamlDir}/sp-extended.xml</filename>,
+      so that it matches the assertion mapping configured in the IDP metadata.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>subjectMapping</term>
+    <term>subjectMapping (required)</term>
     <listitem>
-     <para>The value contained in the assertion subject is set as the value of
-     the attribute <literal>subjectName</literal> in the session.</para>
+     <para>
+      The value contained in the assertion subject is set as
+      the value of the attribute <literal>subjectName</literal> in the session.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>sessionIndexMapping</term>
+    <term>"sessionIndexMapping"</term>
     <listitem>
-     <para>The IDP's <literal>sessionIndex</literal> for the user is sent in
-     the assertion. The value contained in the assertion is set as the value
-     of the attribute <literal>sessionIndex</literal> in the session.</para>
+     <para>
+      The IDP sends the <literal>sessionIndex</literal> for the user
+      in the assertion.
+      The value contained in the assertion is set as
+      the value of the attribute <literal>sessionIndex</literal> in the session.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>redirectURI</term>
+    <term>"redirectURI" (required)</term>
     <listitem>
-     <para>The <literal>redirectURI</literal> should be set to the page the
-     Form-Filter recognizes as the login page for the target application.
-     This is how OpenIG and the Federation service work together to provide
-     single sign-on. When OpenIG detects the target application's login page,
-     it redirects to the Federation Service. Once the Federation Service
-     validates the SAML exchanges with the IDP and sets the required session
-     attributes, it redirect back to the target application's login page.
-     This allows the Form-Filter to finish the job of logging in the user by
-     retrieving the necessary user data from the session and creating a login
-     form for the application.</para>
+     <para>
+      Set this to the page that the filter used to HTTP POST a login form
+      recognizes as the login page for the protected application.
+     </para>
+
+     <para>
+      This is how OpenIG and the Federation component work together
+      to provide single sign-on.
+      When OpenIG detects the login page of the protected application,
+      it redirects to the Federation component.
+      Once the Federation Service validates the SAML exchanges with the IDP,
+      and sets the required session attributes,
+      it redirects back to the login page of the protected application.
+      This allows the filter used to HTTP POST a login form to finish the job
+      by creating a login form to post to the application
+      based on the credentials retrieved from the session attributes.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>logoutURI</term>
+    <term>"logoutURI" (optional)</term>
     <listitem>
-     <para>The <literal>logoutURI</literal> should be set to the URI which logs
-     the user out of  the target application. This attribute is only needed if
-     your application uses the single log-out feature of the Identity
-     Provider.</para>
+     <para>
+      Set this to the URI that logs the user out of the protected application.
+     </para>
+
+     <para>
+      You only need to set this if the application
+      uses the single logout feature of the Identity Provider.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>assertionConsumerEndpoint</term>
+    <term>"assertionConsumerEndpoint" (optional)</term>
     <listitem>
-     <para>The default value of <literal>fedletapplication</literal> is the same
-     as the Fedlet. If you modify this attribute you must change the metadata
-     to match.</para>
+     <para>
+      Default: "fedletapplication" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>SPinitiatedSSOEndpoint</term>
+    <term>"SPinitiatedSSOEndpoint" (optional)</term>
     <listitem>
-     <para>The default value is <literal>SPInitiatedSSO</literal>. If you
-     modify this attribute you must change the metadata to match.</para>
+     <para>
+      Default: "SPInitiatedSSO"
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>singleLogoutEndpoint</term>
+    <term>"singleLogoutEndpoint" (optional)</term>
     <listitem>
-     <para>The default value of <literal>fedletSLO</literal> is the same as the
-     Fedlet. If you modify this attribute you must change the metadata to
-     match.</para>
+     <para>
+      Default: "fedletSLO" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>singleLogoutEndpointSoap</term>
+    <term>"singleLogoutEndpointSoap" (optional)</term>
     <listitem>
-     <para>(Optional) The default value of <literal>fedletSloSoap</literal> is
-     the same as the Fedlet. If you modify this attribute you must change the
-     metadata to match.</para>
+     <para>
+      Default: "fedletSloSoap" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term>SPinitiatedSLOEndpoint</term>
+    <term>"SPinitiatedSLOEndpoint" (optional)</term>
     <listitem>
-     <para>The default value is <literal>SPInitiatedSLO</literal>. If you
-     modify this attribute you must change the metadata to match.</para>
+     <para>
+      Default: "SPInitiatedSLO"
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -382,62 +559,96 @@
  <section xml:id="federation-example-settings">
   <title>Example Settings</title>
 
-  <para>Application myportal requires a form with userName and password for
-  login. The userName for myportal is the mail attribute at the user's Identity
-  Provider. The password for myportal is the mailPassword at the Identity
-  Provider. The incoming SAML2 assertion sent by the Identity Provider contains
-  the mail and mailPassword attributes. The Federation Service validates the
-  incoming assertion, sets the userName and password in the HttpSession to the
-  values of mail and mailPassword from the assertion, and redirects the user
-  to <literal>/myportal/login</literal>. The LoginRequest Filter then retrieves
-  the login values from the session and creates the form to log the user into
-  myportal.</para>
+  <para>
+   Application <literal>myportal</literal> requires a form
+   with username and password for login.
+   The username for <literal>myportal</literal>
+   is the <literal>mail</literal> attribute at the user's Identity Provider.
+   The password for <literal>myportal</literal>
+   is the <literal>mailPassword</literal> attribute at the Identity Provider.
+  </para>
 
-  <programlisting language="javascript">{
+  <para>
+   The incoming SAML2 assertion sent by the Identity Provider contains
+   the <literal>mail</literal> and <literal>mailPassword</literal> attributes.
+   The Federation component validates the incoming assertion,
+   sets the session attributes
+   <literal>username</literal> and <literal>password</literal>
+   to the values of
+   <literal>mail</literal> and <literal>mailPassword</literal>
+   from the assertion attributes,
+   and redirects the user to <literal>/myportal/login</literal>.
+   A "LoginRequest" filter then retrieves the credentials
+   and creates the form to log the user in to <literal>myportal</literal>.
+  </para>
+
+  <para>
+   The "FederationServlet" configuration object looks like this:
+  </para>
+
+  <programlisting language="javascript">
+{
     "name": "FederationServlet",
     "type": "org.forgerock.openig.saml.FederationServlet",
     "config": {
-            "assertionMapping": {
-                 "userName":"mail",
-                 "password":"mailPassword"
-            }
-            "redirectURI":"/myportal/login",
-            "logoutURI":"/myportal/logout" 
+        "assertionMapping": {
+            "username": "mail",
+            "password": "mailPassword"
+        },
+        "redirectURI": "/myportal/login",
+        "logoutURI": "/myportal/logout"
     }
-}</programlisting>
+}
+  </programlisting>
 
-<programlisting language="javascript">{
+  <para>
+   The "LoginRequest" configuration object looks like this:
+  </para>
+
+  <programlisting language="javascript">
+{
     "name": "LoginRequest",
     "type": "StaticRequestFilter",
     "config": {
         "method": "POST",
-        "uri": "https://10.10.0.5/login",
+        "uri": "https://www.myportal.com/myportal/login",
         "form": {
-            "userName": [ "${exchange.session.userName}" ],
-            "password": [ "${exchange.session.password}" ],
-        }   
-    }   
-}</programlisting>
+            "username": [
+                "${exchange.session.username}"
+            ],
+            "password": [
+                "${exchange.session.password}"
+            ]
+        }
+    }
+}
+  </programlisting>
  </section>
 
  <section xml:id="federation-idp-metadata">
   <title>Identity Provider Metadata</title>
 
-  <para>The Identity Provider metadata must be in
-  <filename>${warSamlDir}/idp.xml</filename> directory. See the
-  documentation for your Identity Provider for instructions on how to get the
-  metadata.</para>
+  <para>
+   The Identity Provider metadata must be copied to
+   the <filename>${warSamlDir}/idp.xml</filename> directory.
+   See the documentation for your Identity Provider
+   for instructions on how to get the metadata.
+  </para>
 
-  <para>To export Identity Provider metadata from OpenAM, run a command such
-  as the following.</para>
+  <para>
+   To export Identity Provider metadata from OpenAM,
+   either save the response from the appropriate end point,
+   such as <literal>http://openam.example.com:8088/openam/saml2/jsp/exportmetadata.jsp</literal>,
+   or run an <command>ssoadm</command> command such as the following:
+  </para>
 
   <screen>
 $ <userinput>ssoadm \
  export-entity \
- -u amadmin \
- -f /tmp/pass \
- -y http://www.idp.com:8080/openam \
- -m /tmp/idp.xml</userinput>
+ --adminid amadmin \
+ --password-file /tmp/pwd.txt \
+ --entityid http://openam.example.com:8088/openam \
+ --meta-data-file /tmp/idp.xml</userinput>
   </screen>
  </section>
 </chapter>

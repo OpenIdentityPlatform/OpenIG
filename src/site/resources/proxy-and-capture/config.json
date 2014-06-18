@@ -1,0 +1,49 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler",
+                    "baseURI": "http://www.example.com:8081"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "handler": "OutgoingChain"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter"
+                    ],
+                    "handler": "DefaultHandler"
+                }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "DefaultHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "servletObject": "HandlerServlet"
+}

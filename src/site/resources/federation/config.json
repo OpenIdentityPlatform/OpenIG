@@ -1,0 +1,110 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LogSink",
+                "comment": "Default sink for logging information.",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG"
+                }
+            },
+            {
+                "name": "DispatchServlet",
+                "type": "DispatchServlet",
+                "config": {
+                    "bindings": [
+                        {
+                            "pattern": "^/saml",
+                            "object": "FederationServlet"
+                        },
+                        {
+                            "pattern": "",
+                            "object": "HandlerServlet"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "FederationServlet",
+                "type": "org.forgerock.openig.saml.FederationServlet",
+                "config": {
+                    "assertionMapping": {
+                        "username": "mail",
+                        "password": "employeenumber"
+                    },
+                    "subjectMapping": "subjectName",
+                    "redirectURI": "/"
+                }
+            },
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler",
+                    "baseURI": "http://www.example.com:8081"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${empty exchange.session.username}",
+                            "handler": "SPInitiatedSSORedirectHandler"
+                        },
+                        {
+                            "handler": "LoginChain"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "SPInitiatedSSORedirectHandler",
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 302,
+                    "reason": "Found",
+                    "headers": {
+                        "Location": [
+                            "http://www.example.com:8080/saml/SPInitiatedSSO"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "LoginRequest"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "${exchange.session.username}"
+                        ],
+                        "password": [
+                            "${exchange.session.password}"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "servletObject": "DispatchServlet"
+}

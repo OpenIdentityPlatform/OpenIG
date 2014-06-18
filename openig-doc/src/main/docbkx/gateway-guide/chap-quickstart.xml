@@ -29,197 +29,640 @@
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Getting Started</title>
 
- <para>This chapter provides instructions to get OpenIG up and running on
- Jetty, configured to execute the WordPress samples at our hosted WordPress
- deployment. This allows you to quickly see how OpenIG works and provides hands
- on experience with a few key features. If you are looking for more general
- installation and configuration instructions for your deployment or would
- like to use a container other than Jetty, start with the chapter on <link
- xlink:href="gateway-guide#chap-install"
- xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Installing
- OpenIG</citetitle></link>.</para>
+ <para>
+  This chapter provides instructions to get OpenIG up and running on Jetty,
+  configured to serve as reverse proxy
+  to a minimal HTTP server for use when following along with the documentation.
+  This allows you to quickly see how OpenIG works,
+  and provides hands on experience with a few key features.
+  For more general installation and configuration instructions,
+  start with the chapter on
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-install"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Installing OpenIG</citetitle></link>.
+ </para>
 
- <section>
+ <section xml:id="before-you-quickstart">
   <title>Before You Begin</title>
 
-  <para>For the remainder of this chapter, <literal>$HOME</literal> is the
-  location of the home directory of the user running the web application
-  container, where Jetty, OpenIG and the Samples are unpacked.</para>
-
-  <para>Make sure you have the correct Java environment installed. If necessary,
-  download and install <link xlink:show="new"
-  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
-  versions of any JDK supported with OpenIG.</para>
+  <para>
+   Make sure you have a supported Java Development Kit installed.
+   For details, see the <citetitle>Release Notes</citetitle> section,
+   <link
+    xlink:show="new"
+    xlink:href="release-notes#java-requirements"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>JDK Version</citetitle></link>.
+  </para>
  </section>
 
- <section>
+ <section xml:id="quickstart-install">
   <title>Installation Steps</title>
 
   <procedure>
    <step>
-    <para><link xlink:href="http://www.forgerock.org/openig.html"
-    xlink:show="new">Download</link> and if necessary unpack the gateway
-    .war file.</para>
-   </step>
-
-   <step>
-    <para>Download and unzip the <link xlink:show="new"
-    xlink:href="http://openig.forgerock.org/forgerock-sample-configs.zip">OpenIG
-    sample configuration files</link>.</para>
-   </step>
-
-   <step>
-    <para>Download and unzip <link xlink:show="new"
-    xlink:href="http://dist.codehaus.org/jetty/jetty-hightide-7.1.6/jetty-hightide-7.1.6.v20100715.zip"
-    >Jetty 7.1.6 Hightide</link>.</para>
-   </step>
-
-   <step>
-    <para>Copy the OpenIG .war file as <filename>root.war</filename> to the
-    <filename>webapps/</filename> directory in Jetty.</para>
-
-    <para>When copied to this location along with the
-    <filename>root.xml</filename> file below, Jetty automatically deploys OpenIG
-    on startup.</para>
+    <para>
+     Download and run the
+     <link xlink:href="${sampleServerDownloadUrl}"
+     >minimal HTTP server .jar</link>
+     to use as the application to protect.
+    </para>
 
     <screen>
-$ <userinput>cp $HOME/gateway-*.war $HOME/jetty-hightide-7.1.6/webapps/root.war</userinput>
+$ <userinput>java -jar ${sampleServerJar}</userinput>
+<computeroutput>Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Starting HTTP server on port 8081
+Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8081]
+Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.HttpServer start
+INFO: [HttpServer] Started.
+Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Press Ctrl+C to stop the server.
+</computeroutput>
+    </screen>
+
+    <para>
+     Now access the minimal HTTP server through a browser at
+     <link xlink:show="new" xlink:href="http://localhost:8081" />.
+    </para>
+
+    <para>
+     Login with username <literal>demo</literal>,
+     password <literal>changeit</literal>.
+     You should see a page that includes the username, <literal>demo</literal>,
+     and some information about your browser request.
+    </para>
+
+    <para>
+     By default, this server listens on port 8081.
+     If that port is not free, specify another port.
+    </para>
+
+    <screen>
+$ <userinput>java -jar ${sampleServerJar} 8888</userinput>
+<computeroutput>Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Starting HTTP server on port 8888
+Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8888]
+Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.HttpServer start
+INFO: [HttpServer] Started.
+Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Press Ctrl+C to stop the server.</computeroutput>
     </screen>
    </step>
 
    <step>
-    <para>Copy the <filename>WordPressLogin.json</filename> gateway
-    configuration file to
-    <filename>${warConfigDir}/config.json</filename>. By default,
-    OpenIG looks for <filename>config.json</filename> in the
-    <filename>${warConfigDir}</filename> directory.</para>
+    <para>
+     Download and unzip a supported version of Jetty server.
+    </para>
+
+    <para>
+     Supported versions are listed in the <citetitle>Release Notes</citetitle> section,
+     <link
+     xlink:show="new"
+     xlink:href="release-notes#which-container"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Web Application Containers</citetitle></link>.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     <link
+      xlink:href="${downloadUrl}"
+      xlink:show="new"
+     >Download</link> the OpenIG .war file.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     If you are using Jetty 7,
+     configure Jetty to run OpenIG in the root context.
+    </para>
+
+    <para>
+     If you are using Jetty 8 or 9, then skip this step.
+    </para>
+
+    <para>
+     Create <filename>/path/to/jetty/contexts/root.xml</filename>
+     with the following content.
+    </para>
+
+    <informalexample><?dbfo pgwide="1"?>
+     <programlisting language="xml">
+<xinclude:include href="root-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include XML
+ </xinclude:fallback>
+</xinclude:include>
+     </programlisting>
+    </informalexample>
+   </step>
+
+   <step>
+    <para>
+     Deploy OpenIG in the root context.
+    </para>
+
+    <para>
+     Copy the OpenIG .war file as <filename>root.war</filename>
+     to the <filename>/path/to/jetty/webapps/</filename>.
+    </para>
 
     <screen>
-$ <userinput>cp $HOME/forgerock-sample-configs/WordPressLogin.json \
- ${warConfigDir}/config.json</userinput>
+$ <userinput>cp ${openigWar} /path/to/jetty/webapps/root.war</userinput>
     </screen>
 
-    <para>On Windows, the configuration files belong in
-    <filename>%appdata%\ForgeRock\OpenIG</filename>. To locate the
-    <filename>%appdata%</filename> folder for your version of Windows, open
-    Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-    press Enter. You must create the <filename>ForgeRock\OpenIG\</filename>
-    folder, and then copy the configuration files.</para>
+    <para>
+     When the <filename>root.xml</filename> file configuration as described,
+     Jetty automatically deploys OpenIG in the root context on startup.
+    </para>
    </step>
 
    <step>
-    <para>Create
-    <filename>$HOME/jetty-hightide-7.1.6/contexts/root.xml</filename> with the
-    following content. This tells Jetty to deploy OpenIG in the root
-    context:</para>
+    <para>
+     Prepare the OpenIG configuration.
+    </para>
 
-    <programlisting language="xml"
-    >&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;
-&lt;!DOCTYPE Configure PUBLIC &quot;-//Jetty//Configure//EN&quot;
-  &quot;http://www.eclipse.org/jetty/configure.dtd&quot;&gt;
-&lt;Configure class=&quot;org.eclipse.jetty.webapp.WebAppContext&quot;&gt;
-    &lt;Set name=&quot;contextPath&quot;&gt;/&lt;/Set&gt;
-    &lt;Set name=&quot;war&quot;&gt;&lt;SystemProperty name=&quot;jetty.home&quot;
-      default=&quot;.&quot;/&gt;/webapps/root.war&lt;/Set&gt;
-    &lt;Set name=&quot;extractWAR&quot;&gt;true&lt;/Set&gt;
-    &lt;Set name=&quot;copyWebDir&quot;&gt;false&lt;/Set&gt;
-    &lt;Set name=&quot;defaultsDescriptor&quot;&gt;&lt;SystemProperty name=&quot;jetty.home&quot;
-      default=&quot;.&quot;/&gt;/etc/webdefault.xml&lt;/Set&gt;
-&lt;/Configure&gt;</programlisting> 
+    <para>
+     Copy the basic configuration file
+     <link
+      xlink:show="new"
+      xlink:href="http://openig.forgerock.org/proxy-and-capture/config.json"
+     >config.json</link>
+     to <filename>${warConfigDir}/config.json</filename>.
+     By default, OpenIG looks for <filename>config.json</filename>
+     in the <filename>${warConfigDir}</filename> directory.
+    </para>
+
+    <screen>
+$ <userinput>mkdir -p ${warConfigDir}</userinput>
+$ <userinput>cp config.json ${warConfigDir}/config.json</userinput>
+    </screen>
+
+    <para>
+     On Windows, the configuration files belong in
+     <filename>${windowsWarConfigDir}</filename>.
+     To locate the <filename>%appdata%</filename> folder
+     for your version of Windows,
+     open Windows Explorer,
+     type <literal>%appdata%</literal> as the file path,
+     and press Enter.
+     You must create the <filename>${windowsWarConfigDir}</filename> folder,
+     and then copy the configuration files.
+    </para>
+
+    <para>
+     Also on Windows, change the capture log file name
+     in <filename>config.json</filename>
+     from <filename>/tmp/gateway.log</filename>
+     to a file system location that works for Windows systems,
+     such as <filename>C:\Temp\gateway.log</filename>.
+    </para>
    </step>
 
-   <step>
-    <para>If you are managing multiple
-    applications in one domain you must turn on domain cookies in Jetty. This
-    can be done by adding the following property to
-    <filename>$JETTY_HOME/contexts/root.xml</filename> or to
-    <filename>$JETTY_HOME/etc/jetty.xml</filename>. Note that any changes to
-    <filename>jetty.xml</filename> impact all web applications running in the
-    container.</para>
+   <step performance="optional">
+    <para>
+     If you are managing multiple applications in one domain
+     you must turn on domain cookies in Jetty.
+     This can be done by adding the following property to
+     <filename>/path/to/jetty/contexts/root.xml</filename>
+     or to <filename>/path/to/jetty/etc/jetty.xml</filename>.
+     Note that any changes to <filename>jetty.xml</filename>
+     impact all web applications running in the container.
+    </para>
 
-    <programlisting language="xml">&lt;Get name="sessionHandler"&gt;
-    &lt;Get name="sessionManager"&gt;
-        &lt;Set name="sessionDomain"&gt;.forgerock.com&lt;Set&gt;
-    &lt;Get&gt;
-&lt;Get&gt;</programlisting>
+    <programlisting language="xml">
+<xinclude:include href="jetty-session-handler-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include XML
+ </xinclude:fallback>
+</xinclude:include>
+    </programlisting>
    </step>
 
    <step>
     <para>Start Jetty in the background:</para>
 
     <screen>
-$ <userinput>$HOME/jetty-hightide-7.1.6/bin/jetty.sh start</userinput>
+$ <userinput>/path/to/jetty/bin/jetty.sh start</userinput>
     </screen>
 
     <para>Or start Jetty in the foreground:</para>
 
     <screen>
-$ <userinput>java -jar $HOME/jetty-hightide-7.1.6/start.jar</userinput>
+$ <userinput>$ cd /path/to/jetty/</userinput>
+$ <userinput>java -jar start.jar</userinput>
     </screen>
    </step>
   </procedure>
  </section>
 
- <section>
-  <title>Configuration Steps</title>
+ <section xml:id="quickstart-network-config">
+  <title>Network Configuration Steps</title>
 
-  <para>So far you have deployed the gateway web application in the root
-  context of Jetty on port 8080. Since the gateway is a reverse proxy you must
-  make sure all traffic from your browser to
-  <literal>http://demo.forgerock.com:8080/wordpress/</literal> goes through the
-  gateway. The quickest way to do this is to add an entry to your
-  <filename>/etc/hosts</filename> file on UNIX systems or
-  <filename>%SystemRoot%\system32\drivers\etc\hosts</filename> on Windows. See
-  <link xlink:show="new" xlink:href="http://en.wikipedia.org/wiki/Hosts_(file)"
-  >Wikipedia</link> for more information on host files. If you are running
-  OpenIG and the browser on the same host, add this entry to the hosts file on
-  the OpenIG host.</para>
+  <para>
+   So far you have deployed OpenIG in the root context of Jetty on port 8080.
+   Since OpenIG is a reverse proxy you must make sure
+   that all traffic from your browser to the protected application
+   goes through OpenIG.
+   In other words, the network must be configured
+   so that the browser goes to OpenIG
+   instead of going directly to the protected application.
+  </para>
 
-  <programlisting>127.0.0.1 demo.forgerock.com</programlisting>
+  <para>
+   Although if you followed the installation steps you are running
+   both OpenIG and the minimal HTTP server
+   on the same host as your browser (probably your laptop or desktop),
+   keep in mind that network configuration is an important deployment step.
+   To encourage you to keep this in mind,
+   the sample configuration for this chapter expects the minimal HTTP server
+   to be running on <literal>www.example.com</literal>,
+   rather than <literal>localhost</literal>.
+  </para>
 
-  <para>If you are running the browser and OpenIG on separate hosts, you must
-  add the IP address of the host running OpenIG. For example, if OpenIG is
-  running on a host with IP Address of 10.0.1.5:</para>
+  <para>
+   The quickest way to configure the network locally is to add an entry to your
+   <filename>/etc/hosts</filename> file on UNIX systems
+   or <filename>%SystemRoot%\system32\drivers\etc\hosts</filename> on Windows.
+   See the Wikipedia entry,
+   <link
+    xlink:show="new"
+    xlink:href="http://en.wikipedia.org/wiki/Hosts_(file)"
+   ><citetitle>Hosts (file)</citetitle></link>,
+   for more information on host files.
+   If you are indeed running all servers in this chapter on the same host,
+   add the following entry to the hosts file.
+  </para>
 
-  <programlisting>10.0.1.5 demo.forgerock.com</programlisting>
+  <programlisting>127.0.0.1    www.example.com</programlisting>
+
+  <para>
+   If you are running the browser and OpenIG on separate hosts,
+   add the IP address of the host running OpenIG
+   to the hosts file on the system running the browser,
+   where the host name matches that of protected application.
+   For example, if OpenIG is running on a host with IP address 192.168.0.15:
+  </para>
+
+  <programlisting>192.168.0.15    www.example.com</programlisting>
+
+  <para>
+   If OpenIG is on a different host from the protected application,
+   also make sure that the host name of the protected application
+   resolves correctly for requests from OpenIG to the application.
+  </para>
 
   <tip>
-   <para>Some browsers cache IP address resolutions, even after clearing all
-   browsing data. It might be necessary to restart the browser if you are
-   changing IP addresses of named hosts. The simplest way to make sure you have
-   configured your DNS or host settings properly is to stop OpenIG and
-   make sure you cannot reach the target application. If you can still reach
-   it, you should double check your host settings. You should also make sure
-   your name resolution is configured to check your host files before DNS.
-   This configuration can be found in <filename>/etc/nsswitch.conf</filename>
-   for most UNIX systems. Make sure <literal>files</literal> is listed before
-   <literal>dns</literal>.</para>
+   <para>
+    Some browsers cache IP address resolutions,
+    even after clearing all browsing data.
+    Restart the browser after changing the IP addresses of named hosts.
+  </para>
+
+  <para>
+    The simplest way to make sure you have configured
+    your DNS or host settings properly for remote systems is to stop OpenIG
+    and then to make sure you cannot reach the target application
+    with the host name and port number of OpenIG.
+    If you can still reach it, double check your host settings.
+  </para>
+
+  <para>
+    Also make sure name resolution is configured to check host files before DNS.
+    This configuration can be found in <filename>/etc/nsswitch.conf</filename>
+    for most UNIX systems.
+    Make sure <literal>files</literal> is listed before <literal>dns</literal>.
+   </para>
   </tip>
  </section>
 
- <section>
+ <section xml:id="quickstart-try-it-out">
   <title>Try It Out</title>
-  <para><link xlink:href="http://demo.forgerock.com:8080/wordpress/" /> should
-  take you to the WordPress portal hosted at ForgeRock. When you click the login
-  link, you are automatically logged in by OpenIG with the user name
-  <literal>george</literal>.</para>
 
-  <para>What's happening behind the scenes?</para>
+  <para>
+   <link xlink:show="new" xlink:href="http://www.example.com:8080/" />
+   should take you to the home page of the minimal HTTP server.
+  </para>
 
-  <para>When your browser goes to
-  <literal>http://demo.forgerock.com:8080/wordpress/</literal>, it is actually
-  connecting to OpenIG deployed on Jetty. OpenIG is configured to proxy all
-  traffic it receives to the target application at
-  <literal>http://demo.forgerock.com:8080/wordpress/</literal>. For this
-  example, OpenIG is watching for the login page from WordPress. When it sees
-  the login page, it creates and POSTs the login form for WordPress on behalf
-  of the user. Since this is just a sample, the credentials for the user are
-  hard coded in the gateway configuration file. In a real deployment, the
-  credentials may come from a database, directory, flat file, HTTP headers,
-  SAML assertion,or an OpenAM policy agent.</para>
+  <orderedlist>
+   <para>
+    Now change the OpenIG configuration to log you in automatically
+    with hard-coded credentials.
+   </para>
+
+   <listitem>
+    <para>
+     Edit the configuration file, <filename>config.json</filename>,
+     to automatically log you in as username <literal>demo</literal>,
+     password <literal>password</literal>.
+    </para>
+
+    <orderedlist>
+     <para>
+      To do this, make the following two changes to the file.
+     </para>
+
+     <listitem>
+      <para>
+       Between the <literal>"OutgoingChain"</literal> object
+       and the "CaptureFilter" object,
+       add a new <literal>StaticRequestFilter</literal> configuration object.
+      </para>
+
+      <para>
+       The <literal>StaticRequestFilter</literal> performs
+       an HTTP POST of the username and password as form data.
+       OpenIG supports a variety of ways to get the credentials,
+       but for now just hard code them into the configuration.
+      </para>
+
+      <para>
+       The new filter configuration object should look like this:
+      </para>
+
+      <programlisting language="javascript">
+{
+    "name": "LoginRequest",
+    "type": "StaticRequestFilter",
+    "config": {
+        "method": "POST",
+        "uri": "http://www.example.com:8081",
+        "form": {
+            "username": [
+                "demo"
+            ],
+            "password": [
+                "changeit"
+            ]
+        }
+    }
+}
+      </programlisting>
+
+      <para>
+       Do not forget to add the comma after the object,
+       so that your configuration file remains valid JSON.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Edit the list of filters in the "OutgoingChain" object
+       to include your new filter before the "CaptureFilter".
+      </para>
+
+      <para>
+       The full "OutgoingChain" object should now look like this:
+      </para>
+
+      <programlisting language="javascript">
+{
+    "name": "OutgoingChain",
+    "type": "Chain",
+    "config": {
+        "filters": [
+            "LoginRequest",
+            "CaptureFilter"
+        ],
+        "handler": "DefaultHandler"
+    }
+}
+      </programlisting>
+     </listitem>
+    </orderedlist>
+
+    <para>
+     Make sure that the configuration is valid JSON,
+     and then save your changes.
+    </para>
+
+    <para>
+     The resulting configuration file should be very close to
+     the following version that you can download,
+     <link
+      xlink:show="new"
+      xlink:href="http://openig.forgerock.org/login-static-request/config.json"
+     >config.json</link>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Restart the Jetty server where OpenIG is deployed.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Access the home page again,
+     <link xlink:show="new" xlink:href="http://www.example.com:8080/" />.
+    </para>
+
+    <para>
+     This time, OpenIG logs you in automatically.
+    </para>
+   </listitem>
+  </orderedlist>
+
+  <para>
+   Also view the file capturing information about requests and responses.
+   In the default sample configuration,
+   this file is <filename>/tmp/gateway.log</filename>.
+  </para>
+
+  <para>
+   What's happening behind the scenes?
+  </para>
+
+  <para>
+   When your browser goes to <literal>http://www.example.com:8080/</literal>,
+   it is actually connecting to OpenIG deployed in Jetty.
+   OpenIG proxies all traffic it receives to the protected application at
+   <literal>http://www.example.com:8080/</literal>,
+   and returns responses from the application to your browser.
+  </para>
+
+  <para>
+   With the original configuration,
+   OpenIG does not change requests or responses,
+   but only proxies requests and responses,
+   and captures request and response information.
+  </para>
+
+  <para>
+   After you change the configuration,
+   OpenIG continues to capture request and response data.
+   And OpenIG also replaces your browser's original HTTP GET request
+   with an HTTP POST login request containing credentials to authenticate.
+   As a result, instead of the home page with a login form,
+   OpenIG logs you in directly,
+   and the application responds with the page you see after logging in.
+   OpenIG then returns this response to your browser.
+  </para>
+
+  <para>
+   The following sequence diagram shows the steps.
+  </para>
+
+  <figure xml:id="figure-hard-coded-login">
+   <mediaobject>
+    <imageobject>
+     <imagedata fileref="images/hard-coded-login.png" format="PNG" />
+    </imageobject>
+    <textobject>
+     <para>
+      This image diagrams the steps showing how OpenIG performs login
+      with hard-coded credentials and a static request filter.
+     </para>
+    </textobject>
+   </mediaobject>
+  </figure>
+
+  <orderedlist>
+   <listitem>
+    <para>
+     The browser host makes a DNS request for
+     the IP address of the HTTP server host, <literal>www.example.com</literal>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     DNS responds with the address for OpenIG.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Browser sends a request to the HTTP server.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     OpenIG replaces the request with an HTTP POST request,
+     including the login form with hard-coded credentials.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     HTTP server validates the credentials,
+     and responds with the profile page.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     OpenIG passes the response back to the browser.
+    </para>
+   </listitem>
+  </orderedlist>
+ </section>
+
+ <section xml:id="quickstart-where-to-go-from-here">
+  <title>Where To Go From Here</title>
+
+  <para>
+   In this chapter, you have scratched the surface of OpenIG.
+   For more information, start with these chapters.
+  </para>
+
+  <variablelist>
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-usecases"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Detailed Use Cases</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter covers common use case request and response flows.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-credentials-tutorial"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuring Deployment Containers</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter shows how to set up supported application servers for OpenIG.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-credentials-tutorial"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Tutorial On Looking Up Credentials</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter shows you how to configure OpenIG
+      to look up credentials in external sources, such as a file or a database.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-gateway-templates"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuration Templates</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter provides sample OpenIG configuration files
+      for common use cases.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-federation-tutorial"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Tutorial For the Federation Gateway</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter shows how to configure OpenIG to get credentials
+      from a SAML 2.0 Identity Provider.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   ForgeRock can also help you succeed in your projects involving OpenIG.
+   You can purchase OpenIG support subscriptions and training courses
+   from ForgeRock and from consulting partners around the world and in your area.
+   To contact ForgeRock, send mail to
+   <link xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.
+   To find a partner in your area, see
+   <link
+    xlink:show="new"
+    xlink:href="http://forgerock.com/partners/find-a-partner/" />.
+  </para>
  </section>
 </chapter>

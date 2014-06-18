@@ -21,16 +21,16 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012-2013 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <refentry xml:id='Expressions'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Expressions</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -144,9 +144,12 @@
  </refsect1>
  <refsect1>
   <title>Examples</title>
-  <para>Lines are folded for readability in these example. In your JSON, keep
-  the values on one line.</para>
-  <programlisting language="javascript">
+  <para>
+   In your JSON, keep the values on one line.
+  </para>
+
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="javascript">
 "${exchange.request.uri.path == '/wordpress/wp-login.php' and exchange.request.form['action'][0] != 'logout'}"
 
 "${exchange.request.uri.host == 'wiki.example.com'}"
@@ -168,7 +171,8 @@
 "${exchange.response.headers['Set-Cookie'][0]}"
 
 "${exchange.request.headers['host'][0]}"
- </programlisting>
+   </programlisting>
+  </informalexample>
  </refsect1>
  <refsect1>
   <title>See Also</title>

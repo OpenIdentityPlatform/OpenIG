@@ -1,0 +1,52 @@
+@startuml login-from-sql.png
+
+/'
+    CCPL HEADER START
+
+    This work is licensed under the Creative Commons
+    Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+    To view a copy of this license, visit
+    http://creativecommons.org/licenses/by-nc-nd/3.0/
+    or send a letter to Creative Commons, 444 Castro Street,
+    Suite 900, Mountain View, California, 94041, USA.
+
+    You can also obtain a copy of the license at
+    src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+    See the License for the specific language governing permissions
+    and limitations under the License.
+
+    If applicable, add the following below this CCPL HEADER, with the fields
+    enclosed by brackets "[]" replaced with your own identifying information:
+         Portions Copyright [yyyy] [name of copyright owner]
+
+    CCPL HEADER END
+
+         Copyright 2014 ForgeRock AS
+
+    To generate a sequence diagram from this file, process
+    it with PlantUML, http://plantuml.sourceforge.net/sequence.html
+'/
+
+title Login With Credentials From a Database
+autonumber
+
+participant "Browser" as Browser
+participant "OpenIG" as Gateway
+participant "Database" as SQL
+participant "Application" as App
+
+Browser->Gateway: Send HTTP GET request to http://www.example.com
+
+Gateway->SQL: Look up the record containing credentials
+
+Gateway->Gateway: SqlAttributesFilter stores credentials in exchange
+
+Gateway->Gateway: StaticRequestFilter retrieves credentials from exchange
+
+Gateway->App: Replace request with HTTP POST of login form
+
+App->Gateway: Validate login & send response
+
+Gateway->Browser: Response from http://www.example.com
+
+@enduml

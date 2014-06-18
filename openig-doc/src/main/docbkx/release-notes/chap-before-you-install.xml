@@ -60,7 +60,43 @@
  </section>
 
  <section xml:id="which-container">
-  <title>Web Application Container</title>
+  <title>Web Application Containers</title>
+
+  <itemizedlist>
+   <para>
+    OpenIG runs in the following web application containers.
+   </para>
+
+   <listitem>
+    <para>Apache Tomcat 6, 7</para>
+   </listitem>
+
+   <!-- True?
+   <listitem>
+    <para>GlassFish v2, v3</para>
+   </listitem>
+   -->
+
+   <listitem>
+    <para>JBoss Enterprise Application Platform 5, 6</para>
+<!-- True?
+    <para>JBoss Application Server 7</para>
+-->
+   </listitem>
+
+   <listitem>
+    <para>Jetty 7 (7.6.13 or later)</para>
+    <para>Jetty 8 (8.1.13 or later)</para>
+    <para>Jetty 9 (9.1.3 or later)</para>
+   </listitem>
+
+   <listitem>
+    <para>Oracle WebLogic Server 11g (10.3.5)</para>
+<!-- True?
+    <para>Oracle WebLogic Server 12c (12.1.2)</para>
+-->
+   </listitem>
+  </itemizedlist>
 
   <para>See the chapter on <link xlink:href="gateway-guide#chap-container"
   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring

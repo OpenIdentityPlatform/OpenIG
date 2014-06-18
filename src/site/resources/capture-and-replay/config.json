@@ -1,0 +1,94 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "DispatchHandler",
+                    "baseURI": "http://www.example.com:8081"
+                }
+            },
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "handler": "OutgoingChain"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CryptoHeaderFilter",
+                        "LoginRequest",
+                        "HeaderFilter",
+                        "CaptureFilter"
+                    ],
+                    "handler": "DefaultHandler"
+                }
+            },
+            {
+                "name": "CryptoHeaderFilter",
+                "type": "CryptoHeaderFilter",
+                "config": {
+                    "messageType": "REQUEST",
+                    "operation": "DECRYPT",
+                    "algorithm": "DES/ECB/NoPadding",
+                    "key": "DESKEY",
+                    "keyType": "DES",
+                    "charSet": "utf-8",
+                    "headers": [
+                        "password"
+                    ]
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "${exchange.request.headers['username'][0]}"
+                        ],
+                        "password": [
+                            "${exchange.request.headers['password'][0]}"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "HeaderFilter",
+                "type": "HeaderFilter",
+                "config": {
+                    "messageType": "REQUEST",
+                    "remove": [
+                        "password",
+                        "username"
+                    ]
+                }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": true,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "DefaultHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "servletObject": "HandlerServlet"
+}

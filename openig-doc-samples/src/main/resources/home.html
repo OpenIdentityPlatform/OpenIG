@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions Copyrighted [year] [name of copyright owner]".
+
+  Copyright 2014 ForgeRock AS.
+-->
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Howdy, Anonymous User</title>
+    <style type="text/css">
+        #login-form {
+            float: right;
+            border: 1px solid #999;
+            border-radius: 6px;
+            margin: 0.25em;
+            padding: 0.25em;
+            font-family: verdana, arial, sans-serif;
+            background: #eae737;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-form">
+
+        <form method="POST" >
+            <input name="username" type="text" placeholder="username" />
+            <input name="password" type="password" placeholder="password" />
+            <input name="submit" type="submit" value="Login" />
+        </form>
+
+    </div>
+
+    <div id="content">
+
+        <iframe frameborder="0"
+                seamless="seamless"
+                src="http://openig.forgerock.org"
+                height="1000" width="100%"></iframe>
+
+    </div>
+
+</body>
+</html>
