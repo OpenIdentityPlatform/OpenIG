@@ -32,30 +32,16 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Configuring Deployment Containers</title>
 
- <indexterm>
-  <primary>Containers</primary>
-  <secondary>Supported</secondary>
- </indexterm>
-
- <itemizedlist>
-  <para>This section provides installation and configuration tips. The
-  following containers are supported.</para>
-  <listitem>
-   <para>Tomcat 6.x and 7.x</para>
-  </listitem>
-  <listitem>
-   <para>Jetty 6.x and 7.x</para>
-  </listitem>
-  <listitem>
-   <para>Glassfish 2.x and 3.x</para>
-  </listitem>
-  <listitem>
-   <para>JBoss 5.x</para>
-  </listitem>
-  <listitem>
-   <para>Weblogic 10.x</para>
-  </listitem>
- </itemizedlist>
+ <para>
+  This section provides installation and configuration tips.
+  For the full list of supported containers,
+  see the <citetitle>Release Notes</citetitle> section,
+  <link
+   xlink:show="new"
+   xlink:href="release-notes#which-container"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Web Application Containers</citetitle></link>.
+ </para>
 
  <section xml:id="tomcat">
   <title>Tomcat</title>

@@ -1,0 +1,5 @@
+<Get name="sessionHandler">
+    <Get name="sessionManager">
+        <Set name="sessionDomain">.example.com</Set>
+    </Get>
+</Get>

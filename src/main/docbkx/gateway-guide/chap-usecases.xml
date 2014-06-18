@@ -42,10 +42,14 @@
   </indexterm>
 
   <para>The figure below illustrates a sample flow with a description of each
-  request from the browser to the back end application. This flow is taken from
-  the <link xlink:href="gateway-guide#chap-gateway-tutorial"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Tutorial With
-  WordPress</citetitle></link>. Try the tutorial yourself to learn how
+  request from the browser to the back end application.
+  This flow is based on the tutorial,
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#tutorial-credentials-from-file"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Login With Credentials From a File</citetitle></link>.
+  Try the tutorial yourself to learn how
   OpenIG works. The Flat-File attribute store contains only one set of
   credentials. OpenIG makes the assumption this user is logging into the
   sample application. In a real deployment OpenIG would look up the user

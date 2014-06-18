@@ -1,0 +1,11 @@
+<New id="jdbc/forgerock" class="org.eclipse.jetty.plus.jndi.Resource">
+  <Arg></Arg>
+  <Arg>jdbc/forgerock</Arg>
+  <Arg>
+    <New class="org.h2.jdbcx.JdbcDataSource">
+      <Set name="Url">jdbc:h2:tcp://localhost/~/test</Set>
+      <Set name="User">sa</Set>
+      <Set name="Password">password</Set>
+    </New>
+  </Arg>
+</New>
