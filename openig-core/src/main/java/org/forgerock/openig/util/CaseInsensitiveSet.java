@@ -26,7 +26,7 @@ import java.util.Set;
  * An implementation of a set whose values are case-insensitive strings. All operations match
  * values in a case-insensitive manner. The original cases of values are retained, so the
  * {@link #iterator() iterator()} method for example returns the originally values.
- * <p/>
+ * <p>
  * <strong>Note:</strong> The behavior of this class is undefined when wrapping a set that
  * has keys that would result in duplicate case-insensitive values.
  */

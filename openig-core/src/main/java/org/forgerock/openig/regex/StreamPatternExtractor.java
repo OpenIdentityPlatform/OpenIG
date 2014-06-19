@@ -62,10 +62,10 @@ public class StreamPatternExtractor {
      * Extracts regular expression patterns from a character streams. Returns a
      * mapping of names to the results of pattern extraction (literal match or
      * applied template).
-     * <p/>
+     * <p>
      * Patterns are resolved lazily; only as much of the stream is read in order
      * to satisfy a request for a specific key in the returned map.
-     * <p/>
+     * <p>
      * <strong>Note:</strong> If an {@link IOException} is encountered when
      * accessing the stream, the exception is caught and suppressed. This
      * results in {@code null} values being returned for values not extracted

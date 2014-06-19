@@ -39,7 +39,7 @@ import org.forgerock.openig.script.Script;
  * performing LDAP requests such as LDAP authentication
  * <li>{@link Logger logger} - the OpenIG logger.
  * </ul>
- * <p/>
+ * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public class ScriptableHandler extends AbstractScriptableHeapObject implements Handler {

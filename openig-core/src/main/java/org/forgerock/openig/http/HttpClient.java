@@ -65,7 +65,7 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * Submits requests to remote servers. In this implementation, requests are
  * dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
- * <p/>
+ * <p>
  * <strong>Note:</strong> This implementation does not verify hostnames for
  * outgoing SSL connections. This is because the gateway will usually access the
  * SSL endpoint using a raw IP address rather than a fully-qualified hostname.

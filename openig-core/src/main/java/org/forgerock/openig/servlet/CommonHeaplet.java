@@ -42,6 +42,8 @@ abstract class CommonHeaplet extends NestedHeaplet {
 
     /**
      * Returns the servlet context in which the caller is executing.
+     *
+     * @return the servlet context in which the caller is executing.
      */
     public ServletContext getServletContext() { // FilterConfig, ServletConfig
         return servletContext;
@@ -58,8 +60,10 @@ abstract class CommonHeaplet extends NestedHeaplet {
     }
 
     /**
-     * Returns the names of the initialization parameters, or an empty enumeration if there
-     * are no initialization parameters.
+     * Returns the names of the initialization parameters, or an empty
+     * enumeration if there are no initialization parameters.
+     *
+     * @return the names of the initialization parameters.
      */
     public Enumeration<String> getInitParameterNames() { // FilterConfig, ServletConfig
         return Collections.enumeration(initParams.keySet());

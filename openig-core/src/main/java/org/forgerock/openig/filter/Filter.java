@@ -35,13 +35,13 @@ public interface Filter {
      * contains the request to be filtered. To pass the request to the next filter or handler
      * in the chain, the filter calls {@code next.handle(exchange)}. After this call,
      * {@code exchange.response} contains the response that can be filtered.
-     * <p/>
+     * <p>
      * This method may elect not to pass the request to the next filter or handler, and instead
      * handle the request itself. It can achieve this by merely avoiding a call to
      * {@code next.handle(exchange)} and creating its own response object the exchange. The
      * filter is also at liberty to replace a response with another of its own after the call
      * to {@code next.handle(exchange)}.
-     * <p/>
+     * <p>
      * <strong>Important note:</strong> If an existing response exists in the exchange object
      * and the filter intends to replace it with its own, it must first check to see if the
      * existing response has an entity, and if it does, must call its {@code close} method in

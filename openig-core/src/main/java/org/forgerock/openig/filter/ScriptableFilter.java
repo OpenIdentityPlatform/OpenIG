@@ -45,7 +45,7 @@ import org.forgerock.openig.script.Script;
  * Like Java based filters, scripts are free to choose whether or not they
  * forward the request to the next handler or, instead, return a response
  * immediately.
- * <p/>
+ * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {

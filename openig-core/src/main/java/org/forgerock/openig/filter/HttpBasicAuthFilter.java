@@ -44,15 +44,15 @@ import org.forgerock.util.encode.Base64;
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
  * see <a href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</a>.
- * <p/>
+ * <p>
  * If challenged for authentication via a {@code 401 Unauthorized} status code by the server,
  * this filter will retry the request with credentials attached. Therefore, the request entity
  * will be branched and stored for the duration of the exchange.
- * <p/>
+ * <p>
  * Once an HTTP authentication challenge (status code 401) is issued from the remote server,
  * all subsequent requests to that remote server that pass through the filter will include the
  * user credentials.
- * <p/>
+ * <p>
  * Credentials are cached in the session to allow subsequent requests to automatically include
  * authentication credentials. If authentication fails (including the case of no credentials
  * yielded from the {@code username} or {@code password} expressions, then the exchange is diverted

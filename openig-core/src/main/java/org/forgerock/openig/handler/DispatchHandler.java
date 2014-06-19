@@ -38,7 +38,7 @@ import org.forgerock.openig.util.URIUtil;
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
  * condition is evaluated. If a condition expression yields {@code true}, then the exchange
  * is dispatched to the associated handler with no further processing.
- * <p/>
+ * <p>
  * If no condition yields {@code true} then the handler will throw a {@link HandlerException}.
  * Therefore, it's advisable to have a single "default" handler at the end of the list
  * with no condition (unconditional) to handle otherwise un-dispatched requests.

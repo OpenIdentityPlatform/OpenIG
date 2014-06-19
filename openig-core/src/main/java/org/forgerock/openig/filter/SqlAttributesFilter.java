@@ -52,7 +52,7 @@ import org.forgerock.util.LazyMap;
  * in the prepared statement are derived from exchange-scoped expressions. The query result is
  * exposed in a {@link Map} object, whose location is specified by the {@code target}
  * expression. If the query yields no result, then the resulting map will be empty.
- * <p/>
+ * <p>
  * The execution of the query is performed lazily; it does not occur until the first attempt
  * to access a value in the target. This defers the overhead of connection pool, network
  * and database query processing until a value is first required. This also means that the

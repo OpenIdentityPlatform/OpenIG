@@ -26,7 +26,7 @@ import org.forgerock.util.Factory;
 /**
  * Wraps an standard input stream with a stream that can branch to perform divergent reads.
  * All divergence between branches is maintained in a temporary buffer.
- * <p/>
+ * <p>
  * <strong>Note:</strong> This stream and any branches it creates are not safe for use by
  * multiple concurrent threads.
  */
@@ -43,7 +43,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
 
     /**
      * Constructs a new branching input stream to wrap another input stream.
-     * <p/>
+     * <p>
      * If the stream being wrapped is a branching input stream, this constructor will simply
      * branch off of that existing stream rather than wrapping it with another branching
      * input stream.

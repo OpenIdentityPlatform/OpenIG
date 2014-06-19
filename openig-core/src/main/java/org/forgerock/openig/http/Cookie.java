@@ -24,11 +24,11 @@ import java.util.List;
 import org.forgerock.openig.util.FieldMap;
 
 /**
- * An HTTP cookie. For more information, see the original
- * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">
- *     Netscape specification<a>,
- * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
- * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
+ * An HTTP cookie. For more information, see the original <a href=
+ * "http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html"
+ * > Netscape specification</a>, <a
+ * href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and <a
+ * href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
  */
 public class Cookie extends FieldMap {
 

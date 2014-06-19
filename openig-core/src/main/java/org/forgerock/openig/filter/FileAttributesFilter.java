@@ -40,7 +40,7 @@ import org.forgerock.util.LazyMap;
  * The resulting record is exposed in a {@link Map} object, whose location is specified by the
  * {@code target} expression. If a matching record cannot be found, then the resulting map
  * will be empty.
- * <p/>
+ * <p>
  * The retrieval of the record is performed lazily; it does not occur until the first attempt
  * to access a value in the target. This defers the overhead of file operations and text
  * processing until a value is first required. This also means that the {@code value}
