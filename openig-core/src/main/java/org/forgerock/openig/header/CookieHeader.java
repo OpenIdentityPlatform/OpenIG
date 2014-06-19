@@ -29,7 +29,7 @@ import org.forgerock.openig.http.Message;
  *     Netscape specification</a>,
  * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
  * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
- * <p/>
+ * <p>
  * Note: This implementation is designed to be forgiving when parsing malformed cookies.
  */
 public class CookieHeader implements Header {

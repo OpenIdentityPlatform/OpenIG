@@ -47,12 +47,12 @@ import org.forgerock.openig.util.StringUtil;
  * Suppresses, relays and manages cookies. The names of filtered cookies are stored in one of
  * three action set variables: {@code suppressed}, {@code relayed} and {@code managed}. If a
  * cookie is not found in any of the action sets, then a default action is selected.
- * <p/>
+ * <p>
  * The default action is controlled by setting the {@code defaultAction} field. The default
  * action at initialization is to manage all cookies. In the event a cookie appears in more
  * than one action set, then it will be selected in order of precedence: managed, suppressed,
  * relayed.
- * <p/>
+ * <p>
  * Managed cookies are intercepted by the cookie filter itself and stored in the request
  * {@link Session} object. The default {@code policy} is to accept all incoming cookies, but
  * can be changed to others as appropriate.
@@ -148,7 +148,7 @@ public class CookieFilter extends GenericFilter {
      * Host header. This allows the request URI to contain a raw IP address,
      * while the Host header resolves the hostname and port that the remote
      * client used to access it.
-     * <p/>
+     * <p>
      * Note: This method returns a normalized URI, as though returned by the
      * {@link URI#normalize} method.
      *

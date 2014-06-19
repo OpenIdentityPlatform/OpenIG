@@ -26,7 +26,7 @@ import org.forgerock.util.MapDecorator;
  * An implementation of a map whose keys are case-insensitive strings. All operations match
  * keys in a case-insensitive manner. The original cases of keys are retained, so the
  * {@link #keySet() keySet()} method for example returns the original keys.
- * <p/>
+ * <p>
  * <strong>Note:</strong> The behavior of this class is undefined when wrapping a map that
  * has keys that would result in duplicate case-insensitive keys.
  * @param <V> The type of the case insensitive map.

@@ -53,7 +53,7 @@ import org.forgerock.openig.log.Logger;
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
- * <p/>
+ * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {

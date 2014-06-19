@@ -41,13 +41,6 @@ public final class HttpUtil {
     private HttpUtil() {
     }
 
-    /**
-     * TODO: Description.
-     *
-     * @param message TODO.
-     * @param charset TODO.
-     * @return TODO.
-     */
     private static Charset cs(Message message, Charset charset) {
         if (charset == null) {
             // use Content-Type charset if not explicitly specified
@@ -61,21 +54,27 @@ public final class HttpUtil {
     }
 
     /**
-     * Sets the entity in the message to contain the content of the string with the specified
-     * character set. Also sets the {@code Content-Length} header, overwriting any existing
-     * <p/>
-     * <p/>
-     * If {@code charset} is not {@code null} then it will be used to encode the entity,
-     * else the character set specified in the message's {@code Content-Type} header (if
-     * present) will be used, otherwise the default {@code ISO-8859-1} character set.
-     * <p/>
-     * Note: This method replaces the entity without closing any previous one. The caller is
-     * responsible for first closing any existing entity. This method also does not attempt to
-     * encode the entity based-on any codings specified in the {@code Content-Encoding} header.
+     * Sets the entity in the message to contain the content of the string with
+     * the specified character set. Also sets the {@code Content-Length} header,
+     * overwriting any existing header.
+     * <p>
+     * If {@code charset} is not {@code null} then it will be used to encode the
+     * entity, else the character set specified in the message's
+     * {@code Content-Type} header (if present) will be used, otherwise the
+     * default {@code ISO-8859-1} character set.
+     * <p>
+     * Note: This method replaces the entity without closing any previous one.
+     * The caller is responsible for first closing any existing entity. This
+     * method also does not attempt to encode the entity based-on any codings
+     * specified in the {@code Content-Encoding} header.
      *
-     * @param message the message whose entity is to be set with the string value.
-     * @param string the string whose value is to be set as the message entity.
-     * @param charset the character set to encode the string in, or ISO-8859-1 if {@code null}.
+     * @param message
+     *            the message whose entity is to be set with the string value.
+     * @param string
+     *            the string whose value is to be set as the message entity.
+     * @param charset
+     *            the character set to encode the string in, or ISO-8859-1 if
+     *            {@code null}.
      */
     public static void toEntity(Message message, String string, Charset charset) {
         byte[] data = string.getBytes(cs(message, charset));
@@ -85,14 +84,14 @@ public final class HttpUtil {
 
     /**
      * Returns a new reader that decodes the entity of a message.
-     * <p/>
+     * <p>
      * The entity will be decoded and/or decompressed based-on any codings that are specified
      * in the {@code Content-Encoding} header.
-     * <p/>
+     * <p>
      * If {@code charset} is not {@code null} then it will be used to decode the entity,
      * else the character set specified in the message's {@code Content-Type} header (if
      * present) will be used, otherwise the default {@code ISO-8859-1} character set.
-     * <p/>
+     * <p>
      * Note: The caller is responsible for calling the reader's {@code close} method when it
      * is finished reading the entity.
      *

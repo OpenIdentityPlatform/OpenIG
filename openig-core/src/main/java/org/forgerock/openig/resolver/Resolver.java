@@ -54,11 +54,11 @@ public interface Resolver extends Indexed<Class> {
      * references an object for which a named or indexed element is being
      * requested. The {@code element} argument specifies the element that is
      * being requested from the referenced object.
-     * <p/>
+     * <p>
      * The {@code element} argument can be either a {@link String} or an
      * {@link Integer} object. A string represents a named element of an
      * associative array; an integer represents the index of an ordered array.
-     * <p/>
+     * <p>
      * If the resolver cannot resolve the requested element, then
      * {@link #UNRESOLVED} should be returned. This allows other resovlers of
      * more generic classes or interfaces to potentially resolve the requested
@@ -76,11 +76,11 @@ public interface Resolver extends Indexed<Class> {
      * argument references an object for which a named or indexed element is to
      * be set. The {@code element} argument specifies which element value is to
      * be set. The {@code value} argument specifies the value to be set.
-     * <p/>
+     * <p>
      * The {@code element} argument can be either a {@link String} or an
      * {@link Integer} object. A string represents a named element of an
      * associative array; an integer represents the index of an ordered array.
-     * <p/>
+     * <p>
      * If the resolver cannot resolve the requested element or set its value,
      * then {@link #UNRESOLVED} should be returned. This allows other resovlers
      * of more generic classes or interfaces to potentially resolve the

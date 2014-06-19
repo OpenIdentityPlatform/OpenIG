@@ -24,7 +24,7 @@ import java.io.RandomAccessFile;
 
 /**
  * A buffer that uses a local file for data storage.
- * <p/>
+ * <p>
  * <strong>Note:</strong> This implementation is not synchronized. If multiple threads access
  * a buffer concurrently, threads that append to the buffer should synchronize on the instance
  * of this object.

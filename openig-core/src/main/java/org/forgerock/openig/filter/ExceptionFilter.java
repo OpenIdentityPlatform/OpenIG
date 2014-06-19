@@ -32,7 +32,7 @@ import org.forgerock.openig.log.LogTimer;
  * pages to be displayed than would otherwise be displayed by the container. Caught exceptions
  * are logged with a log level of {@link org.forgerock.openig.log.LogLevel#WARNING} and the exchange is diverted to
  * the specified exception handler.
- * <p/>
+ * <p>
  * Note: While the response object will be retained in the exchange object, this class will
  * close any open entity within the response object prior to dispatching the exchange to the
  * exception handler.

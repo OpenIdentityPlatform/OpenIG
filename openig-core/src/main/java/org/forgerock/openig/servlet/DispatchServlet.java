@@ -47,7 +47,7 @@ import org.forgerock.openig.log.Logger;
  * The extra path information is the path that follows the path of the dispatch servlet itself,
  * but precedes the query string. It is guaranteed to be a value that always begins with a
  * {@code "/"} character.
- * <p/>
+ * <p>
  * All filters that match the pattern will be invoked in the order they are expressed in the
  * bindings list until a matching servlet is encountered. The first matching servlet object in
  * the bindings list will be invoked, and terminates any further processing of the request. If

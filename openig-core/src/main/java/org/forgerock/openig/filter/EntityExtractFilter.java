@@ -45,7 +45,7 @@ import org.forgerock.openig.util.JsonValueUtil;
  * before the exchange is handled if {@code messageType} is {@link MessageType#REQUEST}, or
  * after the exchange is handled if it is {@link MessageType#RESPONSE}. Each pattern can have
  * an associated template, which is applied to its match result.
- * <p/>
+ * <p>
  * The extraction results are contained in a {@link Map} object, whose location is specified
  * by the {@code target} expression. For a given matched pattern, the value stored in the map
  * is either the result of applying its associated pattern template (if specified) or the

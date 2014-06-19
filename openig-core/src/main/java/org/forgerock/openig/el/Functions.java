@@ -67,6 +67,7 @@ public class Functions extends FunctionMapper {
      * @return the length of the object, or {@code 0} if length could not be
      * determined.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static boolean _contains(Object object, Object value) {
         if (object == null || value == null) {
             return false;
@@ -103,6 +104,7 @@ public class Functions extends FunctionMapper {
      * @return the index of the first instance of substring, or {@code -1} if
      * not found.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static int _indexOf(String string, String substring) {
         return (string != null && substring != null ? string.indexOf(substring) : null);
     }
@@ -115,6 +117,7 @@ public class Functions extends FunctionMapper {
      * @param strings the array of strings to be joined.
      * @return the string containing the joined strings.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _join(String[] strings, String separator) {
         return (strings != null ? StringUtil.join(separator, (Object[]) strings) : null);
     }
@@ -127,6 +130,7 @@ public class Functions extends FunctionMapper {
      * @param pattern a string containing the regular expression pattern to match.
      * @return the first matching key, or {@code null} if no match found.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _keyMatch(Object map, String pattern) {
         if (map instanceof Map) {
             // avoid unnecessary proxying via duck typing
@@ -158,6 +162,7 @@ public class Functions extends FunctionMapper {
      * @return the length of the object, or {@code 0} if length could not be
      * determined.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static int _length(Object object) {
         if (object == null) {
             return 0;
@@ -188,6 +193,7 @@ public class Functions extends FunctionMapper {
      * @param pattern a string containing the regular expression pattern to match.
      * @return an array of matches, or {@code null} if no match found.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String[] _matches(String string, String pattern) {
         try {
             Pattern p = Pattern.compile(pattern);
@@ -215,6 +221,7 @@ public class Functions extends FunctionMapper {
      * @param regex the regular expression to split substrings around.
      * @return the resulting array of split substrings.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String[] _split(String string, String regex) {
         return (string != null ? string.split(regex) : null);
     }
@@ -225,16 +232,19 @@ public class Functions extends FunctionMapper {
      * @param string the string whose characters are to be converted.
      * @return the string with characters converted to lower case.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _toLowerCase(String string) {
         return (string != null ? string.toLowerCase() : null);
     }
 
     /**
-     * Returns the string value of an aribtrary object.
+     * Returns the string value of an arbitrary object.
      *
-     * @param object the object whose string value is to be returned.
+     * @param object
+     *            the object whose string value is to be returned.
      * @return the string value of the object.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _toString(Object object) {
         return (object != null ? object.toString() : null);
     }
@@ -245,6 +255,7 @@ public class Functions extends FunctionMapper {
      * @param string the string whose characters are to be converted.
      * @return the string with characters converted to upper case.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _toUpperCase(String string) {
         return (string != null ? string.toUpperCase() : null);
     }
@@ -255,6 +266,7 @@ public class Functions extends FunctionMapper {
      * @param string the string whose white space is to be omitted.
      * @return the string with leading and trailing white space omitted.
      */
+    // @Checkstyle:ignore - malformed method name.
     public static String _trim(String string) {
         return (string != null ? string.trim() : null);
     }

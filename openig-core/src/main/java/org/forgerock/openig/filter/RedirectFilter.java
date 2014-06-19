@@ -34,7 +34,6 @@ import org.forgerock.openig.util.URIUtil;
  * Specialised header filter that deals with rewriting Location headers on responses
  * that generate a redirect that would take the user directly to the application
  * being proxied rather than via OpenIG.
- * <p/>
  * <p><strong>Currently only HTTP 302 redirects are supported.</strong></p>
  */
 public class RedirectFilter extends GenericFilter {

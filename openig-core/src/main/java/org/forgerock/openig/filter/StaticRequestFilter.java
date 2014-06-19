@@ -52,7 +52,7 @@ public class StaticRequestFilter extends GenericFilter {
     /** URI as an expression to allow dynamic URI construction. */
     public Expression uri;
 
-    /** Protocol version (e.g.&nbsp{@code "HTTP/1.1"}). */
+    /** Protocol version (e.g. {@code "HTTP/1.1"}). */
     public String version;
 
     /** Message header fields whose values are expressions that are evaluated. */

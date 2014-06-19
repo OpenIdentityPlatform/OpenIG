@@ -32,24 +32,24 @@ import org.forgerock.openig.resource.Resources;
 
 /**
  * A resource for accessing application configuration data.
- * <p/>
+ * <p>
  * There are two modes the configuration resource resolve: simple and bootstrap.
  * Simple mode is meant for single local deployments of a web application in a
  * user account; bootstrap mode supports remotely configured or multiple
  * deployments of an application for a given user account.
- * <p/>
+ * <p>
  * In both cases, all file resources are located a directory that is either
  * <tt><strong>$AppData/</strong><em>product</em><strong>/</strong></tt> if the
  * <strong>{@code $AppData}</strong> environment variable is defined (typical in
  * Windows installations), or otherwise
  * <tt><em>user-home</em><strong>/.</strong><em>product</em><strong>/</strong></tt>
  * (typical in Unix installations).
- * <p/>
+ * <p>
  * This class first tries to locate the configuration file using simple mode by
  * looking for a file named <strong>{@code config.json}</strong> in the
  * configuration directory specified above. If the file does not exist, then
  * this class reverts to bootstrap mode.
- * <p/>
+ * <p>
  * In bootstrap mode, the name of a bootstrap configuration resource is
  * generated based on the instance name supplied (or derived from the servlet
  * context) and takes the form <tt><em>instance</em><strong>.json</strong></tt>.

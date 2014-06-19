@@ -40,7 +40,7 @@ public final class HeaderUtil {
      * separator. Quoted strings are not split into multiple values if they contain separator
      * characters. All leading and trailing white space in values is trimmed. All quotations
      * remain intact.
-     * <p/>
+     * <p>
      * Note: This method is liberal in its interpretation of malformed header values; namely
      * the incorrect use of string and character quoting mechanisms and unquoted white space.
      * If a {@code null} or empty string is supplied as a value, this method yields an empty
@@ -127,17 +127,17 @@ public final class HeaderUtil {
      * Splits a single HTTP header parameter name and value from an input string value. The
      * input string value is presumed to have been extracted from a collection provided by the
      * {@link #split(String, char)} method.
-     * <p/>
+     * <p>
      * This method returns the parameter name-value pair split into an array of
      * {@code String}s. Element {@code [0]} contains the parameter name; element {@code [1]}
      * contains contains the parameter value or {@code null} if there is no value.
-     * <p/>
+     * <p>
      * A value that is contained within a quoted-string is processed such that the surrounding
      * '"' (quotation mark) characters are removed and single-character quotations hold the
      * character being quoted without the escape '\' (backslash) character. All white space
      * outside of the quoted-string is removed. White space within the quoted-string is
      * retained.
-     * <p/>
+     * <p>
      * Note: This method is liberal in its interpretation of a malformed header value; namely
      * the incorrect use of string and character quoting mechanisms and unquoted white space.
      *
@@ -192,16 +192,16 @@ public final class HeaderUtil {
      * Parses a set of HTTP header parameters from a collection of values. The input
      * collection of values is presumed to have been provided from the
      * {@link #split(String, char)} method.
-     * <p/>
+     * <p>
      * A well-formed parameter contains an attribute and optional value, separated by an '='
      * (equals sign) character. If the parameter contains no value, it is represented by a
      * {@code null} value in the returned map.
-     * <p/>
+     * <p>
      * Values that are contained in quoted-strings are processed such that the surrounding
      * '"' (quotation mark) characters are removed and single-character quotations hold the
      * character being quoted without the escape '\' (backslash) character. All white space
      * outside of quoted-strings is removed. White space within quoted-strings is retained.
-     * <p/>
+     * <p>
      * Note: This method is liberal in its interpretation of malformed header values; namely
      * the incorrect use of string and character quoting mechanisms and unquoted white space.
      *

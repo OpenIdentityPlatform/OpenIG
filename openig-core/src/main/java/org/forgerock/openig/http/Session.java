@@ -23,7 +23,7 @@ import java.util.Map;
  * An interface for managing attributes across multiple requests from the same user agent.
  * Implementations should expose underlying container session attributes through this
  * interface if applicable.
- * <p/>
+ * <p>
  * New keys added to a session object should be named in a manner that avoids possible
  * collision with keys added by other objects in the heap.
  */

@@ -91,7 +91,7 @@ public final class LdapClient {
      * caller has completed its transaction. Connections are cached between
      * calls using a connection pool. The LDAP options may be used for
      * configuring SSL parameters and timeouts.
-     * <p/>
+     * <p>
      * NOTE: if a connection has already been obtained to the specified LDAP
      * server then a cached connection will be returned and the LDAP options
      * will be ignored.
