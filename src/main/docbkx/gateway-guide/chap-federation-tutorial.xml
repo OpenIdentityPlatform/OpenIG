@@ -199,7 +199,7 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
   </para>
 
   <screen>
-$ cd <userinput>$HOME/openam/myfedlets/OpenIG</userinput>
+$ <userinput>cd $HOME/openam/myfedlets/OpenIG</userinput>
 $ <userinput>unzip Fedlet.zip fedlet.war</userinput>
 $ <userinput>unzip fedlet.war conf/*</userinput>
 $ <userinput>mkdir ${warSamlDir}</userinput>
