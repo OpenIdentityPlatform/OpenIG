@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-mediawiki-tutorial'
@@ -172,7 +172,7 @@
   <title>Configuring OpenIG &amp; Trying It Out</title>
 
   <para>Download the <link
-  xlink:href="http://openig.forgerock.org/MediaWikiLogin.json"
+  xlink:href="https://svn.forgerock.org/openig/tags/2.1.0-docs/src/site/resources/MediaWikiLogin.json"
   >MediaWikiLogin.json</link> file.</para>
 
   <para>Copy <filename>MediaWikiLogin.json</filename> to

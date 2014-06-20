@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <book xml:id='reference'
@@ -31,14 +31,16 @@
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
-  <title>OpenIG <?eval ${docTargetVersion}?> Reference</title>
+  <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
+  <title>OpenIG Reference</title>
+  <subtitle>Version ${docTargetVersion}</subtitle>
   <abstract>
    <para>Reference documentation for OpenIG. OpenIG provides a high-performance
    reverse proxy server with specialized session management and credential
    replay functionality.</para>
   </abstract>
   <copyright>
-   <year>2011-2012</year>
+   <year>2011-2014</year>
    <holder>ForgeRock AS</holder>
   </copyright>
   <authorgroup>
@@ -56,11 +58,13 @@
     <personname>
      <firstname>Jamie</firstname><surname>Nelson</surname>
     </personname>
+    <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
   </authorgroup>
   <xinclude:include href="../legal.xml" />
-  <date><?dbtimestamp format="B d, Y"?></date>
-  <pubdate>Last updated: <?dbtimestamp format="B d, Y"?></pubdate>
+  <date>${publicationDate}</date>
+  <pubdate>${publicationDate}</pubdate>
+  <releaseinfo>${softwareReleaseDate}</releaseinfo>
  </info>
 
  <toc />

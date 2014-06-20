@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-federation-tutorial'
@@ -79,7 +79,7 @@
   <title>Configuring OpenIG For Federation</title>
 
   <para>Download the <link xlink:show="new"
-  xlink:href="http://openig.forgerock.org/FederationWordpress.json">Federation
+  xlink:href="https://svn.forgerock.org/openig/tags/2.1.0-docs/src/site/resources/FederationWordpress.json">Federation
   to WordPress Sample Config File</link> and copy it to
   <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>, overwriting the
   <filename>config.json</filename> from the WordPress tutorial.</para>

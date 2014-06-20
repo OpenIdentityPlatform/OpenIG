@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2012 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-quickstart'
@@ -68,7 +68,7 @@
 
    <step>
     <para>Download and unzip the <link xlink:show="new"
-    xlink:href="http://openig.forgerock.org/forgerock-sample-configs.zip">OpenIG
+    xlink:href="https://svn.forgerock.org/openig/tags/2.1.0-docs/src/site/resources/forgerock-sample-configs.zip">OpenIG
     sample configuration files</link>.</para>
    </step>
 
