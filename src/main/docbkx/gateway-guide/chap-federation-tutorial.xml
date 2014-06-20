@@ -100,11 +100,12 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
   <para>
    The initial OpenIG configuration file should look like the one used
    to proxy requests through to the HTTP server
-   and to capture request and response data,
+   and to capture request and response data, see
    <link
     xlink:show="new"
-    xlink:href="http://openig.forgerock.org/proxy-and-capture/config.json"
-    >config.json</link>.
+    xlink:href="gateway-guide#config-proxy-and-capture"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
   </para>
 
   <para>
@@ -179,11 +180,12 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
 
   <para>
    Replace the existing OpenIG configuration file
-   with the new configuration for this tutorial,
-  <link
-   xlink:show="new"
-   xlink:href="http://openig.forgerock.org/federation/config.json"
-   >config.json</link>.
+   with the new configuration from the example,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-federation"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
   </para>
 
   <para>

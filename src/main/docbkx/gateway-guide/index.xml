@@ -79,6 +79,7 @@
  <xinclude:include href="chap-scripting.xml" />
  <xinclude:include href="chap-customizing.xml" />
  <xinclude:include href='chap-troubleshooting.xml' />
+ <xinclude:include href='appendix-config.xml' />
 
  <index />
 </book>
