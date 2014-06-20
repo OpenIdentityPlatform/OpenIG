@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.text;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Allows records to be retrieved from a delimier-separated file using key and value. Once
+ * Allows records to be retrieved from a delimiter-separated file using key and value. Once
  * constructed, an instance of this class is thread-safe, meaning the object can be long-lived,
  * and multiple concurrent calls to {@link #getRecord(String, String) getRecord} is fully
  * supported.
