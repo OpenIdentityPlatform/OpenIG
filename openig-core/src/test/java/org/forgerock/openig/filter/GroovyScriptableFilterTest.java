@@ -35,7 +35,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.script.ScriptException;
 
@@ -351,6 +353,10 @@ public class GroovyScriptableFilterTest {
         }
     }
 
+    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
+        private static final long serialVersionUID = 1L;
+    }
+
     @Test(enabled = true)
     public void testLdapAuthFromFile() throws Exception {
         // Create mock LDAP server with a single user.
@@ -380,7 +386,8 @@ public class GroovyScriptableFilterTest {
                 "objectClass: person",
                 "objectClass: organizationalPerson",
                 "objectClass: inetOrgPerson",
-                "cn: Barbara",
+                "cn: Barbara Jensen",
+                "cn: Babs Jensen",
                 "sn: Jensen",
                 "uid: bjensen",
                 "description: test user",
@@ -403,8 +410,15 @@ public class GroovyScriptableFilterTest {
             // FixMe: Passing the LDAP host and port as headers is wrong.
             exchange.put("ldapHost", "localhost");
             exchange.put("ldapPort", "" + port);
+            exchange.session = new SimpleMapSession();
             final Handler handler = mock(Handler.class);
             filter.filter(exchange, handler);
+            Set<String> cnValues = new HashSet<String>();
+            cnValues.add("Barbara Jensen");
+            cnValues.add("Babs Jensen");
+            assertThat(exchange.session.get("cn")).isEqualTo(cnValues);
+            assertThat(exchange.session.get("description"))
+                    .isEqualTo("New description set by my script");
             assertThat(exchange.request.headers.get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
 
