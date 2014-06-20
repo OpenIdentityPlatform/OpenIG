@@ -158,7 +158,7 @@ INFO: Press Ctrl+C to stop the server.</computeroutput>
 
     <informalexample><?dbfo pgwide="1"?>
      <programlisting language="xml">
-<xinclude:include href="root-xml.txt" parse="text">
+<xinclude:include href="resources/root-xml.txt" parse="text">
  <xinclude:fallback>
   Failed to include XML
  </xinclude:fallback>
@@ -193,11 +193,12 @@ $ <userinput>cp ${openigWar} /path/to/jetty/webapps/root.war</userinput>
     </para>
 
     <para>
-     Copy the basic configuration file
+     Copy the basic configuration file from the example,
      <link
       xlink:show="new"
-      xlink:href="http://openig.forgerock.org/proxy-and-capture/config.json"
-     >config.json</link>
+      xlink:href="gateway-guide#config-proxy-and-capture"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>,
      to <filename>${warConfigDir}/config.json</filename>.
      By default, OpenIG looks for <filename>config.json</filename>
      in the <filename>${warConfigDir}</filename> directory.
@@ -241,7 +242,7 @@ $ <userinput>cp config.json ${warConfigDir}/config.json</userinput>
     </para>
 
     <programlisting language="xml">
-<xinclude:include href="jetty-session-handler-xml.txt" parse="text">
+<xinclude:include href="resources/jetty-session-handler-xml.txt" parse="text">
  <xinclude:fallback>
   Failed to include XML
  </xinclude:fallback>
@@ -447,12 +448,12 @@ $ <userinput>java -jar start.jar</userinput>
     </para>
 
     <para>
-     The resulting configuration file should be very close to
-     the following version that you can download,
+     The resulting configuration file should be very close to the example,
      <link
       xlink:show="new"
-      xlink:href="http://openig.forgerock.org/login-static-request/config.json"
-     >config.json</link>.
+      xlink:href="gateway-guide#config-login-static-request"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuration for Hard-Coded Credentials</citetitle></link>.
     </para>
    </listitem>
 
