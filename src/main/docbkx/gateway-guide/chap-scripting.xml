@@ -214,6 +214,15 @@ parse="text"
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
+
+  <para>
+   For the list of methods to specify which type of objects to return,
+   see the OpenDJ LDAP SDK Javadoc for
+   <link
+    xlink:show="new"
+    xlink:href="http://docs.forgerock.org/en/opendj/2.6.0/apidocs/index.html?org/forgerock/opendj/ldap/AttributeParser.html"
+   >AttributeParser</link>.
+  </para>
  </section>
 
 <!--
