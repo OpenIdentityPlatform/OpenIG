@@ -9,17 +9,20 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011-2014 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc. All rights reserved.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -269,6 +272,40 @@ public class Functions extends FunctionMapper {
     // @Checkstyle:ignore - malformed method name.
     public static String _trim(String string) {
         return (string != null ? string.trim() : null);
+    }
+
+    /**
+     * Returns the URL encoding of the provided string.
+     *
+     * @param string
+     *            the string to be URL encoded, which may be {@code null}.
+     * @return the URL encoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null}.
+     */
+    // @Checkstyle:ignore - malformed method name.
+    public static String _urlEncode(String string) {
+        try {
+            return string != null ? URLEncoder.encode(string, "UTF-8") : null;
+        } catch (UnsupportedEncodingException e) {
+            return string;
+        }
+    }
+
+    /**
+     * Returns the URL decoding of the provided string.
+     *
+     * @param string
+     *            the string to be URL decoded, which may be {@code null}.
+     * @return the URL decoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null}.
+     */
+    // @Checkstyle:ignore - malformed method name.
+    public static String _urlDecode(String string) {
+        try {
+            return string != null ? URLDecoder.decode(string, "UTF-8") : null;
+        } catch (UnsupportedEncodingException e) {
+            return string;
+        }
     }
 
     private static Map<String, Method> mapMethods() {

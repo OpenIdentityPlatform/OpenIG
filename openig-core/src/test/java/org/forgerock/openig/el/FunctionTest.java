@@ -9,10 +9,10 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc. All rights reserved.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -25,8 +25,10 @@ import java.util.Arrays;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class FunctionTest {
 
     private Exchange exchange;
@@ -121,5 +123,30 @@ public class FunctionTest {
         String[] ss = (String[]) o;
         assertThat(ss[0]).isEqualTo("the very model");
         assertThat(ss[1]).isEqualTo("very");
+    }
+
+    @DataProvider
+    private Object[][] urlEncodings() {
+        // @formatter:off
+        return new Object[][] {
+            { null, null },
+            { "", "" },
+            { "needs !@#$ encoding", "needs+%21%40%23%24+encoding" }
+        };
+        // @formatter:on
+    }
+
+    @Test(dataProvider = "urlEncodings")
+    public void urlEncode(String decoded, String encoded) throws ExpressionException {
+        exchange.put("s", decoded);
+        Object o = new Expression("${urlEncode(exchange.s)}").eval(exchange);
+        assertThat(o).isEqualTo(encoded);
+    }
+
+    @Test(dataProvider = "urlEncodings")
+    public void urlDecode(String decoded, String encoded) throws ExpressionException {
+        exchange.put("s", encoded);
+        Object o = new Expression("${urlDecode(exchange.s)}").eval(exchange);
+        assertThat(o).isEqualTo(decoded);
     }
 }
