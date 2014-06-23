@@ -39,20 +39,66 @@ import org.forgerock.openig.util.MultiValueMap;
 public class StaticResponseHandler extends GenericHandler {
 
     /** The response status code (e.g. 200). */
-    public Integer status;
+    private Integer status;
 
     /** The response status reason (e.g. "OK"). */
-    public String reason;
+    private String reason;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}. */
-    public String version = null;
+    private String version;
 
     /** Message header fields whose values are expressions that are evaluated. */
-    public final MultiValueMap<String, Expression> headers =
+    private final MultiValueMap<String, Expression> headers =
             new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
     /** The message entity. */
-    public String entity = null;
+    private String entity;
+
+    /**
+     * Constructor.
+     *
+     * @param status
+     *            The response status to set.
+     * @param reason
+     *            The response status reason to set.
+     */
+    public StaticResponseHandler(final Integer status, final String reason) {
+        this(status, reason, null, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param status
+     *            The response status to set.
+     * @param reason
+     *            The response status reason to set.
+     * @param version
+     *            The protocol version.
+     * @param entity
+     *            The message entity.
+     */
+    public StaticResponseHandler(final Integer status, final String reason, final String version, final String entity) {
+        super();
+        this.status = status;
+        this.reason = reason;
+        this.version = version;
+        this.entity = entity;
+    }
+
+    /**
+     * Adds a pair key / expression to the header.
+     *
+     * @param key
+     *            The header key.
+     * @param expression
+     *            The expression to evaluate.
+     * @return The current static response handler.
+     */
+    public StaticResponseHandler addHeader(final String key, final Expression expression) {
+        headers.add(key, expression);
+        return this;
+    }
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
@@ -94,19 +140,19 @@ public class StaticResponseHandler extends GenericHandler {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            StaticResponseHandler handler = new StaticResponseHandler();
-            handler.status = config.get("status").required().asInteger();
-            handler.reason = config.get("reason").asString();
-            handler.version = config.get("version").asString();
-            JsonValue headers = config.get("headers").expect(Map.class);
+            final int status = config.get("status").required().asInteger();
+            final String reason = config.get("reason").required().asString();
+            final String version = config.get("version").asString();
+            final JsonValue headers = config.get("headers").expect(Map.class);
+            final String entity = config.get("entity").asString();
+            final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.headers.add(key, JsonValueUtil.asExpression(value.required()));
+                        handler.addHeader(key, JsonValueUtil.asExpression(value.required()));
                     }
                 }
             }
-            handler.entity = config.get("entity").asString();
             return handler;
         }
     }

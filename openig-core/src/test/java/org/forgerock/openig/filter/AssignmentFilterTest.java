@@ -29,6 +29,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class AssignmentFilterTest {
 
     @Test
@@ -41,8 +42,7 @@ public class AssignmentFilterTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.method = "DELETE";
-        StaticResponseHandler handler = new StaticResponseHandler();
-        handler.status = 200;
+        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
         assertThat(binding.target.eval(exchange)).isNull();
@@ -58,8 +58,7 @@ public class AssignmentFilterTest {
         binding.value = new Expression("${exchange.response.status}");
         filter.onResponse.add(binding);
         Exchange exchange = new Exchange();
-        StaticResponseHandler handler = new StaticResponseHandler();
-        handler.status = 200;
+        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
         assertThat(binding.target.eval(exchange)).isNull();
