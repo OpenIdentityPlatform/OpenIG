@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -26,15 +26,14 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class StaticResponseHandlerTest {
 
     @Test
     public void redirect() throws ExpressionException, HandlerException, IOException {
-        StaticResponseHandler handler = new StaticResponseHandler();
-        handler.status = 302;
-        handler.reason = "Found";
-        handler.headers.add("Location", new Expression("http://www.example.com/"));
-        Exchange exchange = new Exchange();
+        final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
+        handler.addHeader("Location", new Expression("http://www.example.com/"));
+        final Exchange exchange = new Exchange();
         handler.handle(exchange);
         assertThat(exchange.response.status).isEqualTo(302);
         assertThat(exchange.response.reason).isEqualTo("Found");

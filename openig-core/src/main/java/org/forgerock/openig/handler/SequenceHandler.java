@@ -32,24 +32,49 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**
- * Processes an exchange through a sequence of handlers. This allows multi-request processing
- * such as retrieving a form, extracting form content (e.g. nonce) and submitting in a
- * subsequent request.
+ * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
+ * extracting form content (e.g. nonce) and submitting in a subsequent request.
  */
 public class SequenceHandler extends GenericHandler {
 
-    /** Binds sequenced handlers with sequence processing postconditions. */
-    public static class Binding {
-        /** Handler to dispatch exchange to. */
-        Handler handler;
-        /**
-         * Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a. unconditional).
-         */
-        Expression postcondition;
+    /** Handlers and associated sequence processing postconditions. */
+    private final List<Binding> bindings = new ArrayList<Binding>();
+
+    /**
+     * Binds sequenced handlers with sequence processing postconditions.
+     *
+     * @param handler
+     *            The name of the handler heap object to dispatch to if the associated condition yields true.
+     * @param postcondition
+     *            evaluated to determine if sequence continues (default: {@code null} a.k.a. unconditional)
+     * @return The current dispatch handler.
+     */
+    public SequenceHandler addBinding(final Handler handler, final Expression postcondition) {
+        bindings.add(new Binding(handler, postcondition));
+        return this;
     }
 
-    /** Handlers and associated sequence processing postconditions. */
-    public final List<Binding> bindings = new ArrayList<Binding>();
+    /** Binds sequenced handlers with sequence processing postconditions. */
+    private static class Binding {
+
+        private final Handler handler;
+
+        private final Expression postcondition;
+
+        /**
+         * Default constructor.
+         *
+         * @param handler
+         *            Handler to dispatch exchange to.
+         * @param postcondition
+         *            Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a.
+         *            unconditional).
+         */
+        Binding(Handler handler, Expression postcondition) {
+            this.handler = handler;
+            this.postcondition = postcondition;
+        }
+    }
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
@@ -73,15 +98,14 @@ public class SequenceHandler extends GenericHandler {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            SequenceHandler handler = new SequenceHandler();
-            for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
+            final SequenceHandler sequenceHandler = new SequenceHandler();
+            for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                Binding binding = new Binding();
-                binding.handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
-                binding.postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
-                handler.bindings.add(binding);
+                final Handler handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                final Expression postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
+                sequenceHandler.addBinding(handler, postcondition);
             }
-            return handler;
+            return sequenceHandler;
         }
     }
 }

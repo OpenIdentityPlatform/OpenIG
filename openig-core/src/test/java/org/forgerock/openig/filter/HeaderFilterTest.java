@@ -28,6 +28,7 @@ import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class HeaderFilterTest {
     private Exchange exchange;
 
@@ -45,8 +46,7 @@ public class HeaderFilterTest {
 
         exchange.request.method = "DELETE";
         exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
-        StaticResponseHandler handler = new StaticResponseHandler();
-        handler.status = 200;
+        StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
         chain.handle(exchange);
@@ -61,9 +61,8 @@ public class HeaderFilterTest {
         filter.getRemovedHeaders().add("Location");
 
         // Prepare a static response handler that provision a response header
-        StaticResponseHandler handler = new StaticResponseHandler();
-        handler.headers.putSingle("Location", new Expression("http://openig.forgerock.com"));
-        handler.status = 200;
+        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
+        handler.addHeader("Location", new Expression("http://openig.forgerock.com"));
 
         // Execute the filter
         filter.filter(exchange, handler);
