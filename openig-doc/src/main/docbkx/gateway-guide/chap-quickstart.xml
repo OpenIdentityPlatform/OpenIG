@@ -67,12 +67,13 @@
 
   <procedure>
    <step>
-    <para>
-     Download and run the
-     <link xlink:href="${sampleServerDownloadUrl}"
-     >minimal HTTP server .jar</link>
-     to use as the application to protect.
-    </para>
+    <xinclude:include href="${sampleServerDownloadDoc}">
+     <xinclude:fallback>
+      <para>
+       Failed to include sample server download link.
+      </para>
+     </xinclude:fallback>
+    </xinclude:include>
 
     <screen>
 $ <userinput>java -jar ${sampleServerJar}</userinput>
