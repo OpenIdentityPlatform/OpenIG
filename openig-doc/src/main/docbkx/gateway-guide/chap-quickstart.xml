@@ -67,12 +67,7 @@
 
   <procedure>
    <step>
-    <para>
-     Download and run the
-     <link xlink:href="${sampleServerDownloadUrl}"
-     >minimal HTTP server .jar</link>
-     to use as the application to protect.
-    </para>
+    <xinclude:include href="../shared/para-download-doc-samples-snapshot.xml" />
 
     <screen>
 $ <userinput>java -jar ${sampleServerJar}</userinput>
