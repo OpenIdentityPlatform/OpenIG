@@ -104,6 +104,24 @@
         </executions>
       </plugin>
 
+      <!-- Provide separate package of configuration used in the documentation -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/docbkx/doc-resources-assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
