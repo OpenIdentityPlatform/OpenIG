@@ -186,7 +186,7 @@
     <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
     <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
 
-    <frDocPluginVersion>2.1.2</frDocPluginVersion>
+    <frDocPluginVersion>2.1.3</frDocPluginVersion>
     <gaId>UA-23412190-11</gaId>
     <!-- Release date and publication date are set at release build time.
       -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication
