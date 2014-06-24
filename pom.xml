@@ -173,6 +173,10 @@
     <openigFedWar>gateway-fed-${project.version}.war</openigFedWar>
     <sampleServerJar>doc-samples-${project.version}-jar-with-dependencies.jar</sampleServerJar>
     <sampleServerDownloadUrl>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/${sampleServerJar}</sampleServerDownloadUrl>
+    <sampleServerDownloadDirectory>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/</sampleServerDownloadDirectory>
+    <!-- Empty this property to link to a release version: -->
+    <sampleServerSnapshot>-snapshot</sampleServerSnapshot>
+    <sampleServerDownloadDoc>../shared/para-download-doc-samples${sampleServerSnapshot}.xml</sampleServerDownloadDoc>
 
     <warConfigDir>$HOME/.openig/config</warConfigDir>
     <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>
