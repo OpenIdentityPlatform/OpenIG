@@ -107,6 +107,7 @@
       <!-- Provide separate package of configuration used in the documentation -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <inherited>false</inherited>
         <configuration>
           <descriptors>
             <descriptor>src/main/docbkx/doc-resources-assembly.xml</descriptor>
