@@ -59,6 +59,25 @@
   </listitem>
 
   <listitem>
+   <para>
+    OpenIG built-in functions to call within expressions now include
+    <link
+     xlink:show="new"
+     xlink:href="reference#functions-urlEncode"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >urlEncode(string)</link>, and
+    <link
+     xlink:show="new"
+     xlink:href="reference#functions-urlDecode"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >urlDecode(string)</link>
+    (<link
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-54"
+     xlink:show="new">OPENIG-54</link>).
+   </para>
+  </listitem>
+
+  <listitem>
    <para>OpenIG HttpBasicAuthFilter now lets users change their passwords
    during a session (<link
    xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-32"
