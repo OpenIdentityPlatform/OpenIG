@@ -28,17 +28,19 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Functions</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>Functions</refname>
   <refpurpose>built-in functions to call within expressions</refpurpose>
  </refnamediv>
- <refsect1>
+
+ <refsect1 xml:id="functions-description">
   <title>Description</title>
   <indexterm>
    <primary>Expressions</primary>
@@ -49,7 +51,8 @@
   xlink:role="http://docbook.org/xlink/role/olink"
   >expressions</link>.</para>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-contains">
   <title>contains</title>
   <literallayout class="monospaced">contains(object, value)</literallayout>
 
@@ -84,7 +87,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-indexOf">
   <title>indexOf</title>
   <literallayout class="monospaced">indexOf(string, substring)</literallayout>
 
@@ -118,7 +122,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-join">
   <title>join</title>
   <literallayout class="monospaced">join(strings, separator)</literallayout>
 
@@ -151,7 +156,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-keyMatch">
   <title>keyMatch</title>
   <literallayout class="monospaced">keyMatch(map, pattern)</literallayout>
 
@@ -188,7 +194,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-length">
   <title>length</title>
   <literallayout class="monospaced">length(object)</literallayout>
 
@@ -216,7 +223,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-matches">
   <title>matches</title>
   <literallayout class="monospaced">matches(string, pattern)</literallayout>
 
@@ -255,7 +263,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-split">
   <title>split</title>
   <literallayout class="monospaced">split(string, pattern)</literallayout>
 
@@ -290,7 +299,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-toLowerCase">
   <title>toLowerCase</title>
   <literallayout class="monospaced">toLowerCase(string)</literallayout>
 
@@ -316,7 +326,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-toString">
   <title>toString</title>
   <literallayout class="monospaced">toString(object)</literallayout>
 
@@ -342,7 +353,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-toUpperCase">
   <title>toUpperCase</title>
   <literallayout class="monospaced">toUpperCase(string)</literallayout>
 
@@ -368,7 +380,8 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-trim">
   <title>trim</title>
   <literallayout class="monospaced">trim(string)</literallayout>
 
@@ -395,7 +408,77 @@
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
+
+ <refsect1 xml:id="functions-urlDecode">
+  <title>trim</title>
+  <literallayout class="monospaced">urlDecode(string)</literallayout>
+
+  <para>
+   Returns the URL decoding of the provided string.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The string to be URL decoded, which may be <literal>null</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>
+      The URL decoding of the provided string,
+      or <literal>null</literal> if string was <literal>null</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+
+ <refsect1 xml:id="functions-urlEncode">
+  <title>trim</title>
+  <literallayout class="monospaced">urlEncode(string)</literallayout>
+
+  <para>
+   Returns the URL encoding of the provided string.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The string to be URL encoded, which may be <literal>null</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>
+      The URL encoding of the provided string,
+      or <literal>null</literal> if string was <literal>null</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 xml:id="functions-javadoc">
   <title>Javadoc</title>
   <para><link xlink:show="new"
   xlink:href="${javadocBase}/org/forgerock/openig/el/Functions.html"
