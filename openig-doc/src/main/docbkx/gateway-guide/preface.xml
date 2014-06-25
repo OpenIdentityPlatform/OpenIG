@@ -21,36 +21,42 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <preface xml:id='preface'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Preface</title>
 
- <para>This guide shows you how to install and configure OpenIG, a
- high-performance reverse proxy server with specialized session
- management and credential replay functionality.</para>
+ <para>
+  This guide shows you how to install and configure ${projectName},
+  a high-performance reverse proxy server with specialized session management
+  and credential replay functionality.
+ </para>
 
  <section>
   <title>Who Should Use this Guide</title>
   
-  <para>This guide is written for access management designers and
-  administrators who build, deploy, and maintain identity gateways for
-  their organizations. This guide covers the tasks you might perform once
-  or repeat throughout the life cycle of an OpenIG release used in your
-  organization.</para>
+  <para>
+   This guide is written for access management designers and administrators
+   who develop, build, deploy, and maintain ${projectName} deployments
+   for their organizations.
+   This guide covers the tasks you might perform once
+   or repeat throughout the life cycle of an ${projectName} release.
+  </para>
    
-  <para>You do not need to be an OpenIG wizard to learn something from
-  this guide, though a background in access management and maintaining
-  web application software can help. You do need some background in
-  managing services on your operating systems and in your application
-  servers. You can nevertheless get started with this guide, and then
-  learn more as you go along.</para>
+  <para>
+   You do not need to be an expert to learn something from this guide,
+   though a background in HTTP, access management web applications can help.
+   You do need some background in managing services on your operating systems
+   and in your application servers.
+   You can nevertheless get started with this guide,
+   and then learn more as you go along.
+  </para>
  </section>
 
  <xinclude:include href="../shared/sec-formatting-conventions.xml" />

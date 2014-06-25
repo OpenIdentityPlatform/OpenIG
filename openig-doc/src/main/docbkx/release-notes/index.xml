@@ -31,12 +31,14 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
   <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
-  <title>OpenIG Release Notes</title>
+  <title>${projectName} Release Notes</title>
   <subtitle>Version ${docTargetVersion}</subtitle>
   <abstract>
-   <para>Notes covering OpenIG prerequisites, fixes, known issues. OpenIG
-   provides a high-performance reverse proxy server with specialized session
-   management and credential replay functionality.</para>
+   <para>
+    Notes covering ${projectName} prerequisites, fixes, known issues.
+    ${projectName} provides a high-performance reverse proxy server
+    with specialized session management and credential replay functionality.
+   </para>
   </abstract>
   <copyright>
    <year>2012-2014</year>

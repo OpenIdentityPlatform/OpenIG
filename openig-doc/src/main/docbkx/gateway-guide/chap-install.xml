@@ -30,14 +30,14 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>Installing OpenIG</title>
+ <title>Installing ${projectName}</title>
 
   <indexterm>
    <primary>Installation</primary>
   </indexterm>
 
  <itemizedlist>
-  <para>Before you install OpenIG, make sure you have the right version of Java,
+  <para>Before you install ${projectName}, make sure you have the right version of Java,
   and install and configure the web container.</para>
   <listitem>
    <para>Make sure you have the correct Java environment installed.</para>
@@ -60,13 +60,13 @@
 
  <para>For the remainder of this chapter <literal>$HOME</literal> refers to
  the home directory of the user running the web container where you install
- OpenIG.</para>
+ ${projectName}.</para>
 
  <procedure xml:id="download-install-configure">
   <title>Download, Install, &amp; Configure</title>
   <step>
    <para><link xlink:href="http://www.forgerock.org/openig.html"
-   xlink:show="new">Download</link> the OpenIG .war file.</para>
+   xlink:show="new">Download</link> the ${projectName} .war file.</para>
   </step>
   <step>
    <para>Deploy the .war to the root context of the web application
@@ -97,20 +97,20 @@
 
   <step>
    <para>Modify DNS or host file settings so the name of your target
-   application resolves to the IP address of OpenIG. Be sure to restart your
+   application resolves to the IP address of ${projectName}. Be sure to restart your
    browser after making this change.</para>
   </step>
 
   <step>
-   <para>Start the web container where OpenIG is deployed and browse to the
-   target application. OpenIG should now proxy all traffic to the
+   <para>Start the web container where ${projectName} is deployed and browse to the
+   target application. ${projectName} should now proxy all traffic to the
    application.</para>
   </step>
 
   <step>
-   <para>To ensure the browser is going through OpenIG, stop the OpenIG web
+   <para>To ensure the browser is going through ${projectName}, stop the ${projectName} web
    container, and verify you cannot reach the application. You can also look
-   in the OpenIG capture log to verify the traffic is going through OpenIG.
+   in the ${projectName} capture log to verify the traffic is going through ${projectName}.
    The location for this log is set in <filename>config.json</filename>, by
    default <filename>/tmp/gateway.log</filename>.
    </para>

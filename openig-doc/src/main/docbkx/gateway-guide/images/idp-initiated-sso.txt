@@ -32,7 +32,7 @@ autonumber
 
 participant "Browser" as Browser
 participant "Identity Provider" as IDP
-participant "Gateway" as Gateway
+participant "${projectName}" as Gateway
 participant "HR App" as Portal
 
 Browser->IDP: Authenticate user

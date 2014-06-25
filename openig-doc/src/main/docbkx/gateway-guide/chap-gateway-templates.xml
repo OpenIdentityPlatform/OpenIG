@@ -75,7 +75,7 @@
   <para>Proxies all requests and captures them in a flat file. Use this
   template if you need to analyze the traffic for your application. Simply
   change the <literal>baseURI</literal> to be that of the target application,
-  restart OpenIG, and login to the application. The entire sequence is logged
+  restart ${projectName}, and login to the application. The entire sequence is logged
   to the flat file.</para>
 
   <informalexample><?dbfo pgwide="1"?>
@@ -160,10 +160,10 @@
    <literal>OutgoingChain</literal> the cookie set in the login page response
    would not get set in the browser since that request is intercepted before
    it gets to the browser. The simplest way to deal with this situation is to
-   let OpenIG manage all the cookies by enabling the
-   <literal>CookieFilter</literal>. The side effect of OpenIG managing
+   let ${projectName} manage all the cookies by enabling the
+   <literal>CookieFilter</literal>. The side effect of ${projectName} managing
    cookies is none of the cookies are sent to the browser, but are managed
-   locally by OpenIG.</para>
+   locally by ${projectName}.</para>
   </note>
 
   <informalexample><?dbfo pgwide="1"?>
@@ -237,7 +237,7 @@
   </indexterm>
 
   <para>
-   Shows how a single OpenIG configuration can proxy to
+   Shows how a single ${projectName} configuration can proxy to
    multiple applications on different ports with the same IP address.
    This template is setup to proxy to
    both WordPress and MediaWiki hosted on the same web server.
@@ -285,7 +285,7 @@
   </indexterm>
 
   <para>A sample template used to log a user into Microsoft Online Outlook Web
-  Access. This template shows how you would use the Gateway and the OpenAM
+  Access. This template shows how you would use ${projectName} and the OpenAM
   password capture feature to integrate with OWA. You can follow the
   <link xlink:href="gateway-guide#chap-password-capture-replay-tutorial"
   xlink:role="http://docbook.org/xlink/role/olink">Tutorial On Password Capture

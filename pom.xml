@@ -53,17 +53,50 @@
         <version>3.1</version>
       </plugin>
 
+      <!-- Workaround pending fix for DOCS-178 -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <outputDirectory>${filteredDocSources}</outputDirectory>
+          <resources>
+            <resource>
+              <directory>${basedir}/src/main/docbkx</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>**/*.txt</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>${basedir}/src/main/docbkx</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>**/*.txt</exclude>
+              </excludes>
+            </resource>
+          </resources>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-doc-maven-plugin</artifactId>
         <version>${frDocPluginVersion}</version>
         <inherited>false</inherited>
         <configuration>
-          <projectName>OpenIG</projectName>
+          <projectName>${projectName}</projectName>
           <projectVersion>${docTargetVersion}</projectVersion>
-          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary
-            workaround pending #QOZ-985-23233 -->
+          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary workaround pending #QOZ-985-23233 -->
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
+          <docbkxSourceDirectory>${filteredDocSources}</docbkxSourceDirectory><!-- Workaround pending fix for DOCS-178 -->
         </configuration>
         <executions>
           <execution>
@@ -164,6 +197,7 @@
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
 
     <!-- Start documentation properties -->
+    <filteredDocSources>${project.build.directory}/doc-filtered</filteredDocSources>
 
     <!-- Reset these to build docs for the final publication: -->
     <docTargetVersion>${project.version}</docTargetVersion>
@@ -177,6 +211,8 @@
     <!-- Empty this property to link to a release version: -->
     <sampleServerSnapshot>-snapshot</sampleServerSnapshot>
     <sampleServerDownloadDoc>../shared/para-download-doc-samples${sampleServerSnapshot}.xml</sampleServerDownloadDoc>
+
+    <projectName>OpenIG</projectName>
 
     <warConfigDir>$HOME/.openig/config</warConfigDir>
     <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>

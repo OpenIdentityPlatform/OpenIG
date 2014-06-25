@@ -31,7 +31,7 @@ title Portal Application Login
 autonumber
 
 participant "Browser" as Browser
-participant "Gateway" as Gateway
+participant "${projectName}" as Gateway
 participant "Portal" as Portal
 participant "Flat File" as FlatFile
 

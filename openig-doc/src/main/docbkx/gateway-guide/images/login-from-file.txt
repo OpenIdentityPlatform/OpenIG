@@ -31,7 +31,7 @@ title Login With Credentials From a File
 autonumber
 
 participant "Browser" as Browser
-participant "OpenIG" as Gateway
+participant "${projectName}" as Gateway
 participant "User File" as File
 participant "Application" as App
 

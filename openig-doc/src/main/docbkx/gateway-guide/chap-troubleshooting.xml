@@ -68,12 +68,12 @@ Problem accessing /. Reason:
  /var/root/.openig/config/_private_var_folders_...webinf.json
   </programlisting>
 
-  <para>OpenIG could not find its configuration file in the home directory of
-  the user running the container where OpenIG is deployed, in this case
+  <para>${projectName} could not find its configuration file in the home directory of
+  the user running the container where ${projectName} is deployed, in this case
   <filename>/var/root/.openig/config/config.json</filename>.
-  As you can see from the error message, OpenIG looks in a secondary location
+  As you can see from the error message, ${projectName} looks in a secondary location
   determined at runtime by the container. The secondary location is only
-  necessary if you are running more than one OpenIG on a single host and your
+  necessary if you are running more than one ${projectName} on a single host and your
   instances do not share a single configuration.</para>
  </section>
 
@@ -97,7 +97,7 @@ Unexpected character (x) at position 1103
   <title>The values in the flat file are incorrect</title>
 
   <para>Ensure the flat file is readable by the user running the container for
-  OpenIG. Values are all characters, including space and tabs, between the
+  ${projectName}. Values are all characters, including space and tabs, between the
   separator, so make sure the values are not padded with spaces.</para>
  </section>
 
@@ -146,7 +146,7 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
  </section>
 
  <section>
-  <title>OpenIG is not logging users in</title>
+  <title>${projectName} is not logging users in</title>
 
   <para>If you are proxying to more than one application in multiple DNS
   domains, you must make sure your container is enabled for domain cookies.

@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>ClientHandler</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -48,7 +48,7 @@
 
   <note>
    <para>This handler does not verify hostnames for outgoing SSL connections.
-   This is because the gateway usually accesses the SSL endpoint using a raw IP
+   This is because ${projectName} usually accesses the SSL endpoint using a raw IP
    address rather than a fully-qualified hostname.</para>
   </note>
  </refsect1>

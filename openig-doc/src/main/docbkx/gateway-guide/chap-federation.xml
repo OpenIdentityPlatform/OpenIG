@@ -30,12 +30,12 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>Using the Federation Gateway</title>
+ <title>Using ${projectName} Federation</title>
 
  <para>
-  The Federation component of OpenIG is a standards based authentication service
-  used by OpenIG to validate a user and retrieve key attributes of the user
-  in order to log them in to applications that OpenIG protects.
+  The Federation component of ${projectName} is a standards based authentication service
+  used by ${projectName} to validate a user and retrieve key attributes of the user
+  in order to log them in to applications that ${projectName} protects.
   The Federation component implements Security Assertion Markup Language 2.0.
  </para>
 
@@ -65,8 +65,8 @@
  </para>
 
  <para>
-  OpenIG plays the role of SAML 2.0 SP.
-  You must therefore configure OpenIG as SP to access IDP services
+  ${projectName} plays the role of SAML 2.0 SP.
+  You must therefore configure ${projectName} as SP to access IDP services
   in order for the Federation component to be operational.
  </para>
 
@@ -79,28 +79,28 @@
   This assertion statement attests which user the IDP authenticated,
   when the authentication succeeded, how long the assertion is valid, and so forth.
   It can optionally contain attribute values for the user who authenticated.
-  (OpenIG can then, for example, use the attribute values
+  (${projectName} can then, for example, use the attribute values
   to log a user into a protected application.)
   The assertion can optionally be signed and encrypted.
  </para>
 
  <orderedlist>
   <para>
-   There are two ways that the OpenIG federation component can be invoked:
+   There are two ways that the ${projectName} federation component can be invoked:
   </para>
 
   <listitem>
    <para>
     IDP initiated SSO,
     where the remote Identity Provider sends
-    an unsolicited authentication statement to OpenIG
+    an unsolicited authentication statement to ${projectName}
    </para>
   </listitem>
 
   <listitem>
    <para>
     SP initiated SSO,
-    where OpenIG calls the Federation component to
+    where ${projectName} calls the Federation component to
     initiate federated SSO with the Identity Provider
    </para>
   </listitem>
@@ -109,7 +109,7 @@
  <para>
   In both cases, the job of the Federation component is
   to validate the user
-  and to pass the required attributes to OpenIG
+  and to pass the required attributes to ${projectName}
   so that it can log the user into protected applications.
  </para>
 
@@ -119,7 +119,7 @@
    xlink:show="new"
    xlink:href="gateway-guide#chap-federation-tutorial"
    xlink:role="http://docbook.org/xlink/role/olink"
-  ><citetitle>Tutorial For the Federation Gateway</citetitle></link>
+  ><citetitle>Tutorial For ${projectName} Federation</citetitle></link>
   in order to try this out with OpenAM playing the role of Identity Provider.
  </para>
 
@@ -133,19 +133,19 @@
 
   <itemizedlist>
    <para>
-    This section summarizes the steps needed to prepare OpenIG
+    This section summarizes the steps needed to prepare ${projectName}
     to act as a SAML 2.0 SP for your target application.
    </para>
 
    <listitem>
     <para>
-     Install the OpenIG Federation .war.
+     Install the ${projectName} Federation .war.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     Configure OpenIG to proxy successfully, and even log a user in,
+     Configure ${projectName} to proxy successfully, and even log a user in,
      to the target application.
      Getting this to work before configuring Federation
      makes the process much simpler to troubleshoot if anything goes wrong.
@@ -154,7 +154,7 @@
 
    <listitem>
     <para>
-     Add Federation configuration to the OpenIG configuration.
+     Add Federation configuration to the ${projectName} configuration.
     </para>
    </listitem>
 
@@ -176,7 +176,7 @@
 
    <listitem>
     <para>
-     Import OpenIG metadata to your Identity Provider.
+     Import ${projectName} metadata to your Identity Provider.
     </para>
    </listitem>
   </itemizedlist>
@@ -192,15 +192,15 @@
 
   <para>
    You configure the Federation component by modifying
-   both the OpenIG <filename>config.json</filename> file
+   both the ${projectName} <filename>config.json</filename> file
    and also by including Federation-specific XML files with the configuration.
   </para>
 
   <itemizedlist>
    <para>
     The location of configuration information depends on
-    the operating system where OpenIG runs,
-    and on the user who runs the application server where OpenIG runs.
+    the operating system where ${projectName} runs,
+    and on the user who runs the application server where ${projectName} runs.
    </para>
 
    <listitem>
@@ -237,7 +237,7 @@
     <term><filename>${warConfigDir}/config.json</filename></term>
     <listitem>
      <para>
-      This is the core configuration file for OpenIG.
+      This is the core configuration file for ${projectName}.
       You must configure both this file
       and also the XML files specific to the Federation component.
       The reason there are two sets of configuration files
@@ -264,7 +264,7 @@
     <term><filename>${warSamlDir}/gateway.cot</filename></term>
     <listitem>
      <para>
-      Circle of trust for OpenIG and the Identity Provider.
+      Circle of trust for ${projectName} and the Identity Provider.
      </para>
     </listitem>
    </varlistentry>
@@ -295,7 +295,7 @@
     <listitem>
      <para>
       These are the standard metadata and metadata extensions
-      for the OpenIG Federation component.
+      for the ${projectName} Federation component.
      </para>
     </listitem>
    </varlistentry>
@@ -318,7 +318,7 @@
    simply unpack <filename>Fedlet.war</filename>
    and copy all the files listed above into <filename>${warSamlDir}</filename>.
    You do not have to modify the files
-   to do basic IDP and SP initiated SSO with OpenIG.
+   to do basic IDP and SP initiated SSO with ${projectName}.
    When generating a Fedlet,
    know that the sample <filename>config.json</filename> templates
    uses <literal>/saml</literal> as the URI
@@ -343,7 +343,7 @@
 
   <para>
    The following sample configuration is corresponds to a scenario
-   where OpenIG receives a SAML assertion from OpenAM,
+   where ${projectName} receives a SAML assertion from OpenAM,
    and then logs the user in to the protected application
    using the username and password from the assertion.
    Descriptions of the fields follow the example.
@@ -374,7 +374,7 @@
     <term>"name" (required)</term>
     <listitem>
      <para>
-      Name of the Federation component of OpenIG.
+      Name of the Federation component of ${projectName}.
       Do not modify this value.
      </para>
     </listitem>
@@ -395,7 +395,7 @@
     <listitem>
      <para>
       The "assertionMapping" defines how to transform attributes
-      from the incoming assertion to attribute value pairs in OpenIG.
+      from the incoming assertion to attribute value pairs in ${projectName}.
       Each entry in the <literal>assertionMapping</literal> is of the form
       <literal><replaceable>localName</replaceable>:
        <replaceable>incomingName</replaceable></literal>,
@@ -461,9 +461,9 @@
      </para>
 
      <para>
-      This is how OpenIG and the Federation component work together
+      This is how ${projectName} and the Federation component work together
       to provide single sign-on.
-      When OpenIG detects the login page of the protected application,
+      When ${projectName} detects the login page of the protected application,
       it redirects to the Federation component.
       Once the Federation Service validates the SAML exchanges with the IDP,
       and sets the required session attributes,

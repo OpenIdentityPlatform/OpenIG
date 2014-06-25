@@ -27,9 +27,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>RedirectFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -45,15 +45,15 @@
   </indexterm>
   <para>Rewrites Location headers on responses that generate a redirect that
   would take the user directly to the application being proxied rather than
-  taking the user through OpenIG.</para>
+  taking the user through ${projectName}.</para>
 
-  <para>For example, if OpenIG listens on
-  <literal>https://openig.example.com:443/</literal> and the application it
-  protects listens on <literal>http://app.example.com:8080/</literal>, then
+  <para>For example, if ${projectName} listens on
+  <literal>https://proxy.example.com:443/</literal> and the application it
+  protects listens on <literal>http://www.example.com:8080/</literal>, then
   you can configure this filter to rewrite redirects that would take the user
-  to locations under <literal>http://app.example.com:8080/</literal> to go
+  to locations under <literal>http://www.example.com:8080/</literal> to go
   instead to locations under
-  <literal>https://openig.example.com:443/</literal>.</para>
+  <literal>https://proxy.example.com:443/</literal>.</para>
 
   <para>The current implementation supports only HTTP 302 redirects.</para>
 
@@ -74,8 +74,10 @@
    <varlistentry>
     <term><code>"baseURI"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The base URI of the OpenIG instance. This is used to rewrite the
-     Location header on the redirect response.</para>
+     <para>
+      The base URI of the ${projectName} instance.
+      This is used to rewrite the Location header on the redirect response.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -86,7 +88,7 @@
      "name": "LocationRewriter",
      "type": "RedirectFilter",
      "config": {
-         "baseURI": "https://openig.example.com:443/"
+         "baseURI": "https://proxy.example.com:443/"
       }
 }</programlisting>
  </refsect1>

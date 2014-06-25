@@ -21,16 +21,16 @@
   ! CCPL HEADER END
   !
   !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <refentry xml:id='heap-objects'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Heap Objects</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -45,7 +45,7 @@
    <secondary>Heap objects</secondary>
   </indexterm>
   <para>A heap is a collection of associated objects, initialized from
-  declarative configuration artifacts. All configurable objects in the gateway
+  declarative configuration artifacts. All configurable objects in ${projectName}
   are heap objects. Heap objects are created and initialized by associated
   "heaplets", which retrieve any objects an object depends on from the heap.
   The heap configuration is included as an object in the <link

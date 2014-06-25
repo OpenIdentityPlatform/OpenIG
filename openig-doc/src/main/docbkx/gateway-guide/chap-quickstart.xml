@@ -34,10 +34,10 @@
  <title>Getting Started</title>
 
  <para>
-  This chapter provides instructions to get OpenIG up and running on Jetty,
+  This chapter provides instructions to get ${projectName} up and running on Jetty,
   configured to serve as reverse proxy
   to a minimal HTTP server for use when following along with the documentation.
-  This allows you to quickly see how OpenIG works,
+  This allows you to quickly see how ${projectName} works,
   and provides hands on experience with a few key features.
   For more general installation and configuration instructions,
   start with the chapter on
@@ -45,7 +45,7 @@
    xlink:show="new"
    xlink:href="gateway-guide#chap-install"
    xlink:role="http://docbook.org/xlink/role/olink"
-  ><citetitle>Installing OpenIG</citetitle></link>.
+  ><citetitle>Installing ${projectName}</citetitle></link>.
  </para>
 
  <section xml:id="before-you-quickstart">
@@ -138,14 +138,14 @@ INFO: Press Ctrl+C to stop the server.</computeroutput>
      <link
       xlink:href="${downloadUrl}"
       xlink:show="new"
-     >Download</link> the OpenIG .war file.
+     >Download</link> the ${projectName} .war file.
     </para>
    </step>
 
    <step>
     <para>
      If you are using Jetty 7,
-     configure Jetty to run OpenIG in the root context.
+     configure Jetty to run ${projectName} in the root context.
     </para>
 
     <para>
@@ -170,11 +170,11 @@ INFO: Press Ctrl+C to stop the server.</computeroutput>
 
    <step>
     <para>
-     Deploy OpenIG in the root context.
+     Deploy ${projectName} in the root context.
     </para>
 
     <para>
-     Copy the OpenIG .war file as <filename>root.war</filename>
+     Copy the ${projectName} .war file as <filename>root.war</filename>
      to the <filename>/path/to/jetty/webapps/</filename>.
     </para>
 
@@ -184,13 +184,13 @@ $ <userinput>cp ${openigWar} /path/to/jetty/webapps/root.war</userinput>
 
     <para>
      When the <filename>root.xml</filename> file configuration as described,
-     Jetty automatically deploys OpenIG in the root context on startup.
+     Jetty automatically deploys ${projectName} in the root context on startup.
     </para>
    </step>
 
    <step>
     <para>
-     Prepare the OpenIG configuration.
+     Prepare the ${projectName} configuration.
     </para>
 
     <para>
@@ -201,7 +201,7 @@ $ <userinput>cp ${openigWar} /path/to/jetty/webapps/root.war</userinput>
       xlink:role="http://docbook.org/xlink/role/olink"
      ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>,
      to <filename>${warConfigDir}/config.json</filename>.
-     By default, OpenIG looks for <filename>config.json</filename>
+     By default, ${projectName} looks for <filename>config.json</filename>
      in the <filename>${warConfigDir}</filename> directory.
     </para>
 
@@ -272,18 +272,18 @@ $ <userinput>java -jar start.jar</userinput>
   <title>Network Configuration Steps</title>
 
   <para>
-   So far you have deployed OpenIG in the root context of Jetty on port 8080.
-   Since OpenIG is a reverse proxy you must make sure
+   So far you have deployed ${projectName} in the root context of Jetty on port 8080.
+   Since ${projectName} is a reverse proxy you must make sure
    that all traffic from your browser to the protected application
-   goes through OpenIG.
+   goes through ${projectName}.
    In other words, the network must be configured
-   so that the browser goes to OpenIG
+   so that the browser goes to ${projectName}
    instead of going directly to the protected application.
   </para>
 
   <para>
    Although if you followed the installation steps you are running
-   both OpenIG and the minimal HTTP server
+   both ${projectName} and the minimal HTTP server
    on the same host as your browser (probably your laptop or desktop),
    keep in mind that network configuration is an important deployment step.
    To encourage you to keep this in mind,
@@ -309,19 +309,19 @@ $ <userinput>java -jar start.jar</userinput>
   <programlisting>127.0.0.1    www.example.com</programlisting>
 
   <para>
-   If you are running the browser and OpenIG on separate hosts,
-   add the IP address of the host running OpenIG
+   If you are running the browser and ${projectName} on separate hosts,
+   add the IP address of the host running ${projectName}
    to the hosts file on the system running the browser,
    where the host name matches that of protected application.
-   For example, if OpenIG is running on a host with IP address 192.168.0.15:
+   For example, if ${projectName} is running on a host with IP address 192.168.0.15:
   </para>
 
   <programlisting>192.168.0.15    www.example.com</programlisting>
 
   <para>
-   If OpenIG is on a different host from the protected application,
+   If ${projectName} is on a different host from the protected application,
    also make sure that the host name of the protected application
-   resolves correctly for requests from OpenIG to the application.
+   resolves correctly for requests from ${projectName} to the application.
   </para>
 
   <tip>
@@ -333,9 +333,9 @@ $ <userinput>java -jar start.jar</userinput>
 
   <para>
     The simplest way to make sure you have configured
-    your DNS or host settings properly for remote systems is to stop OpenIG
+    your DNS or host settings properly for remote systems is to stop ${projectName}
     and then to make sure you cannot reach the target application
-    with the host name and port number of OpenIG.
+    with the host name and port number of ${projectName}.
     If you can still reach it, double check your host settings.
   </para>
 
@@ -358,7 +358,7 @@ $ <userinput>java -jar start.jar</userinput>
 
   <orderedlist>
    <para>
-    Now change the OpenIG configuration to log you in automatically
+    Now change the ${projectName} configuration to log you in automatically
     with hard-coded credentials.
    </para>
 
@@ -384,7 +384,7 @@ $ <userinput>java -jar start.jar</userinput>
       <para>
        The <literal>StaticRequestFilter</literal> performs
        an HTTP POST of the username and password as form data.
-       OpenIG supports a variety of ways to get the credentials,
+       ${projectName} supports a variety of ways to get the credentials,
        but for now just hard code them into the configuration.
       </para>
 
@@ -460,7 +460,7 @@ $ <userinput>java -jar start.jar</userinput>
 
    <listitem>
     <para>
-     Restart the Jetty server where OpenIG is deployed.
+     Restart the Jetty server where ${projectName} is deployed.
     </para>
    </listitem>
 
@@ -471,7 +471,7 @@ $ <userinput>java -jar start.jar</userinput>
     </para>
 
     <para>
-     This time, OpenIG logs you in automatically.
+     This time, ${projectName} logs you in automatically.
     </para>
    </listitem>
   </orderedlist>
@@ -488,28 +488,28 @@ $ <userinput>java -jar start.jar</userinput>
 
   <para>
    When your browser goes to <literal>http://www.example.com:8080/</literal>,
-   it is actually connecting to OpenIG deployed in Jetty.
-   OpenIG proxies all traffic it receives to the protected application at
+   it is actually connecting to ${projectName} deployed in Jetty.
+   ${projectName} proxies all traffic it receives to the protected application at
    <literal>http://www.example.com:8080/</literal>,
    and returns responses from the application to your browser.
   </para>
 
   <para>
    With the original configuration,
-   OpenIG does not change requests or responses,
+   ${projectName} does not change requests or responses,
    but only proxies requests and responses,
    and captures request and response information.
   </para>
 
   <para>
    After you change the configuration,
-   OpenIG continues to capture request and response data.
-   And OpenIG also replaces your browser's original HTTP GET request
+   ${projectName} continues to capture request and response data.
+   And ${projectName} also replaces your browser's original HTTP GET request
    with an HTTP POST login request containing credentials to authenticate.
    As a result, instead of the home page with a login form,
-   OpenIG logs you in directly,
+   ${projectName} logs you in directly,
    and the application responds with the page you see after logging in.
-   OpenIG then returns this response to your browser.
+   ${projectName} then returns this response to your browser.
   </para>
 
   <para>
@@ -523,7 +523,7 @@ $ <userinput>java -jar start.jar</userinput>
     </imageobject>
     <textobject>
      <para>
-      This image diagrams the steps showing how OpenIG performs login
+      This image diagrams the steps showing how ${projectName} performs login
       with hard-coded credentials and a static request filter.
      </para>
     </textobject>
@@ -540,7 +540,7 @@ $ <userinput>java -jar start.jar</userinput>
 
    <listitem>
     <para>
-     DNS responds with the address for OpenIG.
+     DNS responds with the address for ${projectName}.
     </para>
    </listitem>
 
@@ -552,7 +552,7 @@ $ <userinput>java -jar start.jar</userinput>
 
    <listitem>
     <para>
-     OpenIG replaces the request with an HTTP POST request,
+     ${projectName} replaces the request with an HTTP POST request,
      including the login form with hard-coded credentials.
     </para>
    </listitem>
@@ -566,7 +566,7 @@ $ <userinput>java -jar start.jar</userinput>
 
    <listitem>
     <para>
-     OpenIG passes the response back to the browser.
+     ${projectName} passes the response back to the browser.
     </para>
    </listitem>
   </orderedlist>
@@ -576,7 +576,7 @@ $ <userinput>java -jar start.jar</userinput>
   <title>Where To Go From Here</title>
 
   <para>
-   In this chapter, you have scratched the surface of OpenIG.
+   In this chapter, you have scratched the surface of ${projectName}.
    For more information, start with these chapters.
   </para>
 
@@ -604,7 +604,7 @@ $ <userinput>java -jar start.jar</userinput>
     </term>
     <listitem>
      <para>
-      This chapter shows how to set up supported application servers for OpenIG.
+      This chapter shows how to set up supported application servers for ${projectName}.
      </para>
     </listitem>
    </varlistentry>
@@ -618,7 +618,7 @@ $ <userinput>java -jar start.jar</userinput>
     </term>
     <listitem>
      <para>
-      This chapter shows you how to configure OpenIG
+      This chapter shows you how to configure ${projectName}
       to look up credentials in external sources, such as a file or a database.
      </para>
     </listitem>
@@ -633,7 +633,7 @@ $ <userinput>java -jar start.jar</userinput>
     </term>
     <listitem>
      <para>
-      This chapter provides sample OpenIG configuration files
+      This chapter provides sample ${projectName} configuration files
       for common use cases.
      </para>
     </listitem>
@@ -644,11 +644,11 @@ $ <userinput>java -jar start.jar</userinput>
       xlink:show="new"
       xlink:href="gateway-guide#chap-federation-tutorial"
       xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Tutorial For the Federation Gateway</citetitle></link>
+     ><citetitle>Tutorial For ${projectName} Federation</citetitle></link>
     </term>
     <listitem>
      <para>
-      This chapter shows how to configure OpenIG to get credentials
+      This chapter shows how to configure ${projectName} to get credentials
       from a SAML 2.0 Identity Provider.
      </para>
     </listitem>
@@ -656,8 +656,8 @@ $ <userinput>java -jar start.jar</userinput>
   </variablelist>
 
   <para>
-   ForgeRock can also help you succeed in your projects involving OpenIG.
-   You can purchase OpenIG support subscriptions and training courses
+   ForgeRock can also help you succeed in your projects involving ${projectName}.
+   You can purchase ${projectName} support subscriptions and training courses
    from ForgeRock and from consulting partners around the world and in your area.
    To contact ForgeRock, send mail to
    <link xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.

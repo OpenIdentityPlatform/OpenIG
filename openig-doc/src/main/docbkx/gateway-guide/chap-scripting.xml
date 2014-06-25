@@ -38,7 +38,7 @@
 
  <para>
   To extend what you can do with Filters and Handlers,
-  OpenIG supports dynamic scripting languages like Groovy
+  ${projectName} supports dynamic scripting languages like Groovy
   through the use of <literal>ScriptableFilter</literal>
   and <literal>ScriptableHandler</literal> objects.
  </para>
@@ -48,7 +48,7 @@
   as for other Filters and Handlers.
   Each takes as its configuration the script's Internet media "type"
   and either a "source" script included in the JSON configuration,
-  or a "file" script that OpenIG reads from a file.
+  or a "file" script that ${projectName} reads from a file.
  </para>
 
  <para>
@@ -69,8 +69,8 @@
  </programlisting>
 
  <para>
-  Relative paths in the "file" field depend on how the gateway is installed.
-  If the gateway is installed in an application server,
+  Relative paths in the "file" field depend on how ${projectName} is installed.
+  If ${projectName} is installed in an application server,
   then paths for Groovy scripts are relative to
   <filename>${warGroovyDir}</filename>.
  </para>
@@ -86,7 +86,7 @@
  </para>
 
  <para>
-  OpenIG provides scripts with several global variables at run time,
+  ${projectName} provides scripts with several global variables at run time,
   enabling them to access the Exchange,
   to store variables across executions,
   to write messages to the logs,
@@ -139,6 +139,7 @@
   </programlisting>
  </section>
 
+<!--
  <section xml:id="scripting-capture">
   <title>Scripting Proxy &amp; Capture</title>
 
@@ -150,13 +151,14 @@
   </para>
 
   <programlisting language="java">
-// FixMe: need a Capture similar to CaptureFilter but without the condition
+// TODO: need a Capture similar to CaptureFilter but without the condition
 capture = globals.get("capture", { -> new Capture("/tmp/gateway.log") })
 capture(exchange.request)
 http.execute(exchange) // next.handle(exchange) if this were a filter
 capture(exchange.response)
   </programlisting>
  </section>
+-->
 
  <section xml:id="scripting-http-basic">
   <title>Scripting HTTP Basic Authentication</title>

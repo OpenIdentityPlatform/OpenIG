@@ -32,12 +32,14 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <info>
   <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
-  <title>OpenIG Reference</title>
+  <title>${projectName} Reference</title>
   <subtitle>Version ${docTargetVersion}</subtitle>
   <abstract>
-   <para>Reference documentation for OpenIG. OpenIG provides a high-performance
-   reverse proxy server with specialized session management and credential
-   replay functionality.</para>
+   <para>
+    Reference documentation for ${projectName}.
+    ${projectName} provides a high-performance reverse proxy server
+    with specialized session management and credential replay functionality.
+   </para>
   </abstract>
   <copyright>
    <year>2011-2014</year>
@@ -81,7 +83,7 @@
   <title>Required Configuration</title>
   <partintro>
    <para>You must specify at least the entry point for incoming requests,
-   the OpenIG Servlet, and the heap objects that configure and initialize
+   the ${projectName} Servlet, and the heap objects that configure and initialize
    objects, with dependency injection.</para>
   </partintro>
   <xinclude:include href="man-gateway-servlet.xml" />
@@ -91,7 +93,7 @@
  <reference xml:id="servlets-conf">
   <title>Servlets</title>
   <partintro>
-   <para>The gateway includes objects that can create, initialize and dispatch
+   <para>${projectName} includes objects that can create, initialize and dispatch
    to Java Enterprise Edition Servlets and Servlet filters.</para>
   </partintro>
   <xinclude:include href="man-DispatchServlet.xml" />

@@ -30,32 +30,32 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>How OpenIG Works</title>
+ <title>How ${projectName} Works</title>
 
  <indexterm>
   <primary>Architecture</primary>
  </indexterm>
 
- <para>This chapter provides a detailed look at OpenIG's components and how
+ <para>This chapter provides a detailed look at ${projectName} components and how
  they work together.</para>
  
  <section xml:id="how-it-works-short">
   <title>How It Works In A Nutshell</title>
 
-  <para>The underlying core of ForgeRock Open Identity Gateway is based on a
+  <para>The underlying core of ForgeRock ${projectName} is based on a
   <link xlink:show="new" xlink:href="http://en.wikipedia.org/wiki/Reverse_proxy"
   >reverse proxy architecture</link>. All HTTP traffic to each protected
-  application is routed through OpenIG, enabling close inspection,
+  application is routed through ${projectName}, enabling close inspection,
   transformation and filtering of each request.  By inspecting the traffic,
-  OpenIG is able to intercept requests that would normally require the user to
+  ${projectName} is able to intercept requests that would normally require the user to
   authenticate, obtain the user's login credentials, and send the necessary
   HTTP request to the target application, thereby logging in the user without
   modifying or installing anything on the application.  In its simplest form
-  and basic configuration, OpenIG is a Java-based reverse proxy which runs as
-  a web application.  Enable the Form-Filter replay module and OpenIG
+  and basic configuration, ${projectName} is a Java-based reverse proxy which runs as
+  a web application.  Enable the Form-Filter replay module and ${projectName}
   automatically log users in when a timeout or authentication page is detected.
-  Additionally, enable the SAML2 service and OpenIG becomes a SAML2
-  endpoint. In this mode of operation, OpenIG receives
+  Additionally, enable the SAML2 service and ${projectName} becomes a SAML2
+  endpoint. In this mode of operation, ${projectName} receives
   and verifies the SAML2 request and then logs the user directly
   into the target application.</para>
  </section>
@@ -63,17 +63,17 @@
  <section xml:id="how-it-works-detail">
   <title>How It Works In Detail</title>
 
-  <para>The following modules make up OpenIG.</para>
+  <para>The following modules make up ${projectName}.</para>
 
   <section xml:id="how-it-works-core">
-   <title>OpenIG Core (Reverse Proxy)</title>
+   <title>${projectName} Core (Reverse Proxy)</title>
 
-   <para>OpenIG core is a standard Java EE servlet implementation of a reverse
-   proxy. The main function of OpenIG core is to act as a reverse proxy to the
-   target application. When deployed in its base configuration, OpenIG can be
-   used as a pure reverse proxy. The power of the OpenIG core comes in its
+   <para>${projectName} core is a standard Java EE servlet implementation of a reverse
+   proxy. The main function of ${projectName} core is to act as a reverse proxy to the
+   target application. When deployed in its base configuration, ${projectName} can be
+   used as a pure reverse proxy. The power of the ${projectName} core comes in its
    ability to search, transform, and process HTTP traffic to and from the
-   target application. This enables OpenIG to recognize login pages, submit
+   target application. This enables ${projectName} to recognize login pages, submit
    login forms, transform or filter content, and even function as a Federation
    endpoint for the application.  All these features are possible without
    making any changes to the application's deployment container or the
@@ -85,7 +85,7 @@
    <para>The <link xlink:href="reference#Exchange"
    xlink:role="http://docbook.org/xlink/role/olink">Exchange</link> is a
    wrapper around the HTTP request and response objects that pass through
-   OpenIG. Every request or response being processed in OpenIG can be accessed
+   ${projectName}. Every request or response being processed in ${projectName} can be accessed
    or modified through the Exchange object.  In addition, arbitrary data can
    be set in the Exchange to facilitate the passing of data and state between
    filters and handlers.</para>
@@ -93,8 +93,8 @@
 
   <section xml:id="how-it-works-dispatcher">
    <title>Dispatcher</title>
-   <para>The Dispatcher may be thought of as the internal router of OpenIG.
-   Every request that comes into OpenIG is analyzed and forwarded on to the
+   <para>The Dispatcher may be thought of as the internal router of ${projectName}.
+   Every request that comes into ${projectName} is analyzed and forwarded on to the
    configured processing chain of filters and handlers. A request may be
    forwarded based on the target host, URL, URL parameters, headers, cookies,
    or any other component of the request.</para>
@@ -117,7 +117,7 @@
 
    <para>The final processing of every Chain ends in a call to a Handler. A
    Handler can simply call another Chain or it can send the request on to the
-   target application. The following Handlers are shipped with OpenIG:</para>
+   target application. The following Handlers are shipped with ${projectName}:</para>
 
    <itemizedlist>
     <listitem>
@@ -154,15 +154,15 @@
 
   <section xml:id="how-it-works-filters">
    <title>Filters</title>
-   <para>Filters are responsible for processing HTTP requests in OpenIG.
+   <para>Filters are responsible for processing HTTP requests in ${projectName}.
    Filters can be chained together to act on the input stream coming from the
    browser, or the  output stream returned back from the target application.
    A filter can do something as simple as logging the input and output stream
    or something more complex, such as processing login pages, fetching user
    attributes, or transforming content. There are multiple Filters shipped with
-   OpenIG that can be combined in chains to provide very extensible request and
+   ${projectName} that can be combined in chains to provide very extensible request and
    response processing features. Custom filters can also be written using the
-   Java SPIs. The following is a list of Filters shipped with OpenIG:</para>
+   Java SPIs. The following is a list of Filters shipped with ${projectName}:</para>
 
    <itemizedlist>
     <listitem>
@@ -174,16 +174,16 @@
     <listitem>
      <para><link xlink:href="reference#CaptureFilter"
      xlink:role="http://docbook.org/xlink/role/olink">CaptureFilter</link>:
-     Captures the HTTP requests being processed by OpenIG. Capture can be used
+     Captures the HTTP requests being processed by ${projectName}. Capture can be used
      for audit purposes and may also be very useful when analyzing an
-     application or troubleshooting a misbehaving OpenIG. Logs are written to
-     a flat file on the OpenIG host.</para>
+     application or troubleshooting a misbehaving ${projectName}. Logs are written to
+     a flat file on the ${projectName} host.</para>
     </listitem>
 
     <listitem>
      <para><link xlink:href="reference#CookieFilter"
      xlink:role="http://docbook.org/xlink/role/olink">CookieFilter</link>:
-     The default behavior of OpenIG is to accept and forward all cookies.
+     The default behavior of ${projectName} is to accept and forward all cookies.
      Since this is not always the desirable behavior, the CookieFilter, when
      configured, allows you to suppress, manage, and relay cookies.</para>
     </listitem>
@@ -214,12 +214,12 @@
     <listitem>
      <para><link xlink:href="reference#HeaderFilter"
      xlink:role="http://docbook.org/xlink/role/olink">HeaderFilter</link>:
-     The default behavior of OpenIG is to accept and forward all headers.
+     The default behavior of ${projectName} is to accept and forward all headers.
      The HeaderFilter can be configured to add additional headers or remove
      headers on both the HTTP request and the response. It can also be
-     configured to parse and set header values in OpenIG context to allow
+     configured to parse and set header values in ${projectName} context to allow
      filters access to the header attributes. This feature is used most
-     commonly when OpenIG is integrated with OpenAM and being fronted by a
+     commonly when ${projectName} is integrated with OpenAM and being fronted by a
      policy agent.</para>
     </listitem>
 
@@ -236,7 +236,7 @@
      xlink:role="http://docbook.org/xlink/role/olink"
      >RedirectFilter</link>: Rewrites Location headers on responses that
      generate a redirect that would take the user directly to the application
-     being proxied rather than taking the user through OpenIG.</para>
+     being proxied rather than taking the user through ${projectName}.</para>
     </listitem>
 
     <listitem>
@@ -276,19 +276,19 @@
   <section xml:id="how-it-works-configuration">
    <title>Configuration</title>
 
-   <para>The configuration of OpenIG was designed to be very modular and
-   self-contained. Each module within OpenIG stores its configuration in JSON
+   <para>The configuration of ${projectName} was designed to be very modular and
+   self-contained. Each module within ${projectName} stores its configuration in JSON
    representation, which is stored in flat files. The
-   features of OpenIG can be configured by directly manipulating the JSON flat
+   features of ${projectName} can be configured by directly manipulating the JSON flat
    files.</para>
   </section>
 
   <section xml:id="how-it-works-heaplets">
    <title>Heaplets</title>
 
-   <para>Every OpenIG module which has JSON configuration also has a Heaplet
+   <para>Every ${projectName} module which has JSON configuration also has a Heaplet
    associated with it. Each module's Heaplet is responsible for reading the
-   JSON configuration and creating that module's configuration in OpenIG's
+   JSON configuration and creating that module's configuration in the ${projectName}
    runtime heap. Each module can then read its configuration from the heap as
    well as make shared configuration information available to other
    modules.</para>
@@ -299,19 +299,19 @@
 
    <para>The Services model was designed to allow the integration of value
    added features, such as Federation, without requiring them to be tightly
-   bound to the OpenIG implementation. SAML2 is the add on 
-   service shipping with OpenIG today.</para>
+   bound to the ${projectName} implementation. SAML2 is the add on
+   service shipping with ${projectName} today.</para>
   </section>
 
   <section xml:id="how-it-works-saml2">
-   <title>Federation Service (Federation Gateway)</title>
+   <title>Federation Service (${projectName} Federation)</title>
 
-   <para>When the Federation Service is enabled, OpenIG acts as the
+   <para>When the Federation Service is enabled, ${projectName} acts as the
    Service Provider in a Circle of Trust with a SAML2 compliant Identity
    Provider. The Federation service supports both IDP and SP initiated SAML2
-   profiles. The Federation Gateway may be a Service Provider in the classic
+   profiles. ${projectName} Federation may be a Service Provider in the classic
    Federation use case where the IDP and SP are different companies or domains.
-   The OpenIG SP can also be a standards based alternative to an OpenAM policy
+   The ${projectName} SP can also be a standards based alternative to an OpenAM policy
    agent for internal enterprise applications that want to move away from
    installing agents with web and web application servers.</para>
   </section>

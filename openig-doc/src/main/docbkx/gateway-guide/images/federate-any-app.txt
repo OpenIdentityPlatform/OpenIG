@@ -1,4 +1,4 @@
-@startuml am-integration.png
+@startuml federate-any-app.png
 
 /'
     CCPL HEADER START
@@ -27,33 +27,23 @@
     it with PlantUML, http://plantuml.sourceforge.net/sequence.html
 '/
 
-title OpenAM Integration
-autonumber
+title Federating Any Application
 
 participant "Browser" as Browser
-participant "Access Manager" as AM
-participant "Agent" as PA
+participant "SAML 2.0 Identity Provider" as IDP
 participant "${projectName}" as Gateway
-participant "Portal" as Portal
+participant "Ringtones" as Ringtones
+participant "Apps" as Apps
+participant "Accessories" as Accessories
 
-Browser->PA: Request to http://portal.example.com
+Browser<->IDP: Authentication
 
-PA->Browser: Redirect to...
+Gateway<->IDP: Use SAML 2.0 for SSO
 
-Browser->AM: ...AM login page
+Gateway->Ringtones: Manage access
 
-AM->Browser: Log user in & redirect to...
+Gateway->Apps: Manage access
 
-Browser->Gateway: ...Portal
-
-Gateway->Portal: Pass through request
-
-Portal->Gateway: No Portal session
-
-Gateway->Portal: POST login form
-
-Portal->Gateway: Redirect to Portal
-
-Gateway->Browser: Response from http://portal.example.com
+Gateway->Accessories: Manage access
 
 @enduml

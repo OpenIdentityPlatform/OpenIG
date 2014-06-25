@@ -1,4 +1,4 @@
-@startuml am-integration.png
+@startuml standards-based-agent.png
 
 /'
     CCPL HEADER START
@@ -27,33 +27,33 @@
     it with PlantUML, http://plantuml.sourceforge.net/sequence.html
 '/
 
-title OpenAM Integration
-autonumber
+title Standards-Based Policy Enforcement
 
 participant "Browser" as Browser
-participant "Access Manager" as AM
-participant "Agent" as PA
+participant "Policy Agent\nHR App" as HR
+participant "Policy Agent\nPayroll App" as Payroll
+participant "OpenAM" as AM
 participant "${projectName}" as Gateway
-participant "Portal" as Portal
+participant "Legacy App" as Legacy
+participant "Unsupported App" as Unsupported
+participant "Custom App" as Custom
 
-Browser->PA: Request to http://portal.example.com
+Browser->HR: Access HR application
 
-PA->Browser: Redirect to...
+HR->AM: Authentication & policy decision requests
 
-Browser->AM: ...AM login page
+Browser->Payroll: Access Payroll application
 
-AM->Browser: Log user in & redirect to...
+Payroll->AM: Authentication & policy decision requests
 
-Browser->Gateway: ...Portal
+Browser->Gateway: Access other applications
 
-Gateway->Portal: Pass through request
+Gateway<->AM: Use SAML 2.0 for SSO & enforcement
 
-Portal->Gateway: No Portal session
+Gateway->Legacy: Manage access
 
-Gateway->Portal: POST login form
+Gateway->Unsupported: Manage access
 
-Portal->Gateway: Redirect to Portal
-
-Gateway->Browser: Response from http://portal.example.com
+Gateway->Custom: Manage access
 
 @enduml
