@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>AssignmentFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -123,7 +123,7 @@
  <refsect1>
   <title>Example</title>
   <para>This is an example of how you would capture credentials and store them
-  in the Gateway session during a login request. Notice the credentials are
+  in the ${projectName} session during a login request. Notice the credentials are
   captured on the request, but not marked as valid until the response returns
   a positive 302. The credentials would then be used to login a user to a
   different application.</para>

@@ -44,8 +44,8 @@ $ <userinput>echo Command line sessions are formatted with lines folded for easi
  and so forth are marked (UNIX). Sections pertaining to Microsoft Windows
  might be marked (Windows). To avoid repetition, however, file system
  directory names are often given only in UNIX format as in
- <filename>/path/to/OpenIG</filename>, even if the text applies to
- <filename>C:\path\to\OpenIG</filename> as well.</para>
+ <filename>/path/to/${projectName}</filename>, even if the text applies to
+ <filename>C:\path\to\${projectName}</filename> as well.</para>
 
  <para>Absolute path names usually begin with the placeholder
  <filename>/path/to/</filename>, which might translate to

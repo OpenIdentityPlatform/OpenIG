@@ -20,25 +20,27 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012 ForgeRock AS
+  !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <preface xml:id='preface'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Preface</title>
  
- <para>This reference covers OpenIG configuration.</para>
+ <para>This reference covers ${projectName} configuration.</para>
 
  <section>
   <title>Who Should Use this Reference</title>
   
-  <para>This references is written for access management designers, developers,
-  and administrators using OpenIG. For API specifications, see the appropriate
-  Javadoc.</para> 
+  <para>
+   This references is written for access management designers, developers,
+   and administrators using ${projectName}.
+   For API specifications, see the appropriate Javadoc.
+  </para>
  </section>
 
  <xinclude:include href="../shared/sec-formatting-conventions.xml" />

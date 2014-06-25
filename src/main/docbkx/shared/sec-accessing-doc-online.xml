@@ -20,16 +20,16 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !
 -->
  <section xml:id="accessing-doc-online"
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Accessing OpenIG Documentation Online</title>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <title>Accessing ${projectName} Documentation Online</title>
 
  <para>Core documentation, such as what you are now reading, aims to
  be technically accurate and complete with respect to the software
@@ -43,10 +43,10 @@
  xlink:href='http://docs.forgerock.org/'>docs.forgerock.org</link>.</para>
 
  <para>The <link
- xlink:href="https://wikis.forgerock.org/confluence/display/OPENAM/Home"
- xlink:show="new">OpenAM Wiki</link> offers additional content related to
+ xlink:href="https://wikis.forgerock.org/confluence/display/OPENIG/Home"
+ xlink:show="new">Wiki</link> offers additional content related to
  ForgeRock access management software. You are welcome to <link
- xlink:href='https://idp.forgerock.org/openam/UI/Login?service=register'
+ xlink:href='https://sso.forgerock.com/openam/UI/Login'
  xlink:show="new">sign up</link> and then edit the Wiki if you notice an error,
  or if you have something to share.</para>
 </section>

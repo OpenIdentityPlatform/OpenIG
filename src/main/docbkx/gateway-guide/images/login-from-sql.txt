@@ -31,7 +31,7 @@ title Login With Credentials From a Database
 autonumber
 
 participant "Browser" as Browser
-participant "OpenIG" as Gateway
+participant "${projectName}" as Gateway
 participant "Database" as SQL
 participant "Application" as App
 

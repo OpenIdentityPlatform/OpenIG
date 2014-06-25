@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>Tutorial For the Federation Gateway</title>
+ <title>Tutorial For ${projectName} Federation</title>
 
  <indexterm>
   <primary>Tutorials</primary>
@@ -38,15 +38,15 @@
  </indexterm>
 
  <para>
-  This tutorial demonstrates how to configure OpenIG
+  This tutorial demonstrates how to configure ${projectName}
   as a SAML 2.0 federation service provider
   to log users in to a protected application.
  </para>
 
  <para>
   When following this tutorial, you configure
-  OpenAM to send a SAML 2.0 assertion to OpenIG containing user credentials,
-  and OpenIG to validate the assertion and use the credentials
+  OpenAM to send a SAML 2.0 assertion to ${projectName} containing user credentials,
+  and ${projectName} to validate the assertion and use the credentials
   to log the user in to the protected application.
  </para>
 
@@ -58,7 +58,7 @@
    xlink:show="new"
    xlink:href="gateway-guide#chap-federation"
    xlink:role="http://docbook.org/xlink/role/olink"
-  ><citetitle>Using the Federation Gateway</citetitle></link>.
+  ><citetitle>Using ${projectName} Federation</citetitle></link>.
   For OpenAM documentation, see
   <link xlink:show="new" xlink:href="http://docs.forgerock.org/en/openam/" />.
  </para>
@@ -68,7 +68,7 @@
 
   <para>
    Before you start this tutorial,
-   prepare OpenIG and the minimal HTTP server as you did for the chapter on
+   prepare ${projectName} and the minimal HTTP server as you did for the chapter on
   <link
    xlink:show="new"
    xlink:href="gateway-guide#chap-quickstart"
@@ -77,18 +77,18 @@
   </para>
 
   <para>
-   OpenIG should be running in Jetty,
+   ${projectName} should be running in Jetty,
    configured to access the minimal HTTP server as described in that chapter.
   </para>
 
   <para>
-   The OpenIG .war file to use for this tutorial is different, however.
+   The ${projectName} .war file to use for this tutorial is different, however.
    The .war you want is the build with Federation support.
    When you go to the
    <link
     xlink:href="${downloadUrl}"
     xlink:show="new"
-   >download page</link> to get the OpenIG war,
+   >download page</link> to get the ${projectName} war,
    make sure you get the version with Federation support, ${openigFedWar}.
    This is the .war that you deploy at the root context in Jetty:
   </para>
@@ -98,7 +98,7 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
   </screen>
 
   <para>
-   The initial OpenIG configuration file should look like the one used
+   The initial ${projectName} configuration file should look like the one used
    to proxy requests through to the HTTP server
    and to capture request and response data, see
    <link
@@ -109,7 +109,7 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
   </para>
 
   <para>
-   To test your setup, access the HTTP server home page through OpenIG at
+   To test your setup, access the HTTP server home page through ${projectName} at
    <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
    Login as username <literal>george</literal>, password <literal>costanza</literal>.
    You should see a page showing the username and some information about the request.
@@ -131,13 +131,13 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
    Login to the OpenAM console as administrator,
    and use the common task wizard to create a hosted Identity Provider.
    This tutorial does not address PKI configuration for validation and encryption,
-   though OpenIG is capable of handling both when properly configured,
+   though ${projectName} is capable of handling both when properly configured,
    just as any OpenAM Fedlet can handle both.
   </para>
 
   <para>
    Then use the common task wizard to create a Fedlet.
-   Set the Name to <literal>OpenIG</literal>.
+   Set the Name to <literal>${projectName}</literal>.
    Set the Destination URL to <literal>http://www.example.com:8080/saml</literal>.
    Configure the Attribute Mapping to map the
    the <literal>mail</literal> attribute to <literal>mail</literal>
@@ -146,11 +146,11 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
 
   <para>
    Why map these attributes?
-   The SAML 2.0 attribute mapping indicates that the SP, OpenIG,
+   The SAML 2.0 attribute mapping indicates that the SP, ${projectName},
    wants the IDP, OpenAM in this case,
    to get the values of these attributes from the user profile
-   and then send them to the SP, OpenIG.
-   OpenIG can then use the values of the attributes,
+   and then send them to the SP, ${projectName}.
+   ${projectName} can then use the values of the attributes,
    in this case <literal>mail</literal> and <literal>employeenumber</literal>,
    to log the user in to the application it protects.
   </para>
@@ -176,10 +176,10 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
  </section>
 
  <section xml:id="fed-tutorial-configure-federation">
-  <title>Configuring OpenIG For Federation</title>
+  <title>Configuring ${projectName} For Federation</title>
 
   <para>
-   Replace the existing OpenIG configuration file
+   Replace the existing ${projectName} configuration file
    with the new configuration from the example,
    <link
     xlink:show="new"
@@ -196,12 +196,12 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
    OpenAM displays the location of the .zip file
    upon successful creation of the Fedlet.
    If you followed the instructions above, the .zip is
-   <filename>$HOME/openam/myfedlets/OpenIG/Fedlet.zip</filename>
+   <filename>$HOME/openam/myfedlets/${projectName}/Fedlet.zip</filename>
    on the system where OpenAM runs.
   </para>
 
   <screen>
-$ <userinput>cd $HOME/openam/myfedlets/OpenIG</userinput>
+$ <userinput>cd $HOME/openam/myfedlets/${projectName}</userinput>
 $ <userinput>unzip Fedlet.zip fedlet.war</userinput>
 $ <userinput>unzip fedlet.war conf/*</userinput>
 $ <userinput>mkdir ${warSamlDir}</userinput>
@@ -239,7 +239,7 @@ sp.xml</computeroutput>
      For IDP initiated SSO, click
      <link
       xlink:show="new"
-      xlink:href="http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=OpenIG&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      xlink:href="http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=${projectName}&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
      >this IDP initiated SSO link</link>,
      and then login to OpenAM
      with username <literal>george</literal>, password <literal>costanza</literal>.
@@ -249,7 +249,7 @@ sp.xml</computeroutput>
    <listitem>
     <para>
      For SP initiated SSO,
-     either browse to OpenIG protecting the application,
+     either browse to ${projectName} protecting the application,
      at <link xlink:show="new" xlink:href="http://www.example.com:8080/" />,
      or click
      <link
@@ -274,7 +274,7 @@ sp.xml</computeroutput>
   <para>
    Consider the configuration, <filename>${warConfigDir}/config.json</filename>.
    In this configuration,
-   the "HandlerServlet" is no longer the entry point to OpenIG processing.
+   the "HandlerServlet" is no longer the entry point to ${projectName} processing.
    Instead, the entry point is now a "DispatchServlet".
   </para>
 

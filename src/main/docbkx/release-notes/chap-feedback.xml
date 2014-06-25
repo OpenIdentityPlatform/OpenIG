@@ -20,44 +20,62 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012 ForgeRock AS
+  !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
 <chapter xml:id='chap-feedback'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>How to Report Problems &amp; Provide Feedback</title>
 
- <para>If you have questions regarding OpenIG which are not answered by the
- documentation, there is a mailing list which can be found at
- <link xlink:href="https://lists.forgerock.org/mailman/listinfo/openig"
- xlink:show="new">https://lists.forgerock.org/mailman/listinfo/openig</link>
- where you are likely to find an answer.</para>
+ <para>
+  If you have questions regarding ${projectName}
+  that are not answered by the documentation,
+  there is a mailing list which can be found at
+  <link
+   xlink:href="https://lists.forgerock.org/mailman/listinfo/openig"
+   xlink:show="new"
+  >https://lists.forgerock.org/mailman/listinfo/openig</link>
+  where you are likely to find an answer.</para>
 
- <para>If you have found issues or reproducible bugs within OpenIG, report
- them in <link xlink:href="https://bugster.forgerock.org" xlink:show="new"
- >https://bugster.forgerock.org</link>.</para>
+ <para>
+  If you have found issues or reproducible bugs within ${projectName},
+  report them in
+  <link xlink:href="https://bugster.forgerock.org" xlink:show="new" />.
+ </para>
 
  <itemizedlist>
-  <para>When requesting help with a problem, include the following
-  information:</para>
+  <para>
+   When requesting help with a problem, include the following information:
+  </para>
+
   <listitem>
-   <para>Description of the problem, including when the problem occurs and
-   its impact on your operation</para>
+   <para>
+    Description of the problem,
+    including when the problem occurs and its impact on your operation
+   </para>
   </listitem>
+
   <listitem>
-   <para>Machine type, operating system version, web container and version,
-   Java version, and OpenIG release version, including any patches or other
-   software that might be affecting the problem</para>
+   <para>
+    Machine type, operating system version, web container and version,
+    Java version, and ${projectName} release version,
+    including any patches or other software that might be affecting the problem
+   </para>
   </listitem>
+
   <listitem>
-   <para>Steps to reproduce the problem</para>
+   <para>
+    Steps to reproduce the problem
+   </para>
   </listitem>
+
   <listitem>
-   <para>Any relevant access and error logs, stack traces, or core dumps</para>
+   <para>
+    Any relevant logs or stack traces
+   </para>
   </listitem>
  </itemizedlist>
 </chapter>

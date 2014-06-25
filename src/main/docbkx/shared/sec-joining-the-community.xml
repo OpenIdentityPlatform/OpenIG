@@ -20,23 +20,23 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2013 ForgeRock AS
+  !      Copyright 2011-2014 ForgeRock AS
   !
 -->
  <section xml:id="joining-the-community"
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Joining the OpenIG Community</title>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <title>Joining the ${projectName} Community</title>
 
  <para>After you <link xlink:show="new"
  xlink:href='https://idp.forgerock.org/openam/UI/Login?service=register'
  >sign up</link> at ForgeRock, you can also login to the Wiki and the issue
  database to follow what is happening with the project.</para>
 
- <para>If you have questions regarding OpenIG which are not answered by the
+ <para>If you have questions regarding ${projectName} which are not answered by the
  documentation, there is a mailing list that can be found at
  <link xlink:href='https://lists.forgerock.org/mailman/listinfo/openig'
  xlink:show="new">https://lists.forgerock.org/mailman/listinfo/openig</link>

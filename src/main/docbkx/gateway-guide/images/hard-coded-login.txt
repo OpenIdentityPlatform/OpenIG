@@ -32,12 +32,12 @@ autonumber
 
 participant "Browser" as Browser
 participant "DNS" as DNS
-participant "OpenIG" as Gateway
+participant "${projectName}" as Gateway
 participant "Application" as App
 
 Browser->DNS: Look up www.example.com
 
-DNS->Browser: Return address for OpenIG
+DNS->Browser: Return address for ${projectName}
 
 Browser->Gateway: Send HTTP GET request to http://www.example.com
 

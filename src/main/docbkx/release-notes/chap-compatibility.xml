@@ -53,7 +53,7 @@
    </listitem>
 
    <listitem>
-    <para>If you are running older versions of the Gateway you must modify
+    <para>If you are running older versions of ${projectName} you must modify
     your <filename>config.json</filename>.</para>
 
     <para><literal>"type"</literal> entries no longer require the full Java

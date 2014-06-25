@@ -32,7 +32,7 @@ autonumber
 
 participant "Browser" as Browser
 participant "Access Manager" as AM
-participant "Gateway" as Gateway
+participant "${projectName}" as Gateway
 participant "Payroll App" as Portal
 
 Browser->Gateway: Request to Payroll App

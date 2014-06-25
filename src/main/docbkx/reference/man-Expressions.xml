@@ -61,7 +61,7 @@
  <refsect1>
   <title>Value Expressions</title>
   <para>A value expression references a value relative to the scope supplied to
-  the expression. In the current version of the gateway, the supplied scope is
+  the expression. In the current version of ${projectName}, the supplied scope is
   always the HTTP <link xlink:href="reference#Exchange"
   xlink:role="http://docbook.org/xlink/role/olink"
   >exchange object</link>. For example

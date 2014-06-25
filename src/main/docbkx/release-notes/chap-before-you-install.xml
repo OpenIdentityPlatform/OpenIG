@@ -32,7 +32,7 @@
  <title>Before You Install</title>
 
  <para>
-  This chapter covers requirements for running OpenIG software.
+  This chapter covers requirements for running ${projectName} software.
   If you have a special request to support
   a component or combination not listed here,
   contact ForgeRock at
@@ -40,19 +40,19 @@
  </para>
 
  <section xml:id="which-gateway">
-  <title>Which OpenIG to Use</title>
+  <title>Which ${projectName} to Use</title>
 
-  <para>There are two versions of the Open Identity Gateway, OpenIG and OpenIG
-  (Federation). The OpenIG Federation consists of OpenIG plus additional
+  <para>There are two versions of the software, core ${projectName} and ${projectName}
+  Federation. ${projectName} Federation consists of ${projectName} plus additional
   Federation libraries. Unless you require Federation capabilities, use core
-  OpenIG.</para>
+  ${projectName}.</para>
  </section>
 
  <section xml:id="java-requirements">
   <title>JDK Version</title>
 
   <para>
-   This release of OpenIG requires
+   This release of ${projectName} requires
    Java Development Kit 6 or Java Development Kit 7.
    ForgeRock recommends the most recent update of Java 6 or 7
    to ensure you have the latest security fixes.
@@ -64,7 +64,7 @@
 
   <itemizedlist>
    <para>
-    OpenIG runs in the following web application containers.
+    ${projectName} runs in the following web application containers.
    </para>
 
    <listitem>
@@ -101,7 +101,7 @@
   <para>See the chapter on <link xlink:href="gateway-guide#chap-container"
   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
   Deployment Containers</citetitle></link> in the <citetitle>Guide to
-  OpenIG</citetitle> for details on setting up your web application
+  ${projectName}</citetitle> for details on setting up your web application
   container.</para>
  </section>
 
@@ -109,7 +109,7 @@
   <title>Scripting Support</title>
 
   <para>
-   This release of OpenIG supports the Groovy scripting language.
+   This release of ${projectName} supports the Groovy scripting language.
    For examples using Groovy scripts for Filters and Handlers, see
    <link
     xlink:show="new"

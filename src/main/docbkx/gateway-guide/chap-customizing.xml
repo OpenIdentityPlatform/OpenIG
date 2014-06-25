@@ -30,7 +30,7 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>Customizing OpenIG</title>
+ <title>Customizing ${projectName}</title>
 
  <para>
   With
@@ -45,7 +45,7 @@
    xlink:href="reference#ScriptableHandler"
    xlink:role="http://docbook.org/xlink/role/olink"
   >ScriptableHandler</link> objects,
-  you can often avoid customizing OpenIG Java code
+  you can often avoid customizing ${projectName} Java code
   by writing scripts instead.
   For examples, see
   <link
@@ -57,13 +57,13 @@
 
  <para>
   If scripting is not enough, be aware that
-  OpenIG includes a complete
+  ${projectName} includes a complete
   <link
    xlink:show="new"
    xlink:href="${javadocBase}/index.html"
   >application programming interface</link>,
-  designed to allow you to customize OpenIG as required.
-  Customizing OpenIG can be used to perform complex server interactions
+  designed to allow you to customize ${projectName} as required.
+  Customizing ${projectName} can be used to perform complex server interactions
   or intensive data transformations
   that you cannot achieve with scripts or existing handlers, filters and
   <link
@@ -95,12 +95,12 @@
   xlink:show="new">GenericFilter</link> and <link
   xlink:href="${javadocBase}/org/forgerock/openig/handler/GenericHandler.html"
   xlink:show="new">GenericHandler</link> that you can use if you intend to make
-  your extensions configurable through the OpenIG configuration
+  your extensions configurable through the ${projectName} configuration
   resource.</para>
 
-  <para>OpenIG also allows standard Java Enterprise Edition servlets and
+  <para>${projectName} also allows standard Java Enterprise Edition servlets and
   servlet filters to be embedded in the gateway, with initialization parameters
-  supplied through through the OpenIG configuration resource.</para>
+  supplied through through the ${projectName} configuration resource.</para>
  </section>
 
  <section xml:id="custom-filter">
@@ -217,7 +217,7 @@
  </indexterm>
 
   <para>A servlet or servlet filter can be added as a heap object by including
-  it in the classpath, and identifying it in the OpenIG heap configuration as
+  it in the classpath, and identifying it in the ${projectName} heap configuration as
   an <link xlink:href="reference#Servlet"
   xlink:role="http://docbook.org/xlink/role/olink"
   >javax.servlet.http.HttpServlet</link> or <link
@@ -243,7 +243,7 @@
 // Java Standard Edition
 import java.io.IOException;
 
-// OpenIG Core Library
+// ${projectName} Core Library
 import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.handler.HandlerException;

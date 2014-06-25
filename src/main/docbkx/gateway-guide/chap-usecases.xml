@@ -50,9 +50,9 @@
    xlink:role="http://docbook.org/xlink/role/olink"
   ><citetitle>Login With Credentials From a File</citetitle></link>.
   Try the tutorial yourself to learn how
-  OpenIG works. The Flat-File attribute store contains only one set of
-  credentials. OpenIG makes the assumption this user is logging into the
-  sample application. In a real deployment OpenIG would look up the user
+  ${projectName} works. The Flat-File attribute store contains only one set of
+  credentials. ${projectName} makes the assumption this user is logging into the
+  sample application. In a real deployment ${projectName} would look up the user
   credentials using its own session, a SAML2 assertion, or a header from an
   OpenAM policy agent. Use cases that follow show examples of these types
   of deployments.</para>
@@ -72,7 +72,7 @@
     <para>User accesses the Portal.</para>
    </listitem>
    <listitem>
-    <para>Gateway intercepts request, finds no login page and passes it
+    <para>${projectName} intercepts request, finds no login page and passes it
     through.</para>
    </listitem>
    <listitem>
@@ -80,11 +80,11 @@
     authentication.</para>
    </listitem>
    <listitem>
-    <para>Gateway intercepts the redirect, finds a match for the login page,
+    <para>${projectName} intercepts the redirect, finds a match for the login page,
     fetches the credentials from the flat file.</para>
    </listitem>
    <listitem>
-    <para>Gateway creates the login form and POSTs it to the Portal login
+    <para>${projectName} creates the login form and POSTs it to the Portal login
     page.</para>
    </listitem>
    <listitem>
@@ -92,7 +92,7 @@
     page.</para>
    </listitem>
    <listitem>
-    <para>Gateway passes the request through to the browser.</para>
+    <para>${projectName} passes the request through to the browser.</para>
    </listitem>
   </orderedlist>
  </section>
@@ -104,11 +104,11 @@
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates OpenIG integrated into an OpenAM
-  deployment. In this deployment OpenIG is running in a container
+  <para>The figure below illustrates ${projectName} integrated into an OpenAM
+  deployment. In this deployment ${projectName} is running in a container
   that is protected by an OpenAM policy agent. The agent is configured to
   forward a header, with the subject (user) of the single sign-on session, to
-  OpenIG. OpenIG then uses the subject as the login credentials, or uses the
+  ${projectName}. ${projectName} then uses the subject as the login credentials, or uses the
   subject as a reference to look up the login credentials in a database or
   directory. The HR application is integrated into the SSO deployment without
   an agent or any modification to the application or its deployment
@@ -155,7 +155,7 @@
    </listitem>
 
    <listitem>
-    <para>OpenAM plugin finds a valid session, request goes through, OpenIG
+    <para>OpenAM plugin finds a valid session, request goes through, ${projectName}
     passes the request through to the Portal.
     </para>
    </listitem>
@@ -164,7 +164,7 @@
     page.</para>
    </listitem>
    <listitem>
-    <para>OpenIG inspects the redirect, finds a match for the login page,
+    <para>${projectName} inspects the redirect, finds a match for the login page,
     creates the login form, and POSTs it to the Portal.</para>
    </listitem>
    <listitem>
@@ -172,27 +172,28 @@
     page.</para>
    </listitem>
    <listitem>
-    <para>Gateway passes the request through to the browser.</para>
+    <para>${projectName} passes the request through to the browser.</para>
    </listitem>
   </orderedlist>
  </section>
 
  <section xml:id="sp-initiated-sso">
-  <title>Federation Gateway SP Initiated SAML2 SSO</title>
+  <title>${projectName} Federation SP Initiated SAML2 SSO</title>
 
   <indexterm>
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates the OpenIG Federation Gateway providing
+  <para>The figure below illustrates ${projectName} Federation providing
   SAML2 endpoint features acting as Service Provider in an SP initiated single
-  sign-on configuration. In this sample, company myHR is an outsourced provider
+  sign-on configuration. In this sample, the HR application is an outsourced provider
   of HR services and has started seeing increased demand for SAML2 support in
   their core application. The companies to which they outsource are refusing
   proprietary means of authentication and demanding the widely accepted SAML2
-  standard. myHR is not in a position to modify their application to support
+  standard. The HR application cannot be modified to support
   SAML2 nor do they have the time or money to integrate and deploy all of
-  OpenAM. With OpenIG Federation Gateway, myHR deploys OpenIG in front of their
+  OpenAM. With ${projectName} Federation, the HR application deploys
+  ${projectName} in front of their
   HR application, configures it as a SAML2 endpoint for SP initiated SSO,
   and configures it to log users into the HR application upon successful
   verification of the SAML2 assertion from their customers.</para>
@@ -216,7 +217,7 @@
    </listitem>
 
    <listitem>
-    <para>Federation Gateway inspects the request, no match is found for the
+    <para>${projectName} Federation inspects the request, no match is found for the
     HR application's login page so the request goes through.</para>
    </listitem>
 
@@ -227,7 +228,7 @@
 
    <listitem>
     <para>
-     Federation Gateway intercepts the redirect,
+     ${projectName} Federation intercepts the redirect,
      finds a match for the login page, and...
     </para>
    </listitem>
@@ -252,17 +253,17 @@
 
    <listitem>
     <para>
-     ...to the Federation Gateway using an auto-submitting form in the browser.
+     ...to ${projectName} Federation using an auto-submitting form in the browser.
     </para>
 
     <para>
-     Federation Gateway validates the assertion
-     and makes the assertion attributes available to the OpenIG login chain.
+     ${projectName} Federation validates the assertion
+     and makes the assertion attributes available to the ${projectName} login chain.
     </para>
    </listitem>
 
    <listitem>
-    <para>OpenIG login chain gets the user credentials and POSTs the login form
+    <para>${projectName} login chain gets the user credentials and POSTs the login form
     to the application.</para>
    </listitem>
 
@@ -273,20 +274,20 @@
 
    <listitem>
     <para>
-     Federation gateway passes the HR application's redirect to the browser.
+     ${projectName} Federation passes the HR application's redirect to the browser.
     </para>
    </listitem>
   </orderedlist>
  </section>
 
  <section xml:id="idp-initiated-sso">
-  <title>Federation Gateway IDP Initiated SAML2 SSO</title>
+  <title>${projectName} Federation IDP Initiated SAML2 SSO</title>
 
   <indexterm>
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates the Federation Gateway providing SAML2
+  <para>The figure below illustrates ${projectName} Federation providing SAML2
   endpoint features acting as a Service Provider in a IDP initiated single
   sign-on configuration.</para>
 
@@ -309,13 +310,13 @@
     <para>IDP sends an AuthN Response to the HR application.</para>
    </listitem>
    <listitem>
-    <para>Federation Gateway receives the POST, validates the assertion, and
-    makes the attributes available to the OpenIG login chain.
+    <para>${projectName} Federation receives the POST, validates the assertion, and
+    makes the attributes available to the ${projectName} login chain.
     </para>
    </listitem>
    <listitem>
-    <para>OpenIG login chain retrieves the user credentials and POSTs the login
-    form to the myHR application.</para>
+    <para>${projectName} login chain retrieves the user credentials and POSTs the login
+    form to the HR application.</para>
    </listitem>
    <listitem>
     <para>HR application validates the credentials and redirects to the main
@@ -331,7 +332,7 @@
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates the Federation Gateway as a standards
+  <para>The figure below illustrates ${projectName} Federation as a standards
   based replacement for OpenAM policy agents.</para>
 
   <mediaobject xml:id="figure-saml2-pep">
@@ -340,7 +341,7 @@
    </imageobject>
    <textobject>
     <para>
-     This image diagrams the steps showing how OpenIG Federation Gateway works
+     This image diagrams the steps showing how ${projectName} Federation works
      as a SAML2 based policy enforcement point.
     </para>
    </textobject>
@@ -351,7 +352,7 @@
     <para>The user accesses an internal Payroll application.</para>
    </listitem>
    <listitem>
-    <para>Federation Gateway inspects the request, no match is found for the
+    <para>${projectName} Federation inspects the request, no match is found for the
     Payroll application's login page so the request goes through.</para>
    </listitem>
    <listitem>
@@ -361,7 +362,7 @@
 
    <listitem>
     <para>
-     Federation Gateway intercepts the redirect,
+     ${projectName} Federation intercepts the redirect,
      finds a match for the login page, and...
     </para>
    </listitem>
@@ -386,17 +387,17 @@
 
    <listitem>
     <para>
-     ...to the Federation Gateway using an auto-submitting form in the browser.
+     ...to ${projectName} Federation using an auto-submitting form in the browser.
     </para>
 
     <para>
-     Federation Gateway validates the assertion
-     and makes the assertion attributes available to the OpenIG login chain.
+     ${projectName} Federation validates the assertion
+     and makes the assertion attributes available to the ${projectName} login chain.
     </para>
    </listitem>
 
    <listitem>
-    <para>OpenIG login chain gets the user credentials and POSTs the login
+    <para>${projectName} login chain gets the user credentials and POSTs the login
     form to the application.</para>
    </listitem>
 
@@ -407,7 +408,7 @@
 
    <listitem>
     <para>
-     Federation Gateway passes the Payroll application's redirect to the browser.
+     ${projectName} Federation passes the Payroll application's redirect to the browser.
     </para>
    </listitem>
   </orderedlist>

@@ -29,17 +29,17 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>What's New in OpenIG</title>
+ <title>What's New in ${projectName}</title>
 
  <para>
-  OpenIG ${docTargetVersion} fixes a number of issues,
+  ${projectName} ${docTargetVersion} fixes a number of issues,
   and provides the following additional features.
  </para>
 
  <itemizedlist>
   <listitem>
    <para>
-    OpenIG now supports use of scripts to process and to handle
+    ${projectName} now supports use of scripts to process and to handle
     the HTTP exchange (
     <link
      xlink:show="new"
@@ -60,7 +60,7 @@
 
   <listitem>
    <para>
-    OpenIG built-in functions to call within expressions now include
+    ${projectName} built-in functions to call within expressions now include
     <link
      xlink:show="new"
      xlink:href="reference#functions-urlEncode"
@@ -78,22 +78,24 @@
   </listitem>
 
   <listitem>
-   <para>OpenIG HttpBasicAuthFilter now lets users change their passwords
+   <para>${projectName} HttpBasicAuthFilter now lets users change their passwords
    during a session (<link
    xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-32"
    xlink:show="new">OPENIG-32</link>).</para>
   </listitem>
 
   <listitem>
-   <para>OpenIG Federation Servlet now supports SP-initiated single logout
+   <para>${projectName} Federation now supports SP-initiated single logout
    and also supports single logout using the SOAP binding (<link
    xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-10"
    xlink:show="new">OPENIG-10</link>).</para>
   </listitem>
  </itemizedlist>
 
-<!-- 
- <para>OpenIG <?eval ${docTargetVersion}?> is a patch release. It does not
- introduce new features.</para>
+<!-- Alternative for maintenance releases:
+ <para>
+  ${projectName} ${docTargetVersion} is a maintenance release.
+  It does not introduce new features.
+  </para>
  -->
  </chapter>
