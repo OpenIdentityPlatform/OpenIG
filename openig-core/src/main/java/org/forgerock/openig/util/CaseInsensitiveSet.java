@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -87,7 +87,7 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
     }
 
     private Object translate(Object element) {
-        if (element != null && element instanceof String) {
+        if (element instanceof String) {
             String e = lc.get(((String) element).toLowerCase());
             if (e != null) {
                 // found a mapped-equivalent
@@ -114,7 +114,7 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
     @Override
     public boolean remove(Object o) {
         boolean removed = super.remove(translate(o));
-        if (o != null && o instanceof String) {
+        if (o instanceof String) {
             lc.remove(((String) o).toLowerCase());
         }
         return removed;
