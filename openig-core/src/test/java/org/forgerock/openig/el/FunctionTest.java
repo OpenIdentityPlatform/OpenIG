@@ -40,8 +40,7 @@ public class FunctionTest {
     }
 
     @Test
-    // @Checkstyle:ignore
-    public void _toString() throws ExpressionException {
+    public void toStringTest() throws ExpressionException {
         exchange.request.uri = URI.create("http://www.forgerock.org/");
         Object o = new Expression("${toString(exchange.request.uri)}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
@@ -126,7 +125,7 @@ public class FunctionTest {
     }
 
     @DataProvider
-    private Object[][] urlEncodings() {
+    private static Object[][] urlEncodings() {
         // @formatter:off
         return new Object[][] {
             { null, null },
