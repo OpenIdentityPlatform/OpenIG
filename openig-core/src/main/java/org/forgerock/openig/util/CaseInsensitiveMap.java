@@ -55,11 +55,11 @@ public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
     }
 
     /**
-     * Returns a case-insensitve key translated into its mapped equivalent. If its equivalent
+     * Returns a case-insensitive key translated into its mapped equivalent. If its equivalent
      * cannot be found, then the key is returned untouched.
      */
     private Object translate(Object key) {
-        if (key != null && key instanceof String) {
+        if (key instanceof String) {
             String k = lc.get(((String) key).toLowerCase());
             if (k != null) {
                 // found a mapped-equivalent
@@ -116,7 +116,7 @@ public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
     @Override
     public V remove(Object key) {
         V removed = super.remove(translate(key));
-        if (key != null && key instanceof String) {
+        if (key instanceof String) {
             lc.remove(((String) key).toLowerCase());
         }
         return removed;
