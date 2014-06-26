@@ -30,34 +30,34 @@ import org.forgerock.openig.el.ExpressionException;
 public final class JsonValueUtil {
 
     /** TODO: Description. */
-    private static final HashMap<String, String> aliases = new HashMap<String, String>();
+    private static final HashMap<String, String> ALIASES = new HashMap<String, String>();
 
     // TODO: allow aliases to be dynamically configured
     static {
-        aliases.put("AssignmentFilter", "org.forgerock.openig.filter.AssignmentFilter");
-        aliases.put("CaptureFilter", "org.forgerock.openig.filter.CaptureFilter");
-        aliases.put("Chain", "org.forgerock.openig.filter.Chain");
-        aliases.put("ClientHandler", "org.forgerock.openig.handler.ClientHandler");
-        aliases.put("ConsoleLogSink", "org.forgerock.openig.log.ConsoleLogSink");
-        aliases.put("CookieFilter", "org.forgerock.openig.filter.CookieFilter");
-        aliases.put("CryptoHeaderFilter", "org.forgerock.openig.filter.CryptoHeaderFilter");
-        aliases.put("DispatchHandler", "org.forgerock.openig.handler.DispatchHandler");
-        aliases.put("DispatchServlet", "org.forgerock.openig.servlet.DispatchServlet");
-        aliases.put("EntityExtractFilter", "org.forgerock.openig.filter.EntityExtractFilter");
-        aliases.put("ExceptionFilter", "org.forgerock.openig.filter.ExceptionFilter");
-        aliases.put("FileAttributesFilter", "org.forgerock.openig.filter.FileAttributesFilter");
-        aliases.put("HandlerServlet", "org.forgerock.openig.servlet.HandlerServlet");
-        aliases.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
-        aliases.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
-        aliases.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
-        aliases.put("ScriptableFilter", "org.forgerock.openig.filter.ScriptableFilter");
-        aliases.put("ScriptableHandler", "org.forgerock.openig.handler.ScriptableHandler");
-        aliases.put("SequenceHandler", "org.forgerock.openig.handler.SequenceHandler");
-        aliases.put("SqlAttributesFilter", "org.forgerock.openig.filter.SqlAttributesFilter");
-        aliases.put("StaticRequestFilter", "org.forgerock.openig.filter.StaticRequestFilter");
-        aliases.put("StaticResponseHandler", "org.forgerock.openig.handler.StaticResponseHandler");
-        aliases.put("SwitchFilter", "org.forgerock.openig.filter.SwitchFilter");
-        aliases.put("TemporaryStorage", "org.forgerock.openig.io.TemporaryStorage");
+        ALIASES.put("AssignmentFilter", "org.forgerock.openig.filter.AssignmentFilter");
+        ALIASES.put("CaptureFilter", "org.forgerock.openig.filter.CaptureFilter");
+        ALIASES.put("Chain", "org.forgerock.openig.filter.Chain");
+        ALIASES.put("ClientHandler", "org.forgerock.openig.handler.ClientHandler");
+        ALIASES.put("ConsoleLogSink", "org.forgerock.openig.log.ConsoleLogSink");
+        ALIASES.put("CookieFilter", "org.forgerock.openig.filter.CookieFilter");
+        ALIASES.put("CryptoHeaderFilter", "org.forgerock.openig.filter.CryptoHeaderFilter");
+        ALIASES.put("DispatchHandler", "org.forgerock.openig.handler.DispatchHandler");
+        ALIASES.put("DispatchServlet", "org.forgerock.openig.servlet.DispatchServlet");
+        ALIASES.put("EntityExtractFilter", "org.forgerock.openig.filter.EntityExtractFilter");
+        ALIASES.put("ExceptionFilter", "org.forgerock.openig.filter.ExceptionFilter");
+        ALIASES.put("FileAttributesFilter", "org.forgerock.openig.filter.FileAttributesFilter");
+        ALIASES.put("HandlerServlet", "org.forgerock.openig.servlet.HandlerServlet");
+        ALIASES.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
+        ALIASES.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
+        ALIASES.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
+        ALIASES.put("ScriptableFilter", "org.forgerock.openig.filter.ScriptableFilter");
+        ALIASES.put("ScriptableHandler", "org.forgerock.openig.handler.ScriptableHandler");
+        ALIASES.put("SequenceHandler", "org.forgerock.openig.handler.SequenceHandler");
+        ALIASES.put("SqlAttributesFilter", "org.forgerock.openig.filter.SqlAttributesFilter");
+        ALIASES.put("StaticRequestFilter", "org.forgerock.openig.filter.StaticRequestFilter");
+        ALIASES.put("StaticResponseHandler", "org.forgerock.openig.handler.StaticResponseHandler");
+        ALIASES.put("SwitchFilter", "org.forgerock.openig.filter.SwitchFilter");
+        ALIASES.put("TemporaryStorage", "org.forgerock.openig.io.TemporaryStorage");
     }
 
     /**
@@ -74,7 +74,7 @@ public final class JsonValueUtil {
      */
     private static Class<?> classForName(JsonValue value) {
         String c = value.asString();
-        String a = aliases.get(c);
+        String a = ALIASES.get(c);
         if (a != null) {
             c = a;
         }

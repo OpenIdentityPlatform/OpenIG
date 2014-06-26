@@ -308,6 +308,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${javadocPluginVersion}</version>
         <configuration>
           <author>false</author>
           <bottom>Copyright &#169; 2011-2014 ForgeRock AS. All rights reserved.</bottom>

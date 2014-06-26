@@ -41,8 +41,7 @@ public final class Script {
         private final GroovyScriptEngine engine;
         private final String fileName;
 
-        private GroovyImpl(final GroovyScriptEngine engine, final String fileName)
-                throws ScriptException {
+        private GroovyImpl(final GroovyScriptEngine engine, final String fileName) {
             this.engine = engine;
             this.fileName = fileName;
         }
@@ -73,7 +72,7 @@ public final class Script {
 
     private static final String EOL = System.getProperty("line.separator");
 
-    private static final Object initializationLock = new Object();
+    private static final Object INIT_LOCK = new Object();
     /**
      * The groovy script cache directory.
      *
@@ -163,7 +162,7 @@ public final class Script {
             return cacheDir;
         }
 
-        synchronized (initializationLock) {
+        synchronized (INIT_LOCK) {
             cacheDir = groovyScriptCacheDir;
             if (cacheDir != null) {
                 return cacheDir;
@@ -191,7 +190,7 @@ public final class Script {
             return engine;
         }
 
-        synchronized (initializationLock) {
+        synchronized (INIT_LOCK) {
             engine = groovyScriptEngine;
             if (engine != null) {
                 return engine;

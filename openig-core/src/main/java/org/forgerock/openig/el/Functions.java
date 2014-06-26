@@ -35,14 +35,21 @@ import javax.el.FunctionMapper;
 import org.forgerock.openig.util.StringUtil;
 
 /**
- * Maps between EL function names and methods. In this implementation all
- * public, static methods that are prefixed with an '_' (underscore) character
- * are automatically exposed (sans prefix) as functions.
+ * Maps between EL function names and methods. In this implementation all public
+ * static methods are automatically exposed as functions.
  */
 public class Functions extends FunctionMapper {
 
     /** A mapping of function names with methods to return. */
-    private static final Map<String, Method> METHODS = mapMethods();
+    private static final Map<String, Method> METHODS;
+    static {
+        METHODS = new HashMap<String, Method>();
+        for (Method method : Functions.class.getMethods()) {
+            if (Modifier.isStatic(method.getModifiers())) {
+                METHODS.put(method.getName(), method);
+            }
+        }
+    }
 
     /**
      * Resolves the specified prefix and local name into a method. In this
@@ -70,8 +77,7 @@ public class Functions extends FunctionMapper {
      * @return the length of the object, or {@code 0} if length could not be
      * determined.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static boolean _contains(Object object, Object value) {
+    public static boolean contains(Object object, Object value) {
         if (object == null || value == null) {
             return false;
         } else if (object instanceof CharSequence && value instanceof CharSequence) {
@@ -102,14 +108,13 @@ public class Functions extends FunctionMapper {
      * Returns the index within a string of the first occurrence of a specified
      * substring.
      *
-     * @param string the string to be searched.
+     * @param value the string to be searched.
      * @param substring the value to search for within the string
      * @return the index of the first instance of substring, or {@code -1} if
      * not found.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static int _indexOf(String string, String substring) {
-        return (string != null && substring != null ? string.indexOf(substring) : null);
+    public static int indexOf(String value, String substring) {
+        return (value != null && substring != null ? value.indexOf(substring) : null);
     }
 
     /**
@@ -117,12 +122,11 @@ public class Functions extends FunctionMapper {
      * separator.
      *
      * @param separator the separator to place between joined elements.
-     * @param strings the array of strings to be joined.
+     * @param values the array of strings to be joined.
      * @return the string containing the joined strings.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _join(String[] strings, String separator) {
-        return (strings != null ? StringUtil.join(separator, (Object[]) strings) : null);
+    public static String join(String[] values, String separator) {
+        return (values != null ? StringUtil.join(separator, (Object[]) values) : null);
     }
 
     /**
@@ -133,8 +137,7 @@ public class Functions extends FunctionMapper {
      * @param pattern a string containing the regular expression pattern to match.
      * @return the first matching key, or {@code null} if no match found.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _keyMatch(Object map, String pattern) {
+    public static String keyMatch(Object map, String pattern) {
         if (map instanceof Map) {
             // avoid unnecessary proxying via duck typing
             Pattern p = null;
@@ -161,26 +164,25 @@ public class Functions extends FunctionMapper {
      * Returns the number of items in a collection, or the number of characters
      * in a string.
      *
-     * @param object the object whose length is to be determined.
+     * @param value the object whose length is to be determined.
      * @return the length of the object, or {@code 0} if length could not be
      * determined.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static int _length(Object object) {
-        if (object == null) {
+    public static int length(Object value) {
+        if (value == null) {
             return 0;
-        } else if (object instanceof CharSequence) {
-            return ((CharSequence) object).length();
-        } else if (object instanceof Collection) {
-            return ((Collection<?>) object).size();
-        } else if (object instanceof Map) {
-            return ((Map<?, ?>) object).size();
-        } else if (object instanceof Object[]) {
+        } else if (value instanceof CharSequence) {
+            return ((CharSequence) value).length();
+        } else if (value instanceof Collection) {
+            return ((Collection<?>) value).size();
+        } else if (value instanceof Map) {
+            return ((Map<?, ?>) value).size();
+        } else if (value instanceof Object[]) {
             // doesn't handle primitives (but is cheap)
-            return ((Object[]) object).length;
-        } else if (object.getClass().isArray()) {
+            return ((Object[]) value).length;
+        } else if (value.getClass().isArray()) {
             // handles primitives (slightly more expensive)
-            return Array.getLength(object);
+            return Array.getLength(value);
         }
         // no items
         return 0;
@@ -192,15 +194,14 @@ public class Functions extends FunctionMapper {
      * the array is the entire match, and each subsequent element correlates to
      * any capture group specified within the regular expression.
      *
-     * @param string the string to be searched.
+     * @param value the string to be searched.
      * @param pattern a string containing the regular expression pattern to match.
      * @return an array of matches, or {@code null} if no match found.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String[] _matches(String string, String pattern) {
+    public static String[] matches(String value, String pattern) {
         try {
             Pattern p = Pattern.compile(pattern);
-            Matcher m = p.matcher(string);
+            Matcher m = p.matcher(value);
             if (m.find()) {
                 int count = m.groupCount();
                 String[] matches = new String[count + 1];
@@ -220,101 +221,84 @@ public class Functions extends FunctionMapper {
      * Splits a string into an array of substrings around matches of the given
      * regular expression.
      *
-     * @param string the string to be split.
+     * @param value the string to be split.
      * @param regex the regular expression to split substrings around.
      * @return the resulting array of split substrings.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String[] _split(String string, String regex) {
-        return (string != null ? string.split(regex) : null);
+    public static String[] split(String value, String regex) {
+        return (value != null ? value.split(regex) : null);
     }
 
     /**
      * Converts all of the characters in a string to lower case.
      *
-     * @param string the string whose characters are to be converted.
+     * @param value the string whose characters are to be converted.
      * @return the string with characters converted to lower case.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _toLowerCase(String string) {
-        return (string != null ? string.toLowerCase() : null);
+    public static String toLowerCase(String value) {
+        return (value != null ? value.toLowerCase() : null);
     }
 
     /**
      * Returns the string value of an arbitrary object.
      *
-     * @param object
+     * @param value
      *            the object whose string value is to be returned.
      * @return the string value of the object.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _toString(Object object) {
-        return (object != null ? object.toString() : null);
+    public static String toString(Object value) {
+        return (value != null ? value.toString() : null);
     }
 
     /**
      * Converts all of the characters in a string to upper case.
      *
-     * @param string the string whose characters are to be converted.
+     * @param value the string whose characters are to be converted.
      * @return the string with characters converted to upper case.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _toUpperCase(String string) {
-        return (string != null ? string.toUpperCase() : null);
+    public static String toUpperCase(String value) {
+        return (value != null ? value.toUpperCase() : null);
     }
 
     /**
      * Returns a copy of a string with leading and trailing whitespace omitted.
      *
-     * @param string the string whose white space is to be omitted.
+     * @param value the string whose white space is to be omitted.
      * @return the string with leading and trailing white space omitted.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _trim(String string) {
-        return (string != null ? string.trim() : null);
+    public static String trim(String value) {
+        return (value != null ? value.trim() : null);
     }
 
     /**
      * Returns the URL encoding of the provided string.
      *
-     * @param string
+     * @param value
      *            the string to be URL encoded, which may be {@code null}.
      * @return the URL encoding of the provided string, or {@code null} if
      *         {@code string} was {@code null}.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _urlEncode(String string) {
+    public static String urlEncode(String value) {
         try {
-            return string != null ? URLEncoder.encode(string, "UTF-8") : null;
+            return value != null ? URLEncoder.encode(value, "UTF-8") : null;
         } catch (UnsupportedEncodingException e) {
-            return string;
+            return value;
         }
     }
 
     /**
      * Returns the URL decoding of the provided string.
      *
-     * @param string
+     * @param value
      *            the string to be URL decoded, which may be {@code null}.
      * @return the URL decoding of the provided string, or {@code null} if
      *         {@code string} was {@code null}.
      */
-    // @Checkstyle:ignore - malformed method name.
-    public static String _urlDecode(String string) {
+    public static String urlDecode(String value) {
         try {
-            return string != null ? URLDecoder.decode(string, "UTF-8") : null;
+            return value != null ? URLDecoder.decode(value, "UTF-8") : null;
         } catch (UnsupportedEncodingException e) {
-            return string;
+            return value;
         }
-    }
-
-    private static Map<String, Method> mapMethods() {
-        HashMap<String, Method> map = new HashMap<String, Method>();
-        for (Method method : Functions.class.getMethods()) {
-            if (method.getName().charAt(0) == '_' && Modifier.isStatic(method.getModifiers())) {
-                map.put(method.getName().substring(1), method);
-            }
-        }
-        return map;
     }
 }

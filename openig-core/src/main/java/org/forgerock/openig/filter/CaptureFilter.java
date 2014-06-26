@@ -81,9 +81,9 @@ public class CaptureFilter extends GenericFilter {
         /**
          * Construct a new {@code FileWriterProvider} using the given file as
          * destination. Calling this constructor is equivalent to calling
-         * {@link #FileWriterProvider(java.io.File, java.nio.charset.Charset)}
+         * {@link FileWriterProvider#FileWriterProvider(java.io.File, java.nio.charset.Charset)}
          * with {@literal UTF-8} as {@link java.nio.charset.Charset}.
-         * 
+         *
          * @param file
          *            specify where the output will be flushed.
          */
@@ -198,7 +198,7 @@ public class CaptureFilter extends GenericFilter {
         writer.flush();
     }
 
-    private void writeHeaders(final PrintWriter writer, Message message) throws IOException {
+    private void writeHeaders(final PrintWriter writer, Message message) {
         for (String key : message.headers.keySet()) {
             for (String value : message.headers.get(key)) {
                 writer.println(key + ": " + value);
