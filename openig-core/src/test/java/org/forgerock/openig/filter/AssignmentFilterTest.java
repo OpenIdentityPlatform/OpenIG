@@ -35,17 +35,17 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws ExpressionException, HandlerException, IOException {
         AssignmentFilter filter = new AssignmentFilter();
-        AssignmentFilter.Binding binding = new AssignmentFilter.Binding();
-        binding.target = new Expression("${exchange.newAttr}");
-        binding.value = new Expression("${exchange.request.method}");
-        filter.onRequest.add(binding);
+        final Expression target = new Expression("${exchange.newAttr}");
+        filter.addRequestBinding(target,
+                                 new Expression("${exchange.request.method}"));
+
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.method = "DELETE";
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
-        assertThat(binding.target.eval(exchange)).isNull();
+        assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange);
         assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
     }
@@ -53,15 +53,15 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws ExpressionException, HandlerException, IOException {
         AssignmentFilter filter = new AssignmentFilter();
-        AssignmentFilter.Binding binding = new AssignmentFilter.Binding();
-        binding.target = new Expression("${exchange.newAttr}");
-        binding.value = new Expression("${exchange.response.status}");
-        filter.onResponse.add(binding);
+        final Expression target = new Expression("${exchange.newAttr}");
+        filter.addResponseBinding(target,
+                                  new Expression("${exchange.response.status}"));
+
         Exchange exchange = new Exchange();
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
-        assertThat(binding.target.eval(exchange)).isNull();
+        assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange);
         assertThat(exchange.get("newAttr")).isEqualTo(200);
     }
