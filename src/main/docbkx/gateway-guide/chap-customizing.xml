@@ -225,7 +225,7 @@
   xlink:role="http://docbook.org/xlink/role/olink"
   >javax.servlet.Filter</link> type, providing any appropriate initialization
   parameters. A servlet can be dispatched directly by the <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/gateway/GatewayServlet.html"
+  xlink:href="${javadocBase}/org/forgerock/openig/servlet/GatewayServlet.html"
   >gateway servlet</link>, and servlets and filters can be flexibly dispatched
   to through a <link xlink:show="new"
   xlink:href="${javadocBase}/org/forgerock/openig/servlet/DispatchServlet.html"
