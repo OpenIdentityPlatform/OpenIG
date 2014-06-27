@@ -49,10 +49,9 @@ public class StaticRequestFilterTest {
      */
     @Test
     public void testUriMethodAndVersionPropagation() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter();
-        filter.uri = new Expression(URI);
-        filter.method = "GET";
-        filter.version = "1.1";
+        StaticRequestFilter filter = new StaticRequestFilter("GET");
+        filter.setUri(new Expression(URI));
+        filter.setVersion("1.1");
 
         Exchange exchange = new Exchange();
         filter.filter(exchange, terminalHandler);
@@ -65,11 +64,11 @@ public class StaticRequestFilterTest {
 
     @Test
     public void testHeadersPropagation() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter();
-        filter.uri = new Expression(URI);
-        filter.headers.putSingle("Mono-Valued", new Expression("First Value"));
-        filter.headers.add("Multi-Valued", new Expression("One (1)"));
-        filter.headers.add("Multi-Valued", new Expression("Two (${exchange.request.version})"));
+        StaticRequestFilter filter = new StaticRequestFilter("GET");
+        filter.setUri(new Expression(URI));
+        filter.addHeaderValue("Mono-Valued", new Expression("First Value"));
+        filter.addHeaderValue("Multi-Valued", new Expression("One (1)"));
+        filter.addHeaderValue("Multi-Valued", new Expression("Two (${exchange.request.version})"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -92,12 +91,11 @@ public class StaticRequestFilterTest {
 
     @Test
     public void testFormAttributesPropagationWithGetMethod() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter();
-        filter.uri = new Expression(URI);
-        filter.method = "GET";
-        filter.form.putSingle("mono", new Expression("one"));
-        filter.form.add("multi", new Expression("one1"));
-        filter.form.add("multi", new Expression("two${exchange.request.version}"));
+        StaticRequestFilter filter = new StaticRequestFilter("GET");
+        filter.setUri(new Expression(URI));
+        filter.addFormParameter("mono", new Expression("one"));
+        filter.addFormParameter("multi", new Expression("one1"));
+        filter.addFormParameter("multi", new Expression("two${exchange.request.version}"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -117,12 +115,11 @@ public class StaticRequestFilterTest {
 
     @Test
     public void testFormAttributesPropagationWithPostMethod() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter();
-        filter.uri = new Expression(URI);
-        filter.method = "POST";
-        filter.form.putSingle("mono", new Expression("one"));
-        filter.form.add("multi", new Expression("one1"));
-        filter.form.add("multi", new Expression("two${exchange.request.version}"));
+        StaticRequestFilter filter = new StaticRequestFilter("POST");
+        filter.setUri(new Expression(URI));
+        filter.addFormParameter("mono", new Expression("one"));
+        filter.addFormParameter("multi", new Expression("one1"));
+        filter.addFormParameter("multi", new Expression("two${exchange.request.version}"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
