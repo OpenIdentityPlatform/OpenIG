@@ -79,6 +79,7 @@ public class DispatchServletTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testChainedDispatchServlet() throws Exception {
 
         DispatchServlet nested = new DispatchServlet();
