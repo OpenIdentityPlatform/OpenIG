@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -29,8 +29,16 @@ import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
+ * A Heap can be part of a heap hierarchy: if the queried object is not found locally, and if it has a parent,
+ * the parent will be queried (and this, recursively until there is no parent anymore).
  */
 public class HeapImpl implements Heap {
+
+    /**
+     * Parent heap to delegate queries to if nothing is found in the local heap.
+     * It may be null if this is the root heap (built by the system).
+     */
+    private final Heap parent;
 
     /** Heaplets mapped to heaplet identifiers in the heap configuration. */
     private HashMap<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
@@ -40,6 +48,21 @@ public class HeapImpl implements Heap {
 
     /** Objects allocated in the heap mapped to heaplet names. */
     private HashMap<String, Object> objects = new HashMap<String, Object>();
+
+    /**
+     * Builds a root heap (will be referenced by children but has no parent itself).
+     */
+    public HeapImpl() {
+        this(null);
+    }
+
+    /**
+     * Builds a new heap that is a child of the given heap.
+     * @param parent parent heap.
+     */
+    public HeapImpl(final Heap parent) {
+        this.parent = parent;
+    }
 
     /**
      * Initializes the heap using the given configuration. Once complete, all heaplets will
@@ -86,6 +109,9 @@ public class HeapImpl implements Heap {
                     throw new HeapException(new NullPointerException());
                 }
                 objects.put(name, object);
+            } else if (parent != null) {
+                // no heaplet available, query parent (if any)
+                return parent.get(name);
             }
         }
         return object;
