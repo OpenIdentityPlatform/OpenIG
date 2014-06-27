@@ -468,7 +468,7 @@ public class FederationServlet extends HttpServlet {
              * the SAML directory.
              */
             Environment environment = (Environment) heap.get("Environment");
-            String openFedConfigDir = new File(environment.getInstanceRoot(), "SAML").getPath();
+            String openFedConfigDir = new File(environment.getBaseDirectory(), "SAML").getPath();
             System.out.println("FederationServlet init: " + openFedConfigDir);
             Properties p = System.getProperties();
             p.setProperty("com.sun.identity.fedlet.home", openFedConfigDir);

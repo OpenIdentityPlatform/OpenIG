@@ -17,10 +17,18 @@
 
 package org.forgerock.openig.servlet;
 
+import static java.lang.String.format;
+import static org.forgerock.util.Utils.closeSilently;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,14 +36,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.config.Config;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.config.env.WebEnvironment;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
-import org.forgerock.openig.resource.ResourceException;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  * The main OpenIG HTTP Servlet which is responsible for bootstrapping the
@@ -43,20 +52,30 @@ import org.forgerock.openig.resource.ResourceException;
  * servlet implementation (e.g. HandlerServlet).
  */
 public class GatewayServlet extends HttpServlet {
-    private static final String PRODUCT_NAME = "OpenIG";
-
     private static final long serialVersionUID = 1L;
 
-    private final Environment environment;
+    /**
+     * Environment can be provided by the caller or, if null, it will be based on default policy.
+     * <ol>
+     *     <li>{@literal openig-base} servlet init-param</li>
+     *     <li>{@literal OPENIG_BASE} environment variable</li>
+     *     <li>{@literal openig.base} system property</li>
+     *     <li>platform specific default directory ({@literal ~/.openig/} or {@literal $AppData$\openig\})</li>
+     * </ol>
+     */
+    private Environment environment;
+
+    /**
+     * Servlet to delegate requests to.
+     */
     private HttpServlet servlet;
 
     /**
-     * Default constructor invoked from web container. The servlet will be
-     * assumed to be running as a web application and obtain its configuration
-     * and scripts from the ".openig" directory in the user's home directory.
+     * Default constructor invoked from web container. The servlet will be assumed to be running as a web
+     * application and obtain its configuration from the default web {@linkplain Environment environment}.
      */
     public GatewayServlet() {
-        this(Environment.forWebApp(PRODUCT_NAME));
+        this(null);
     }
 
     /**
@@ -71,26 +90,49 @@ public class GatewayServlet extends HttpServlet {
     }
 
     @Override
-    public void init() throws ServletException {
+    public void init(final ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        if (environment == null) {
+            environment = new WebEnvironment(servletConfig);
+        }
         try {
-            ServletContext context = getServletConfig().getServletContext();
-            JsonValue config = new Config(environment.getConfigResource(context)).read();
+            // Load the configuration
+            File configuration = new File(environment.getConfigDirectory(), "config.json");
+            JsonValue config = readJson(configuration);
+
+            // Create and configure the heap
             HeapImpl heap = new HeapImpl();
-            // can be overridden in config
-            heap.put("ServletContext", context);
+            // "Live" objects
+            heap.put("ServletContext", servletConfig.getServletContext());
+            heap.put("Environment", environment);
+
             // can be overridden in config
             heap.put("TemporaryStorage", new TemporaryStorage());
-            // can be overridden in config
             heap.put("LogSink", new ConsoleLogSink());
-            heap.put("Environment", environment);
             heap.init(config.get("heap").required().expect(Map.class));
             servlet = HeapUtil.getRequiredObject(heap, config.get("servletObject").required(), HttpServlet.class);
         } catch (HeapException he) {
             throw new ServletException(he);
         } catch (JsonValueException jve) {
             throw new ServletException(jve);
-        } catch (ResourceException re) {
-            throw new ServletException(re);
+        }
+    }
+
+    private JsonValue readJson(final File resource) throws ServletException {
+        InputStreamReader reader = null;
+        try {
+            InputStream in = new FileInputStream(resource);
+            JSONParser parser = new JSONParser();
+            reader = new InputStreamReader(in);
+            return new JsonValue(parser.parse(reader));
+        } catch (ParseException e) {
+            throw new ServletException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
+        } catch (FileNotFoundException e) {
+            throw new ServletException(format("File %s does not exists", resource), e);
+        } catch (IOException e) {
+            throw new ServletException(format("Cannot read content of %s", resource), e);
+        } finally {
+            closeSilently(reader);
         }
     }
 
