@@ -250,7 +250,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.model.ModelException;
 
 public class HelloWorldFilter extends GenericFilter {
 
@@ -258,17 +257,17 @@ public class HelloWorldFilter extends GenericFilter {
     public String value;
 
     @Override
-    public void filter(Exchange exchange, Chain chain)
+    public void filter(Exchange exchange, Handler next)
             throws HandlerException, IOException {
         exchange.request.headers.put(name, value); // set header in request
-        chain.handle(exchange); // pass to remaining filters &amp; handler in chain
+        next.handle(exchange); // pass to remaining filters &amp; handler in chain
         exchange.response.headers.put(name, value); // set header in response
     }
 
     public static class Heaplet extends NestedHeaplet {
 
         @Override
-        public Object create() throws HeapException, ModelException {
+        public Object create() throws HeapException {
             HelloWorldFilter filter = new HelloWorldFilter();
             filter.name = config.get("name").required().asString(); // required
             filter.value = config.get("value").required().asString(); // req'd
