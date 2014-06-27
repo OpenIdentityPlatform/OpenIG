@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.*;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -38,7 +40,6 @@ import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
-import org.forgerock.openig.util.JsonValueUtil;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either
@@ -57,16 +58,56 @@ import org.forgerock.openig.util.JsonValueUtil;
 public class EntityExtractFilter extends GenericFilter {
 
     /** Extracts regular expression patterns from entities. */
-    public final StreamPatternExtractor extractor = new StreamPatternExtractor();
+    private final StreamPatternExtractor extractor = new StreamPatternExtractor();
 
     /** The message type in the exchange to extract patterns from. */
-    public MessageType messageType;
+    private final MessageType messageType;
 
     /** Overrides the character set encoding specified in message. If {@code null}, the message encoding is used. */
-    public Charset charset;
+    private final Charset charset;
 
     /** Expression that yields the target object that will contain the mapped extraction results. */
-    public Expression target;
+    private final Expression target;
+
+    /**
+     * Builds an EntityExtractFilter that will act either on {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
+     * flow, extracting patterns into the given {@code target} {@link Expression}. The {@link Charset} used is the one
+     * of the message.
+     *
+     * @param type
+     *         Specifies the execution flow to be executed in
+     * @param target
+     *         Expression that yields the target object that will contain the mapped extraction results
+     */
+    public EntityExtractFilter(final MessageType type, final Expression target) {
+        this(type, target, null);
+    }
+
+    /**
+     * Builds an EntityExtractFilter that will act either on {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
+     * flow, extracting patterns into the given {@code target} {@link Expression}. The {@link Charset} used is the one
+     * specified.
+     *
+     * @param type
+     *         Specifies the execution flow to be executed in
+     * @param target
+     *         Expression that yields the target object that will contain the mapped extraction results
+     * @param charset
+     *         Overrides the character set encoding specified in message. If {@code null}, the message encoding is used
+     */
+    public EntityExtractFilter(final MessageType type, final Expression target, final Charset charset) {
+        this.messageType = type;
+        this.target = target;
+        this.charset = charset;
+    }
+
+    /**
+     * Returns the regular expression patterns extractor.
+     * @return the regular expression patterns extractor.
+     */
+    public StreamPatternExtractor getExtractor() {
+        return extractor;
+    }
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -105,10 +146,12 @@ public class EntityExtractFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            EntityExtractFilter filter = new EntityExtractFilter();
-            filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
-            filter.charset = config.get("charset").asCharset();
-            filter.target = JsonValueUtil.asExpression(config.get("target").required());
+            EntityExtractFilter filter = new EntityExtractFilter(config.get("messageType")
+                                                                         .required()
+                                                                         .asEnum(MessageType.class),
+                                                                 asExpression(config.get("target").required()),
+                                                                 config.get("charset").asCharset());
+
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
                 String key = jv.get("key").required().asString();

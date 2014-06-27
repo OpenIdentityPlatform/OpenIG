@@ -48,12 +48,10 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter();
-        filter.messageType = MessageType.REQUEST;
-        filter.target = new Expression("${exchange.result}");
-        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
-        filter.extractor.getPatterns().put("none", Pattern.compile("Cannot match"));
-        filter.extractor.getTemplates().put("hello", new PatternTemplate("$1"));
+        EntityExtractFilter filter = new EntityExtractFilter(MessageType.REQUEST, new Expression("${exchange.result}"));
+        filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
+        filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
+        filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -71,11 +69,9 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter();
-        filter.messageType = MessageType.REQUEST;
-        filter.target = new Expression("${exchange.result}");
-        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
-        filter.extractor.getPatterns().put("none", Pattern.compile("Cannot match"));
+        EntityExtractFilter filter = new EntityExtractFilter(MessageType.REQUEST, new Expression("${exchange.result}"));
+        filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
+        filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -94,10 +90,9 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter();
-        filter.messageType = MessageType.RESPONSE;
-        filter.target = new Expression("${exchange.result}");
-        filter.extractor.getPatterns().put("hello", Pattern.compile("Hello(.*)"));
+        EntityExtractFilter filter = new EntityExtractFilter(MessageType.RESPONSE,
+                                                             new Expression("${exchange.result}"));
+        filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
