@@ -17,10 +17,13 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.io.TemporaryStorage;
+import org.json.simple.parser.JSONParser;
 import org.testng.annotations.Test;
 
 public class HeapImplTest {
@@ -50,5 +53,40 @@ public class HeapImplTest {
         parent.put("Open", "AM");
 
         assertThat(child.get("Open")).isEqualTo("AM");
+    }
+
+    @Test
+    public void testHeapObjectCreationDestruction() throws Exception {
+        HeapImpl heap = new HeapImpl();
+        heap.put("TemporaryStorage", new TemporaryStorage());
+        heap.init(asJson("heap-object-creation.json"));
+
+        HeapObject heapObject = (HeapObject) heap.get("heap-object");
+        assertThat(heapObject).isNotNull();
+
+        heap.destroy();
+        assertThat(heapObject.destroyed).isTrue();
+    }
+
+    @Test
+    public void testHeapObjectOfSameTypeCreationDestruction() throws Exception {
+        HeapImpl heap = new HeapImpl();
+        heap.put("TemporaryStorage", new TemporaryStorage());
+        heap.init(asJson("heap-object-creation-same-type.json"));
+
+        HeapObject heapObject = (HeapObject) heap.get("heap-object");
+        assertThat(heapObject.message).isEqualTo("one");
+        HeapObject heapObject2 = (HeapObject) heap.get("heap-object-2");
+        assertThat(heapObject2.message).isEqualTo("two");
+
+        heap.destroy();
+        assertThat(heapObject.destroyed).isTrue();
+        assertThat(heapObject2.destroyed).isTrue();
+    }
+
+    private JsonValue asJson(final String resourceName) throws Exception {
+        Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
+        JSONParser parser = new JSONParser();
+        return new JsonValue(parser.parse(reader)).get("heap");
     }
 }
