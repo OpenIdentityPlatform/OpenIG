@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +36,6 @@ import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.openig.util.MultiValueMap;
 
 /**
@@ -47,21 +48,81 @@ import org.forgerock.openig.util.MultiValueMap;
 public class StaticRequestFilter extends GenericFilter {
 
     /** The HTTP method to be performed on the resource. */
-    public String method;
+    private final String method;
 
     /** URI as an expression to allow dynamic URI construction. */
-    public Expression uri;
+    private Expression uri;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}). */
-    public String version;
+    private String version;
 
     /** Message header fields whose values are expressions that are evaluated. */
-    public final MultiValueMap<String, Expression> headers =
+    private final MultiValueMap<String, Expression> headers =
             new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
     /** A form to include in the request, whose values are exchange-scoped expressions that are evaluated. */
-    public final MultiValueMap<String, Expression> form =
+    private final MultiValueMap<String, Expression> form =
             new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+
+    /**
+     * Builds a new {@link StaticRequestFilter} that will uses the given HTTP method on the resource.
+     *
+     * @param method
+     *         The HTTP method to be performed on the resource
+     */
+    public StaticRequestFilter(final String method) {
+        this.method = method;
+    }
+
+    /**
+     * Sets the target URI as an expression to allow dynamic URI construction.
+     *
+     * @param uri
+     *         target URI expression
+     */
+    public void setUri(final Expression uri) {
+        this.uri = uri;
+    }
+
+    /**
+     * Sets the new request message's version.
+     *
+     * @param version
+     *         Protocol version (e.g. {@code "HTTP/1.1"}).
+     */
+    public void setVersion(final String version) {
+        this.version = version;
+    }
+
+    /**
+     * Adds a new header value using the given {@code key} with the given {@link Expression}. As headers are
+     * multi-valued objects, it's perfectly legal to call this method multiple times with the same key.
+     *
+     * @param key
+     *         Header name
+     * @param value
+     *         {@link Expression} that represents the value of the new header
+     * @return this object for fluent usage
+     */
+    public StaticRequestFilter addHeaderValue(final String key, final Expression value) {
+        headers.add(key, value);
+        return this;
+    }
+
+    /**
+     * Adds a new form parameter using the given {@code key} with the given {@link Expression}. As form parameters are
+     * multi-valued objects, it's perfectly legal to call this method multiple times with the same key.
+     *
+     * @param name
+     *         Form parameter name
+     * @param value
+     *         {@link Expression} that represents the value of the parameter
+     * @return this object for fluent usage
+     */
+    public StaticRequestFilter addFormParameter(final String name, final Expression value) {
+        form.add(name, value);
+        return this;
+    }
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -115,15 +176,15 @@ public class StaticRequestFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            StaticRequestFilter filter = new StaticRequestFilter();
-            filter.method = config.get("method").required().asString();
-            filter.uri = JsonValueUtil.asExpression(config.get("uri"));
-            filter.version = config.get("version").asString();
+            StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
+            filter.setUri(asExpression(config.get("uri")));
+            filter.setVersion(config.get("version").asString());
+
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).required().expect(List.class)) {
-                        filter.headers.add(key, JsonValueUtil.asExpression(value.required()));
+                        filter.addHeaderValue(key, asExpression(value.required()));
                     }
                 }
             }
@@ -131,7 +192,7 @@ public class StaticRequestFilter extends GenericFilter {
             if (form != null) {
                 for (String key : form.keys()) {
                     for (JsonValue value : form.get(key).required().expect(List.class)) {
-                        filter.form.add(key, JsonValueUtil.asExpression(value.required()));
+                        filter.addFormParameter(key, asExpression(value.required()));
                     }
                 }
             }
