@@ -47,6 +47,7 @@ import org.forgerock.opendj.ldap.LDAPClientContext;
 import org.forgerock.opendj.ldap.LDAPListener;
 import org.forgerock.opendj.ldap.MemoryBackend;
 import org.forgerock.opendj.ldif.LDIFEntryReader;
+import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -777,7 +778,7 @@ public class GroovyScriptableFilterTest {
     }
 
     private Environment getEnvironment() throws Exception {
-        return Environment.forStandaloneApp(getTestBaseDirectory());
+        return new DefaultEnvironment(new File(getTestBaseDirectory()));
     }
 
     /**

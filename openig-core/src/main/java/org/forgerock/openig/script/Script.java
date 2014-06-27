@@ -196,7 +196,7 @@ public final class Script {
                 return engine;
             }
 
-            final String classPath = environment.getScriptsDir("groovy").getAbsolutePath();
+            final String classPath = environment.getScriptDirectory("groovy").getAbsolutePath();
             try {
                 engine = new GroovyScriptEngine(classPath);
             } catch (final IOException e) {
