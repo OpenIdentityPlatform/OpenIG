@@ -1,0 +1,20 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "heap-object",
+                "type": "org.forgerock.openig.heap.HeapObject",
+                "config": {
+                    "message": "one"
+                }
+            },
+            {
+                "name": "heap-object-2",
+                "type": "org.forgerock.openig.heap.HeapObject",
+                "config": {
+                    "message": "two"
+                }
+            }
+        ]
+    }
+}
