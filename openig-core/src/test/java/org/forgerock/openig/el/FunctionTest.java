@@ -113,15 +113,46 @@ public class FunctionTest {
         assertThat(o).isEqualTo(true);
     }
 
-    @Test
-    public void matches() throws ExpressionException {
-        String s = "I am the very model of a modern Major-General";
+    @DataProvider
+    private static Object[][] matchData() {
+        // @formatter:off
+        return new Object[][] {
+            { "I am the very model of a modern Major-General",
+                "the (.*) model", true, groups("the very model", "very") },
+            { "/saml/endpoint", "^/saml", true, groups("/saml") },
+            { "/notsaml/endpoint", "^/saml", false, groups() }
+        };
+        // @formatter:on
+    }
+
+    private static String[] groups(String... groups) {
+        return groups;
+    }
+
+    @Test(dataProvider = "matchData")
+    public void matches(String s, String pattern, boolean matches, String[] groups)
+            throws Exception {
         exchange.put("s", s);
-        Object o = new Expression("${matches(exchange.s, 'the (.*) model')}").eval(exchange);
-        assertThat(o).isInstanceOf(String[].class);
-        String[] ss = (String[]) o;
-        assertThat(ss[0]).isEqualTo("the very model");
-        assertThat(ss[1]).isEqualTo("very");
+        Object o = new Expression("${matches(exchange.s, '" + pattern + "')}").eval(exchange);
+        assertThat(o).isInstanceOf(Boolean.class);
+        Boolean b = (Boolean) o;
+        assertThat(b).isEqualTo(matches);
+    }
+
+    @Test(dataProvider = "matchData")
+    public void matchingGroups(String s, String pattern, boolean matches, String[] groups)
+            throws Exception {
+        exchange.put("s", s);
+        Object o =
+                new Expression("${matchingGroups(exchange.s, '" + pattern + "')}").eval(exchange);
+        if (matches) {
+            assertThat(o).isInstanceOf(String[].class);
+            String[] ss = (String[]) o;
+            assertThat(ss).isEqualTo(groups);
+        } else {
+            assertThat(o).isNull();
+        }
+
     }
 
     @DataProvider

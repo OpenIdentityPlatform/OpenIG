@@ -189,16 +189,38 @@ public class Functions extends FunctionMapper {
     }
 
     /**
-     * Returns an array of matches of a regular expression pattern against a
-     * string, or {@code null} if no such match is found. The first element of
-     * the array is the entire match, and each subsequent element correlates to
-     * any capture group specified within the regular expression.
+     * Returns {@code true} if the string contains the specified regular
+     * expression pattern.
      *
-     * @param value the string to be searched.
-     * @param pattern a string containing the regular expression pattern to match.
+     * @param value
+     *            the string to be searched.
+     * @param pattern
+     *            a string containing the regular expression pattern to find.
+     * @return {@code true} if the string contains the specified regular
+     *         expression pattern.
+     */
+    public static boolean matches(String value, String pattern) {
+        try {
+            return Pattern.compile(pattern).matcher(value).find();
+        } catch (PatternSyntaxException pse) {
+            // ignore invalid pattern
+        }
+        return false;
+    }
+
+    /**
+     * Returns an array containing the matches of a regular expression pattern
+     * against a string, or {@code null} if no match is found. The first element
+     * of the array is the entire match, and each subsequent element correlates
+     * to any capture group specified within the regular expression.
+     *
+     * @param value
+     *            the string to be searched.
+     * @param pattern
+     *            a string containing the regular expression pattern to match.
      * @return an array of matches, or {@code null} if no match found.
      */
-    public static String[] matches(String value, String pattern) {
+    public static String[] matchingGroups(String value, String pattern) {
         try {
             Pattern p = Pattern.compile(pattern);
             Matcher m = p.matcher(value);
@@ -221,8 +243,10 @@ public class Functions extends FunctionMapper {
      * Splits a string into an array of substrings around matches of the given
      * regular expression.
      *
-     * @param value the string to be split.
-     * @param regex the regular expression to split substrings around.
+     * @param value
+     *            the string to be split.
+     * @param regex
+     *            the regular expression to split substrings around.
      * @return the resulting array of split substrings.
      */
     public static String[] split(String value, String regex) {
