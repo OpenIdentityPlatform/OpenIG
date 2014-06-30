@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
 
@@ -53,7 +54,7 @@ public class RouterHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get("TemporaryStorage")).thenReturn(new TemporaryStorage());
+        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY)).thenReturn(new TemporaryStorage());
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
     }

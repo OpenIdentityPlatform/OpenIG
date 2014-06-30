@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.saml;
 
+import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -467,7 +469,7 @@ public class FederationServlet extends HttpServlet {
              * override the default openFed location. Federation config files will reside in
              * the SAML directory.
              */
-            Environment environment = (Environment) heap.get("Environment");
+            Environment environment = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
             String openFedConfigDir = new File(environment.getBaseDirectory(), "SAML").getPath();
             System.out.println("FederationServlet init: " + openFedConfigDir);
             Properties p = System.getProperties();

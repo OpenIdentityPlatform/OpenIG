@@ -32,6 +32,11 @@ import java.io.File;
 public interface Environment {
 
     /**
+     * Key to retrieve an {@link Environment} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String ENVIRONMENT_HEAP_KEY = "Environment";
+
+    /**
      * Returns the base directory of the OpenIG file system.
      * It can be used to access resources that are not part of the standard layout.
      * @return the base directory of the OpenIG file system.
