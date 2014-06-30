@@ -225,7 +225,7 @@
  </refsect1>
 
  <refsect1 xml:id="functions-matchingGroups">
-  <title>matches</title>
+  <title>matchingGroups</title>
   <literallayout class="monospaced">matchingGroups(string, pattern)</literallayout>
 
   <para>Returns an array of matching groups for a <link
