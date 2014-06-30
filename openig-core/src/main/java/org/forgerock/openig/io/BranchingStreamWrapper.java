@@ -220,14 +220,18 @@ public class BranchingStreamWrapper extends BranchingInputStream {
 
     /**
      * Closes this branching stream and all of the branches created from it.
+     *
+     * @throws Throwable
+     *         may be raised by super.finalize().
      */
     @Override
-    public void finalize() {
+    public void finalize() throws Throwable {
         try {
             close();
         } catch (IOException ioe) {
             // inappropriate to throw an exception when object is being collected
         }
+        super.finalize();
     }
 
     /**

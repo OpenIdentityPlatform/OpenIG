@@ -93,8 +93,9 @@ public class MemoryBuffer implements Buffer {
     }
 
     @Override
-    public void finalize() {
+    public void finalize() throws Throwable {
         close();
+        super.finalize();
     }
 
     /**

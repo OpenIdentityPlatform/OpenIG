@@ -103,12 +103,13 @@ public class FileBuffer implements Buffer {
     }
 
     @Override
-    public void finalize() {
+    public void finalize() throws Throwable {
         try {
             close();
         } catch (IOException ioe) {
             // inappropriate to throw an exception when object is being collected
         }
+        super.finalize();
     }
 
     /**
