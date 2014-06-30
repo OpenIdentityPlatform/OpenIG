@@ -30,21 +30,36 @@ import org.forgerock.util.Factory;
 public class TemporaryStorage implements Factory<Buffer> {
 
     /**
+     * 8 KiB.
+     */
+    public static final int HEIGHT_KB = 8 * 1024;
+
+    /**
+     * 64 KiB.
+     */
+    public static final int SIXTY_FOUR_KB = 64 * 1024;
+
+    /**
+     * 1 MiB.
+     */
+    public static final int ONE_MB = 1 * 1024 * 1024;
+
+    /**
      * The initial length of memory buffer byte array. Default: 8 KiB.
      */
-    public int initialLength = 8 * 1024;
+    private final int initialLength;
 
     /**
      * The length limit of the memory buffer. Attempts to exceed this limit will result in
      * promoting the buffer from a memory to a file buffer. Default: 64 KiB.
      */
-    public int memoryLimit = 64 * 1024;
+    private final int memoryLimit;
 
     /**
      * The length limit of the file buffer. Attempts to exceed this limit will result in an
      * {@link OverflowException} being thrown. Default: 1 MiB.
      */
-    public int fileLimit = 1 * 1024 * 1024;
+    private final int fileLimit;
 
     /**
      * The directory where temporary files are created. If {@code null}, then the
@@ -52,7 +67,55 @@ public class TemporaryStorage implements Factory<Buffer> {
      *
      * @see java.io.File#createTempFile(String, String, File)
      */
-    public File directory;
+    private final File directory;
+
+    /**
+     * Builds a storage using the system dependent default temporary directory and default sizes.
+     * Equivalent to call {@code new TemporaryStorage(null)}.
+     * @see #TemporaryStorage(File)
+     */
+    public TemporaryStorage() {
+        this(null);
+    }
+
+    /**
+     * Builds a storage using the given directory (may be {@literal null}) and default sizes. Equivalent to call {@code
+     * new TemporaryStorage(directory, HEIGHT_KB, SIXTY_FOUR_KB, ONE_MB)}.
+     *
+     * @param directory
+     *         The directory where temporary files are created. If {@code null}, then the system-dependent default
+     *         temporary directory will be used.
+     * @see #TemporaryStorage(File, int, int, int)
+     */
+    public TemporaryStorage(final File directory) {
+        this(directory, HEIGHT_KB, SIXTY_FOUR_KB, ONE_MB);
+    }
+
+    /**
+     * Builds a storage using the given directory (may be {@literal null}) and provided sizes.
+     *
+     * @param directory
+     *         The directory where temporary files are created. If {@code null}, then the system-dependent default
+     *         temporary directory will be used.
+     * @param initialLength
+     *         The initial length of memory buffer byte array.
+     * @param memoryLimit
+     *         The length limit of the memory buffer. Attempts to exceed this limit will result in promoting the buffer
+     *         from a memory to a file buffer.
+     * @param fileLimit
+     *         The length limit of the file buffer. Attempts to exceed this limit will result in an {@link
+     *         OverflowException} being thrown.
+     * @see #TemporaryStorage(File, int, int, int)
+     */
+    public TemporaryStorage(final File directory,
+                            final int initialLength,
+                            final int memoryLimit,
+                            final int fileLimit) {
+        this.initialLength = initialLength;
+        this.memoryLimit = memoryLimit;
+        this.fileLimit = fileLimit;
+        this.directory = directory;
+    }
 
     /**
      * Creates and returns a new instance of a temporary buffer.
@@ -69,12 +132,10 @@ public class TemporaryStorage implements Factory<Buffer> {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            TemporaryStorage storage = new TemporaryStorage();
-            storage.initialLength = config.get("initialLength").defaultTo(storage.initialLength).asInteger();
-            storage.memoryLimit = config.get("memoryLimit").defaultTo(storage.memoryLimit).asInteger();
-            storage.fileLimit = config.get("fileLimit").defaultTo(storage.fileLimit).asInteger();
-            storage.directory = config.get("directory").asFile();
-            return storage;
+            return new TemporaryStorage(config.get("directory").asFile(),
+                                        config.get("initialLength").defaultTo(HEIGHT_KB).asInteger(),
+                                        config.get("memoryLimit").defaultTo(SIXTY_FOUR_KB).asInteger(),
+                                        config.get("fileLimit").defaultTo(ONE_MB).asInteger());
         }
     }
 }
