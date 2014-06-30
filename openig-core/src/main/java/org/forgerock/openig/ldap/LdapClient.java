@@ -61,7 +61,7 @@ public final class LdapClient {
      * within scripts where Maps are exposed as properties, e.g. in Groovy the
      * sub-tree scope may be specified using the value "ldap.scope.sub".
      */
-    public final Map<String, SearchScope> scope;
+    private final Map<String, SearchScope> scope;
 
     private LdapClient() {
         final Map<String, SearchScope> map = new HashMap<String, SearchScope>(4);
@@ -69,6 +69,14 @@ public final class LdapClient {
             map.put(scope.toString(), scope);
         }
         scope = Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * Returns the {@link SearchScope} available.
+     * @return the {@link SearchScope} available.
+     */
+    public Map<String, SearchScope> getScope() {
+        return scope;
     }
 
     /**
@@ -159,9 +167,10 @@ public final class LdapClient {
     }
 
     @Override
-    protected void finalize() {
+    protected void finalize() throws Throwable {
         for (ConnectionFactory factory : factories.values()) {
             factory.close();
         }
+        super.finalize();
     }
 }
