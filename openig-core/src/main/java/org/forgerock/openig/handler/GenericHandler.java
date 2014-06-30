@@ -17,18 +17,11 @@
 
 package org.forgerock.openig.handler;
 
-import java.io.IOException;
-
 import org.forgerock.openig.heap.GenericHeapObject;
-import org.forgerock.openig.http.Exchange;
 
 /**
  * A generic base class for handlers with handy injected heap objects.
  *
  * @see GenericHeapObject
  */
-public abstract class GenericHandler extends GenericHeapObject implements Handler {
-
-    @Override // Handler
-    public abstract void handle(Exchange exchange) throws HandlerException, IOException;
-}
+public abstract class GenericHandler extends GenericHeapObject implements Handler { }
