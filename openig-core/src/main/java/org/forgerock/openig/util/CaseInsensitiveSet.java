@@ -53,9 +53,8 @@ public class CaseInsensitiveSet extends SetDecorator<String> {
      * @param c the collection whose elements are to be placed into this set.
      * @throws NullPointerException if the specified collection is {@code null}.
      */
-    @SuppressWarnings("unchecked")
     public CaseInsensitiveSet(Collection<String> c) {
-        super(c instanceof Set ? (Set) c : new HashSet<String>(c));
+        super(c instanceof Set ? (Set<String>) c : new HashSet<String>(c));
         lc = new HashMap<String, String>(c.size());
         for (String e : c) {
             lc.put(e.toLowerCase(), e);
