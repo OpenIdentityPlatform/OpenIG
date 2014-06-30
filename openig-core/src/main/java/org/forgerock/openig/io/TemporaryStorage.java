@@ -30,6 +30,11 @@ import org.forgerock.util.Factory;
 public class TemporaryStorage implements Factory<Buffer> {
 
     /**
+     * Key to retrieve a {@link TemporaryStorage} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";
+
+    /**
      * 8 KiB.
      */
     public static final int HEIGHT_KB = 8 * 1024;

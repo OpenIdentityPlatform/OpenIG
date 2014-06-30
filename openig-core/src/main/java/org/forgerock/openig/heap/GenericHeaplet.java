@@ -17,6 +17,9 @@
 
 package org.forgerock.openig.heap;
 
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,7 +41,7 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /** Heap objects to avoid dependency injection (prevents circular dependencies). */
     private static final Set<String> SPECIAL_OBJECTS =
-            new HashSet<String>(Arrays.asList("LogSink", "TemporaryStorage"));
+            new HashSet<String>(Arrays.asList(LOGSINK_HEAP_KEY, TEMPORARY_STORAGE_HEAP_KEY));
 
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;
@@ -70,12 +73,12 @@ public abstract class GenericHeaplet implements Heaplet {
             this.logger = new Logger(
                     HeapUtil.getObject(
                             heap,
-                            config.get("logSink").defaultTo("LogSink"),
+                            config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                             LogSink.class),
                     name);
             this.storage = HeapUtil.getRequiredObject(
                     heap,
-                    config.get("temporaryStorage").defaultTo("TemporaryStorage"),
+                    config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
         }
         this.object = create();

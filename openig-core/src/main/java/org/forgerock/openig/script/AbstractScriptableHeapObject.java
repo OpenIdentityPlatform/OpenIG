@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.script;
 
+import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +88,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 throws HeapException;
 
         private final Script compileScript() throws HeapException {
-            final Environment environment = (Environment) heap.get("Environment");
+            final Environment environment = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
 
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {
                 throw new JsonValueException(config, "The configuration option '"

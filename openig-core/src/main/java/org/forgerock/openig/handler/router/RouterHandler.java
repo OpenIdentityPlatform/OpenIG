@@ -17,6 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
+import static org.forgerock.openig.config.Environment.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -212,7 +213,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         public Object create() throws HeapException {
 
             // By default, uses the config/routes from the environment
-            Environment env = (Environment) heap.get("Environment");
+            Environment env = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
             File directory = new File(env.getConfigDirectory(), "routes");
 
             // configuration can override that value
