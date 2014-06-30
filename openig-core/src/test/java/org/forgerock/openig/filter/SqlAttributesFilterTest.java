@@ -64,9 +64,7 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testSqlResultRowIsStoredInAMapAndInAnExchangeProperty() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter();
-        filter.dataSource = source;
-        filter.target = new Expression("${exchange.result}");
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
 
         mockDatabaseInteractions();
 
@@ -83,11 +81,10 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testParametersAreAssignedToTheRightPlaceholders() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter();
-        filter.dataSource = source;
-        filter.target = new Expression("${exchange.result}");
-        filter.parameters.add(new Expression("${true}"));
-        filter.parameters.add(new Expression("${false}"));
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+
+        filter.getParameters().add(new Expression("${true}"));
+        filter.getParameters().add(new Expression("${false}"));
 
         mockDatabaseInteractions();
 
@@ -105,9 +102,7 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter();
-        filter.dataSource = source;
-        filter.target = new Expression("${exchange.result}");
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
         filter.logger = spy(filter.logger);
 
         // Generate an SQLException when getConnection() is called
