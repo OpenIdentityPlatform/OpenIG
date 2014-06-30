@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.*;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,7 +45,6 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 
@@ -63,16 +64,41 @@ import org.forgerock.util.LazyMap;
 public class SqlAttributesFilter extends GenericFilter {
 
     /** Expression that yields the target object that will contain the mapped results. */
-    public Expression target;
+    private final Expression target;
 
     /** The factory for connections to the physical data source. */
-    public DataSource dataSource;
+    private final DataSource dataSource;
 
     /** The parametrized SQL query to execute, with ? parameter placeholders. */
-    public String preparedStatement;
+    private final String preparedStatement;
 
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
-    public final List<Expression> parameters = new ArrayList<Expression>();
+    private final List<Expression> parameters = new ArrayList<Expression>();
+
+    /**
+     * Builds a new SqlAttributesFilter that will execute the given SQL statement on the given {@link DataSource},
+     * placing the results in a {@link Map} in the specified target.
+     *
+     * @param dataSource
+     *         JDBC data source
+     * @param target
+     *         Expression that yields the target object that will contain the mapped results
+     * @param preparedStatement
+     *         The parametrized SQL query to execute, with ? parameter placeholders
+     */
+    public SqlAttributesFilter(final DataSource dataSource, final Expression target, final String preparedStatement) {
+        this.dataSource = dataSource;
+        this.target = target;
+        this.preparedStatement = preparedStatement;
+    }
+
+    /**
+     * Returns the list of parameters to evaluate and include in the execution of the prepared statement.
+     * @return the list of parameters to evaluate and include in the execution of the prepared statement.
+     */
+    public List<Expression> getParameters() {
+        return parameters;
+    }
 
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -135,25 +161,28 @@ public class SqlAttributesFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            SqlAttributesFilter filter = new SqlAttributesFilter();
-            filter.target = JsonValueUtil.asExpression(config.get("target").required());
             InitialContext ctx;
             try {
                 ctx = new InitialContext();
             } catch (NamingException ne) {
                 throw new HeapException(ne);
             }
+            DataSource source;
             JsonValue dataSource = config.get("dataSource").required();
             try {
-                filter.dataSource = (DataSource) ctx.lookup(dataSource.asString());
+                source = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
                 throw new JsonValueException(dataSource, ne);
             } catch (ClassCastException ne) {
                 throw new JsonValueException(dataSource, "expecting " + DataSource.class.getName() + " type");
             }
-            filter.preparedStatement = config.get("preparedStatement").asString();
+
+            SqlAttributesFilter filter = new SqlAttributesFilter(source,
+                                                                 asExpression(config.get("target").required()),
+                                                                 config.get("preparedStatement").asString());
+
             for (JsonValue parameter : config.get("parameters").required().expect(List.class)) {
-                filter.parameters.add(JsonValueUtil.asExpression(parameter));
+                filter.parameters.add(asExpression(parameter));
             }
             return filter;
         }
