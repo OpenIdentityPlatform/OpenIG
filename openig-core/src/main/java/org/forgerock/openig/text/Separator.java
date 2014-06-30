@@ -23,13 +23,13 @@ package org.forgerock.openig.text;
 public class Separator {
 
     /** The character used to separate values. */
-    public final char character;
+    private final char character;
 
     /** The character used to quote string literals, or {@code -1} if none. */
-    public final int quote;
+    private final int quote;
 
     /** The character used to escape character literals, or {@code -1} if none. */
-    public final int escape;
+    private final int escape;
 
     /**
      * Constructs a new field separator specification.
@@ -42,6 +42,30 @@ public class Separator {
         this.character = character;
         this.quote = quote;
         this.escape = escape;
+    }
+
+    /**
+     * Returns the character used to separate values.
+     * @return the character used to separate values.
+     */
+    public char getCharacter() {
+        return character;
+    }
+
+    /**
+     * Returns the character used to quote string literals, or {@code -1} if none.
+     * @return the character used to quote string literals, or {@code -1} if none.
+     */
+    public int getQuote() {
+        return quote;
+    }
+
+    /**
+     * Returns the character used to escape character literals, or {@code -1} if none.
+     * @return the character used to escape character literals, or {@code -1} if none.
+     */
+    public int getEscape() {
+        return escape;
     }
 
     /**
@@ -59,7 +83,8 @@ public class Separator {
             return true;
         }
         return (this.character == ((Separator) o).character
-                && this.quote == ((Separator) o).quote && this.escape == ((Separator) o).escape);
+                && this.quote == ((Separator) o).quote
+                && this.escape == ((Separator) o).escape);
     }
 
     @Override
