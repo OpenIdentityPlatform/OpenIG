@@ -20,6 +20,7 @@ package org.forgerock.openig.heap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
@@ -36,7 +37,7 @@ import org.forgerock.openig.log.Logger;
 public abstract class GenericHeaplet implements Heaplet {
 
     /** Heap objects to avoid dependency injection (prevents circular dependencies). */
-    private static final HashSet<String> SPECIAL_OBJECTS =
+    private static final Set<String> SPECIAL_OBJECTS =
             new HashSet<String>(Arrays.asList("LogSink", "TemporaryStorage"));
 
     /** The name of the object to be created and stored in the heap by this heaplet. */

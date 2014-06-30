@@ -77,7 +77,7 @@ public class StreamPatternExtractor {
      */
     public Iterable<Map.Entry<String, String>> extract(final Reader reader) {
         return new Iterable<Map.Entry<String, String>>() {
-            private final HashMap<String, String> values = new HashMap<String, String>();
+            private final Map<String, String> values = new HashMap<String, String>();
             @SuppressWarnings("rawtypes")
             private Map.Entry[] entries = patterns.entrySet().toArray(
                     new Map.Entry[patterns.size()]);

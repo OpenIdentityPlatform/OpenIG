@@ -20,6 +20,7 @@ package org.forgerock.openig.util;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -33,7 +34,7 @@ import java.util.Set;
 public class CaseInsensitiveSet extends SetDecorator<String> {
 
     /** Maps lowercase elements to the real string elements. */
-    private final HashMap<String, String> lc;
+    private final Map<String, String> lc;
 
     /**
      * Constructs a new empty case-insensitive set. The backing set is a new {@link HashSet}

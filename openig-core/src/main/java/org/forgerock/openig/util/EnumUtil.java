@@ -20,6 +20,7 @@ package org.forgerock.openig.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Set;
 public final class EnumUtil {
 
     /** Cache of name sets for repeated call efficiency. */
-    private static final HashMap<Class<?>, Set<String>> NAMESETS = new HashMap<Class<?>, Set<String>>();
+    private static final Map<Class<?>, Set<String>> NAMESETS = new HashMap<Class<?>, Set<String>>();
 
     /** Static methods only. */
     private EnumUtil() {

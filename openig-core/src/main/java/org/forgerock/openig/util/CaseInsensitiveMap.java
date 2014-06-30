@@ -34,7 +34,7 @@ import org.forgerock.util.MapDecorator;
 public class CaseInsensitiveMap<V> extends MapDecorator<String, V> {
 
     /** Maps lowercase keys to the real string keys. */
-    private final HashMap<String, String> lc = new HashMap<String, String>();
+    private final Map<String, String> lc = new HashMap<String, String>();
 
     /**
      * Constructs a new empty case-insensitive map. The backing map is a new {@link HashMap}

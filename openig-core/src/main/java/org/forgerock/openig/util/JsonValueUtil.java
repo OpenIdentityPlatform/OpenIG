@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
@@ -30,7 +31,7 @@ import org.forgerock.openig.el.ExpressionException;
 public final class JsonValueUtil {
 
     /** TODO: Description. */
-    private static final HashMap<String, String> ALIASES = new HashMap<String, String>();
+    private static final Map<String, String> ALIASES = new HashMap<String, String>();
 
     // TODO: allow aliases to be dynamically configured
     static {
