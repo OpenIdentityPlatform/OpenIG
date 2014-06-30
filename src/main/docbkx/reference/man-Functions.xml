@@ -224,9 +224,9 @@
   </variablelist>
  </refsect1>
 
- <refsect1 xml:id="functions-matches">
+ <refsect1 xml:id="functions-matchingGroups">
   <title>matches</title>
-  <literallayout class="monospaced">matches(string, pattern)</literallayout>
+  <literallayout class="monospaced">matchingGroups(string, pattern)</literallayout>
 
   <para>Returns an array of matching groups for a <link
   xlink:href="reference#Expressions"
@@ -259,6 +259,42 @@
     <listitem>
      <para>an array of matching groups, or <literal>null</literal> if no such
      match is found.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 xml:id="functions-matches">
+  <title>matches</title>
+  <literallayout class="monospaced">matches(string, pattern)</literallayout>
+
+  <para>Returns <literal>true</literal> if the string contains the specified
+  <link xlink:href="reference#Expressions"
+  xlink:role="http://docbook.org/xlink/role/olink"
+  >regular expression pattern</link>.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>the string to be searched.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>pattern</term>
+    <listitem>
+     <para>a string containing the regular expression pattern to find.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+  
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>true</term>
+    <listitem>
+     <para>if the string contains the specified regular expression pattern.</para>
     </listitem>
    </varlistentry>
   </variablelist>
