@@ -41,13 +41,13 @@ public class HeapImpl implements Heap {
     private final Heap parent;
 
     /** Heaplets mapped to heaplet identifiers in the heap configuration. */
-    private HashMap<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
+    private Map<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
 
     /** Configuration objects for heaplets. */
-    private HashMap<String, JsonValue> configs = new HashMap<String, JsonValue>();
+    private Map<String, JsonValue> configs = new HashMap<String, JsonValue>();
 
     /** Objects allocated in the heap mapped to heaplet names. */
-    private HashMap<String, Object> objects = new HashMap<String, Object>();
+    private Map<String, Object> objects = new HashMap<String, Object>();
 
     /**
      * Builds a root heap (will be referenced by children but has no parent itself).
@@ -135,7 +135,7 @@ public class HeapImpl implements Heap {
      */
     public synchronized void destroy() {
         // save the heaplets locally to send destroy notifications
-        HashMap<String, Heaplet> h = heaplets;
+        Map<String, Heaplet> h = heaplets;
         // prevent any further (inadvertent) object allocations
         heaplets = new HashMap<String, Heaplet>();
         // all allocated objects are no longer in this heap

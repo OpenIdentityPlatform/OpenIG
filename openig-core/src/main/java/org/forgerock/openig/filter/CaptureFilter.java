@@ -31,6 +31,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -116,7 +117,7 @@ public class CaptureFilter extends GenericFilter {
 
 
     /** Set of common textual content with non-text content-types to capture. */
-    private static final HashSet<String> TEXT_TYPES = new HashSet<String>(
+    private static final Set<String> TEXT_TYPES = new HashSet<String>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
                     "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
                     "application/x-www-form-urlencoded")

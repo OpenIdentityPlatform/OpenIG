@@ -38,12 +38,12 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
      * Cache of field mappings to avoid overhead of repeated mapping via
      * reflection.
      */
-    private static final HashMap<Class<?>, HashMap<String, Field>> MAPPINGS =
-            new HashMap<Class<?>, HashMap<String, Field>>();
+    private static final Map<Class<?>, Map<String, Field>> MAPPINGS =
+            new HashMap<Class<?>, Map<String, Field>>();
 
-    private static HashMap<String, Field> getFields(final Object o) {
+    private static Map<String, Field> getFields(final Object o) {
         final Class<?> c = o.getClass();
-        HashMap<String, Field> fields = MAPPINGS.get(c);
+        Map<String, Field> fields = MAPPINGS.get(c);
         if (fields == null) {
             // lazy initialization
             fields = new HashMap<String, Field>();
@@ -63,7 +63,7 @@ public class FieldMap extends AbstractMap<String, Object> implements Map<String,
     private final Object object;
 
     /** Mapping between the map's keys and the object's fields. */
-    private final HashMap<String, Field> fields;
+    private final Map<String, Field> fields;
 
     /**
      * Entry set view of this field map. Updates to the entry set write through

@@ -36,7 +36,7 @@ public class ExtensibleFieldMap extends AbstractMap<String, Object> implements M
     private final FieldMap fields;
 
     /** Map to store extended keys. */
-    private final HashMap<String, Object> extension = new HashMap<String, Object>();
+    private final Map<String, Object> extension = new HashMap<String, Object>();
 
     /**
      * Constructs a new extensible field map, using this object's field members

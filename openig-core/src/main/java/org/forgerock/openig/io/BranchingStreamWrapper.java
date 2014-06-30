@@ -20,6 +20,7 @@ package org.forgerock.openig.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.forgerock.util.Factory;
 
@@ -290,7 +291,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     /** Object shared by all branches. */
     private class Trunk {
         /** Keeps track of all branches on this trunk. */
-        private ArrayList<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>();
+        private List<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>();
         /** The input stream being wrapped by the branches. */
         private InputStream in;
         /** An object that creates new temporary buffers. */
