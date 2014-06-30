@@ -72,19 +72,19 @@ public class SeparatedValuesReader {
             if (escaped) {
                 sb.append((char) c);
                 escaped = false;
-            } else if (c == separator.escape) {
+            } else if (c == separator.getEscape()) {
                 escaped = true;
-            } else if (c == separator.quote && sb.length() == 0) {
+            } else if (c == separator.getQuote() && sb.length() == 0) {
                 quoted = true;
-            } else if (c == separator.quote && quoted) {
+            } else if (c == separator.getQuote() && quoted) {
                 c = read();
-                if (c == separator.quote) {
+                if (c == separator.getQuote()) {
                     sb.append((char) c);
                 } else {
                     next = c;
                     quoted = false;
                 }
-            } else if (c == separator.character && !quoted) {
+            } else if (c == separator.getCharacter() && !quoted) {
                 list.add(sb.toString());
                 sb.setLength(0);
             } else if (c == LF && !quoted) {

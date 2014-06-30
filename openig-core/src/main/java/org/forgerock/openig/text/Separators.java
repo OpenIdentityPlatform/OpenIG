@@ -32,12 +32,23 @@ public enum Separators {
     TAB(new Separator('\t', '"', -1));
 
     /** The separator specification that the enum constant represents. */
-    public final Separator separator;
+    private final Separator separator;
 
     /**
      * Constructs a new separator constant with the specified separator specification.
+     *
+     * @param separator
+     *         specified separator specification
      */
     private Separators(Separator separator) {
         this.separator = separator;
+    }
+
+    /**
+     * Returns the {@link Separator} specification that the enum constant represents.
+     * @return the {@link Separator} specification that the enum constant represents.
+     */
+    public Separator getSeparator() {
+        return separator;
     }
 }

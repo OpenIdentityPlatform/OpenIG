@@ -37,22 +37,104 @@ import java.util.Map;
 public class SeparatedValuesFile {
 
     /** The file containing the separated values to be read. */
-    public File file;
+    private final File file;
 
     /** The character set the file is encoded in. */
-    public Charset charset;
+    private final Charset charset;
 
     /** The separator specification to split lines into fields. */
-    public Separator separator;
+    private final Separator separator;
 
     /** Does the first line of the file contain the set of defined field keys. */
-    public boolean header;
+    private boolean header;
 
     /**
      * Explicit field keys in the order they appear in a record, overriding any existing field header,
-     * or {@code null} to use field header.
+     * or empty to use field header.
      */
-    public List<String> fields = new ArrayList<String>();
+    private final List<String> fields = new ArrayList<String>();
+
+    /**
+     * Builds a new SeparatedValuesFile reading the given {@code file} using a the {@link Separators#COMMA}
+     * separator specification and {@code UTF-8} charset. This constructor consider the file has a header line.
+     * <p>
+     * It is equivalent to call:
+     * <code> new SeparatedValuesFile(file, "UTF-8"); </code>
+     *
+     * @param file
+     *         file to read from
+     * @see #SeparatedValuesFile(File, Charset)
+     */
+    public SeparatedValuesFile(final File file) {
+        this(file, Charset.forName("UTF-8"));
+    }
+
+    /**
+     * Builds a new SeparatedValuesFile reading the given {@code file} using a the {@link Separators#COMMA}
+     * separator specification. This constructor consider the file has a header line.
+     * <p>
+     * It is equivalent to call:
+     * <code> new SeparatedValuesFile(file, charset, Separators.COMMA.getSeparator()); </code>
+     *
+     * @param file
+     *         file to read from
+     * @param charset
+     *         {@link Charset} of the file (non-null)
+     * @see #SeparatedValuesFile(File, Charset, Separator)
+     */
+    public SeparatedValuesFile(final File file, final Charset charset) {
+        this(file, charset, Separators.COMMA.getSeparator());
+    }
+
+    /**
+     * Builds a new SeparatedValuesFile reading the given {@code file}. This constructor consider the file has a header
+     * line.
+     * <p>
+     * It is equivalent to call:
+     * <code> new SeparatedValuesFile(file, charset, separator, true); </code>
+     *
+     * @param file
+     *         file to read from
+     * @param charset
+     *         {@link Charset} of the file (non-null)
+     * @param separator
+     *         separator specification
+     * @see #SeparatedValuesFile(File, Charset, Separator, boolean)
+     */
+    public SeparatedValuesFile(final File file, final Charset charset, final Separator separator) {
+        this(file, charset, separator, true);
+    }
+
+    /**
+     * Builds a new SeparatedValuesFile reading the given {@code file}.
+     *
+     * @param file
+     *         file to read from
+     * @param charset
+     *         {@link Charset} of the file (non-null)
+     * @param separator
+     *         separator specification
+     * @param header
+     *         does the file has a header first line ?
+     */
+    public SeparatedValuesFile(final File file,
+                               final Charset charset,
+                               final Separator separator,
+                               final boolean header) {
+        this.file = file;
+        this.charset = charset;
+        this.separator = separator;
+        this.header = header;
+    }
+
+    /**
+     * Returns the explicit field keys in the order they appear in a record, overriding any existing field header,
+     * or empty to use field header.
+     * @return the explicit field keys in the order they appear in a record
+     */
+    public List<String> getFields() {
+        return fields;
+    }
 
     /**
      * Returns a record from the file where the specified key is equal to the specified value.

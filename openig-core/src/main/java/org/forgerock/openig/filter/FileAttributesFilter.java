@@ -17,7 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-import java.io.File;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -30,7 +31,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
-import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 
@@ -51,16 +51,38 @@ import org.forgerock.util.LazyMap;
 public class FileAttributesFilter extends GenericFilter {
 
     /** Expression that yields the target object that will contain the record. */
-    public Expression target;
+    private final Expression target;
 
     /** The file to read separated values from. */
-    public final SeparatedValuesFile file = new SeparatedValuesFile();
+    private final SeparatedValuesFile file;
 
     /** The name of the field in the file to perform the lookup on. */
-    public String key;
+    private final String key;
 
     /** Expression that yields the value to be looked-up within the file. */
-    public Expression value;
+    private final Expression value;
+
+    /**
+     * Builds a new FileAttributesFilter extracting values from the given separated values file.
+     *
+     * @param file
+     *         The file to read separated values from ({@literal csv} file)
+     * @param key
+     *         The name of the field in the file to perform the lookup on
+     * @param value
+     *         Expression that yields the value to be looked-up within the file
+     * @param target
+     *         Expression that yields the target object that will contain the record
+     */
+    public FileAttributesFilter(final SeparatedValuesFile file,
+                                final String key,
+                                final Expression value,
+                                final Expression target) {
+        this.file = file;
+        this.key = key;
+        this.value = value;
+        this.target = target;
+    }
 
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
@@ -85,16 +107,17 @@ public class FileAttributesFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            FileAttributesFilter filter = new FileAttributesFilter();
-            filter.target = JsonValueUtil.asExpression(config.get("target").required());
-            filter.file.file = new File(config.get("file").required().asString());
-            filter.file.charset = config.get("charset").defaultTo("UTF-8").asCharset();
-            filter.file.separator = config.get("separator").defaultTo("COMMA").asEnum(Separators.class).separator;
-            filter.file.header = config.get("header").defaultTo(true).asBoolean();
-            filter.file.fields = config.get("fields").asList(String.class);
-            filter.key = config.get("key").required().asString();
-            filter.value = JsonValueUtil.asExpression(config.get("value").required());
-            return filter;
+            SeparatedValuesFile sources = new SeparatedValuesFile(config.get("file").required().asFile(),
+                                                                  config.get("charset").defaultTo("UTF-8").asCharset(),
+                                                                  config.get("separator").defaultTo("COMMA")
+                                                                          .asEnum(Separators.class).getSeparator(),
+                                                                  config.get("header").defaultTo(true).asBoolean());
+
+            sources.getFields().addAll(config.get("fields").asList(String.class));
+            return new FileAttributesFilter(sources,
+                                            config.get("key").required().asString(),
+                                            asExpression(config.get("value").required()),
+                                            asExpression(config.get("target").required()));
         }
     }
 }
