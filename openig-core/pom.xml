@@ -25,7 +25,6 @@
   </parent>
   <artifactId>openig-core</artifactId>
   <name>OpenIG Core library</name>
-  <packaging>jar</packaging>
   <properties>
     <juel.version>2.2.7</juel.version>
   </properties>
