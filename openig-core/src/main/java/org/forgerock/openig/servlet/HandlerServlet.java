@@ -115,8 +115,8 @@ public class HandlerServlet extends HttpServlet {
         exchange.session = new ServletSession(request);
         exchange.principal = request.getUserPrincipal();
         // handy servlet-specific attributes, sure to be abused by downstream filters
-        exchange.put("javax.servlet.http.HttpServletRequest", request);
-        exchange.put("javax.servlet.http.HttpServletResponse", response);
+        exchange.put(HttpServletRequest.class.getName(), request);
+        exchange.put(HttpServletResponse.class.getName(), response);
         try {
             // handle request
             try {
@@ -124,21 +124,28 @@ public class HandlerServlet extends HttpServlet {
             } catch (HandlerException he) {
                 throw new ServletException(he);
             }
-            // response status-code (reason-phrase deprecated in Servlet API)
-            response.setStatus(exchange.response.status);
-            // response headers
-            for (String name : exchange.response.headers.keySet()) {
-                for (String value : exchange.response.headers.get(name)) {
-                    if (value != null && value.length() > 0) {
-                        response.addHeader(name, value);
+            /*
+             * Support for OPENIG-94/95 - The wrapped servlet may have already committed its response w/o creating a new
+             * OpenIG Response instance in the exchange.
+             */
+            if (exchange.response != null) {
+                // response status-code (reason-phrase deprecated in Servlet API)
+                response.setStatus(exchange.response.status);
+
+                // response headers
+                for (String name : exchange.response.headers.keySet()) {
+                    for (String value : exchange.response.headers.get(name)) {
+                        if (value != null && value.length() > 0) {
+                            response.addHeader(name, value);
+                        }
                     }
                 }
-            }
-            // response entity (if applicable)
-            if (exchange.response.entity != null) {
-                OutputStream out = response.getOutputStream();
-                Streamer.stream(exchange.response.entity, out);
-                out.flush();
+                // response entity (if applicable)
+                if (exchange.response.entity != null) {
+                    OutputStream out = response.getOutputStream();
+                    Streamer.stream(exchange.response.entity, out);
+                    out.flush();
+                }
             }
         } finally {
             // final cleanup
