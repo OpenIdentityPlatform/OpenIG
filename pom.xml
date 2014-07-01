@@ -40,7 +40,7 @@
   <modules>
     <module>openig-core</module>
     <module>openig-war</module>
-    <module>openig-federation-war</module>
+    <module>openig-saml</module>
     <module>openig-doc-samples</module>
   </modules>
 
