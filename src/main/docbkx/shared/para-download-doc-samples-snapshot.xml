@@ -34,5 +34,6 @@
  The latest build of the minimal HTTP server .jar
  is a file named like <filename>${sampleServerJar}</filename>,
  but with a build date in the name in place of <literal>-SNAPSHOT</literal>.
- Find this .jar under <link xlink:href="${sampleServerDownloadDirectory}" />.
+ Find this .jar under
+ <link xlink:show="new" xlink:href="${sampleServerDownloadDirectory}" />.
 </para>
