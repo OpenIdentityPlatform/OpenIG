@@ -52,28 +52,6 @@
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
 
-      <!-- Fail doc build if doc includes literal OpenIG values -->
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>check-docs-for-literal-project-name</id>
-            <phase>pre-site</phase>
-            <goals>
-              <goal>checkstyle</goal>
-            </goals>
-            <configuration>
-              <configLocation>src/main/resources/org/forgerock/checkstyle/check-docs.xml</configLocation>
-              <sourceDirectory>src/main/docbkx</sourceDirectory>
-              <includes>**/*</includes>
-              <consoleOutput>true</consoleOutput>
-              <failsOnError>true</failsOnError>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Workaround pending fix for DOCS-178 -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -348,4 +326,35 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <id>predocs</id>
+      <build>
+        <plugins>
+          <!-- Fail doc build if doc includes literal OpenIG values -->
+         <plugin>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>check-docs-for-literal-project-name</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>checkstyle</goal>
+                </goals>
+                <configuration>
+                  <configLocation>src/main/resources/org/forgerock/checkstyle/check-docs.xml</configLocation>
+                  <sourceDirectory>src/main/docbkx</sourceDirectory>
+                  <includes>**/*</includes>
+                  <consoleOutput>true</consoleOutput>
+                  <failsOnError>true</failsOnError>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
