@@ -12,7 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Portions Copyrighted 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -34,7 +34,7 @@ public final class URIUtil {
      * constructor by accepting raw versions of userInfo, path, query and fragment components.
      *
      * @param scheme the scheme component of the URI or {@code null} if none.
-     * @param rawUserInfo the raw user-information componenent of the URI or {@code null} if none.
+     * @param rawUserInfo the raw user-information component of the URI or {@code null} if none.
      * @param host the host component of the URI or {@code null} if none.
      * @param port the port number of the URI or {@code -1} if none.
      * @param rawPath the raw path component of the URI or {@code null} if none.
