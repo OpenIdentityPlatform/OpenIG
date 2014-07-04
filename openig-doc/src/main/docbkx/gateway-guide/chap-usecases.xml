@@ -53,7 +53,7 @@
   ${projectName} works. The Flat-File attribute store contains only one set of
   credentials. ${projectName} makes the assumption this user is logging into the
   sample application. In a real deployment ${projectName} would look up the user
-  credentials using its own session, a SAML2 assertion, or a header from an
+  credentials using its own session, a SAML 2.0 assertion, or a header from an
   OpenAM policy agent. Use cases that follow show examples of these types
   of deployments.</para>
 
@@ -178,25 +178,30 @@
  </section>
 
  <section xml:id="sp-initiated-sso">
-  <title>${projectName} Federation SP Initiated SAML2 SSO</title>
+  <title>${projectName} Federation SP Initiated SAML 2.0 SSO</title>
 
   <indexterm>
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates ${projectName} Federation providing
-  SAML2 endpoint features acting as Service Provider in an SP initiated single
-  sign-on configuration. In this sample, the HR application is an outsourced provider
-  of HR services and has started seeing increased demand for SAML2 support in
-  their core application. The companies to which they outsource are refusing
-  proprietary means of authentication and demanding the widely accepted SAML2
-  standard. The HR application cannot be modified to support
-  SAML2 nor do they have the time or money to integrate and deploy all of
-  OpenAM. With ${projectName} Federation, the HR application deploys
-  ${projectName} in front of their
-  HR application, configures it as a SAML2 endpoint for SP initiated SSO,
-  and configures it to log users into the HR application upon successful
-  verification of the SAML2 assertion from their customers.</para>
+  <para>
+   The figure below illustrates ${projectName} Federation
+   providing SAML 2.0 features acting as Service Provider (SP)
+   in an SP-initiated single sign-on configuration.
+   In this sample, the HR application is an outsourced provider of HR services
+   and has started seeing increased demand for SAML 2.0 support
+   in their core application.
+   The companies to which they outsource are refusing proprietary means
+   of authentication and demanding the widely-accepted SAML 2.0 standard.
+   The HR application cannot be modified to support SAML 2.0
+   nor do they have the time or money to integrate and deploy all of OpenAM.
+   With ${projectName} Federation, the HR application deploys ${projectName}
+   as a reverse proxy for their application,
+   configures it as a SAML 2.0 Service Provider,
+   and configures it to log users into the HR application
+   upon successful verification of the SAML 2.0 authentication assertion
+   from their customers' SAML 2.0 Identity Providers.
+  </para>
 
   <mediaobject xml:id="figure-sp-initiated-sso">
    <imageobject>
@@ -204,8 +209,7 @@
    </imageobject>
    <textobject>
     <para>
-     This image diagrams the steps of service provider-initiated
-     SAML 2.0 single sign-on.
+     This image diagrams the steps of SP-initiated SAML 2.0 single sign-on.
     </para>
    </textobject>
   </mediaobject>
@@ -281,30 +285,36 @@
  </section>
 
  <section xml:id="idp-initiated-sso">
-  <title>${projectName} Federation IDP Initiated SAML2 SSO</title>
+  <title>${projectName} Federation IDP Initiated SAML 2.0 SSO</title>
 
   <indexterm>
    <primary>Use cases</primary>
   </indexterm>
 
-  <para>The figure below illustrates ${projectName} Federation providing SAML2
-  endpoint features acting as a Service Provider in a IDP initiated single
-  sign-on configuration.</para>
+  <para>
+   The figure below illustrates ${projectName} Federation
+   providing SAML 2.0 features acting as Service Provider
+   in an IDP-initiated single sign-on configuration.
+  </para>
 
   <mediaobject xml:id="figure-idp-initiated-sso">
    <imageobject>
     <imagedata fileref="images/idp-initiated-sso.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>This image diagrams the five steps of identity provider initiated
-    SAML2 single sign on.</para>
+    <para>
+     This image diagrams the steps of IDP-initiated SAML 2.0 single sign-on.
+    </para>
    </textobject>
   </mediaobject>
 
   <orderedlist>
    <listitem>
-    <para>User clicks the HR link on the company portal and is redirected to
-    the company IDP for authentication.</para>
+    <para>
+     User clicks the HR link on the company portal
+     and is redirected to the company Identity Provider (IDP)
+     for authentication.
+    </para>
    </listitem>
    <listitem>
     <para>IDP sends an AuthN Response to the HR application.</para>
@@ -326,7 +336,7 @@
  </section>
 
  <section xml:id="saml2-pep">
-  <title>Standards Based SAML2 Agent</title>
+  <title>Standards Based SAML 2.0 Agent</title>
 
   <indexterm>
    <primary>Use cases</primary>
@@ -342,7 +352,7 @@
    <textobject>
     <para>
      This image diagrams the steps showing how ${projectName} Federation works
-     as a SAML2 based policy enforcement point.
+     as a SAML 2.0 based policy enforcement point.
     </para>
    </textobject>
   </mediaobject>
@@ -375,7 +385,7 @@
 
    <listitem>
     <para>
-     OpenAM receives the SAML2 AuthN and authenticates the user.
+     OpenAM receives the SAML 2.0 AuthN and authenticates the user.
     </para>
    </listitem>
 

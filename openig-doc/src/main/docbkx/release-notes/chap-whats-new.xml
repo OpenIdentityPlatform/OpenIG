@@ -49,12 +49,25 @@
     Use the <literal>ScriptableFilter</literal>
     and <literal>ScriptableHandler</literal> objects
     to the configuration in order to hook scripts into exchange processing.
+    At present Groovy is supported, but JavaScript is not.
     For examples using Groovy scripts for Filters and Handlers, see
     <link
      xlink:show="new"
      xlink:href="gateway-guide#chap-scripting"
      xlink:role="http://docbook.org/xlink/role/olink"
     >Scripting Filters &amp; Handlers</link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    SAML 2.0 federation support is now integrated into the
+    main ${projectName} .war file (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-95"
+    >OPENIG-95</link>
+    ).
    </para>
   </listitem>
 

@@ -33,8 +33,18 @@
  <title>Tutorial Configuration Files</title>
 
  <para>
-  This appendix holds the configuration files for tutorials in this guide.
+  This appendix holds the following configuration files
+  for tutorials in this guide.
  </para>
+
+ <itemizedlist>
+  <listitem><para><xref linkend="config-proxy-and-capture" /></para></listitem>
+  <listitem><para><xref linkend="config-login-static-request" /></para></listitem>
+  <listitem><para><xref linkend="config-login-from-file" /></para></listitem>
+  <listitem><para><xref linkend="config-login-from-sql" /></para></listitem>
+  <listitem><para><xref linkend="config-capture-and-replay" /></para></listitem>
+  <listitem><para><xref linkend="config-federation" /></para></listitem>
+ </itemizedlist>
 
  <example xml:id="config-proxy-and-capture"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
   <title>Configuration for Proxy &amp; Capture</title>

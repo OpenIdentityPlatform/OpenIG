@@ -33,8 +33,9 @@
  <title>Using ${projectName} Federation</title>
 
  <para>
-  The Federation component of ${projectName} is a standards based authentication service
-  used by ${projectName} to validate a user and retrieve key attributes of the user
+  The Federation component of ${projectName} is
+  a standards based authentication service used by ${projectName}
+  to validate a user and retrieve key attributes of the user
   in order to log them in to applications that ${projectName} protects.
   The Federation component implements Security Assertion Markup Language 2.0.
  </para>
@@ -139,7 +140,7 @@
 
    <listitem>
     <para>
-     Install the ${projectName} Federation .war.
+     Install the ${projectName} .war.
     </para>
    </listitem>
 

@@ -297,23 +297,32 @@
   <section xml:id="how-it-works-services">
    <title>Services</title>
 
-   <para>The Services model was designed to allow the integration of value
-   added features, such as Federation, without requiring them to be tightly
-   bound to the ${projectName} implementation. SAML2 is the add on
-   service shipping with ${projectName} today.</para>
+   <para>
+    The Services model was designed to allow the integration of
+    value added features, such as Federation,
+    without requiring them to be tightly bound
+    to the ${projectName} implementation.
+    SAML 2.0 is an added service currently shipped with ${projectName}.
+   </para>
   </section>
 
   <section xml:id="how-it-works-saml2">
-   <title>Federation Service (${projectName} Federation)</title>
+   <title>${projectName} SAML 2.0 Federation</title>
 
-   <para>When the Federation Service is enabled, ${projectName} acts as the
-   Service Provider in a Circle of Trust with a SAML2 compliant Identity
-   Provider. The Federation service supports both IDP and SP initiated SAML2
-   profiles. ${projectName} Federation may be a Service Provider in the classic
-   Federation use case where the IDP and SP are different companies or domains.
-   The ${projectName} SP can also be a standards based alternative to an OpenAM policy
-   agent for internal enterprise applications that want to move away from
-   installing agents with web and web application servers.</para>
+   <para>
+    When the Federation component is configured,
+    ${projectName} acts as the Service Provider in a Circle of Trust
+    with a SAML 2.0-compliant Identity Provider.
+    The Federation component supports both IDP and SP-initiated
+    SAML 2.0 Web Single Sign-On.
+    ${projectName} Federation can serve as a a Service Provider
+    in the classic Federation use case
+    where the IDP and SP are different companies or domains.
+    The ${projectName} SP can also be a standards-based alternative
+    to an OpenAM policy agent for internal enterprise applications
+    that want to move away from installing agents
+    in web servers and in Java EE application servers.
+   </para>
   </section>
 
  </section>

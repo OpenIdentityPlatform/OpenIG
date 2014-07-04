@@ -27,7 +27,8 @@
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'>
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Changes &amp; Deprecated Functionality</title>
 
  <para>This chapter covers both major changes to existing functionality, and
@@ -49,6 +50,27 @@
      and <filename>${warSamlDir}</filename> on UNIX, Linux, and Mac OS X,
      and under <filename>${windowsWarConfigDir}</filename>
      and <filename>${windowsWarSamlDir}</filename> on Windows systems.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     As SAML 2.0 federation support is now integrated into the
+     main ${projectName} .war file,
+     the way of configuring dispatch to the Federation component has changed.
+     For an example of how the configuration is handled now,
+     see the <citetitle>Guide to ${projectName}</citetitle> chapter,
+     <link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-federation-tutorial"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Tutorial For ${projectName} Federation</link>,
+     or read the example configuration file,
+     <link
+      xlink:show="new"
+      xlink:href="gateway-guide#config-federation"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
     </para>
    </listitem>
 
