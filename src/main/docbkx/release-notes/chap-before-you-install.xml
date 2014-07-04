@@ -39,15 +39,6 @@
   <link xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.
  </para>
 
- <section xml:id="which-gateway">
-  <title>Which ${projectName} to Use</title>
-
-  <para>There are two versions of the software, core ${projectName} and ${projectName}
-  Federation. ${projectName} Federation consists of ${projectName} plus additional
-  Federation libraries. Unless you require Federation capabilities, use core
-  ${projectName}.</para>
- </section>
-
  <section xml:id="java-requirements">
   <title>JDK Version</title>
 
@@ -103,19 +94,5 @@
   Deployment Containers</citetitle></link> in the <citetitle>Guide to
   ${projectName}</citetitle> for details on setting up your web application
   container.</para>
- </section>
-
- <section xml:id="scripting-languages">
-  <title>Scripting Support</title>
-
-  <para>
-   This release of ${projectName} supports the Groovy scripting language.
-   For examples using Groovy scripts for Filters and Handlers, see
-   <link
-    xlink:show="new"
-    xlink:href="gateway-guide#chap-scripting"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   >Scripting Filters &amp; Handlers</link>.
-  </para>
  </section>
 </chapter>

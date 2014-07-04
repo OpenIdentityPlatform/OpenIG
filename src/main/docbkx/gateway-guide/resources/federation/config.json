@@ -10,39 +10,10 @@
                 }
             },
             {
-                "name": "DispatchServlet",
-                "type": "DispatchServlet",
-                "config": {
-                    "bindings": [
-                        {
-                            "pattern": "^/saml",
-                            "object": "FederationServlet"
-                        },
-                        {
-                            "pattern": "",
-                            "object": "HandlerServlet"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "FederationServlet",
-                "type": "org.forgerock.openig.saml.FederationServlet",
-                "config": {
-                    "assertionMapping": {
-                        "username": "mail",
-                        "password": "employeenumber"
-                    },
-                    "subjectMapping": "subjectName",
-                    "redirectURI": "/"
-                }
-            },
-            {
                 "name": "HandlerServlet",
                 "type": "HandlerServlet",
                 "config": {
-                    "handler": "DispatchHandler",
-                    "baseURI": "http://www.example.com:8081"
+                    "handler": "DispatchHandler"
                 }
             },
             {
@@ -51,13 +22,31 @@
                 "config": {
                     "bindings": [
                         {
-                            "condition": "${empty exchange.session.username}",
-                            "handler": "SPInitiatedSSORedirectHandler"
+                            "condition": "${matches(exchange.request.uri.path, '^/saml')}",
+                            "handler": "SamlFederationHandler"
                         },
                         {
-                            "handler": "LoginChain"
+                            "condition": "${empty exchange.session.username}",
+                            "handler": "SPInitiatedSSORedirectHandler",
+                            "baseURI": "http://www.example.com:8081"
+                        },
+                        {
+                            "handler": "LoginChain",
+                            "baseURI": "http://www.example.com:8081"
                         }
                     ]
+                }
+            },
+            {
+                "name": "SamlFederationHandler",
+                "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
+                "config": {
+                    "assertionMapping": {
+                        "username": "mail",
+                        "password": "employeenumber"
+                    },
+                    "subjectMapping": "subjectName",
+                    "redirectURI": "/"
                 }
             },
             {
@@ -106,5 +95,5 @@
             }
         ]
     },
-    "servletObject": "DispatchServlet"
+    "servletObject": "HandlerServlet"
 }

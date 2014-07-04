@@ -60,16 +60,20 @@
  <section xml:id="federate-any-app">
   <title>Federate Enabling Applications</title>
 
-  <para>The expertise and cost required to add SAML2 support to web
-  applications is a problem for many businesses. Those businesses not moving
-  to a standard for exposing their applications to their customers see
-  increased cost and maintenance due to the complexity of one-off proprietary
-  integrations. They may also see a loss of business to those customers
-  requiring a Federation standard for authentication. Sometimes, deploying
-  a full access management solution just to federate a few applications is
-  is too complex and costly, and
-  building out their own solution by modifying their applications is just not
-  possible.</para>
+  <para>
+   The expertise and cost required to add SAML 2.0 support to web applications
+   is a problem for many businesses.
+   Those businesses not moving to a standard
+   for exposing their applications to their customers
+   see increased cost and maintenance due to the complexity
+   of one-off proprietary integrations.
+   They can also see a loss of business to those customers
+   requiring a Federation standard for authentication.
+   Sometimes, deploying a full access management solution
+   just to federate a few applications is is too complex and costly,
+   and building out their own solution by modifying their applications
+   is just not possible.
+  </para>
 
   <mediaobject xml:id="figure-federate-any-app">
    <imageobject>
@@ -80,32 +84,42 @@
    </textobject>
   </mediaobject>
 
-  <para>${projectName} Federation allows businesses to add SAML2 support to
-  their applications with little to no knowledge of the standard. In addition,
-  there is no need to modify the application or install any plugin or agent on
-  the application container.</para>
+  <para>
+   ${projectName} Federation allows businesses to add SAML 2.0 support
+   to their applications with little to no knowledge of the standard.
+   In addition, there is no need to modify the application
+   or to install any plugin or policy agent on the application container.
+  </para>
  </section>
 
  <section xml:id="standards-based-policy-enforcement">
   <title>Implement Standards Based Policy Enforcement</title>
 
-  <para>In order to provide SSO, OpenAM policy enforcement points, the policy
-  agents, have traditionally functioned as plugins for each application. The
-  policy agents however use OpenAM specific APIs and protocols. In contrast,
-  you can roll out ${projectName} as an independent policy enforcement point that is
-  built on the SAML2 standard.</para>
+  <para>
+   In order to provide SSO, OpenAM policy enforcement points,
+   called policy agents,
+   have traditionally functioned as plugins for each application.
+   The policy agents however use OpenAM-specific APIs and protocols.
+   In contrast, you can roll out ${projectName}
+   as an independent policy enforcement point
+   that is built on the SAML 2.0 standard.
+  </para>
 
   <mediaobject xml:id="figure-standards-based-agent">
    <imageobject>
     <imagedata fileref="images/standards-based-agent.png" format="PNG" />
    </imageobject>
    <textobject>
-    <para>${projectName} integrates well as a policy enforcement point with OpenAM and
-    with other standards based solutions.</para>
+    <para>
+     ${projectName} integrates well as a policy enforcement point
+     with OpenAM and with other standards-based solutions.
+    </para>
    </textobject>
   </mediaobject>
 
-  <para>${projectName} Federation can replace policy agents with a standards
-  based SAML2 compliant enforcement point.</para>
+  <para>
+   ${projectName} Federation can replace policy agents
+   with a standards-based SAML 2.0-compliant enforcement point.
+  </para>
  </section>
 </chapter>

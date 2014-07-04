@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>DispatchHandler</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -105,25 +105,42 @@
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-     "name": "Dispatcher",
-     "type": "DispatchHandler",
-     "config": {
-         "bindings": [ 
-             {
-                 "condition": "${exchange.request.uri.path == '/login.php'}",
-                 "handler": "LoginChain",
-             },
-             {
-                 "condition": "${exchange.request.uri.path == '/logout.php'}",
-                 "handler": "LogoutChain",
-             },
-             {
-                 "handler": "ClientHandler",
-             }
-         ]   
-     }   
-}</programlisting>
+
+  <para>
+   The following sample is from a SAML 2.0 federation configuration.
+   If the incoming URI starts with <literal>/saml</literal>,
+   then ${projectName} dispatches to a "SamlFederationHandler".
+   If the user name is not set in the exchange session,
+   then the user has not authenticated with the SAML 2.0 Identity Provider,
+   so ${projectName} dispatches to a "SPInitiatedSSORedirectHandler"
+   to initiate SAML 2.0 single sign-on from the Service Provider,
+   which is ${projectName}.
+   All other requests go through a "LoginChain" handler.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "DispatchHandler",
+    "type": "DispatchHandler",
+    "config": {
+        "bindings": [
+            {
+                "condition": "${matches(exchange.request.uri.path, '^/saml')}",
+                "handler": "SamlFederationHandler"
+            },
+            {
+                "condition": "${empty exchange.session.username}",
+                "handler": "SPInitiatedSSORedirectHandler",
+                "baseURI": "http://www.example.com:8081"
+            },
+            {
+                "handler": "LoginChain",
+                "baseURI": "http://www.example.com:8081"
+            }
+        ]
+    }
+}
+  </programlisting>
  </refsect1>
  <refsect1>
   <title>Javadoc</title>

@@ -28,9 +28,9 @@
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>DispatchServlet</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -79,8 +79,10 @@
     <term><code>"bindings"</code>: <emphasis>array of objects,
     required</emphasis></term>
     <listitem>
-     <para>A list of bindings of patterns and associated servlets/filters to
-     dispatch to.</para>
+     <para>
+      A list of bindings of patterns
+      and associated Servlets or Servlet Filters to dispatch to.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>
@@ -96,35 +98,15 @@
    <varlistentry>
     <term><code>"object"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The name of the HTTP servlet or servlet filter heap object to
-     dispatch to if the regular expression pattern matches.</para>
+     <para>
+      The name of the Servlet or Servlet Filter heap object to dispatch to
+      if the regular expression pattern matches.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
- <refsect1>
-  <title>Example</title>
-  <para>Sample from a federation configuration. Federation is implemented as
-  its own servlet which will be dispatched-to based on the incoming URI
-  starting with <literal>"/saml"</literal>. All other requests will go through
-  the <literal>HandlerServlet</literal>.</para>
-  <programlisting language="javascript">{
-     "name": "Dispatcher",
-     "type": "DispatchServlet",
-     "config": {
-         "bindings": [
-             {
-                 "pattern":"^/saml",
-                 "object":"FederationServlet" 
-             },
-             {
-                 "pattern":".*",
-                 "object":"HandlerServlet" 
-             }
-         ]
-     }
-}</programlisting>
- </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"

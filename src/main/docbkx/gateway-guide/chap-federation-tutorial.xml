@@ -82,22 +82,6 @@
   </para>
 
   <para>
-   The ${projectName} .war file to use for this tutorial is different, however.
-   The .war you want is the build with Federation support.
-   When you go to the
-   <link
-    xlink:href="${downloadUrl}"
-    xlink:show="new"
-   >download page</link> to get the ${projectName} war,
-   make sure you get the version with Federation support, ${openigFedWar}.
-   This is the .war that you deploy at the root context in Jetty:
-  </para>
-
-  <screen>
-$ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
-  </screen>
-
-  <para>
    The initial ${projectName} configuration file should look like the one used
    to proxy requests through to the HTTP server
    and to capture request and response data, see
@@ -133,6 +117,8 @@ $ <userinput>cp ${openigFedWar} /path/to/jetty/webapps/root.war</userinput>
    This tutorial does not address PKI configuration for validation and encryption,
    though ${projectName} is capable of handling both when properly configured,
    just as any OpenAM Fedlet can handle both.
+   You can use the <literal>test</literal> certificate
+   in the Identity Provider configuration for signing in this example.
   </para>
 
   <para>
@@ -274,25 +260,39 @@ sp.xml</computeroutput>
   <para>
    Consider the configuration, <filename>${warConfigDir}/config.json</filename>.
    In this configuration,
-   the "HandlerServlet" is no longer the entry point to ${projectName} processing.
-   Instead, the entry point is now a "DispatchServlet".
+   the "HandlerServlet" is the entry point to ${projectName} processing,
+   but its only function is to pass processing to a "DispatchHandler".
   </para>
 
   <para>
-   The "DispatchServlet" provides an internal routing mechanism
-   based on the incoming URI.
-   The "DispatchServlet" looks at the incoming URI.
-   If the incoming URI matches the SAML URI,
-   then the "DispatchServlet" dispatches to a "FederationServlet".
-   Otherwise, it dispatches to the "HandlerServlet".
-  </para>
-
-  <para>
-   The "FederationServlet" can then process the incoming assertion,
+   The "DispatchHandler" provides an internal routing mechanism,
+   based on the state of the exchange.
+   If the incoming URI matches a SAML URI,
+   then the "SamlFederationHandler" can process an incoming SAML 2.0 assertion,
    and also set the attributes from the assertion in the session.
+   This condition is not met until the user has authenticated.
+  </para>
+
+  <para>
+   If no user name is set in the session of the exchange,
+   the "DispatchHandler" considers that the user has not yet authenticated.
+   This condition is met when the user has not yet authenticated.
+   In this case the "DispatchHandler" dispatches to the static request handler,
+   "SPInitiatedSSORedirectHandler",
+   which redirects the user-agent to
+   the Identity Provider for SAML 2.0 single sign-on.
+   After authentication, the Identity Provider redirects the user-agent back to
+   a SAML URI on the Service Provider (${projectName}),
+   and so the request is dispatched to
+   the "SamlFederationHandler" mentioned above.
+  </para>
+
+  <para>
    Once the attributes from the assertion are set in the session,
-   then the "StaticRequestFilter" can use the attribute values
-   to replace the request with an HTTP POST of login form data
+   then the exchange is dispatched to the "LoginChain".
+   The "LoginRequest" static request filter in the "LoginChain"
+   uses the attribute values to replace the request
+   with an HTTP POST of login form data
    to log the user in to the protected application.
   </para>
  </section>
