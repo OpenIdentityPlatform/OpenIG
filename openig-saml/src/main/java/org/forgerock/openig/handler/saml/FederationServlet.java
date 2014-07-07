@@ -191,7 +191,7 @@ class FederationServlet extends HttpServlet {
     @SuppressWarnings("unchecked")
     private void serviceAssertionConsumer(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
-        Map map = SPACSUtils.processResponseForFedlet(request, response);
+        Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
         String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
         if (relayURI != null && !"".equals(relayURI)) {
             redirectURI = relayURI;
@@ -218,14 +218,14 @@ class FederationServlet extends HttpServlet {
      * @param assertion
      *            The assertion mapping found in the configuration file(.json).
      */
-    private void addAttributesToSession(HttpServletRequest request, Map assertion) {
+    private void addAttributesToSession(HttpServletRequest request, Map<?, ?> assertion) {
         HttpSession httpSession = request.getSession();
-        Map attributeStatement = (Map) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
+        Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
             logger.debug(format("FederationServlet attribute statement: %s", attributeStatement));
 
             for (String key : attributeMapping.keySet()) {
-                HashSet t = (HashSet) attributeStatement.get(attributeMapping.get(key));
+                HashSet<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
                     httpSession.setAttribute(key, sessionValue);
@@ -281,14 +281,14 @@ class FederationServlet extends HttpServlet {
         String metaAlias = request.getParameter(SAML2Constants.METAALIAS);
         if (metaAlias == null || metaAlias.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
-            List spMetaAliases = manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
+            List<String> spMetaAliases = manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
             if (spMetaAliases != null && !spMetaAliases.isEmpty()) {
-                metaAlias = (String) spMetaAliases.get(0);
+                metaAlias = spMetaAliases.get(0);
             }
         }
         String idpEntityID = request.getParameter(SAML2Constants.IDPENTITYID);
-        Map paramsMap = SAML2Utils.getParamsMap(request);
-        List list = new ArrayList();
+        Map<String, List> paramsMap = SAML2Utils.getParamsMap(request);
+        List<String> list = new ArrayList<String>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
         // next line testing to see if we can change the name format
@@ -297,15 +297,15 @@ class FederationServlet extends HttpServlet {
         // TODO: add option to specify artifact
         if (paramsMap.get(SAML2Constants.BINDING) == null) {
             // use POST binding
-            list = new ArrayList();
+            list = new ArrayList<String>();
             list.add(SAML2Constants.HTTP_POST);
             paramsMap.put(SAML2Constants.BINDING, list);
         }
         if (idpEntityID == null || idpEntityID.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
-            List idpEntities = manager.getAllRemoteIdentityProviderEntities(DEFAULT_REALM);
+            List<String> idpEntities = manager.getAllRemoteIdentityProviderEntities(DEFAULT_REALM);
             if (idpEntities != null && !idpEntities.isEmpty()) {
-                idpEntityID = (String) idpEntities.get(0);
+                idpEntityID = idpEntities.get(0);
             }
         }
         if (metaAlias == null || idpEntityID == null) {
