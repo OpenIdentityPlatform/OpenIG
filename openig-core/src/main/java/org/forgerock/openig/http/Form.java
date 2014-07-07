@@ -170,8 +170,7 @@ public class Form extends MultiValueMap<String, String> {
     public Form fromRequestEntity(Request request) throws IOException {
         if (request != null
                 && request.entity != null
-                && request.headers != null
-                && request.headers.getFirst("Content-Type").equalsIgnoreCase("application/x-www-form-urlencoded")) {
+                && "application/x-www-form-urlencoded".equalsIgnoreCase(request.headers.getFirst("Content-Type"))) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             Streamer.stream(request.entity, bytes);
             fromString(bytes.toString());
