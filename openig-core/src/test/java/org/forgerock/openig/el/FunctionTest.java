@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc. All rights reserved.
+ * Copyright 2010–2011 ApexIdentity Inc.
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 

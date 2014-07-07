@@ -20,9 +20,9 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Copyright 2010–2011 ApexIdentity Inc.
   !      Portions Copyright 2012 ForgeRock AS
-  !    
+  !
 -->
 <refentry xml:id='Principal'
  xmlns='http://docbook.org/ns/docbook'

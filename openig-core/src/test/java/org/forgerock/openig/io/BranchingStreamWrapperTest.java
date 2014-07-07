@@ -9,10 +9,10 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -57,8 +57,6 @@ public class BranchingStreamWrapperTest {
     /** Current read length offset. */
     private static int currentLengthCounter = 0;
 
-    private ByteArrayInputStream in;
-
     private BranchingStreamWrapper trunk;
 
     private int nextReadLength() {
@@ -74,7 +72,7 @@ public class BranchingStreamWrapperTest {
 
     @BeforeMethod
     public void beforeMethod() {
-        in = new ByteArrayInputStream(BYTES);
+        ByteArrayInputStream in = new ByteArrayInputStream(BYTES);
         trunk = new BranchingStreamWrapper(in, STORAGE);
         for (int n = 0; n < BRANCHES; n++) {
             Arrays.fill(BUFFERS[n], (byte) 0);

@@ -9,11 +9,11 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2009 Sun Microsystems Inc. All rights reserved.
- * Portions Copyrighted 2010–2011 ApexIdentity Inc.
- * Portions Copyrighted 2011-2014 ForgeRock AS.
+ * Copyright 2009 Sun Microsystems Inc.
+ * Portions Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -170,7 +170,8 @@ public class Form extends MultiValueMap<String, String> {
     public Form fromRequestEntity(Request request) throws IOException {
         if (request != null
                 && request.entity != null
-                && "application/x-www-form-urlencoded".equalsIgnoreCase(request.headers.getFirst("Content-Type"))) {
+                && request.headers != null
+                && request.headers.getFirst("Content-Type").equalsIgnoreCase("application/x-www-form-urlencoded")) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             Streamer.stream(request.entity, bytes);
             fromString(bytes.toString());
