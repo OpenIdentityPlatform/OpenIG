@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.handler.saml;
 
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -102,16 +104,17 @@ public class SamlFederationHandler extends GenericHandler {
              * location. Federation config files will reside in the SAML directory.
              */
             Environment environment = (Environment) heap.get("Environment");
-            String openFedConfigDir = new File(environment.getBaseDirectory(), "SAML").getPath();
-            System.out.println("FederationServlet init: " + openFedConfigDir);
+            String samlDirectory = new File(environment.getBaseDirectory(), "SAML").getPath();
+            logger.info(format("FederationServlet init directory: %s", samlDirectory));
             Properties p = System.getProperties();
-            p.setProperty("com.sun.identity.fedlet.home", openFedConfigDir);
+            p.setProperty("com.sun.identity.fedlet.home", samlDirectory);
             System.setProperties(p);
 
             final SamlFederationHandler handler = new SamlFederationHandler();
             handler.servlet = new FederationServlet(attributeMapping, subjectMapping, authnContextDelimiter,
                     authnContext, sessionIndexMapping, redirectURI, logoutURI, assertionConsumerEndpoint,
-                    sPinitiatedSSOEndpoint, singleLogoutEndpoint, singleLogoutEndpointSoap, sPinitiatedSLOEndpoint);
+                    sPinitiatedSSOEndpoint, singleLogoutEndpoint, singleLogoutEndpointSoap, sPinitiatedSLOEndpoint,
+                    logger);
 
             return handler;
         }
