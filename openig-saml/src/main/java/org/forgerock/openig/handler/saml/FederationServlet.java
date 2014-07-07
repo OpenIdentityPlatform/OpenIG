@@ -222,14 +222,14 @@ class FederationServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();
         Map attributeStatement = (Map) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
-            logger.info(format("FederationServlet attribute statement: %s", attributeStatement));
+            logger.debug(format("FederationServlet attribute statement: %s", attributeStatement));
 
             for (String key : attributeMapping.keySet()) {
                 HashSet t = (HashSet) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
                     httpSession.setAttribute(key, sessionValue);
-                    logger.info(format("FederationServlet adding to session: %s = %s", key, sessionValue));
+                    logger.debug(format("FederationServlet adding to session: %s = %s", key, sessionValue));
 
                 } else {
                     logger.warning(format("FederationServlet: Warning no assertion attribute found for : %s",
@@ -242,14 +242,14 @@ class FederationServlet extends HttpServlet {
         if (subjectMapping != null) {
             String subjectValue = ((Subject) assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
             httpSession.setAttribute(subjectMapping, subjectValue);
-            logger.info(format("FederationServlet adding subject to session: %s = %s", subjectMapping,
+            logger.debug(format("FederationServlet adding subject to session: %s = %s", subjectMapping,
                     subjectValue));
         }
 
         if (sessionIndexMapping != null) {
             String sessionIndexValue = (String) assertion.get(SAML2Constants.SESSION_INDEX);
             httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
-            logger.info(format("FederationServlet adding session index: %s = %s", sessionIndexMapping,
+            logger.debug(format("FederationServlet adding session index: %s = %s", sessionIndexMapping,
                         sessionIndexValue));
         }
 
@@ -269,7 +269,7 @@ class FederationServlet extends HttpServlet {
                 // remove the last delimiter as it is redundant
                 authnContextValues.deleteCharAt(authnContextValues.length() - 1);
                 httpSession.setAttribute(authnContext, authnContextValues.toString());
-                logger.info(format("FederationServlet adding authentication contexts to session: %s = %s",
+                logger.debug(format("FederationServlet adding authentication contexts to session: %s = %s",
                             authnContext, authnContextValues));
             }
         }
@@ -325,7 +325,7 @@ class FederationServlet extends HttpServlet {
     private void serviceSPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
 
-        logger.info("FederationServlet.serviceSPInitiatedSLO entering");
+        logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
 
         HttpSession httpSession = request.getSession();
         // Retrieve these values from the session, if they do not exist then the session has expired
@@ -350,7 +350,7 @@ class FederationServlet extends HttpServlet {
                 idpEntityID = idpEntities.get(0);
             }
         }
-        logger.info(format("FederationServlet.serviceSPInitiatedSLO idpEntityID: %s", idpEntityID));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO idpEntityID: %s", idpEntityID));
 
 
         String metaAlias = null;
@@ -368,8 +368,8 @@ class FederationServlet extends HttpServlet {
                 metaAlias = spConfig.getMetaAlias();
             }
         }
-        logger.info(format("FederationServlet.serviceSPInitiatedSLO metaAlias: %s", metaAlias));
-        logger.info(format("FederationServlet.serviceSPInitiatedSLO spEntityID: %s", spEntityID));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO metaAlias: %s", metaAlias));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO spEntityID: %s", spEntityID));
 
 
         if (metaAlias == null || idpEntityID == null) {
@@ -386,7 +386,7 @@ class FederationServlet extends HttpServlet {
             throw new SAML2Exception(SAML2Utils.bundle.getString("unsupportedBinding"));
         }
 
-        logger.info(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
 
         HashMap<String, String> paramsMap = new HashMap<String, String>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
@@ -408,7 +408,7 @@ class FederationServlet extends HttpServlet {
             paramsMap.put(SAML2Constants.RELAY_STATE, relayState);
         }
 
-        logger.info(format("FederationServlet.serviceSPInitiatedSLO relayState: %s", relayState));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO relayState: %s", relayState));
 
         SPSingleLogout.initiateLogoutRequest(request, response, binding, paramsMap);
 
@@ -420,24 +420,24 @@ class FederationServlet extends HttpServlet {
     private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
 
-        logger.info("FederationServlet.serviceIDPInitiatedSLO entering");
+        logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
         String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
         if (relayState == null || (relayState.isEmpty() && logoutURI != null && !logoutURI.isEmpty())) {
             relayState = logoutURI;
         }
-        logger.info(format("FederationServlet.serviceIDPInitiatedSLO relayState: %s", relayState));
+        logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState: %s", relayState));
 
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = request.getParameter(SAML2Constants.SAML_REQUEST);
         if (samlRequest != null) {
-            logger.info("FederationServlet.serviceIDPInitiatedSLO processing request");
+            logger.debug("FederationServlet.serviceIDPInitiatedSLO processing request");
             SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
             String samlResponse = request.getParameter(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
-                logger.info("FederationServlet.serviceIDPInitiatedSLO processing response");
+                logger.debug("FederationServlet.serviceIDPInitiatedSLO processing response");
                 SPSingleLogout.processLogoutResponse(request, response, samlResponse, relayState);
             }
         }
@@ -446,7 +446,7 @@ class FederationServlet extends HttpServlet {
     private void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        logger.info("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
+        logger.debug("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
 
         SPSingleLogoutServiceSOAP spSingleLogoutServiceSOAP = new SPSingleLogoutServiceSOAP();
         spSingleLogoutServiceSOAP.doPost(request, response);
