@@ -34,17 +34,53 @@ import org.forgerock.openig.util.ISO8601;
  */
 public class FileLogSink implements LogSink {
 
-    /** TODO: Description. */
-    public File file;
+    /**
+     * Default {@link Charset} to use on the output file.
+     */
+    public static final Charset UTF_8 = Charset.forName("UTF-8");
 
-    /** The level of log entries to display in the console (default: {@link LogLevel#INFO INFO}). */
-    public LogLevel level = LogLevel.INFO;
+    /** File where the entries will be written to. */
+    private final File file;
 
     /** Character set to encode log output with (default: UTF-8). */
-    public Charset charset = Charset.forName("UTF-8");
+    private final Charset charset;
 
-    /** TODO: Description. */
+    /** The level of log entries to display in the file (default: {@link LogLevel#INFO INFO}). */
+    private LogLevel level = LogLevel.INFO;
+
+    /** Wraps the file output for writing entries. */
     private PrintWriter writer;
+
+    /**
+     * Builds a new FileLogSink writing entries in the given log file.
+     *
+     * @param file
+     *         output where entries will be written (default to UTF-8 Charset)
+     */
+    public FileLogSink(final File file) {
+        this(file, UTF_8);
+    }
+
+    /**
+     * Builds a new FileLogSink writing entries in the given log file using the specified {@link Charset}.
+     *
+     * @param file
+     *         output where entries will be written (default to UTF-8 Charset)
+     * @param charset
+     *         Character set to encode log output with
+     */
+    public FileLogSink(final File file, final Charset charset) {
+        this.file = file;
+        this.charset = charset;
+    }
+
+    /**
+     * Sets the level of log entries to display in the file.
+     * @param level level of log entries to display in the file
+     */
+    public void setLevel(final LogLevel level) {
+        this.level = level;
+    }
 
     @Override
     public void log(LogEntry entry) {
@@ -82,16 +118,16 @@ public class FileLogSink implements LogSink {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            FileLogSink sink = new FileLogSink();
-            sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
-            sink.file = config.get("file").required().asFile();
+            File file = config.get("file").required().asFile();
             try {
                 // try opening file to ensure it's writable at config time
-                FileOutputStream out = new FileOutputStream(sink.file, true);
+                FileOutputStream out = new FileOutputStream(file, true);
                 out.close();
             } catch (IOException ioe) {
                 throw new JsonValueException(config.get("file"), ioe);
             }
+            FileLogSink sink = new FileLogSink(file);
+            sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
             return sink;
         }
     }
