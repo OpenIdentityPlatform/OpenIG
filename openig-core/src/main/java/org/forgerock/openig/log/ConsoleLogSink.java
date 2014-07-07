@@ -27,7 +27,15 @@ import org.forgerock.openig.util.ISO8601;
 public class ConsoleLogSink implements LogSink {
 
     /** The level of log entries to display in the console (default: {@link LogLevel#INFO INFO}). */
-    public LogLevel level = LogLevel.INFO;
+    private LogLevel level = LogLevel.INFO;
+
+    /**
+     * Sets the level of log entries to display in the console.
+     * @param level level of log entries to display in the console
+     */
+    public void setLevel(final LogLevel level) {
+        this.level = level;
+    }
 
     @Override
     public void log(LogEntry entry) {
@@ -57,7 +65,7 @@ public class ConsoleLogSink implements LogSink {
         @Override
         public Object create() throws HeapException {
             ConsoleLogSink sink = new ConsoleLogSink();
-            sink.level = config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class);
+            sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
             return sink;
         }
     }
