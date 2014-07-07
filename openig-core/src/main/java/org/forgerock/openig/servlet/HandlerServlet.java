@@ -106,9 +106,6 @@ public class HandlerServlet extends HttpServlet {
             exchange.request.headers.addAll(name, Collections.list(request.getHeaders(name)));
         }
 
-        // Force parameters parsing otherwise request.getInputStream interferes with.
-        request.getParameterNames();
-
         // include request entity if appears to be provided with request
         if ((request.getContentLength() > 0 || request.getHeader("Transfer-Encoding") != null)
                 && !NON_ENTITY_METHODS.contains(exchange.request.method)) {

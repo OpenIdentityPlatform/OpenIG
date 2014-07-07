@@ -49,10 +49,8 @@ public class SamlFederationHandler extends GenericHandler {
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         final LogTimer timer = logger.getTimer().start();
-        HttpServletRequest request = adaptRequest(exchange);
-        HttpServletResponse response = adaptResponse(exchange);
         try {
-            servlet.service(request, response);
+            servlet.service(adaptRequest(exchange), adaptResponse(exchange));
         } catch (ServletException e) {
             throw new HandlerException(e);
         } finally {
@@ -65,7 +63,8 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     private static HttpServletRequest adaptRequest(Exchange exchange) {
-        return (HttpServletRequest) exchange.get(HttpServletRequest.class.getName());
+        HttpServletRequest request = (HttpServletRequest) exchange.get(HttpServletRequest.class.getName());
+        return new RequestAdapter(request, exchange);
     }
 
     /**
