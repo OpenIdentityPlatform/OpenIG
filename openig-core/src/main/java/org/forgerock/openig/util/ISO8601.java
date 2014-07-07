@@ -9,10 +9,10 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * TODO: Description.
+ * ISO8601 compliant representation of dates and times
  */
 public final class ISO8601 {
 
@@ -39,10 +39,10 @@ public final class ISO8601 {
     private ISO8601() { }
 
     /**
-     * TODO: Description.
+     * Returns an ISO8601 compliant string representing a date from a Java Date object.
      *
-     * @param date TODO.
-     * @return TODO.
+     * @param date The date.
+     * @return The IS08601 compliant string representation of the date.
      */
     public static String format(Date date) {
         synchronized (SDF) {
@@ -51,10 +51,10 @@ public final class ISO8601 {
     }
 
     /**
-     * TODO: Description.
+     * Returns an ISO8601 compliant string representing a date from a long
      *
-     * @param date TODO.
-     * @return TODO.
+     * @param date the date input as a long.
+     * @return The IS08601 compliant string representation of the date.
      */
     public static String format(long date) {
         return format(new Date(date));

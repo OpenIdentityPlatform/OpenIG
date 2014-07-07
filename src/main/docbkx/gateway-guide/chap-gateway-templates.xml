@@ -20,9 +20,9 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Copyright 2010–2011 ApexIdentity Inc.
   !      Portions Copyright 2012-2014 ForgeRock AS
-  !    
+  !
 -->
 <chapter xml:id='chap-gateway-templates'
  xmlns='http://docbook.org/ns/docbook'
@@ -63,7 +63,7 @@
    </listitem>
   </itemizedlist>
  </note>
-  
+
  <section xml:id="template-proxy-capture">
   <title>Proxy &amp; Capture</title>
 
@@ -100,7 +100,7 @@
   <para>Logs the user into the target application with hard-coded user name
   and password. This template intercepts the login page request and replaces
   it with the login form.</para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/loginSimple.json">
@@ -124,7 +124,7 @@
   in the login request form. This templates allows the login page request to
   go through to the target, intercepts the response, then creates the login
   form and adds the intercepted cookie to the POST.</para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/loginWithCookie.json">
@@ -187,7 +187,7 @@
 
   <para>Extracts a hidden value from the login page and includes it in the
   login form POSTed to the target application.</para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/loginHiddenValue.json">
@@ -216,7 +216,7 @@
   target application. This should allow you to proxy all traffic to the
   application. Then add the logic for the <literal>LoginChain</literal> using
   the flow from one of the login templates.</para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/loginMixed.json">
@@ -244,7 +244,7 @@
    The <literal>DispatchHandler</literal> is used to route
    each incoming request to either the WordPress chain or the MediaWiki chain.
   </para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/multipleApplications.json">
@@ -264,7 +264,7 @@
   header passed in contains only a user name or subject and requires a lookup to
   an external data source, you must add an attribute filter to the chain to
   retrieve the credentials.</para>
-  
+
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
     <xinclude:include parse="text" href="resources/loginAMHeaders.json">

@@ -20,9 +20,9 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Copyright 2010–2011 ApexIdentity Inc.
   !      Portions Copyright 2012-2014 ForgeRock AS
-  !    
+  !
 -->
 <preface xml:id='preface'
  xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
@@ -40,7 +40,7 @@
 
  <section>
   <title>Who Should Use this Guide</title>
-  
+
   <para>
    This guide is written for access management designers and administrators
    who develop, build, deploy, and maintain ${projectName} deployments
@@ -48,7 +48,7 @@
    This guide covers the tasks you might perform once
    or repeat throughout the life cycle of an ${projectName} release.
   </para>
-   
+
   <para>
    You do not need to be an expert to learn something from this guide,
    though a background in HTTP, access management web applications can help.

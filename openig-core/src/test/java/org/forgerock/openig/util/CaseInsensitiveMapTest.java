@@ -9,10 +9,10 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyrighted [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
- * Portions Copyrighted 2011 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -32,7 +32,7 @@ public class CaseInsensitiveMapTest {
     private String lower; // key as a lower-case string
     private String value1; // value to store and check for in mapping
     private String value2; // value to replace original with to see that replacement sticks
-    private String spurious; // key to use to test spurious lookups
+    private String spurious; // key to use to test spurious lookup
 
     // ----- context -----------------------------------------------------------
 
