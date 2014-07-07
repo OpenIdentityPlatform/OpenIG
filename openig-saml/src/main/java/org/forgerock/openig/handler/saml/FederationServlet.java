@@ -26,13 +26,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.forgerock.openig.log.Logger;
 
 import com.sun.identity.plugin.session.SessionException;
 import com.sun.identity.saml2.assertion.Assertion;
@@ -42,7 +43,6 @@ import com.sun.identity.saml2.common.SAML2Constants;
 import com.sun.identity.saml2.common.SAML2Exception;
 import com.sun.identity.saml2.common.SAML2Utils;
 import com.sun.identity.saml2.jaxb.entityconfig.SPSSOConfigElement;
-import com.sun.identity.saml2.logging.LogUtil;
 import com.sun.identity.saml2.meta.SAML2MetaManager;
 import com.sun.identity.saml2.profile.LogoutUtil;
 import com.sun.identity.saml2.profile.SPACSUtils;
@@ -60,6 +60,9 @@ class FederationServlet extends HttpServlet {
     private static final String DEFAULT_REALM = "/";
 
     private static final long serialVersionUID = 1L;
+
+    /** The current logger. */
+    private final Logger logger;
 
     /** The attribute mapping. */
     private Map<String, String> attributeMapping = new HashMap<String, String>();
@@ -121,11 +124,13 @@ class FederationServlet extends HttpServlet {
      *            IDP Single Logout SOAP Endpoint.
      * @param sPinitiatedSLOEndpoint
      *            SP Single Logout Endpoint.
+     * @param logger
+     *            The current logger.
      */
     FederationServlet(Map<String, String> attributeMapping, String subjectMapping, String authnContextDelimiter,
             String authnContext, String sessionIndexMapping, String redirectURI, String logoutURI,
             String assertionConsumerEndpoint, String sPinitiatedSSOEndpoint, String singleLogoutEndpoint,
-            String singleLogoutEndpointSoap, String sPinitiatedSLOEndpoint) {
+            String singleLogoutEndpointSoap, String sPinitiatedSLOEndpoint, Logger logger) {
         super();
         this.attributeMapping = Collections.unmodifiableMap(attributeMapping);
         this.subjectMapping = subjectMapping;
@@ -139,6 +144,7 @@ class FederationServlet extends HttpServlet {
         this.singleLogoutEndpoint = singleLogoutEndpoint;
         this.singleLogoutEndpointSoap = singleLogoutEndpointSoap;
         this.sPinitiatedSLOEndpoint = sPinitiatedSLOEndpoint;
+        this.logger = logger;
     }
 
     @Override
@@ -156,7 +162,11 @@ class FederationServlet extends HttpServlet {
             } else if (path.indexOf(singleLogoutEndpoint) > 0) {
                 serviceIDPInitiatedSLO(request, response);
             } else {
-                System.out.println("FederationServlet warning: URI not in service " + path);
+                final StringBuffer uri = request.getRequestURL();
+                if (request.getQueryString() != null) {
+                    uri.append("?").append(request.getQueryString());
+                }
+                logger.warning(format("FederationServlet warning: URI not in service %s", uri));
             }
         } catch (SAML2Exception sme) {
             errorResponse(response, sme.getMessage());
@@ -165,8 +175,12 @@ class FederationServlet extends HttpServlet {
         }
     }
 
-    private static void errorResponse(HttpServletResponse response, String message) throws IOException {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "SSO Failed:" + message);
+    private void errorResponse(HttpServletResponse response, String message) throws IOException {
+        final String msg = format("SSO Failed: %s", message);
+        if (!response.isCommitted()) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+        }
+        logger.error(msg);
     }
 
     /**
@@ -177,7 +191,7 @@ class FederationServlet extends HttpServlet {
     @SuppressWarnings("unchecked")
     private void serviceAssertionConsumer(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
-        Map map = SPACSUtils.processResponseForFedlet(request, response);
+        Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
         String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
         if (relayURI != null && !"".equals(relayURI)) {
             redirectURI = relayURI;
@@ -204,47 +218,39 @@ class FederationServlet extends HttpServlet {
      * @param assertion
      *            The assertion mapping found in the configuration file(.json).
      */
-    private void addAttributesToSession(HttpServletRequest request, Map assertion) {
+    private void addAttributesToSession(HttpServletRequest request, Map<?, ?> assertion) {
         HttpSession httpSession = request.getSession();
-        Map attributeStatement = (Map) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
+        Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
-            if (LogUtil.isAccessLoggable(Level.INFO)) {
-                System.out.println("FederationServlet attribute statement: " + attributeStatement);
-            }
+            logger.debug(format("FederationServlet attribute statement: %s", attributeStatement));
+
             for (String key : attributeMapping.keySet()) {
-                HashSet t = (HashSet) attributeStatement.get(attributeMapping.get(key));
+                HashSet<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
                     httpSession.setAttribute(key, sessionValue);
-                    if (LogUtil.isAccessLoggable(Level.INFO)) {
-                        System.out.println("FederationServlet adding to session: " + key + " = " + sessionValue);
-                    }
+                    logger.debug(format("FederationServlet adding to session: %s = %s", key, sessionValue));
+
                 } else {
-                    System.out.println("FederationServlet: Warning no assertion attribute found for:"
-                            + attributeMapping.get(key));
+                    logger.warning(format("FederationServlet: Warning no assertion attribute found for : %s",
+                            attributeMapping.get(key)));
                 }
             }
         } else {
-            if (LogUtil.isAccessLoggable(Level.INFO)) {
-                System.out.println("FederationServlet attribute statement was not present in assertion");
-            }
+            logger.warning("FederationServlet attribute statement was not present in assertion");
         }
         if (subjectMapping != null) {
             String subjectValue = ((Subject) assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
             httpSession.setAttribute(subjectMapping, subjectValue);
-            if (LogUtil.isAccessLoggable(Level.INFO)) {
-                System.out.println("FederationServlet adding subject to session: " + subjectMapping + " = "
-                        + subjectValue);
-            }
+            logger.debug(format("FederationServlet adding subject to session: %s = %s", subjectMapping,
+                    subjectValue));
         }
 
         if (sessionIndexMapping != null) {
             String sessionIndexValue = (String) assertion.get(SAML2Constants.SESSION_INDEX);
             httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
-            if (LogUtil.isAccessLoggable(Level.INFO)) {
-                System.out.println("FederationServlet adding session index: " + sessionIndexMapping + " = "
-                        + sessionIndexValue);
-            }
+            logger.debug(format("FederationServlet adding session index: %s = %s", sessionIndexMapping,
+                        sessionIndexValue));
         }
 
         if (authnContext != null) {
@@ -263,10 +269,8 @@ class FederationServlet extends HttpServlet {
                 // remove the last delimiter as it is redundant
                 authnContextValues.deleteCharAt(authnContextValues.length() - 1);
                 httpSession.setAttribute(authnContext, authnContextValues.toString());
-                if (LogUtil.isAccessLoggable(Level.INFO)) {
-                    System.out.println("FederationServlet adding authentication contexts to session: " + authnContext
-                            + " = " + authnContextValues);
-                }
+                logger.debug(format("FederationServlet adding authentication contexts to session: %s = %s",
+                            authnContext, authnContextValues));
             }
         }
     }
@@ -277,14 +281,14 @@ class FederationServlet extends HttpServlet {
         String metaAlias = request.getParameter(SAML2Constants.METAALIAS);
         if (metaAlias == null || metaAlias.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
-            List spMetaAliases = manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
+            List<String> spMetaAliases = manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
             if (spMetaAliases != null && !spMetaAliases.isEmpty()) {
-                metaAlias = (String) spMetaAliases.get(0);
+                metaAlias = spMetaAliases.get(0);
             }
         }
         String idpEntityID = request.getParameter(SAML2Constants.IDPENTITYID);
-        Map paramsMap = SAML2Utils.getParamsMap(request);
-        List list = new ArrayList();
+        Map<String, List> paramsMap = SAML2Utils.getParamsMap(request);
+        List<String> list = new ArrayList<String>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
         // next line testing to see if we can change the name format
@@ -293,15 +297,15 @@ class FederationServlet extends HttpServlet {
         // TODO: add option to specify artifact
         if (paramsMap.get(SAML2Constants.BINDING) == null) {
             // use POST binding
-            list = new ArrayList();
+            list = new ArrayList<String>();
             list.add(SAML2Constants.HTTP_POST);
             paramsMap.put(SAML2Constants.BINDING, list);
         }
         if (idpEntityID == null || idpEntityID.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
-            List idpEntities = manager.getAllRemoteIdentityProviderEntities(DEFAULT_REALM);
+            List<String> idpEntities = manager.getAllRemoteIdentityProviderEntities(DEFAULT_REALM);
             if (idpEntities != null && !idpEntities.isEmpty()) {
-                idpEntityID = (String) idpEntities.get(0);
+                idpEntityID = idpEntities.get(0);
             }
         }
         if (metaAlias == null || idpEntityID == null) {
@@ -321,9 +325,7 @@ class FederationServlet extends HttpServlet {
     private void serviceSPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
 
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceSPInitiatedSLO entering");
-        }
+        logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
 
         HttpSession httpSession = request.getSession();
         // Retrieve these values from the session, if they do not exist then the session has expired
@@ -348,9 +350,8 @@ class FederationServlet extends HttpServlet {
                 idpEntityID = idpEntities.get(0);
             }
         }
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceSPInitiatedSLO idpEntityID: " + idpEntityID);
-        }
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO idpEntityID: %s", idpEntityID));
+
 
         String metaAlias = null;
         // If the spEntityID has not been specified then read it from the SP metadata.
@@ -367,10 +368,9 @@ class FederationServlet extends HttpServlet {
                 metaAlias = spConfig.getMetaAlias();
             }
         }
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceSPInitiatedSLO metaAlias: " + metaAlias);
-            System.out.println("FederationServlet.serviceSPInitiatedSLO spEntityID: " + spEntityID);
-        }
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO metaAlias: %s", metaAlias));
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO spEntityID: %s", spEntityID));
+
 
         if (metaAlias == null || idpEntityID == null) {
             throw new SAML2Exception("No metadata for SP or IDP");
@@ -382,15 +382,11 @@ class FederationServlet extends HttpServlet {
         }
 
         if (!SAML2Utils.isSPProfileBindingSupported(DEFAULT_REALM, spEntityID, SAML2Constants.SLO_SERVICE, binding)) {
-            if (LogUtil.isAccessLoggable(Level.SEVERE)) {
-                System.out.println("FederationServlet.serviceSPInitiatedSLO unsupported binding: " + binding);
-            }
+            logger.error(format("FederationServlet.serviceSPInitiatedSLO unsupported binding: %s", binding));
             throw new SAML2Exception(SAML2Utils.bundle.getString("unsupportedBinding"));
         }
 
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceSPInitiatedSLO binding: " + binding);
-        }
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
 
         HashMap<String, String> paramsMap = new HashMap<String, String>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
@@ -412,9 +408,7 @@ class FederationServlet extends HttpServlet {
             paramsMap.put(SAML2Constants.RELAY_STATE, relayState);
         }
 
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceSPInitiatedSLO relayState: " + relayState);
-        }
+        logger.debug(format("FederationServlet.serviceSPInitiatedSLO relayState: %s", relayState));
 
         SPSingleLogout.initiateLogoutRequest(request, response, binding, paramsMap);
 
@@ -426,42 +420,33 @@ class FederationServlet extends HttpServlet {
     private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
 
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceIDPInitiatedSLO entering");
-        }
+        logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
         String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
         if (relayState == null || (relayState.isEmpty() && logoutURI != null && !logoutURI.isEmpty())) {
             relayState = logoutURI;
         }
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceIDPInitiatedSLO relayState: " + relayState);
-        }
+        logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState: %s", relayState));
+
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = request.getParameter(SAML2Constants.SAML_REQUEST);
         if (samlRequest != null) {
-            if (LogUtil.isAccessLoggable(Level.INFO)) {
-                System.out.println("FederationServlet.serviceIDPInitiatedSLO processing request");
-            }
+            logger.debug("FederationServlet.serviceIDPInitiatedSLO processing request");
             SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
             String samlResponse = request.getParameter(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
-                if (LogUtil.isAccessLoggable(Level.INFO)) {
-                    System.out.println("FederationServlet.serviceIDPInitiatedSLO processing response");
-                }
+                logger.debug("FederationServlet.serviceIDPInitiatedSLO processing response");
                 SPSingleLogout.processLogoutResponse(request, response, samlResponse, relayState);
             }
         }
     }
 
-    private static void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
+    private void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        if (LogUtil.isAccessLoggable(Level.INFO)) {
-            System.out.println("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
-        }
+        logger.debug("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
 
         SPSingleLogoutServiceSOAP spSingleLogoutServiceSOAP = new SPSingleLogoutServiceSOAP();
         spSingleLogoutServiceSOAP.doPost(request, response);
