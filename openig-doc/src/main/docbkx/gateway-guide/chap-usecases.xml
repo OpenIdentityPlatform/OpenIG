@@ -335,6 +335,7 @@
   </orderedlist>
  </section>
 
+ <!-- Revisit this when the fed. component can request policy decisions
  <section xml:id="saml2-pep">
   <title>Standards Based SAML 2.0 Agent</title>
 
@@ -423,4 +424,5 @@
    </listitem>
   </orderedlist>
  </section>
+ -->
 </chapter>
