@@ -318,10 +318,12 @@
     ${projectName} Federation can serve as a a Service Provider
     in the classic Federation use case
     where the IDP and SP are different companies or domains.
+    <!-- Revisit this when the fed. component can request policy decisions
     The ${projectName} SP can also be a standards-based alternative
     to an OpenAM policy agent for internal enterprise applications
     that want to move away from installing agents
     in web servers and in Java EE application servers.
+    -->
    </para>
   </section>
 

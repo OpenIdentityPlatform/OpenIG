@@ -92,6 +92,7 @@
   </para>
  </section>
 
+ <!-- Revisit this when the fed. component can request policy decisions
  <section xml:id="standards-based-policy-enforcement">
   <title>Implement Standards Based Policy Enforcement</title>
 
@@ -122,4 +123,5 @@
    with a standards-based SAML 2.0-compliant enforcement point.
   </para>
  </section>
+ -->
 </chapter>
