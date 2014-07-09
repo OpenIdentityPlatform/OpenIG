@@ -375,14 +375,14 @@ $ <userinput>curl http://www.example.com:8080 | grep george</userinput>
   <para>
    When you issued your first request with HTTP POST form data "site=forgerock",
    the request matched the condition defined in the ForgeRock.com Route.
-   ${productName} rebased the request and sent it along to
+   ${projectName} rebased the request and sent it along to
    <literal>http://forgerock.com:80/</literal>.
   </para>
 
   <para>
    When you issued your second request with HTTP POST form data "site=community",
    the request matched the condition defined in the Community Route.
-   ${productName} rebased the request and sent it along to
+   ${projectName} rebased the request and sent it along to
    <literal>http://forgerock.org:80/</literal>.
   </para>
 
@@ -396,7 +396,7 @@ $ <userinput>curl http://www.example.com:8080 | grep george</userinput>
 
   <para>
    At this point, tinker with your Route configurations
-   without stopping ${productName}, and notice that changes are picked up
+   without stopping ${projectName}, and notice that changes are picked up
    every 10 seconds.
   </para>
  </section>
