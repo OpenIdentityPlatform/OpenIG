@@ -1,0 +1,39 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "LoginRequest"
+                    ],
+                    "handler": "DefaultHandler"
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "george"
+                        ],
+                        "password": [
+                            "costanza"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "DefaultHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handler": "LoginChain",
+    "name": "zDefault"
+}

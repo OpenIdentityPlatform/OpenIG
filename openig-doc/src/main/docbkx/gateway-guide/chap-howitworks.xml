@@ -91,13 +91,51 @@
    filters and handlers.</para>
   </section>
 
+  <section xml:id="how-it-works-router">
+   <title>Router &amp; Routes</title>
+
+   <para>
+    In a multiple-file configuration, the
+    <link
+    xlink:show="new"
+    xlink:href="reference#Router"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    >Router</link>
+    takes responsibility for managing
+    <link
+    xlink:show="new"
+    xlink:href="reference#Route"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    >Route</link> configurations.
+   </para>
+
+   <para>
+    Each Route accepts all Exchanges that match its (configurable) condition.
+    The Route then optionally changes the request scheme, host, and port,
+    and forwards the Exchange on to the configured chain of filters and handlers.
+   </para>
+
+   <para>
+    The Router can be configured either
+    to load Route configurations only at startup
+    or to reload Route configurations periodically,
+    picking up any changes you make.
+    You can thus reconfigure ${projectName} without restarting the server.
+   </para>
+  </section>
+
   <section xml:id="how-it-works-dispatcher">
    <title>Dispatcher</title>
-   <para>The Dispatcher may be thought of as the internal router of ${projectName}.
-   Every request that comes into ${projectName} is analyzed and forwarded on to the
-   configured processing chain of filters and handlers. A request may be
-   forwarded based on the target host, URL, URL parameters, headers, cookies,
-   or any other component of the request.</para>
+
+   <para>
+    In a single-file configuration with no Router,
+    the Dispatcher may be thought of as the internal router of ${projectName}.
+    Every request that comes into ${projectName} is analyzed
+    and forwarded on to the configured processing chain of filters and handlers.
+    A request may be forwarded based on
+    the target host, URL, URL parameters, headers, cookies,
+    or any other component of the request.
+   </para>
   </section>
 
   <section xml:id="how-it-works-chain">

@@ -1,0 +1,23 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "CommunityChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [],
+                    "handler": "DefaultHandler"
+                }
+            },
+            {
+                "name": "DefaultHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "name": "Community",
+    "handler": "CommunityChain",
+    "condition": "${exchange.request.form.site[0] == 'community'}",
+    "baseURI": "http://forgerock.org:80/"
+}
