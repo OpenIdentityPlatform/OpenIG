@@ -228,34 +228,6 @@
   </informalexample>
  </section>
 
- <section xml:id="template-multiple-apps">
-  <title>Multiple Applications</title>
-
-  <indexterm>
-   <primary>Configuration</primary>
-   <secondary>Multiple applications</secondary>
-  </indexterm>
-
-  <para>
-   Shows how a single ${projectName} configuration can proxy to
-   multiple applications on different ports with the same IP address.
-   This template is setup to proxy to
-   both WordPress and MediaWiki hosted on the same web server.
-   The <literal>DispatchHandler</literal> is used to route
-   each incoming request to either the WordPress chain or the MediaWiki chain.
-  </para>
-
-  <informalexample><?dbfo pgwide="1"?>
-   <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/multipleApplications.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
-   </programlisting>
-  </informalexample>
- </section>
-
  <section xml:id="template-am-integration-headers">
   <title>OpenAM Integration With Headers</title>
   <para>Logs the user into the target application using the headers passed down

@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id="chap-routing"
+         xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation="http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xinclude="http://www.w3.org/2001/XInclude">
+ <title>Routing Tutorial</title>
+
+ <indexterm>
+  <primary>Routing</primary>
+ </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>Multiple applications</secondary>
+ </indexterm>
+
+ <para>
+  Other tutorials in this guide demonstrate use of a single configuration file
+  for all of ${projectName}.
+  In those tutorials, you had to restart ${projectName}
+  to pick up configuration changes.
+ </para>
+
+ <para>
+  This tutorial instead demonstrates how you can use a
+  <link
+   xlink:show="new"
+   xlink:href="reference#Router"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Router</link>
+  and
+  <link
+   xlink:show="new"
+   xlink:href="reference#Route"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Route</link> configurations to make changes at runtime.
+  This tutorial also shows how to lock down the configurations for deployment
+  so that accidental changes to configuration files
+  do not affect servers running in production.
+ </para>
+
+ <section xml:id="routing-before-you-start">
+  <title>Before You Start</title>
+
+  <para>
+   Before you start this tutorial,
+   prepare ${projectName} and the minimal HTTP server as you did for the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>.
+  </para>
+
+  <para>
+   ${projectName} should be running in Jetty,
+   configured to access the minimal HTTP server as described in that chapter.
+  </para>
+
+  <para>
+   The initial ${projectName} configuration file should look like the one used
+   to proxy requests through to the HTTP server
+   and to capture request and response data, see
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-proxy-and-capture"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
+  </para>
+
+  <para>
+   To test your setup, access the HTTP server home page through ${projectName} at
+   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+   Login as username <literal>george</literal>, password <literal>costanza</literal>.
+   You should see a page showing the username and some information about the request.
+  </para>
+ </section>
+
+ <section xml:id="routing-route-setup">
+  <title>Configuring Routes</title>
+
+  <para>
+   Routes are configuration objects to handle a particular kind of Exchange.
+  </para>
+
+  <para>
+   The particular kind of an Exchange that a Route handles is
+   an Exchange that fits the condition defined for the route.
+   The condition is defined using a ${projectName}
+   <link
+    xlink:show="new"
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >expression</link>, so it can be based on
+   almost any characteristic of the Exchange.
+   Another way to think of the Route is like an independent
+   <link
+    xlink:show="new"
+    xlink:href="reference#DispatchHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >DispatchHandler</link>.
+  </para>
+
+  <para>
+   Routes can also have their own names, used to order them lexicographically.
+   If no name is specified, the Route file name is used.
+  </para>
+
+  <para>
+   Routes can have a base URI to change the scheme, host, and port of the request.
+  </para>
+
+  <para>
+   Routes wrap a heap of configuration objects,
+   and hand off any Exchange they accept to a handler.
+   In this way each Route is much like one of
+   the server-wide configuration files you have used in other tutorials.
+  </para>
+
+  <para>
+   If no condition is specified for the Route, the Route accepts any Exchange.
+   The following is a basic default route that accepts any Exchange
+   and forwards it on without changes.
+   This object explicitly shows you all the fields of the Route object.
+   (You could omit "condition" and "baseURI" here as they have no effect.)
+  </para>
+
+  <programlisting language="javascript">
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "name": "default",
+    "condition": null,
+    "baseURI": null,
+    "handler": "ClientHandler"
+}
+  </programlisting>
+
+  <orderedlist>
+   <para>
+    The rest of this section indicates how to set up Route configurations.
+    Two of the Route configurations direct requests to
+    ForgeRock.com and ForgeRock.org based on a parameter in form data.
+    The third Route configuration directs request to
+    the minimal HTTP server when the parameter is not set.
+   </para>
+
+   <listitem>
+    <para>
+     Create a file system directory where you store the Route configurations.
+    </para>
+
+    <para>
+     By default, Route configurations are stored in
+     <filename>${warConfigDir}/routes/</filename>
+     (<filename>${windowsWarConfigDir}\routes\</filename> on Windows).
+     Create that file system directory now.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add a ForgeRock.com Route file in the directory,
+     <filename>forgerock.json</filename>,
+     that holds the following content.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/forgerock.json" parse="text">
+ <xinclude:fallback>
+  Failed to include forgerock.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <para>
+     This Route accepts the Exchange when the form data parameter,
+     <literal>site</literal> matches <literal>forgerock</literal>.
+     When this Route picks up an Exchange,
+     it changes the request scheme, host, and port, and sends it to ForgeRock.com.
+    </para>
+   </listitem>
+
+
+   <listitem>
+    <para>
+     Add a ForgeRock.org community Route file in the directory,
+     <filename>community.json</filename>,
+     that holds the following content.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/community.json" parse="text">
+ <xinclude:fallback>
+  Failed to include community.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <para>
+     This Route accepts the Exchange when the form data parameter,
+     <literal>site</literal> matches <literal>community</literal>.
+     When this Route picks up an Exchange,
+     it changes the request scheme, host, and port, and sends it to ForgeRock.org.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add a default Route file in the directory,
+     <filename>default.json</filename>,
+     that holds the following content.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/default.json" parse="text">
+ <xinclude:fallback>
+  Failed to include default.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <para>
+     This Route has no condition set, and so it accepts any Exchange.
+     When this Route picks up an Exchange, it uses a static request filter
+     to login George Costanza with hard-coded username and password.
+    </para>
+   </listitem>
+  </orderedlist>
+ </section>
+
+ <section xml:id="routing-router-setup">
+  <title>Configuring the Router</title>
+
+  <para>
+   At this point you have configured the Routes,
+   but ${projectName} does not route any traffic to them.
+   To use the routes, you must configure a Router.
+  </para>
+
+  <para>
+   The Router is a handler that you can configure in the top-level
+   <filename>config.json</filename> file for ${projectName}.<footnote>
+    <para>
+     In fact you can add a Router wherever you can add a Handler,
+     not only in the top-level configuration.
+    </para>
+   </footnote>
+   The Router's job is to pass Exchanges to configured Routes,
+   and to periodically reload changed route configurations.
+   As Routes define the conditions on which they accept any given Exchange,
+   the Router does not have to know about specific Routes in advance.
+   In other words, you could configure the Router first and then add Routes
+   while ${projectName} is running.
+  </para>
+
+  <orderedlist>
+   <para>
+    Configure the Router as follows.
+   </para>
+
+   <listitem>
+    <para>
+     Stop Jetty.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Replace the existing <filename>config.json</filename> file content
+     with a simpler configuration that ends in a Router.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include config.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <para>
+     This configuration passes all Exchanges to the Router.
+     using the default settings, meaning that the Router
+     monitors <filename>${warConfigDir}/routes/</filename> for Routes.
+     When ${projectName} receives a request,
+     if more time has passed than the default scan interval of 10 seconds,
+     then ${projectName} rescans the Routes directory for changes
+     and reloads any Routes changes it finds.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Restart Jetty.
+    </para>
+   </listitem>
+  </orderedlist>
+ </section>
+
+ <section xml:id="routing-try-it-out">
+  <title>Trying it Out</title>
+
+  <para>
+   At this point you can try your new Router and Route configurations.
+  </para>
+
+  <para>
+   Make a request to hit the ForgeRock.com router.
+  </para>
+
+  <screen>
+$ <userinput>curl --data "site=forgerock" http://www.example.com:8080</userinput>
+<computeroutput>...HTML of ForgeRock.com home page...</computeroutput>
+  </screen>
+
+  <para>
+   Now make a request to hit the Community page.
+  </para>
+
+  <screen>
+$ <userinput>curl --data "site=community" http://www.example.com:8080</userinput>
+<computeroutput>...HTML of ForgeRock.org home page...</computeroutput>
+  </screen>
+
+  <para>
+   Now check that the default route still works.
+  </para>
+
+  <screen>
+$ <userinput>curl http://www.example.com:8080 | grep george</userinput>
+<computeroutput>
+   &lt;title>Howdy, george&lt;/title>
+        &lt;dd>george&lt;/dd>
+</computeroutput>
+  </screen>
+
+  <para>
+   What happened behind the scenes?
+  </para>
+
+  <para>
+   When you issued your first request with HTTP POST form data "site=forgerock",
+   the request matched the condition defined in the ForgeRock.com Route.
+   ${productName} rebased the request and sent it along to
+   <literal>http://forgerock.com:80/</literal>.
+  </para>
+
+  <para>
+   When you issued your second request with HTTP POST form data "site=community",
+   the request matched the condition defined in the Community Route.
+   ${productName} rebased the request and sent it along to
+   <literal>http://forgerock.org:80/</literal>.
+  </para>
+
+  <para>
+   When the third request did not match either of the conditions defined,
+   the Exchange was routed to the default Route (that accepts any Exchange).
+   The static request filter in that route logged George in to the local server
+   listening on <literal>http://www.example.com:8081/</literal>.
+   The default Route has name "zDefault".
+  </para>
+
+  <para>
+   At this point, tinker with your Route configurations
+   without stopping ${productName}, and notice that changes are picked up
+   every 10 seconds.
+  </para>
+ </section>
+
+ <section xml:id="routing-lockdown">
+  <title>Locking Down Route Configurations</title>
+
+  <para>
+   Having the Route configurations automatically reloaded is great in the lab,
+   but is perhaps not what you want in production.
+  </para>
+
+  <para>
+   In that case, stop the server, edit the Router "scan-interval", and restart.
+   When "scan-interval" is set to -1, the Router only loads routes at startup.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "scan-interval": -1
+    }
+}
+  </programlisting>
+
+  <para>
+   You can also change the file system location to look for Routes.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "directory": "/path/to/safe/routes",
+        "scan-interval": -1
+    }
+}
+  </programlisting>
+ </section>
+</chapter>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='Router'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <refmeta>
+  <refentrytitle>Router</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>Router</refname>
+  <refpurpose>Route processing to distinct configurations</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>Router</secondary>
+  </indexterm>
+
+  <para>
+   A Router is a handler that routes Exchange processing
+   to separate configuration files.
+   Each separate configuration file then defines a
+   <link
+    xlink:show="new"
+    xlink:href="reference#Route"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Route</link>.
+  </para>
+
+  <para>
+   The Router reloads configuration files for Routes
+   from the specified directory at the specified scan interval.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"directory"</code>: <emphasis>string</emphasis> (Optional)</term>
+    <listitem>
+     <para>
+      Base directory from which to load configuration files for routes.
+     </para>
+
+     <para>
+      Default: <filename>${warConfigDir}/routes/</filename> (UNIX, Linux, Mac),
+      <filename>${windowsWarConfigDir}\routes\</filename> (Windows)
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"scan-interval"</code>: <emphasis>integer</emphasis> (Optional)</term>
+    <listitem>
+     <para>
+      Interval in seconds after which ${projectName} scans
+      the specified directory for changes to configuration files.
+     </para>
+
+     <para>
+      Default: 10 (seconds)
+     </para>
+
+     <para>
+      To prevent ${projectName} from reloading Route configurations
+      after you except at startup,
+      set the scan interval to -1.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/router/RouterHandler.html"
+   >org.forgerock.openig.handler.router.RouteHandler</link></para>
+ </refsect1>
+</refentry>

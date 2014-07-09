@@ -1,0 +1,20 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "Router",
+                    "baseURI": "http://www.example.com:8081"
+                }
+            },
+            {
+                "name": "Router",
+                "type": "Router",
+                "config": {}
+            }
+        ]
+    },
+    "servletObject": "HandlerServlet"
+}

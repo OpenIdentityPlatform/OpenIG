@@ -111,6 +111,8 @@
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
+  <xinclude:include href="man-Route.xml" />
+  <xinclude:include href="man-Router.xml" />
   <xinclude:include href="man-ScriptableHandler.xml" />
   <xinclude:include href="man-SequenceHandler.xml" />
   <xinclude:include href="man-StaticResponseHandler.xml" />

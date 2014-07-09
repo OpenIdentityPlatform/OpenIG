@@ -44,6 +44,7 @@
   <listitem><para><xref linkend="config-login-from-sql" /></para></listitem>
   <listitem><para><xref linkend="config-capture-and-replay" /></para></listitem>
   <listitem><para><xref linkend="config-federation" /></para></listitem>
+  <listitem><para><xref linkend="config-routing" /></para></listitem>
  </itemizedlist>
 
  <example xml:id="config-proxy-and-capture"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
@@ -113,6 +114,58 @@
 <xinclude:include href="resources/federation/config.json" parse="text">
  <xinclude:fallback>
   Failed to include config.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </example>
+
+ <example xml:id="config-routing"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
+  <title>Configuration for the Routing Tutorial</title>
+
+  <para>
+   The following listing shows <filename>config.json</filename>
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include config.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The following listing shows <filename>community.json</filename>
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/community.json" parse="text">
+ <xinclude:fallback>
+  Failed to include community.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The following listing shows <filename>default.json</filename>
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/default.json" parse="text">
+ <xinclude:fallback>
+  Failed to include default.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The following listing shows <filename>forgerock.json</filename>
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/routing/routes/forgerock.json" parse="text">
+ <xinclude:fallback>
+  Failed to include forgerock.json
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>

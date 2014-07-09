@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='Route'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <refmeta>
+  <refentrytitle>Route</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>Route</refname>
+  <refpurpose>Configuration for handling a specified Exchange condition</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>Route</secondary>
+  </indexterm>
+
+  <para>
+   In ${projectName},
+   a Route is represented by a separate JSON configuration file that handles an
+   <link
+    xlink:show="new"
+    xlink:href="reference#Exchange"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Exchange</link>
+   when a specified condition is met.
+  </para>
+
+  <para>
+   A top-level
+   <link
+    xlink:show="new"
+    xlink:href="reference#Router"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Router</link>
+   is responsible for reloading the Route configuration.
+   By default the Router rereads the configurations periodically,
+   so that configuration changes to Routes apply without restarting ${projectName}.
+  </para>
+
+  <para>
+   Each separate Route has its own Heap of configuration objects.
+   The Route's Heap inherits from the global Heap,
+   so the Route configuration can reference configuration objects
+   specified in the top-level Router configuration file.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"handler"</code>: <emphasis>string</emphasis> (Required)</term>
+    <listitem>
+     <para>
+      Name of the main handler for this route.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"baseURI"</code>: <emphasis>string</emphasis> (Optional)</term>
+    <listitem>
+     <para>
+      URI on which to rebase the request URL.
+     </para>
+
+     <para>
+      If this is set, the request URL is rebased using the value.
+      Rebasing changes the scheme, host, and port of the request URL.
+      Rebasing does not affect the path, query string, or fragment.
+     </para>
+
+     <para>
+      If this is not set, the request URL remains unchanged.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"condition"</code>: <emphasis
+     ><link
+       xlink:show="new"
+       xlink:href="reference#Expressions"
+       xlink:role="http://docbook.org/xlink/role/olink"
+     >expression</link></emphasis> (Optional)</term>
+    <listitem>
+     <para>
+      Whether the Route accepts to handle the Exchange.
+     </para>
+
+     <para>
+      If the condition is not set, or is <literal>null</literal>,
+      then this Route accepts any Exchange.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"name"</code>: <emphasis>string</emphasis> (Optional)</term>
+    <listitem>
+     <para>
+      Name for the Route, used by the Router to order the routes.
+     </para>
+
+     <para>
+      Default: Route configuration file name
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+</refentry>

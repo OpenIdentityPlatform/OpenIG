@@ -39,6 +39,24 @@
  <itemizedlist>
   <listitem>
    <para>
+    ${projectName} now supports runtime configuration
+    with separate routes for separate applications (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-97"
+    >OPENIG-97</link>
+    ).
+    For a tutorial on how to use routes, see
+    <link
+     xlink:show="new"
+     xlink:href="gateway-guide#chap-routing"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >Routing Tutorial</link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} now supports use of scripts to process and to handle
     the HTTP exchange (
     <link
