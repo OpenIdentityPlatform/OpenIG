@@ -261,7 +261,7 @@ $ <userinput>/path/to/jetty/bin/jetty.sh start</userinput>
     <para>Or start Jetty in the foreground:</para>
 
     <screen>
-$ <userinput>$ cd /path/to/jetty/</userinput>
+$ <userinput>cd /path/to/jetty/</userinput>
 $ <userinput>java -jar start.jar</userinput>
     </screen>
    </step>
