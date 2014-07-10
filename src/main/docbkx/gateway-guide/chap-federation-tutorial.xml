@@ -117,6 +117,9 @@
    This tutorial does not address PKI configuration for validation and encryption,
    though ${projectName} is capable of handling both when properly configured,
    just as any OpenAM Fedlet can handle both.
+   Configure the Attribute Mapping to map the
+   the <literal>mail</literal> attribute to <literal>mail</literal>
+   and the <literal>employeenumber</literal> attribute to <literal>employeenumber</literal>.
    You can use the <literal>test</literal> certificate
    in the Identity Provider configuration for signing in this example.
   </para>
@@ -125,7 +128,7 @@
    Then use the common task wizard to create a Fedlet.
    Set the Name to <literal>${projectName}</literal>.
    Set the Destination URL to <literal>http://www.example.com:8080/saml</literal>.
-   Configure the Attribute Mapping to map the
+   Also configure the Attribute Mapping for the Fedlet to map the
    the <literal>mail</literal> attribute to <literal>mail</literal>
    and the <literal>employeenumber</literal> attribute to <literal>employeenumber</literal>.
   </para>

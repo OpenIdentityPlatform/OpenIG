@@ -29,11 +29,16 @@
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Configuring Deployment Containers</title>
 
  <para>
-  This section provides installation and configuration tips.
+  This section provides installation and configuration tips
+  that you need to run ${projectName} in supported containers.
+ </para>
+
+ <para>
   For the full list of supported containers,
   see the <citetitle>Release Notes</citetitle> section,
   <link
@@ -43,327 +48,344 @@
   ><citetitle>Web Application Containers</citetitle></link>.
  </para>
 
+ <para>
+  For further information on advanced configuration for a particular container,
+  see the container documentation.
+ </para>
+
  <section xml:id="tomcat">
-  <title>Tomcat</title>
+  <title>Configuring Apache Tomcat For ${projectName}</title>
 
- <indexterm>
-  <primary>Containers</primary>
-  <secondary>Tomcat</secondary>
- </indexterm>
+  <para>
+   This section describes essential Apache Tomcat configuration
+   that you need in order to run ${projectName}.
+  </para>
 
-  <itemizedlist>
-   <para>Tomcat reference links:</para>
-   <listitem>
-    <para><link xlink:href="http://tomcat.apache.org/tomcat-6.0-doc"
-    xlink:show="new">Tomcat Documentation</link></para>
-   </listitem>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://tomcat.apache.org/tomcat-6.0-doc/ssl-howto.html"
-    >Configuring Tomcat for HTTPS</link>
-    </para>
-   </listitem>
-   <listitem>
-    <para><link xlink:href="http://www.owasp.org/index.php/Securing_tomcat"
-    xlink:show="new">Hardening Tomcat for production</link></para>
-   </listitem>
-  </itemizedlist>
+  <indexterm>
+   <primary>Containers</primary>
+   <secondary>Tomcat</secondary>
+  </indexterm>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
-  versions of any JDK supported with ${projectName}.</para>
+  <para>
+   Download and install a supported version of Apache Tomcat from
+   <link xlink:show="new" xlink:href="http://tomcat.apache.org/" />.
+  </para>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://tomcat.apache.org/download-60.cgi">Tomcat 6</link> or
-  <link xlink:show="new" xlink:href="http://tomcat.apache.org/download-70.cgi"
-  >Tomcat 7</link>.</para>
+  <para>
+   Configure Tomcat to use the same protocol
+   as the application you are protecting with ${projectName}.
+   If the protected application is on a remote system,
+   configure Tomcat to use the same port as well.
+   If your application listens on both an HTTP and an HTTPS port,
+   then you must configure Tomcat to do so as well.
+  </para>
 
-  <para><literal>$TOMCAT_HOME</literal> refers to the location where you have
-  installed Tomcat.</para>
+  <para>
+   To configure Tomcat to use an HTTP port other than 8080,
+   modify the defaults in <filename>/path/to/tomcat/conf/server.xml</filename>.
+   Search for the default value of 8080 and replace it with the new port number.
+  </para>
 
-  <para>Configure Tomcat to listen on the same port and protocol of the
-  application you are protecting with ${projectName}. If your application listens on
-  both an HTTP and an HTTPS port you must configure Tomcat to do so as well.
-  If you are installing to run the samples you do not have to modify the Tomcat
-  port configuration since both the Tomcat default and the samples use port
-  8080.</para>
+  <section xml:id="tomcat-cookie-domains">
+   <title>Configuring Tomcat Cookie Domains</title>
 
-  <para>To configure Tomcat to use a port other than 8080 modify the defaults
-  in <filename>$TOMCAT_HOME/conf/server.xml</filename>. The quickest way to do
-  this is to search for the default value of 8080 and replace it with the new
-  port number.</para>
-
-  <section>
-   <title>Tomcat &amp; MySQL/JNDI Configuration</title>
-
-   <para>If ${projectName} accesses an SQL database you must <link xlink:show="new"
-   xlink:href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html"
-   >configure Tomcat for JNDI</link>. Once you have Tomcat configured you must
-   add the jar for the database, and set up a JNDI data source and a reference
-   to that data source in your web application. The following steps are for
-   the MySQL Connector/J.</para>
-
-   <para>Download the 
-    <link xlink:show="new"
-    xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver
-    Connector/J</link>. Add it to the class path by copying it to
-    <filename>$TOMCAT_HOME/lib</filename>.
+   <para>
+    If you use ${projectName} for more than a single protected application
+    and the protected applications are on different hosts,
+    then you must configure Tomcat to set domain cookies.
+    To do this, add a session cookie domain context element
+    that specifies the domain to
+    <filename>/path/to/conf/Catalina/<replaceable>server</replaceable>/root.xml</filename>,
+    as in the following example.
    </para>
 
-   <para>Add a JNDI data source for your MySQL server and database in
-   <filename>$TOMCAT_HOME/conf/context.xml</filename>.</para>
+   <programlisting language="xml">
+<xinclude:include href="resources/tomcat-cookie-domains-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include session cookie domain configuration</xinclude:fallback>
+</xinclude:include>
+   </programlisting>
 
-   <programlisting language="xml">&lt;Resource name="jdbc/forgerock" auth="Container" type="javax.sql.DataSource"
- maxActive="100" maxIdle="30" maxWait="10000"
- username="admin" password="11111111" driverClassName="com.mysql.jdbc.Driver"
- url="jdbc:mysql://localhost:3306/databasename"/&gt;</programlisting>
-
-   <para>Add a resource reference to the data source in
-   <filename>$TOMCAT_HOME/conf/web.xml</filename>.</para>
-
-   <programlisting language="xml">&lt;resource-ref&gt;
-    &lt;description&gt;MySQL Connection&lt;/description&gt;
-    &lt;res-ref-name&gt;jdbc/forgerock&lt;/res-ref-name&gt;
-    &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;
-    &lt;res-auth&gt;Container&lt;/res-auth&gt;
-&lt;/resource-ref&gt;</programlisting>
+   <para>
+    Restart Tomcat to read the configuration changes.
+   </para>
   </section>
 
-  <section>
-   <title>Tomcat &amp; Cookie Domains</title>
+  <section xml:id="tomcat-https">
+   <title>Configuring Tomcat For HTTPS</title>
 
-   <para>If you use ${projectName} for more than a single application and those
-   applications are on different hosts, you must configure Tomcat to set domain
-   cookies. To do this add the following to your
-   <filename>$TOMCAT_HOME/conf/Catalina/<replaceable
-   >server</replaceable>/root.xml</filename> file.</para>
+   <para>
+    To get Tomcat up quickly on an SSL port
+    add an entry similar to the following in
+    <filename>/path/to/tomcat/conf/server.xml</filename>.
+   </para>
 
-   <programlisting language="xml"
-   >&lt;Context sessionCookieDomain=".forgerock.com" /&gt;</programlisting>
-  </section>
+   <programlisting language="xml">
+<xinclude:include href="resources/tomcat-https-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include HTTPS configuration</xinclude:fallback>
+</xinclude:include>
+   </programlisting>
 
-  <section>
-   <title>Tomcat &amp; SSL</title>
-   <para>To get Tomcat up quickly on an SSL port you can add an entry similar
-   to the following in <filename>$TOMCAT_HOME/conf/server.xml</filename>.</para>
-
-   <programlisting language="xml"
-   >&lt;Connector port="443" protocol="HTTP/1.1" SSLEnabled="true"
-    maxThreads="150" scheme="https" secure="true"
-    address="10.0.1.6"
-    clientAuth="false" sslProtocol="TLS" keystorePass="11111111"/&gt;</programlisting>
-
-   <para>You must also have to make sure you have create a key store along with
-   a self-signed certificate. You can do that with the following UNIX
-   command:</para>
+   <para>
+    Also create a key store holding a self-signed certificate.
+   </para>
 
    <screen>
-$ <userinput>keytool -genkey -alias tomcat -keyalg RSA</userinput>
+$ <userinput>keytool \
+ -genkey \
+ -alias tomcat \
+ -keyalg RSA \
+ -keystore /path/to/tomcat/conf/keystore \
+ -storepass password \
+ -keypass password \
+ -dname "CN=openig.example.com,O=Example Corp,C=FR"
+   </userinput>
    </screen>
+
+   <para>
+    Notice the key store file location and the key store password
+    both match the configuration.
+    By default, Tomcat looks for a certificate with alias <literal>tomcat</literal>.
+   </para>
+
+   <para>
+    Restart Tomcat to read the configuration changes.
+   </para>
+
+   <para>
+    Browsers generally do not trust self-signed certificates.
+    To work with a certificate signed instead by a trusted CA,
+    see the Apache Tomcat documentation on configuring HTTPS.
+   </para>
+  </section>
+
+  <section xml:id="tomcat-mysql">
+   <title>Configuring Tomcat to Access MySQL Over JNDI</title>
+
+   <para>
+    If ${projectName} accesses an SQL database,
+    then you must configure Apache Tomcat to access the database over JNDI.
+    To do so, you must add the driver jar for the database,
+    set up a JNDI data source, and set up a reference to that data source.
+   </para>
+
+   <orderedlist>
+    <para>
+     The following steps are for MySQL Connector/J.
+    </para>
+
+    <listitem>
+     <para>
+      Download the MySQL JDBC Driver Connector/J from
+      <link xlink:show="new" xlink:href="http://dev.mysql.com/downloads/connector/j" />.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Copy the driver .jar to <filename>/path/to/tomcat/lib/</filename>
+      so that it is on Tomcat's class path.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Add a JNDI data source for your MySQL server and database in
+      <filename>/path/to/tomcat/conf/context.xml</filename>.
+     </para>
+
+     <programlisting language="xml">
+<xinclude:include href="resources/tomcat-data-source-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include data source configuration</xinclude:fallback>
+</xinclude:include>
+     </programlisting>
+    </listitem>
+
+    <listitem>
+     <para>
+      Add a resource reference to the data source in
+      <filename>/path/to/tomcat/conf/web.xml</filename>.
+     </para>
+
+     <programlisting language="xml">
+<xinclude:include href="resources/tomcat-resource-ref-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include resource ref configuration</xinclude:fallback>
+</xinclude:include>
+     </programlisting>
+    </listitem>
+
+    <listitem>
+     <para>
+      Restart Tomcat to read the configuration changes.
+     </para>
+    </listitem>
+   </orderedlist>
   </section>
  </section>
 
  <section xml:id="jetty">
-  <title>Jetty</title>
+  <title>Configuring Jetty For ${projectName}</title>
 
- <indexterm>
-  <primary>Containers</primary>
-  <secondary>Jetty</secondary>
- </indexterm>
+  <para>
+   This section describes essential Jetty configuration
+   that you need in order to run ${projectName}.
+  </para>
 
-  <itemizedlist>
-   <para>Jetty reference links:</para>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://wiki.eclipse.org/Jetty/Starting">Jetty
-    Documentation</link></para>
-   </listitem>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://wiki.eclipse.org/Jetty/Howto/Port80">Running Jetty on
-    port 80</link></para>
-   </listitem>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://wiki.eclipse.org/Jetty/Howto/Deploy_Web_Applications"
-    >Deploying Web Applications</link></para>
-   </listitem>
-  </itemizedlist>
+  <indexterm>
+   <primary>Containers</primary>
+   <secondary>Jetty</secondary>
+  </indexterm>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
-  versions of any JDK supported with ${projectName}.</para>
+  <para>
+   Download and install a supported version of Jetty from
+   <link xlink:show="new" xlink:href="http://download.eclipse.org/jetty/" />.
+  </para>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://wiki.eclipse.org/Jetty/Starting/Downloads">Jetty</link>.
-  The install directory is referred to as <literal>$JETTY_HOME</literal>
-  from now on.</para>
+  <para>
+   Configure Jetty to use the same protocol
+   as the application you are protecting with ${projectName}.
+   If the protected application is on a remote system,
+   configure Jetty to use the same port as well.
+   If your application listens on both an HTTP and an HTTPS port,
+   then you must configure Jetty to do so as well.
+  </para>
 
-  <para>Configure Jetty to listen on the same port and protocol of the
-  application you are protecting with ${projectName}.
-   If you are configuring ${projectName} for
-  the samples you do not have to modify the Jetty port configuration since
-  the default for Jetty is 8080 and the samples use port 8080.</para>
+  <para>
+   To configure Jetty to use an HTTP port other than 8080,
+   modify the defaults in <filename>/path/to/jetty/etc/jetty.xml</filename>.
+   Search for the default value of 8080 and replace it with the new port number.
+  </para>
 
-  <para>To configure Jetty to use a port other than 8080 you must modify
-  the default <filename>$JETTY_HOME/etc/jetty.xml</filename>. The quickest way
-  to do that is to search for the default value of 8080 and replace it with the
-  new port number. The simplest way to get Jetty running on ports below 1024 is
-  to run the Jetty process as root. This is only appropriate for sample
-  purposes. Do not run Jetty as root in production.</para>
+  <section xml:id="jetty-cookie-domains">
+   <title>Configuring Jetty Cookie Domains</title>
 
-  <para>If the application your are protecting is configured on an HTTPS port,
-  you must configure Jetty for HTTPS as well.</para>
+   <para>
+    If you use ${projectName} for more than a single protected application
+    and the protected applications are on different hosts,
+    then you must configure Jetty to set domain cookies.
+    To do this, add a session domain handler element
+    that specifies the domain to
+    <filename>/path/to/jetty/etc/jetty.xml</filename>,
+    as in the following example.
+   </para>
 
-  <para>If you are managing multiple applications in one domain you will need
-  to turn on domain cookies in Jetty. This can be done by adding the following
-  property to <filename>$JETTY_HOME/contexts/root.xml</filename> or to
-  <filename>$JETTY_HOME/etc/jetty.xml</filename>. Note that any changes to
-  <filename>jetty.xml</filename> impact all web applications running in the
-  container.</para>
+   <programlisting language="xml">
+<xinclude:include href="resources/jetty-cookie-domains-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include session domain handler configuration</xinclude:fallback>
+</xinclude:include>
+   </programlisting>
 
-  <programlisting language="xml">&lt;Get name="sessionHandler"&gt;
-    &lt;Get name="sessionManager"&gt;
-        &lt;Set name="sessionDomain"&gt;example.com&lt;Set&gt;
-    &lt;Get&gt;
-&lt;Get&gt;</programlisting>
+   <para>
+    Restart Jetty to read the configuration changes.
+   </para>
+  </section>
 
-  <para>If ${projectName} accesses an SQL database you must <link xlink:show="new"
-  xlink:href="http://wiki.eclipse.org/Jetty/Feature/JNDI">configure Jetty for
-  JNDI</link> or use the <link xlink:show="new"
-  xlink:href="http://docs.codehaus.org/display/JETTY/Hightide+Documentation"
-  >Jetty Hightide distribution</link>, which comes pre-configured for JNDI.
-  Once you have Jetty configured you must add the jar for the database, and set
-  up a JNDI data source and a reference to that data source in your web
-  application. The following steps are for the MySQL Connector/J.</para>
+  <!-- TODO pending OPENIG-185... need to adapt the content here...
+  <section xml:id="jetty-https">
+   <title>Configuring Jetty For HTTPS</title>
 
-  <para>Download the <link xlink:show="new"
-  xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver
-  Connector/J</link> Add it to the Jetty class path by copying it to
-  <filename>$JETTY_HOME/lib/jndi</filename>.</para>
+   <para>
+    To get Jetty up quickly on an SSL port
+    add an entry similar to the following in
+    <filename>/path/to/jetty/etc/jetty.xml</filename>.
+   </para>
 
-  <para>Add a JNDI data source for your MySQL server and database in
-  <filename>$JETTY_HOME/etc/jetty.xml</filename>.</para>
+   <programlisting language="xml">
+<xinclude:include href="resources/TODO-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include HTTPS configuration</xinclude:fallback>
+</xinclude:include>
+   </programlisting>
 
-  <programlisting language="xml"
-  >&lt;New id="jdbc/forgerock" class="org.eclipse.jetty.plus.jndi.Resource"&gt;
-  &lt;Arg&gt;&lt;Arg&gt;
-  &lt;Arg&gt;jdbc/forgerock&lt;Arg&gt;
-  &lt;Arg&gt;
-    &lt;New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"&gt;
-      &lt;Set name="Url"&gt;jdbc:mysql://localhost:3306/databasename&lt;Set&gt;
-      &lt;Set name="User"&gt;mysqladmin&lt;Set&gt;
-      &lt;Set name="Password"&gt;11111111&lt;Set&gt;
-    &lt;New&gt;
-  &lt;Arg&gt;
-&lt;New&gt;</programlisting>
+   <para>
+    Also create a key store holding a self-signed certificate.
+   </para>
 
-  <para>Add a resource reference to the data source in
-  <filename>$JETTY_HOME/etc/webdefault.xml</filename>.</para>
+   <screen>
+$ <userinput>keytool \
+ -genkey \
+ -alias jetty \
+ -keyalg RSA \
+ -keystore /path/to/jetty/etc/keystore \
+ -storepass password \
+ -keypass password \
+ -dname "CN=openig.example.com,O=Example Corp,C=FR"
+   </userinput>
+   </screen>
 
-  <programlisting language="xml">&lt;resource-ref&gt;
-    &lt;description&gt;My DataSource Reference&lt;description&gt;
-    &lt;res-ref-name&gt;jdbc/forgerock&lt;res-ref-name&gt;
-    &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
-    &lt;res-auth&gt;Container&lt;res-auth&gt;
- &lt;resource-ref&gt;</programlisting>
- </section>
+   <para>
+    Notice the key store file location and the key store password
+    both match the configuration.
+    TODO Jetty too: By default, Jetty looks for a certificate with alias <literal>jetty</literal>.
+   </para>
 
- <section xml:id="jboss">
-  <title>JBoss</title>
+   <para>
+    Browsers generally do not trust self-signed certificates.
+    To work with a certificate signed instead by a trusted CA,
+    see the Jetty documentation on configuring HTTPS.
+   </para>
+  </section>
+  -->
 
- <indexterm>
-  <primary>Containers</primary>
-  <secondary>JBoss</secondary>
- </indexterm>
+  <section xml:id="jetty-mysql">
+   <title>Configuring Jetty to Access MySQL Over JNDI</title>
 
-  <itemizedlist>
-   <para>JBoss reference links:</para>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://www.jboss.org/jbossas/docs/5-x">JBOSS 5
-    Documentation</link></para>
-   </listitem>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://www.jboss.org/jbossas/docs/6-x">JBOSS 6
-    Documentation</link></para>
-   </listitem>
-   <listitem>
-    <para><link xlink:show="new"
-    xlink:href="http://www.jboss.org/jbossas/docs/5-x/admin-console-quick-start.html"
-    >Admin Console Quick Start Guide</link></para>
-   </listitem>
-  </itemizedlist>
+   <para>
+    If ${projectName} accesses an SQL database,
+    then you must configure Jetty to access the database over JNDI.
+    To do so, you must add the driver jar for the database,
+    set up a JNDI data source, and set up a reference to that data source.
+   </para>
 
-  <para>Download and install <link xlink:show="new"
-  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
-  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
-  versions of any JDK supported with ${projectName}.</para>
+   <orderedlist>
+    <para>
+     The following steps are for MySQL Connector/J.
+    </para>
 
-  <para>Download and install the community version of <link xlink:show="new"
-  xlink:href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA"
-  >JBoss 5.1</link>. $JBOSS_HOME refers to the location you have installed
-  JBoss. The assumption in this chapter is that you run the default server
-  configuration.</para>
+    <listitem>
+     <para>
+      Download the MySQL JDBC Driver Connector/J from
+      <link xlink:show="new" xlink:href="http://dev.mysql.com/downloads/connector/j" />.
+     </para>
+    </listitem>
 
-  <para>Configure JBoss to listen on the same port and protocol of the
-  application you are protecting with ${projectName}. If your application listens on
-  both an HTTP and an HTTPS port you must configure JBoss to do so as well. If
-  you are installing to run the samples you do not have to modify the JBoss
-  port configuration since both the JBoss default and the samples use port
-  8080.</para>
+    <listitem>
+     <para>
+      Copy the driver .jar to <filename>/path/to/jetty/lib/jndi/</filename>
+      so that it is on Jetty's class path.
+     </para>
+    </listitem>
 
-  <para>To configure JBoss to use a port other than 8080 modify
-  <filename>server.xml</filename> under your server configuration. For example,
-  if you are using the default server configuration,
-  <filename>server.xml</filename> is
-  <filename>$JBOSS_HOME/server/default/deploy/jbossweb.sar/server.xml</filename>.
-  The quickest way to do this is to search for the default value of 8080 and
-  replace it with the new port number.</para>
+    <listitem>
+     <para>
+      Add a JNDI data source for your MySQL server and database in
+      <filename>/path/to/jetty/etc/jetty.xml</filename>.
+     </para>
 
-  <para>If ${projectName} accesses an SQL database you must configure JBoss for JNDI.
-  Once you have JBOSS configured you must add the jar  for the database, and
-  set up a JNDI data source and a reference to that data source in your web
-  application. The following steps are for the MySQL Connector/J.</para>
+     <programlisting language="xml">
+<xinclude:include href="resources/jetty-data-source-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include data source configuration</xinclude:fallback>
+</xinclude:include>
+     </programlisting>
+    </listitem>
 
-  <para>Download the <link xlink:show="new"
-  xlink:href="http://dev.mysql.com/downloads/connector/j">MySQL JDBC Driver
-  Connector/J</link> Add it to the JBoss class path by copying it to
-  <filename>$JBOSS_HOME/server/default/lib</filename>.</para>
+    <listitem>
+     <para>
+      Add a resource reference to the data source in
+      <filename>/path/to/jetty/etc/webdefault.xml</filename>.
+     </para>
 
-  <para>Add a JNDI data source for your MySQL server and database in
-  <filename>$JBOSS_HOME/server/default/deploy/mysql-ds.xml</filename>.</para>
+     <programlisting language="xml">
+<xinclude:include href="resources/jetty-resource-ref-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include resource ref configuration</xinclude:fallback>
+</xinclude:include>
+     </programlisting>
+    </listitem>
 
-  <programlisting language="xml">&lt;datasources&gt;
-  &lt;local-tx-datasource&gt;
-    &lt;jndi-name&gt;jdbc/forgerock&lt;jndi-name&gt;
-    &lt;connection-url&gt;jdbc:mysql://localhost:3306/databasename&lt;connection-url&gt;
-    &lt;driver-class&gt;com.mysql.jdbc.Driver&lt;driver-class&gt;
-    &lt;user-name&gt;admin&lt;user-name&gt;
-    &lt;password&gt;11111111&lt;password&gt;
-    &lt;min-pool-size&gt;5&lt;min-pool-size&gt;
-    &lt;max-pool-size&gt;20&lt;max-pool-size&gt;
-    &lt;idle-timeout-minutes&gt;5&lt;idle-timeout-minutes&gt;
-    &lt;exception-sorter-class-name&gt;
-com.mysql.jdbc.integration.jboss.ExtendedMysqlExceptionSorter
-    &lt;exception-sorter-class-name&gt;
-    &lt;valid-connection-checker-class-name&gt;
-com.mysql.jdbc.integration.jboss.MysqlValidConnectionChecker
-    &lt;valid-connection-checker-class-name&gt;
-  &lt;local-tx-datasource&gt;
-&lt;datasources&gt;</programlisting>
-
-  <para>Add a resource reference to the data source in
-  <filename>$JBOSS_HOME/server/default/deployers/jbossweb.deployer/web.xml</filename>.</para>
-
-  <programlisting language="xml">&lt;resource-ref&gt;
-    &lt;description&gt;MySQL Connection&lt;description&gt;
-    &lt;res-ref-name&gt;jdbc/forgerock&lt;res-ref-name&gt;
-    &lt;res-type&gt;javax.sql.DataSource&lt;res-type&gt;
-    &lt;res-auth&gt;Container&lt;res-auth&gt;
-&lt;resource-ref&gt;</programlisting>
+    <listitem>
+     <para>
+      Restart Jetty to read the configuration changes.
+     </para>
+    </listitem>
+   </orderedlist>
+  </section>
  </section>
 </chapter>

@@ -1,0 +1,13 @@
+<Connector
+ port="8443"
+ protocol="HTTP/1.1"
+ SSLEnabled="true"
+ maxThreads="150"
+ scheme="https"
+ secure="true"
+ address="127.0.0.1"
+ clientAuth="false"
+ sslProtocol="TLS"
+ keystoreFile="/path/to/tomcat/conf/keystore"
+ keystorePass="password"
+/>
