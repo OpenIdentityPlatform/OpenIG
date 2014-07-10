@@ -144,32 +144,6 @@ INFO: Press Ctrl+C to stop the server.</computeroutput>
 
    <step>
     <para>
-     If you are using Jetty 7,
-     configure Jetty to run ${projectName} in the root context.
-    </para>
-
-    <para>
-     If you are using Jetty 8 or 9, then skip this step.
-    </para>
-
-    <para>
-     Create <filename>/path/to/jetty/contexts/root.xml</filename>
-     with the following content.
-    </para>
-
-    <informalexample><?dbfo pgwide="1"?>
-     <programlisting language="xml">
-<xinclude:include href="resources/root-xml.txt" parse="text">
- <xinclude:fallback>
-  Failed to include XML
- </xinclude:fallback>
-</xinclude:include>
-     </programlisting>
-    </informalexample>
-   </step>
-
-   <step>
-    <para>
      Deploy ${projectName} in the root context.
     </para>
 
@@ -243,7 +217,7 @@ $ <userinput>cp config.json ${warConfigDir}/config.json</userinput>
     </para>
 
     <programlisting language="xml">
-<xinclude:include href="resources/jetty-session-handler-xml.txt" parse="text">
+<xinclude:include href="resources/jetty-cookie-domains-xml.txt" parse="text">
  <xinclude:fallback>
   Failed to include XML
  </xinclude:fallback>
@@ -598,13 +572,13 @@ $ <userinput>java -jar start.jar</userinput>
    <varlistentry>
     <term><link
       xlink:show="new"
-      xlink:href="gateway-guide#chap-credentials-tutorial"
+      xlink:href="gateway-guide#chap-install"
       xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuring Deployment Containers</citetitle></link>
+     ><citetitle>Installing ${projectName}</citetitle></link>
     </term>
     <listitem>
      <para>
-      This chapter shows how to set up supported application servers for ${projectName}.
+      This chapter covers everything you need to install ${projectName}.
      </para>
     </listitem>
    </varlistentry>

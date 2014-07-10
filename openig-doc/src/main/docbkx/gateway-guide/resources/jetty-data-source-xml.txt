@@ -1,0 +1,11 @@
+<New id="jdbc/forgerock" class="org.eclipse.jetty.plus.jndi.Resource">
+  <Arg></Arg>
+  <Arg>jdbc/forgerock</Arg>
+  <Arg>
+    <New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+      <Set name="Url">jdbc:mysql://localhost:3306/databasename</Set>
+      <Set name="User">mysqladmin</Set>
+      <Set name="Password">password</Set>
+    </New>
+  </Arg>
+</New>
