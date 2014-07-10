@@ -24,7 +24,7 @@
     <version>2.2.0-SNAPSHOT</version>
   </parent>
   <artifactId>openig-saml</artifactId>
-  <name>OpenIG Federation web application</name>
+  <name>OpenIG SAML Support</name>
   <properties>
     <openam.version>10.0.2</openam.version>
   </properties>
