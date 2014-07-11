@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * ISO8601 compliant representation of dates and times
+ * ISO8601 compliant representation of dates and times.
  */
 public final class ISO8601 {
 
@@ -51,7 +51,7 @@ public final class ISO8601 {
     }
 
     /**
-     * Returns an ISO8601 compliant string representing a date from a long
+     * Returns an ISO8601 compliant string representing a date from a long.
      *
      * @param date the date input as a long.
      * @return The IS08601 compliant string representation of the date.
