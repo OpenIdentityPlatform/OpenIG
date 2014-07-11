@@ -79,12 +79,12 @@
   </itemizedlist>
 
   <para>
-   See the <citetitle>Guide to ${projectName}</citetitle> chapter on
+   See the <citetitle>Guide to ${projectName}</citetitle> section,
    <link
-    xlink:href="gateway-guide#chap-container"
+    xlink:href="gateway-guide#configure-container"
     xlink:show="new"
     xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuring Deployment Containers</citetitle></link>
+   ><citetitle>Configuring Deployment Containers</citetitle></link>,
    for details on setting up your web application container.
   </para>
  </section>

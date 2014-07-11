@@ -627,6 +627,21 @@ $ <userinput>java -jar start.jar</userinput>
      </para>
     </listitem>
    </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-routing"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Routing Tutorial</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter shows how to configure ${projectName}
+      to allow dynamic configuration changes and route to multiple applications.
+     </para>
+    </listitem>
+   </varlistentry>
   </variablelist>
 
   <para>

@@ -29,91 +29,809 @@
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Installing ${projectName}</title>
 
-  <indexterm>
-   <primary>Installation</primary>
-  </indexterm>
+ <para>
+  This chapter covers everything you need to install ${projectName}.
+ </para>
+
+ <indexterm>
+  <primary>Installation</primary>
+ </indexterm>
 
  <itemizedlist>
-  <para>Before you install ${projectName}, make sure you have the right version of Java,
-  and install and configure the web container.</para>
   <listitem>
-   <para>Make sure you have the correct Java environment installed.</para>
+   <para>
+    Make sure you have a supported Java version installed.
+   </para>
 
    <para>
-    See the <citetitle>Release Notes</citetitle> section about the required <link
+    See the <citetitle>Release Notes</citetitle> section,
+    <link
      xlink:show="new"
      xlink:href="release-notes#java-requirements"
-     xlink:role=""><citetitle>JDK Version</citetitle></link> for details.
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>JDK Version</citetitle></link>, for details.
    </para>
   </listitem>
+
   <listitem>
-   <para>Refer to the chapter on <link xlink:href="gateway-guide#chap-container"
-   xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
-   Deployment Containers</citetitle></link> to ensure you have properly
-   installed and configured your web application container and are running a
-   supported version of Java.</para>
+   <para>
+    Prepare a deployment container.
+   </para>
+
+   <para>
+    For details, see <xref linkend="configure-container" />.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Prepare the network to use ${projectName} as a reverse proxy.
+   </para>
+
+   <para>
+    For details, see <xref linkend="configure-network" />.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Download, deploy, and configure ${projectName}.
+   </para>
+
+   <para>
+    For details, see <xref linkend="install" />.
+   </para>
   </listitem>
  </itemizedlist>
 
- <para>For the remainder of this chapter <literal>$HOME</literal> refers to
- the home directory of the user running the web container where you install
- ${projectName}.</para>
+ <section xml:id="configure-container">
+  <title>Configuring Deployment Containers</title>
 
- <procedure xml:id="download-install-configure">
-  <title>Download, Install, &amp; Configure</title>
-  <step>
-   <para><link xlink:href="http://www.forgerock.org/openig.html"
-   xlink:show="new">Download</link> the ${projectName} .war file.</para>
-  </step>
-  <step>
-   <para>Deploy the .war to the root context of the web application
-   container.</para>
-  </step>
+  <para>
+   This section provides installation and configuration tips
+   that you need to run ${projectName} in supported containers.
+  </para>
 
-  <step>
-   <para>Copy the <link xlink:href="gateway-guide#template-proxy-capture"
-   xlink:role="http://docbook.org/xlink/role/olink">proxy and capture</link>
-   template. You can jump straight to a configuration template that best
-   matches your application, but it is highly recommended you start with the
-   basic proxy template.</para>
-  </step>
+  <para>
+   For the full list of supported containers,
+   see the <citetitle>Release Notes</citetitle> section,
+   <link
+    xlink:show="new"
+    xlink:href="release-notes#which-container"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Web Application Containers</citetitle></link>.
+  </para>
 
-  <step>
-   <para>Copy the template to
-   <filename>${warConfigDir}/config.json</filename>. Replace the
-   <literal>TARGETIP</literal> tag in <filename>config.json</filename> with
-   the IP address and port number of your target application.</para>
+  <para>
+   For further information on advanced configuration for a particular container,
+   see the container documentation.
+  </para>
 
-   <para>On Windows, the configuration files belong in
-   <filename>${windowsWarConfigDir}</filename>. To locate the
-   <filename>%appdata%</filename> folder for your version of Windows, open
-   Windows Explorer, type <literal>%appdata%</literal> as the file path, and
-   press Enter. You must create the <filename>${windowsWarConfigDir}</filename>
-   folder, and then copy the configuration files.</para>
-  </step>
+  <section xml:id="about-securing-connections">
+   <title>About Securing Connections</title>
 
-  <step>
-   <para>Modify DNS or host file settings so the name of your target
-   application resolves to the IP address of ${projectName}. Be sure to restart your
-   browser after making this change.</para>
-  </step>
-
-  <step>
-   <para>Start the web container where ${projectName} is deployed and browse to the
-   target application. ${projectName} should now proxy all traffic to the
-   application.</para>
-  </step>
-
-  <step>
-   <para>To ensure the browser is going through ${projectName}, stop the ${projectName} web
-   container, and verify you cannot reach the application. You can also look
-   in the ${projectName} capture log to verify the traffic is going through ${projectName}.
-   The location for this log is set in <filename>config.json</filename>, by
-   default <filename>/tmp/gateway.log</filename>.
+   <para>
+    ${projectName} is often deployed to replay credentials
+    or other security information.
+    In a real world deployment,
+    that information must be communicated over a secure connection using HTTPS,
+    meaning in effect HTTP over encrypted Transport Layer Security (TLS).
+    Never send real credentials, bearer tokens, or other security information
+    unprotected over HTTP.
    </para>
-  </step>
- </procedure>
+
+   <para>
+    The web application container where ${projectName} runs
+    is responsible for setting up TLS connections.
+   </para>
+
+   <para>
+    TLS depends on the use of digital certificates (public keys).
+    In typical use of TLS,
+    the client authenticates the server by its X.509 digital certificate
+    as the first step to establishing communication.
+    Once trust is established,
+    then the client and server can set up
+    a symmetric key to encrypt communications.
+   </para>
+
+   <para>
+    In order for the client to trust the server certificate,
+    the client needs first to trust
+    the certificate of the party who signed the server's certificate.
+    This means that either the client
+    has a trusted copy of the signer's certificate,
+    or the client has a trusted copy
+    of the certificate of the party who signed the signer's certificate.
+   </para>
+
+   <para>
+    Certificate Authorities (CAs) are trusted signers
+    with well-known certificates.
+    Browsers generally ship with with many well-known CA certificates.
+    Java distributions also ship with many well-known CA certificates.
+    Getting a certificate signed by a well-known CA generally costs money.
+   </para>
+
+   <para>
+    It is also possible for you to self-sign certificates.
+    The trade off is that although you do not have to pay any money,
+    the certificate is not trusted by any clients until they have a copy.
+    Whereas it is often enough
+    to install a certificate signed by a well-known CA
+    in the server key store as the basis of trust for HTTPS connections,
+    self-signed certificates must also be installed in all clients.<footnote>
+     <para>
+      When ${projectName} acts as a client
+      of a protected application or other server
+      whose certificate is not recognized out of the box by the Java environment,
+      then you must also install that certificate
+      in the key store for the ${projectName} web application container.
+     </para>
+
+     <para>
+      The following command installs a trusted signer's certificate,
+      <filename>ca.crt</filename>, in a Java Key Store file.
+     </para>
+
+     <screen>
+$ <userinput>keytool \
+ -import \
+ -trustcacerts \
+ -keystore /path/to/container/keystore \
+ -file ca.crt \
+ -alias ca-cert \
+ -storepass password</userinput>
+     </screen>
+
+     <para>
+      The <option>-trustcacerts</option> option says
+      to trust this as a signing certificate,
+      and so works both with self-signed certificates
+      and also with certificates used to sign server certificates.
+     </para>
+    </footnote>
+   </para>
+
+   <para>
+    This guide describes how to install self-signed certificates,
+    which are certainly fine for trying out the software
+    and okay for deployments where you manage all clients
+    that access ${projectName}.
+    If you need a well-known CA signed certificate instead,
+    see the documentation for your container for details
+    on requesting a CA signature and installing the CA signed certificate.
+   </para>
+
+   <para>
+    Once certificates are properly installed to allow client-server trust,
+    also consider the cipher suites configured for use.
+    The cipher suite used determines the security settings for the communication.
+    Initial TLS negotiations bring the client and server to agreement on which
+    cipher suite to use.
+    Basically the client and server share their preferred cipher suites
+    to compare and to choose.
+    If you therefore have a preference concerning the cipher suites to use,
+    you must set up your container to use only your preferred cipher suites.
+    Otherwise the container is likely to inherit the list of cipher suites
+    from the underlying Java environment.
+   </para>
+
+   <para>
+    The Java Secure Socket Extension (JSSE), part of the Java environment,
+    provides security services that ${projectName} uses to secure connections.
+    You can set security and system properties to configure the JSSE.
+    For example, you can set the key store and password,
+    the trust store and password (useful when ${projectName} acts as a client),
+    the cipher suites to enable for use, and other properties.
+    For a list of properties you can use to customize the JSSE in Oracle Java,
+    see the <citetitle>Customization</citetitle> section of the
+    <link
+     xlink:href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html#Customization"
+     xlink:show="new"
+    ><citetitle>JSSE Reference Guide</citetitle></link>.
+   </para>
+  </section>
+
+  <section xml:id="tomcat">
+   <title>Configuring Apache Tomcat For ${projectName}</title>
+
+   <para>
+    This section describes essential Apache Tomcat configuration
+    that you need in order to run ${projectName}.
+   </para>
+
+   <indexterm>
+    <primary>Containers</primary>
+    <secondary>Tomcat</secondary>
+   </indexterm>
+
+   <para>
+    Download and install a supported version of Apache Tomcat from
+    <link xlink:show="new" xlink:href="http://tomcat.apache.org/" />.
+   </para>
+
+   <para>
+    Configure Tomcat to use the same protocol
+    as the application you are protecting with ${projectName}.
+    If the protected application is on a remote system,
+    configure Tomcat to use the same port as well.
+    If your application listens on both an HTTP and an HTTPS port,
+    then you must configure Tomcat to do so as well.
+   </para>
+
+   <para>
+    To configure Tomcat to use an HTTP port other than 8080,
+    modify the defaults in <filename>/path/to/tomcat/conf/server.xml</filename>.
+    Search for the default value of 8080 and replace it with the new port number.
+   </para>
+
+   <section xml:id="tomcat-cookie-domains">
+    <title>Configuring Tomcat Cookie Domains</title>
+
+    <para>
+     If you use ${projectName} for more than a single protected application
+     and the protected applications are on different hosts,
+     then you must configure Tomcat to set domain cookies.
+     To do this, add a session cookie domain context element
+     that specifies the domain to
+     <filename>/path/to/conf/Catalina/<replaceable>server</replaceable>/root.xml</filename>,
+     as in the following example.
+    </para>
+
+    <programlisting language="xml">
+<xinclude:include href="resources/tomcat-cookie-domains-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include session cookie domain configuration</xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     Restart Tomcat to read the configuration changes.
+    </para>
+   </section>
+
+   <section xml:id="tomcat-https">
+    <title>Configuring Tomcat For HTTPS</title>
+
+    <para>
+     To get Tomcat up quickly on an SSL port
+     add an entry similar to the following in
+     <filename>/path/to/tomcat/conf/server.xml</filename>.
+    </para>
+
+    <programlisting language="xml">
+<xinclude:include href="resources/tomcat-https-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include HTTPS configuration</xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     Also create a key store holding a self-signed certificate.
+    </para>
+
+    <screen>
+$ <userinput>keytool \
+ -genkey \
+ -alias tomcat \
+ -keyalg RSA \
+ -keystore /path/to/tomcat/conf/keystore \
+ -storepass password \
+ -keypass password \
+ -dname "CN=openig.example.com,O=Example Corp,C=FR"</userinput>
+    </screen>
+
+    <para>
+     Notice the key store file location and the key store password
+     both match the configuration.
+     By default, Tomcat looks for a certificate with alias <literal>tomcat</literal>.
+    </para>
+
+    <para>
+     Restart Tomcat to read the configuration changes.
+    </para>
+
+    <para>
+     Browsers generally do not trust self-signed certificates.
+     To work with a certificate signed instead by a trusted CA,
+     see the Apache Tomcat documentation on configuring HTTPS.
+    </para>
+   </section>
+
+   <section xml:id="tomcat-mysql">
+    <title>Configuring Tomcat to Access MySQL Over JNDI</title>
+
+    <para>
+     If ${projectName} accesses an SQL database,
+     then you must configure Apache Tomcat to access the database over JNDI.
+     To do so, you must add the driver jar for the database,
+     set up a JNDI data source, and set up a reference to that data source.
+    </para>
+
+    <orderedlist>
+     <para>
+      The following steps are for MySQL Connector/J.
+     </para>
+
+     <listitem>
+      <para>
+       Download the MySQL JDBC Driver Connector/J from
+       <link xlink:show="new" xlink:href="http://dev.mysql.com/downloads/connector/j" />.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Copy the driver .jar to <filename>/path/to/tomcat/lib/</filename>
+       so that it is on Tomcat's class path.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Add a JNDI data source for your MySQL server and database in
+       <filename>/path/to/tomcat/conf/context.xml</filename>.
+      </para>
+
+      <programlisting language="xml">
+<xinclude:include href="resources/tomcat-data-source-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include data source configuration</xinclude:fallback>
+</xinclude:include>
+      </programlisting>
+     </listitem>
+
+     <listitem>
+      <para>
+       Add a resource reference to the data source in
+       <filename>/path/to/tomcat/conf/web.xml</filename>.
+      </para>
+
+      <programlisting language="xml">
+<xinclude:include href="resources/tomcat-resource-ref-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include resource ref configuration</xinclude:fallback>
+</xinclude:include>
+      </programlisting>
+     </listitem>
+
+     <listitem>
+      <para>
+       Restart Tomcat to read the configuration changes.
+      </para>
+     </listitem>
+    </orderedlist>
+   </section>
+  </section>
+
+  <section xml:id="jetty">
+   <title>Configuring Jetty For ${projectName}</title>
+
+   <para>
+    This section describes essential Jetty configuration
+    that you need in order to run ${projectName}.
+   </para>
+
+   <indexterm>
+    <primary>Containers</primary>
+    <secondary>Jetty</secondary>
+   </indexterm>
+
+   <para>
+    Download and install a supported version of Jetty from
+    <link xlink:show="new" xlink:href="http://download.eclipse.org/jetty/" />.
+   </para>
+
+   <para>
+    Configure Jetty to use the same protocol
+    as the application you are protecting with ${projectName}.
+    If the protected application is on a remote system,
+    configure Jetty to use the same port as well.
+    If your application listens on both an HTTP and an HTTPS port,
+    then you must configure Jetty to do so as well.
+   </para>
+
+   <para>
+    To configure Jetty to use an HTTP port other than 8080,
+    modify the defaults in <filename>/path/to/jetty/etc/jetty.xml</filename>.
+    Search for the default value of 8080 and replace it with the new port number.
+   </para>
+
+   <section xml:id="jetty-cookie-domains">
+    <title>Configuring Jetty Cookie Domains</title>
+
+    <para>
+     If you use ${projectName} for more than a single protected application
+     and the protected applications are on different hosts,
+     then you must configure Jetty to set domain cookies.
+     To do this, add a session domain handler element
+     that specifies the domain to
+     <filename>/path/to/jetty/etc/jetty.xml</filename>,
+     as in the following example.
+    </para>
+
+    <programlisting language="xml">
+<xinclude:include href="resources/jetty-cookie-domains-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include session domain handler configuration</xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     Restart Jetty to read the configuration changes.
+    </para>
+   </section>
+
+  <section xml:id="jetty-https">
+   <title>Configuring Jetty For HTTPS</title>
+
+   <para>
+    To get Jetty up quickly on an SSL port, follow the steps in this section.
+   </para>
+
+   <para>
+    These steps involve replacing the built-in key store with your own.
+   </para>
+
+   <procedure>
+    <step>
+     <para>
+      If you have not done so already, remove the built-in key store.
+     </para>
+
+     <screen>
+$ <userinput>rm /path/to/jetty/etc/keystore</userinput>
+     </screen>
+    </step>
+
+    <step>
+     <para>
+      Generate a new key pair with self-signed certificate in the key store.
+     </para>
+
+     <screen>
+$ <userinput>keytool \
+ -genkey \
+ -alias jetty \
+ -keyalg RSA \
+ -keystore /path/to/jetty/etc/keystore \
+ -storepass password \
+ -keypass password \
+ -dname "CN=openig.example.com,O=Example Corp,C=FR"</userinput>
+     </screen>
+    </step>
+
+    <step>
+     <para>
+      Find the obfuscated form of the password.
+     </para>
+
+     <screen>
+$ <userinput>java \
+ -cp /path/to/jetty/lib/jetty-util-*.jar \
+ org.eclipse.jetty.util.security.Password \
+ password</userinput>
+<computeroutput>password
+OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v
+MD5:5f4dcc3b5aa765d61d8327deb882cf99</computeroutput>
+     </screen>
+    </step>
+
+    <step>
+     <para>
+      Edit the SSL Context Factory entry in the Jetty configuration file,
+      <filename>/path/to/jetty/etc/jetty-ssl.xml</filename>.
+     </para>
+
+   <programlisting language="xml">
+<xinclude:include href="resources/jetty-https-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include HTTPS configuration</xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+    </step>
+
+    <step>
+     <para>
+      Uncomment the line specifying that configuration file in
+      <filename>/path/to/jetty/start.ini</filename>.
+     </para>
+
+     <programlisting language="ini">
+etc/jetty-ssl.xml
+     </programlisting>
+    </step>
+
+    <step>
+     <para>
+      Restart Jetty.
+     </para>
+    </step>
+
+    <step>
+     <para>
+      Browse <link xlink:show="new" xlink:href="https://www.example.com:8443" />.
+     </para>
+
+     <para>
+      You should see a warning in the browser
+      that the (self-signed) certificate is not recognized.
+     </para>
+    </step>
+   </procedure>
+  </section>
+
+   <section xml:id="jetty-mysql">
+    <title>Configuring Jetty to Access MySQL Over JNDI</title>
+
+    <para>
+     If ${projectName} accesses an SQL database,
+     then you must configure Jetty to access the database over JNDI.
+     To do so, you must add the driver jar for the database,
+     set up a JNDI data source, and set up a reference to that data source.
+    </para>
+
+    <orderedlist>
+     <para>
+      The following steps are for MySQL Connector/J.
+     </para>
+
+     <listitem>
+      <para>
+       Download the MySQL JDBC Driver Connector/J from
+       <link xlink:show="new" xlink:href="http://dev.mysql.com/downloads/connector/j" />.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Copy the driver .jar to <filename>/path/to/jetty/lib/jndi/</filename>
+       so that it is on Jetty's class path.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Add a JNDI data source for your MySQL server and database in
+       <filename>/path/to/jetty/etc/jetty.xml</filename>.
+      </para>
+
+      <programlisting language="xml">
+<xinclude:include href="resources/jetty-data-source-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include data source configuration</xinclude:fallback>
+</xinclude:include>
+      </programlisting>
+     </listitem>
+
+     <listitem>
+      <para>
+       Add a resource reference to the data source in
+       <filename>/path/to/jetty/etc/webdefault.xml</filename>.
+      </para>
+
+      <programlisting language="xml">
+<xinclude:include href="resources/jetty-resource-ref-xml.txt" parse="text">
+ <xinclude:fallback>Failed to include resource ref configuration</xinclude:fallback>
+</xinclude:include>
+      </programlisting>
+     </listitem>
+
+     <listitem>
+      <para>
+       Restart Jetty to read the configuration changes.
+      </para>
+     </listitem>
+    </orderedlist>
+   </section>
+  </section>
+ </section>
+
+ <section xml:id="configure-network">
+  <title>Preparing the Network</title>
+
+  <para>
+   In order for ${projectName} to function as a reverse proxy,
+   browsers attempting to access the protected application
+   must go through ${projectName} instead.
+  </para>
+
+  <para>
+   Modify DNS or host file settings so that
+   the host name of the protected application
+   resolves to the IP address of ${projectName}
+   on the system where the browser runs.
+  </para>
+
+  <para>
+   Restart the browser after making this change.
+  </para>
+ </section>
+
+ <section xml:id="install">
+  <title>Installing ${projectName}</title>
+
+  <procedure>
+   <para>
+    Follow these steps to install ${projectName}.
+   </para>
+
+   <step>
+    <para>
+     Download the ${projectName}.
+    </para>
+
+    <itemizedlist>
+     <para>
+      ${projectName} can be downloaded from these locations.
+     </para>
+
+     <listitem>
+      <para>
+       The
+       <link
+        xlink:show="new"
+        xlink:href="http://forgerock.com/download-stack/"
+       >Enterprise Software Downloads</link> page
+       provides thoroughly validated release builds
+       for ForgeRock customers who run ${projectName} in production deployments,
+       and for those who want to try or test with release builds.
+      </para>
+
+      <para>
+       Use this build with officially released project documentation from
+       <link xlink:show="new" xlink:href="http://docs.forgerock.org/" />.
+      </para>
+
+      <para>
+       Make sure you review and agree with
+       the Software License and Subscription Agreement
+       in order to use the software.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The
+       <link
+        xlink:show="new"
+        xlink:href="http://forgerock.org/downloads/openig-builds/"
+       >Nightly Builds</link> page
+       offers the very latest successful nightly build of the latest code.
+      </para>
+
+      <para>
+       Use this build to get a preview of the latest features and fixes,
+       when reading along with the draft documentation.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The
+       <link
+        xlink:show="new"
+        xlink:href="http://forgerock.org/downloads/openig-archive/"
+       >Archive</link> page
+       makes older builds available.
+      </para>
+     </listitem>
+    </itemizedlist>
+   </step>
+
+   <step>
+    <para>
+     Deploy the ${projectName} .war <emphasis>to the root context</emphasis>
+     of the web application container.
+    </para>
+
+    <para>
+     ${projectName} must be deployed to the root context, not below.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Prepare your ${projectName} configuration files.
+    </para>
+
+    <para>
+     If you have not yet prepared configuration files, then start with the
+     <link
+      xlink:href="gateway-guide#config-proxy-and-capture"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
+    </para>
+
+    <para>
+     Copy the template to <filename>${warConfigDir}/config.json</filename>.
+     Replace the "baseURI" of the "HandlerServlet"
+     with that of the protected application.
+    </para>
+
+    <para>
+     On Windows,
+     copy the template to <filename>${windowsWarConfigDir}/config.json</filename>.
+     To locate the <filename>%appdata%</filename> folder
+     for your version of Windows,
+     open Windows Explorer,
+     type <literal>%appdata%</literal> as the file path,
+     and press Enter.
+     You must create the <filename>${windowsWarConfigDir}</filename> folder,
+     and then add the configuration file.
+    </para>
+
+    <para>
+     On Windows,
+     also edit the location of the capture log file.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Start the web container where ${projectName} is deployed.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Browse to the protected application.
+    </para>
+
+    <para>
+     ${projectName} should now proxy all traffic to the application.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Make sure the browser is going through ${projectName}.
+    </para>
+
+    <para>
+     Verify this in one of the following ways.
+    </para>
+
+    <stepalternatives>
+     <step>
+      <substeps>
+       <step>
+        <para>
+         Stop the ${projectName} web container.
+        </para>
+       </step>
+
+       <step>
+        <para>
+         Verify that you cannot browse to the protected application.
+        </para>
+       </step>
+
+       <step>
+        <para>
+         Start the ${projectName} web container.
+        </para>
+       </step>
+
+       <step>
+        <para>
+         Verify that you can now browse to the protected application again.
+        </para>
+       </step>
+      </substeps>
+     </step>
+
+     <step>
+      <para>
+       Check the capture log to see that traffic is going through ${projectName}.
+      </para>
+
+      <para>
+       The location for the capture log is set in <filename>config.json</filename>,
+       by default <filename>/tmp/gateway.log</filename>.
+      </para>
+     </step>
+    </stepalternatives>
+   </step>
+  </procedure>
+ </section>
 </chapter>

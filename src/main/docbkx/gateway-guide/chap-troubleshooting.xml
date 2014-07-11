@@ -148,11 +148,15 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
  <section>
   <title>${projectName} is not logging users in</title>
 
-  <para>If you are proxying to more than one application in multiple DNS
-  domains, you must make sure your container is enabled for domain cookies.
-  See the chapter on <link xlink:href="gateway-guide#chap-container"
-  xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Configuring
-  Deployment Containers</citetitle></link> for details on your specific
-  container.</para>
+  <para>
+   If you are proxying to more than one application in multiple DNS domains,
+   you must make sure your container is enabled for domain cookies.
+   For details on your specific container, see the section on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#configure-container"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuring Deployment Containers</citetitle></link>.
+  </para>
  </section>
 </chapter>

@@ -69,7 +69,6 @@
  <xinclude:include href='chap-howitworks.xml' />
  <xinclude:include href='chap-quickstart.xml' />
  <xinclude:include href='chap-install.xml' />
- <xinclude:include href='chap-container.xml' />
  <xinclude:include href='chap-usecases.xml' />
  <xinclude:include href='chap-credentials-tutorial.xml' />
  <xinclude:include href='chap-password-capture-replay-tutorial.xml' />
