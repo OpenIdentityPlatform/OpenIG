@@ -167,6 +167,16 @@
     <listitem>
      <para>
       <link
+       xlink:show="new"E
+       xlink:href="reference#Router"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Router</link>: Routes Exchange processing to separate configuration files.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
        xlink:show="new"
        xlink:href="reference#ScriptableHandler"
        xlink:role="http://docbook.org/xlink/role/olink"
