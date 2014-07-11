@@ -1,0 +1,7 @@
+<New id="sslContextFactory" class="org.eclipse.jetty.http.ssl.SslContextFactory">
+  <Set name="KeyStore"><Property name="jetty.home" default="." />/etc/keystore</Set>
+  <Set name="KeyStorePassword">OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</Set>
+  <Set name="KeyManagerPassword">OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</Set>
+  <Set name="TrustStore"><Property name="jetty.home" default="." />/etc/keystore</Set>
+  <Set name="TrustStorePassword">OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</Set>
+</New>
