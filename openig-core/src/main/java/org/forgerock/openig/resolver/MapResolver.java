@@ -34,7 +34,13 @@ public class MapResolver implements Resolver {
 
     @Override
     public Object get(Object object, Object element) {
-        return (object instanceof Map ? ((Map) object).get(element) : Resolver.UNRESOLVED);
+        if (object instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) object;
+            if (map.containsKey(element)) {
+                return map.get(element);
+            }
+        }
+        return Resolver.UNRESOLVED;
     }
 
     @SuppressWarnings("unchecked")
