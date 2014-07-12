@@ -2,3 +2,4 @@ org.forgerock.openig.resolver.ListResolver
 org.forgerock.openig.resolver.MapResolver
 org.forgerock.openig.resolver.PrincipalResolver
 org.forgerock.openig.resolver.UriResolver
+org.forgerock.openig.resolver.BeanResolver

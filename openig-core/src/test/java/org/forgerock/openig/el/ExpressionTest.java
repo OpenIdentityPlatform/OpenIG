@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
+import org.forgerock.openig.util.FieldMap;
 import org.testng.annotations.Test;
 
 public class ExpressionTest {
@@ -158,5 +159,97 @@ public class ExpressionTest {
 
         expr = new Expression("${exchange.response.headers['Set-Cookie'][0]}");
         assertThat(expr.eval(exchange, String.class)).isEqualTo("MyCookie=example; path=/");
+    }
+
+    @Test
+    public void testAccessingBeanProperties() throws Exception {
+        BeanFieldMap bfm = new BeanFieldMap("hello");
+        bfm.legacy = "OpenIG";
+        bfm.setNumber(42);
+
+        assertThat(new Expression("${legacy}").eval(bfm, String.class)).isEqualTo("OpenIG");
+        assertThat(new Expression("${number}").eval(bfm, Integer.class)).isEqualTo(42);
+        assertThat(new Expression("${readOnly}").eval(bfm, String.class)).isEqualTo("hello");
+    }
+
+    @Test
+    public void testSettingBeanProperties() throws Exception {
+        BeanFieldMap bfm = new BeanFieldMap("hello");
+        bfm.legacy = "OpenIG";
+        bfm.setNumber(42);
+
+        new Expression("${legacy}").set(bfm, "ForgeRock");
+        assertThat(bfm.legacy).isEqualTo("ForgeRock");
+
+        new Expression("${number}").set(bfm, 404);
+        assertThat(bfm.getNumber()).isEqualTo(404);
+
+        new Expression("${readOnly}").set(bfm, "will-be-ignored");
+        assertThat(bfm.getReadOnly()).isEqualTo("hello");
+    }
+
+    @Test
+    public void testUsingIntermediateBean() throws Exception {
+        ExternalBean bean = new ExternalBean(new InternalBean("Hello World"));
+
+        assertThat(new Expression("${internal.value}").eval(bean, String.class)).isEqualTo("Hello World");
+        new Expression("${internal.value}").set(bean, "ForgeRock OpenIG");
+        assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
+    }
+
+    public static class BeanFieldMap extends FieldMap {
+        public String legacy;
+
+        private int number;
+        private String readOnly;
+
+        private BeanFieldMap(final String readOnly) {
+            this.readOnly = readOnly;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public void setNumber(final int number) {
+            this.number = number;
+        }
+
+        public String getReadOnly() {
+            return readOnly;
+        }
+
+    }
+
+    public static class ExternalBean {
+        private InternalBean internal;
+
+        public ExternalBean(final InternalBean internal) {
+            this.internal = internal;
+        }
+
+        public InternalBean getInternal() {
+            return internal;
+        }
+
+        public void setInternal(final InternalBean internal) {
+            this.internal = internal;
+        }
+    }
+
+    private static class InternalBean {
+        private String value;
+
+        private InternalBean(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(final String value) {
+            this.value = value;
+        }
     }
 }
