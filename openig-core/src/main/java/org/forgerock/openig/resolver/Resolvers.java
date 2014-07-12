@@ -74,7 +74,7 @@ public final class Resolvers {
                     }
 
                     public Resolver next() {
-                        while (class1 != null && class1 != Object.class) {
+                        while (class1 != null) {
                             // class hierarchy
                             Resolver resolver = SERVICES.get(class1);
                             class1 = class1.getSuperclass();
