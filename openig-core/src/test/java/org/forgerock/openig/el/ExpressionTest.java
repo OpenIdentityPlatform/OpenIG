@@ -25,7 +25,7 @@ import java.util.HashMap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.util.FieldMap;
+import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.Test;
 
 public class ExpressionTest {
@@ -166,10 +166,13 @@ public class ExpressionTest {
         BeanFieldMap bfm = new BeanFieldMap("hello");
         bfm.legacy = "OpenIG";
         bfm.setNumber(42);
+        bfm.put("attribute", "hello");
 
         assertThat(new Expression("${legacy}").eval(bfm, String.class)).isEqualTo("OpenIG");
         assertThat(new Expression("${number}").eval(bfm, Integer.class)).isEqualTo(42);
         assertThat(new Expression("${readOnly}").eval(bfm, String.class)).isEqualTo("hello");
+        assertThat(new Expression("${attribute}").eval(bfm, String.class)).isEqualTo("hello");
+        assertThat(new Expression("${missing}").eval(bfm, String.class)).isNull();
     }
 
     @Test
@@ -186,6 +189,9 @@ public class ExpressionTest {
 
         new Expression("${readOnly}").set(bfm, "will-be-ignored");
         assertThat(bfm.getReadOnly()).isEqualTo("hello");
+
+        new Expression("${attribute}").set(bfm, "a-value");
+        assertThat(bfm.get("attribute")).isEqualTo("a-value");
     }
 
     @Test
@@ -197,7 +203,7 @@ public class ExpressionTest {
         assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
     }
 
-    public static class BeanFieldMap extends FieldMap {
+    public static class BeanFieldMap extends ExtensibleFieldMap {
         public String legacy;
 
         private int number;
