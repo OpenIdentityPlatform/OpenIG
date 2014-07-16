@@ -18,12 +18,12 @@
 
 package org.forgerock.openig.http;
 
+import static org.forgerock.openig.el.Functions.urlDecode;
+import static org.forgerock.openig.el.Functions.urlEncode;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -58,11 +58,7 @@ public class Form extends MultiValueMap<String, String> {
         for (String param : s.split("&")) {
             String[] nv = param.split("=", 2);
             if (nv.length == 2) {
-                try {
-                    add(URLDecoder.decode(nv[0], "UTF-8"), URLDecoder.decode(nv[1], "UTF-8"));
-                } catch (UnsupportedEncodingException uee) {
-                    throw new IllegalStateException(uee);
-                }
+                add(urlDecode(nv[0]), urlDecode(nv[1]));
             }
         }
         return this;
@@ -81,12 +77,7 @@ public class Form extends MultiValueMap<String, String> {
                 if (sb.length() > 0) {
                     sb.append('&');
                 }
-                try {
-                    sb.append(URLEncoder.encode(name, "UTF-8")).append('=').append(
-                            URLEncoder.encode(value, "UTF-8"));
-                } catch (UnsupportedEncodingException uee) {
-                    throw new IllegalStateException(uee);
-                }
+                sb.append(urlEncode(name)).append('=').append(urlEncode(value));
             }
         }
         return sb.toString();
