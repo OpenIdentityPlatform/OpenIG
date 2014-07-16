@@ -18,6 +18,8 @@
 
 package org.forgerock.openig.servlet;
 
+import static org.forgerock.util.Utils.closeSilently;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -150,20 +152,9 @@ public class HandlerServlet extends HttpServlet {
             }
         } finally {
             // final cleanup
-            if (requestEntityTrunk != null) {
-                try {
-                    requestEntityTrunk.close();
-                } catch (IOException ioe) {
-                    // ignore exception closing a stream
-                }
-            }
-            if (exchange.response != null && exchange.response.entity != null) {
-                try {
-                    // important!
-                    exchange.response.entity.close();
-                } catch (IOException ioe) {
-                    // ignore exception closing a stream
-                }
+            closeSilently(requestEntityTrunk);
+            if (exchange.response != null) {
+                closeSilently(exchange.response.entity);
             }
         }
         timer.stop();
