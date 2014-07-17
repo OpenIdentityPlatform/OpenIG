@@ -74,6 +74,11 @@ public class GatewayServlet extends HttpServlet {
     private HttpServlet servlet;
 
     /**
+     * Heap of objects (represents the live configuration).
+     */
+    private HeapImpl heap;
+
+    /**
      * Default constructor invoked from web container. The servlet will be assumed to be running as a web
      * application and obtain its configuration from the default web {@linkplain Environment environment}.
      */
@@ -104,7 +109,7 @@ public class GatewayServlet extends HttpServlet {
             JsonValue config = readJson(configuration);
 
             // Create and configure the heap
-            HeapImpl heap = new HeapImpl();
+            heap = new HeapImpl();
             // "Live" objects
             heap.put("ServletContext", servletConfig.getServletContext());
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
@@ -143,5 +148,12 @@ public class GatewayServlet extends HttpServlet {
     public void service(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         servlet.service(request, response);
+    }
+
+    @Override
+    public void destroy() {
+        heap.destroy();
+        servlet = null;
+        environment = null;
     }
 }
