@@ -37,6 +37,8 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
+import com.sun.identity.common.ShutdownManager;
+
 /**
  * The federation servlet adapter.
  */
@@ -116,6 +118,20 @@ public class SamlFederationHandler extends GenericHandler {
                     logger);
 
             return handler;
+        }
+
+        @Override
+        public void destroy() {
+            // Automatically shutdown the fedlet
+            ShutdownManager manager = ShutdownManager.getInstance();
+            if (manager.acquireValidLock()) {
+                try {
+                    manager.shutdown();
+                } finally {
+                    manager.releaseLockAndNotify();
+                }
+            }
+            super.destroy();
         }
     }
 }
