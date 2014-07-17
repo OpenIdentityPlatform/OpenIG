@@ -30,6 +30,9 @@ public class BeanResolver implements Resolver {
     private final BeanELResolver delegate;
     private final ELContext context;
 
+    /**
+     * Builds a new BeanResolver around an EL {@link BeanELResolver} instance.
+     */
     public BeanResolver() {
         delegate = new BeanELResolver();
         context = new BasicELContext();
