@@ -410,8 +410,8 @@ $ <userinput>curl http://www.example.com:8080 | grep george</userinput>
   </para>
 
   <para>
-   In that case, stop the server, edit the Router "scan-interval", and restart.
-   When "scan-interval" is set to -1, the Router only loads routes at startup.
+   In that case, stop the server, edit the Router "scanInterval", and restart.
+   When "scanInterval" is set to -1, the Router only loads routes at startup.
   </para>
 
   <programlisting language="javascript">
@@ -419,7 +419,7 @@ $ <userinput>curl http://www.example.com:8080 | grep george</userinput>
     "name": "Router",
     "type": "Router",
     "config": {
-        "scan-interval": -1
+        "scanInterval": -1
     }
 }
   </programlisting>
@@ -434,7 +434,7 @@ $ <userinput>curl http://www.example.com:8080 | grep george</userinput>
     "type": "Router",
     "config": {
         "directory": "/path/to/safe/routes",
-        "scan-interval": -1
+        "scanInterval": -1
     }
 }
   </programlisting>

@@ -82,7 +82,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"scan-interval"</code>: <emphasis>integer</emphasis> (Optional)</term>
+    <term><code>"scanInterval"</code>: <emphasis>integer</emphasis> (Optional)</term>
     <listitem>
      <para>
       Interval in seconds after which ${projectName} scans
