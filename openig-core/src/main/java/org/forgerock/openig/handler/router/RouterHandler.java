@@ -49,12 +49,12 @@ import org.forgerock.util.time.TimeService;
  *     "type": "Router",
  *     "config": {
  *       "directory": "/tmp/routes",
- *       "scan-interval": 2
+ *       "scanInterval": 2
  *     }
  *   }
  * </pre>
  *
- * Note that {@literal scan-interval} is defined in seconds. If {@literal -1} (or any negative value) is
+ * Note that {@literal scanInterval} is defined in seconds. If {@literal -1} (or any negative value) is
  * provided, only an initial scan is performed at startup, synchronously.
  *
  * @since 2.2
@@ -224,7 +224,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
             DirectoryScanner scanner = new DirectoryMonitor(directory);
 
-            int period = config.get("scan-interval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
+            int period = config.get("scanInterval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
             if (period > 0) {
                 // Wrap the scanner in another scanner that will trigger scan at given interval
                 PeriodicDirectoryScanner periodic =
