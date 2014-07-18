@@ -18,6 +18,8 @@ package org.forgerock.openig.handler.router;
 
 import java.util.concurrent.Semaphore;
 
+import org.forgerock.util.time.TimeService;
+
 /**
  * Trigger a directory scan if a given amount of time has elapsed since last scan.
  * Only 1 thread at a time can trigger the new scan.
