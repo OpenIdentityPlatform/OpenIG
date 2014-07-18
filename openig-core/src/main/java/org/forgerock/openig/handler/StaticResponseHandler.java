@@ -141,7 +141,7 @@ public class StaticResponseHandler extends GenericHandler {
         @Override
         public Object create() throws HeapException {
             final int status = config.get("status").required().asInteger();
-            final String reason = config.get("reason").required().asString();
+            final String reason = config.get("reason").asString();
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
             final String entity = config.get("entity").asString();
