@@ -38,6 +38,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.time.TimeService;
 
 /**
  * Auto-configured {@link DispatchHandler}. It looks for route configuration files (very similar to the
@@ -226,7 +227,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             int period = config.get("scan-interval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
             if (period > 0) {
                 // Wrap the scanner in another scanner that will trigger scan at given interval
-                PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(scanner, new SystemTimeService());
+                PeriodicDirectoryScanner periodic =
+                        new PeriodicDirectoryScanner(scanner, TimeService.SYSTEM);
 
                 // configuration values is expressed in seconds, needs to convert it to milliseconds
                 periodic.setScanInterval(period * 1000);
