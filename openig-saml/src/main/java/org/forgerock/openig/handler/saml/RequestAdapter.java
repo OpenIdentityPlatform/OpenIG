@@ -30,14 +30,14 @@ import org.forgerock.openig.http.Exchange;
 /**
  * Adapts a given {@link HttpServletRequest} to make uses of the {@link Exchange} in some places.
  */
-public class RequestAdapter extends HttpServletRequestWrapper {
+class RequestAdapter extends HttpServletRequestWrapper {
 
     /**
      * Provides additional data (parameter values).
      */
     private final Exchange exchange;
 
-    public RequestAdapter(final HttpServletRequest request, final Exchange exchange) {
+    RequestAdapter(final HttpServletRequest request, final Exchange exchange) {
         super(request);
         this.exchange = exchange;
     }
