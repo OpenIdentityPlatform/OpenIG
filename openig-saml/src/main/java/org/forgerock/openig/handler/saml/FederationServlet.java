@@ -65,34 +65,34 @@ class FederationServlet extends HttpServlet {
     private final Logger logger;
 
     /** The attribute mapping. */
-    private Map<String, String> attributeMapping = new HashMap<String, String>();
+    private final Map<String, String> attributeMapping;
 
     /** The value contained in the assertion subject is set as the value of the attribute subjectName in the session. */
-    private String subjectMapping;
+    private final String subjectMapping;
 
     /** The delimiter to use when there are multiple contexts in the assertion. */
-    private String authnContextDelimiter;
+    private final String authnContextDelimiter;
 
     /** The name to use when placing context values into the session. */
-    private String authnContext;
+    private final String authnContext;
 
-    private String sessionIndexMapping;
+    private final String sessionIndexMapping;
 
-    private String redirectURI;
+    private final String redirectURI;
 
-    private String logoutURI;
+    private final String logoutURI;
 
-    private String assertionConsumerEndpoint;
+    private final String assertionConsumerEndpoint;
 
-    private String sPinitiatedSSOEndpoint;
+    private final String sPinitiatedSSOEndpoint;
 
-    private String singleLogoutEndpoint;
+    private final String singleLogoutEndpoint;
 
     /** IDP Single Logout SOAP Endpoint. */
-    private String singleLogoutEndpointSoap;
+    private final String singleLogoutEndpointSoap;
 
     /** SP Single Logout Endpoint. */
-    private String sPinitiatedSLOEndpoint;
+    private final String sPinitiatedSLOEndpoint;
 
     /**
      * Constructs a federation servlet according to the specified parameters.
@@ -131,7 +131,6 @@ class FederationServlet extends HttpServlet {
             String authnContext, String sessionIndexMapping, String redirectURI, String logoutURI,
             String assertionConsumerEndpoint, String sPinitiatedSSOEndpoint, String singleLogoutEndpoint,
             String singleLogoutEndpointSoap, String sPinitiatedSLOEndpoint, Logger logger) {
-        super();
         this.attributeMapping = Collections.unmodifiableMap(attributeMapping);
         this.subjectMapping = subjectMapping;
         this.authnContextDelimiter = authnContextDelimiter;
@@ -188,7 +187,6 @@ class FederationServlet extends HttpServlet {
      * from and set in the HttpSession where downstream filters can access them and pass them on to the target
      * application.
      */
-    @SuppressWarnings("unchecked")
     private void serviceAssertionConsumer(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
         Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
@@ -278,18 +276,19 @@ class FederationServlet extends HttpServlet {
     }
 
     @SuppressWarnings("unchecked")
-    private static void serviceSPInitiatedSSO(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, SAML2Exception, SessionException {
+    private static void serviceSPInitiatedSSO(HttpServletRequest request,
+            HttpServletResponse response) throws SAML2Exception {
         String metaAlias = request.getParameter(SAML2Constants.METAALIAS);
         if (metaAlias == null || metaAlias.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
-            List<String> spMetaAliases = manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
+            List<String> spMetaAliases =
+                    manager.getAllHostedServiceProviderMetaAliases(DEFAULT_REALM);
             if (spMetaAliases != null && !spMetaAliases.isEmpty()) {
                 metaAlias = spMetaAliases.get(0);
             }
         }
         String idpEntityID = request.getParameter(SAML2Constants.IDPENTITYID);
-        Map<String, List> paramsMap = SAML2Utils.getParamsMap(request);
+        Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(request);
         List<String> list = new ArrayList<String>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
@@ -324,9 +323,8 @@ class FederationServlet extends HttpServlet {
      * "binding" - binding used for this request and when not set it will use the default binding of the IDP
      */
     @SuppressWarnings("unchecked")
-    private void serviceSPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
-            ServletException, SAML2Exception, SessionException {
-
+    private void serviceSPInitiatedSLO(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, SAML2Exception {
         logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
 
         HttpSession httpSession = request.getSession();
@@ -419,9 +417,8 @@ class FederationServlet extends HttpServlet {
         }
     }
 
-    private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response) throws IOException,
-            ServletException, SAML2Exception, SessionException {
-
+    private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response)
+            throws SAML2Exception, SessionException {
         logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
         String relayState = request.getParameter(SAML2Constants.RELAY_STATE);

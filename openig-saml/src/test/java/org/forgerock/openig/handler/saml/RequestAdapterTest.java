@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class RequestAdapterTest {
 
     public static final String BASE_URI = "http://www.example.org";
@@ -53,10 +54,10 @@ public class RequestAdapterTest {
     @DataProvider
     public Object[][] exchangesWithFormParameters() throws Exception {
         return new Object[][] {
-                { buildExchangeWithParametersInQuery() },
-                { buildExchangeWithParametersInPayload() },
-                { buildExchangeWithParametersInBothPayloadAndQuery() }
-                // TODO add a case(s) where content type is missing ...
+            { buildExchangeWithParametersInQuery() },
+            { buildExchangeWithParametersInPayload() },
+            { buildExchangeWithParametersInBothPayloadAndQuery() }
+            // TODO add a case(s) where content type is missing ...
         };
     }
 
@@ -97,13 +98,15 @@ public class RequestAdapterTest {
         return exchange;
     }
 
-    private Exchange buildExchange(final String name) {return new Exchange() {
-        @Override
-        public String toString() {
-            // Just make TestNG printed test names more explicit
-            return format("Exchange[%s]", name);
-        }
-    };}
+    private Exchange buildExchange(final String name) {
+        return new Exchange() {
+            @Override
+            public String toString() {
+                // Just make TestNG printed test names more explicit
+                return format("Exchange[%s]", name);
+            }
+        };
+    }
 
     @Test(dataProvider = "exchangesWithFormParameters")
     public void testGetParameter(final Exchange exchange) throws Exception {

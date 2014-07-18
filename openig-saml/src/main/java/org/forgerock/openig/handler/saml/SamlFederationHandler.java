@@ -46,8 +46,6 @@ public class SamlFederationHandler extends GenericHandler {
 
     private HttpServlet servlet;
 
-    private static final long serialVersionUID = 1L;
-
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         final LogTimer timer = logger.getTimer().start();
