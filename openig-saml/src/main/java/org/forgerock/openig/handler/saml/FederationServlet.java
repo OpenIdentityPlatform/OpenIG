@@ -192,17 +192,19 @@ class FederationServlet extends HttpServlet {
     private void serviceAssertionConsumer(HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException, SAML2Exception, SessionException {
         Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
-        String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
-        if (relayURI != null && !"".equals(relayURI)) {
-            redirectURI = relayURI;
-        }
         addAttributesToSession(request, map);
         /*
          * Redirect back to the original target application's login page and let the filters take over. If the relayURI
          * is set in the assertion we must use that, otherwise we will use the configured value, which should be the
          * login page for the target application.
          */
-        response.sendRedirect(redirectURI);
+        String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
+        String uri = isRelayURIProvided(relayURI) ? relayURI : redirectURI;
+        response.sendRedirect(uri);
+    }
+
+    private boolean isRelayURIProvided(String relayURI) {
+        return relayURI != null && !relayURI.isEmpty();
     }
 
     /**
