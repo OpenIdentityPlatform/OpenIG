@@ -51,9 +51,11 @@ public interface Environment {
     File getTempDirectory();
 
     /**
-     * Returns the directory that contains the files of the given type.
-     * It usually points to the {@literal scripts/{type}/} directory.
-     * @param type script's type (could be {@literal groovy} or {@literal js})
+     * Returns the directory that contains the files of the given type. It
+     * usually points to the {@literal scripts/<type>/} directory.
+     *
+     * @param type
+     *            script's type (could be {@literal groovy} or {@literal js})
      * @return the scripting directory.
      */
     File getScriptDirectory(String type);
