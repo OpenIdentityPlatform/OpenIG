@@ -61,6 +61,7 @@ public final class JsonValueUtil {
         ALIASES.put("StaticResponseHandler", "org.forgerock.openig.handler.StaticResponseHandler");
         ALIASES.put("SwitchFilter", "org.forgerock.openig.filter.SwitchFilter");
         ALIASES.put("TemporaryStorage", "org.forgerock.openig.io.TemporaryStorage");
+        ALIASES.put("WelcomeHandler", "org.forgerock.openig.handler.WelcomeHandler");
     }
 
     /**
