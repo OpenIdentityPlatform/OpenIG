@@ -16,11 +16,15 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.util.Utils.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +33,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.http.Exchange;
@@ -109,6 +114,33 @@ public class RouterHandlerTest {
         assertThat(DestroyDetectHandler.destroyed).isTrue();
     }
 
+    @Test
+    public void testDefaultHandler() throws Exception {
+        RouterHandler handler =
+                new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+
+        // Initial scan
+        handler.start();
+
+        // Verify that the initial route is active
+        assertStatusAfterHandle(handler, "OpenIG", 42);
+
+        try {
+            // Should throw since no routes match and there is no default handler.
+            handle(handler, "OpenAM");
+            failBecauseExceptionWasNotThrown(HandlerException.class);
+        } catch (HandlerException e) {
+            // Ok - the request could not be routed.
+        }
+
+        Handler defaultHandler = mock(Handler.class);
+        handler.setDefaultHandler(defaultHandler);
+
+        // Should route to default handler.
+        Exchange exchange = handle(handler, "OpenAM");
+        verify(defaultHandler).handle(exchange);
+    }
+
     private File copyFileFromSupplyToRoutes(final String filename) throws IOException {
         File destination;
         Reader reader = null;
@@ -129,9 +161,15 @@ public class RouterHandlerTest {
     private void assertStatusAfterHandle(final RouterHandler handler,
                                          final String value,
                                          final int expected) throws HandlerException, IOException {
+        Exchange exchange = handle(handler, value);
+        assertThat(exchange.response.status).isEqualTo(expected);
+    }
+
+    private Exchange handle(final RouterHandler handler, final String value)
+            throws HandlerException, IOException {
         Exchange exchange = new Exchange();
         exchange.put("name", value);
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(expected);
+        return exchange;
     }
 }
