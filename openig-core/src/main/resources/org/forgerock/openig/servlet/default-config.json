@@ -1,0 +1,61 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "_HandlerServlet",
+                "type": "HandlerServlet",
+                "config": {
+                    "handler": "_Router"
+                }
+            },
+            {
+                "name": "_Router",
+                "type": "Router",
+                "config": {
+                    "defaultHandler": "_DefaultRoute"
+                }
+            },
+            {
+                "name": "_DefaultRoute",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
+                            "handler": "_200Welcome"
+                        },
+                        {
+                            "condition": "${exchange.request.uri.path == '/'}",
+                            "handler": "_405MethodNotAllowed"
+                        },
+                        {
+                            "handler": "_404NotFound"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "_200Welcome",
+                "type": "WelcomeHandler",
+                "config": {}
+            },
+            {
+                "name": "_405MethodNotAllowed",
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 405,
+                    "reason": "Method Not Allowed"
+                }
+            },
+            {
+                "name": "_404NotFound",
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 404,
+                    "reason": "Not Found"
+                }
+            }
+        ]
+    },
+    "servletObject": "_HandlerServlet"
+}

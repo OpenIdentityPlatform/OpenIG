@@ -24,11 +24,11 @@ import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -38,10 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.WebEnvironment;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.io.TemporaryStorage;
@@ -106,7 +104,10 @@ public class GatewayServlet extends HttpServlet {
         try {
             // Load the configuration
             File configuration = new File(environment.getConfigDirectory(), "config.json");
-            JsonValue config = readJson(configuration);
+            URL configurationURL =
+                    configuration.canRead() ? configuration.toURI().toURL() : getClass()
+                            .getResource("default-config.json");
+            JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
             heap = new HeapImpl();
@@ -119,17 +120,17 @@ public class GatewayServlet extends HttpServlet {
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.init(config.get("heap").required().expect(Map.class));
             servlet = HeapUtil.getRequiredObject(heap, config.get("servletObject").required(), HttpServlet.class);
-        } catch (HeapException he) {
-            throw new ServletException(he);
-        } catch (JsonValueException jve) {
-            throw new ServletException(jve);
+        } catch (ServletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
     }
 
-    private JsonValue readJson(final File resource) throws ServletException {
+    private JsonValue readJson(final URL resource) throws ServletException {
         InputStreamReader reader = null;
         try {
-            InputStream in = new FileInputStream(resource);
+            InputStream in = resource.openStream();
             JSONParser parser = new JSONParser();
             reader = new InputStreamReader(in);
             return new JsonValue(parser.parse(reader));
