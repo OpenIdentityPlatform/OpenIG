@@ -22,6 +22,7 @@ import static com.xebialabs.restito.semantics.Condition.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.mockito.Mockito.*;
 
@@ -776,6 +777,7 @@ public class GroovyScriptableFilterTest {
         final HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
+        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new TemporaryStorage()));
         return heap;
     }
 

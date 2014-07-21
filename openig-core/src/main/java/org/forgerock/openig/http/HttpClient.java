@@ -55,6 +55,8 @@ import org.forgerock.openig.header.ConnectionHeader;
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentLengthHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
@@ -71,6 +73,21 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * SSL endpoint using a raw IP address rather than a fully-qualified hostname.
  */
 public class HttpClient {
+
+    /**
+     * Key to retrieve an {@link HttpClient} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
+
+    /** Reuse of Http connection is disabled by default. */
+    public static final boolean DISABLE_CONNECTION_REUSE = false;
+
+    /** Http connection retries are disabled by default. */
+    public static final boolean DISABLE_RETRIES = false;
+
+    /** Default maximum number of collections through HTTP client. */
+    public static final int DEFAULT_CONNECTIONS = 64;
+
     /** A request that encloses an entity. */
     private static class EntityRequest extends HttpEntityEnclosingRequestBase {
         private final String method;
@@ -108,9 +125,6 @@ public class HttpClient {
             return method;
         }
     }
-
-    /** Default maximum number of collections through HTTP client. */
-    private static final int DEFAULT_CONNECTIONS = 64;
 
     /** Headers that are suppressed in request. */
     // FIXME: How should the the "Expect" header be handled?
@@ -289,4 +303,32 @@ public class HttpClient {
         // TODO: decide if need to try-finally to call httpRequest.abort?
         return response;
     }
+
+    /**
+     * Creates and initializes a http client object in a heap environment.
+     */
+    public static class Heaplet extends NestedHeaplet {
+
+        @Override
+        public Object create() throws HeapException {
+            // optional, default to DEFAULT_CONNECTIONS number of connections
+            Integer connections = config.get("connections").defaultTo(DEFAULT_CONNECTIONS).asInteger();
+            // determines if connections should be reused, disables keep-alive
+            Boolean disableReuseConnection = config.get("disableReuseConnection")
+                    .defaultTo(DISABLE_CONNECTION_REUSE)
+                    .asBoolean();
+            // determines if requests should be retried on failure
+            Boolean disableRetries = config.get("disableRetries").defaultTo(DISABLE_RETRIES).asBoolean();
+
+            HttpClient client = new HttpClient(storage, connections);
+            if (disableRetries) {
+                client.disableRetries(logger);
+            }
+            if (disableReuseConnection) {
+                client.disableConnectionReuse();
+            }
+            return client;
+        }
+    }
+
 }

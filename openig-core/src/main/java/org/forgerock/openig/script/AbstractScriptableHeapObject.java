@@ -16,6 +16,8 @@
 package org.forgerock.openig.script;
 
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -70,7 +72,10 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
-            component.setHttpClient(new HttpClient(storage)); // TODO more config?
+            HttpClient httpClient = getRequiredObject(heap,
+                                                      config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
+                                                      HttpClient.class);
+            component.setHttpClient(httpClient);
             return component;
         }
 
