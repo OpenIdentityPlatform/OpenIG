@@ -34,8 +34,8 @@ import org.forgerock.openig.log.Logger;
 /**
  * A generic base class for heaplets with automatically injected fields.
  * <p>
- * If the object created is an instance of {@link GenericHeapObject}, it is then automatically injected with
- * {@code logger} and {@code storage} objects.
+ * If the object created is an instance of {@link GenericHeapObject}, it is then
+ * automatically injected with {@code logger} and {@code storage} objects.
  */
 public abstract class GenericHeaplet implements Heaplet {
 
@@ -88,6 +88,7 @@ public abstract class GenericHeaplet implements Heaplet {
             ghObject.logger = this.logger;
             ghObject.storage = this.storage;
         }
+        start();
         return object;
     }
 
@@ -97,14 +98,34 @@ public abstract class GenericHeaplet implements Heaplet {
     }
 
     /**
-     * Called to request the heaplet create an object. Called by {@link GenericHeaplet#create(String, JsonValue, Heap)}
-     * after initializing the protected field members.
+     * Called to request the heaplet create an object. Called by
+     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after initializing
+     * the protected field members. Implementations should parse configuration
+     * but not acquire resources, start threads, or log any initialization
+     * messages. These tasks should be performed by the {@link #start()} method.
      *
      * @return The created object.
      * @throws HeapException
-     *             if an exception occurred during creation of the heap object or any of its dependencies.
+     *             if an exception occurred during creation of the heap object
+     *             or any of its dependencies.
      * @throws JsonValueException
-     *             if the heaplet (or one of its dependencies) has a malformed configuration.
+     *             if the heaplet (or one of its dependencies) has a malformed
+     *             configuration.
      */
     public abstract Object create() throws HeapException;
+
+    /**
+     * Called to request the heaplet start an object. Called by
+     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after creating and
+     * configuring the object and once the object's logger and storage have been
+     * configured. Implementations should override this method if they need to
+     * acquire resources, start threads, or log any initialization messages.
+     *
+     * @throws HeapException
+     *             if an exception occurred while starting the heap object or
+     *             any of its dependencies.
+     */
+    public void start() throws HeapException {
+        // default does nothing
+    }
 }

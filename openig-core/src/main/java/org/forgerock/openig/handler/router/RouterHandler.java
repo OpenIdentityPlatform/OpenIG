@@ -34,8 +34,10 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.DispatchHandler;
 import org.forgerock.openig.handler.GenericHandler;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.time.TimeService;
@@ -49,6 +51,7 @@ import org.forgerock.util.time.TimeService;
  *     "type": "Router",
  *     "config": {
  *       "directory": "/tmp/routes",
+ *       "defaultHandler": "404NotFound",
  *       "scanInterval": 2
  *     }
  *   }
@@ -92,6 +95,12 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
     private final Lock write;
 
     /**
+     * The optional handler which should be invoked when no routes match the
+     * request.
+     */
+    private Handler defaultHandler;
+
+    /**
      * Builds a router that loads its configuration from the given directory.
      * @param builder route builder
      * @param scanner {@link DirectoryScanner} that will be invoked at each incoming request
@@ -114,6 +123,23 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             SortedSet<Route> newSet = new TreeSet<Route>(comparator);
             newSet.addAll(sorted);
             sorted = newSet;
+        } finally {
+            write.unlock();
+        }
+    }
+
+    /**
+     * Sets the handler which should be invoked when no routes match the
+     * request.
+     *
+     * @param handler
+     *            the handler which should be invoked when no routes match the
+     *            request
+     */
+    public void setDefaultHandler(final Handler handler) {
+        write.lock();
+        try {
+            this.defaultHandler = handler;
         } finally {
             write.unlock();
         }
@@ -171,20 +197,41 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             Route route = builder.build(file);
             sorted.add(route);
             routes.put(file, route);
+            logger.info(format("Added route '%s' defined in file '%s'", route.getName(), file));
         } catch (HeapException e) {
-            logger.warning(format("Cannot build route from file '%s': %s", file, e.getMessage()));
+            logger.warning(format(
+                    "The route defined in file '%s' cannot be added because it could not be parsed: %s",
+                    file, e.getMessage()));
         }
     }
 
     private void onRemovedFile(final File file) {
         Route route = routes.remove(file);
-        sorted.remove(route);
-        route.destroy();
+        if (route != null) {
+            sorted.remove(route);
+            route.destroy();
+            logger.info(format("Removed route '%s' defined in file '%s'", route.getName(), file));
+        }
     }
 
     private void onModifiedFile(final File file) {
-        onRemovedFile(file);
-        onAddedFile(file);
+        Route newRoute;
+        try {
+            newRoute = builder.build(file);
+        } catch (HeapException e) {
+            logger.warning(format(
+                    "The route defined in file '%s' cannot be modified because it could not be parsed: %s",
+                    file, e.getMessage()));
+            return;
+        }
+        Route oldRoute = routes.remove(file);
+        if (oldRoute != null) {
+            sorted.remove(oldRoute);
+            oldRoute.destroy();
+        }
+        sorted.add(newRoute);
+        routes.put(file, newRoute);
+        logger.info(format("Modified route '%s' defined in file '%s'", newRoute.getName(), file));
     }
 
     @Override
@@ -200,6 +247,10 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
                     route.handle(exchange);
                     return;
                 }
+            }
+            if (defaultHandler != null) {
+                defaultHandler.handle(exchange);
+                return;
             }
             throw new HandlerException("no handler to dispatch to");
         } finally {
@@ -239,8 +290,16 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
 
             RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
-            handler.start();
+            JsonValue defaultHandler = config.get("defaultHandler");
+            if (!defaultHandler.isNull()) {
+                handler.setDefaultHandler(HeapUtil.getObject(heap, defaultHandler, Handler.class));
+            }
             return handler;
+        }
+
+        @Override
+        public void start() throws HeapException {
+            ((RouterHandler) object).start();
         }
 
         @Override
