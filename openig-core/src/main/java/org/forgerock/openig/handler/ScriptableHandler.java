@@ -20,9 +20,6 @@ import java.util.Map;
 
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.ldap.LdapClient;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 
@@ -33,11 +30,11 @@ import org.forgerock.openig.script.Script;
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
- * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
+ * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
- * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
+ * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
- * <li>{@link Logger logger} - the OpenIG logger.
+ * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger.
  * </ul>
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
