@@ -18,6 +18,12 @@ package org.forgerock.openig.filter.oauth2;
 
 /**
  * Extracts the bearer token from the request's authorization header.
+ * <p>
+ * Expected ABNF format (as per RFC 6750):
+ * <pre>
+ *     b64token    = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
+ *     credentials = "Bearer" 1*SP b64token
+ * </pre>
  */
 public class BearerTokenExtractor {
 
@@ -30,20 +36,21 @@ public class BearerTokenExtractor {
      * @return The access token, or <code>null</code> if the access token was not present or was not using Bearer
      * authorization.
      */
-    public String getAccessToken(String authorizationHeader) {
+    public String getAccessToken(final String authorizationHeader) {
 
         if (authorizationHeader == null) {
             return null;
         }
-        final int index = authorizationHeader.indexOf(' ');
+        String authorization = authorizationHeader.trim();
+        final int index = authorization.indexOf(' ');
         if (index <= 0) {
             return null;
         }
 
-        final String tokenType = authorizationHeader.substring(0, index);
+        final String tokenType = authorization.substring(0, index);
 
         if (BEARER_TOKEN_KEY.equalsIgnoreCase(tokenType)) {
-            return authorizationHeader.substring(index + 1);
+            return authorization.substring(index + 1);
         }
 
         return null;
