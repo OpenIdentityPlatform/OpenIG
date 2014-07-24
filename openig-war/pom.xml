@@ -39,6 +39,12 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-oauth2</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>gateway-${project.version}</finalName>
