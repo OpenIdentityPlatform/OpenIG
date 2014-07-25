@@ -64,6 +64,18 @@
           </webAppConfig>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <targetPath>legal-notices</targetPath>
+              <directory>../legal</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
