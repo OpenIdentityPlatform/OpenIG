@@ -15,9 +15,7 @@
   Copyright 2010–2011 ApexIdentity Inc.
   Portions Copyright 2011-2014 ForgeRock AS.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.forgerock</groupId>
@@ -28,7 +26,7 @@
   <groupId>org.forgerock.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>2.2.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -316,7 +314,7 @@
         <version>${javadocPluginVersion}</version>
         <configuration>
           <author>false</author>
-          <bottom>Copyright &#169; 2011-2014 ForgeRock AS.</bottom>
+          <bottom>Copyright 2011-2014 ForgeRock AS.</bottom>
           <links>
             <link>http://docs.oracle.com/javase/6/docs/api/</link>
           </links>
