@@ -2,13 +2,6 @@
     "heap": {
         "objects": [
             {
-                "name": "_HandlerServlet",
-                "type": "HandlerServlet",
-                "config": {
-                    "handler": "_Router"
-                }
-            },
-            {
                 "name": "_Router",
                 "type": "Router",
                 "config": {
@@ -57,5 +50,5 @@
             }
         ]
     },
-    "servletObject": "_HandlerServlet"
+    "handlerObject": "_Router"
 }
