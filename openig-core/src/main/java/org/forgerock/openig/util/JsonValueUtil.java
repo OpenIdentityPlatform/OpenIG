@@ -43,11 +43,9 @@ public final class JsonValueUtil {
         ALIASES.put("CookieFilter", "org.forgerock.openig.filter.CookieFilter");
         ALIASES.put("CryptoHeaderFilter", "org.forgerock.openig.filter.CryptoHeaderFilter");
         ALIASES.put("DispatchHandler", "org.forgerock.openig.handler.DispatchHandler");
-        ALIASES.put("DispatchServlet", "org.forgerock.openig.servlet.DispatchServlet");
         ALIASES.put("EntityExtractFilter", "org.forgerock.openig.filter.EntityExtractFilter");
         ALIASES.put("ExceptionFilter", "org.forgerock.openig.filter.ExceptionFilter");
         ALIASES.put("FileAttributesFilter", "org.forgerock.openig.filter.FileAttributesFilter");
-        ALIASES.put("HandlerServlet", "org.forgerock.openig.servlet.HandlerServlet");
         ALIASES.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
         ALIASES.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
         ALIASES.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
