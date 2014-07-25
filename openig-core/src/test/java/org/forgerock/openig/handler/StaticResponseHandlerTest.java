@@ -17,12 +17,10 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.openig.util.StringUtil.asString;
 
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
 
@@ -30,7 +28,7 @@ import org.testng.annotations.Test;
 public class StaticResponseHandlerTest {
 
     @Test
-    public void redirect() throws ExpressionException, HandlerException, IOException {
+    public void shouldSetStatusReasonAndHeaders() throws Exception {
         final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
         handler.addHeader("Location", new Expression("http://www.example.com/"));
         final Exchange exchange = new Exchange();
@@ -38,5 +36,23 @@ public class StaticResponseHandlerTest {
         assertThat(exchange.response.status).isEqualTo(302);
         assertThat(exchange.response.reason).isEqualTo("Found");
         assertThat(exchange.response.headers.getFirst("Location")).isEqualTo("http://www.example.com/");
+    }
+
+    @Test
+    public void shouldEvaluateTheEntityExpressionContent() throws Exception {
+        final StaticResponseHandler handler =
+                new StaticResponseHandler(
+                        200,
+                        null,
+                        null,
+                        new Expression(
+                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>"));
+        final Exchange exchange = new Exchange();
+        exchange.put("goto", "http://goto.url");
+        handler.handle(exchange);
+        assertThat(exchange.response.status).isEqualTo(200);
+        assertThat(exchange.response.reason).isEqualTo("OK");
+        assertThat(asString(exchange.response.entity)).isEqualTo(
+                "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");
     }
 }

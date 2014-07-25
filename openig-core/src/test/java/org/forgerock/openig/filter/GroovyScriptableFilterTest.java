@@ -24,13 +24,10 @@ import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.util.StringUtil.asString;
 import static org.mockito.Mockito.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Connection;
@@ -253,7 +250,7 @@ public class GroovyScriptableFilterTest {
 
             verifyHttp(server).once(method(Method.GET), uri("/example"));
             assertThat(exchange.response.status).isEqualTo(200);
-            assertThat(s(exchange.response.entity)).isEqualTo(JSON_CONTENT);
+            assertThat(asString(exchange.response.entity)).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
         }
@@ -667,7 +664,7 @@ public class GroovyScriptableFilterTest {
         filter.filter(exchange, handler);
 
         assertThat(exchange.response.status).isEqualTo(200);
-        assertThat(s(exchange.response.entity)).isEqualTo("hello world");
+        assertThat(asString(exchange.response.entity)).isEqualTo("hello world");
     }
 
     @Test(expectedExceptions = ScriptException.class)
@@ -752,7 +749,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(s(exchange.request.entity)).isEqualTo(JSON_CONTENT);
+        assertThat(asString(exchange.request.entity)).isEqualTo(JSON_CONTENT);
     }
 
     @Test(enabled = false)
@@ -770,7 +767,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(s(exchange.request.entity)).isEqualTo(XML_CONTENT);
+        assertThat(asString(exchange.request.entity)).isEqualTo(XML_CONTENT);
     }
 
     private HeapImpl getHeap() throws Exception {
@@ -828,15 +825,6 @@ public class GroovyScriptableFilterTest {
                 return null;
             }
         });
-    }
-
-    private String s(final InputStream is) throws IOException {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        try {
-            return reader.readLine();
-        } finally {
-            reader.close();
-        }
     }
 
 }

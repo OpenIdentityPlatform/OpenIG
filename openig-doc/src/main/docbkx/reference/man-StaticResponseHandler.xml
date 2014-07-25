@@ -58,7 +58,7 @@
          "headers": {
              name: [ expression, ... ], ...
          },
-         "entity": string
+         "entity": expression
      }
 }</programlisting>
  </refsect1>
@@ -96,9 +96,9 @@
    <varlistentry>
     <term><code>"entity"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>The message entity to write in the response. Conforms to the set
-     <literal>Content-Type</literal> header and sets
-     <literal>Content-Length</literal>.</para>
+     <para>The message entity expression to be evaluated and included in the
+     response. Conforms to the set <literal>Content-Type</literal> header and
+     sets <literal>Content-Length</literal>.</para>
     </listitem>
    </varlistentry>
   </variablelist>
