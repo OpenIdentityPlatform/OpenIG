@@ -39,20 +39,20 @@ import org.forgerock.openig.util.MultiValueMap;
 public class StaticResponseHandler extends GenericHandler {
 
     /** The response status code (e.g. 200). */
-    private Integer status;
+    private final Integer status;
 
     /** The response status reason (e.g. "OK"). */
-    private String reason;
+    private final String reason;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}. */
-    private String version;
+    private final String version;
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression> headers =
             new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
 
-    /** The message entity. */
-    private String entity;
+    /** The message entity expression. */
+    private final Expression entity;
 
     /**
      * Constructor.
@@ -76,9 +76,10 @@ public class StaticResponseHandler extends GenericHandler {
      * @param version
      *            The protocol version.
      * @param entity
-     *            The message entity.
+     *            The message entity expression.
      */
-    public StaticResponseHandler(final Integer status, final String reason, final String version, final String entity) {
+    public StaticResponseHandler(final Integer status, final String reason, final String version,
+            final Expression entity) {
         super();
         this.status = status;
         this.reason = reason;
@@ -127,7 +128,8 @@ public class StaticResponseHandler extends GenericHandler {
         }
         if (this.entity != null) {
             // use content-type charset (or default)
-            HttpUtil.toEntity(response, entity, null);
+            final String content = entity.eval(exchange, String.class);
+            HttpUtil.toEntity(response, content, null);
         }
         // finally replace response in the exchange
         exchange.response = response;
@@ -144,7 +146,7 @@ public class StaticResponseHandler extends GenericHandler {
             final String reason = config.get("reason").asString();
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final String entity = config.get("entity").asString();
+            final Expression entity = JsonValueUtil.asExpression(config.get("entity"));
             final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {

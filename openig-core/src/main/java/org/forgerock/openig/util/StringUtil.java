@@ -18,6 +18,10 @@
 
 package org.forgerock.openig.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -58,5 +62,24 @@ public final class StringUtil {
      */
     public static String join(String separator, Object... elements) {
         return join(separator, Arrays.asList(elements));
+    }
+
+    /**
+     * Reads the provided input stream as a UTF-8 string and then closes the
+     * stream.
+     *
+     * @param is
+     *            the input stream to be read.
+     * @return the UTF-8 content of the stream.
+     * @throws IOException
+     *             If an I/O error occurs.
+     */
+    public static String asString(final InputStream is) throws IOException {
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
+        }
     }
 }
