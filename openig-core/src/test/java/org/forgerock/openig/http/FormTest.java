@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class FormTest {
 
     @Test

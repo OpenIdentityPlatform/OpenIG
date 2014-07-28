@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
  * See <link>http://www.ietf.org/rfc/rfc2109.txt</link>
  * </p>
  */
+@SuppressWarnings("javadoc")
 public class CookieHeaderTest {
 
     private static final String CHEADER_1 = "$Version=1; Customer=\"BAB_JENSEN\"; $Path=\"/example\"; $Port=\"42,13\"";

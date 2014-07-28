@@ -19,6 +19,7 @@ package org.forgerock.openig.regex;
 import java.io.Reader;
 import java.io.StringReader;
 
+@SuppressWarnings("javadoc")
 public final class Readers {
 
     /**

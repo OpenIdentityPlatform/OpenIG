@@ -32,6 +32,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class StaticRequestFilterTest {
 
     public static final String URI = "http://openig.forgerock.org";

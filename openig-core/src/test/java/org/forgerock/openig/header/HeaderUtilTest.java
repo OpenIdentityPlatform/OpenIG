@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 /**
  * This class contains some unit tests for the header utility class.
  */
+@SuppressWarnings("javadoc")
 public class HeaderUtilTest {
 
     private static final String ACCEPT_CHARSET_SAMPLE = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";

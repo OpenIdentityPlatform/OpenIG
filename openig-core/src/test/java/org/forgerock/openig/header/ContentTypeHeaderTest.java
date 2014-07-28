@@ -33,6 +33,7 @@ import org.testng.annotations.Test;
  * Content-Type: text/html; charset=utf-8
  * </pre>
  */
+@SuppressWarnings("javadoc")
 public class ContentTypeHeaderTest {
 
     /** An invalid content type header - The separator is not correct. */

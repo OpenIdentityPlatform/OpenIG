@@ -33,6 +33,7 @@ import org.testng.annotations.Test;
  * Location: http://www.example.org/index.php
  * </pre>
  */
+@SuppressWarnings("javadoc")
 public class LocationHeaderTest {
 
     @DataProvider

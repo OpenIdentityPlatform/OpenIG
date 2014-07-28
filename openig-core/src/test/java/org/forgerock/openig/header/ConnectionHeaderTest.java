@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
  * Connection: close
  * </pre>
  */
+@SuppressWarnings("javadoc")
 public class ConnectionHeaderTest {
 
     private static final String ESCAPED_KEEP_ALIVE_VALUE = "\\\"Keep-Alive\\\"";

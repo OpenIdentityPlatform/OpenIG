@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
  * For each line, it creates a new {@link org.forgerock.openig.regex.StringPatternMatches} and returns the
  * produced {@link java.util.regex.Matcher}s.
  */
+@SuppressWarnings("javadoc")
 public class StreamPatternMatchesTest {
 
     @Mock

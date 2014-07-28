@@ -22,7 +22,6 @@ import static org.mockito.Mockito.*;
 import java.net.URI;
 
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
@@ -78,7 +77,7 @@ public class RouteTest {
         assertThat(exchange.request.uri).isEqualTo(new URI("https://localhost:443/demo"));
     }
 
-    private Route createRoute(final Expression condition, final URI baseURI) throws ExpressionException {
+    private Route createRoute(final Expression condition, final URI baseURI) {
         return new Route(new HeapImpl(),
                          handler,
                          "router",

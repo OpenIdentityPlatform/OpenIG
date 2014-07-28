@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.heap;
 
+@SuppressWarnings("javadoc")
 public class HeapObject {
 
     public boolean destroyed = false;

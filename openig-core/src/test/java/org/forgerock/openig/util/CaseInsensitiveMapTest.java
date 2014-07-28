@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class CaseInsensitiveMapTest {
 
     private CaseInsensitiveMap<String> map; // map to perform tests on

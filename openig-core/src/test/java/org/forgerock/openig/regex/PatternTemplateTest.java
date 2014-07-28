@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 /**
  * The {{PatternTemplate}} class is intended to be used in the case of a pattern matching context.
  */
+@SuppressWarnings("javadoc")
 public class PatternTemplateTest {
     @Test
     public void testTemplateSubstitutionWithoutGroupCapture() throws Exception {

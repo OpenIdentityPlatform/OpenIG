@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * Content-Encoding: gzip
  * </pre>
  */
+@SuppressWarnings("javadoc")
 public class ContentEncodingHeaderTest {
 
     private static final String STRING_TO_DECODE = "People have forgotten this truth, the fox said."
