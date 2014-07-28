@@ -74,9 +74,9 @@ import org.json.simple.parser.ParseException;
  *      "heap": {
  *          ...
  *      },
- *      "handlerObject": "DispatchHandler",  
- *      "baseURI": "http://localhost:8080", 
- *      "logSink":  "myCustomLogSink",         
+ *      "handlerObject": "DispatchHandler",
+ *      "baseURI": "http://localhost:8080",
+ *      "logSink":  "myCustomLogSink",
  *      "temporaryStorage": "myCustomStorage"
  *   }
  * </pre>
@@ -147,7 +147,7 @@ public class GatewayServlet extends HttpServlet {
     /**
      * Creates a new servlet using the provided environment. This constructor should be called when running the servlet
      * as part of a standalone application.
-     * 
+     *
      * @param environment
      *            The application environment.
      */
@@ -186,8 +186,8 @@ public class GatewayServlet extends HttpServlet {
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.init(config.get("heap").required().expect(Map.class));
-            
-            handler = getRequiredObject(heap, config.get("handlerObject").required(), Handler.class);
+
+            handler = getRequiredObject(heap, config.get("handlerObject"), Handler.class);
             baseURI = config.get("baseURI").asURI();
             // As all heaplets can specify their own storage and logger,
             // those two lines provide custom logger or storage available.
@@ -206,7 +206,7 @@ public class GatewayServlet extends HttpServlet {
      * Handles a servlet request by dispatching it to a handler. It receives a servlet request, translates it into an
      * exchange object, dispatches the exchange to a handler, then translates the exchange response into the servlet
      * response.
-     * 
+     *
      * @param request
      *            the {@link HttpServletRequest} object that will be used to populate the initial OpenIG's
      *            {@link Request} encapsulated in the {@link Exchange}.

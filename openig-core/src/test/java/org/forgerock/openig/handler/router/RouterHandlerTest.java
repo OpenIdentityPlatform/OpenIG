@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,7 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -60,6 +62,7 @@ public class RouterHandlerTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(heap.get(TEMPORARY_STORAGE_HEAP_KEY)).thenReturn(new TemporaryStorage());
+        when(heap.get(LOGSINK_HEAP_KEY)).thenReturn(new NullLogSink());
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
     }

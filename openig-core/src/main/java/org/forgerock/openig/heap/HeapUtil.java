@@ -31,28 +31,26 @@ public final class HeapUtil {
     }
 
     /**
-     * Retreives an object from a heap with the specified name and type.
+     * Retrieves an object from a heap with the specified name and type, or {@code null} if the name is {@code null}.
      *
      * @param heap the heap to retrieve the object from.
      * @param name a JSON value containing the name of the heap object to retrieve.
      * @param type the expected type of the heap object.
      * @param <T> expected instance type
-     * @return the specified heap object.
+     * @return the specified heap object or {@code null} if name contains {@code null}.
      * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
-     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
+     * @throws JsonValueException if the name is not a string, or the specified heap object
      * has the wrong type.
      */
-    @SuppressWarnings("unchecked")
     public static <T> T getObject(Heap heap, JsonValue name, Class<T> type) throws HeapException {
-        Object o = heap.get(name.required().asString());
-        if (o != null && !(type.isInstance(o))) {
-            throw new JsonValueException(name, "expecting heap object of type " + type.getName());
+        if (name.isNull()) {
+            return null;
         }
-        return (T) o;
+        return getRequiredObject(heap, name, type);
     }
 
     /**
-     * Retreives an object from a heap with the specified name and type. If the object does not
+     * Retrieves an object from a heap with the specified name and type. If the object does not
      * exist, a {@link JsonValueException} is thrown.
      *
      * @param heap the heap to retrieve the object from.
@@ -64,11 +62,12 @@ public final class HeapUtil {
      * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
      * could not be retrieved or has the wrong type.
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getRequiredObject(Heap heap, JsonValue name, Class<T> type) throws HeapException {
-        T t = getObject(heap, name, type);
-        if (t == null) {
+        Object o = heap.get(name.required().asString());
+        if (o == null) {
             throw new JsonValueException(name, "object " + name.asString() + " not found in heap");
         }
-        return t;
+        return (T) o;
     }
 }

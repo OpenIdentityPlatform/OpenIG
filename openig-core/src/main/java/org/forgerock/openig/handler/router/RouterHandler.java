@@ -290,10 +290,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
 
             RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
-            JsonValue defaultHandler = config.get("defaultHandler");
-            if (!defaultHandler.isNull()) {
-                handler.setDefaultHandler(HeapUtil.getObject(heap, defaultHandler, Handler.class));
-            }
+            handler.setDefaultHandler(HeapUtil.getObject(heap, config.get("defaultHandler"),
+                    Handler.class));
             return handler;
         }
 

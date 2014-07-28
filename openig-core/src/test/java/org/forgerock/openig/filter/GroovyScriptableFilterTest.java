@@ -24,6 +24,7 @@ import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.StringUtil.asString;
 import static org.mockito.Mockito.*;
 
@@ -62,6 +63,7 @@ import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -773,6 +775,7 @@ public class GroovyScriptableFilterTest {
     private HeapImpl getHeap() throws Exception {
         final HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
         heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new TemporaryStorage()));
         return heap;
