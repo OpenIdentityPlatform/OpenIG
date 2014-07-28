@@ -19,7 +19,6 @@ package org.forgerock.openig.handler;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -87,11 +86,7 @@ public class DispatchHandler extends GenericHandler {
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
                 if (binding.baseURI != null) {
-                    try {
-                        exchange.request.uri = URIUtil.rebase(exchange.request.uri, binding.baseURI);
-                    } catch (URISyntaxException use) {
-                        throw logger.debug(new HandlerException(use));
-                    }
+                    exchange.request.uri = URIUtil.rebase(exchange.request.uri, binding.baseURI);
                 }
                 binding.handler.handle(exchange);
                 timer.stop();

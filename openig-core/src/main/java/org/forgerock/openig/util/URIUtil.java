@@ -81,9 +81,8 @@ public final class URIUtil {
      * @param uri the URI whose base is to be changed.
      * @param base the URI to base the other URI on.
      * @return the the URI with the new established base.
-     * @throws URISyntaxException if the resulting URI would be malformed per RFC 2396.
      */
-    public static URI rebase(URI uri, URI base) throws URISyntaxException {
+    public static URI rebase(URI uri, URI base)  {
         if (base == null) {
             return uri;
         }
@@ -93,7 +92,11 @@ public final class URIUtil {
         if (scheme == null || host == null) {
             return uri;
         }
-        return create(scheme, uri.getRawUserInfo(), host, port, uri.getRawPath(),
-                uri.getRawQuery(), uri.getRawFragment());
+        try {
+            return create(scheme, uri.getRawUserInfo(), host, port, uri.getRawPath(),
+                    uri.getRawQuery(), uri.getRawFragment());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

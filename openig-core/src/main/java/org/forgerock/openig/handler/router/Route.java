@@ -21,7 +21,6 @@ import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
@@ -118,9 +117,7 @@ class Route extends GenericHandler {
      */
     public Route(final HeapImpl heap, final JsonValue config, final String defaultName) throws HeapException {
         this(heap,
-             getRequiredObject(heap,
-                               config.get("handler").required(),
-                               Handler.class),
+             getRequiredObject(heap, config.get("handler"), Handler.class),
              config.get("name").defaultTo(defaultName).asString(),
              asExpression(config.get("condition")),
              config.get("baseURI").asURI());
@@ -169,11 +166,7 @@ class Route extends GenericHandler {
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         // Rebase the request URI if required before delegating
         if (baseURI != null) {
-            try {
-                exchange.request.uri = URIUtil.rebase(exchange.request.uri, baseURI);
-            } catch (URISyntaxException use) {
-                throw logger.debug(new HandlerException(use));
-            }
+            exchange.request.uri = URIUtil.rebase(exchange.request.uri, baseURI);
         }
         handler.handle(exchange);
     }
