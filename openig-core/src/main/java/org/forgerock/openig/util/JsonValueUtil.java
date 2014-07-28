@@ -48,6 +48,7 @@ public final class JsonValueUtil {
         ALIASES.put("FileAttributesFilter", "org.forgerock.openig.filter.FileAttributesFilter");
         ALIASES.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
         ALIASES.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
+        ALIASES.put("HttpClient", "org.forgerock.openig.http.HttpClient");
         ALIASES.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
         ALIASES.put("Router", "org.forgerock.openig.handler.router.RouterHandler");
         ALIASES.put("RouterHandler", "org.forgerock.openig.handler.router.RouterHandler");
