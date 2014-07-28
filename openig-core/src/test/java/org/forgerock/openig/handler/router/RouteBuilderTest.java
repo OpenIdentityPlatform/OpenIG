@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
@@ -28,6 +29,7 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -43,6 +45,7 @@ public class RouteBuilderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(heap.get(TEMPORARY_STORAGE_HEAP_KEY)).thenReturn(new TemporaryStorage());
+        when(heap.get(LOGSINK_HEAP_KEY)).thenReturn(new NullLogSink());
     }
 
     @Test

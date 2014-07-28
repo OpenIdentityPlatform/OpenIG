@@ -18,12 +18,14 @@ package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.NullLogSink;
 import org.json.simple.parser.JSONParser;
 import org.testng.annotations.Test;
 
@@ -60,6 +62,7 @@ public class HeapImplTest {
     public void testHeapObjectCreationDestruction() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.init(asJson("heap-object-creation.json"));
 
         HeapObject heapObject = (HeapObject) heap.get("heap-object");
@@ -73,6 +76,7 @@ public class HeapImplTest {
     public void testHeapObjectOfSameTypeCreationDestruction() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.init(asJson("heap-object-creation-same-type.json"));
 
         HeapObject heapObject = (HeapObject) heap.get("heap-object");

@@ -36,7 +36,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.BranchingInputStream;
-import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.util.encode.Base64;
@@ -183,9 +182,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            Handler failureHandler = HeapUtil.getObject(heap,
-                                                        config.get("failureHandler").required(),
-                                                        Handler.class);
+            Handler failureHandler =
+                    HeapUtil.getRequiredObject(heap, config.get("failureHandler"), Handler.class);
 
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(asExpression(config.get("username").required()),
                                                                  asExpression(config.get("password").required()),
@@ -193,9 +191,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
             filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean();
 
-            if (logger != null && logger.isLoggable(LogLevel.DEBUG)) {
-                logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);
-            }
+            logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);
 
             return filter;
         }
