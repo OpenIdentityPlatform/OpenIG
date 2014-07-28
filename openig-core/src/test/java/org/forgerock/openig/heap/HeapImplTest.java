@@ -29,6 +29,7 @@ import org.forgerock.openig.log.NullLogSink;
 import org.json.simple.parser.JSONParser;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class HeapImplTest {
     @Test
     public void testPutAndGetObjectLocally() throws Exception {

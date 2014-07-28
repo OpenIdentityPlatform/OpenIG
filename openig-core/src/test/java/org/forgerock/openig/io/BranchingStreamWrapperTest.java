@@ -29,6 +29,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class BranchingStreamWrapperTest {
 
     /** The size of a read buffer. */

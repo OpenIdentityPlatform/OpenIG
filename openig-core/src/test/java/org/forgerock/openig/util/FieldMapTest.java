@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class FieldMapTest {
 
     public static class Fields {
@@ -29,6 +30,7 @@ public class FieldMapTest {
         public int primitiveField;
         public String stringField;
         public Boolean booleanField;
+        @SuppressWarnings("unused")
         private String privateField;
     }
 

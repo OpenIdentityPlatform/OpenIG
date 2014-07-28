@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
  * Content-Length: 348
  * </pre>
  */
+@SuppressWarnings("javadoc")
 public class ContentLengthHeaderTest {
 
     private static final int LENGTH_DEFAULT_VALUE = 1024;

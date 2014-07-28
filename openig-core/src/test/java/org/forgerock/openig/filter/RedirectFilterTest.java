@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 /**
  * Test case for the RedirectFilter
  */
+@SuppressWarnings("javadoc")
 public class RedirectFilterTest {
 
     @Test

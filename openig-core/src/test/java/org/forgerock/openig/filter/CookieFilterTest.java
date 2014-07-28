@@ -39,6 +39,7 @@ import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class CookieFilterTest {
 
     private Exchange exchange;

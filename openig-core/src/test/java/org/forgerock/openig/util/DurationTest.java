@@ -16,13 +16,12 @@
 
 package org.forgerock.openig.util;
 
+import java.util.concurrent.TimeUnit;
+
 import org.assertj.core.api.ObjectAssert;
 import org.testng.annotations.Test;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+@SuppressWarnings("javadoc")
 public class DurationTest {
 
     @Test

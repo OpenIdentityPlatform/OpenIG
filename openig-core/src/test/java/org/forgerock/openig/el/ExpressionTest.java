@@ -28,6 +28,7 @@ import org.forgerock.openig.http.Response;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class ExpressionTest {
 
     @Test
@@ -254,6 +255,7 @@ public class ExpressionTest {
             return value;
         }
 
+        @SuppressWarnings("unused")
         public void setValue(final String value) {
             this.value = value;
         }

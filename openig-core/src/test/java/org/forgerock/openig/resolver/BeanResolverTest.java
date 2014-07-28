@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class BeanResolverTest {
 
     @Test
@@ -77,6 +78,7 @@ public class BeanResolverTest {
             return name;
         }
 
+        @SuppressWarnings("unused")
         public void setName(final String name) {
             this.name = name;
         }
@@ -85,6 +87,7 @@ public class BeanResolverTest {
             return bool;
         }
 
+        @SuppressWarnings("unused")
         public void setBool(final boolean bool) {
             this.bool = bool;
         }

@@ -38,6 +38,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class HttpBasicAuthFilterTest {
 
     public static final String AUTHENTICATE_HEADER = "WWW-Authenticate";

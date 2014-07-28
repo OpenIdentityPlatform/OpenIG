@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class StreamPatternExtractorTest {
     @Test
     public void testSimple() throws Exception {
