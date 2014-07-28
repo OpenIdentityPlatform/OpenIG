@@ -18,12 +18,20 @@
 
 package org.forgerock.openig.http;
 
+import static java.lang.String.format;
+import static org.forgerock.util.Utils.closeSilently;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Arrays;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
@@ -51,6 +59,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.header.ConnectionHeader;
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentLengthHeader;
@@ -67,6 +76,26 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * Submits requests to remote servers. In this implementation, requests are
  * dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
+ * <p>
+ * <pre>
+ *   {
+ *     "name": "HttpClient",
+ *     "type": "HttpClient",
+ *     "config": {
+ *       "connections": 64,
+ *       "disableReuseConnection": true,
+ *       "disableRetries": true,
+ *       "keystore": {
+ *           "file": "/path/to/keystore.jks",
+ *           "password": "changeit"
+ *       },
+ *       "truststore": {
+ *           "file": "/path/to/keystore.jks",
+ *           "password": "changeit"
+ *       }
+ *     }
+ *   }
+ * </pre>
  * <p>
  * <strong>Note:</strong> This implementation does not verify hostnames for
  * outgoing SSL connections. This is because the gateway will usually access the
@@ -146,29 +175,29 @@ public class HttpClient {
     );
 
     /**
-     * Returns a new SSL socket factory that does not perform hostname
-     * verification.
+     * Returns a new SSL socket factory that does not perform hostname verification.
+     *
+     * @param keyManagerFactory
+     *         Provides Keys/Certificates in case of SSL/TLS connections
+     * @param trustManagerFactory
+     *         Provides TrustManagers in case of SSL/TLS connections
+     * @throws GeneralSecurityException
+     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
-    private static SSLSocketFactory newSSLSocketFactory() {
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-        } catch (final NoSuchAlgorithmException nsae) {
-            throw new IllegalStateException(nsae);
-        }
-        try {
-            sslContext.init(null, null, null);
-        } catch (final KeyManagementException kme) {
-            throw new IllegalStateException(kme);
-        }
-        final SSLSocketFactory sslSocketFactory = new SSLSocketFactory(sslContext);
-        sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        return sslSocketFactory;
+    private static SSLSocketFactory newSSLSocketFactory(final KeyManagerFactory keyManagerFactory,
+                                                        final TrustManagerFactory trustManagerFactory)
+            throws GeneralSecurityException {
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init((keyManagerFactory == null) ? null : keyManagerFactory.getKeyManagers(),
+                     (trustManagerFactory == null) ? null : trustManagerFactory.getTrustManagers(),
+                     null);
+        SSLSocketFactory factory = new SSLSocketFactory(context);
+        factory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        return factory;
     }
 
     /** The HTTP client to transmit requests through. */
     private final DefaultHttpClient httpClient;
-
     /**
      * Allocates temporary buffers for caching streamed content during request
      * processing.
@@ -179,32 +208,41 @@ public class HttpClient {
      * Creates a new client handler which will cache at most 64 connections.
      *
      * @param storage the TemporaryStorage to use
+     * @throws GeneralSecurityException
+     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
-    public HttpClient(final TemporaryStorage storage) {
-        this(storage, DEFAULT_CONNECTIONS);
+    public HttpClient(final TemporaryStorage storage) throws GeneralSecurityException {
+        this(storage, DEFAULT_CONNECTIONS, null, null);
     }
 
     /**
-     * Creates a new client handler with the specified maximum number of cached
-     * connections.
+     * Creates a new client handler with the specified maximum number of cached connections.
      *
-     * @param storage the TemporyStorage to use
+     * @param storage the {@link TemporaryStorage} to use
      * @param connections the maximum number of connections to open.
+     * @param keyManagerFactory Provides Keys/Certificates in case of SSL/TLS connections
+     * @param trustManagerFactory Provides TrustManagers in case of SSL/TLS connections
+     * @throws GeneralSecurityException
+     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
-    public HttpClient(final TemporaryStorage storage, final int connections) {
+    public HttpClient(final TemporaryStorage storage,
+                      final int connections,
+                      final KeyManagerFactory keyManagerFactory,
+                      final TrustManagerFactory trustManagerFactory) throws GeneralSecurityException {
         this.storage = storage;
+
         final BasicHttpParams parameters = new BasicHttpParams();
         final int maxConnections = connections <= 0 ? DEFAULT_CONNECTIONS : connections;
         ConnManagerParams.setMaxTotalConnections(parameters, maxConnections);
-        ConnManagerParams.setMaxConnectionsPerRoute(parameters,
-                new ConnPerRouteBean(maxConnections));
+        ConnManagerParams.setMaxConnectionsPerRoute(parameters, new ConnPerRouteBean(maxConnections));
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
         HttpClientParams.setRedirecting(parameters, false);
+
         final SchemeRegistry registry = new SchemeRegistry();
         registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        registry.register(new Scheme("https", newSSLSocketFactory(), 443));
-        final ClientConnectionManager connectionManager =
-                new ThreadSafeClientConnManager(parameters, registry);
+        registry.register(new Scheme("https", newSSLSocketFactory(keyManagerFactory, trustManagerFactory), 443));
+        final ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(parameters, registry);
+
         httpClient = new DefaultHttpClient(connectionManager, parameters);
         httpClient.removeRequestInterceptorByClass(RequestAddCookies.class);
         httpClient.removeRequestInterceptorByClass(RequestProxyAuthentication.class);
@@ -315,19 +353,87 @@ public class HttpClient {
             Integer connections = config.get("connections").defaultTo(DEFAULT_CONNECTIONS).asInteger();
             // determines if connections should be reused, disables keep-alive
             Boolean disableReuseConnection = config.get("disableReuseConnection")
-                    .defaultTo(DISABLE_CONNECTION_REUSE)
-                    .asBoolean();
+                                                   .defaultTo(DISABLE_CONNECTION_REUSE)
+                                                   .asBoolean();
             // determines if requests should be retried on failure
             Boolean disableRetries = config.get("disableRetries").defaultTo(DISABLE_RETRIES).asBoolean();
 
-            HttpClient client = new HttpClient(storage, connections);
-            if (disableRetries) {
-                client.disableRetries(logger);
+            // Build an optional KeyManagerFactory
+            KeyManagerFactory keyManagerFactory = null;
+            if (config.isDefined("keystore")) {
+                JsonValue store = config.get("keystore");
+                File keystoreFile = store.get("file").required().asFile();
+                String password = store.get("password").required().asString();
+
+                keyManagerFactory = buildKeyManagerFactory(keystoreFile, password);
             }
-            if (disableReuseConnection) {
-                client.disableConnectionReuse();
+
+            // Build an optional TrustManagerFactory
+            TrustManagerFactory trustManagerFactory = null;
+            if (config.isDefined("truststore")) {
+                JsonValue store = config.get("truststore");
+                File truststoreFile = store.get("file").required().asFile();
+                String password = store.get("password").asString();
+
+                trustManagerFactory = buildTrustManagerFactory(truststoreFile, password);
             }
-            return client;
+
+            // Create the HttpClient instance
+            try {
+                HttpClient client = new HttpClient(storage, connections, keyManagerFactory, trustManagerFactory);
+
+                if (disableRetries) {
+                    client.disableRetries(logger);
+                }
+                if (disableReuseConnection) {
+                    client.disableConnectionReuse();
+                }
+
+                return client;
+            } catch (GeneralSecurityException e) {
+                throw new HeapException(format("Cannot build HttpClient named '%s'", name), e);
+            }
+        }
+
+        private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile, final String password)
+                throws HeapException {
+            try {
+                TrustManagerFactory factory = TrustManagerFactory.getInstance("SunX509");
+                KeyStore store = buildJksKeyStore(truststoreFile, password);
+                factory.init(store);
+                return factory;
+            } catch (Exception e) {
+                throw new HeapException(format("Cannot build TrustManagerFactory from trust store: %s",
+                                               truststoreFile),
+                                        e);
+            }
+        }
+
+        private KeyManagerFactory buildKeyManagerFactory(final File keystoreFile, final String password)
+                throws HeapException {
+            try {
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                KeyStore keyStore = buildJksKeyStore(keystoreFile, password);
+                keyManagerFactory.init(keyStore, password.toCharArray());
+                return keyManagerFactory;
+            } catch (Exception e) {
+                throw new HeapException(format("Cannot build KeyManagerFactory from key store: %s",
+                                               keystoreFile),
+                                        e);
+            }
+        }
+
+        private KeyStore buildJksKeyStore(final File keystoreFile, final String password) throws Exception {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            InputStream keyInput = null;
+            try {
+                keyInput = new FileInputStream(keystoreFile);
+                char[] credentials = (password == null) ? null : password.toCharArray();
+                keyStore.load(keyInput, credentials);
+            } finally {
+                closeSilently(keyInput);
+            }
+            return keyStore;
         }
     }
 
