@@ -124,6 +124,11 @@ public class DurationTest {
     }
 
     @Test
+    public void shouldAcceptZero() throws Exception {
+        assertThat(new Duration("0 ns")).isEqualTo(0L, TimeUnit.NANOSECONDS);
+    }
+
+    @Test
     public void shouldConvertValue() throws Exception {
         assertThat(new Duration("1 hour").convertTo(TimeUnit.SECONDS))
                 .isEqualTo(3600L, TimeUnit.SECONDS);
