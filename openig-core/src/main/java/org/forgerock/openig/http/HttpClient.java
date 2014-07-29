@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
@@ -59,6 +60,7 @@ import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.header.ConnectionHeader;
@@ -71,6 +73,7 @@ import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.Duration;
 import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
 
 /**
@@ -87,6 +90,8 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  *       "disableReuseConnection": true,
  *       "disableRetries": true,
  *       "hostnameVerifier": "ALLOW_ALL",
+ *       "soTimeout": "10 seconds",
+ *       "connectionTimeout": "10 seconds",
  *       "keystore": {
  *           "file": "/path/to/keystore.jks",
  *           "password": "changeit"
@@ -112,6 +117,12 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  *     <li>{@literal BROWSER_COMPATIBLE}</li>
  *     <li>{@literal STRICT}</li>
  * </ul>
+ * <p>
+ * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection
+ * will live before being considered a stalled and automatically destroyed). It defaults to {@literal 10 seconds}.
+ * <p>
+ * The {@literal connectionTimeout} optional attribute specifies a connection timeout (the given amount of time to
+ * wait until the connection is established). It defaults to {@literal 10 seconds}.
  */
 public class HttpClient {
 
@@ -128,6 +139,21 @@ public class HttpClient {
 
     /** Default maximum number of collections through HTTP client. */
     public static final int DEFAULT_CONNECTIONS = 64;
+
+    /**
+     * Value of the default timeout.
+     */
+    public static final String TEN_SECONDS = "10 seconds";
+
+    /**
+     * Default socket timeout as a {@link Duration}.
+     */
+    public static final Duration DEFAULT_SO_TIMEOUT = new Duration(TEN_SECONDS);
+
+    /**
+     * Default connection timeout as a {@link Duration}.
+     */
+    public static final Duration DEFAULT_CONNECTION_TIMEOUT = new Duration(TEN_SECONDS);
 
     /** A request that encloses an entity. */
     private static class EntityRequest extends HttpEntityEnclosingRequestBase {
@@ -245,14 +271,21 @@ public class HttpClient {
     private final TemporaryStorage storage;
 
     /**
-     * Creates a new client handler which will cache at most 64 connections and allow all host names for SSL requests.
+     * Creates a new client handler which will cache at most 64 connections, allow all host names for SSL requests
+     * and has a both a default connection and so timeout.
      *
      * @param storage the TemporaryStorage to use
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
     public HttpClient(final TemporaryStorage storage) throws GeneralSecurityException {
-        this(storage, DEFAULT_CONNECTIONS, null, null, Verifier.ALLOW_ALL);
+        this(storage,
+             DEFAULT_CONNECTIONS,
+             null,
+             null,
+             Verifier.ALLOW_ALL,
+             DEFAULT_SO_TIMEOUT,
+             DEFAULT_CONNECTION_TIMEOUT);
     }
 
     /**
@@ -263,6 +296,8 @@ public class HttpClient {
      * @param keyManagerFactory Provides Keys/Certificates in case of SSL/TLS connections
      * @param trustManagerFactory Provides TrustManagers in case of SSL/TLS connections
      * @param verifier hostname verification strategy
+     * @param soTimeout socket timeout duration
+     * @param connectionTimeout connection timeout duration
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
@@ -270,13 +305,17 @@ public class HttpClient {
                       final int connections,
                       final KeyManagerFactory keyManagerFactory,
                       final TrustManagerFactory trustManagerFactory,
-                      final Verifier verifier) throws GeneralSecurityException {
+                      final Verifier verifier,
+                      final Duration soTimeout,
+                      final Duration connectionTimeout) throws GeneralSecurityException {
         this.storage = storage;
 
         final BasicHttpParams parameters = new BasicHttpParams();
         final int maxConnections = connections <= 0 ? DEFAULT_CONNECTIONS : connections;
         ConnManagerParams.setMaxTotalConnections(parameters, maxConnections);
         ConnManagerParams.setMaxConnectionsPerRoute(parameters, new ConnPerRouteBean(maxConnections));
+        HttpConnectionParams.setSoTimeout(parameters, (int) soTimeout.to(MILLISECONDS));
+        HttpConnectionParams.setConnectionTimeout(parameters, (int) connectionTimeout.to(MILLISECONDS));
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
         HttpClientParams.setRedirecting(parameters, false);
 
@@ -294,7 +333,6 @@ public class HttpClient {
         httpClient.removeRequestInterceptorByClass(RequestProxyAuthentication.class);
         httpClient.removeRequestInterceptorByClass(RequestTargetAuthentication.class);
         httpClient.removeResponseInterceptorByClass(ResponseProcessCookies.class);
-        // TODO: set timeout to drop stalled connections?
     }
 
     /**
@@ -428,13 +466,21 @@ public class HttpClient {
                                       .defaultTo(Verifier.ALLOW_ALL.name())
                                       .asEnum(Verifier.class);
 
+            // Timeouts
+            Duration soTimeout = new Duration(config.get("soTimeout").defaultTo(TEN_SECONDS).asString());
+            Duration connectionTimeout = new Duration(config.get("connectionTimeout")
+                                                            .defaultTo(TEN_SECONDS)
+                                                            .asString());
+
             // Create the HttpClient instance
             try {
                 HttpClient client = new HttpClient(storage,
                                                    connections,
                                                    keyManagerFactory,
                                                    trustManagerFactory,
-                                                   verifier);
+                                                   verifier,
+                                                   soTimeout,
+                                                   connectionTimeout);
 
                 if (disableRetries) {
                     client.disableRetries(logger);
