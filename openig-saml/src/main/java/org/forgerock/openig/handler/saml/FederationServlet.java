@@ -222,15 +222,11 @@ class FederationServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();
         Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
-            logger.debug(format("FederationServlet attribute statement: %s", attributeStatement));
-
             for (String key : attributeMapping.keySet()) {
                 HashSet<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
                     httpSession.setAttribute(key, sessionValue);
-                    logger.debug(format("FederationServlet adding to session: %s = %s", key, sessionValue));
-
                 } else {
                     logger.warning(format("FederationServlet: Warning no assertion attribute found for : %s",
                             attributeMapping.get(key)));
