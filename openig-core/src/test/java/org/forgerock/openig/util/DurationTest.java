@@ -176,7 +176,7 @@ public class DurationTest {
             }
             return this;
         }
-        
+
         public DurationAssert isUnlimited() {
             isNotNull();
             if (!actual.isUnlimited()) {

@@ -26,8 +26,6 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static org.forgerock.util.Reject.checkNotNull;
 
-import org.forgerock.util.Reject;
-
 /**
  * Represents a duration in english. Cases is not important, plurals units are accepted.
  *
@@ -44,15 +42,15 @@ public class Duration {
     /**
      * Special duration that represents an unlimited duration (or indefinite).
      */
-    private static Duration UNLIMITED = new Duration(Long.MAX_VALUE, DAYS);
+    private static final Duration UNLIMITED = new Duration(Long.MAX_VALUE, DAYS);
 
     /**
      * Tokens that represents the unlimited duration.
      */
-    private static Set<String> UNLIMITED_TOKENS = new CaseInsensitiveSet(asList("unlimited",
-                                                                                "indefinite",
-                                                                                "infinity",
-                                                                                "undefined"));
+    private static final Set<String> UNLIMITED_TOKENS = new CaseInsensitiveSet(asList("unlimited",
+                                                                                      "indefinite",
+                                                                                      "infinity",
+                                                                                      "undefined"));
 
     private Long number;
     private TimeUnit unit;
@@ -72,6 +70,7 @@ public class Duration {
      *
      * @param value
      *         natural speech duration
+     * @return a new {@link Duration}
      * @throws IllegalArgumentException
      *         if the input string is incorrectly formatted.
      */
