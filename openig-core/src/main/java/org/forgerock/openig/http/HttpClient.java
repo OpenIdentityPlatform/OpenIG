@@ -20,6 +20,7 @@ package org.forgerock.openig.http;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.forgerock.openig.util.Duration.duration;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
@@ -123,6 +124,8 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * <p>
  * The {@literal connectionTimeout} optional attribute specifies a connection timeout (the given amount of time to
  * wait until the connection is established). It defaults to {@literal 10 seconds}.
+ *
+ * @see Duration
  */
 public class HttpClient {
 
@@ -148,12 +151,12 @@ public class HttpClient {
     /**
      * Default socket timeout as a {@link Duration}.
      */
-    public static final Duration DEFAULT_SO_TIMEOUT = new Duration(TEN_SECONDS);
+    public static final Duration DEFAULT_SO_TIMEOUT = duration(TEN_SECONDS);
 
     /**
      * Default connection timeout as a {@link Duration}.
      */
-    public static final Duration DEFAULT_CONNECTION_TIMEOUT = new Duration(TEN_SECONDS);
+    public static final Duration DEFAULT_CONNECTION_TIMEOUT = duration(TEN_SECONDS);
 
     /** A request that encloses an entity. */
     private static class EntityRequest extends HttpEntityEnclosingRequestBase {
@@ -314,8 +317,12 @@ public class HttpClient {
         final int maxConnections = connections <= 0 ? DEFAULT_CONNECTIONS : connections;
         ConnManagerParams.setMaxTotalConnections(parameters, maxConnections);
         ConnManagerParams.setMaxConnectionsPerRoute(parameters, new ConnPerRouteBean(maxConnections));
-        HttpConnectionParams.setSoTimeout(parameters, (int) soTimeout.to(MILLISECONDS));
-        HttpConnectionParams.setConnectionTimeout(parameters, (int) connectionTimeout.to(MILLISECONDS));
+        if (!soTimeout.isUnlimited()) {
+            HttpConnectionParams.setSoTimeout(parameters, (int) soTimeout.to(MILLISECONDS));
+        }
+        if (!connectionTimeout.isUnlimited()) {
+            HttpConnectionParams.setConnectionTimeout(parameters, (int) connectionTimeout.to(MILLISECONDS));
+        }
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
         HttpClientParams.setRedirecting(parameters, false);
 
@@ -471,10 +478,10 @@ public class HttpClient {
                                       .asEnum(Verifier.class);
 
             // Timeouts
-            Duration soTimeout = new Duration(config.get("soTimeout").defaultTo(TEN_SECONDS).asString());
-            Duration connectionTimeout = new Duration(config.get("connectionTimeout")
-                                                            .defaultTo(TEN_SECONDS)
-                                                            .asString());
+            Duration soTimeout = duration(config.get("soTimeout").defaultTo(TEN_SECONDS).asString());
+            Duration connectionTimeout = duration(config.get("connectionTimeout")
+                                                        .defaultTo(TEN_SECONDS)
+                                                        .asString());
 
             // Create the HttpClient instance
             try {
