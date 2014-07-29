@@ -16,10 +16,11 @@
 
 package org.forgerock.openig.util;
 
-import java.util.concurrent.TimeUnit;
-
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ObjectAssert;
 import org.testng.annotations.Test;
+
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("javadoc")
 public class DurationTest {
@@ -120,6 +121,14 @@ public class DurationTest {
         assertThat(new Duration("1 nanos")).isEqualTo(1L, TimeUnit.NANOSECONDS);
         assertThat(new Duration("1 nano")).isEqualTo(1L, TimeUnit.NANOSECONDS);
         assertThat(new Duration("1 ns")).isEqualTo(1L, TimeUnit.NANOSECONDS);
+    }
+
+    @Test
+    public void shouldConvertValue() throws Exception {
+        assertThat(new Duration("1 hour").convertTo(TimeUnit.SECONDS))
+                .isEqualTo(3600L, TimeUnit.SECONDS);
+        Assertions.assertThat(new Duration("1 hour").to(TimeUnit.SECONDS))
+                  .isEqualTo(3600L);
     }
 
     public DurationAssert assertThat(Duration duration) {
