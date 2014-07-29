@@ -53,6 +53,7 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -85,6 +86,7 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  *       "connections": 64,
  *       "disableReuseConnection": true,
  *       "disableRetries": true,
+ *       "hostnameVerifier": "ALLOW_ALL",
  *       "keystore": {
  *           "file": "/path/to/keystore.jks",
  *           "password": "changeit"
@@ -98,8 +100,18 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * </pre>
  * <p>
  * <strong>Note:</strong> This implementation does not verify hostnames for
- * outgoing SSL connections. This is because the gateway will usually access the
+ * outgoing SSL connections by default. This is because the gateway will usually access the
  * SSL endpoint using a raw IP address rather than a fully-qualified hostname.
+ * <p>
+ * It's possible to override that behavior using the {@literal hostnameVerifier} attribute (case is not important,
+ * but unknown values will produce an error).
+ * <p>
+ * Accepted values are:
+ * <ul>
+ *     <li>{@literal ALLOW_ALL} (the default)</li>
+ *     <li>{@literal BROWSER_COMPATIBLE}</li>
+ *     <li>{@literal STRICT}</li>
+ * </ul>
  */
 public class HttpClient {
 
@@ -155,6 +167,32 @@ public class HttpClient {
         }
     }
 
+    /**
+     * The set of accepted configuration values for the {@literal hostnameVerifier} attribute.
+     */
+    private static enum Verifier {
+        ALLOW_ALL {
+            @Override
+            X509HostnameVerifier getHostnameVerifier() {
+                return SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+            }
+        },
+        BROWSER_COMPATIBLE {
+            @Override
+            X509HostnameVerifier getHostnameVerifier() {
+                return SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
+            }
+        },
+        STRICT {
+            @Override
+            X509HostnameVerifier getHostnameVerifier() {
+                return SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+            }
+        };
+
+        abstract X509HostnameVerifier getHostnameVerifier();
+    }
+
     /** Headers that are suppressed in request. */
     // FIXME: How should the the "Expect" header be handled?
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS = new CaseInsensitiveSet(
@@ -181,18 +219,20 @@ public class HttpClient {
      *         Provides Keys/Certificates in case of SSL/TLS connections
      * @param trustManagerFactory
      *         Provides TrustManagers in case of SSL/TLS connections
+     * @param hostnameVerifier hostname verification strategy
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
     private static SSLSocketFactory newSSLSocketFactory(final KeyManagerFactory keyManagerFactory,
-                                                        final TrustManagerFactory trustManagerFactory)
+                                                        final TrustManagerFactory trustManagerFactory,
+                                                        final X509HostnameVerifier hostnameVerifier)
             throws GeneralSecurityException {
         SSLContext context = SSLContext.getInstance("TLS");
         context.init((keyManagerFactory == null) ? null : keyManagerFactory.getKeyManagers(),
                      (trustManagerFactory == null) ? null : trustManagerFactory.getTrustManagers(),
                      null);
         SSLSocketFactory factory = new SSLSocketFactory(context);
-        factory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        factory.setHostnameVerifier(hostnameVerifier);
         return factory;
     }
 
@@ -205,14 +245,14 @@ public class HttpClient {
     private final TemporaryStorage storage;
 
     /**
-     * Creates a new client handler which will cache at most 64 connections.
+     * Creates a new client handler which will cache at most 64 connections and allow all host names for SSL requests.
      *
      * @param storage the TemporaryStorage to use
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
     public HttpClient(final TemporaryStorage storage) throws GeneralSecurityException {
-        this(storage, DEFAULT_CONNECTIONS, null, null);
+        this(storage, DEFAULT_CONNECTIONS, null, null, Verifier.ALLOW_ALL);
     }
 
     /**
@@ -222,13 +262,15 @@ public class HttpClient {
      * @param connections the maximum number of connections to open.
      * @param keyManagerFactory Provides Keys/Certificates in case of SSL/TLS connections
      * @param trustManagerFactory Provides TrustManagers in case of SSL/TLS connections
+     * @param verifier hostname verification strategy
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
     public HttpClient(final TemporaryStorage storage,
                       final int connections,
                       final KeyManagerFactory keyManagerFactory,
-                      final TrustManagerFactory trustManagerFactory) throws GeneralSecurityException {
+                      final TrustManagerFactory trustManagerFactory,
+                      final Verifier verifier) throws GeneralSecurityException {
         this.storage = storage;
 
         final BasicHttpParams parameters = new BasicHttpParams();
@@ -240,7 +282,11 @@ public class HttpClient {
 
         final SchemeRegistry registry = new SchemeRegistry();
         registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        registry.register(new Scheme("https", newSSLSocketFactory(keyManagerFactory, trustManagerFactory), 443));
+        registry.register(new Scheme("https",
+                                     newSSLSocketFactory(keyManagerFactory,
+                                                         trustManagerFactory,
+                                                         verifier.getHostnameVerifier()),
+                                     443));
         final ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(parameters, registry);
 
         httpClient = new DefaultHttpClient(connectionManager, parameters);
@@ -378,9 +424,17 @@ public class HttpClient {
                 trustManagerFactory = buildTrustManagerFactory(truststoreFile, password);
             }
 
+            Verifier verifier = config.get("hostnameVerifier")
+                                      .defaultTo(Verifier.ALLOW_ALL.name())
+                                      .asEnum(Verifier.class);
+
             // Create the HttpClient instance
             try {
-                HttpClient client = new HttpClient(storage, connections, keyManagerFactory, trustManagerFactory);
+                HttpClient client = new HttpClient(storage,
+                                                   connections,
+                                                   keyManagerFactory,
+                                                   trustManagerFactory,
+                                                   verifier);
 
                 if (disableRetries) {
                     client.disableRetries(logger);
