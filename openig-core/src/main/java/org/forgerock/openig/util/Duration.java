@@ -205,4 +205,30 @@ public class Duration {
         return unit;
     }
 
+    /**
+     * Convert the current duration to a given {@link TimeUnit}.
+     * Conversions from finer to coarser granularities truncate, so lose precision.
+     *
+     * @param targetUnit
+     *         target unit of the conversion.
+     * @return converted duration
+     * @see TimeUnit#convert(long, TimeUnit)
+     */
+    public Duration convertTo(TimeUnit targetUnit) {
+        return new Duration(targetUnit.convert(number, unit), targetUnit);
+    }
+
+    /**
+     * Convert the current duration to a number of given {@link TimeUnit}.
+     * Conversions from finer to coarser granularities truncate, so lose precision.
+     *
+     * @param targetUnit
+     *         target unit of the conversion.
+     * @return converted duration value
+     * @see TimeUnit#convert(long, TimeUnit)
+     */
+    public long to(TimeUnit targetUnit) {
+        return convertTo(targetUnit).getValue();
+    }
+
 }
