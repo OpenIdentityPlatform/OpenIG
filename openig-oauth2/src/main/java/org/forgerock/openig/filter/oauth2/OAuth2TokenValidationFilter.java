@@ -18,6 +18,7 @@ package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.util.Duration.duration;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -253,7 +254,7 @@ public class OAuth2TokenValidationFilter extends GenericFilter {
                     config.get("tokenInfoEndpoint").required().asString());
 
             // Build the cache
-            Duration expiration = new Duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
+            Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
             executorService = Executors.newSingleThreadScheduledExecutor();
             cache = new ThreadSafeCache<String, AccessToken>(executorService);
             cache.setTimeout(expiration);

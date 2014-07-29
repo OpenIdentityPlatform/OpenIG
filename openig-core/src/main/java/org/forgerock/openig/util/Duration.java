@@ -18,40 +18,53 @@ package org.forgerock.openig.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static org.forgerock.util.Reject.checkNotNull;
+
+import org.forgerock.util.Reject;
 
 /**
- * Represents a duration in english.
+ * Represents a duration in english. Cases is not important, plurals units are accepted.
  *
  * <code>
  *     6 days
  *     59 minutes and 1 millisecond
  *     1 minute and 10 seconds
  *     42 millis
+ *     unlimited
  * </code>
  */
 public class Duration {
+
+    /**
+     * Special duration that represents an unlimited duration (or indefinite).
+     */
+    private static Duration UNLIMITED = new Duration(Long.MAX_VALUE, DAYS);
+
+    /**
+     * Tokens that represents the unlimited duration.
+     */
+    private static Set<String> UNLIMITED_TOKENS = new CaseInsensitiveSet(asList("unlimited",
+                                                                                "indefinite",
+                                                                                "infinity",
+                                                                                "undefined"));
 
     private Long number;
     private TimeUnit unit;
 
     /**
-     * Builds an empty Duration. This is only used when composing Duration together.
-     */
-    private Duration() {
-        this(null, null);
-    }
-
-    /**
      * Builds a new Duration.
-     * @param number number of time unit (maybe {@literal null}).
-     * @param unit TimeUnit to express the duration in (maybe {@literal null}).
+     * @param number number of time unit (cannot be {@literal null}).
+     * @param unit TimeUnit to express the duration in (cannot be {@literal null}).
      */
     public Duration(final Long number, final TimeUnit unit) {
-        this.number = number;
-        this.unit = unit;
+        this.number = checkNotNull(number);
+        this.unit = checkNotNull(unit);
     }
 
     /**
@@ -62,11 +75,19 @@ public class Duration {
      * @throws IllegalArgumentException
      *         if the input string is incorrectly formatted.
      */
-    public Duration(final String value) {
+    public static Duration duration(final String value) {
         List<Duration> composite = new ArrayList<Duration>();
 
         // Split around ',' and ' and ' patterns
         String[] fragments = value.split(",| and ");
+
+        // If there is only 1 fragment and that it matches the recognized "unlimited" tokens
+        if ((fragments.length == 1) && UNLIMITED_TOKENS.contains(fragments[0].trim())) {
+            // Unlimited Duration
+            return UNLIMITED;
+        }
+
+        // Build the normal duration
         for (String fragment : fragments) {
 
             fragment = fragment.trim();
@@ -101,13 +122,12 @@ public class Duration {
         }
 
         // Merge components of the composite together
-        Duration duration = new Duration();
+        Duration duration = new Duration(0L, DAYS);
         for (Duration elements : composite) {
             duration.merge(elements);
         }
 
-        number = duration.number;
-        unit = duration.unit;
+        return duration;
     }
 
     /**
@@ -117,21 +137,15 @@ public class Duration {
      *         other Duration
      */
     private void merge(final Duration duration) {
-        // Very first merge, this was empty
-        if (unit == null) {
+        // find littlest unit
+        // conversion will happen on the littlest unit otherwise we loose details
+        if (unit.ordinal() > duration.unit.ordinal()) {
+            // Other duration is smaller than me
+            number = duration.unit.convert(number, unit) + duration.number;
             unit = duration.unit;
-            number = duration.number;
         } else {
-            // find littlest unit
-            // conversion will happen on the littlest unit otherwise we loose details
-            if (unit.ordinal() > duration.unit.ordinal()) {
-                // Other duration is smaller than me
-                number = duration.unit.convert(number, unit) + duration.number;
-                unit = duration.unit;
-            } else {
-                // Other duration is greater than me
-                number = unit.convert(duration.number, duration.unit) + number;
-            }
+            // Other duration is greater than me
+            number = unit.convert(duration.number, duration.unit) + number;
         }
     }
 
@@ -143,9 +157,9 @@ public class Duration {
 
         // @Checkstyle:off
 
-        if ("days".equals(lowercase)) return TimeUnit.DAYS;
-        if ("day".equals(lowercase)) return TimeUnit.DAYS;
-        if ("d".equals(lowercase)) return TimeUnit.DAYS;
+        if ("days".equals(lowercase)) return DAYS;
+        if ("day".equals(lowercase)) return DAYS;
+        if ("d".equals(lowercase)) return DAYS;
 
         if ("hours".equals(lowercase)) return TimeUnit.HOURS;
         if ("hour".equals(lowercase)) return TimeUnit.HOURS;
@@ -229,6 +243,15 @@ public class Duration {
      */
     public long to(TimeUnit targetUnit) {
         return convertTo(targetUnit).getValue();
+    }
+
+    /**
+     * Returns {@literal true} if this Duration represents at unlimited duration.
+     *
+     * @return {@literal true} if this Duration represents at unlimited duration.
+     */
+    public boolean isUnlimited() {
+        return this == UNLIMITED;
     }
 
 }

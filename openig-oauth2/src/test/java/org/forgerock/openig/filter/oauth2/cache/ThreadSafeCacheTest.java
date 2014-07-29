@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2.cache;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.util.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -113,7 +114,7 @@ public class ThreadSafeCacheTest {
     public void shouldRegisterAnExpirationCallbackWithAppropriateDuration() throws Exception {
 
         ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<Integer, Integer>(executorService);
-        cache.setTimeout(new Duration("30 seconds"));
+        cache.setTimeout(duration("30 seconds"));
 
         cache.getValue(42, new Callable<Integer>() {
             @Override
