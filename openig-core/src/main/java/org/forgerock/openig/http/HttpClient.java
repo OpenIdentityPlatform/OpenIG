@@ -448,8 +448,10 @@ public class HttpClient {
                 JsonValue store = config.get("keystore");
                 File keystoreFile = store.get("file").required().asFile();
                 String password = store.get("password").required().asString();
+                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                String algorithm = store.get("alg").defaultTo("SunX509").asString();
 
-                keyManagerFactory = buildKeyManagerFactory(keystoreFile, password);
+                keyManagerFactory = buildKeyManagerFactory(keystoreFile, type, algorithm, password);
             }
 
             // Build an optional TrustManagerFactory
@@ -458,8 +460,10 @@ public class HttpClient {
                 JsonValue store = config.get("truststore");
                 File truststoreFile = store.get("file").required().asFile();
                 String password = store.get("password").asString();
+                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                String algorithm = store.get("alg").defaultTo("SunX509").asString();
 
-                trustManagerFactory = buildTrustManagerFactory(truststoreFile, password);
+                trustManagerFactory = buildTrustManagerFactory(truststoreFile, type, algorithm, password);
             }
 
             Verifier verifier = config.get("hostnameVerifier")
@@ -495,36 +499,49 @@ public class HttpClient {
             }
         }
 
-        private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile, final String password)
+        private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile,
+                                                             final String type,
+                                                             final String algorithm,
+                                                             final String password)
                 throws HeapException {
             try {
-                TrustManagerFactory factory = TrustManagerFactory.getInstance("SunX509");
-                KeyStore store = buildJksKeyStore(truststoreFile, password);
+                TrustManagerFactory factory = TrustManagerFactory.getInstance(algorithm);
+                KeyStore store = buildKeyStore(truststoreFile, type, password);
                 factory.init(store);
                 return factory;
             } catch (Exception e) {
-                throw new HeapException(format("Cannot build TrustManagerFactory from trust store: %s",
-                                               truststoreFile),
+                throw new HeapException(format(
+                        "Cannot build TrustManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
+                        algorithm,
+                        type,
+                        truststoreFile),
                                         e);
             }
         }
 
-        private KeyManagerFactory buildKeyManagerFactory(final File keystoreFile, final String password)
+        private KeyManagerFactory buildKeyManagerFactory(final File keystoreFile,
+                                                         final String type,
+                                                         final String algorithm,
+                                                         final String password)
                 throws HeapException {
             try {
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-                KeyStore keyStore = buildJksKeyStore(keystoreFile, password);
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(algorithm);
+                KeyStore keyStore = buildKeyStore(keystoreFile, type, password);
                 keyManagerFactory.init(keyStore, password.toCharArray());
                 return keyManagerFactory;
             } catch (Exception e) {
-                throw new HeapException(format("Cannot build KeyManagerFactory from key store: %s",
-                                               keystoreFile),
+                throw new HeapException(format(
+                        "Cannot build KeyManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
+                        algorithm,
+                        type,
+                        keystoreFile),
                                         e);
             }
         }
 
-        private KeyStore buildJksKeyStore(final File keystoreFile, final String password) throws Exception {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
+        private KeyStore buildKeyStore(final File keystoreFile, final String type, final String password)
+                throws Exception {
+            KeyStore keyStore = KeyStore.getInstance(type);
             InputStream keyInput = null;
             try {
                 keyInput = new FileInputStream(keystoreFile);
