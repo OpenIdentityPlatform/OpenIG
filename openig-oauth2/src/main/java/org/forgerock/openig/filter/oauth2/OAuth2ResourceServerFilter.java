@@ -60,8 +60,8 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  *     {@code
  * {
- *         "name": "OAuth2Filter",
- *         "type": "org.forgerock.openig.filter.oauth2.OAuth2TokenValidationFilter",
+ *         "name": "ProtectedResourceFilter",
+ *         "type": "org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter",
  *         "config": {
  *           "requiredScopes": [ "email", "profile" ],
  *           "tokenInfoEndpoint": "https://openam.example.com:8443/openam/oauth2/tokeninfo",
@@ -99,7 +99,7 @@ import org.forgerock.util.time.TimeService;
  *
  * @see Duration
  */
-public class OAuth2TokenValidationFilter extends GenericFilter {
+public class OAuth2ResourceServerFilter extends GenericFilter {
 
     /**
      * The key under which downstream handlers will find the access token in the {@link Exchange}.
@@ -131,9 +131,9 @@ public class OAuth2TokenValidationFilter extends GenericFilter {
      * @param time
      *         A {@link TimeService} instance used to check if token is expired or not.
      */
-    public OAuth2TokenValidationFilter(final AccessTokenResolver resolver,
-                                       final BearerTokenExtractor extractor,
-                                       final TimeService time) {
+    public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
+                                      final BearerTokenExtractor extractor,
+                                      final TimeService time) {
         this(resolver, extractor, time, Collections.<String>emptySet(), DEFAULT_REALM_NAME);
     }
 
@@ -151,11 +151,11 @@ public class OAuth2TokenValidationFilter extends GenericFilter {
      * @param realm
      *         Name of the realm (used in authentication challenge returned in case of error).
      */
-    public OAuth2TokenValidationFilter(final AccessTokenResolver resolver,
-                                       final BearerTokenExtractor extractor,
-                                       final TimeService time,
-                                       final Set<String> scopes,
-                                       final String realm) {
+    public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
+                                      final BearerTokenExtractor extractor,
+                                      final TimeService time,
+                                      final Set<String> scopes,
+                                      final String realm) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
@@ -264,11 +264,11 @@ public class OAuth2TokenValidationFilter extends GenericFilter {
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
-            Filter filter = new OAuth2TokenValidationFilter(resolver,
-                                                            new BearerTokenExtractor(),
-                                                            time,
-                                                            scopes,
-                                                            realm);
+            Filter filter = new OAuth2ResourceServerFilter(resolver,
+                                                           new BearerTokenExtractor(),
+                                                           time,
+                                                           scopes,
+                                                           realm);
             if (config.get("enforceHttps").defaultTo(Boolean.TRUE).asBoolean()) {
                 try {
                     filter = new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"),
