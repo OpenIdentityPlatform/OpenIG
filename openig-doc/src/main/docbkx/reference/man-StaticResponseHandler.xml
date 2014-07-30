@@ -94,7 +94,10 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"entity"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"entity"</code>: <emphasis><link
+     xlink:show="new"
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>, optional</emphasis></term>
     <listitem>
      <para>The message entity expression to be evaluated and included in the
      response. Conforms to the set <literal>Content-Type</literal> header and
@@ -111,7 +114,9 @@
      "config": {
         "status": 500,
         "reason": "Error",
-        "entity":"&lt;html&gt;&lt;h2&gt;Epic #FAIL&lt;/h2&gt;&lt;/html&gt;"
+        "entity": "&lt;html&gt;
+                   &lt;h2&gt;Epic #FAIL&lt;/h2&gt;
+                   &lt;/html&gt;"
      }
 }</programlisting>
  </refsect1>
