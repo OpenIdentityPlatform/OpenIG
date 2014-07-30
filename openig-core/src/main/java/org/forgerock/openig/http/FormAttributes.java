@@ -68,6 +68,18 @@ public class FormAttributes extends AbstractMap<String, List<String>> implements
         return form().get(name);
     }
 
+    /**
+     * Returns the first value in the list of values for the matching key, or
+     * {@code null} if no such value exists.
+     *
+     * @param key
+     *            the key whose associated first item is to be returned.
+     * @return the first value in the key's value list, or null if non-existent.
+     */
+    public String getFirst(String key) {
+        return form().getFirst(key);
+    }
+
     @Override
     public boolean isEmpty() {
         return form().isEmpty();

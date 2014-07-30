@@ -24,6 +24,8 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.promise.Function;
 
 /**
  * Provides additional functionality to JsonValue.
@@ -62,6 +64,14 @@ public final class JsonValueUtil {
         ALIASES.put("TemporaryStorage", "org.forgerock.openig.io.TemporaryStorage");
         ALIASES.put("WelcomeHandler", "org.forgerock.openig.handler.WelcomeHandler");
     }
+
+    private static final Function<JsonValue, Expression, HeapException> OF_EXPRESSION =
+            new Function<JsonValue, Expression, HeapException>() {
+                @Override
+                public Expression apply(final JsonValue value) throws HeapException {
+                    return asExpression(value);
+                }
+            };
 
     /**
      * Private constructor for utility class.
@@ -163,5 +173,14 @@ public final class JsonValueUtil {
             return expression.eval(null, String.class);
         }
         return null;
+    }
+
+    /**
+     * Returns a function for transforming JsonValues to expressions.
+     *
+     * @return A function for transforming JsonValues to expressions.
+     */
+    public static final Function<JsonValue, Expression, HeapException> ofExpression() {
+        return OF_EXPRESSION;
     }
 }
