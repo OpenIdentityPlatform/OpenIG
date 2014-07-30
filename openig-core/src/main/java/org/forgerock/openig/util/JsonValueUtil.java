@@ -147,4 +147,21 @@ public final class JsonValueUtil {
             throw new JsonValueException(value, ee);
         }
     }
+
+    /**
+     * Evaluates the given JSON value string as an {@link Expression}.
+     *
+     * @param value
+     *         the JSON value containing the expression string.
+     * @return the String that resulted of the Expression evaluation.
+     * @throws JsonValueException
+     *         if the value is not a string or the value is not a valid string typed expression.
+     */
+    public static String evaluate(JsonValue value) {
+        Expression expression = asExpression(value);
+        if (expression != null) {
+            return expression.eval(null, String.class);
+        }
+        return null;
+    }
 }
