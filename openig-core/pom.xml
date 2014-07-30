@@ -118,6 +118,12 @@
       <version>1.7.7</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+     <groupId>simple-jndi</groupId>
+     <artifactId>simple-jndi</artifactId>
+     <version>0.11.4.1</version>
+     <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <resources>

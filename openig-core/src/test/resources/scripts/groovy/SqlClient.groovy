@@ -1,32 +1,32 @@
 import groovy.sql.Sql
 
+import javax.naming.InitialContext
+import javax.sql.DataSource
+
 /**
  * Access a database with a well-known structure,
  * in particular to get credentials given an email address.
  */
 class SqlClient {
 
-    // By default use an in-memory H2 test database.
-
-    String url = "jdbc:h2:mem:test"
-    String username = "sa"
-    String password = ""
-    String driver = "org.h2.Driver"
-    def sql = Sql.newInstance(url, username, password, driver)
+    // Get a DataSource from the container.
+    InitialContext context = new InitialContext()
+    DataSource dataSource = context.lookup("jdbc/forgerock") as DataSource
+    def sql = new Sql(dataSource)
 
     // The expected table is laid out like the following.
 
-    // Table CREDENTIALS
-    // ------------------------------------
-    // |    UID    | PASSWORD |    MAIL   |
-    // ------------------------------------
-    // | <user ID> | <passwd> | <mail@...>|
-    // ------------------------------------
+    // Table USERS
+    // ----------------------------------------
+    // | USERNAME  | PASSWORD |   EMAIL   |...|
+    // ----------------------------------------
+    // | <username>| <passwd> | <mail@...>|...|
+    // ----------------------------------------
 
-    String usernameColumn = "UID"
+    String tableName = "USERS"
+    String usernameColumn = "USERNAME"
     String passwordColumn = "PASSWORD"
-    String tableName = "CREDENTIALS"
-    String mailColumn = "MAIL"
+    String mailColumn = "EMAIL"
 
     /**
      * Get the Username and Password given an email address.

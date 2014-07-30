@@ -32,7 +32,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -40,6 +39,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -67,6 +68,7 @@ import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.h2.jdbcx.JdbcDataSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.Stubber;
@@ -447,27 +449,34 @@ public class GroovyScriptableFilterTest {
 
         try {
             // Create an in-memory database with a table to hold credentials.
-            Class.forName("org.h2.Driver");
-            connection = DriverManager.getConnection("jdbc:h2:mem:test", "sa", "");
+            JdbcDataSource jdbcDataSource = new JdbcDataSource();
+            jdbcDataSource.setUrl("jdbc:h2:mem:test");
+            jdbcDataSource.setUser("sa");
+            jdbcDataSource.setPassword("sa");
+
+            Context context = new InitialContext();
+            context.bind("jdbc/forgerock", jdbcDataSource);
+
+            connection = jdbcDataSource.getConnection();
 
             statement = connection.createStatement();
 
-            final String createTable = "CREATE TABLE CREDENTIALS("
-                    + "UID VARCHAR(255) PRIMARY KEY, "
+            final String createTable = "CREATE TABLE USERS("
+                    + "USERNAME VARCHAR(255) PRIMARY KEY, "
                     + "PASSWORD VARCHAR(255), "
-                    + "MAIL VARCHAR(255));";
+                    + "EMAIL VARCHAR(255));";
             statement.execute(createTable);
 
-            final String insertCredentials = "INSERT INTO CREDENTIALS "
+            final String insertCredentials = "INSERT INTO USERS "
                     + "VALUES('bjensen', 'hifalutin', 'bjensen@example.com');";
             statement.execute(insertCredentials);
 
             // The script can do something like the following.
             final String readTable =
-                    "SELECT UID, PASSWORD FROM CREDENTIALS WHERE MAIL='bjensen@example.com';";
+                    "SELECT USERNAME, PASSWORD FROM USERS WHERE EMAIL='bjensen@example.com';";
             resultSet = statement.executeQuery(readTable);
             while (resultSet.next()) {
-                assertThat(resultSet.getString("UID")).isEqualTo("bjensen");
+                assertThat(resultSet.getString("USERNAME")).isEqualTo("bjensen");
                 assertThat(resultSet.getString("PASSWORD")).isEqualTo("hifalutin");
             }
             // In-memory database disappears when the last connection is closed.
