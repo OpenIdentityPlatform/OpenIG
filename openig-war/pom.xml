@@ -70,7 +70,7 @@
         <configuration>
           <webResources>
             <resource>
-              <targetPath>legal-notices</targetPath>
+              <targetPath>WEB-INF/legal-notices</targetPath>
               <directory>../legal</directory>
             </resource>
           </webResources>
