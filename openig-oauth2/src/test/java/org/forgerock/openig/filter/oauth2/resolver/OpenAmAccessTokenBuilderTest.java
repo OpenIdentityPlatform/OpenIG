@@ -29,6 +29,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class OpenAmAccessTokenBuilderTest {
 
     public static final String TOKEN = "45b4c835-2617-4c39-9dc8-708ae493975f5f";
