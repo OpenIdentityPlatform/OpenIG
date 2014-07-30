@@ -17,11 +17,14 @@
 
 package org.forgerock.openig.el;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Arrays;
 
+import org.forgerock.openig.handler.router.Files;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
@@ -178,5 +181,64 @@ public class FunctionTest {
         exchange.put("s", encoded);
         Object o = new Expression("${urlDecode(exchange.s)}").eval(exchange);
         assertThat(o).isEqualTo(decoded);
+    }
+
+    @DataProvider
+    public static Object[][] base64EncodingValues() {
+        // @Checkstyle:off
+        return new Object[][] {
+                // Don't forget the enclosing ' (quote)
+                {"'This is a very long string'", "VGhpcyBpcyBhIHZlcnkgbG9uZyBzdHJpbmc="},
+                {"'hello'", "aGVsbG8="},
+                {"''", ""},
+                {null, null}
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "base64EncodingValues")
+    public void testBase64Encoding(final String original, final String encoded) throws Exception {
+        assertThat(new Expression(format("${encodeBase64(%s)}", original)).eval(null))
+                .isEqualTo(encoded);
+    }
+
+    @DataProvider
+    public static Object[][] base64DecodingValues() {
+        // @Checkstyle:off
+        return new Object[][] {
+                // Don't forget the enclosing ' (quote)
+                {"'VGhpcyBpcyBhIHZlcnkgbG9uZyBzdHJpbmc='", "This is a very long string"},
+                {"'aGVsbG8='", "hello"},
+                {"'VGhpcyBpcyB'", null}, // Invalid value
+                {"''", ""},
+                {null, null}
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "base64DecodingValues")
+    public void testBase64Decoding(final String original, final String decoded) throws Exception {
+        assertThat(new Expression(format("${decodeBase64(%s)}", original)).eval(null))
+                .isEqualTo(decoded);
+    }
+
+    @Test
+    public void testFileReading() throws Exception {
+        File file = Files.getRelativeFile(getClass(), "readme.txt");
+        assertThat(new Expression(format("${read('%s')}", file.getPath())).eval(null))
+                .isEqualTo("Hello World");
+    }
+
+    @Test
+    public void testMissingFileReading() throws Exception {
+        File file = Files.getRelative(getClass(), "missing.txt");
+        assertThat(new Expression(format("${read('%s')}", file.getPath())).eval(null)).isNull();
+    }
+
+    @Test
+    public void testPropertiesReading() throws Exception {
+        File file = Files.getRelativeFile(getClass(), "configuration.properties");
+        assertThat(new Expression(format("${readProperties('%s')['key']}", file.getPath())).eval(null))
+                .isEqualTo("some value");
     }
 }
