@@ -17,6 +17,12 @@
 
 package org.forgerock.openig.el;
 
+import static org.forgerock.openig.util.StringUtil.asString;
+import static org.forgerock.util.Utils.closeSilently;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -26,6 +32,7 @@ import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,6 +40,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.el.FunctionMapper;
 
 import org.forgerock.openig.util.StringUtil;
+import org.forgerock.util.encode.Base64;
 
 /**
  * Maps between EL function names and methods. In this implementation all public
@@ -323,6 +331,72 @@ public class Functions extends FunctionMapper {
             return value != null ? URLDecoder.decode(value, "UTF-8") : null;
         } catch (UnsupportedEncodingException e) {
             return value;
+        }
+    }
+
+    /**
+     * Encode the given String input into Base 64.
+     *
+     * @param value
+     *            the string to be Base64 encoded, which may be {@code null}.
+     * @return the Base64 encoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null}.
+     */
+    public static String encodeBase64(final String value) {
+        if (value == null) {
+            return null;
+        }
+        return Base64.encode(value.getBytes());
+    }
+
+    /**
+     * Decode the given Base64 String input.
+     *
+     * @param value
+     *            the string to be Base64 decoded, which may be {@code null}.
+     * @return the decoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null} or if the input was not a Base64 valid input.
+     */
+    public static String decodeBase64(final String value) {
+        if (value == null) {
+            return null;
+        }
+        return new String(Base64.decode(value));
+    }
+
+    /**
+     * Returns the content of the given file as a plain String.
+     *
+     * @param filename
+     *         file to be read
+     * @return the file content as a String or {@literal null} if here was an error (missing file, ...)
+     */
+    public static String read(final String filename) {
+        try {
+            return asString(new FileInputStream(new File(filename)));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the content of the given file as a {@link Properties}.
+     *
+     * @param filename
+     *         file to be read
+     * @return the file content as {@link Properties} or {@literal null} if here was an error (missing file, ...)
+     */
+    public static Properties readProperties(final String filename) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(new File(filename));
+            Properties properties = new Properties();
+            properties.load(fis);
+            return properties;
+        } catch (IOException e) {
+            return null;
+        } finally {
+            closeSilently(fis);
         }
     }
 }
