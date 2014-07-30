@@ -20,6 +20,8 @@ package org.forgerock.openig.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.openig.http.Form;
+
 /**
  * Utility class for performing operations on universal resource identifiers.
  */
@@ -96,6 +98,43 @@ public final class URIUtil {
             return create(scheme, uri.getRawUserInfo(), host, port, uri.getRawPath(),
                     uri.getRawQuery(), uri.getRawFragment());
         } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Returns a new URI having the provided query parameters. The scheme,
+     * authority, path, and fragment remain unchanged.
+     *
+     * @param uri
+     *            the URI whose query is to be changed.
+     * @param query
+     *            the form containing the query parameters.
+     * @return a new URI having the provided query parameters. The scheme,
+     *         authority, path, and fragment remain unchanged.
+     */
+    public static URI withQuery(final URI uri, final Form query) {
+        try {
+            return create(uri.getScheme(), uri.getRawUserInfo(), uri.getHost(), uri.getPort(), uri
+                    .getRawPath(), query.toString(), uri.getRawFragment());
+        } catch (final URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Returns a new URI having the same scheme, authority and path, but no
+     * query nor fragment.
+     *
+     * @param uri
+     *            the URI whose query and fragments are to be removed.
+     * @return a new URI having the same scheme, authority and path, but no
+     *         query nor fragment.
+     */
+    public static URI withoutQueryAndFragment(final URI uri) {
+        try {
+            return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
+        } catch (final URISyntaxException e) {
             throw new IllegalStateException(e);
         }
     }
