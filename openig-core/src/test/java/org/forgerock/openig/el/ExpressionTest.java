@@ -204,6 +204,12 @@ public class ExpressionTest {
         assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
     }
 
+    @Test
+    public void testImplicitObjectsReferences() throws Exception {
+        assertThat(new Expression("${system['user.home']}").eval(null)).isNotNull();
+        assertThat(new Expression("${env['PATH']}").eval(null)).isNotNull();
+    }
+
     public static class BeanFieldMap extends ExtensibleFieldMap {
         public String legacy;
 

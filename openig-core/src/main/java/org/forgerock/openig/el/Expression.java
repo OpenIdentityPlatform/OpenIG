@@ -19,8 +19,10 @@ package org.forgerock.openig.el;
 
 import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -72,7 +74,7 @@ public class Expression {
      * @param scope the scope to evaluate the expression within.
      * @return the result of the expression evaluation, or {@code null} if does not resolve a value.
      */
-    public Object eval(Object scope) {
+    public Object eval(final Object scope) {
 
         XLContext context = new XLContext(scope);
 
@@ -160,13 +162,25 @@ public class Expression {
     private static class XLResolver extends ELResolver {
         private final Object scope;
 
-        public XLResolver(Object scope) {
-            this.scope = scope;
+        public XLResolver(final Object scope) {
+            // Resolvers.get() don't support null value
+            this.scope = (scope == null) ? new Object() : scope;
         }
 
         @Override
         public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
+
+            // deal with readonly implicit objects
+            if (base == null) {
+                String name = property.toString();
+                if ("system".equals(name)) {
+                    return readOnlySystemProperties();
+                } else if ("env".equals(name)) {
+                    return readOnlyEnvironmentVariables();
+                }
+            }
+
             Object value = Resolvers.get((base == null ? scope : base), property);
             return (value != Resolver.UNRESOLVED ? value : null);
         }
@@ -199,5 +213,14 @@ public class Expression {
         public Class<?> getCommonPropertyType(ELContext context, Object base) {
             return (base == null ? String.class : Object.class);
         }
+
+        private Map<String, String> readOnlyEnvironmentVariables() {
+            return Collections.unmodifiableMap(System.getenv());
+        }
+
+        private Map<Object, Object> readOnlySystemProperties() {
+            return Collections.unmodifiableMap(System.getProperties());
+        }
+
     }
 }
