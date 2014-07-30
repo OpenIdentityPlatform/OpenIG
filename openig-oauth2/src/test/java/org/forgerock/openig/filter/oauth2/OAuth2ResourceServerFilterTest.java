@@ -19,7 +19,7 @@ package org.forgerock.openig.filter.oauth2;
 import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.filter.oauth2.OAuth2TokenValidationFilter.*;
+import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.*;
 import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.*;
 import static org.mockito.Mockito.*;
 
@@ -36,7 +36,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class OAuth2TokenValidationFilterTest {
+public class OAuth2ResourceServerFilterTest {
 
     /**
      * Re-used token-id.
@@ -68,7 +68,7 @@ public class OAuth2TokenValidationFilterTest {
 
     @Test
     public void shouldFailBecauseOfMissingHeader() throws Exception {
-        OAuth2TokenValidationFilter filter = buildAuth2TokenValidationFilter();
+        OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildUnAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -85,7 +85,7 @@ public class OAuth2TokenValidationFilterTest {
         when(resolver.resolve(TOKEN_ID))
                 .thenThrow(new OAuth2TokenException("error"));
 
-        OAuth2TokenValidationFilter filter = buildAuth2TokenValidationFilter();
+        OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -102,7 +102,7 @@ public class OAuth2TokenValidationFilterTest {
         // Compared to the expiration date (100L), now is greater, so the token is expired
         when(time.now()).thenReturn(2000L);
 
-        OAuth2TokenValidationFilter filter = buildAuth2TokenValidationFilter();
+        OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -116,7 +116,7 @@ public class OAuth2TokenValidationFilterTest {
 
     @Test
     public void shouldFailBecauseOfMissingScopes() throws Exception {
-        OAuth2TokenValidationFilter filter = buildAuth2TokenValidationFilter("a-missing-scope", "another-one");
+        OAuth2ResourceServerFilter filter = buildResourceServerFilter("a-missing-scope", "another-one");
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -131,7 +131,7 @@ public class OAuth2TokenValidationFilterTest {
 
     @Test
     public void shouldStoreAccessTokenInTheExchange() throws Exception {
-        OAuth2TokenValidationFilter filter = buildAuth2TokenValidationFilter();
+        OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -140,12 +140,12 @@ public class OAuth2TokenValidationFilterTest {
         verify(nextHandler).handle(exchange);
     }
 
-    private OAuth2TokenValidationFilter buildAuth2TokenValidationFilter(String... scopes) {
-        return new OAuth2TokenValidationFilter(resolver,
-                                               new BearerTokenExtractor(),
-                                               time,
-                                               asSet(scopes),
-                                               DEFAULT_REALM_NAME);
+    private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) {
+        return new OAuth2ResourceServerFilter(resolver,
+                                              new BearerTokenExtractor(),
+                                              time,
+                                              asSet(scopes),
+                                              DEFAULT_REALM_NAME);
     }
 
     private static Set<String> asSet(final String... scopes) {
