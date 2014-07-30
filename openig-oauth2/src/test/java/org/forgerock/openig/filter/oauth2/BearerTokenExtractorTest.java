@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class BearerTokenExtractorTest {
 
     @DataProvider

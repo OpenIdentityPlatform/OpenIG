@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.cache;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.openig.util.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -29,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.forgerock.openig.util.Duration;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -37,6 +36,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class ThreadSafeCacheTest {
 
     public static final int NUMBER_OF_ENTRIES = 10;
