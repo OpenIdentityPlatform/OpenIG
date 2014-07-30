@@ -85,8 +85,7 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"headers"</code>: <emphasis>array of objects,
-    required</emphasis></term>
+    <term><code>"headers"</code>: <emphasis>array of objects, optional</emphasis></term>
     <listitem>
      <para>Header fields to set in the response. The <literal>name</literal>
      specifies the header name, with an associated array of expressions to
