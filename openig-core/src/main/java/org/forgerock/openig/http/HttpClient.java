@@ -21,6 +21,7 @@ package org.forgerock.openig.http;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.openig.util.Duration.duration;
+import static org.forgerock.openig.util.JsonValueUtil.*;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
@@ -64,6 +65,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.header.ConnectionHeader;
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentLengthHeader;
@@ -117,6 +119,14 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  *     <li>{@literal ALLOW_ALL} (the default)</li>
  *     <li>{@literal BROWSER_COMPATIBLE}</li>
  *     <li>{@literal STRICT}</li>
+ * </ul>
+ * <p>
+ * The {@literal keystore} and {@literal truststore} optional attributes are both supporting the following attributes:
+ * <ul>
+ *     <li>{@literal file}: path to the key store</li>
+ *     <li>{@literal type}: key store type (defaults to {@literal JKS})</li>
+ *     <li>{@literal alg}: certificate algorithm to use (defaults to {@literal SunX509})</li>
+ *     <li>{@literal password}: mandatory for key store, optional for trust store, defined as an {@link Expression}</li>
  * </ul>
  * <p>
  * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection
@@ -454,7 +464,7 @@ public class HttpClient {
             if (config.isDefined("keystore")) {
                 JsonValue store = config.get("keystore");
                 File keystoreFile = store.get("file").required().asFile();
-                String password = store.get("password").required().asString();
+                String password = evaluate(store.get("password").required());
                 String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
                 String algorithm = store.get("alg").defaultTo("SunX509").asString();
 
@@ -466,7 +476,9 @@ public class HttpClient {
             if (config.isDefined("truststore")) {
                 JsonValue store = config.get("truststore");
                 File truststoreFile = store.get("file").required().asFile();
-                String password = store.get("password").asString();
+
+                // Password is optional for trust store
+                String password = evaluate(store.get("password"));
                 String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
                 String algorithm = store.get("alg").defaultTo("SunX509").asString();
 
