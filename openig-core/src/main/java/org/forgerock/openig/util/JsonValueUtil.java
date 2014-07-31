@@ -17,11 +17,14 @@
 
 package org.forgerock.openig.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import static java.util.Collections.unmodifiableList;
+import static org.forgerock.openig.util.Loader.loadList;
+
+import java.util.List;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.HeapException;
@@ -32,38 +35,11 @@ import org.forgerock.util.promise.Function;
  */
 public final class JsonValueUtil {
 
-    /** TODO: Description. */
-    private static final Map<String, String> ALIASES = new HashMap<String, String>();
-
-    // TODO: allow aliases to be dynamically configured
-    static {
-        ALIASES.put("AssignmentFilter", "org.forgerock.openig.filter.AssignmentFilter");
-        ALIASES.put("CaptureFilter", "org.forgerock.openig.filter.CaptureFilter");
-        ALIASES.put("Chain", "org.forgerock.openig.filter.Chain");
-        ALIASES.put("ClientHandler", "org.forgerock.openig.handler.ClientHandler");
-        ALIASES.put("ConsoleLogSink", "org.forgerock.openig.log.ConsoleLogSink");
-        ALIASES.put("CookieFilter", "org.forgerock.openig.filter.CookieFilter");
-        ALIASES.put("CryptoHeaderFilter", "org.forgerock.openig.filter.CryptoHeaderFilter");
-        ALIASES.put("DispatchHandler", "org.forgerock.openig.handler.DispatchHandler");
-        ALIASES.put("EntityExtractFilter", "org.forgerock.openig.filter.EntityExtractFilter");
-        ALIASES.put("ExceptionFilter", "org.forgerock.openig.filter.ExceptionFilter");
-        ALIASES.put("FileAttributesFilter", "org.forgerock.openig.filter.FileAttributesFilter");
-        ALIASES.put("HeaderFilter", "org.forgerock.openig.filter.HeaderFilter");
-        ALIASES.put("HttpBasicAuthFilter", "org.forgerock.openig.filter.HttpBasicAuthFilter");
-        ALIASES.put("HttpClient", "org.forgerock.openig.http.HttpClient");
-        ALIASES.put("RedirectFilter", "org.forgerock.openig.filter.RedirectFilter");
-        ALIASES.put("Router", "org.forgerock.openig.handler.router.RouterHandler");
-        ALIASES.put("RouterHandler", "org.forgerock.openig.handler.router.RouterHandler");
-        ALIASES.put("ScriptableFilter", "org.forgerock.openig.filter.ScriptableFilter");
-        ALIASES.put("ScriptableHandler", "org.forgerock.openig.handler.ScriptableHandler");
-        ALIASES.put("SequenceHandler", "org.forgerock.openig.handler.SequenceHandler");
-        ALIASES.put("SqlAttributesFilter", "org.forgerock.openig.filter.SqlAttributesFilter");
-        ALIASES.put("StaticRequestFilter", "org.forgerock.openig.filter.StaticRequestFilter");
-        ALIASES.put("StaticResponseHandler", "org.forgerock.openig.handler.StaticResponseHandler");
-        ALIASES.put("SwitchFilter", "org.forgerock.openig.filter.SwitchFilter");
-        ALIASES.put("TemporaryStorage", "org.forgerock.openig.io.TemporaryStorage");
-        ALIASES.put("WelcomeHandler", "org.forgerock.openig.handler.WelcomeHandler");
-    }
+    /**
+     * List of alias service providers found at initialisation time.
+     */
+    private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
+            unmodifiableList(loadList(ClassAliasResolver.class));
 
     private static final Function<JsonValue, Expression, HeapException> OF_EXPRESSION =
             new Function<JsonValue, Expression, HeapException>() {
@@ -86,16 +62,32 @@ public final class JsonValueUtil {
      * @throws JsonValueException if value is not a string or the named class could not be found.
      */
     private static Class<?> classForName(JsonValue value) {
-        String c = value.asString();
-        String a = ALIASES.get(c);
-        if (a != null) {
-            c = a;
+        String name = value.asString();
+        // Looks for registered aliases first
+        Class<?> type = resolveAlias(name);
+        if (type != null) {
+            return type;
         }
+        // No alias found, consider the value as a fully qualified class name
         try {
-            return Class.forName(c, true, Thread.currentThread().getContextClassLoader());
+            return Class.forName(name, true, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException cnfe) {
             throw new JsonValueException(value, cnfe);
         }
+    }
+
+    /**
+     * Resolve a given alias against the known aliases service providers.
+     * The first {@literal non-null} resolved type is returned.
+     */
+    private static Class<?> resolveAlias(final String alias) {
+        for (ClassAliasResolver service : CLASS_ALIAS_RESOLVERS) {
+            Class<?> type = service.resolve(alias);
+            if (type != null) {
+                return type;
+            }
+        }
+        return null;
     }
 
     /**
