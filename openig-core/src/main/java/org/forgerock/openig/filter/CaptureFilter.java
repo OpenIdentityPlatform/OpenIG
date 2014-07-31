@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.evaluate;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
@@ -271,7 +272,7 @@ public class CaptureFilter extends GenericFilter {
         }
 
         private WriterProvider buildFileProvider(final JsonValue config) {
-            File file = config.get("file").required().asFile();
+            File file = new File(evaluate(config.get("file").required()));
             Charset charset = config.get("charset").defaultTo("UTF-8").asCharset();
             return new FileWriterProvider(file, charset);
         }

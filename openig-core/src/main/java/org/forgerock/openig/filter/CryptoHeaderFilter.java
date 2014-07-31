@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.evaluate;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
@@ -252,9 +254,10 @@ public class CryptoHeaderFilter extends GenericFilter {
             filter.operation = config.get("operation").required().asEnum(Operation.class);
             filter.algorithm = config.get("algorithm").defaultTo(DEFAULT_ALGORITHM).asString();
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset();
-            byte[] key = Base64.decode(config.get("key").required().asString());
+            byte[] key = Base64.decode(evaluate(config.get("key").required()));
             if (key.length == 0) {
-                throw new JsonValueException(config.get("key"), "Empty key is not allowed");
+                throw new JsonValueException(config.get("key"),
+                                             "key evaluation gave an empty result that is not allowed");
             }
             try {
                 filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("DES").asString());

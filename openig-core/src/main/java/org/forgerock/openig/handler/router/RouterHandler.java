@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.util.JsonValueUtil.evaluate;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.DispatchHandler;
 import org.forgerock.openig.handler.GenericHandler;
@@ -268,11 +268,12 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             Environment env = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
             File directory = new File(env.getConfigDirectory(), "routes");
 
-            // configuration can override that value
-            JsonValue value = config.get("directory");
-            if (!value.isNull()) {
-                directory = value.asFile();
+            // Configuration can override that value
+            String evaluation = evaluate(config.get("directory"));
+            if (evaluation != null) {
+                directory = new File(evaluation);
             }
+
             DirectoryScanner scanner = new DirectoryMonitor(directory);
 
             int period = config.get("scanInterval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
