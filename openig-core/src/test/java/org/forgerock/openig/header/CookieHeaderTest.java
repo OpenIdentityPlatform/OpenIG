@@ -42,12 +42,12 @@ public class CookieHeaderTest {
         final CookieHeader ch = new CookieHeader(CHEADER_1);
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertEquals(cookie.version.intValue(), 1);
-        assertEquals(cookie.value, "BAB_JENSEN");
-        assertEquals(cookie.path, "/example");
-        assertEquals(cookie.port.size(), 2);
-        assertEquals(cookie.port.get(0).intValue(), 42);
-        assertEquals(cookie.port.get(1).intValue(), 13);
+        assertEquals(cookie.getVersion().intValue(), 1);
+        assertEquals(cookie.getValue(), "BAB_JENSEN");
+        assertEquals(cookie.getPath(), "/example");
+        assertEquals(cookie.getPort().size(), 2);
+        assertEquals(cookie.getPort().get(0).intValue(), 42);
+        assertEquals(cookie.getPort().get(1).intValue(), 13);
         assertEquals(ch.getKey(), NAME);
     }
 
@@ -56,11 +56,11 @@ public class CookieHeaderTest {
         final CookieHeader ch = new CookieHeader(CHEADER_2);
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertEquals(cookie.version.intValue(), 2);
-        assertEquals(cookie.value, "SAM_CARTER");
-        assertEquals(cookie.path, "/example");
-        assertEquals(cookie.port.size(), 0);
-        assertEquals(cookie.domain, "example.com");
+        assertEquals(cookie.getVersion().intValue(), 2);
+        assertEquals(cookie.getValue(), "SAM_CARTER");
+        assertEquals(cookie.getPath(), "/example");
+        assertEquals(cookie.getPort().size(), 0);
+        assertEquals(cookie.getDomain(), "example.com");
         assertEquals(ch.getKey(), NAME);
     }
 
@@ -69,8 +69,8 @@ public class CookieHeaderTest {
         final CookieHeader ch = new CookieHeader("Customer=\"BAB_JENSEN\"; $Path=\"/example\"");
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertNull(cookie.version);
-        assertEquals(cookie.value, "BAB_JENSEN");
+        assertNull(cookie.getVersion());
+        assertEquals(cookie.getValue(), "BAB_JENSEN");
         assertEquals(ch.getKey(), NAME);
     }
 
@@ -79,8 +79,8 @@ public class CookieHeaderTest {
         final CookieHeader ch = new CookieHeader("$Version=invalid; Customer=\"BAB_JENSEN\"; $Path=\"/example\"");
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertNull(cookie.version);
-        assertEquals(cookie.value, "BAB_JENSEN");
+        assertNull(cookie.getVersion());
+        assertEquals(cookie.getValue(), "BAB_JENSEN");
         assertEquals(ch.getKey(), NAME);
     }
 
@@ -105,19 +105,19 @@ public class CookieHeaderTest {
     @Test
     public void testCookieHeaderToStringInsertVersionWhenPathOrDomainArePresent() {
         CookieHeader ch = new CookieHeader("Customer=\"SAM_CARTER\";");
-        assertNull(ch.getCookies().get(0).version);
+        assertNull(ch.getCookies().get(0).getVersion());
         assertThat(ch.toString()).doesNotContain("$Version=1;");
 
         ch = new CookieHeader("Customer=\"SAM_CARTER\"; $Path=\"/example\"");
-        assertNull(ch.getCookies().get(0).version);
+        assertNull(ch.getCookies().get(0).getVersion());
         assertThat(ch.toString()).contains("$Version=1;");
 
         ch = new CookieHeader("Customer=\"SAM_CARTER\"; $Domain=\"example.com\"");
-        assertNull(ch.getCookies().get(0).version);
+        assertNull(ch.getCookies().get(0).getVersion());
         assertThat(ch.toString()).contains("$Version=1;");
 
         ch = new CookieHeader("Customer=\"SAM_CARTER\"; $Domain=\"example.com\"; $Version=2");
-        assertEquals(ch.getCookies().get(0).version.intValue(), 2);
+        assertEquals(ch.getCookies().get(0).getVersion().intValue(), 2);
         assertThat(ch.toString()).doesNotContain("$Version=1;");
     }
 
@@ -145,10 +145,10 @@ public class CookieHeaderTest {
         assertNotNull(request.getCookies().get("Customer"));
 
         final Cookie cookie = request.getCookies().get("Customer").get(0);
-        assertEquals(cookie.name, "Customer");
-        assertEquals(cookie.version.intValue(), 1);
-        assertEquals(cookie.port.size(), 2);
-        assertEquals(cookie.value, "BAB_JENSEN");
+        assertEquals(cookie.getName(), "Customer");
+        assertEquals(cookie.getVersion().intValue(), 1);
+        assertEquals(cookie.getPort().size(), 2);
+        assertEquals(cookie.getValue(), "BAB_JENSEN");
     }
 
     @Test
@@ -173,7 +173,7 @@ public class CookieHeaderTest {
 
         final CookieHeader ch2 = new CookieHeader();
         ch2.fromMessage(response);
-        assertFalse(ch2.getCookies().equals(ch.getCookies()));
+        assertThat(ch2.getCookies()).isNotEqualTo(ch.getCookies());
         assertThat(ch).isNotEqualTo(ch2);
     }
 

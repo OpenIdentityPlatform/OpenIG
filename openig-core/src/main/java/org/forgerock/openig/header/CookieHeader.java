@@ -100,28 +100,28 @@ public class CookieHeader implements Header {
                 for (String s2 : HeaderUtil.split(s1, ';')) {
                     String[] nvp = HeaderUtil.parseParameter(s2);
                     if (nvp[0].length() > 0 && nvp[0].charAt(0) != '$') {
-                        if (cookie.name != null) {
+                        if (cookie.getName() != null) {
                             // existing cookie was being parsed
                             cookies.add(cookie);
                         }
                         cookie = new Cookie();
                         // inherit previous parsed version
-                        cookie.version = version;
-                        cookie.name = nvp[0];
-                        cookie.value = nvp[1];
+                        cookie.setVersion(version);
+                        cookie.setName(nvp[0]);
+                        cookie.setValue(nvp[1]);
                     } else if ("$Version".equalsIgnoreCase(nvp[0])) {
-                        cookie.version = version = parseInteger(nvp[1]);
+                        cookie.setVersion(version = parseInteger(nvp[1]));
                     } else if ("$Path".equalsIgnoreCase(nvp[0])) {
-                        cookie.path = nvp[1];
+                        cookie.setPath(nvp[1]);
                     } else if ("$Domain".equalsIgnoreCase(nvp[0])) {
-                        cookie.domain = nvp[1];
+                        cookie.setDomain(nvp[1]);
                     } else if ("$Port".equalsIgnoreCase(nvp[0])) {
-                        cookie.port.clear();
-                        parsePorts(cookie.port, nvp[1]);
+                        cookie.getPort().clear();
+                        parsePorts(cookie.getPort(), nvp[1]);
                     }
                 }
             }
-            if (cookie.name != null) {
+            if (cookie.getName() != null) {
                 // last cookie being parsed
                 cookies.add(cookie);
             }
@@ -141,9 +141,9 @@ public class CookieHeader implements Header {
         boolean quoted = false;
         Integer version = null;
         for (Cookie cookie : cookies) {
-            if (cookie.version != null && (version == null || cookie.version > version)) {
-                version = cookie.version;
-            } else if (version == null && (cookie.path != null || cookie.domain != null)) {
+            if (cookie.getVersion() != null && (version == null || cookie.getVersion() > version)) {
+                version = cookie.getVersion();
+            } else if (version == null && (cookie.getPath() != null || cookie.getDomain() != null)) {
                 // presence of extended fields makes it version 1 at minimum
                 version = 1;
             }
@@ -154,20 +154,20 @@ public class CookieHeader implements Header {
             quoted = true;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.name != null) {
+            if (cookie.getName() != null) {
                 if (sb.length() > 0) {
                     sb.append("; ");
                 }
-                sb.append(cookie.name).append('=');
-                sb.append(quoted ? HeaderUtil.quote(cookie.value) : cookie.value);
-                if (cookie.path != null) {
-                    sb.append("; $Path=").append(HeaderUtil.quote(cookie.path));
+                sb.append(cookie.getName()).append('=');
+                sb.append(quoted ? HeaderUtil.quote(cookie.getValue()) : cookie.getValue());
+                if (cookie.getPath() != null) {
+                    sb.append("; $Path=").append(HeaderUtil.quote(cookie.getPath()));
                 }
-                if (cookie.domain != null) {
-                    sb.append("; $Domain=").append(HeaderUtil.quote(cookie.domain));
+                if (cookie.getDomain() != null) {
+                    sb.append("; $Domain=").append(HeaderUtil.quote(cookie.getDomain()));
                 }
-                if (cookie.port.size() > 0) {
-                    sb.append("; $Port=").append(HeaderUtil.quote(portList(cookie.port)));
+                if (cookie.getPort().size() > 0) {
+                    sb.append("; $Port=").append(HeaderUtil.quote(portList(cookie.getPort())));
                 }
             }
         }
