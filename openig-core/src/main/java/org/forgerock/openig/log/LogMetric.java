@@ -17,38 +17,57 @@
 
 package org.forgerock.openig.log;
 
-import org.forgerock.openig.util.FieldMap;
-
 /**
  * Log entry data that provides a measurement.
  */
-public class LogMetric extends FieldMap {
-
-    /** The numeric value of the metric. */
-    public final Number value;
+public class LogMetric {
 
     /** The unit of measurement the metric is expressed in. */
-    public final String units;
+    private final String units;
+
+    /** The numeric value of the metric. */
+    private final Number value;
 
     /**
      * Constructs a new metric with the specific value and units.
      *
-     * @param value the numeric value of the metric.
-     * @param units the unit of measurement that the metric is expressed in.
+     * @param value
+     *            the numeric value of the metric.
+     * @param units
+     *            the unit of measurement that the metric is expressed in.
      */
-    public LogMetric(Number value, String units) {
+    public LogMetric(final Number value, final String units) {
         this.value = value;
         this.units = units;
     }
 
     /**
-     * Returns the metric in the form <em>value</em> SP <em>units</em>. For example, if
-     * value is {@code 100} and units are {@code "ms"}, then the returned value would be
-     * {@code "100 ms"}.
+     * Returns the unit of measurement the metric is expressed in.
+     *
+     * @return The unit of measurement the metric is expressed in.
+     */
+    public String getUnits() {
+        return units;
+    }
+
+    /**
+     * Returns the numeric value of the metric.
+     *
+     * @return The numeric value of the metric.
+     */
+    public Number getValue() {
+        return value;
+    }
+
+    /**
+     * Returns the metric in the form <em>value</em> SP <em>units</em>. For
+     * example, if value is {@code 100} and units are {@code "ms"}, then the
+     * returned value would be {@code "100 ms"}.
+     *
      * @return the metric in the form <em>value</em> SP <em>units</em>.
      */
     @Override
     public String toString() {
-        return value.toString() + ' ' + units;
+        return getValue().toString() + ' ' + getUnits();
     }
 }

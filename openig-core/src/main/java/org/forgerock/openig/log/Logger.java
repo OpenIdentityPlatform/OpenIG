@@ -47,10 +47,7 @@ public class Logger implements LogSink {
      * @param message the message to be logged.
      */
     public void logMessage(LogLevel level, String message) {
-        LogEntry entry = newEntry();
-        entry.level = level;
-        entry.message = message;
-        log(entry);
+        log(new LogEntry(source, level, message));
     }
 
     /**
@@ -62,11 +59,7 @@ public class Logger implements LogSink {
      * @return the exception being logged.
      */
     public <T extends Throwable> T logException(LogLevel level, T throwable) {
-        LogEntry entry = newEntry();
-        entry.level = level;
-        entry.message = throwable.toString();
-        entry.data = throwable;
-        log(entry);
+        log(new LogEntry(source, level, throwable.toString(), throwable));
         return throwable;
     }
 
@@ -218,8 +211,8 @@ public class Logger implements LogSink {
      */
     @Override
     public void log(LogEntry entry) {
-        entry.source = source(source, entry.source);
-        sink.log(entry);
+        sink.log(new LogEntry(source(source, entry.getSource()), entry.getLevel(), entry
+                .getMessage(), entry.getData()));
     }
 
     /**
@@ -244,16 +237,6 @@ public class Logger implements LogSink {
      */
     public boolean isLoggable(LogLevel level) {
         return sink.isLoggable(this.source, level);
-    }
-
-    /**
-     * Returns a new log entry, initialized with timestamp and source.
-     */
-    private LogEntry newEntry() {
-        LogEntry entry = new LogEntry();
-        entry.time = System.currentTimeMillis();
-        entry.source = this.source;
-        return entry;
     }
 
     private String source(String source, String event) {

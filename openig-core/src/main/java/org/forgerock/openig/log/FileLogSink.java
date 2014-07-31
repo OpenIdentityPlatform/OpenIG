@@ -84,7 +84,7 @@ public class FileLogSink implements LogSink {
 
     @Override
     public void log(LogEntry entry) {
-        if (isLoggable(entry.source, entry.level)) {
+        if (isLoggable(entry.getSource(), entry.getLevel())) {
             synchronized (this) {
                 try {
                     if (!file.exists() || writer == null) {
@@ -95,10 +95,10 @@ public class FileLogSink implements LogSink {
                                 new FileOutputStream(file, true), charset), true);
                     }
                     StringBuilder sb = new StringBuilder();
-                    sb.append(ISO8601.format(entry.time)).append(':').append(entry.source).append(':');
-                    sb.append(entry.level).append(':').append(entry.message);
-                    if (entry.data != null) {
-                        sb.append(':').append(entry.data.toString());
+                    sb.append(ISO8601.format(entry.getTime())).append(':').append(entry.getSource()).append(':');
+                    sb.append(entry.getLevel()).append(':').append(entry.getMessage());
+                    if (entry.getData() != null) {
+                        sb.append(':').append(entry.getData().toString());
                     }
                     writer.println(sb.toString());
                 } catch (IOException ioe) {

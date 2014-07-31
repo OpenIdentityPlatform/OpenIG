@@ -32,7 +32,7 @@ import java.util.Set;
  * {@code remove} and {@code clear} methods merely set field values to
  * {@code null}.
  */
-public class FieldMap extends AbstractMap<String, Object> implements Map<String, Object> {
+final class FieldMap extends AbstractMap<String, Object> implements Map<String, Object> {
 
     /**
      * Cache of field mappings to avoid overhead of repeated mapping via
