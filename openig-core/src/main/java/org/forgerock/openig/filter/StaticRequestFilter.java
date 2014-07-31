@@ -128,11 +128,11 @@ public class StaticRequestFilter extends GenericFilter {
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Request request = new Request();
-        request.method = this.method;
+        request.setMethod(this.method);
         String value = this.uri.eval(exchange, String.class);
         if (value != null) {
             try {
-                request.uri = new URI(value);
+                request.setUri(new URI(value));
             } catch (URISyntaxException e) {
                 throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
             }
@@ -141,13 +141,13 @@ public class StaticRequestFilter extends GenericFilter {
         }
         if (this.version != null) {
             // default in Message class
-            request.version = version;
+            request.setVersion(version);
         }
         for (String key : this.headers.keySet()) {
             for (Expression expression : this.headers.get(key)) {
                 String eval = expression.eval(exchange, String.class);
                 if (eval != null) {
-                    request.headers.add(key, eval);
+                    request.getHeaders().add(key, eval);
                 }
             }
         }
@@ -161,7 +161,7 @@ public class StaticRequestFilter extends GenericFilter {
                     }
                 }
             }
-            if (request.method.equals("POST")) {
+            if (request.getMethod().equals("POST")) {
                 f.toRequestEntity(request);
             } else {
                 f.appendRequestQuery(request);

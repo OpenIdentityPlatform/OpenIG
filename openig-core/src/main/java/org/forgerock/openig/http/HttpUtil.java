@@ -41,7 +41,7 @@ public final class HttpUtil {
     private HttpUtil() {
     }
 
-    private static Charset cs(Message message, Charset charset) {
+    private static Charset cs(Message<?> message, Charset charset) {
         if (charset == null) {
             // use Content-Type charset if not explicitly specified
             charset = new ContentTypeHeader(message).getCharset();
@@ -76,10 +76,10 @@ public final class HttpUtil {
      *            the character set to encode the string in, or ISO-8859-1 if
      *            {@code null}.
      */
-    public static void toEntity(Message message, String string, Charset charset) {
+    public static void toEntity(Message<?> message, String string, Charset charset) {
         byte[] data = string.getBytes(cs(message, charset));
-        message.entity = new ByteArrayBranchingStream(data);
-        message.headers.putSingle("Content-Length", Integer.toString(data.length));
+        message.setEntity(new ByteArrayBranchingStream(data));
+        message.getHeaders().putSingle("Content-Length", Integer.toString(data.length));
     }
 
     /**
@@ -102,15 +102,15 @@ public final class HttpUtil {
      * @throws IOException if an I/O exception occurs.
      * @throws UnsupportedEncodingException if content encoding or charset are not supported.
      */
-    public static BufferedReader entityReader(Message message, boolean branch, Charset charset)
+    public static BufferedReader entityReader(Message<?> message, boolean branch, Charset charset)
             throws IOException, UnsupportedEncodingException {
         InputStream in;
-        if (message == null || message.entity == null) {
+        if (message == null || message.getEntity() == null) {
             in = new NullInputStream();
         } else if (branch) {
-            in = message.entity.branch();
+            in = message.getEntity().branch();
         } else {
-            in = message.entity;
+            in = message.getEntity();
         }
         // wrap entity with decoders for codings in Content-Encoding header
         in = new ContentEncodingHeader(message).decode(in);

@@ -69,10 +69,10 @@ public class HttpBasicAuthFilterTest {
         Expression password = new Expression("${exchange.request.headers['password'][0]}");
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.method = "GET";
-        exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
-        exchange.request.headers.add("username", "Myname");
-        exchange.request.headers.add("password", "Mypass");
+        exchange.request.setMethod("GET");
+        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
+        exchange.request.getHeaders().add("username", "Myname");
+        exchange.request.getHeaders().add("password", "Mypass");
 
         String user = username.eval(exchange, String.class);
         String pass = password.eval(exchange, String.class);
@@ -87,7 +87,7 @@ public class HttpBasicAuthFilterTest {
         filter.setCacheHeader(false);
 
         Exchange exchange = newExchange();
-        exchange.request.headers.putSingle(AUTHORIZATION_HEADER, "Basic azerty");
+        exchange.request.getHeaders().putSingle(AUTHORIZATION_HEADER, "Basic azerty");
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -96,8 +96,8 @@ public class HttpBasicAuthFilterTest {
 
                 // Produce a valid response with an authentication challenge
                 exchange.response = new Response();
-                exchange.response.status = HTTP_SUCCESS;
-                exchange.response.headers.putSingle(AUTHENTICATE_HEADER, "Realm toto");
+                exchange.response.setStatus(HTTP_SUCCESS);
+                exchange.response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Realm toto");
                 return null;
 
             }
@@ -109,7 +109,7 @@ public class HttpBasicAuthFilterTest {
         // not have the original authorization header
         verify(terminalHandler).handle(argThat(new AbsenceOfHeaderInRequest(AUTHORIZATION_HEADER)));
         // Verify that the outgoing message has no authenticate header
-        assertThat(exchange.response.headers.get(AUTHENTICATE_HEADER))
+        assertThat(exchange.response.getHeaders().get(AUTHENTICATE_HEADER))
                 .isNull();
     }
 
@@ -125,7 +125,7 @@ public class HttpBasicAuthFilterTest {
         Exchange exchange = newExchange();
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.response.status).isEqualTo(HTTP_SUCCESS);
+        assertThat(exchange.response.getStatus()).isEqualTo(HTTP_SUCCESS);
     }
 
     /**
@@ -206,8 +206,8 @@ public class HttpBasicAuthFilterTest {
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
 
         // Responses should be OK for all outgoing responses
-        assertThat(first.response.status).isEqualTo(HTTP_SUCCESS);
-        assertThat(second.response.status).isEqualTo(HTTP_SUCCESS);
+        assertThat(first.response.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(second.response.getStatus()).isEqualTo(HTTP_SUCCESS);
     }
 
     @Test
@@ -261,9 +261,9 @@ public class HttpBasicAuthFilterTest {
         verify(session).put(endsWith(":userpass"), eq(REFRESHED_CREDENTIALS));
 
         // Responses should be OK for all outgoing responses
-        assertThat(first.response.status).isEqualTo(HTTP_SUCCESS);
-        assertThat(second.response.status).isEqualTo(HTTP_SUCCESS);
-        assertThat(third.response.status).isEqualTo(HTTP_SUCCESS);
+        assertThat(first.response.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(second.response.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(third.response.getStatus()).isEqualTo(HTTP_SUCCESS);
     }
 
     @Test(dataProvider = "invalidUserNames",
@@ -297,7 +297,7 @@ public class HttpBasicAuthFilterTest {
     private Exchange newExchange() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://openig.forgerock.org");
+        exchange.request.setUri(new URI("http://openig.forgerock.org"));
         exchange.session = session;
         return exchange;
     }
@@ -308,8 +308,8 @@ public class HttpBasicAuthFilterTest {
         public Void answer(InvocationOnMock invocation) throws Throwable {
             Exchange exchange = (Exchange) invocation.getArguments()[0];
             exchange.response = new Response();
-            exchange.response.status = HTTP_UNAUTHORIZED;
-            exchange.response.headers.putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
+            exchange.response.setStatus(HTTP_UNAUTHORIZED);
+            exchange.response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
             return null;
         }
     }
@@ -327,12 +327,12 @@ public class HttpBasicAuthFilterTest {
             Exchange exchange = (Exchange) invocation.getArguments()[0];
 
             // Verify the authorization header: base64(user:pass)
-            assertThat(exchange.request.headers.getFirst(AUTHORIZATION_HEADER))
+            assertThat(exchange.request.getHeaders().getFirst(AUTHORIZATION_HEADER))
                     .isEqualTo("Basic " + credentials);
 
             // Produce a valid response, no special headers are required
             exchange.response = new Response();
-            exchange.response.status = HTTP_SUCCESS;
+            exchange.response.setStatus(HTTP_SUCCESS);
             return null;
         }
     }
@@ -352,7 +352,7 @@ public class HttpBasicAuthFilterTest {
             }
 
             Exchange exchange = (Exchange) o;
-            return exchange.request.headers.get(headerName) == null;
+            return exchange.request.getHeaders().get(headerName) == null;
         }
 
         @Override

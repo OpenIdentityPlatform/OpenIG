@@ -44,14 +44,14 @@ public class HeaderFilterTest {
         filter.getRemovedHeaders().add("Location");
         filter.getAddedHeaders().add("Location", "http://newtest.com:321${exchange.request.uri.path}");
 
-        exchange.request.method = "DELETE";
-        exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
+        exchange.request.setMethod("DELETE");
+        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
         StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);
         chain.handle(exchange);
 
-        assertThat(exchange.response.headers.get("Location"))
+        assertThat(exchange.response.getHeaders().get("Location"))
                 .containsOnly("http://newtest.com:321/path/to/resource.html");
     }
 
@@ -68,6 +68,6 @@ public class HeaderFilterTest {
         filter.filter(exchange, handler);
 
         // Verify that the response header has been removed
-        assertThat(exchange.response.headers.get("Location")).isNull();
+        assertThat(exchange.response.getHeaders().get("Location")).isNull();
     }
 }

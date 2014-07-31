@@ -61,7 +61,7 @@ public class RedirectFilter extends GenericFilter {
         next.handle(exchange);
 
         // Only process the response if it has a status that matches what we are looking for
-        if (REDIRECT_STATUS_302.equals(exchange.response.status)) {
+        if (REDIRECT_STATUS_302.equals(exchange.response.getStatus())) {
             processResponse(exchange.response);
         }
 
@@ -73,7 +73,7 @@ public class RedirectFilter extends GenericFilter {
      *
      * @param message the response message containing the Location header
      */
-    private void processResponse(Message message) throws HandlerException {
+    private void processResponse(Message<?> message) throws HandlerException {
 
         LocationHeader header = new LocationHeader(message);
         if (header.toString() != null) {
@@ -82,8 +82,8 @@ public class RedirectFilter extends GenericFilter {
                 URI rebasedURI = URIUtil.rebase(currentURI, baseURI);
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
-                    message.headers.remove(LocationHeader.NAME);
-                    message.headers.add(LocationHeader.NAME, rebasedURI.toString());
+                    message.getHeaders().remove(LocationHeader.NAME);
+                    message.getHeaders().add(LocationHeader.NAME, rebasedURI.toString());
                 }
             } catch (URISyntaxException ex) {
                 throw logger.debug(new HandlerException(ex));

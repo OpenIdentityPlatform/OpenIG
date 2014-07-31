@@ -41,7 +41,7 @@ public class AssignmentFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.method = "DELETE";
+        exchange.request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);

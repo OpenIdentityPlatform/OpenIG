@@ -225,12 +225,12 @@ public class GatewayServlet extends HttpServlet {
         final Exchange exchange = new Exchange();
         // populate request
         exchange.request = new Request();
-        exchange.request.method = request.getMethod();
+        exchange.request.setMethod(request.getMethod());
         try {
-            exchange.request.uri = URIUtil.create(request.getScheme(), null, request.getServerName(),
-                    request.getServerPort(), request.getRequestURI(), request.getQueryString(), null);
+            exchange.request.setUri(URIUtil.create(request.getScheme(), null, request.getServerName(),
+                    request.getServerPort(), request.getRequestURI(), request.getQueryString(), null));
             if (baseURI != null) {
-                exchange.request.uri = URIUtil.rebase(exchange.request.uri, baseURI);
+                exchange.request.setUri(URIUtil.rebase(exchange.request.getUri(), baseURI));
             }
         } catch (final URISyntaxException use) {
             throw new ServletException(use);
@@ -238,16 +238,16 @@ public class GatewayServlet extends HttpServlet {
         // request headers
         for (final Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
-            exchange.request.headers.addAll(name, Collections.list(request.getHeaders(name)));
+            exchange.request.getHeaders().addAll(name, Collections.list(request.getHeaders(name)));
         }
 
         // include request entity if appears to be provided with request
         if ((request.getContentLength() > 0 || request.getHeader("Transfer-Encoding") != null)
-                && !NON_ENTITY_METHODS.contains(exchange.request.method)) {
-            exchange.request.entity = new BranchingStreamWrapper(request.getInputStream(), storage);
+                && !NON_ENTITY_METHODS.contains(exchange.request.getMethod())) {
+            exchange.request.setEntity(new BranchingStreamWrapper(request.getInputStream(), storage));
         }
         // remember request entity so that it (and its children) can be properly closed
-        final BranchingInputStream requestEntityTrunk = exchange.request.entity;
+        final BranchingInputStream requestEntityTrunk = exchange.request.getEntity();
         exchange.session = new ServletSession(request);
         exchange.principal = request.getUserPrincipal();
         // handy servlet-specific attributes, sure to be abused by downstream filters
@@ -266,20 +266,20 @@ public class GatewayServlet extends HttpServlet {
              */
             if (exchange.response != null) {
                 // response status-code (reason-phrase deprecated in Servlet API)
-                response.setStatus(exchange.response.status);
+                response.setStatus(exchange.response.getStatus());
 
                 // response headers
-                for (final String name : exchange.response.headers.keySet()) {
-                    for (final String value : exchange.response.headers.get(name)) {
+                for (final String name : exchange.response.getHeaders().keySet()) {
+                    for (final String value : exchange.response.getHeaders().get(name)) {
                         if (value != null && value.length() > 0) {
                             response.addHeader(name, value);
                         }
                     }
                 }
                 // response entity (if applicable)
-                if (exchange.response.entity != null) {
+                if (exchange.response.getEntity() != null) {
                     final OutputStream out = response.getOutputStream();
-                    Streamer.stream(exchange.response.entity, out);
+                    Streamer.stream(exchange.response.getEntity(), out);
                     out.flush();
                 }
             }
@@ -287,7 +287,7 @@ public class GatewayServlet extends HttpServlet {
             // final cleanup
             closeSilently(requestEntityTrunk);
             if (exchange.response != null) {
-                closeSilently(exchange.response.entity);
+                closeSilently(exchange.response.getEntity());
             }
         }
         timer.stop();

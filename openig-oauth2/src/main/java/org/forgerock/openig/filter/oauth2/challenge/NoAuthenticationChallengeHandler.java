@@ -42,8 +42,8 @@ public class NoAuthenticationChallengeHandler extends AuthenticateChallengeHandl
     @Override
     public Response createResponse() {
         Response response = new Response();
-        response.status = 401;
-        response.reason = "Unauthorized";
+        response.setStatus(401);
+        response.setReason("Unauthorized");
         return response;
     }
 }

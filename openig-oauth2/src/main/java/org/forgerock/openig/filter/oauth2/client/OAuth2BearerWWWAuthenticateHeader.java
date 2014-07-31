@@ -44,7 +44,7 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
      * @param message
      *            the message to initialize the header from.
      */
-    public OAuth2BearerWWWAuthenticateHeader(final Message message) {
+    public OAuth2BearerWWWAuthenticateHeader(final Message<?> message) {
         fromMessage(message);
     }
 
@@ -74,9 +74,9 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
     }
 
     @Override
-    public void fromMessage(final Message message) {
-        if (message != null && message.headers != null) {
-            fromString(message.headers.getFirst(NAME));
+    public void fromMessage(final Message<?> message) {
+        if (message != null && message.getHeaders() != null) {
+            fromString(message.getHeaders().getFirst(NAME));
         }
     }
 
@@ -112,10 +112,10 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
     }
 
     @Override
-    public void toMessage(final Message message) {
+    public void toMessage(final Message<?> message) {
         final String value = toString();
         if (value != null) {
-            message.headers.putSingle(NAME, value);
+            message.getHeaders().putSingle(NAME, value);
         }
     }
 

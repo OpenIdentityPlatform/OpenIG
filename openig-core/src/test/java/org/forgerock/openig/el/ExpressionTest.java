@@ -18,13 +18,19 @@
 package org.forgerock.openig.el;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.data.MapEntry.entry;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.object;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
+import org.forgerock.openig.io.BranchingInputStream;
+import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.Test;
 
@@ -81,7 +87,7 @@ public class ExpressionTest {
     public void exchangeRequestHeader() throws ExpressionException {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.putSingle("Host", "www.example.com");
+        exchange.request.getHeaders().putSingle("Host", "www.example.com");
         Expression expr = new Expression("${exchange.request.headers['Host'][0]}");
         String host = expr.eval(exchange, String.class);
         assertThat(host).isEqualTo("www.example.com");
@@ -91,7 +97,7 @@ public class ExpressionTest {
     public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://test.com:123/path/to/resource.html");
+        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
         Object o = new Expression("${exchange.request.uri.path}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("/path/to/resource.html");
@@ -113,13 +119,13 @@ public class ExpressionTest {
 
         // The following are used as examples in the OpenIG documentation, they should all be valid
         Request request = new Request();
-        request.uri = new URI("http://wiki.example.com/wordpress/wp-login.php?action=login");
-        request.method = "POST";
-        request.headers.putSingle("host", "wiki.example.com");
-        request.headers.putSingle("cookie", "SESSION=value; path=/");
+        request.setUri(new URI("http://wiki.example.com/wordpress/wp-login.php?action=login"));
+        request.setMethod("POST");
+        request.getHeaders().putSingle("host", "wiki.example.com");
+        request.getHeaders().putSingle("cookie", "SESSION=value; path=/");
 
         Response response = new Response();
-        response.headers.putSingle("Set-Cookie", "MyCookie=example; path=/");
+        response.getHeaders().putSingle("Set-Cookie", "MyCookie=example; path=/");
 
         Exchange exchange = new Exchange();
         exchange.request = request;
@@ -208,6 +214,66 @@ public class ExpressionTest {
     public void testImplicitObjectsReferences() throws Exception {
         assertThat(new Expression("${system['user.home']}").eval(null)).isNotNull();
         assertThat(new Expression("${env['PATH']}").eval(null)).isNotNull();
+    }
+
+    @Test(enabled = false)
+    public void getNullExchangeRequestEntityAsString() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
+        assertThat(o).isNull();
+    }
+
+    @Test(enabled = false)
+    public void getNullExchangeRequestEntityAsJson() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        Object o = new Expression("${exchange.request.entity.json}").eval(exchange);
+        assertThat(o).isNull();
+    }
+
+    @Test(enabled = false)
+    public void getExchangeRequestEntityAsString() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.setEntity(stream("old mcdonald had a farm"));
+        Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
+        assertThat(o).isEqualTo("old mcdonald had a farm");
+    }
+
+    @Test(enabled = false)
+    public void getExchangeRequestEntityAsJson() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.setEntity(stream("{ \"string\" : \"string\", \"int\" : 12345 }"));
+        Object map = new Expression("${exchange.request.entity.json}").eval(exchange);
+        assertThat(map).isInstanceOf(Map.class);
+        assertThat((Map<?, ?>) map).containsExactly(entry("string", "string"), entry("int", 12345));
+        Object i = new Expression("${exchange.request.entity.json.int}").eval(exchange);
+        assertThat(i).isEqualTo(Integer.valueOf(12345));
+    }
+
+    @Test(enabled = false)
+    public void setExchangeRequestEntityAsJson() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        new Expression("${exchange.request.entity.json}").set(exchange, object(field("k1", "v1"),
+                field("k2", 123)));
+        assertThat(exchange.request.getEntity()).isNotNull();
+        assertThat(exchange.request.getEntity()).hasContentEqualTo(stream("{\"k1\":\"v1\",\"k2\":123}"));
+    }
+
+    @Test(enabled = false)
+    public void setExchangeRequestEntityAsString() throws Exception {
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        new Expression("${exchange.request.entity.json}").set(exchange, "mary mary quite contrary");
+        assertThat(exchange.request.getEntity()).isNotNull();
+        assertThat(exchange.request.getEntity()).hasContentEqualTo(stream("mary mary quite contrary"));
+    }
+
+    private BranchingInputStream stream(String content) throws Exception {
+        return new ByteArrayBranchingStream(content.getBytes("UTF-8"));
     }
 
     public static class BeanFieldMap extends ExtensibleFieldMap {

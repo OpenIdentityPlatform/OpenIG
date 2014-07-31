@@ -58,7 +58,7 @@ final class OAuth2Utils {
                     uriString += "/" + additionalPath;
                 }
             }
-            return exchange.request.uri.resolve(new URI(uriString));
+            return exchange.request.getUri().resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
             throw new HandlerException(e);
         }
@@ -66,7 +66,7 @@ final class OAuth2Utils {
 
     static JsonValue getJsonContent(final Response response) throws OAuth2ErrorException {
         final JSONParser parser = new JSONParser();
-        final InputStreamReader reader = new InputStreamReader(response.entity);
+        final InputStreamReader reader = new InputStreamReader(response.getEntity());
         try {
             return new JsonValue(parser.parse(reader)).expect(Map.class);
         } catch (final Exception e) {
@@ -78,20 +78,20 @@ final class OAuth2Utils {
     static void httpRedirect(final Exchange exchange, final String uri) {
         // FIXME: this constant should in HTTP package?
         httpResponse(exchange, RedirectFilter.REDIRECT_STATUS_302);
-        exchange.response.headers.add(LocationHeader.NAME, uri);
+        exchange.response.getHeaders().add(LocationHeader.NAME, uri);
     }
 
     static void httpResponse(final Exchange exchange, final int status) {
         if (exchange.response != null) {
-            closeSilently(exchange.response.entity);
+            closeSilently(exchange.response.getEntity());
         }
         exchange.response = new Response();
-        exchange.response.status = status;
+        exchange.response.setStatus(status);
     }
 
     static boolean matchesUri(final Exchange exchange, final URI uri) {
         final URI pathOnly = withoutQueryAndFragment(uri);
-        final URI requestPathOnly = withoutQueryAndFragment(exchange.request.uri);
+        final URI requestPathOnly = withoutQueryAndFragment(exchange.request.getUri());
         return pathOnly.equals(requestPathOnly);
     }
 

@@ -86,7 +86,7 @@ public class DispatchHandler extends GenericHandler {
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
                 if (binding.baseURI != null) {
-                    exchange.request.uri = URIUtil.rebase(exchange.request.uri, binding.baseURI);
+                    exchange.request.setUri(URIUtil.rebase(exchange.request.getUri(), binding.baseURI));
                 }
                 binding.handler.handle(exchange);
                 timer.stop();

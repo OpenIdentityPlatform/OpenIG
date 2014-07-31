@@ -21,10 +21,64 @@ package org.forgerock.openig.http;
 /**
  * A response message.
  */
-public class Response extends Message {
-    /** The response status code. */
-    public Integer status;
-
+public final class Response extends Message<Response> {
     /** The response status reason. */
-    public String reason;
+    private String reason;
+
+    /** The response status code. */
+    private Integer status;
+
+    /**
+     * Creates a new response.
+     */
+    public Response() {
+        // Nothing to do.
+    }
+
+    /**
+     * Returns the response status reason.
+     *
+     * @return The response status reason.
+     */
+    public String getReason() {
+        return reason;
+    }
+
+    /**
+     * Returns the response status code.
+     *
+     * @return The response status code.
+     */
+    public Integer getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the response status reason.
+     *
+     * @param reason
+     *            The response status reason.
+     * @return This response.
+     */
+    public Response setReason(final String reason) {
+        this.reason = reason;
+        return this;
+    }
+
+    /**
+     * Sets the response status code.
+     *
+     * @param status
+     *            The response status code.
+     * @return This response.
+     */
+    public Response setStatus(final Integer status) {
+        this.status = status;
+        return this;
+    }
+
+    @Override
+    Response getThis() {
+        return this;
+    }
 }

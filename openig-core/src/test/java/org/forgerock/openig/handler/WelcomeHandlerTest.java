@@ -33,13 +33,13 @@ public class WelcomeHandlerTest {
         final WelcomeHandler handler = new WelcomeHandler();
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.method = "GET";
-        exchange.request.uri = new URI("http://example.com/");
+        exchange.request.setMethod("GET");
+        exchange.request.setUri(new URI("http://example.com/"));
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(200);
-        assertThat(exchange.response.reason).isEqualTo("OK");
-        assertThat(exchange.response.headers).containsEntry("Content-Type",
+        assertThat(exchange.response.getStatus()).isEqualTo(200);
+        assertThat(exchange.response.getReason()).isEqualTo("OK");
+        assertThat(exchange.response.getHeaders()).containsEntry("Content-Type",
                 Arrays.asList("text/html"));
-        assertThat(exchange.response.entity.available()).isGreaterThan(0);
+        assertThat(exchange.response.getEntity().available()).isGreaterThan(0);
     }
 }

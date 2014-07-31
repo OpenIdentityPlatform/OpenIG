@@ -70,11 +70,11 @@ public class RouteTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://openig.forgerock.org/demo");
+        exchange.request.setUri(new URI("http://openig.forgerock.org/demo"));
 
         route.handle(exchange);
 
-        assertThat(exchange.request.uri).isEqualTo(new URI("https://localhost:443/demo"));
+        assertThat(exchange.request.getUri()).isEqualTo(new URI("https://localhost:443/demo"));
     }
 
     private Route createRoute(final Expression condition, final URI baseURI) {

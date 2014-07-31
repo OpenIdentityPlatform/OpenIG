@@ -100,7 +100,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         final Response response = new Response();
-        response.status = 302;
+        response.setStatus(302);
         returnResponse(response).when(handler).handle(exchange);
         filter.filter(exchange, handler);
         assertThat(exchange.get("test")).isEqualTo(true);
@@ -153,25 +153,25 @@ public class GroovyScriptableFilterTest {
         // Try with valid credentials
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://test/login");
-        exchange.request.headers.add("Username", "bjensen");
-        exchange.request.headers.add("Password", "hifalutin");
+        exchange.request.setUri(new URI("http://test/login"));
+        exchange.request.getHeaders().add("Username", "bjensen");
+        exchange.request.getHeaders().add("Password", "hifalutin");
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(200);
+        assertThat(exchange.response.getStatus()).isEqualTo(200);
 
         // Try with invalid credentials
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://test/login");
-        exchange.request.headers.add("Username", "bob");
-        exchange.request.headers.add("Password", "dobbs");
+        exchange.request.setUri(new URI("http://test/login"));
+        exchange.request.getHeaders().add("Username", "bob");
+        exchange.request.getHeaders().add("Password", "dobbs");
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(403);
+        assertThat(exchange.response.getStatus()).isEqualTo(403);
 
         // Try with different path
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://test/index.html");
+        exchange.request.setUri(new URI("http://test/index.html"));
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(401);
+        assertThat(exchange.response.getStatus()).isEqualTo(401);
     }
 
     @Test
@@ -183,13 +183,13 @@ public class GroovyScriptableFilterTest {
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://www.example.com/");
+        exchange.request.setUri(new URI("http://www.example.com/"));
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
         // base64-encode "bjensen:hifalutin" -> "YmplbnNlbjpoaWZhbHV0aW4="
-        assertThat(exchange.request.headers.get("Authorization").toString())
+        assertThat(exchange.request.getHeaders().get("Authorization").toString())
                 .isEqualTo("[Basic YmplbnNlbjpoaWZhbHV0aW4=]");
-        assertThat(exchange.request.uri.getScheme()).isEqualTo("https");
+        assertThat(exchange.request.getUri().getScheme()).isEqualTo("https");
     }
 
     @Test
@@ -253,8 +253,8 @@ public class GroovyScriptableFilterTest {
             filter.filter(exchange, handler);
 
             verifyHttp(server).once(method(Method.GET), uri("/example"));
-            assertThat(exchange.response.status).isEqualTo(200);
-            assertThat(asString(exchange.response.entity)).isEqualTo(JSON_CONTENT);
+            assertThat(exchange.response.getStatus()).isEqualTo(200);
+            assertThat(asString(exchange.response.getEntity())).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
         }
@@ -339,20 +339,20 @@ public class GroovyScriptableFilterTest {
             // Authenticate using correct password.
             final Exchange exchange = new Exchange();
             exchange.request = new Request();
-            exchange.request.headers.add("Username", "bjensen");
-            exchange.request.headers.add("Password", "password");
+            exchange.request.getHeaders().add("Username", "bjensen");
+            exchange.request.getHeaders().add("Password", "password");
             final Handler handler = mock(Handler.class);
             filter.filter(exchange, handler);
-            assertThat(exchange.response.status).as(exchange.response.reason).isEqualTo(200);
-            assertThat(exchange.response.reason).isEqualTo("test user");
+            assertThat(exchange.response.getStatus()).as(exchange.response.getReason()).isEqualTo(200);
+            assertThat(exchange.response.getReason()).isEqualTo("test user");
 
             // Authenticate using wrong password.
             exchange.request = new Request();
-            exchange.request.headers.add("Username", "bjensen");
-            exchange.request.headers.add("Password", "wrong");
+            exchange.request.getHeaders().add("Username", "bjensen");
+            exchange.request.getHeaders().add("Password", "wrong");
             filter.filter(exchange, handler);
-            assertThat(exchange.response.status).isEqualTo(403);
-            assertThat(exchange.response.reason).isNotNull();
+            assertThat(exchange.response.getStatus()).isEqualTo(403);
+            assertThat(exchange.response.getReason()).isNotNull();
         } finally {
             listener.close();
         }
@@ -411,7 +411,7 @@ public class GroovyScriptableFilterTest {
             // Authenticate using correct password.
             final Exchange exchange = new Exchange();
             exchange.request = new Request();
-            exchange.request.uri = new URI("http://test?username=bjensen&password=hifalutin");
+            exchange.request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
             exchange.put("ldapHost", "localhost");
             exchange.put("ldapPort", "" + port);
@@ -424,18 +424,18 @@ public class GroovyScriptableFilterTest {
             assertThat(exchange.session.get("cn")).isEqualTo(cnValues);
             assertThat(exchange.session.get("description"))
                     .isEqualTo("New description set by my script");
-            assertThat(exchange.request.headers.get("Ldap-User-Dn").toString())
+            assertThat(exchange.request.getHeaders().get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
 
             // Authenticate using wrong password.
             exchange.request = new Request();
-            exchange.request.uri = new URI("http://test?username=bjensen&password=wrong");
+            exchange.request.setUri(new URI("http://test?username=bjensen&password=wrong"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
-            exchange.request.headers.add("LdapHost", "0.0.0.0");
-            exchange.request.headers.add("LdapPort", "" + port);
+            exchange.request.getHeaders().add("LdapHost", "0.0.0.0");
+            exchange.request.getHeaders().add("LdapPort", "" + port);
             filter.filter(exchange, handler);
-            assertThat(exchange.response.status).isEqualTo(403);
-            assertThat(exchange.response.reason).isNotNull();
+            assertThat(exchange.response.getStatus()).isEqualTo(403);
+            assertThat(exchange.response.getReason()).isNotNull();
         } finally {
             listener.close();
         }
@@ -488,14 +488,14 @@ public class GroovyScriptableFilterTest {
 
             final Exchange exchange = new Exchange();
             exchange.request = new Request();
-            exchange.request.uri = new URI("http://test?mail=bjensen@example.com");
+            exchange.request.setUri(new URI("http://test?mail=bjensen@example.com"));
             final Handler handler = mock(Handler.class);
             filter.filter(exchange, handler);
-            assertThat(exchange.request.headers.get("Username").toString())
+            assertThat(exchange.request.getHeaders().get("Username").toString())
                     .isEqualTo("[bjensen]");
-            assertThat(exchange.request.headers.get("Password").toString())
+            assertThat(exchange.request.getHeaders().get("Password").toString())
                     .isEqualTo("[hifalutin]");
-            assertThat(exchange.request.uri.getScheme()).isEqualTo("https");
+            assertThat(exchange.request.getUri().getScheme()).isEqualTo("https");
         } finally {
             try {
                 if (resultSet != null) {
@@ -574,7 +574,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.entity = new ByteArrayBranchingStream(JSON_CONTENT.getBytes("UTF-8"));
+        exchange.request.setEntity(new ByteArrayBranchingStream(JSON_CONTENT.getBytes("UTF-8")));
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -587,7 +587,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.entity = new ByteArrayBranchingStream(XML_CONTENT.getBytes("UTF-8"));
+        exchange.request.setEntity(new ByteArrayBranchingStream(XML_CONTENT.getBytes("UTF-8")));
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -600,7 +600,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.add("Cookie", "username=test;Path=/");
+        exchange.request.getHeaders().add("Cookie", "username=test;Path=/");
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -613,7 +613,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://test?username=test");
+        exchange.request.setUri(new URI("http://test?username=test"));
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -628,11 +628,11 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.add("Username", "test");
+        exchange.request.getHeaders().add("Username", "test");
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(exchange.request.headers.get("Test")).containsOnly("test");
-        assertThat(exchange.request.headers.get("Username")).isNull();
+        assertThat(exchange.request.getHeaders().get("Test")).containsOnly("test");
+        assertThat(exchange.request.getHeaders().get("Username")).isNull();
     }
 
     @Test
@@ -647,7 +647,7 @@ public class GroovyScriptableFilterTest {
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://example.com:8080/users?action=create");
+        exchange.request.setUri(new URI("http://example.com:8080/users?action=create"));
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -674,8 +674,8 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
 
-        assertThat(exchange.response.status).isEqualTo(200);
-        assertThat(asString(exchange.response.entity)).isEqualTo("hello world");
+        assertThat(exchange.response.getStatus()).isEqualTo(200);
+        assertThat(asString(exchange.response.getEntity())).isEqualTo("hello world");
     }
 
     @Test(expectedExceptions = ScriptException.class)
@@ -725,7 +725,7 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
         assertThat(exchange.response).isNotNull();
-        assertThat(exchange.response.status).isEqualTo(404);
+        assertThat(exchange.response.getStatus()).isEqualTo(404);
     }
 
     @Test(expectedExceptions = HandlerException.class, expectedExceptionsMessageRegExp = "test")
@@ -760,7 +760,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(asString(exchange.request.entity)).isEqualTo(JSON_CONTENT);
+        assertThat(asString(exchange.request.getEntity())).isEqualTo(JSON_CONTENT);
     }
 
     @Test(enabled = false)
@@ -778,7 +778,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(asString(exchange.request.entity)).isEqualTo(XML_CONTENT);
+        assertThat(asString(exchange.request.getEntity())).isEqualTo(XML_CONTENT);
     }
 
     private HeapImpl getHeap() throws Exception {

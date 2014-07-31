@@ -55,7 +55,7 @@ public class CookieFilterTest {
 
         exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.uri = new URI("http://openig.example.org");
+        exchange.request.setUri(new URI("http://openig.example.org"));
 
         session = new SimpleMapSession();
         exchange.session = session;
@@ -81,7 +81,7 @@ public class CookieFilterTest {
 
                 // Expecting to find the managed cookie, not the original one
                 // CookieFilter produces a single 'Cookie' value
-                assertThat(exchange.request.headers.getFirst("Cookie"))
+                assertThat(exchange.request.getHeaders().getFirst("Cookie"))
                         .contains("Test-Managed=\"Overridden value\"");
 
                 // request.cookies is not in sync with the message's headers' content
@@ -93,13 +93,13 @@ public class CookieFilterTest {
 
         // Prepare the manager with a managed cookie to transmit in place of the original one
         CookieManager manager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-        manager.getCookieStore().add(exchange.request.uri, buildCookie("Test-Managed", "Overridden value"));
+        manager.getCookieStore().add(exchange.request.getUri(), buildCookie("Test-Managed", "Overridden value"));
         session.put(CookieManager.class.getName(), manager);
 
         // Prepare the request with an existing cookie that will be overridden
         appendRequestCookie("Test-Managed", ".example.org");
 
-        assertThat(exchange.request.cookies.containsKey("Test-Managed")).isTrue();
+        assertThat(exchange.request.getCookies().containsKey("Test-Managed")).isTrue();
         filter.filter(exchange, terminalHandler);
 
     }
@@ -121,7 +121,7 @@ public class CookieFilterTest {
                 exchange.response = new Response();
 
                 // As the cookie should have been removed, we should not have any Cookie header now
-                assertThat(exchange.request.headers.get("Cookie")).isNull();
+                assertThat(exchange.request.getHeaders().get("Cookie")).isNull();
 
                 return null;
             }
@@ -150,7 +150,7 @@ public class CookieFilterTest {
                 exchange.response = new Response();
 
                 // As the cookie should have been removed, we should not have any Cookie header now
-                assertThat(exchange.request.headers.get("Cookie")).isNull();
+                assertThat(exchange.request.getHeaders().get("Cookie")).isNull();
 
                 return null;
             }
@@ -178,7 +178,7 @@ public class CookieFilterTest {
                 // As the terminal handler is a mock, prepare an empty Response in the exchange
                 exchange.response = new Response();
 
-                assertThat(exchange.request.headers.getFirst("Cookie"))
+                assertThat(exchange.request.getHeaders().getFirst("Cookie"))
                         .contains("Will-Be-Relayed=\"Default Value\"");
 
                 return null;
@@ -208,7 +208,7 @@ public class CookieFilterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
-                exchange.response.headers.putSingle("Set-cookie2", "Hidden-Cookie=value");
+                exchange.response.getHeaders().putSingle("Set-cookie2", "Hidden-Cookie=value");
 
                 return null;
             }
@@ -216,7 +216,7 @@ public class CookieFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.response.headers.get("Set-cookie2")).isEmpty();
+        assertThat(exchange.response.getHeaders().get("Set-cookie2")).isEmpty();
     }
 
     @Test
@@ -230,7 +230,7 @@ public class CookieFilterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
-                exchange.response.headers.putSingle("Set-cookie2", "Suppressed-Cookie=value");
+                exchange.response.getHeaders().putSingle("Set-cookie2", "Suppressed-Cookie=value");
 
                 return null;
             }
@@ -238,7 +238,7 @@ public class CookieFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.response.headers.get("Set-cookie2")).isEmpty();
+        assertThat(exchange.response.getHeaders().get("Set-cookie2")).isEmpty();
     }
 
     /**
@@ -280,7 +280,7 @@ public class CookieFilterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 // Populate the response with a cookie that should be invisible to client
                 exchange.response = new Response();
-                exchange.response.headers.putSingle("Set-cookie2", "Managed=value");
+                exchange.response.getHeaders().putSingle("Set-cookie2", "Managed=value");
 
                 return null;
             }
@@ -296,7 +296,7 @@ public class CookieFilterTest {
         final Exchange exchange2 = new Exchange();
         exchange2.session = session;
         exchange2.request = new Request();
-        exchange2.request.uri = new URI("http://openig.example.org");
+        exchange2.request.setUri(new URI("http://openig.example.org"));
         exchange2.response = null;
 
         doAnswer(new Answer<Void>() {
@@ -304,7 +304,7 @@ public class CookieFilterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
 
                 // Ensure the next handler have the cookie
-                String cookie = exchange2.request.headers.getFirst("Cookie");
+                String cookie = exchange2.request.getHeaders().getFirst("Cookie");
                 assertThat(cookie).isEqualTo("Managed=value");
 
                 // Prepare a stubbed Response to avoid NPE
@@ -316,7 +316,7 @@ public class CookieFilterTest {
         // Perform the call
         filter.filter(exchange2, terminalHandler);
 
-        assertThat(exchange2.response.headers.get("Set-cookie2")).isNullOrEmpty();
+        assertThat(exchange2.response.getHeaders().get("Set-cookie2")).isNullOrEmpty();
 
     }
 

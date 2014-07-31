@@ -107,10 +107,10 @@ public class FormAttributes extends AbstractMap<String, List<String>> implements
 
     private Form form() {
         BranchingInputStream entity = null;
-        if (request.entity != null) {
-            entity = request.entity;
+        if (request.getEntity() != null) {
+            entity = request.getEntity();
             try {
-                request.entity = entity.branch();
+                request.setEntity(entity.branch());
             } catch (final IOException ioe) {
                 throw new IllegalStateException(ioe);
             }
@@ -129,7 +129,7 @@ public class FormAttributes extends AbstractMap<String, List<String>> implements
                     throw new IllegalStateException(ioe);
                 }
             }
-            request.entity = entity;
+            request.setEntity(entity);
         }
         return form;
     }

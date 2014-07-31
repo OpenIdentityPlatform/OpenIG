@@ -58,10 +58,10 @@ public class ExceptionFilter extends GenericFilter {
         } catch (Throwable t) {
             // user-impacting
             logger.warning(t);
-            if (exchange.response != null && exchange.response.entity != null) {
+            if (exchange.response != null && exchange.response.getEntity() != null) {
                 try {
                     // important!
-                    exchange.response.entity.close();
+                    exchange.response.getEntity().close();
                 } catch (IOException ioe) {
                     logger.debug(ioe);
                 }

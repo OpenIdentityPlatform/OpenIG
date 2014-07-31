@@ -124,27 +124,27 @@ public class CookieHeaderTest {
     @Test
     public void testCookieHeaderToResponseMessage() {
         final Response response = new Response();
-        assertNull(response.headers.get("cookie"));
-        assertNull(response.headers.get("Customer"));
+        assertNull(response.getHeaders().get("cookie"));
+        assertNull(response.getHeaders().get("Customer"));
         final CookieHeader ch = new CookieHeader(CHEADER_1);
         ch.toMessage(response);
-        assertNotNull(response.headers.get("cookie"));
-        assertNull(response.headers.get("Customer"));
-        assertEquals(response.headers.get("cookie").get(0), CHEADER_1);
+        assertNotNull(response.getHeaders().get("cookie"));
+        assertNull(response.getHeaders().get("Customer"));
+        assertEquals(response.getHeaders().get("cookie").get(0), CHEADER_1);
     }
 
     @Test
     public void testCookieHeaderToRequestMessage() {
         final Request request = new Request();
-        assertNull(request.cookies.get("cookie"));
-        assertNull(request.cookies.get("Customer"));
+        assertNull(request.getCookies().get("cookie"));
+        assertNull(request.getCookies().get("Customer"));
         final CookieHeader ch = new CookieHeader(CHEADER_1);
         ch.toMessage(request);
-        assertNotNull(request.cookies);
-        assertNull(request.cookies.get("cookie"));
-        assertNotNull(request.cookies.get("Customer"));
+        assertNotNull(request.getCookies());
+        assertNull(request.getCookies().get("cookie"));
+        assertNotNull(request.getCookies().get("Customer"));
 
-        final Cookie cookie = request.cookies.get("Customer").get(0);
+        final Cookie cookie = request.getCookies().get("Customer").get(0);
         assertEquals(cookie.name, "Customer");
         assertEquals(cookie.version.intValue(), 1);
         assertEquals(cookie.port.size(), 2);
@@ -155,8 +155,8 @@ public class CookieHeaderTest {
     public void testCookieHeaderEqualityIsTrue() {
         final CookieHeader ch = new CookieHeader(CHEADER_1);
         final Response response = new Response();
-        assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, CHEADER_1);
+        assertNull(response.getHeaders().get(NAME));
+        response.getHeaders().putSingle(NAME, CHEADER_1);
 
         final CookieHeader ch2 = new CookieHeader();
         ch2.fromMessage(response);
@@ -168,8 +168,8 @@ public class CookieHeaderTest {
     public void testCookieHeaderEqualityIsFalse() {
         final CookieHeader ch = new CookieHeader(CHEADER_1);
         final Response response = new Response();
-        assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, CHEADER_2);
+        assertNull(response.getHeaders().get(NAME));
+        response.getHeaders().putSingle(NAME, CHEADER_2);
 
         final CookieHeader ch2 = new CookieHeader();
         ch2.fromMessage(response);

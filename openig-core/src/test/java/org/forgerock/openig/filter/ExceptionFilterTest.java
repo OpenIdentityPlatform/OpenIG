@@ -59,7 +59,7 @@ public class ExceptionFilterTest {
     public void testExceptionHandlerIsInvokedAndResponseEntityIsClosedWhenExceptionIsThrown() throws Exception {
         Exchange exchange = new Exchange();
         exchange.response = new Response();
-        exchange.response.entity = entity;
+        exchange.response.setEntity(entity);
 
         doThrow(new HandlerException("Boom")).when(nextHandler).handle(exchange);
 

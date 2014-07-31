@@ -470,7 +470,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private void checkRequestIsSufficientlySecure(final Exchange exchange)
             throws OAuth2ErrorException {
         // FIXME: use enforce filter?
-        if (requireHttps && !exchange.request.uri.getScheme().equalsIgnoreCase("https")) {
+        if (requireHttps && !exchange.request.getUri().getScheme().equalsIgnoreCase("https")) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "SSL is required in order to perform this operation");
         }
@@ -519,7 +519,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
 
     private void handleAuthorizationCallback(final Exchange exchange) throws HandlerException,
             OAuth2ErrorException {
-        if (!"GET".equals(exchange.request.method)) {
+        if (!"GET".equals(exchange.request.getMethod())) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization call-back failed because the request was not a GET");
         }
@@ -528,7 +528,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
          * The state must be valid regardless of whether the authorization
          * succeeded or failed.
          */
-        final String state = exchange.request.form.getFirst("state");
+        final String state = exchange.request.getForm().getFirst("state");
         if (state == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization call-back failed because there was no state parameter");
@@ -555,9 +555,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
                     "Authorization call-back failed because the provider name was unrecognized");
         }
 
-        final String code = exchange.request.form.getFirst("code");
+        final String code = exchange.request.getForm().getFirst("code");
         if (code == null) {
-            throw new OAuth2ErrorException(OAuth2Error.valueOfForm(exchange.request.form));
+            throw new OAuth2ErrorException(OAuth2Error.valueOfForm(exchange.request.getForm()));
         }
 
         /*
@@ -568,13 +568,13 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 provider.createRequestForAccessToken(exchange, code, buildCallbackUri(exchange)
                         .toString());
         final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (response.status != 200) {
-            if (response.status == 400 || response.status == 401) {
+        if (response.getStatus() != 200) {
+            if (response.getStatus() == 400 || response.getStatus() == 401) {
                 final JsonValue errorJson = getJsonContent(response);
                 throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
             } else {
                 throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
-                        "Unable to exchange access token [status=%d]", response.status));
+                        "Unable to exchange access token [status=%d]", response.getStatus()));
             }
         }
 
@@ -634,8 +634,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
         final OAuth2Session refreshedSession =
                 session.isAuthorized() ? prepareExchange(exchange, session) : session;
         next.handle(exchange);
-        if (exchange.response.status == 401 && !session.isAuthorized()) {
-            closeSilently(exchange.response.entity);
+        if (exchange.response.getStatus() == 401 && !session.isAuthorized()) {
+            closeSilently(exchange.response.getEntity());
             exchange.response = null;
             sendRedirectForAuthorization(exchange);
         } else {
@@ -648,14 +648,14 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 new OAuth2BearerWWWAuthenticateHeader(response);
         final OAuth2Error error = header.getOAuth2Error();
         final OAuth2Error bestEffort =
-                OAuth2Error.bestEffortResourceServerError(response.status, error);
+                OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
         throw new OAuth2ErrorException(bestEffort);
     }
 
     private void handleUserInitiatedLogin(final Exchange exchange) throws HandlerException,
             OAuth2ErrorException {
-        final String providerName = exchange.request.form.getFirst("provider");
-        final String gotoUri = exchange.request.form.getFirst("goto");
+        final String providerName = exchange.request.getForm().getFirst("provider");
+        final String gotoUri = exchange.request.getForm().getFirst("goto");
         if (providerName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization provider must be specified");
@@ -669,7 +669,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     private void handleUserInitiatedLogout(final Exchange exchange) throws HandlerException {
-        final String gotoUri = exchange.request.form.getFirst("goto");
+        final String gotoUri = exchange.request.getForm().getFirst("goto");
         httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto);
         persistenceStrategy.remove(sessionKey(exchange), exchange);
     }
@@ -723,7 +723,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
             if (error.is(E_INVALID_TOKEN) && provider != null && session.getRefreshToken() != null) {
                 final Request request = provider.createRequestForTokenRefresh(exchange, session);
                 final Response response = httpRequestToAuthorizationServer(exchange, request);
-                if (response.status == 200) {
+                if (response.getStatus() == 200) {
                     // Update session with new access token.
                     final JsonValue accessTokenResponse = getJsonContent(response);
                     final SignedJwt decodedJwtToken = provider.extractIdToken(accessTokenResponse);
@@ -732,13 +732,13 @@ public final class OAuth2ClientFilter extends GenericFilter {
                     tryPrepareExchange(exchange, refreshedSession);
                     return refreshedSession;
                 }
-                if (response.status == 400 || response.status == 401) {
+                if (response.getStatus() == 400 || response.getStatus() == 401) {
                     final JsonValue errorJson = getJsonContent(response);
                     throw new OAuth2ErrorException(OAuth2Error
                             .valueOfJsonContent(errorJson.asMap()));
                 } else {
                     throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
-                            "Unable to refresh access token [status=%d]", response.status));
+                            "Unable to refresh access token [status=%d]", response.getStatus()));
                 }
             }
 
@@ -797,7 +797,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
             loginHandler.handle(exchange);
         } else {
             final OAuth2Provider provider = providers.values().iterator().next();
-            sendAuthorizationRedirect(exchange, provider, exchange.request.uri.toString());
+            sendAuthorizationRedirect(exchange, provider, exchange.request.getUri().toString());
         }
     }
 
@@ -829,7 +829,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
             final Request request =
                     provider.createRequestForUserInfo(exchange, session.getAccessToken());
             final Response response = httpRequestToAuthorizationServer(exchange, request);
-            if (response.status != 200) {
+            if (response.getStatus() != 200) {
                 /*
                  * The access token may have expired. Trigger an exception,
                  * catch it and react later.
@@ -879,23 +879,23 @@ public final class OAuth2ClientFilter extends GenericFilter {
                     if (uri != null) {
                         final Exchange exchange = new Exchange();
                         exchange.request = new Request();
-                        exchange.request.method = "GET";
-                        exchange.request.uri = uri;
+                        exchange.request.setMethod("GET");
+                        exchange.request.setUri(uri);
                         try {
                             providerHandler.handle(exchange);
-                            if (exchange.response.status != 200) {
+                            if (exchange.response.getStatus() != 200) {
                                 throw new HeapException(
                                         "Unable to read well-known OpenID Configuration from '"
-                                                + exchange.request.uri.toString() + "'");
+                                                + exchange.request.getUri().toString() + "'");
                             }
                             provider.setWellKnownConfiguration(getJsonContent(exchange.response));
                         } catch (final Exception e) {
                             throw new HeapException(
                                     "Unable to read well-known OpenID Configuration from '"
-                                            + exchange.request.uri.toString() + "'", e);
+                                            + exchange.request.getUri().toString() + "'", e);
                         } finally {
                             if (exchange.response != null) {
-                                closeSilently(exchange.response.entity);
+                                closeSilently(exchange.response.getEntity());
                             }
                         }
                     }

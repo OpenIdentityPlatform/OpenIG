@@ -62,9 +62,9 @@ public class LocationHeaderTest {
     @Test(dataProvider = "locationHeaderProvider")
     public void testLocationHeaderFromMessage(final String lHeader) {
         final Response response = new Response();
-        assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, lHeader);
-        assertNotNull(response.headers.get(NAME));
+        assertNull(response.getHeaders().get(NAME));
+        response.getHeaders().putSingle(NAME, lHeader);
+        assertNotNull(response.getHeaders().get(NAME));
 
         final LocationHeader lh = new LocationHeader(response);
         assertEquals(lh.getLocationURI(), lHeader);
@@ -73,7 +73,7 @@ public class LocationHeaderTest {
     @Test
     public void testLocationHeaderFromEmptyMessage() {
         final Response response = new Response();
-        assertNull(response.headers.get(NAME));
+        assertNull(response.getHeaders().get(NAME));
 
         final LocationHeader lh = new LocationHeader(response);
         assertNull(lh.getLocationURI());
@@ -89,23 +89,23 @@ public class LocationHeaderTest {
     @Test(dataProvider = "locationHeaderProvider")
     public void testLocationHeaderToMessageRequest(final String lHeader) {
         final Request request = new Request();
-        assertNull(request.headers.get(NAME));
+        assertNull(request.getHeaders().get(NAME));
         final LocationHeader lh = new LocationHeader(lHeader);
         lh.toMessage(request);
-        assertNotNull(request.headers.get(NAME));
-        assertEquals(request.headers.getFirst(NAME), lHeader);
+        assertNotNull(request.getHeaders().get(NAME));
+        assertEquals(request.getHeaders().getFirst(NAME), lHeader);
     }
 
     @Test(dataProvider = "locationHeaderProvider")
     public void testLocationHeaderToMessageResponse(final String lHeader) {
         final Response response = new Response();
-        assertNull(response.headers.get(NAME));
+        assertNull(response.getHeaders().get(NAME));
 
         final LocationHeader lh = new LocationHeader(lHeader);
         lh.toMessage(response);
 
-        assertNotNull(response.headers.get(NAME));
-        assertEquals(response.headers.get(NAME).get(0), lHeader);
+        assertNotNull(response.getHeaders().get(NAME));
+        assertEquals(response.getHeaders().get(NAME).get(0), lHeader);
     }
 
     @Test(dataProvider = "locationHeaderProvider")
@@ -113,8 +113,8 @@ public class LocationHeaderTest {
         final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
-        assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, lHeader);
+        assertNull(response.getHeaders().get(NAME));
+        response.getHeaders().putSingle(NAME, lHeader);
 
         final LocationHeader lh2 = new LocationHeader(response);
         assertEquals(lh2.getLocationURI(), lh.getLocationURI());
@@ -126,8 +126,8 @@ public class LocationHeaderTest {
         final LocationHeader lh = new LocationHeader(lHeader);
         final Response response = new Response();
 
-        assertNull(response.headers.get(NAME));
-        response.headers.putSingle(NAME, "");
+        assertNull(response.getHeaders().get(NAME));
+        response.getHeaders().putSingle(NAME, "");
 
         final LocationHeader lh2 = new LocationHeader(response);
         assertThat(lh2.getLocationURI()).isNotEqualTo(lh.getLocationURI());

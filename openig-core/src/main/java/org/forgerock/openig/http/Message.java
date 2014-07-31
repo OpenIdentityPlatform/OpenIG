@@ -19,19 +19,78 @@
 package org.forgerock.openig.http;
 
 import org.forgerock.openig.io.BranchingInputStream;
-import org.forgerock.openig.util.FieldMap;
 
 /**
  * Elements common to requests and responses.
+ *
+ * @param <T>
+ *            The sub-type of this message.
  */
-public abstract class Message extends FieldMap {
-
-    /** Protocol version. Default: {@code HTTP/1.1}. */
-    public String version = "HTTP/1.1";
-
-    /** Message header fields. */
-    public final Headers headers = new Headers();
+public abstract class Message<T extends Message<T>> {
 
     /** Message entity body. */
-    public BranchingInputStream entity;
+    private BranchingInputStream entity;
+
+    /** Message header fields. */
+    private final Headers headers = new Headers();
+
+    /** Protocol version. Default: {@code HTTP/1.1}. */
+    private String version = "HTTP/1.1";
+
+    Message() {
+        // Hidden constructor.
+    }
+
+    /**
+     * Returns the entity as an input stream.
+     *
+     * @return The entity as an input stream.
+     */
+    public final BranchingInputStream getEntity() {
+        return entity;
+    }
+
+    /**
+     * Returns the headers.
+     *
+     * @return The headers.
+     */
+    public final Headers getHeaders() {
+        return headers;
+    }
+
+    /**
+     * Returns the protocol version. Default: {@code HTTP/1.1}.
+     *
+     * @return The protocol version.
+     */
+    public final String getVersion() {
+        return version;
+    }
+
+    /**
+     * Sets the entity as an input stream.
+     *
+     * @param entity
+     *            The entity as an input stream.
+     * @return This message.
+     */
+    public final T setEntity(final BranchingInputStream entity) {
+        this.entity = entity;
+        return getThis();
+    }
+
+    /**
+     * Sets the protocol version. Default: {@code HTTP/1.1}.
+     *
+     * @param version
+     *            The protocol version.
+     * @return This message.
+     */
+    public final T setVersion(final String version) {
+        this.version = version;
+        return getThis();
+    }
+
+    abstract T getThis();
 }

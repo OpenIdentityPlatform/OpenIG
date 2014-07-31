@@ -164,7 +164,7 @@ public class RouterHandlerTest {
                                          final String value,
                                          final int expected) throws HandlerException, IOException {
         Exchange exchange = handle(handler, value);
-        assertThat(exchange.response.status).isEqualTo(expected);
+        assertThat(exchange.response.getStatus()).isEqualTo(expected);
     }
 
     private Exchange handle(final RouterHandler handler, final String value)

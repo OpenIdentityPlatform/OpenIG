@@ -103,8 +103,8 @@ public class InsufficientScopeChallengeHandler extends AuthenticateChallengeHand
     @Override
     protected Response createResponse() {
         Response response = new Response();
-        response.status = 403;
-        response.reason = "Forbidden";
+        response.setStatus(403);
+        response.setReason("Forbidden");
         return response;
     }
 

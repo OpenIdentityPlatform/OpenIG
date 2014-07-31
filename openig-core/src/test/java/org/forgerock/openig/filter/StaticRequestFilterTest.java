@@ -58,9 +58,9 @@ public class StaticRequestFilterTest {
         filter.filter(exchange, terminalHandler);
 
         assertThat(exchange.request).isNotNull();
-        assertThat(exchange.request.uri).isEqualTo(new URI(URI));
-        assertThat(exchange.request.method).isEqualTo("GET");
-        assertThat(exchange.request.version).isEqualTo("1.1");
+        assertThat(exchange.request.getUri()).isEqualTo(new URI(URI));
+        assertThat(exchange.request.getMethod()).isEqualTo("GET");
+        assertThat(exchange.request.getVersion()).isEqualTo("1.1");
     }
 
     @Test
@@ -74,7 +74,7 @@ public class StaticRequestFilterTest {
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         Request original = new Request();
-        original.version = "2";
+        original.setVersion("2");
         exchange.request = original;
 
         filter.filter(exchange, terminalHandler);
@@ -82,10 +82,10 @@ public class StaticRequestFilterTest {
         // Verify that the request have been replaced
         // And check that headers have been properly populated
         assertThat(exchange.request).isNotSameAs(original);
-        assertThat(exchange.request.headers.get("Mono-Valued"))
+        assertThat(exchange.request.getHeaders().get("Mono-Valued"))
                 .hasSize(1)
                 .containsOnly("First Value");
-        assertThat(exchange.request.headers.get("Multi-Valued"))
+        assertThat(exchange.request.getHeaders().get("Multi-Valued"))
                 .hasSize(2)
                 .containsOnly("One (1)", "Two (2)");
     }
@@ -101,17 +101,17 @@ public class StaticRequestFilterTest {
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         exchange.request = new Request();
-        exchange.request.version = "2";
+        exchange.request.setVersion("2");
 
         filter.filter(exchange, terminalHandler);
 
         // Verify that the new request URI contains the form's fields
-        assertThat(exchange.request.uri.toString())
+        assertThat(exchange.request.getUri().toString())
                 .startsWith(URI)
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
-        assertThat(exchange.request.entity).isNull();
+        assertThat(exchange.request.getEntity()).isNull();
     }
 
     @Test
@@ -125,14 +125,15 @@ public class StaticRequestFilterTest {
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         Request original = new Request();
-        original.version = "2";
+        original.setVersion("2");
         exchange.request = original;
 
         filter.filter(exchange, terminalHandler);
 
         // Verify that the new request entity contains the form's fields
-        assertThat(exchange.request.method).isEqualTo("POST");
-        assertThat(exchange.request.headers.getFirst("Content-Type")).isEqualTo("application/x-www-form-urlencoded");
+        assertThat(exchange.request.getMethod()).isEqualTo("POST");
+        assertThat(exchange.request.getHeaders().getFirst("Content-Type")).isEqualTo(
+                "application/x-www-form-urlencoded");
         assertThat(readFirstLine(exchange))
                 .contains("mono=one")
                 .contains("multi=one1")
@@ -140,7 +141,7 @@ public class StaticRequestFilterTest {
     }
 
     private static String readFirstLine(final Exchange exchange) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.request.entity));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.request.getEntity()));
         return reader.readLine();
     }
 }

@@ -69,7 +69,7 @@ public abstract class AuthenticateChallengeHandler implements Handler {
     @Override
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         exchange.response = createResponse();
-        exchange.response.headers.putSingle(WWW_AUTHENTICATE,
+        exchange.response.getHeaders().putSingle(WWW_AUTHENTICATE,
                                             format("Bearer %s", buildChallenge()));
     }
 

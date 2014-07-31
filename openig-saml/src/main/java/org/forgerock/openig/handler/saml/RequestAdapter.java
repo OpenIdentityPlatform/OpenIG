@@ -44,14 +44,14 @@ class RequestAdapter extends HttpServletRequestWrapper {
 
     @Override
     public String getParameter(final String name) {
-        final List<String> values = exchange.request.form.get(name);
+        final List<String> values = exchange.request.getForm().get(name);
         return (values == null || values.isEmpty()) ? null : values.get(0);
     }
 
     @Override
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> parameters = new HashMap<String, String[]>();
-        for (Map.Entry<String, List<String>> entry : exchange.request.form.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : exchange.request.getForm().entrySet()) {
             List<String> values = entry.getValue();
             parameters.put(entry.getKey(), values.toArray(new String[values.size()]));
         }
@@ -60,12 +60,12 @@ class RequestAdapter extends HttpServletRequestWrapper {
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return Collections.enumeration(exchange.request.form.keySet());
+        return Collections.enumeration(exchange.request.getForm().keySet());
     }
 
     @Override
     public String[] getParameterValues(final String name) {
-        final List<String> values = exchange.request.form.get(name);
+        final List<String> values = exchange.request.getForm().get(name);
         if (values == null) {
             return null;
         }
