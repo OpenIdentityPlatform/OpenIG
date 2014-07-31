@@ -203,6 +203,35 @@
  </refsect1>
 
  <refsect1>
+  <title>System Properties &amp; Environment Variables</title>
+
+  <para>
+   You can use expressions to retrieve Java system properties,
+   and to retrieve environment variables.
+  </para>
+
+  <para>
+   For system properties,
+   <literal>${system['<replaceable>property</replaceable>']}</literal>
+   yields the value of <replaceable>property</replaceable>,
+   or <literal>null</literal> if there is no value for <replaceable>property</replaceable>.
+   For example, <literal>${system['user.home']}</literal>
+   yields the home directory of the user
+   running the application server for ${projectName}.
+  </para>
+
+  <para>
+   For environment variables,
+   <literal>${env['<replaceable>variable</replaceable>']}</literal>
+   yields the value of <replaceable>variable</replaceable>,
+   or <literal>null</literal> if there is no value for <replaceable>variable</replaceable>.
+   For example, <literal>${env['HOME']}</literal>
+   yields the home directory of the user
+   running the application server for ${projectName}.
+  </para>
+ </refsect1>
+
+ <refsect1>
   <title>Functions</title>
 
   <para>

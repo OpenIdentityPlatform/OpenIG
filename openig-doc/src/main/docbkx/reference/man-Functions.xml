@@ -88,6 +88,74 @@
   </variablelist>
  </refsect1>
 
+ <refsect1 xml:id="functions-decodeBase64">
+  <title>decodeBase64</title>
+  <literallayout class="monospaced">decodeBase64(string)</literallayout>
+
+  <para>
+   Returns the base64-decoded string,
+   or <literal>null</literal> if the string is not valid Base64.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The base64-encoded string to decode.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The base64-decoded string.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 xml:id="functions-encodeBase64">
+  <title>encodeBase64</title>
+  <literallayout class="monospaced">encodeBase64(string)</literallayout>
+
+  <para>
+   Returns the base64-encoded string,
+   or <literal>null</literal> if the string is <literal>null</literal>.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The string to encode into Base64.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The base64-encoded string.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
  <refsect1 xml:id="functions-indexOf">
   <title>indexOf</title>
   <literallayout class="monospaced">indexOf(string, substring)</literallayout>
@@ -295,6 +363,96 @@
     <term>true</term>
     <listitem>
      <para>if the string contains the specified regular expression pattern.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 xml:id="functions-read">
+  <title>read</title>
+  <literallayout class="monospaced">read(string)</literallayout>
+
+  <para>
+   Takes a file name as a <literal>string</literal>,
+   and returns the content of the file as a plain string,
+   or <literal>null</literal> on error
+   (due to the file not being found, for example).
+  </para>
+
+  <para>
+   Either provide the absolute path to the file,
+   or a path relative to the location of
+   the Java system property <literal>user.dir</literal>.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The name of the file to read.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The content of the file or <literal>null</literal> on error.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 xml:id="functions-readProperties">
+  <title>readProperties</title>
+  <literallayout class="monospaced">readProperties(string)</literallayout>
+
+  <para>
+   Takes a Java Properties file name as a <literal>string</literal>,
+   and returns the content of the file as a key/value map of properties,
+   or <literal>null</literal> on error
+   (due to the file not being found, for example).
+  </para>
+
+  <para>
+   Either provide the absolute path to the file,
+   or a path relative to the location of
+   the Java system property <literal>user.dir</literal>.
+  </para>
+
+  <para>
+   For example, to get the value of the <literal>key</literal> property
+   in the properties file <filename>/path/to/my.properties</filename>,
+   use <literal>${readProperties('/path/to/my.properties')['key']}</literal>.
+  </para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>string</term>
+    <listitem>
+     <para>
+      The name of the Java Properties file to read.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>object</term>
+    <listitem>
+     <para>
+      The key/value map of properties or <literal>null</literal> on error.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
