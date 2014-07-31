@@ -19,6 +19,7 @@ package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -107,7 +108,7 @@ public class FileAttributesFilter extends GenericFilter {
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            SeparatedValuesFile sources = new SeparatedValuesFile(config.get("file").required().asFile(),
+            SeparatedValuesFile sources = new SeparatedValuesFile(new File(evaluate(config.get("file").required())),
                                                                   config.get("charset").defaultTo("UTF-8").asCharset(),
                                                                   config.get("separator").defaultTo("COMMA")
                                                                           .asEnum(Separators.class).getSeparator(),
