@@ -78,7 +78,7 @@ public final class Response extends Message<Response> {
     }
 
     @Override
-    Response getThis() {
+    Response thisMessage() {
         return this;
     }
 }

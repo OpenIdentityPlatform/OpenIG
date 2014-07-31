@@ -77,7 +77,7 @@ public abstract class Message<T extends Message<T>> {
      */
     public final T setEntity(final BranchingInputStream entity) {
         this.entity = entity;
-        return getThis();
+        return thisMessage();
     }
 
     /**
@@ -89,8 +89,8 @@ public abstract class Message<T extends Message<T>> {
      */
     public final T setVersion(final String version) {
         this.version = version;
-        return getThis();
+        return thisMessage();
     }
 
-    abstract T getThis();
+    abstract T thisMessage();
 }
