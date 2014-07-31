@@ -110,7 +110,7 @@ public final class Request extends Message<Request> {
     }
 
     @Override
-    Request getThis() {
+    Request thisMessage() {
         return this;
     }
 }
