@@ -18,6 +18,8 @@
 
 package org.forgerock.openig.http;
 
+import static org.forgerock.util.Utils.closeSilently;
+
 import java.io.IOException;
 import java.net.URI;
 
@@ -62,9 +64,8 @@ public final class Request extends Message<Request> {
      *         {@code application/x-www-form-urlencoded} entity as a form.
      */
     public Form getForm() {
-        BranchingInputStream entity = null;
-        if (getEntity() != null) {
-            entity = getEntity();
+        final BranchingInputStream entity = getEntity();
+        if (entity != null) {
             try {
                 setEntity(entity.branch());
             } catch (final IOException ioe) {
@@ -78,13 +79,8 @@ public final class Request extends Message<Request> {
         } catch (final IOException ioe) {
             // Ignore: return empty form.
         } finally {
-            if (entity != null) {
-                try {
-                    entity.closeBranches();
-                } catch (final IOException ioe) {
-                    throw new IllegalStateException(ioe);
-                }
-            }
+            // Close the branch and replace with the original.
+            closeSilently(getEntity());
             setEntity(entity);
         }
         return form;

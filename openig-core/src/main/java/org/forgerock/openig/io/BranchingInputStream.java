@@ -39,25 +39,4 @@ public abstract class BranchingInputStream extends InputStream {
      * @throws IOException if an I/O exception occurs.
      */
     public abstract void close() throws IOException;
-
-    /**
-     * Returns {@code true} if this branching input stream is closed.
-     *
-     * @return {@code true} if this branching input stream is closed.
-     */
-    public abstract boolean isClosed();
-
-    /**
-     * Closes the branches created from this branching stream.
-     *
-     * @throws IOException if an I/O exception occurs.
-     */
-    public abstract void closeBranches() throws IOException;
-
-    /**
-     * Returns the parent branching input stream from which is branch was created, or {@code null} if this is the trunk.
-     *
-     * @return The parent branching input stream from which is branch was created, or {@code null} if this is the trunk.
-     */
-    public abstract BranchingInputStream getParent();
 }

@@ -77,13 +77,11 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         return new BranchingStreamWrapper(this, null);
     }
 
-    @Override
-    public boolean isClosed() {
-        return (trunk == null);
+    boolean isClosed() {
+        return trunk == null;
     }
 
-    @Override
-    public BranchingStreamWrapper getParent() {
+    BranchingStreamWrapper getParent() {
         return parent;
     }
 
@@ -204,8 +202,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         }
     }
 
-    @Override
-    public void closeBranches() throws IOException {
+    private void closeBranches() throws IOException {
         // multiple calls are harmless
         if (trunk != null) {
             ArrayList<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>(trunk.branches);
