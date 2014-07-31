@@ -75,12 +75,7 @@ public class LogTimer {
      */
     public LogTimer start() {
         if (sink != null) {
-            LogEntry entry = new LogEntry();
-            entry.time = System.currentTimeMillis();
-            entry.source = source("started");
-            entry.level = this.level;
-            entry.message = "Started";
-            sink.log(entry);
+            sink.log(new LogEntry(source("started"), level, "Started"));
         }
         started = System.nanoTime();
         return this;
@@ -92,13 +87,8 @@ public class LogTimer {
     public void stop() {
         long stopped = System.nanoTime();
         if (sink != null && started != Long.MIN_VALUE) {
-            LogEntry entry = new LogEntry();
-            entry.time = System.currentTimeMillis();
-            entry.source = source("elapsed");
-            entry.level = this.level;
-            entry.data = new LogMetric((stopped - started) / 1000000, "ms");
-            entry.message = "Elapsed time: " + entry.data.toString();
-            sink.log(entry);
+            LogMetric metric = new LogMetric((stopped - started) / 1000000, "ms");
+            sink.log(new LogEntry(source("elapsed"), level, "Elapsed time: " + metric, metric));
         }
     }
 
