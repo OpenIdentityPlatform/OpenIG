@@ -105,24 +105,24 @@ public class StaticResponseHandler extends GenericHandler {
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Response response = new Response();
-        response.status = this.status;
-        response.reason = this.reason;
-        if (response.reason == null) {
+        response.setStatus(this.status);
+        response.setReason(this.reason);
+        if (response.getReason() == null) {
             // not explicit, derive from status
-            response.reason = HttpUtil.getReason(response.status);
+            response.setReason(HttpUtil.getReason(response.getStatus()));
         }
-        if (response.reason == null) {
+        if (response.getReason() == null) {
             // couldn't derive from status; say something
-            response.reason = "Uncertain";
+            response.setReason("Uncertain");
         }
         if (this.version != null) { // default in Message class
-            response.version = this.version;
+            response.setVersion(this.version);
         }
         for (String key : this.headers.keySet()) {
             for (Expression expression : this.headers.get(key)) {
                 String eval = expression.eval(exchange, String.class);
                 if (eval != null) {
-                    response.headers.add(key, eval);
+                    response.getHeaders().add(key, eval);
                 }
             }
         }

@@ -101,10 +101,10 @@ public class CaptureFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.putSingle("Host", "openig.forgerock.org");
-        exchange.request.headers.add("Multi", "First");
-        exchange.request.headers.add("Multi", "Second");
-        exchange.request.headers.add("Multi", "Third");
+        exchange.request.getHeaders().putSingle("Host", "openig.forgerock.org");
+        exchange.request.getHeaders().add("Multi", "First");
+        exchange.request.getHeaders().add("Multi", "Second");
+        exchange.request.getHeaders().add("Multi", "Third");
         exchange.response = new Response();
 
         filter.filter(exchange, terminalHandler);
@@ -202,8 +202,8 @@ public class CaptureFilterTest {
     private Exchange buildRequestOnlyExchange(final String entity, final String mimeType) {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.entity = new ByteArrayBranchingStream(entity.getBytes());
-        exchange.request.headers.putSingle("Content-type", mimeType);
+        exchange.request.setEntity(new ByteArrayBranchingStream(entity.getBytes()));
+        exchange.request.getHeaders().putSingle("Content-type", mimeType);
         exchange.response = new Response();
         return exchange;
     }

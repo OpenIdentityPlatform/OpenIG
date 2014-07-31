@@ -42,12 +42,11 @@ public class WelcomeHandler extends GenericHandler {
         LogTimer timer = logger.getTimer().start();
         try {
             Response response = new Response();
-            response.status = 200;
-            response.reason = "OK";
-            response.headers.add("Content-Type", "text/html");
-            response.entity =
-                    new BranchingStreamWrapper(getClass().getResourceAsStream("welcome.html"),
-                            storage);
+            response.setStatus(200);
+            response.setReason("OK");
+            response.getHeaders().add("Content-Type", "text/html");
+            response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream("welcome.html"),
+                    storage));
             exchange.response = response;
         } finally {
             timer.stop();

@@ -173,9 +173,9 @@ public class HttpClient {
         private final String method;
 
         public EntityRequest(final Request request) {
-            this.method = request.method;
+            this.method = request.getMethod();
             final InputStreamEntity entity =
-                    new InputStreamEntity(request.entity, new ContentLengthHeader(request).getLength());
+                    new InputStreamEntity(request.getEntity(), new ContentLengthHeader(request).getLength());
             entity.setContentType(new ContentTypeHeader(request).toString());
             entity.setContentEncoding(new ContentEncodingHeader(request).toString());
             setEntity(entity);
@@ -192,7 +192,7 @@ public class HttpClient {
         private final String method;
 
         public NonEntityRequest(final Request request) {
-            this.method = request.method;
+            this.method = request.getMethod();
             final Header[] contentLengthHeader = getHeaders(ContentLengthHeader.NAME);
             if ((contentLengthHeader == null || contentLengthHeader.length == 0)
                     && ("PUT".equals(method) || "POST".equals(method) || "PROPFIND".equals(method))) {
@@ -384,8 +384,8 @@ public class HttpClient {
      */
     public void execute(final Exchange exchange) throws IOException {
         // recover any previous response connection, if present
-        if (exchange.response != null && exchange.response.entity != null) {
-            exchange.response.entity.close();
+        if (exchange.response != null && exchange.response.getEntity() != null) {
+            exchange.response.getEntity().close();
         }
         exchange.response = execute(exchange.request);
     }
@@ -400,16 +400,16 @@ public class HttpClient {
      */
     public Response execute(final Request request) throws IOException {
         final HttpRequestBase clientRequest =
-                request.entity != null ? new EntityRequest(request) : new NonEntityRequest(request);
-        clientRequest.setURI(request.uri);
+                request.getEntity() != null ? new EntityRequest(request) : new NonEntityRequest(request);
+        clientRequest.setURI(request.getUri());
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
         // parse request connection headers to be suppressed in request
         suppressConnection.addAll(new ConnectionHeader(request).getTokens());
         // request headers
-        for (final String name : request.headers.keySet()) {
+        for (final String name : request.getHeaders().keySet()) {
             if (!SUPPRESS_REQUEST_HEADERS.contains(name) && !suppressConnection.contains(name)) {
-                for (final String value : request.headers.get(name)) {
+                for (final String value : request.getHeaders().get(name)) {
                     clientRequest.addHeader(name, value);
                 }
             }
@@ -420,14 +420,13 @@ public class HttpClient {
         // response entity
         final HttpEntity clientResponseEntity = clientResponse.getEntity();
         if (clientResponseEntity != null) {
-            response.entity =
-                    new BranchingStreamWrapper(clientResponseEntity.getContent(), storage);
+            response.setEntity(new BranchingStreamWrapper(clientResponseEntity.getContent(), storage));
         }
         // response status line
         final StatusLine statusLine = clientResponse.getStatusLine();
-        response.version = statusLine.getProtocolVersion().toString();
-        response.status = statusLine.getStatusCode();
-        response.reason = statusLine.getReasonPhrase();
+        response.setVersion(statusLine.getProtocolVersion().toString());
+        response.setStatus(statusLine.getStatusCode());
+        response.setReason(statusLine.getReasonPhrase());
         // parse response connection headers to be suppressed in response
         suppressConnection.clear();
         suppressConnection.addAll(new ConnectionHeader(response).getTokens());
@@ -436,7 +435,7 @@ public class HttpClient {
             final Header header = i.nextHeader();
             final String name = header.getName();
             if (!SUPPRESS_RESPONSE_HEADERS.contains(name) && !suppressConnection.contains(name)) {
-                response.headers.add(name, header.getValue());
+                response.getHeaders().add(name, header.getValue());
             }
         }
         // TODO: decide if need to try-finally to call httpRequest.abort?

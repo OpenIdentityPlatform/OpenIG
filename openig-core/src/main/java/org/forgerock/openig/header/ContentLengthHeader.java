@@ -42,7 +42,7 @@ public class ContentLengthHeader implements Header {
      *
      * @param message the message to initialize the header from.
      */
-    public ContentLengthHeader(Message message) {
+    public ContentLengthHeader(Message<?> message) {
         fromMessage(message);
     }
 
@@ -74,10 +74,10 @@ public class ContentLengthHeader implements Header {
     }
 
     @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.headers != null) {
+    public void fromMessage(Message<?> message) {
+        if (message != null && message.getHeaders() != null) {
             // expect only one header value
-            fromString(message.headers.getFirst(NAME));
+            fromString(message.getHeaders().getFirst(NAME));
         }
     }
 
@@ -94,10 +94,10 @@ public class ContentLengthHeader implements Header {
     }
 
     @Override
-    public void toMessage(Message message) {
+    public void toMessage(Message<?> message) {
         String value = toString();
         if (value != null) {
-            message.headers.putSingle(NAME, value);
+            message.getHeaders().putSingle(NAME, value);
         }
     }
 

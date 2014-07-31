@@ -71,8 +71,8 @@ public class ContentEncodingHeaderTest {
     @Test(dataProvider = "contentEncodingHeaders")
     public void testContentEncodingHeaderFromMessageResponse(final String cheader) {
         final Response response = new Response();
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, cheader);
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, cheader);
 
         final ContentEncodingHeader ceh = new ContentEncodingHeader(response);
         assertThat(ceh.getKey()).isEqualTo(NAME);
@@ -83,8 +83,8 @@ public class ContentEncodingHeaderTest {
     @Test(dataProvider = "contentEncodingHeaders")
     public void testContentEncodingHeaderFromMessageRequest(final String cheader) {
         final Request request = new Request();
-        assertThat(request.headers.get(NAME)).isNull();
-        request.headers.putSingle(NAME, cheader);
+        assertThat(request.getHeaders().get(NAME)).isNull();
+        request.getHeaders().putSingle(NAME, cheader);
 
         final ContentEncodingHeader ceh = new ContentEncodingHeader(request);
         assertThat(ceh.getCodings().size()).isEqualTo(1);
@@ -94,7 +94,7 @@ public class ContentEncodingHeaderTest {
     @Test
     public void testContentEncodingHeaderFromEmptyMessage() {
         final Response response = new Response();
-        assertThat(response.headers.get(NAME)).isNull();
+        assertThat(response.getHeaders().get(NAME)).isNull();
 
         final ContentEncodingHeader ch = new ContentEncodingHeader(response);
         assertThat(ch.getCodings()).isEmpty();
@@ -104,22 +104,22 @@ public class ContentEncodingHeaderTest {
     @Test(dataProvider = "contentEncodingHeaders")
     public void testContentEncodingHeaderToMessageRequest(final String cheader) {
         final Request request = new Request();
-        assertThat(request.headers.getFirst(NAME)).isNull();
+        assertThat(request.getHeaders().getFirst(NAME)).isNull();
         final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
         ceh.toMessage(request);
 
-        assertThat(request.headers.getFirst(NAME)).isEqualTo(cheader);
+        assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(cheader);
     }
 
     @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
     public void testContentEncodingHeaderToMessageNullOrEmptyDoesNothing(final String cheader) {
         final Response response = new Response();
-        assertThat(response.headers.get(NAME)).isNull();
+        assertThat(response.getHeaders().get(NAME)).isNull();
 
         final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
         ceh.toMessage(response);
 
-        assertThat(response.headers.get(NAME)).isNull();
+        assertThat(response.getHeaders().get(NAME)).isNull();
     }
 
     @Test(dataProvider = "contentEncodingHeaders")
@@ -127,8 +127,8 @@ public class ContentEncodingHeaderTest {
         final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
         final Response response = new Response();
 
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, cheader);
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, cheader);
 
         final ContentEncodingHeader ceh2 = new ContentEncodingHeader();
         ceh2.fromMessage(response);
@@ -143,8 +143,8 @@ public class ContentEncodingHeaderTest {
         final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
         final Response response = new Response();
 
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, new ConnectionHeader("Keep-Alive").toString());
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, new ConnectionHeader("Keep-Alive").toString());
 
         final ConnectionHeader ch2 = new ConnectionHeader(response);
 

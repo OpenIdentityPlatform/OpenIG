@@ -56,7 +56,7 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.entity = new ByteArrayBranchingStream("Hello OpenIG".getBytes());
+        exchange.request.setEntity(new ByteArrayBranchingStream("Hello OpenIG".getBytes()));
 
         filter.filter(exchange, terminalHandler);
 
@@ -76,7 +76,7 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.entity = new ByteArrayBranchingStream("Hello OpenIG".getBytes());
+        exchange.request.setEntity(new ByteArrayBranchingStream("Hello OpenIG".getBytes()));
 
         filter.filter(exchange, terminalHandler);
 
@@ -97,7 +97,7 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
-        exchange.response.entity = null;
+        exchange.response.setEntity(null);
 
         filter.filter(exchange, terminalHandler);
 

@@ -73,9 +73,9 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildUnAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange.response.status).isEqualTo(401);
-        assertThat(exchange.response.reason).isEqualTo("Unauthorized");
-        assertThat(exchange.response.headers.getFirst(WWW_AUTHENTICATE))
+        assertThat(exchange.response.getStatus()).isEqualTo(401);
+        assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
+        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .isEqualTo(doubleQuote("Bearer realm='OpenIG'"));
         verifyZeroInteractions(nextHandler);
     }
@@ -90,9 +90,9 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange.response.status).isEqualTo(400);
-        assertThat(exchange.response.reason).isEqualTo("Bad Request");
-        assertThat(exchange.response.headers.getFirst(WWW_AUTHENTICATE))
+        assertThat(exchange.response.getStatus()).isEqualTo(400);
+        assertThat(exchange.response.getReason()).isEqualTo("Bad Request");
+        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .contains(doubleQuote("error='invalid_request'"));
         verifyZeroInteractions(nextHandler);
     }
@@ -107,9 +107,9 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange.response.status).isEqualTo(401);
-        assertThat(exchange.response.reason).isEqualTo("Unauthorized");
-        assertThat(exchange.response.headers.getFirst(WWW_AUTHENTICATE))
+        assertThat(exchange.response.getStatus()).isEqualTo(401);
+        assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
+        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .contains(doubleQuote("error='invalid_token'"));
         verifyZeroInteractions(nextHandler);
     }
@@ -121,9 +121,9 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange.response.status).isEqualTo(403);
-        assertThat(exchange.response.reason).isEqualTo("Forbidden");
-        String header = exchange.response.headers.getFirst(WWW_AUTHENTICATE);
+        assertThat(exchange.response.getStatus()).isEqualTo(403);
+        assertThat(exchange.response.getReason()).isEqualTo("Forbidden");
+        String header = exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE);
         assertThat(header).contains(doubleQuote("error='insufficient_scope'"));
         assertThat(header).contains(doubleQuote("scope='a-missing-scope another-one'"));
         verifyZeroInteractions(nextHandler);
@@ -161,7 +161,7 @@ public class OAuth2ResourceServerFilterTest {
     private static Exchange buildAuthorizedExchange() {
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.headers.add("Authorization", format("Bearer %s", TOKEN_ID));
+        exchange.request.getHeaders().add("Authorization", format("Bearer %s", TOKEN_ID));
         return exchange;
     }
 

@@ -166,7 +166,7 @@ class Route extends GenericHandler {
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         // Rebase the request URI if required before delegating
         if (baseURI != null) {
-            exchange.request.uri = URIUtil.rebase(exchange.request.uri, baseURI);
+            exchange.request.setUri(URIUtil.rebase(exchange.request.getUri(), baseURI));
         }
         handler.handle(exchange);
     }

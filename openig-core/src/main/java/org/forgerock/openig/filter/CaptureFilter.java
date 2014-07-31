@@ -183,7 +183,7 @@ public class CaptureFilter extends GenericFilter {
         writer.println();
         writer.println("--- REQUEST " + id + " --->");
         writer.println();
-        writer.println(request.method + " " + request.uri + " " + request.version);
+        writer.println(request.getMethod() + " " + request.getUri() + " " + request.getVersion());
         writeHeaders(writer, request);
         writeEntity(writer, request);
         writer.flush();
@@ -194,23 +194,23 @@ public class CaptureFilter extends GenericFilter {
         writer.println();
         writer.println("<--- RESPONSE " + id + " ---");
         writer.println();
-        writer.println(response.version + " " + response.status + " " + response.reason);
+        writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
         writeHeaders(writer, response);
         writeEntity(writer, response);
         writer.flush();
     }
 
-    private void writeHeaders(final PrintWriter writer, Message message) {
-        for (String key : message.headers.keySet()) {
-            for (String value : message.headers.get(key)) {
+    private void writeHeaders(final PrintWriter writer, Message<?> message) {
+        for (String key : message.getHeaders().keySet()) {
+            for (String value : message.getHeaders().get(key)) {
                 writer.println(key + ": " + value);
             }
         }
     }
 
-    private void writeEntity(final PrintWriter writer, Message message) throws IOException {
+    private void writeEntity(final PrintWriter writer, Message<?> message) throws IOException {
         ContentTypeHeader contentType = new ContentTypeHeader(message);
-        if (message.entity == null || contentType.getType() == null) {
+        if (message.getEntity() == null || contentType.getType() == null) {
             return;
         }
         writer.println();

@@ -107,8 +107,8 @@ public class RedirectFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
-        exchange.response.headers.add(LocationHeader.NAME, testRedirectionURI.toString());
-        exchange.response.status = RedirectFilter.REDIRECT_STATUS_302;
+        exchange.response.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
+        exchange.response.setStatus(RedirectFilter.REDIRECT_STATUS_302);
 
         DummyHander handler = new DummyHander();
 

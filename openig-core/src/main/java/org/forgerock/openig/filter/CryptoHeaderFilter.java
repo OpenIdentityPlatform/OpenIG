@@ -153,16 +153,16 @@ public class CryptoHeaderFilter extends GenericFilter {
      *
      * @param message the message containing the headers to encrypt/decrypt.
      */
-    private void process(Message message) {
+    private void process(Message<?> message) {
         for (String s : this.headers) {
-            List<String> in = message.headers.get(s);
+            List<String> in = message.getHeaders().get(s);
             if (in != null) {
                 List<String> out = new ArrayList<String>();
-                message.headers.remove(s);
+                message.getHeaders().remove(s);
                 for (String value : in) {
                     out.add(operation == Operation.ENCRYPT ? encrypt(value) : decrypt(value));
                 }
-                message.headers.addAll(s, out);
+                message.getHeaders().addAll(s, out);
             }
         }
     }

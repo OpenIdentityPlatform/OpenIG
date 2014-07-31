@@ -107,8 +107,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
      * @return the session attribute name, fully qualified the request remote server.
      */
     private String attributeName(Request request) {
-        return this.getClass().getName() + ':' + request.uri.getScheme() + ':'
-                + request.uri.getHost() + ':' + request.uri.getPort() + ':' + "userpass";
+        return this.getClass().getName() + ':' + request.getUri().getScheme() + ':'
+                + request.getUri().getHost() + ':' + request.getUri().getPort() + ':' + "userpass";
     }
 
     @Override
@@ -117,32 +117,32 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
         // Remove existing headers from incoming message
         for (String header : SUPPRESS_REQUEST_HEADERS) {
-            exchange.request.headers.remove(header);
+            exchange.request.getHeaders().remove(header);
         }
 
-        BranchingInputStream trunk = exchange.request.entity;
+        BranchingInputStream trunk = exchange.request.getEntity();
         String userpass = null;
 
         // loop to retry for initially retrieved (or refreshed) credentials
         for (int n = 0; n < 2; n++) {
             // put a branch of the trunk in the entity to allow retries
             if (trunk != null) {
-                exchange.request.entity = trunk.branch();
+                exchange.request.setEntity(trunk.branch());
             }
             // because credentials are sent in every request, this class caches them in the session
             if (cacheHeader) {
                 userpass = (String) exchange.session.get(attributeName(exchange.request));
             }
             if (userpass != null) {
-                exchange.request.headers.add("Authorization", "Basic " + userpass);
+                exchange.request.getHeaders().add("Authorization", "Basic " + userpass);
             }
             next.handle(exchange);
             // successful exchange from this filter's standpoint
-            if (exchange.response.status != 401) {
+            if (exchange.response.getStatus() != 401) {
 
                 // Remove headers from outgoing message
                 for (String header : SUPPRESS_RESPONSE_HEADERS) {
-                    exchange.response.headers.remove(header);
+                    exchange.response.getHeaders().remove(header);
                 }
 
                 timer.stop();
@@ -168,9 +168,9 @@ public class HttpBasicAuthFilter extends GenericFilter {
             }
         }
         // close the incoming response because it's about to be dereferenced
-        if (exchange.response.entity != null) {
+        if (exchange.response.getEntity() != null) {
             // important!
-            exchange.response.entity.close();
+            exchange.response.getEntity().close();
         }
         // credentials were missing or invalid; let failure handler deal with it
         exchange.response = new Response();

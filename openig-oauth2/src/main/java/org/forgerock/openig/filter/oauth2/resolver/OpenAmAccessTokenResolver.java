@@ -90,8 +90,8 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         try {
             Exchange exchange = new Exchange();
             exchange.request = new Request();
-            exchange.request.method = "GET";
-            exchange.request.uri = new URI(tokenInfoEndpoint);
+            exchange.request.setMethod("GET");
+            exchange.request.setUri(new URI(tokenInfoEndpoint));
 
             // Append the access_token as a query parameter (automatically performs encoding)
             Form form = new Form();
@@ -105,7 +105,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
                 throw new OAuth2TokenException("empty", "Authorization Server did not returned an AccessToken");
             }
 
-            JsonValue content = asJson(exchange.response.entity);
+            JsonValue content = asJson(exchange.response.getEntity());
             if (isOk(exchange.response)) {
                 return builder.build(content);
             }
@@ -128,11 +128,11 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     }
 
     private boolean isResponseEmpty(final Exchange exchange) {
-        return (exchange.response == null) || (exchange.response.entity == null);
+        return (exchange.response == null) || (exchange.response.getEntity() == null);
     }
 
     private boolean isOk(final Response response) {
-        return response.status == 200;
+        return response.getStatus() == 200;
     }
 
     /**

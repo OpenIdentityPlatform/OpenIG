@@ -147,8 +147,8 @@ public class OAuth2Provider {
     Request createRequestForAccessToken(final Exchange exchange, final String code,
             final String callbackUri) throws HandlerException {
         final Request request = new Request();
-        request.method = "POST";
-        request.uri = buildUri(exchange, tokenEndpoint);
+        request.setMethod("POST");
+        request.setUri(buildUri(exchange, tokenEndpoint));
         final Form form = new Form();
         form.add("grant_type", "authorization_code");
         form.add("redirect_uri", callbackUri);
@@ -161,8 +161,8 @@ public class OAuth2Provider {
     Request createRequestForTokenRefresh(final Exchange exchange, final OAuth2Session session)
             throws HandlerException {
         final Request request = new Request();
-        request.method = "POST";
-        request.uri = buildUri(exchange, tokenEndpoint);
+        request.setMethod("POST");
+        request.setUri(buildUri(exchange, tokenEndpoint));
         final Form form = new Form();
         form.add("grant_type", "refresh_token");
         form.add("refresh_token", session.getRefreshToken());
@@ -174,9 +174,9 @@ public class OAuth2Provider {
     Request createRequestForUserInfo(final Exchange exchange, final String accessToken)
             throws HandlerException {
         final Request request = new Request();
-        request.method = "GET";
-        request.uri = buildUri(exchange, userInfoEndpoint);
-        request.headers.add("Authorization", "Bearer " + accessToken);
+        request.setMethod("GET");
+        request.setUri(buildUri(exchange, userInfoEndpoint));
+        request.getHeaders().add("Authorization", "Bearer " + accessToken);
         return request;
     }
 
@@ -228,7 +228,7 @@ public class OAuth2Provider {
         } else {
             final String userpass =
                     Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset()));
-            request.headers.add("Authorization", "Basic " + userpass);
+            request.getHeaders().add("Authorization", "Basic " + userpass);
         }
     }
 

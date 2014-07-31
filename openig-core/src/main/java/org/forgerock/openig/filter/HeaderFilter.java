@@ -80,14 +80,14 @@ public class HeaderFilter extends GenericFilter {
      *
      * @param message the message to remove headers from and add headers to.
      */
-    private void process(Message message, Exchange exchange) {
+    private void process(Message<?> message, Exchange exchange) {
         for (String s : this.removedHeaders) {
-            message.headers.remove(s);
+            message.getHeaders().remove(s);
         }
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.headers.add(key, (String) JsonValueUtil.asExpression(jsonValue).eval(exchange));
+                message.getHeaders().add(key, (String) JsonValueUtil.asExpression(jsonValue).eval(exchange));
             }
         }
     }

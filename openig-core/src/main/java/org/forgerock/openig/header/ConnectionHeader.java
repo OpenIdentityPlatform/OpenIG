@@ -46,7 +46,7 @@ public class ConnectionHeader implements Header {
      *
      * @param message the message to initialize the header from.
      */
-    public ConnectionHeader(Message message) {
+    public ConnectionHeader(Message<?> message) {
         fromMessage(message);
     }
 
@@ -78,9 +78,9 @@ public class ConnectionHeader implements Header {
     }
 
     @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.headers != null) {
-            fromString(HeaderUtil.join(message.headers.get(NAME), ','));
+    public void fromMessage(Message<?> message) {
+        if (message != null && message.getHeaders() != null) {
+            fromString(HeaderUtil.join(message.getHeaders().get(NAME), ','));
         }
     }
 
@@ -93,10 +93,10 @@ public class ConnectionHeader implements Header {
     }
 
     @Override
-    public void toMessage(Message message) {
+    public void toMessage(Message<?> message) {
         String value = toString();
         if (value != null) {
-            message.headers.putSingle(NAME, value);
+            message.getHeaders().putSingle(NAME, value);
         }
     }
 

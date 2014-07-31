@@ -156,8 +156,8 @@ public class CookieFilter extends GenericFilter {
      */
 // TODO: Rewrite and put in URIutil.
     private URI resolveHostURI(Request request) {
-        URI uri = request.uri;
-        String header = (request.headers != null ? request.headers.getFirst("Host") : null);
+        URI uri = request.getUri();
+        String header = (request.getHeaders() != null ? request.getHeaders().getFirst("Host") : null);
         if (uri != null && header != null) {
             String[] hostport = DELIM_COLON.split(header, 2);
             int port;
@@ -181,11 +181,11 @@ public class CookieFilter extends GenericFilter {
      * a single "Cookie" header in the request.
      */
     private void addRequestCookies(CookieManager manager, URI resolved, Request request) throws IOException {
-        List<String> cookies = request.headers.get("Cookie");
+        List<String> cookies = request.getHeaders().get("Cookie");
         if (cookies == null) {
             cookies = new ArrayList<String>();
         }
-        List<String> managed = manager.get(resolved, request.headers).get("Cookie");
+        List<String> managed = manager.get(resolved, request.getHeaders()).get("Cookie");
         if (managed != null) {
             cookies.addAll(managed);
         }
@@ -198,7 +198,7 @@ public class CookieFilter extends GenericFilter {
         }
         if (sb.length() > 0) {
             // replace any existing header(s)
-            request.headers.putSingle("Cookie", sb.toString());
+            request.getHeaders().putSingle("Cookie", sb.toString());
         }
     }
 
@@ -216,7 +216,7 @@ public class CookieFilter extends GenericFilter {
         // pass exchange to next handler in chain
         next.handle(exchange);
         // manage cookie headers in response
-        manager.put(resolved, exchange.response.headers);
+        manager.put(resolved, exchange.response.getHeaders());
         // remove cookies that are suppressed or managed
         suppress(exchange.response);
         timer.stop();
@@ -269,7 +269,7 @@ public class CookieFilter extends GenericFilter {
      * @param request the request to suppress the cookies in.
      */
     private void suppress(Request request) {
-        List<String> headers = request.headers.get("Cookie");
+        List<String> headers = request.getHeaders().get("Cookie");
         if (headers != null) {
             for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                 String header = hi.next();
@@ -301,7 +301,7 @@ public class CookieFilter extends GenericFilter {
                 }
             }
             if (headers.isEmpty()) {
-                request.headers.remove("Cookie");
+                request.getHeaders().remove("Cookie");
             }
         }
     }
@@ -313,7 +313,7 @@ public class CookieFilter extends GenericFilter {
      */
     private void suppress(Response response) {
         for (String name : RESPONSE_HEADERS) {
-            List<String> headers = response.headers.get(name);
+            List<String> headers = response.getHeaders().get(name);
             if (headers != null) {
                 for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                     String header = hi.next();

@@ -64,37 +64,37 @@ public class RequestAdapterTest {
     private Exchange buildExchangeWithParametersInQuery() throws Exception {
         final Exchange exchange = buildExchange("params-in-query");
         exchange.request = new Request();
-        exchange.request.uri = new URI(BASE_URI.concat("?")
+        exchange.request.setUri(new URI(BASE_URI.concat("?")
                                                .concat(HELLO_WORLD_PARAM)
                                                .concat("&")
                                                .concat(FIRST_MULTI_VALUED_PARAM)
                                                .concat("&")
-                                               .concat(SECOND_MULTI_VALUED_PARAM));
+                                               .concat(SECOND_MULTI_VALUED_PARAM)));
         return exchange;
     }
 
     private Exchange buildExchangeWithParametersInPayload() throws Exception {
         final Exchange exchange = buildExchange("params-in-payload");
         exchange.request = new Request();
-        exchange.request.headers.add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.request.uri = new URI(BASE_URI);
-        exchange.request.entity = new ByteArrayBranchingStream(HELLO_WORLD_PARAM
+        exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        exchange.request.setUri(new URI(BASE_URI));
+        exchange.request.setEntity(new ByteArrayBranchingStream(HELLO_WORLD_PARAM
                                                                        .concat("&")
                                                                        .concat(FIRST_MULTI_VALUED_PARAM)
                                                                        .concat("&")
-                                                                       .concat(SECOND_MULTI_VALUED_PARAM).getBytes());
+                                                                       .concat(SECOND_MULTI_VALUED_PARAM).getBytes()));
         return exchange;
     }
 
     private Exchange buildExchangeWithParametersInBothPayloadAndQuery() throws Exception {
         final Exchange exchange = buildExchange("params-in-payload-and-query");
         exchange.request = new Request();
-        exchange.request.headers.add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.request.uri = new URI(BASE_URI.concat("?")
-                                               .concat(HELLO_WORLD_PARAM));
-        exchange.request.entity = new ByteArrayBranchingStream(FIRST_MULTI_VALUED_PARAM.concat("&")
+        exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        exchange.request.setUri(new URI(BASE_URI.concat("?")
+                                               .concat(HELLO_WORLD_PARAM)));
+        exchange.request.setEntity(new ByteArrayBranchingStream(FIRST_MULTI_VALUED_PARAM.concat("&")
                                                                        .concat(SECOND_MULTI_VALUED_PARAM)
-                                                                       .getBytes());
+                                                                       .getBytes()));
         return exchange;
     }
 

@@ -18,24 +18,99 @@
 
 package org.forgerock.openig.http;
 
-// Java Standard Edition
-
 import java.net.URI;
 
 /**
  * A request message.
  */
-public class Request extends Message {
-
-    /** The method to be performed on the resource. */
-    public String method;
-
-    /** The fully-qualified URI of the resource being accessed. */
-    public URI uri;
-
-    /** Exposes query parameters and {@code application/x-www-form-urlencoded} entity as values. */
-    public final FormAttributes form = new FormAttributes(this);
+public final class Request extends Message<Request> {
 
     /** Exposes incoming request cookies. */
-    public final RequestCookies cookies = new RequestCookies(this);
+    private final RequestCookies cookies = new RequestCookies(this);
+
+    /**
+     * Exposes query parameters and {@code application/x-www-form-urlencoded}
+     * entity as values.
+     */
+    private final FormAttributes form = new FormAttributes(this);
+
+    /** The method to be performed on the resource. */
+    private String method;
+
+    /** The fully-qualified URI of the resource being accessed. */
+    private URI uri;
+
+    /**
+     * Creates a new request message.
+     */
+    public Request() {
+        // Nothing to do.
+    }
+
+    /**
+     * Returns the incoming request cookies.
+     *
+     * @return The incoming request cookies.
+     */
+    public RequestCookies getCookies() {
+        return cookies;
+    }
+
+    /**
+     * Returns the query parameters and
+     * {@code application/x-www-form-urlencoded} entity as values.
+     *
+     * @return The query parameters and
+     *         {@code application/x-www-form-urlencoded} entity as values.
+     */
+    public FormAttributes getForm() {
+        return form;
+    }
+
+    /**
+     * Returns the method to be performed on the resource.
+     *
+     * @return The method to be performed on the resource.
+     */
+    public String getMethod() {
+        return method;
+    }
+
+    /**
+     * Returns the fully-qualified URI of the resource being accessed.
+     *
+     * @return The fully-qualified URI of the resource being accessed.
+     */
+    public URI getUri() {
+        return uri;
+    }
+
+    /**
+     * Sets the method to be performed on the resource.
+     *
+     * @param method
+     *            The method to be performed on the resource.
+     * @return This request.
+     */
+    public Request setMethod(final String method) {
+        this.method = method;
+        return this;
+    }
+
+    /**
+     * Sets the fully-qualified URI of the resource being accessed.
+     *
+     * @param uri
+     *            The fully-qualified URI of the resource being accessed.
+     * @return This request.
+     */
+    public Request setUri(final URI uri) {
+        this.uri = uri;
+        return this;
+    }
+
+    @Override
+    Request getThis() {
+        return this;
+    }
 }

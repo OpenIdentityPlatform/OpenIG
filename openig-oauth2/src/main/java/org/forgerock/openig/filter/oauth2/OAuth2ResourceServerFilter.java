@@ -58,7 +58,6 @@ import org.forgerock.util.time.TimeService;
  *
  * Here is a sample configuration:
  * <pre>
- *     {@code
  * {
  *         "name": "ProtectedResourceFilter",
  *         "type": "org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter",
@@ -70,8 +69,7 @@ import org.forgerock.util.time.TimeService;
  *           "httpHandler": "ClientHandler",
  *           "realm": "Informative realm name"
  *         }
- *       }
- *     }
+ * }
  * </pre>
  *
  * {@literal requiredScopes}, {@literal tokenInfoEndpoint} and {@literal httpHandler} are the 3 only mandatory
@@ -231,7 +229,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * Bearer} authorization.
      */
     private String getAccessToken(final Request request) {
-        String header = request.headers.getFirst("Authorization");
+        String header = request.getHeaders().getFirst("Authorization");
         return extractor.getAccessToken(header);
     }
 

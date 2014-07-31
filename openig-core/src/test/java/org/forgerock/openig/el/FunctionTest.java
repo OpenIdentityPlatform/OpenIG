@@ -44,10 +44,10 @@ public class FunctionTest {
 
     @Test
     public void toStringTest() throws ExpressionException {
-        exchange.request.uri = URI.create("http://www.forgerock.org/");
+        exchange.request.setUri(URI.create("http://www.forgerock.org/"));
         Object o = new Expression("${toString(exchange.request.uri)}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
-        assertThat(o).isEqualTo(exchange.request.uri.toString());
+        assertThat(o).isEqualTo(exchange.request.getUri().toString());
     }
 
     @Test

@@ -36,7 +36,7 @@ public class StatusHandler implements Handler {
     @Override
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         exchange.response = new Response();
-        exchange.response.status = status;
+        exchange.response.setStatus(status);
     }
 
     public static class Heaplet extends NestedHeaplet {

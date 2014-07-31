@@ -33,9 +33,9 @@ public class StaticResponseHandlerTest {
         handler.addHeader("Location", new Expression("http://www.example.com/"));
         final Exchange exchange = new Exchange();
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(302);
-        assertThat(exchange.response.reason).isEqualTo("Found");
-        assertThat(exchange.response.headers.getFirst("Location")).isEqualTo("http://www.example.com/");
+        assertThat(exchange.response.getStatus()).isEqualTo(302);
+        assertThat(exchange.response.getReason()).isEqualTo("Found");
+        assertThat(exchange.response.getHeaders().getFirst("Location")).isEqualTo("http://www.example.com/");
     }
 
     @Test
@@ -50,9 +50,9 @@ public class StaticResponseHandlerTest {
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
         handler.handle(exchange);
-        assertThat(exchange.response.status).isEqualTo(200);
-        assertThat(exchange.response.reason).isEqualTo("OK");
-        assertThat(asString(exchange.response.entity)).isEqualTo(
+        assertThat(exchange.response.getStatus()).isEqualTo(200);
+        assertThat(exchange.response.getReason()).isEqualTo("OK");
+        assertThat(asString(exchange.response.getEntity())).isEqualTo(
                 "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");
     }
 }

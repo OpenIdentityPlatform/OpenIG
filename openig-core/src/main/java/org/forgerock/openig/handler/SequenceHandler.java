@@ -80,9 +80,9 @@ public class SequenceHandler extends GenericHandler {
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         for (Binding binding : bindings) {
-            if (exchange.response != null && exchange.response.entity != null) {
+            if (exchange.response != null && exchange.response.getEntity() != null) {
                 // important!
-                exchange.response.entity.close();
+                exchange.response.getEntity().close();
             }
             // avoid downstream filters/handlers inadvertently using response
             exchange.response = null;

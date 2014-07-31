@@ -68,8 +68,8 @@ public class OpenAmAccessTokenResolverTest {
 
     private Response response(final int status, final String content) {
         Response response = new Response();
-        response.status = status;
-        response.entity = new ByteArrayBranchingStream(content.getBytes());
+        response.setStatus(status);
+        response.setEntity(new ByteArrayBranchingStream(content.getBytes()));
         return response;
     }
 

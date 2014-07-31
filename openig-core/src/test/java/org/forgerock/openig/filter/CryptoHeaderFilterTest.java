@@ -62,11 +62,11 @@ public class CryptoHeaderFilterTest {
         exchange.request = new Request();
 
         // Value length has to be a multiple of 8 because of the DES encryption mechanism
-        exchange.request.headers.putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        exchange.request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.request.headers.getFirst(HEADER_NAME))
+        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
 
@@ -83,11 +83,11 @@ public class CryptoHeaderFilterTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
 
-        exchange.request.headers.putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        exchange.request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.request.headers.getFirst(HEADER_NAME))
+        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
 
@@ -104,11 +104,11 @@ public class CryptoHeaderFilterTest {
         exchange.response = new Response();
 
         // Value length has to be a multiple of 8 because of the DES encryption mechanism
-        exchange.response.headers.putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        exchange.response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.response.headers.getFirst(HEADER_NAME))
+        assertThat(exchange.response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
 
@@ -125,11 +125,11 @@ public class CryptoHeaderFilterTest {
         final Exchange exchange = new Exchange();
         exchange.response = new Response();
 
-        exchange.response.headers.putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        exchange.response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         filter.filter(exchange, terminalHandler);
 
-        assertThat(exchange.response.headers.getFirst(HEADER_NAME))
+        assertThat(exchange.response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
 

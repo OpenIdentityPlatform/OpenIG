@@ -40,7 +40,7 @@ public interface Header extends Indexed<String> {
      * @param message
      *            The message to get the content of the header from.
      */
-    void fromMessage(Message message);
+    void fromMessage(Message<?> message);
 
     /**
      * Populates the content of the header from the specified string value.
@@ -57,7 +57,7 @@ public interface Header extends Indexed<String> {
      * @param message
      *            The message to which add the current header.
      */
-    void toMessage(Message message);
+    void toMessage(Message<?> message);
 
     /**
      * Returns the header as a single string value. If the header is empty, this method will return {@code null}.

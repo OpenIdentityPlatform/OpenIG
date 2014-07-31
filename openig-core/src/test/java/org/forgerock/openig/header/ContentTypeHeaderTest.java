@@ -82,11 +82,11 @@ public class ContentTypeHeaderTest {
     public void testContentTypeHeaderToMessageRequest(final String cheader, final String type, final String charset,
             final String boundary) {
         final Request request = new Request();
-        assertThat(request.headers.get(NAME)).isNull();
+        assertThat(request.getHeaders().get(NAME)).isNull();
         final ContentTypeHeader cth = new ContentTypeHeader(cheader);
         cth.toMessage(request);
-        assertThat(request.headers.get(NAME)).isNotEmpty();
-        assertThat(request.headers.getFirst(NAME)).isEqualTo(cheader);
+        assertThat(request.getHeaders().get(NAME)).isNotEmpty();
+        assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(cheader);
     }
 
     @Test
@@ -102,9 +102,9 @@ public class ContentTypeHeaderTest {
             final String boundary) {
         // Creates response.
         final Response response = new Response();
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, cheader);
-        assertThat(response.headers.get(NAME)).isNotNull();
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, cheader);
+        assertThat(response.getHeaders().get(NAME)).isNotNull();
 
         // Creates content-type header from response.
         final ContentTypeHeader cth = new ContentTypeHeader(response);
@@ -118,9 +118,9 @@ public class ContentTypeHeaderTest {
             final String boundary) {
         // Creates request.
         final Request request = new Request();
-        assertThat(request.headers.get(NAME)).isNull();
-        request.headers.putSingle(NAME, cheader);
-        assertThat(request.headers.get(NAME)).isNotNull();
+        assertThat(request.getHeaders().get(NAME)).isNull();
+        request.getHeaders().putSingle(NAME, cheader);
+        assertThat(request.getHeaders().get(NAME)).isNotNull();
 
         // Creates content-type header from request.
         final ContentTypeHeader cth = new ContentTypeHeader(request);
@@ -135,8 +135,8 @@ public class ContentTypeHeaderTest {
         final ContentTypeHeader cth = new ContentTypeHeader(cheader);
         final Response response = new Response();
 
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, cheader);
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, cheader);
 
         final ContentTypeHeader cth2 = new ContentTypeHeader();
         cth2.fromMessage(response);
@@ -152,8 +152,8 @@ public class ContentTypeHeaderTest {
         final ContentTypeHeader cth = new ContentTypeHeader(cheader);
         final Response response = new Response();
 
-        assertThat(response.headers.get(NAME)).isNull();
-        response.headers.putSingle(NAME, INVALID_CT_HEADER);
+        assertThat(response.getHeaders().get(NAME)).isNull();
+        response.getHeaders().putSingle(NAME, INVALID_CT_HEADER);
 
         final ContentTypeHeader cth2 = new ContentTypeHeader();
         cth2.fromMessage(response);
@@ -166,9 +166,9 @@ public class ContentTypeHeaderTest {
             final String boundary) {
         final ContentTypeHeader cth = new ContentTypeHeader(cheader);
         final Response response = new Response();
-        assertThat(response.headers.get(NAME)).isNull();
+        assertThat(response.getHeaders().get(NAME)).isNull();
 
-        response.headers.putSingle(NAME, null);
+        response.getHeaders().putSingle(NAME, null);
 
         final ContentTypeHeader cth2 = new ContentTypeHeader();
         cth2.fromMessage(response);

@@ -77,8 +77,8 @@ public class InvalidRequestChallengeHandler extends AuthenticateChallengeHandler
     @Override
     protected Response createResponse() {
         Response response = new Response();
-        response.status = 400;
-        response.reason = "Bad Request";
+        response.setStatus(400);
+        response.setReason("Bad Request");
         return response;
     }
 

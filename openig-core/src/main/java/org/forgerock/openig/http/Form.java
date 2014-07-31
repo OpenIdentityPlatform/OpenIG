@@ -92,7 +92,7 @@ public class Form extends MultiValueMap<String, String> {
      * @return this form object.
      */
     public Form fromRequestQuery(Request request) {
-        String query = request.uri.getRawQuery();
+        String query = request.getUri().getRawQuery();
         if (query != null) {
             fromString(query);
         }
@@ -107,10 +107,9 @@ public class Form extends MultiValueMap<String, String> {
      */
     public void toRequestQuery(Request request) {
         try {
-            request.uri =
-                    URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
-                            request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
-                            toString(), request.uri.getRawFragment());
+            request.setUri(URIUtil.create(request.getUri().getScheme(), request.getUri().getRawUserInfo(),
+                    request.getUri().getHost(), request.getUri().getPort(), request.getUri().getRawPath(),
+                    toString(), request.getUri().getRawFragment()));
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }
@@ -124,7 +123,7 @@ public class Form extends MultiValueMap<String, String> {
      */
     public void appendRequestQuery(Request request) {
         StringBuilder sb = new StringBuilder();
-        String uriQuery = request.uri.getRawQuery();
+        String uriQuery = request.getUri().getRawQuery();
         if (uriQuery != null && uriQuery.length() > 0) {
             sb.append(uriQuery);
         }
@@ -140,10 +139,9 @@ public class Form extends MultiValueMap<String, String> {
             newQuery = null;
         }
         try {
-            request.uri =
-                    URIUtil.create(request.uri.getScheme(), request.uri.getRawUserInfo(),
-                            request.uri.getHost(), request.uri.getPort(), request.uri.getRawPath(),
-                            newQuery, request.uri.getRawFragment());
+            request.setUri(URIUtil.create(request.getUri().getScheme(), request.getUri().getRawUserInfo(),
+                    request.getUri().getHost(), request.getUri().getPort(), request.getUri().getRawPath(),
+                    newQuery, request.getUri().getRawFragment()));
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }
@@ -160,10 +158,11 @@ public class Form extends MultiValueMap<String, String> {
      */
     public Form fromRequestEntity(Request request) throws IOException {
         if (request != null
-                && request.entity != null
-                && "application/x-www-form-urlencoded".equalsIgnoreCase(request.headers.getFirst("Content-Type"))) {
+                && request.getEntity() != null
+                && "application/x-www-form-urlencoded".equalsIgnoreCase(request.getHeaders()
+                        .getFirst("Content-Type"))) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            Streamer.stream(request.entity, bytes);
+            Streamer.stream(request.getEntity(), bytes);
             fromString(bytes.toString());
         }
         return this;
@@ -178,9 +177,9 @@ public class Form extends MultiValueMap<String, String> {
      */
     public void toRequestEntity(Request request) {
         String form = toString();
-        request.method = "POST";
-        request.headers.putSingle("Content-Type", "application/x-www-form-urlencoded");
-        request.headers.putSingle("Content-Length", Integer.toString(form.length()));
-        request.entity = new ByteArrayBranchingStream(form.getBytes());
+        request.setMethod("POST");
+        request.getHeaders().putSingle("Content-Type", "application/x-www-form-urlencoded");
+        request.getHeaders().putSingle("Content-Length", Integer.toString(form.length()));
+        request.setEntity(new ByteArrayBranchingStream(form.getBytes()));
     }
 }

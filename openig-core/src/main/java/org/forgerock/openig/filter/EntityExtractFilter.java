@@ -122,9 +122,9 @@ public class EntityExtractFilter extends GenericFilter {
         timer.stop();
     }
 
-    private void process(Exchange exchange, Message message) {
+    private void process(Exchange exchange, Message<?> message) {
         HashMap<String, String> map = new HashMap<String, String>();
-        if (message != null && message.entity != null) {
+        if (message != null && message.getEntity() != null) {
             try {
                 Reader reader = HttpUtil.entityReader(message, true, charset);
                 try {
