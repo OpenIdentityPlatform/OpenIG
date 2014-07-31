@@ -31,119 +31,202 @@
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
+
  <refmeta>
   <refentrytitle>Expressions</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>Expressions</refname>
   <refpurpose>expression configuration parameter values</refpurpose>
  </refnamediv>
- <refsect1>
+
+ <refsect1 xml:id="expressions-description">
   <title>Description</title>
+
   <indexterm>
    <primary>Expressions</primary>
    <secondary>Expressions</secondary>
   </indexterm>
-  <para>Expressions are specified as configuration parameter values for a
-  number of built-in objects. Such expressions conform to the Universal
-  Expression Language as specified in <link xlink:show="new"
-  xlink:href="http://www.jcp.org/en/jsr/detail?id=245">JSR-245</link>.</para>
+
+  <para>
+   Expressions are specified as configuration parameter values
+   for a number of built-in objects.
+   Such expressions conform to the Universal Expression Language as specified in
+   <link
+    xlink:show="new"
+    xlink:href="http://www.jcp.org/en/jsr/detail?id=245"
+   >JSR-245</link>.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>General Syntax</title>
-  <para>All expressions follow standard Universal Expression Language syntax:
-  <literal>${expression}</literal>. The expression can be a simple reference to
-  a value, a function call, and/or arbitrarily complex arithmetic, logical,
-  relational and conditional operations. When supplied within a configuration
-  parameter, an expression is always a string enclosed in quotation marks, for
-  example: <literal>"${exchange.request.method}"</literal>.</para>
+
+  <para>
+   All expressions follow standard Universal Expression Language syntax:
+   <literal>${expression}</literal>.
+   The expression can be a simple reference to a value, a function call,
+   or arbitrarily complex arithmetic, logical, relational and conditional operations.
+   When supplied within a configuration parameter,
+   an expression is always a string enclosed in quotation marks,
+   for example: <literal>"${exchange.request.method}"</literal>.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Value Expressions</title>
-  <para>A value expression references a value relative to the scope supplied to
-  the expression. In the current version of ${projectName}, the supplied scope is
-  always the HTTP <link xlink:href="reference#Exchange"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >exchange object</link>. For example
-  <literal>"${exchange.request.method}"</literal> references the method of an
-  incoming HTTP request in the exchange scope. A
-  <firstterm>lvalue-expression</firstterm> is a specific type of value
-  expression, which references a value to be written. For example,
-  <literal>"${exchange.session.gotoURL}"</literal> specifies a session
-  attribute named <literal>gotoURL</literal> to write a value to. Attempts to
-  write values to read-only values are ignored.</para>
+
+  <para>
+   A value expression references a value relative to the scope
+   supplied to the expression.
+   In the current version of ${projectName},
+   the supplied scope is always the HTTP
+   <link
+    xlink:show="new"
+    xlink:href="reference#Exchange"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >exchange object</link>.
+   For example <literal>"${exchange.request.method}"</literal>
+   references the method of an incoming HTTP request in the exchange scope.
+  </para>
+
+  <para>
+   An <firstterm>lvalue-expression</firstterm>
+   is a specific type of value expression that references a value to be written.
+   For example, <literal>"${exchange.session.gotoURL}"</literal>
+   specifies a session attribute named <literal>gotoURL</literal> to write a value to.
+   Attempts to write values to read-only values are ignored.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Indexed Properties</title>
-  <para>Properties of values are accessed using the <literal>.</literal> and
-  <literal>[]</literal> operators, and can be nested arbitrarily. The value
-  expressions <literal>"${exchange.request}"</literal> and
-  <literal>"${exchange['request']}"</literal> are equivalent. In the case of
-  arrays, the index of an element in the array is expressed as a number in
-  brackets, for example
-  <literal>"${exchange.request.headers['Content-Type'][0]}"</literal>
-  references the first <literal>Content-Type</literal> header value in a
-  request. If a property does not exist, then the index reference yields a
-  <literal>null</literal> (empty) value.</para>
+
+  <para>
+   Properties of values are accessed
+   using the <literal>.</literal> and <literal>[]</literal> operators,
+   and can be nested arbitrarily.
+  </para>
+
+  <para>
+   The value expressions <literal>"${exchange.request}"</literal>
+   and <literal>"${exchange['request']}"</literal> are equivalent.
+  </para>
+
+  <para>
+   In the case of arrays, the index of an element in the array
+   is expressed as a number in brackets.
+   For example,
+   <literal>"${exchange.request.headers['Content-Type'][0]}"</literal>
+   references the first <literal>Content-Type</literal> header value in a request.
+   If a property does not exist, then the index reference
+   yields a <literal>null</literal> (empty) value.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Operations</title>
-  <para>Universal Expression Language supports arbitrarily complex arithmetic,
-  logical, relational and conditional operations. They are, in order of
-  precedence:</para>
+
+  <para>
+   Universal Expression Language supports arbitrarily complex arithmetic,
+   logical, relational and conditional operations.
+   They are, in order of precedence:</para>
+
   <itemizedlist>
    <listitem>
-    <para>Index property value: <literal>[]</literal>,
-    <literal>.</literal></para>
+    <para>
+     Index property value: <literal>[]</literal>, <literal>.</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Change precedence of operation: <literal>()</literal></para>
+    <para>
+     Change precedence of operation: <literal>()</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Unary negative: <literal>-</literal></para>
+    <para>
+     Unary negative: <literal>-</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Logical operations: <literal>not</literal>, <literal>!</literal>,
-    <literal>empty</literal></para>
+    <para>
+     Logical operations:
+     <literal>not</literal>, <literal>!</literal>,
+     <literal>empty</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Arithmetic operations: <literal>*</literal>, <literal>/</literal>,
-    <literal>div</literal>, <literal>%</literal>, <literal>mod</literal></para>
+    <para>
+     Arithmetic operations:
+     <literal>*</literal>, <literal>/</literal>,
+     <literal>div</literal>,
+     <literal>%</literal>, <literal>mod</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Binary arithmetic operations: <literal>+</literal>,
-    <literal>-</literal></para>
+    <para>
+     Binary arithmetic operations: <literal>+</literal>, <literal>-</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Relational operations: <literal>&lt;</literal>,
-    <literal>&gt;</literal>, <literal>&lt;=</literal>, <literal>&gt;=</literal>,
-    <literal>lt</literal>, <literal>gt</literal>, <literal>le</literal>,
-    <literal>ge</literal>, <literal>==</literal>, <literal>!=</literal>,
-    <literal>eq</literal>, <literal>ne</literal></para>
+    <para>
+     Relational operations:
+     <literal>&lt;</literal>, <literal>&gt;</literal>,
+     <literal>&lt;=</literal>, <literal>&gt;=</literal>,
+     <literal>lt</literal>, <literal>gt</literal>,
+     <literal>le</literal>, <literal>ge</literal>,
+     <literal>==</literal>, <literal>!=</literal>,
+     <literal>eq</literal>, <literal>ne</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Logical operations: <literal>&amp;&amp;</literal>,
-    <literal>and</literal>, <literal>||</literal>, <literal>or</literal></para>
+    <para>
+     Logical operations: <literal>&amp;&amp;</literal>, <literal>and</literal>,
+     <literal>||</literal>, <literal>or</literal>
+    </para>
    </listitem>
+
    <listitem>
-    <para>Conditional operations: <literal>?</literal>,
-    <literal>:</literal></para>
+    <para>
+     Conditional operations: <literal>?</literal>, <literal>:</literal>
+    </para>
    </listitem>
   </itemizedlist>
  </refsect1>
+
  <refsect1>
   <title>Functions</title>
-  <para>A number of <link xlink:href="reference#Functions"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >built-in functions</link> can be called within an expression. Syntax is
-  <literal>${function(param, ...)}</literal>, where zero or more parameters
-  are supplied to the function. For example,
-  <literal>"${toLowerCase(exchange.request.method)}"</literal> yields the
-  method of the request, converted to lower case. Functions can be operands
-  for operations, and can yield parameters for other function calls.</para>
+
+  <para>
+   A number of
+   <link
+    xlink:show="new"
+    xlink:href="reference#Functions"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >built-in functions</link> can be called within an expression.
+  </para>
+
+  <para>
+   Syntax is <literal>${function(parameter, ...)}</literal>,
+   where zero or more parameters are supplied to the function.
+   For example, <literal>"${toLowerCase(exchange.request.method)}"</literal>
+   yields the method of the request, converted to lower case.
+   Functions can be operands for operations,
+   and can yield parameters for other function calls.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Examples</title>
+
   <para>
    In your JSON, keep the values on one line.
   </para>
@@ -174,13 +257,24 @@
    </programlisting>
   </informalexample>
  </refsect1>
+
  <refsect1>
   <title>See Also</title>
-  <para><link xlink:href="reference#Exchange"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >Exchange</link></para>
-  <para><link xlink:href="reference#Functions"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >Functions</link></para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="reference#Exchange"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Exchange</link>
+  </para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="reference#Functions"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Functions</link>
+  </para>
  </refsect1>
 </refentry>
