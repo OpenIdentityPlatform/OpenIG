@@ -69,7 +69,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
         if (key instanceof String) {
             final String s = (String) key;
             for (final Cookie cookie : new CookieHeader(request).getCookies()) {
-                if (s.equalsIgnoreCase(cookie.name)) {
+                if (s.equalsIgnoreCase(cookie.getName())) {
                     list.add(cookie);
                 }
             }
@@ -106,9 +106,9 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
         final Map<String, List<Cookie>> cookies =
                 new TreeMap<String, List<Cookie>>(String.CASE_INSENSITIVE_ORDER);
         for (final Cookie cookie : new CookieHeader(request).getCookies()) {
-            List<Cookie> list = cookies.get(cookie.name);
+            List<Cookie> list = cookies.get(cookie.getName());
             if (list == null) {
-                cookies.put(cookie.name, list = new ArrayList<Cookie>(1));
+                cookies.put(cookie.getName(), list = new ArrayList<Cookie>(1));
             }
             list.add(cookie);
         }

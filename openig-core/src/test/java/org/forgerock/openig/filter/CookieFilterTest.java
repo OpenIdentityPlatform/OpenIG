@@ -322,10 +322,10 @@ public class CookieFilterTest {
 
     private void appendRequestCookie(String name, String domain) {
         Cookie cookie = new Cookie();
-        cookie.name = name;
-        cookie.value = "Default Value";
-        cookie.domain = domain;
-        cookie.path = "/";
+        cookie.setName(name);
+        cookie.setValue("Default Value");
+        cookie.setDomain(domain);
+        cookie.setPath("/");
         CookieHeader header = new CookieHeader(exchange.request);
         header.getCookies().add(cookie);
 
