@@ -18,7 +18,10 @@
 
 package org.forgerock.openig.http;
 
+import java.io.IOException;
 import java.net.URI;
+
+import org.forgerock.openig.io.BranchingInputStream;
 
 /**
  * A request message.
@@ -27,12 +30,6 @@ public final class Request extends Message<Request> {
 
     /** Exposes incoming request cookies. */
     private final RequestCookies cookies = new RequestCookies(this);
-
-    /**
-     * Exposes query parameters and {@code application/x-www-form-urlencoded}
-     * entity as values.
-     */
-    private final FormAttributes form = new FormAttributes(this);
 
     /** The method to be performed on the resource. */
     private String method;
@@ -57,13 +54,39 @@ public final class Request extends Message<Request> {
     }
 
     /**
-     * Returns the query parameters and
-     * {@code application/x-www-form-urlencoded} entity as values.
+     * Returns a copy of the query parameters and
+     * {@code application/x-www-form-urlencoded} entity decoded as a form.
+     * Modifications to the returned form are not reflected in this request.
      *
      * @return The query parameters and
-     *         {@code application/x-www-form-urlencoded} entity as values.
+     *         {@code application/x-www-form-urlencoded} entity as a form.
      */
-    public FormAttributes getForm() {
+    public Form getForm() {
+        BranchingInputStream entity = null;
+        if (getEntity() != null) {
+            entity = getEntity();
+            try {
+                setEntity(entity.branch());
+            } catch (final IOException ioe) {
+                throw new IllegalStateException(ioe);
+            }
+        }
+        final Form form = new Form();
+        try {
+            form.fromRequestQuery(this);
+            form.fromRequestEntity(this);
+        } catch (final IOException ioe) {
+            // Ignore: return empty form.
+        } finally {
+            if (entity != null) {
+                try {
+                    entity.closeBranches();
+                } catch (final IOException ioe) {
+                    throw new IllegalStateException(ioe);
+                }
+            }
+            setEntity(entity);
+        }
         return form;
     }
 

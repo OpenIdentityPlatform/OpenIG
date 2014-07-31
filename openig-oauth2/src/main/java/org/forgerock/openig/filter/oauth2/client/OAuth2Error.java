@@ -30,7 +30,6 @@ import java.util.Map;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.FormAttributes;
 import org.forgerock.util.Reject;
 
 /**
@@ -381,20 +380,6 @@ public final class OAuth2Error {
      * @return The parsed OAuth 2.0 error.
      */
     public static OAuth2Error valueOfForm(final Form form) {
-        return new OAuth2Error(null, null, form.getFirst(F_ERROR), form
-                .getFirst(F_ERROR_DESCRIPTION), form.getFirst(F_ERROR_URI));
-    }
-
-    /**
-     * Parses the Form representation of an authorization call-back error as an
-     * OAuth 2.0 error. Only the error, error description, and error URI fields
-     * will be included.
-     *
-     * @param form
-     *            The Form representation of an authorization call-back error.
-     * @return The parsed OAuth 2.0 error.
-     */
-    public static OAuth2Error valueOfForm(final FormAttributes form) {
         return new OAuth2Error(null, null, form.getFirst(F_ERROR), form
                 .getFirst(F_ERROR_DESCRIPTION), form.getFirst(F_ERROR_URI));
     }
