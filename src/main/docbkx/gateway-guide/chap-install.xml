@@ -733,6 +733,150 @@ etc/jetty-ssl.xml
      Prepare your ${projectName} configuration files.
     </para>
 
+    <variablelist>
+     <para>
+      By default, ${projectName} files are located under
+      <filename>${warBase}</filename> on Linux, Mac OS X, and UNIX systems,
+      and <filename>${windowsWarBase}</filename> on Windows systems.
+      ${projectName} uses the following file system directories.
+     </para>
+
+     <varlistentry>
+      <term><filename>${warConfigDir}</filename></term>
+      <term><filename>${windowsWarConfigDir}</filename></term>
+      <listitem>
+       <para>
+        ${projectName} configuration files,
+        where the main configuration file is <filename>config.json</filename>.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><filename>${warRoutesDir}</filename></term>
+      <term><filename>${windowsWarRoutesDir}</filename></term>
+      <listitem>
+       <para>
+        ${projectName} configuration files,
+        where the main configuration file is <filename>config.json</filename>.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><filename>${warSamlDir}</filename></term>
+      <term><filename>${windowsWarSamlDir}</filename></term>
+      <listitem>
+       <para>
+        ${projectName} SAML 2.0 configuration files.
+       </para>
+
+       <para>
+        See the chapter,
+        <link
+         xlink:show="new"
+         xlink:href="gateway-guide#chap-federation"
+         xlink:role="http://docbook.org/xlink/role/olink"
+        ><citetitle>Using ${projectName} Federation</citetitle></link>,
+        for more information.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><filename>${warGroovyDir}</filename></term>
+      <term><filename>${windowsWarGroovyDir}</filename></term>
+      <listitem>
+       <para>
+        ${projectName} script files, for Groovy scripted filters and handlers.
+       </para>
+
+       <para>
+        See the chapter,
+        <link
+         xlink:show="new"
+         xlink:href="gateway-guide#chap-scripting"
+         xlink:role="http://docbook.org/xlink/role/olink"
+         ><citetitle>Scripting Filters &amp; Handlers</citetitle></link>,
+        for more information.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><filename>${warTmpDir}</filename></term>
+      <term><filename>${windowsWarTmpDir}</filename></term>
+      <listitem>
+       <para>
+        ${projectName} temporary files.
+       </para>
+
+       <para>
+        This location can be used for capture files and temporary storage.
+       </para>
+      </listitem>
+     </varlistentry>
+    </variablelist>
+
+    <itemizedlist>
+     <para>
+      You can change <filename>${warBase}</filename>
+      (or <filename>${windowsWarBase}</filename>)
+      from the default location in the following ways.
+     </para>
+
+     <listitem>
+      <para>
+       Unpack the ${projectName} .war,
+       and edit the <filename>WEB-INF/web.xml</filename> application descriptor
+       to set the <literal>openig-base</literal> initialization parameter
+       to the full path to the base location for ${projectName} files,
+       as in the following example.
+      </para>
+
+      <programlisting language="xml">
+<![CDATA[
+ <servlet>
+   <servlet-name>GatewayServlet</servlet-name>
+   <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
+   <init-param>
+     <param-name>openig-base</param-name>
+     <param-value>/path/to/openig/files</param-value>
+   </init-param>
+ </servlet>
+]]>
+      </programlisting>
+     </listitem>
+
+     <listitem>
+      <para>
+       Set the <literal>OPENIG_BASE</literal> environment variable
+       to the full path to the base location for ${projectName} files.
+      </para>
+
+      <screen>
+# On Linux, Mac OS X, and UNIX using Bash
+$ <userinput>export OPENIG_BASE=/path/to/openig/files</userinput>
+
+# On Windows
+C:><userinput>set OPENIG_BASE=c:\path\to\openig\files</userinput>
+      </screen>
+     </listitem>
+
+     <listitem>
+      <para>
+       Set the <literal>openig.base</literal> Java system property
+       to the full path to the base location for ${projectName} files
+       when starting the web application container where ${projectName} runs,
+       as in the following example that starts Jetty server in the foreground.
+      </para>
+
+      <screen>
+$ <userinput>java -Dopenig.base=/path/to/openig/files -jar start.jar</userinput>
+      </screen>
+     </listitem>
+    </itemizedlist>
+
     <para>
      If you have not yet prepared configuration files, then start with the
      <link
