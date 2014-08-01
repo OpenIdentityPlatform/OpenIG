@@ -44,8 +44,10 @@ import com.sun.identity.saml2.common.SAML2Exception;
 import com.sun.identity.saml2.common.SAML2Utils;
 import com.sun.identity.saml2.jaxb.entityconfig.SPSSOConfigElement;
 import com.sun.identity.saml2.meta.SAML2MetaManager;
+import com.sun.identity.saml2.profile.CacheObject;
 import com.sun.identity.saml2.profile.LogoutUtil;
 import com.sun.identity.saml2.profile.SPACSUtils;
+import com.sun.identity.saml2.profile.SPCache;
 import com.sun.identity.saml2.profile.SPSSOFederate;
 import com.sun.identity.saml2.profile.SPSingleLogout;
 import com.sun.identity.saml2.servlet.SPSingleLogoutServiceSOAP;
@@ -414,28 +416,30 @@ class FederationServlet extends HttpServlet {
     }
 
     private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response)
-            throws SAML2Exception, SessionException {
+            throws SAML2Exception, SessionException, IOException {
         logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
-        String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
-        if (relayState == null || (relayState.isEmpty() && logoutURI != null && !logoutURI.isEmpty())) {
-            relayState = logoutURI;
-        }
-        logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState: %s", relayState));
+        String relayState = getLogoutRelayState(request);
+        logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState : %s", relayState));
 
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = request.getParameter(SAML2Constants.SAML_REQUEST);
         if (samlRequest != null) {
-            logger.debug("FederationServlet.serviceIDPInitiatedSLO processing request");
+            logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP request");
             SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
             String samlResponse = request.getParameter(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
-                logger.debug("FederationServlet.serviceIDPInitiatedSLO processing response");
+                logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP response");
                 SPSingleLogout.processLogoutResponse(request, response, samlResponse, relayState);
+                if (relayState != null) {
+                    response.sendRedirect(relayState);
+                }
             }
         }
+
+        cleanSession(request);
     }
 
     private void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
@@ -445,5 +449,40 @@ class FederationServlet extends HttpServlet {
 
         SPSingleLogoutServiceSOAP spSingleLogoutServiceSOAP = new SPSingleLogoutServiceSOAP();
         spSingleLogoutServiceSOAP.doPost(request, response);
+    }
+
+    private String getLogoutRelayState(HttpServletRequest request) {
+
+        String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
+        if (relayState != null) {
+            // Check the SP cache for the actual relayState value as the relayState is
+            // often passed as an ID to the IDP as part of the SP initiated SLO. Based on
+            // code from spSingleLogoutPOST.jsp in OpenAM
+            CacheObject tmpRs = (CacheObject) SPCache.relayStateHash.remove(relayState);
+            if (tmpRs != null) {
+                relayState = (String) tmpRs.getObject();
+            }
+        }
+
+        if (relayState == null || (relayState.isEmpty() && logoutURI != null && !logoutURI.isEmpty())) {
+            relayState = logoutURI;
+        }
+
+        return relayState;
+    }
+
+    /** Clean the session at the end of the SLO process. */
+    private void cleanSession(final HttpServletRequest request) {
+        logger.debug("End of SLO - Processing to session cleanup");
+        final HttpSession session = request.getSession();
+        session.removeAttribute(subjectMapping);
+        session.removeAttribute(sessionIndexMapping);
+        session.removeAttribute(authnContext);
+
+        if (attributeMapping != null) {
+            for (final String key : attributeMapping.keySet()) {
+                session.removeAttribute(key);
+            }
+        }
     }
 }
