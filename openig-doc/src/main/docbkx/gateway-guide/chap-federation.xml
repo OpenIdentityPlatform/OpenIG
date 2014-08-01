@@ -339,7 +339,7 @@
  </section>
 
  <section xml:id="federation-config-json">
-  <title>Config.json Sample</title>
+  <title>Federation Configuration Details</title>
 
   <para>
    The following sample configuration is corresponds to a scenario
@@ -515,7 +515,7 @@
     <term>"singleLogoutEndpoint" (optional)</term>
     <listitem>
      <para>
-      Default: "fedletSLO" (same as the Fedlet)
+      Default: "fedletSLORedirect" (same as the Fedlet)
      </para>
 
      <para>
