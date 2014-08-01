@@ -185,8 +185,8 @@
 
     <para>
      By default, Route configurations are stored in
-     <filename>${warConfigDir}/routes/</filename>
-     (<filename>${windowsWarConfigDir}\routes\</filename> on Windows).
+     <filename>${warRoutesDir}</filename>
+     (<filename>${windowsWarRoutesDir}</filename> on Windows).
      Create that file system directory now.
     </para>
    </listitem>
@@ -315,7 +315,7 @@
     <para>
      This configuration passes all Exchanges to the Router.
      using the default settings, meaning that the Router
-     monitors <filename>${warConfigDir}/routes/</filename> for Routes.
+     monitors <filename>${warRoutesDir}</filename> for Routes.
      When ${projectName} receives a request,
      if more time has passed than the default scan interval of 10 seconds,
      then ${projectName} rescans the Routes directory for changes

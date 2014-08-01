@@ -220,13 +220,19 @@
 
     <projectName>OpenIG</projectName>
 
-    <warConfigDir>$HOME/.openig/config</warConfigDir>
-    <warGroovyDir>$HOME/.openig/scripts/groovy</warGroovyDir>
-    <warSamlDir>$HOME/.openig/SAML</warSamlDir>
+    <warBase>$HOME/.openig</warBase>
+    <warConfigDir>${warBase}/config</warConfigDir>
+    <warRoutesDir>${warConfigDir}/routes</warRoutesDir>
+    <warGroovyDir>${warBase}/scripts/groovy</warGroovyDir>
+    <warSamlDir>${warBase}/SAML</warSamlDir>
+    <warTmpDir>${warBase}/tmp</warTmpDir>
 
-    <windowsWarConfigDir>%appdata%\.openig\config</windowsWarConfigDir>
-    <windowsWarGroovyDir>%appdata%\.openig\scripts\groovy</windowsWarGroovyDir>
-    <windowsWarSamlDir>%appdata%\.openig\SAML</windowsWarSamlDir>
+    <windowsWarBase>%appdata%\.openig</windowsWarBase>
+    <windowsWarConfigDir>${windowsWarBase}\config</windowsWarConfigDir>
+    <windowsWarRoutesDir>${windowsWarConfigDir}\routes</windowsWarRoutesDir>
+    <windowsWarGroovyDir>${windowsWarBase}\scripts\groovy</windowsWarGroovyDir>
+    <windowsWarSamlDir>${windowsWarBase}\SAML</windowsWarSamlDir>
+    <windowsWarTmpDir>${windowsWarBase}\SAML</windowsWarTmpDir>
 
     <frDocPluginVersion>2.1.3</frDocPluginVersion>
     <gaId>UA-23412190-11</gaId>
