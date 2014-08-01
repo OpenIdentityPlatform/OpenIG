@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Portions Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='HttpClient'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'
+          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>HttpClient</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>HttpClient</refname>
+  <refpurpose>group settings and submit requests to remote servers</refpurpose>
+ </refnamediv>
+
+ <refsect1 xml:id="HttpClient-description">
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>HttpClient</secondary>
+  </indexterm>
+
+  <para>
+   Groups settings and submits requests to remote servers.
+  </para>
+
+  <para>
+   You configure <literal>HttpClient</literal> objects in order to
+   specify HTTP client settings for
+   <link
+    xlink:show="new"
+    xlink:href="reference#ClientHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    >ClientHandler</link> objects.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+  "name": "HttpClient",
+  "type": "HttpClient",
+  "config": {
+    "connections": number,
+    "disableReuseConnection": boolean,
+    "disableRetries": boolean,
+    "hostnameVerifier": string,
+    "soTimeout": duration string,
+    "connectionTimeout": duration string,
+    "keystore": {
+        "file": string,
+        "password": expression
+    },
+    "truststore": {
+        "file": string,
+        "password": expression
+    }
+  }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"connections"</code>: <emphasis>number, optional</emphasis></term>
+    <listitem>
+     <para>
+      The maximum number of connections to open, from 1-64 inclusive.
+     </para>
+
+     <para>
+      Default: 64
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"connectionTimeout"</code>: <emphasis>duration string, required</emphasis></term>
+    <listitem>
+     <para>
+      Amount of time to wait to establish a connection, expressed as a duration
+     </para>
+
+     <xinclude:include href="../shared/itemizedlist-duration.xml" />
+
+     <para>
+      Default: 10 seconds
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"disableRetries"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to disable automatic retries for failed requests.
+     </para>
+
+     <para>
+      Default: <literal>true</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"disableReuseConnection"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to disable connection reuse.
+     </para>
+
+     <para>
+      Default: <literal>true</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"hostnameVerifier"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      How to handle hostname verification for outgoing SSL connections.
+     </para>
+
+     <itemizedlist>
+      <para>
+       Set this to one of the following values.
+      </para>
+
+      <listitem>
+       <para>
+        <literal>ALLOW_ALL</literal>: turn off verification.
+       </para>
+      </listitem>
+
+      <listitem>
+       <para>
+        <literal>BROWSER_COMPATIBLE</literal>:
+        match the hostname either as the value of the the first CN,
+        or any of the subject-alt names.
+       </para>
+
+       <para>
+        A wildcard can occur in the CN, and in any of the subject-alt names.
+        Wildcards match all subdomains, so <literal>*.example.com</literal>
+        matches <literal>www.example.com</literal>
+        and <literal>some.host.example.com</literal>.
+       </para>
+      </listitem>
+
+      <listitem>
+       <para>
+        <literal>STRICT</literal>:
+        match the hostname either as the value of the the first CN,
+        or any of the subject-alt names.
+       </para>
+
+       <para>
+        A wildcard can occur in the CN, and in any of the subject-alt names.
+        Wildcards match one domain level,
+        so <literal>*.example.com</literal>
+        matches <literal>www.example.com</literal>
+        but not <literal>some.host.example.com</literal>.
+       </para>
+      </listitem>
+     </itemizedlist>
+
+     <para>
+      Default: <literal>ALLOW_ALL</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"keystore"</code>: <emphasis>object, optional</emphasis></term>
+    <listitem>
+
+     <para>
+      Configuration of the key store holding this client's keys and certificates.
+     </para>
+
+     <variablelist>
+      <para>
+       The "keystore" object has the following fields.
+      </para>
+
+      <varlistentry>
+       <term><code>"file"</code> <emphasis>string, required</emphasis></term>
+       <listitem>
+        <para>
+         Absolute path name of the key store file
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"password"</code> <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required</emphasis></term>
+       <listitem>
+        <para>
+         Password for the key store
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"alg"</code> <emphasis>string, optional</emphasis></term>
+       <listitem>
+        <para>
+         Certificate algorithm to use
+        </para>
+
+        <para>
+         Default: SunX509
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"type"</code> <emphasis>string, optional</emphasis></term>
+       <listitem>
+        <para>
+         Key store format
+        </para>
+
+        <para>
+         Default: JKS
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"soTimeout"</code>: <emphasis>duration string, required</emphasis></term>
+    <listitem>
+     <para>
+      Socket timeout, after which stalled connections are destroyed,
+      expressed as a duration
+     </para>
+
+     <xinclude:include href="../shared/itemizedlist-duration.xml" />
+
+     <para>
+      Default: 10 seconds
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"truststore"</code>: <emphasis>object, optional</emphasis></term>
+    <listitem>
+
+     <para>
+      Configuration of the trust store holding server certificates
+      that this client trusts.
+     </para>
+
+     <variablelist>
+      <para>
+       The "truststore" object has the following fields.
+      </para>
+
+      <varlistentry>
+       <term><code>"file"</code> <emphasis>string, required</emphasis></term>
+       <listitem>
+        <para>
+         Absolute path name of the trust store file
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"alg"</code> <emphasis>string, optional</emphasis></term>
+       <listitem>
+        <para>
+         Certificate algorithm to use
+        </para>
+
+        <para>
+         Default: SunX509
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"password"</code> <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        optional</emphasis></term>
+       <listitem>
+        <para>
+         Password for the trust store
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"type"</code> <emphasis>string, optional</emphasis></term>
+       <listitem>
+        <para>
+         Key store format
+        </para>
+
+        <para>
+         Default: JKS
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <programlisting language="javascript">
+{
+  "name": "HttpClient",
+  "type": "HttpClient",
+  "config": {
+    "connections": 64,
+    "disableReuseConnection": true,
+    "disableRetries": true,
+    "hostnameVerifier": "ALLOW_ALL",
+    "soTimeout": "10 seconds",
+    "connectionTimeout": "10 seconds",
+    "keystore": {
+        "file": "/path/to/keystore.jks",
+        "password": "changeit"
+    },
+    "truststore": {
+        "file": "/path/to/keystore.jks",
+        "password": "changeit"
+    }
+  }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/HttpClient.html"
+    >org.forgerock.openig.http.HttpClient</link>
+  </para>
+ </refsect1>
+</refentry>

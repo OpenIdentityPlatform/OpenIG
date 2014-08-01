@@ -67,7 +67,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  * The main OpenIG HTTP Servlet which is responsible for bootstrapping the configuration and delegating all request
- * processing to the configured HTTP servlet implementation (e.g. HandlerServlet).
+ * processing to the configured handler implementation (for example, a DispatchHandler).
  * <p>
  * <pre>
  *   {

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<itemizedlist
+ xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook
+                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
+
+ <para>
+  A
+  <link
+   xlink:show="new"
+   xlink:href="${javadocBase}/index.html?org/forgerock/openig/util/Duration.html"
+  >duration</link> is a lapse of time expressed in English,
+  such as "23 hours 59 minutes and 59 seconds".
+ </para>
+
+ <para>
+  Durations are not case sensitive.
+ </para>
+
+ <para>
+  The following units can be used in durations.
+ </para>
+
+ <listitem>
+  <para>
+   "indefinite", "infinity", "undefined", "unlimited": unlimited duration
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "days", "day", "d": days
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "hours", "hour", "h": hours
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "minutes", "minute", "min", "m": minutes
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "seconds", "second", "sec", "s": seconds
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "milliseconds", "millisecond", "millisec", "millis", "milli", "ms": milliseconds
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "microseconds", "microsecond", "microsec", "micros", "micro", "us": microseconds
+  </para>
+ </listitem>
+
+ <listitem>
+  <para>
+   "nanoseconds", "nanosecond", "nanosec", "nanos", "nano", "ns": nanoseconds
+  </para>
+ </listitem>
+</itemizedlist>
