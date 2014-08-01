@@ -34,10 +34,12 @@
  <refmeta>
   <refentrytitle>ClientHandler</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>ClientHandler</refname>
   <refpurpose>submit exchange requests to remote servers</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
   <indexterm>
@@ -58,22 +60,54 @@
      "name": string,
      "type": "ClientHandler",
      "config": {
-         "connections": number
+         "httpClient": string
      }
 }</programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"connections"</code>: <emphasis>number, optional</emphasis></term>
+    <term><code>"httpClient"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>The maximum number of concurrent connections to open. Default:
-     64</para>
+     <para>
+      The name of the
+      <link
+       xlink:show="new"
+       xlink:href="reference#HttpClient"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >HttpClient</link> configuration object to use when making HTTP requests.
+     </para>
+
+     <para>
+      Default: <literal>"HttpClient"</literal>, which has the default settings
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following object configures a <literal>ClientHandler</literal>
+   named <literal>Client</literal> that uses the HTTP client configuration
+   specified in the configuration object with name <literal>MyHttpClient</literal>.
+  </para>
+
+  <programlisting language="javascript">
+{
+  "name": "Client",
+  "type": "ClientHandler",
+  "config": {
+    "httpClient": "MyHttpClient"
+  }
+}
+  </programlisting>
+ </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"

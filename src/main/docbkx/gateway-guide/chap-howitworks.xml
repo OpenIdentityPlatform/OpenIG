@@ -159,9 +159,24 @@
 
    <itemizedlist>
     <listitem>
-     <para><link xlink:href="reference#ClientHandler"
-     xlink:role="http://docbook.org/xlink/role/olink">ClientHandler</link>:
-     Sends the final request to the target application.</para>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#ClientHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >ClientHandler</link>: Sends the final request to the target application.
+     </para>
+
+     <para>
+      You can specify HTTP client settings for requests to remote servers
+      by adding an
+      <link
+       xlink:show="new"
+       xlink:href="reference#HttpClient"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >HttpClient</link>
+      in the configuration for the <literal>ClientHandler</literal>.
+     </para>
     </listitem>
 
     <listitem>
