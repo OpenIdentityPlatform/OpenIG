@@ -750,7 +750,7 @@ etc/jetty-ssl.xml
 
     <para>
      On Windows,
-     copy the template to <filename>${windowsWarConfigDir}/config.json</filename>.
+     copy the template to <filename>${windowsWarConfigDir}\config.json</filename>.
      To locate the <filename>%appdata%</filename> folder
      for your version of Windows,
      open Windows Explorer,
