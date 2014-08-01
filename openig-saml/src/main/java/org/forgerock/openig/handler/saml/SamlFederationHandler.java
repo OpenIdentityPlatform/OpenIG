@@ -93,7 +93,8 @@ public class SamlFederationHandler extends GenericHandler {
                     .defaultTo("fedletapplication").asString();
             final String sPinitiatedSSOEndpoint = config.get("SPinitiatedSSOEndpoint").defaultTo("SPInitiatedSSO")
                     .asString();
-            final String singleLogoutEndpoint = config.get("singleLogoutEndpoint").defaultTo("fedletSlo").asString();
+            final String singleLogoutEndpoint = config.get("singleLogoutEndpoint").defaultTo("fedletSloRedirect")
+                    .asString();
             final String singleLogoutEndpointSoap = config.get("singleLogoutEndpointSoap").defaultTo("fedletSloSoap")
                     .asString();
             final String sPinitiatedSLOEndpoint = config.get("SPinitiatedSLOEndpoint").defaultTo("SPInitiatedSLO")
