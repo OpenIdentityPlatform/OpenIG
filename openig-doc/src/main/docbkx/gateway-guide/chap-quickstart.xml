@@ -63,60 +63,18 @@
  </section>
 
  <section xml:id="quickstart-install">
-  <title>Installation Steps</title>
+  <title>Install ${projectName}</title>
+
+  <para>
+   You install ${projectName} in the root context of a web application container.
+   In this chapter, you use Jetty server as the web application container.
+  </para>
 
   <procedure>
-   <step>
-    <xinclude:include href="${sampleServerDownloadDoc}">
-     <xinclude:fallback>
-      <para>
-       Failed to include sample server download link.
-      </para>
-     </xinclude:fallback>
-    </xinclude:include>
 
-    <screen>
-$ <userinput>java -jar ${sampleServerJar}</userinput>
-<computeroutput>Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Starting HTTP server on port 8081
-Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.NetworkListener start
-INFO: Started listener bound to [0.0.0.0:8081]
-Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.HttpServer start
-INFO: [HttpServer] Started.
-Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Press Ctrl+C to stop the server.
-</computeroutput>
-    </screen>
-
-    <para>
-     Now access the minimal HTTP server through a browser at
-     <link xlink:show="new" xlink:href="http://localhost:8081" />.
-    </para>
-
-    <para>
-     Login with username <literal>demo</literal>,
-     password <literal>changeit</literal>.
-     You should see a page that includes the username, <literal>demo</literal>,
-     and some information about your browser request.
-    </para>
-
-    <para>
-     By default, this server listens on port 8081.
-     If that port is not free, specify another port.
-    </para>
-
-    <screen>
-$ <userinput>java -jar ${sampleServerJar} 8888</userinput>
-<computeroutput>Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Starting HTTP server on port 8888
-Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.NetworkListener start
-INFO: Started listener bound to [0.0.0.0:8888]
-Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.HttpServer start
-INFO: [HttpServer] Started.
-Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Press Ctrl+C to stop the server.</computeroutput>
-    </screen>
-   </step>
+   <para>
+    To perform initial installation, follow these steps.
+   </para>
 
    <step>
     <para>
@@ -157,10 +115,140 @@ $ <userinput>cp ${openigWar} /path/to/jetty/webapps/root.war</userinput>
     </screen>
 
     <para>
-     When the <filename>root.xml</filename> file configuration as described,
      Jetty automatically deploys ${projectName} in the root context on startup.
     </para>
    </step>
+
+   <step>
+    <para>Start Jetty in the background:</para>
+
+    <screen>
+$ <userinput>/path/to/jetty/bin/jetty.sh start</userinput>
+    </screen>
+
+    <para>Or start Jetty in the foreground:</para>
+
+    <screen>
+$ <userinput>cd /path/to/jetty/</userinput>
+$ <userinput>java -jar start.jar</userinput>
+    </screen>
+   </step>
+
+   <step>
+    <para>
+     Verify that you can see the ${projectName} welcome page at
+     <link xlink:show="new" xlink:href="http://localhost:8080" />.
+    </para>
+
+    <para>
+     When you start ${projectName} without a configuration,
+     requests to ${projectName} default to a welcome page
+     with a link to the documentation.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Stop Jetty in the background:
+    </para>
+
+    <screen>
+$ <userinput>/path/to/jetty/bin/jetty.sh stop</userinput>
+    </screen>
+
+    <para>
+     Or stop Jetty in the foreground
+     by entering Ctrl+C in the terminal where Jetty is running.
+    </para>
+   </step>
+  </procedure>
+ </section>
+
+ <section xml:id="quickstart-sample-app">
+  <title>Install an Application to Protect</title>
+
+  <para>
+   Now that ${projectName} is installed,
+   set up a sample application to protect.
+  </para>
+
+  <procedure>
+
+   <para>
+    Follow these steps.
+   </para>
+
+   <step>
+    <xinclude:include href="${sampleServerDownloadDoc}">
+     <xinclude:fallback>
+      <para>
+       Failed to include sample server download link.
+      </para>
+     </xinclude:fallback>
+    </xinclude:include>
+
+    <screen>
+$ <userinput>java -jar ${sampleServerJar}</userinput>
+<computeroutput>Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Starting HTTP server on port 8081
+Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8081]
+Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.HttpServer start
+INFO: [HttpServer] Started.
+Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Press Ctrl+C to stop the server.
+</computeroutput>
+    </screen>
+
+    <para>
+     By default, this server listens on port 8081.
+     If that port is not free, specify another port.
+    </para>
+
+    <screen>
+$ <userinput>java -jar ${sampleServerJar} 8888</userinput>
+<computeroutput>Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Starting HTTP server on port 8888
+Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8888]
+Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.HttpServer start
+INFO: [HttpServer] Started.
+Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
+INFO: Press Ctrl+C to stop the server.</computeroutput>
+    </screen>
+   </step>
+
+   <step>
+    <para>
+     Now access the minimal HTTP server through a browser at
+     <link xlink:show="new" xlink:href="http://localhost:8081" />.
+    </para>
+
+    <para>
+     Login with username <literal>demo</literal>,
+     password <literal>changeit</literal>.
+     You should see a page that includes the username, <literal>demo</literal>,
+     and some information about your browser request.
+    </para>
+   </step>
+  </procedure>
+ </section>
+
+ <section xml:id="quickstart-config">
+  <title>Configure ${projectName}</title>
+
+  <para>
+   Now that you have installed both ${projectName}
+   and also a sample application to protect,
+   and configure ${projectName}.
+  </para>
+
+  <procedure>
+
+   <para>
+    Follow these steps to configure ${projectName}
+    to proxy traffic to the sample application.
+   </para>
 
    <step>
     <para>
@@ -223,7 +311,7 @@ $ <userinput>java -jar start.jar</userinput>
  </section>
 
  <section xml:id="quickstart-network-config">
-  <title>Network Configuration Steps</title>
+  <title>Configure the Network</title>
 
   <para>
    So far you have deployed ${projectName} in the root context of Jetty on port 8080.

@@ -199,6 +199,9 @@
     <!-- 2.9.1 includes security fix for Security vulnerability CVE-2013-1571 -->
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
 
+    <!-- For a release build, update this to http://docs.forgerock.org/en/openig/${project.version}/ -->
+    <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
+
     <!-- Start documentation properties -->
     <filteredDocSources>${project.build.directory}/doc-filtered</filteredDocSources>
 
