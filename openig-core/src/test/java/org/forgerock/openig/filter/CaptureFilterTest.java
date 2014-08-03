@@ -30,7 +30,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.NullOutputStream;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -202,7 +201,7 @@ public class CaptureFilterTest {
     private Exchange buildRequestOnlyExchange(final String entity, final String mimeType) {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(new ByteArrayBranchingStream(entity.getBytes()));
+        exchange.request.setEntity(entity);
         exchange.request.getHeaders().putSingle("Content-type", mimeType);
         exchange.response = new Response();
         return exchange;

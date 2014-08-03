@@ -29,7 +29,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -56,7 +55,7 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(new ByteArrayBranchingStream("Hello OpenIG".getBytes()));
+        exchange.request.setEntity("Hello OpenIG");
 
         filter.filter(exchange, terminalHandler);
 
@@ -76,7 +75,7 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(new ByteArrayBranchingStream("Hello OpenIG".getBytes()));
+        exchange.request.setEntity("Hello OpenIG");
 
         filter.filter(exchange, terminalHandler);
 
@@ -97,13 +96,13 @@ public class EntityExtractFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
-        exchange.response.setEntity(null);
+        exchange.response.setEntity((String) null);
 
         filter.filter(exchange, terminalHandler);
 
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
-        assertThat(results).isEmpty();
+        assertThat(results).containsOnly(entry("hello", null));
         verify(terminalHandler).handle(exchange);
     }
 }

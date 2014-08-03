@@ -21,6 +21,7 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValueUtil.asExpression;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -35,7 +36,6 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.util.encode.Base64;
@@ -120,31 +120,30 @@ public class HttpBasicAuthFilter extends GenericFilter {
             exchange.request.getHeaders().remove(header);
         }
 
-        BranchingInputStream trunk = exchange.request.getEntity();
         String userpass = null;
 
         // loop to retry for initially retrieved (or refreshed) credentials
         for (int n = 0; n < 2; n++) {
             // put a branch of the trunk in the entity to allow retries
-            if (trunk != null) {
-                exchange.request.setEntity(trunk.branch());
+            exchange.request.getEntity().push();
+            try {
+                // because credentials are sent in every request, this class caches them in the session
+                if (cacheHeader) {
+                    userpass = (String) exchange.session.get(attributeName(exchange.request));
+                }
+                if (userpass != null) {
+                    exchange.request.getHeaders().add("Authorization", "Basic " + userpass);
+                }
+                next.handle(exchange);
+            } finally {
+                exchange.request.getEntity().pop();
             }
-            // because credentials are sent in every request, this class caches them in the session
-            if (cacheHeader) {
-                userpass = (String) exchange.session.get(attributeName(exchange.request));
-            }
-            if (userpass != null) {
-                exchange.request.getHeaders().add("Authorization", "Basic " + userpass);
-            }
-            next.handle(exchange);
             // successful exchange from this filter's standpoint
             if (exchange.response.getStatus() != 401) {
-
                 // Remove headers from outgoing message
                 for (String header : SUPPRESS_RESPONSE_HEADERS) {
                     exchange.response.getHeaders().remove(header);
                 }
-
                 timer.stop();
                 return;
             }
@@ -168,10 +167,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
             }
         }
         // close the incoming response because it's about to be dereferenced
-        if (exchange.response.getEntity() != null) {
-            // important!
-            exchange.response.getEntity().close();
-        }
+        closeSilently(exchange.response);
+
         // credentials were missing or invalid; let failure handler deal with it
         exchange.response = new Response();
         failureHandler.handle(exchange);

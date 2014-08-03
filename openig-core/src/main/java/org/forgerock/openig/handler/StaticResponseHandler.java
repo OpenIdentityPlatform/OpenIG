@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.handler;
 
+import static org.forgerock.util.Utils.closeSilently;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -126,12 +128,12 @@ public class StaticResponseHandler extends GenericHandler {
                 }
             }
         }
-        if (this.entity != null) {
+        if (entity != null) {
             // use content-type charset (or default)
-            final String content = entity.eval(exchange, String.class);
-            HttpUtil.toEntity(response, content, null);
+            response.setEntity(entity.eval(exchange, String.class));
         }
         // finally replace response in the exchange
+        closeSilently(exchange.response);
         exchange.response = response;
         timer.stop();
     }

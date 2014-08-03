@@ -37,7 +37,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     private Trunk trunk;
 
     /** Points to this branch's parent. */
-    private BranchingStreamWrapper parent;
+    private final BranchingStreamWrapper parent;
 
     /** This branch's position relative to the trunk buffer. */
     private int position;
@@ -56,18 +56,15 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         if (in instanceof BranchingStreamWrapper) {
             // branch off of existing trunk
             BranchingStreamWrapper bsw = (BranchingStreamWrapper) in;
-            this.parent = bsw;
-            this.trunk = bsw.trunk;
-            this.position = bsw.position;
-            this.trunk.branches.add(this);
+            parent = bsw;
+            trunk = bsw.trunk;
+            position = bsw.position;
         } else {
             // wrapping a non-wrapping stream; sprout a new trunk
             parent = null;
-            trunk = new Trunk();
-            trunk.branches.add(this);
-            trunk.in = in;
-            trunk.bufferFactory = bufferFactory;
+            trunk = new Trunk(in, bufferFactory);
         }
+        trunk.branches.add(this);
     }
 
     @Override
@@ -81,7 +78,8 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         return trunk == null;
     }
 
-    BranchingStreamWrapper getParent() {
+    @Override
+    public BranchingStreamWrapper parent() {
         return parent;
     }
 
@@ -290,14 +288,20 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     }
 
     /** Object shared by all branches. */
-    private class Trunk {
+    private final class Trunk {
         /** Keeps track of all branches on this trunk. */
-        private List<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>();
+        private final List<BranchingStreamWrapper> branches =
+                new ArrayList<BranchingStreamWrapper>();
         /** The input stream being wrapped by the branches. */
-        private InputStream in;
+        private final InputStream in;
         /** An object that creates new temporary buffers. */
-        private Factory<Buffer> bufferFactory;
+        private final Factory<Buffer> bufferFactory;
         /** A buffer to track diverging streams. Is {@code null} if there is no divergence. */
         private Buffer buffer;
+
+        private Trunk(InputStream in, Factory<Buffer> factory) {
+            this.in = in;
+            this.bufferFactory = factory;
+        }
     }
 }

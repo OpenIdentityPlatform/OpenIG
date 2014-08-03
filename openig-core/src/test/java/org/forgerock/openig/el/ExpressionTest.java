@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.el;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.object;
@@ -29,8 +29,6 @@ import java.util.Map;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.BranchingInputStream;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.Test;
 
@@ -216,15 +214,15 @@ public class ExpressionTest {
         assertThat(new Expression("${env['PATH']}").eval(null)).isNotNull();
     }
 
-    @Test(enabled = false)
+    @Test
     public void getNullExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
-        assertThat(o).isNull();
+        assertThat(o).isEqualTo("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getNullExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -232,48 +230,46 @@ public class ExpressionTest {
         assertThat(o).isNull();
     }
 
-    @Test(enabled = false)
+    @Test
     public void getExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(stream("old mcdonald had a farm"));
+        exchange.request.setEntity("old mcdonald had a farm");
         Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
         assertThat(o).isEqualTo("old mcdonald had a farm");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(stream("{ \"string\" : \"string\", \"int\" : 12345 }"));
+        exchange.request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
         Object map = new Expression("${exchange.request.entity.json}").eval(exchange);
         assertThat(map).isInstanceOf(Map.class);
-        assertThat((Map<?, ?>) map).containsExactly(entry("string", "string"), entry("int", 12345));
+        assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345L));
         Object i = new Expression("${exchange.request.entity.json.int}").eval(exchange);
-        assertThat(i).isEqualTo(Integer.valueOf(12345));
+        assertThat(i).isEqualTo(Long.valueOf(12345));
     }
 
-    @Test(enabled = false)
+    @Test
     public void setExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         new Expression("${exchange.request.entity.json}").set(exchange, object(field("k1", "v1"),
                 field("k2", 123)));
         assertThat(exchange.request.getEntity()).isNotNull();
-        assertThat(exchange.request.getEntity()).hasContentEqualTo(stream("{\"k1\":\"v1\",\"k2\":123}"));
+        assertThat(exchange.request.getEntity().getString())
+                .isEqualTo("{\"k1\":\"v1\",\"k2\":123}");
     }
 
-    @Test(enabled = false)
+    @Test
     public void setExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        new Expression("${exchange.request.entity.json}").set(exchange, "mary mary quite contrary");
+        new Expression("${exchange.request.entity.string}").set(exchange,
+                "mary mary quite contrary");
         assertThat(exchange.request.getEntity()).isNotNull();
-        assertThat(exchange.request.getEntity()).hasContentEqualTo(stream("mary mary quite contrary"));
-    }
-
-    private BranchingInputStream stream(String content) throws Exception {
-        return new ByteArrayBranchingStream(content.getBytes("UTF-8"));
+        assertThat(exchange.request.getEntity().getString()).isEqualTo("mary mary quite contrary");
     }
 
     public static class BeanFieldMap extends ExtensibleFieldMap {

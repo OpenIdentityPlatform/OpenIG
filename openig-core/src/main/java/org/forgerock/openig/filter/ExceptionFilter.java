@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.util.Utils.closeSilently;
+
 import java.io.IOException;
 
 import org.forgerock.openig.handler.Handler;
@@ -58,14 +60,7 @@ public class ExceptionFilter extends GenericFilter {
         } catch (Throwable t) {
             // user-impacting
             logger.warning(t);
-            if (exchange.response != null && exchange.response.getEntity() != null) {
-                try {
-                    // important!
-                    exchange.response.getEntity().close();
-                } catch (IOException ioe) {
-                    logger.debug(ioe);
-                }
-            }
+            closeSilently(exchange.response);
             handler.handle(exchange);
         }
         timer.stop();

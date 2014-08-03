@@ -17,104 +17,14 @@
 
 package org.forgerock.openig.http;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-
-import org.forgerock.openig.header.ContentEncodingHeader;
-import org.forgerock.openig.header.ContentTypeHeader;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
-import org.forgerock.openig.io.NullInputStream;
 
 /**
  * Utility class for processing HTTP messages.
  */
 public final class HttpUtil {
 
-    /** Default character set to use if not specified, per RFC 2616. */
-    private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
-
     /** Static methods only. */
     private HttpUtil() {
-    }
-
-    private static Charset cs(Message<?> message, Charset charset) {
-        if (charset == null) {
-            // use Content-Type charset if not explicitly specified
-            charset = new ContentTypeHeader(message).getCharset();
-        }
-        if (charset == null) {
-            // use default per RFC 2616 if not resolved
-            charset = ISO_8859_1;
-        }
-        return charset;
-    }
-
-    /**
-     * Sets the entity in the message to contain the content of the string with
-     * the specified character set. Also sets the {@code Content-Length} header,
-     * overwriting any existing header.
-     * <p>
-     * If {@code charset} is not {@code null} then it will be used to encode the
-     * entity, else the character set specified in the message's
-     * {@code Content-Type} header (if present) will be used, otherwise the
-     * default {@code ISO-8859-1} character set.
-     * <p>
-     * Note: This method replaces the entity without closing any previous one.
-     * The caller is responsible for first closing any existing entity. This
-     * method also does not attempt to encode the entity based-on any codings
-     * specified in the {@code Content-Encoding} header.
-     *
-     * @param message
-     *            the message whose entity is to be set with the string value.
-     * @param string
-     *            the string whose value is to be set as the message entity.
-     * @param charset
-     *            the character set to encode the string in, or ISO-8859-1 if
-     *            {@code null}.
-     */
-    public static void toEntity(Message<?> message, String string, Charset charset) {
-        byte[] data = string.getBytes(cs(message, charset));
-        message.setEntity(new ByteArrayBranchingStream(data));
-        message.getHeaders().putSingle("Content-Length", Integer.toString(data.length));
-    }
-
-    /**
-     * Returns a new reader that decodes the entity of a message.
-     * <p>
-     * The entity will be decoded and/or decompressed based-on any codings that are specified
-     * in the {@code Content-Encoding} header.
-     * <p>
-     * If {@code charset} is not {@code null} then it will be used to decode the entity,
-     * else the character set specified in the message's {@code Content-Type} header (if
-     * present) will be used, otherwise the default {@code ISO-8859-1} character set.
-     * <p>
-     * Note: The caller is responsible for calling the reader's {@code close} method when it
-     * is finished reading the entity.
-     *
-     * @param message the message whose entity is to be decoded.
-     * @param branch if the entity should be branched before reading.
-     * @param charset the character set to decode with, or message-specified or default if {@code null}.
-     * @return a buffered reader for reading the decoded entity.
-     * @throws IOException if an I/O exception occurs.
-     * @throws UnsupportedEncodingException if content encoding or charset are not supported.
-     */
-    public static BufferedReader entityReader(Message<?> message, boolean branch, Charset charset)
-            throws IOException, UnsupportedEncodingException {
-        InputStream in;
-        if (message == null || message.getEntity() == null) {
-            in = new NullInputStream();
-        } else if (branch) {
-            in = message.getEntity().branch();
-        } else {
-            in = message.getEntity();
-        }
-        // wrap entity with decoders for codings in Content-Encoding header
-        in = new ContentEncodingHeader(message).decode(in);
-        return new BufferedReader(new InputStreamReader(in, cs(message, charset)));
     }
 
     /**

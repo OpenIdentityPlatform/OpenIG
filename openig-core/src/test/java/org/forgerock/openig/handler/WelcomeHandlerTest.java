@@ -40,6 +40,7 @@ public class WelcomeHandlerTest {
         assertThat(exchange.response.getReason()).isEqualTo("OK");
         assertThat(exchange.response.getHeaders()).containsEntry("Content-Type",
                 Arrays.asList("text/html"));
-        assertThat(exchange.response.getEntity().available()).isGreaterThan(0);
+        assertThat(exchange.response.getEntity().getRawInputStream().available()).isGreaterThan(0);
+        exchange.response.close();
     }
 }

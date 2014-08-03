@@ -59,9 +59,7 @@ try {
     exchange.response = new Response()
     exchange.response.status = 403
     exchange.response.reason = e.message
-    exchange.response.entity = new ByteArrayBranchingStream(
-            ("<html><p>Authentication failed: " + e.message + "</p></html>")
-                    .getBytes())
+    exchange.response.entity = "<html><p>Authentication failed: " + e.message + "</p></html>"
 
 } catch (Exception e) {
 
@@ -71,9 +69,7 @@ try {
     exchange.response = new Response()
     exchange.response.status = 500
     exchange.response.reason = e.message
-    exchange.response.entity = new ByteArrayBranchingStream(
-            ("<html><p>Server error: " + e.message + "</p></html>")
-                    .getBytes())
+    exchange.response.entity = "<html><p>Server error: " + e.message + "</p></html>"
 
 } finally {
     client.close()

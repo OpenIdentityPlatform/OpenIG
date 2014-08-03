@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.handler;
 
+import static org.forgerock.util.Utils.closeSilently;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,11 +82,8 @@ public class SequenceHandler extends GenericHandler {
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         for (Binding binding : bindings) {
-            if (exchange.response != null && exchange.response.getEntity() != null) {
-                // important!
-                exchange.response.getEntity().close();
-            }
             // avoid downstream filters/handlers inadvertently using response
+            closeSilently(exchange.response);
             exchange.response = null;
             binding.handler.handle(exchange);
             if (binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(exchange))) {

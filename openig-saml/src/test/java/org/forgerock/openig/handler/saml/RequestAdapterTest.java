@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -78,11 +77,8 @@ public class RequestAdapterTest {
         exchange.request = new Request();
         exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
         exchange.request.setUri(new URI(BASE_URI));
-        exchange.request.setEntity(new ByteArrayBranchingStream(HELLO_WORLD_PARAM
-                                                                       .concat("&")
-                                                                       .concat(FIRST_MULTI_VALUED_PARAM)
-                                                                       .concat("&")
-                                                                       .concat(SECOND_MULTI_VALUED_PARAM).getBytes()));
+        exchange.request.setEntity(HELLO_WORLD_PARAM + "&" + FIRST_MULTI_VALUED_PARAM + "&"
+                + SECOND_MULTI_VALUED_PARAM);
         return exchange;
     }
 
@@ -90,11 +86,8 @@ public class RequestAdapterTest {
         final Exchange exchange = buildExchange("params-in-payload-and-query");
         exchange.request = new Request();
         exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.request.setUri(new URI(BASE_URI.concat("?")
-                                               .concat(HELLO_WORLD_PARAM)));
-        exchange.request.setEntity(new ByteArrayBranchingStream(FIRST_MULTI_VALUED_PARAM.concat("&")
-                                                                       .concat(SECOND_MULTI_VALUED_PARAM)
-                                                                       .getBytes()));
+        exchange.request.setUri(new URI(BASE_URI.concat("?").concat(HELLO_WORLD_PARAM)));
+        exchange.request.setEntity(FIRST_MULTI_VALUED_PARAM + "&" + SECOND_MULTI_VALUED_PARAM);
         return exchange;
     }
 

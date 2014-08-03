@@ -34,7 +34,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
@@ -124,9 +123,9 @@ public class EntityExtractFilter extends GenericFilter {
 
     private void process(Exchange exchange, Message<?> message) {
         HashMap<String, String> map = new HashMap<String, String>();
-        if (message != null && message.getEntity() != null) {
+        if (message != null) {
             try {
-                Reader reader = HttpUtil.entityReader(message, true, charset);
+                Reader reader = message.getEntity().newDecodedContentReader(charset);
                 try {
                     // get 'em all now
                     for (Map.Entry<String, String> match : extractor.extract(reader)) {

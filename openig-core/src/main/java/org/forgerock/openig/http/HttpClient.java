@@ -175,7 +175,8 @@ public class HttpClient {
         public EntityRequest(final Request request) {
             this.method = request.getMethod();
             final InputStreamEntity entity =
-                    new InputStreamEntity(request.getEntity(), new ContentLengthHeader(request).getLength());
+                    new InputStreamEntity(request.getEntity().getRawInputStream(),
+                            new ContentLengthHeader(request).getLength());
             entity.setContentType(new ContentTypeHeader(request).toString());
             entity.setContentEncoding(new ContentEncodingHeader(request).toString());
             setEntity(entity);
@@ -384,9 +385,7 @@ public class HttpClient {
      */
     public void execute(final Exchange exchange) throws IOException {
         // recover any previous response connection, if present
-        if (exchange.response != null && exchange.response.getEntity() != null) {
-            exchange.response.getEntity().close();
-        }
+        closeSilently(exchange.response);
         exchange.response = execute(exchange.request);
     }
 
@@ -420,7 +419,8 @@ public class HttpClient {
         // response entity
         final HttpEntity clientResponseEntity = clientResponse.getEntity();
         if (clientResponseEntity != null) {
-            response.setEntity(new BranchingStreamWrapper(clientResponseEntity.getContent(), storage));
+            response.setEntity(new BranchingStreamWrapper(clientResponseEntity.getContent(),
+                    storage));
         }
         // response status line
         final StatusLine statusLine = clientResponse.getStatusLine();

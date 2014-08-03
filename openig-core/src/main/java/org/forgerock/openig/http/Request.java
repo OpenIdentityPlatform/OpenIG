@@ -18,12 +18,8 @@
 
 package org.forgerock.openig.http;
 
-import static org.forgerock.util.Utils.closeSilently;
-
 import java.io.IOException;
 import java.net.URI;
-
-import org.forgerock.openig.io.BranchingInputStream;
 
 /**
  * A request message.
@@ -64,24 +60,12 @@ public final class Request extends Message<Request> {
      *         {@code application/x-www-form-urlencoded} entity as a form.
      */
     public Form getForm() {
-        final BranchingInputStream entity = getEntity();
-        if (entity != null) {
-            try {
-                setEntity(entity.branch());
-            } catch (final IOException ioe) {
-                throw new IllegalStateException(ioe);
-            }
-        }
         final Form form = new Form();
+        form.fromRequestQuery(this);
         try {
-            form.fromRequestQuery(this);
             form.fromRequestEntity(this);
-        } catch (final IOException ioe) {
+        } catch (IOException e) {
             // Ignore: return empty form.
-        } finally {
-            // Close the branch and replace with the original.
-            closeSilently(getEntity());
-            setEntity(entity);
         }
         return form;
     }

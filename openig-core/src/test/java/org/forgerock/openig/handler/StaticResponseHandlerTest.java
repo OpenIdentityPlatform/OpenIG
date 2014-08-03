@@ -18,7 +18,6 @@
 package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.openig.util.StringUtil.asString;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
@@ -52,7 +51,7 @@ public class StaticResponseHandlerTest {
         handler.handle(exchange);
         assertThat(exchange.response.getStatus()).isEqualTo(200);
         assertThat(exchange.response.getReason()).isEqualTo("OK");
-        assertThat(asString(exchange.response.getEntity())).isEqualTo(
+        assertThat(exchange.response.getEntity().getString()).isEqualTo(
                 "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");
     }
 }

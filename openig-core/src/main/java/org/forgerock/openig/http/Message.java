@@ -18,6 +18,8 @@
 
 package org.forgerock.openig.http;
 
+import java.io.Closeable;
+
 import org.forgerock.openig.io.BranchingInputStream;
 
 /**
@@ -26,10 +28,10 @@ import org.forgerock.openig.io.BranchingInputStream;
  * @param <T>
  *            The sub-type of this message.
  */
-public abstract class Message<T extends Message<T>> {
+public abstract class Message<T extends Message<T>> implements Closeable {
 
     /** Message entity body. */
-    private BranchingInputStream entity;
+    private final Entity entity = new Entity(this);
 
     /** Message header fields. */
     private final Headers headers = new Headers();
@@ -42,11 +44,11 @@ public abstract class Message<T extends Message<T>> {
     }
 
     /**
-     * Returns the entity as an input stream.
+     * Returns the entity.
      *
-     * @return The entity as an input stream.
+     * @return The entity.
      */
-    public final BranchingInputStream getEntity() {
+    public final Entity getEntity() {
         return entity;
     }
 
@@ -69,14 +71,37 @@ public abstract class Message<T extends Message<T>> {
     }
 
     /**
-     * Sets the entity as an input stream.
+     * Sets the content of the entity to the provided value. Calling this method
+     * will close any existing streams associated with the entity. May also set
+     * the {@code Content-Length} header, overwriting any existing header.
+     * <p>
+     * This method is intended mostly as a convenience method within scripts.
+     * The parameter will be handled depending on its type as follows:
+     * <ul>
+     * <li>{@code BranchingInputStream} - equivalent to calling
+     * {@link Entity#setRawInputStream}
+     * <li>{@code byte[]} - equivalent to calling {@link Entity#setBytes}
+     * <li>{@code String} - equivalent to calling {@link Entity#setString}
+     * <li>{@code Object} - equivalent to calling {@link Entity#setJson}.
+     * </ul>
+     * <p>
+     * Note: This method does not attempt to encode the entity based-on any
+     * codings specified in the {@code Content-Encoding} header.
      *
-     * @param entity
-     *            The entity as an input stream.
+     * @param o
+     *            The object whose value should be stored in the entity.
      * @return This message.
      */
-    public final T setEntity(final BranchingInputStream entity) {
-        this.entity = entity;
+    public final T setEntity(Object o) {
+        if (o instanceof BranchingInputStream) {
+            entity.setRawInputStream((BranchingInputStream) o);
+        } else if (o instanceof byte[]) {
+            entity.setBytes((byte[]) o);
+        } else if (o instanceof String) {
+            entity.setString((String) o);
+        } else {
+            entity.setJson(o);
+        }
         return thisMessage();
     }
 
@@ -90,6 +115,16 @@ public abstract class Message<T extends Message<T>> {
     public final T setVersion(final String version) {
         this.version = version;
         return thisMessage();
+    }
+
+    /**
+     * Closes all resources associated with the entity. Any open streams will be
+     * closed, and the underlying content reset back to a zero length.
+     *
+     * @see Entity#close()
+     */
+    public void close() {
+        entity.close();
     }
 
     abstract T thisMessage();
