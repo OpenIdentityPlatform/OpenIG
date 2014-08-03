@@ -135,4 +135,36 @@ public class StaticRequestFilterTest {
                 .contains("multi=one1")
                 .contains("multi=two2");
     }
+
+    @Test
+    public void testRequestSaveAndRestore() throws Exception {
+        StaticRequestFilter filter = new StaticRequestFilter("POST");
+        filter.setUri(new Expression(URI));
+        filter.setRestore(true);
+
+        Exchange exchange = new Exchange();
+        Request original = new Request();
+        exchange.request = original;
+
+        filter.filter(exchange, terminalHandler);
+
+        // Verify that the original request is restored
+        assertThat(exchange.request).isSameAs(original);
+    }
+
+    @Test
+    public void testRequestDisabledSaveAndRestore() throws Exception {
+        StaticRequestFilter filter = new StaticRequestFilter("POST");
+        filter.setUri(new Expression(URI));
+        filter.setRestore(false);
+
+        Exchange exchange = new Exchange();
+        Request original = new Request();
+        exchange.request = original;
+
+        filter.filter(exchange, terminalHandler);
+
+        // Verify that the original request is not restored
+        assertThat(exchange.request).isNotSameAs(original);
+    }
 }
