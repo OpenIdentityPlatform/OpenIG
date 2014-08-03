@@ -407,11 +407,7 @@ public final class MutableUri implements Comparable<MutableUri> {
      * @return this (rebased) instance
      */
     public MutableUri rebase(URI base) {
-        try {
-            return rebase(new MutableUri(base.toASCIIString()));
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return rebase(new MutableUri(base));
     }
 
     @Override
