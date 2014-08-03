@@ -23,6 +23,7 @@ import java.net.URI;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class MutableUriTest {
 
     // Test for un-encoded values

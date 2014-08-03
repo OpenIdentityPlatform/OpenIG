@@ -59,8 +59,6 @@ import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.MutableUri;
-import org.forgerock.openig.util.URIUtil;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
