@@ -15,9 +15,9 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
-import static org.forgerock.openig.util.JsonValueUtil.asExpression;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.net.URI;
 import java.nio.charset.Charset;

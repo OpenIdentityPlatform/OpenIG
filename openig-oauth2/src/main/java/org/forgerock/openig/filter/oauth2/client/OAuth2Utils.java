@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
-import static org.forgerock.openig.util.URIUtil.withoutQueryAndFragment;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
+import static org.forgerock.openig.util.URIUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,7 +56,8 @@ final class OAuth2Utils {
                     uriString += "/" + additionalPath;
                 }
             }
-            return exchange.request.getUri().resolve(new URI(uriString));
+            // Make sure we don't change the request's URI but return a new URI
+            return exchange.request.getUri().asURI().resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
             throw new HandlerException(e);
         }
@@ -87,7 +88,7 @@ final class OAuth2Utils {
 
     static boolean matchesUri(final Exchange exchange, final URI uri) {
         final URI pathOnly = withoutQueryAndFragment(uri);
-        final URI requestPathOnly = withoutQueryAndFragment(exchange.request.getUri());
+        final URI requestPathOnly = withoutQueryAndFragment(exchange.request.getUri().asURI());
         return pathOnly.equals(requestPathOnly);
     }
 

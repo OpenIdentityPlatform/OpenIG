@@ -16,9 +16,8 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-import java.net.URI;
 import java.util.Arrays;
 
 import org.forgerock.openig.http.Exchange;
@@ -34,7 +33,7 @@ public class WelcomeHandlerTest {
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setMethod("GET");
-        exchange.request.setUri(new URI("http://example.com/"));
+        exchange.request.setUri("http://example.com/");
         handler.handle(exchange);
         assertThat(exchange.response.getStatus()).isEqualTo(200);
         assertThat(exchange.response.getReason()).isEqualTo("OK");

@@ -19,15 +19,7 @@ exchange.request.headers.add("Authorization", "Basic ${credentials}" as String)
  * or set up the gateway to trust the server certificate.
  *
  */
-// exchange.request.uri cannot be modified, so replace it.
-exchange.request.uri = new URI(
-        /* scheme */ "https",
-        exchange.request.uri.userInfo,
-        exchange.request.uri.host,
-        exchange.request.uri.port as Integer,
-        exchange.request.uri.path,
-        exchange.request.uri.query,
-        exchange.request.uri.fragment)
+exchange.request.uri.scheme = "https"
 
 // Call the next handler. This returns when the request has been handled.
 next.handle(exchange)

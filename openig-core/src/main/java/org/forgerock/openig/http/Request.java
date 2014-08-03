@@ -20,6 +20,9 @@ package org.forgerock.openig.http;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.forgerock.openig.util.MutableUri;
 
 /**
  * A request message.
@@ -33,7 +36,7 @@ public final class Request extends Message<Request> {
     private String method;
 
     /** The fully-qualified URI of the resource being accessed. */
-    private URI uri;
+    private MutableUri uri;
 
     /**
      * Creates a new request message.
@@ -84,7 +87,7 @@ public final class Request extends Message<Request> {
      *
      * @return The fully-qualified URI of the resource being accessed.
      */
-    public URI getUri() {
+    public MutableUri getUri() {
         return uri;
     }
 
@@ -107,9 +110,32 @@ public final class Request extends Message<Request> {
      *            The fully-qualified URI of the resource being accessed.
      * @return This request.
      */
-    public Request setUri(final URI uri) {
+    private Request setUri(final MutableUri uri) {
         this.uri = uri;
         return this;
+    }
+
+    /**
+     * Sets the fully-qualified string URI of the resource being accessed.
+     *
+     * @param uri
+     *            The fully-qualified string URI of the resource being accessed.
+     * @return This request.
+     * @throws URISyntaxException if the given URI string is not well-formed.
+     */
+    public Request setUri(final String uri) throws URISyntaxException {
+        return setUri(new MutableUri(uri));
+    }
+
+    /**
+     * Sets the fully-qualified URI of the resource being accessed.
+     *
+     * @param uri
+     *            The fully-qualified URI of the resource being accessed.
+     * @return This request.
+     */
+    public Request setUri(final URI uri) {
+        return setUri(new MutableUri(uri));
     }
 
     @Override
