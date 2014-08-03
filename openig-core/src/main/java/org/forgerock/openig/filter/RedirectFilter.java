@@ -16,10 +16,13 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.JsonValueUtil.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.header.LocationHeader;
@@ -42,13 +45,13 @@ public class RedirectFilter extends GenericFilter {
     public static final Integer REDIRECT_STATUS_302 = Integer.valueOf(302);
 
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
-    private URI baseURI;
+    private Expression baseURI;
 
     /**
-     * Returns the base URI of the OpenIG instance, used to rewrite Location headers.
-     * @param baseURI base URI of this OpenIG instance
+     * Sets the base URI used to rewrite Location headers.
+     * @param baseURI expression that, when evaluated, will represents the base URI of this OpenIG instance
      */
-    public void setBaseURI(final URI baseURI) {
+    public void setBaseURI(final Expression baseURI) {
         this.baseURI = baseURI;
     }
 
@@ -62,24 +65,24 @@ public class RedirectFilter extends GenericFilter {
 
         // Only process the response if it has a status that matches what we are looking for
         if (REDIRECT_STATUS_302.equals(exchange.response.getStatus())) {
-            processResponse(exchange.response);
+            processResponse(exchange);
         }
 
         timer.stop();
     }
 
     /**
-     * Rewrite Location header if it would have the user go direct to the application.
+     * Rewrite Location header if it would have the user go directly to the application.
      *
-     * @param message the response message containing the Location header
+     * @param exchange the exchnage containing the response message containing the Location header
      */
-    private void processResponse(Message<?> message) throws HandlerException {
-
+    private void processResponse(Exchange exchange) throws HandlerException {
+        Message<?> message = exchange.response;
         LocationHeader header = new LocationHeader(message);
         if (header.toString() != null) {
             try {
                 URI currentURI = new URI(header.toString());
-                URI rebasedURI = URIUtil.rebase(currentURI, baseURI);
+                URI rebasedURI = URIUtil.rebase(currentURI, evaluateBaseUri(exchange));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
                     message.getHeaders().remove(LocationHeader.NAME);
@@ -91,13 +94,21 @@ public class RedirectFilter extends GenericFilter {
         }
     }
 
+    private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, HandlerException {
+        String uri = baseURI.eval(exchange, String.class);
+        if (uri == null) {
+            throw logger.debug(new HandlerException("Evaluated baseURI cannot be null"));
+        }
+        return new URI(uri);
+    }
+
     /** Creates and initialises a RedirectFilter in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
 
             RedirectFilter filter = new RedirectFilter();
-            filter.baseURI = config.get("baseURI").required().asURI();
+            filter.baseURI = asExpression(config.get("baseURI").required());
 
             return filter;
         }
