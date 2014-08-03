@@ -114,7 +114,9 @@ public class FileAttributesFilter extends GenericFilter {
                                                                           .asEnum(Separators.class).getSeparator(),
                                                                   config.get("header").defaultTo(true).asBoolean());
 
-            sources.getFields().addAll(config.get("fields").asList(String.class));
+            if (config.isDefined("fields")) {
+                sources.getFields().addAll(config.get("fields").asList(String.class));
+            }
             return new FileAttributesFilter(sources,
                                             config.get("key").required().asString(),
                                             asExpression(config.get("value").required()),
