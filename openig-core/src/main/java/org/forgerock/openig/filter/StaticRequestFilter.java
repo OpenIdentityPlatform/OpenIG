@@ -198,7 +198,7 @@ public class StaticRequestFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
-            filter.setUri(asExpression(config.get("uri")));
+            filter.setUri(asExpression(config.get("uri").required()));
             filter.setVersion(config.get("version").asString());
             filter.setRestore(config.get("restore").defaultTo(DEFAULT_RESTORE).asBoolean());
 
