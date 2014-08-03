@@ -19,8 +19,6 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.util.MutableUri.uri;
 
-import java.net.URI;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
