@@ -46,6 +46,11 @@ import org.forgerock.openig.util.MultiValueMap;
  */
 public class StaticRequestFilter extends GenericFilter {
 
+    /**
+     * By default, do not restore the original {@link Request} back into {@code exchange.request}.
+     */
+    public static final boolean DEFAULT_RESTORE = false;
+
     /** The HTTP method to be performed on the resource. */
     private final String method;
 
@@ -54,6 +59,9 @@ public class StaticRequestFilter extends GenericFilter {
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}). */
     private String version;
+
+    /** Restore the original Request after execution (defaults to {@literal false}). */
+    private boolean restore = DEFAULT_RESTORE;
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression> headers =
@@ -91,6 +99,16 @@ public class StaticRequestFilter extends GenericFilter {
      */
     public void setVersion(final String version) {
         this.version = version;
+    }
+
+    /**
+     * Sets to {@literal false} if this filter should not restore the original Request after execution.
+     *
+     * @param restore
+     *         {@literal true} if restore is required, {@literal false} otherwise
+     */
+    public void setRestore(final boolean restore) {
+        this.restore = restore;
     }
 
     /**
@@ -166,8 +184,12 @@ public class StaticRequestFilter extends GenericFilter {
                 f.appendRequestQuery(request);
             }
         }
+        Request saved = exchange.request;
         exchange.request = request;
         next.handle(exchange);
+        if (restore) {
+            exchange.request = saved;
+        }
         timer.stop();
     }
 
@@ -178,6 +200,7 @@ public class StaticRequestFilter extends GenericFilter {
             StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
             filter.setUri(asExpression(config.get("uri")));
             filter.setVersion(config.get("version").asString());
+            filter.setRestore(config.get("restore").defaultTo(DEFAULT_RESTORE).asBoolean());
 
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
