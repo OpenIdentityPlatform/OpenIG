@@ -59,6 +59,7 @@ import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.URIUtil;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -224,13 +225,9 @@ public class GatewayServlet extends HttpServlet {
         exchange.request = new Request();
         exchange.request.setMethod(request.getMethod());
         try {
-            exchange.request.setUri(new URI(request.getScheme(),
-                                            null,
-                                            request.getServerName(),
-                                            request.getServerPort(),
-                                            request.getRequestURI(),
-                                            request.getQueryString(),
-                                            null));
+            exchange.request.setUri(URIUtil.create(request.getScheme(), null, request
+                    .getServerName(), request.getServerPort(), request.getRequestURI(), request
+                    .getQueryString(), null));
             if (baseURI != null) {
                 exchange.request.getUri().rebase(baseURI);
             }
