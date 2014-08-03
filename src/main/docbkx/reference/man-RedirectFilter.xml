@@ -60,19 +60,24 @@
  </refsect1>
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "name": string,
-     "type": "RedirectFilter",
-     "config": {
-         "baseURI": string
-     }
-}</programlisting>
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "RedirectFilter",
+    "config": {
+        "baseURI": expression
+    }
+}
+  </programlisting>
  </refsect1>
  <refsect1>
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"baseURI"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"baseURI"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
      <para>
       The base URI of the ${projectName} instance.
