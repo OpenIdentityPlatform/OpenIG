@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -102,6 +104,18 @@ public class RedirectFilterTest {
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
+    @Test
+    public void caseChangeHostWithEncodedLocation() throws HandlerException, IOException, URISyntaxException {
+        String expectedResult = "http://proxy.example.com:8080/path/a%20b/redirected?a=1&b=%3D2";
+
+        URI testRedirectionURI = new URI("http://app.example.com:8080/path/a%20b/redirected?a=1&b=%3D2");
+
+        RedirectFilter filter = new RedirectFilter();
+        filter.setBaseURI(new URI("http://proxy.example.com:8080/"));
+
+        callFilter(filter, testRedirectionURI, expectedResult);
+    }
+
     private void callFilter(RedirectFilter filter, URI testRedirectionURI, String expectedResult)
             throws IOException, HandlerException {
 
@@ -115,8 +129,8 @@ public class RedirectFilterTest {
         filter.filter(exchange, handler);
 
         LocationHeader header = new LocationHeader(exchange.response);
-        org.assertj.core.api.Assertions.assertThat(header.toString()).isNotNull();
-        org.assertj.core.api.Assertions.assertThat(expectedResult.equals(header.toString())).isTrue();
+        assertThat(header.toString()).isNotNull();
+        assertThat(expectedResult).isEqualTo(header.toString());
     }
 
     private class DummyHander extends GenericHandler {
