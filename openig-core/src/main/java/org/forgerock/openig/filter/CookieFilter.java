@@ -41,6 +41,7 @@ import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.MutableUri;
 import org.forgerock.openig.util.StringUtil;
 
 /**
@@ -155,8 +156,8 @@ public class CookieFilter extends GenericFilter {
      * @return the resolved URI value.
      */
 // TODO: Rewrite and put in URIutil.
-    private URI resolveHostURI(Request request) {
-        URI uri = request.getUri();
+    private MutableUri resolveHostURI(Request request) {
+        MutableUri uri = request.getUri();
         String header = (request.getHeaders() != null ? request.getHeaders().getFirst("Host") : null);
         if (uri != null && header != null) {
             String[] hostport = DELIM_COLON.split(header, 2);
@@ -167,8 +168,19 @@ public class CookieFilter extends GenericFilter {
                 port = -1;
             }
             try {
-                uri = new URI(uri.getScheme(), null, hostport[0], port, "/", null, null).resolve(
-                        new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), null, null, null).relativize(uri));
+                uri = new MutableUri(uri.getScheme(),
+                                     null,
+                                     hostport[0],
+                                     port,
+                                     "/",
+                                     null,
+                                     null).resolve(new MutableUri(uri.getScheme(),
+                                                                  null,
+                                                                  uri.getHost(),
+                                                                  uri.getPort(),
+                                                                  null,
+                                                                  null,
+                                                                  null).relativize(uri));
             } catch (URISyntaxException use) {
                 // suppress exception
             }
@@ -180,12 +192,12 @@ public class CookieFilter extends GenericFilter {
      * Sets all request cookies (existing in request plus those to add from cookie jar) in
      * a single "Cookie" header in the request.
      */
-    private void addRequestCookies(CookieManager manager, URI resolved, Request request) throws IOException {
+    private void addRequestCookies(CookieManager manager, MutableUri resolved, Request request) throws IOException {
         List<String> cookies = request.getHeaders().get("Cookie");
         if (cookies == null) {
             cookies = new ArrayList<String>();
         }
-        List<String> managed = manager.get(resolved, request.getHeaders()).get("Cookie");
+        List<String> managed = manager.get(resolved.asURI(), request.getHeaders()).get("Cookie");
         if (managed != null) {
             cookies.addAll(managed);
         }
@@ -206,7 +218,7 @@ public class CookieFilter extends GenericFilter {
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         // resolve to client-supplied host header
-        URI resolved = resolveHostURI(exchange.request);
+        MutableUri resolved = resolveHostURI(exchange.request);
         // session cookie jar
         CookieManager manager = getManager(exchange.session);
         // remove cookies that are suppressed or managed
@@ -216,7 +228,7 @@ public class CookieFilter extends GenericFilter {
         // pass exchange to next handler in chain
         next.handle(exchange);
         // manage cookie headers in response
-        manager.put(resolved, exchange.response.getHeaders());
+        manager.put(resolved.asURI(), exchange.response.getHeaders());
         // remove cookies that are suppressed or managed
         suppress(exchange.response);
         timer.stop();

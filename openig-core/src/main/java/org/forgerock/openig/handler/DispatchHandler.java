@@ -31,7 +31,6 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.URIUtil;
 
 /**
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
@@ -86,7 +85,7 @@ public class DispatchHandler extends GenericHandler {
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
                 if (binding.baseURI != null) {
-                    exchange.request.setUri(URIUtil.rebase(exchange.request.getUri(), binding.baseURI));
+                    exchange.request.getUri().rebase(binding.baseURI);
                 }
                 binding.handler.handle(exchange);
                 timer.stop();

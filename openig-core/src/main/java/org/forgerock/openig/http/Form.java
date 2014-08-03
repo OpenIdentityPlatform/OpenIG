@@ -18,8 +18,7 @@
 
 package org.forgerock.openig.http;
 
-import static org.forgerock.openig.el.Functions.urlDecode;
-import static org.forgerock.openig.el.Functions.urlEncode;
+import static org.forgerock.openig.el.Functions.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.forgerock.openig.util.MultiValueMap;
-import org.forgerock.openig.util.URIUtil;
 
 /**
  * Form fields, a case-sensitive multi-string-valued map. The form can be read
@@ -104,9 +102,7 @@ public class Form extends MultiValueMap<String, String> {
      */
     public void toRequestQuery(Request request) {
         try {
-            request.setUri(URIUtil.create(request.getUri().getScheme(), request.getUri().getRawUserInfo(),
-                    request.getUri().getHost(), request.getUri().getPort(), request.getUri().getRawPath(),
-                    toString(), request.getUri().getRawFragment()));
+            request.getUri().setRawQuery(toString());
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }
@@ -136,9 +132,7 @@ public class Form extends MultiValueMap<String, String> {
             newQuery = null;
         }
         try {
-            request.setUri(URIUtil.create(request.getUri().getScheme(), request.getUri().getRawUserInfo(),
-                    request.getUri().getHost(), request.getUri().getPort(), request.getUri().getRawPath(),
-                    newQuery, request.getUri().getRawFragment()));
+            request.getUri().setRawQuery(newQuery);
         } catch (URISyntaxException use) {
             throw new IllegalArgumentException(use);
         }

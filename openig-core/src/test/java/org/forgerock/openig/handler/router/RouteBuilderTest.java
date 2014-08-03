@@ -19,10 +19,9 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;
-
-import java.net.URI;
 
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;
@@ -87,10 +86,10 @@ public class RouteBuilderTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setUri(new URI("http://openig.forgerock.org/demo"));
+        exchange.request.setUri("http://openig.forgerock.org/demo");
 
         route.handle(exchange);
 
-        assertThat(exchange.request.getUri()).isEqualTo(new URI("https://localhost:443/demo"));
+        assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
 }

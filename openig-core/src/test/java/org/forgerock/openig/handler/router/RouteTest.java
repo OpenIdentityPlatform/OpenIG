@@ -17,6 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
@@ -70,11 +71,11 @@ public class RouteTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setUri(new URI("http://openig.forgerock.org/demo"));
+        exchange.request.setUri("http://openig.forgerock.org/demo");
 
         route.handle(exchange);
 
-        assertThat(exchange.request.getUri()).isEqualTo(new URI("https://localhost:443/demo"));
+        assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
 
     private Route createRoute(final Expression condition, final URI baseURI) {

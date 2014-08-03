@@ -18,11 +18,11 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.forgerock.openig.util.Duration.duration;
+import static java.lang.String.*;
+import static java.util.concurrent.TimeUnit.*;
+import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -400,7 +400,7 @@ public class HttpClient {
     public Response execute(final Request request) throws IOException {
         final HttpRequestBase clientRequest =
                 request.getEntity() != null ? new EntityRequest(request) : new NonEntityRequest(request);
-        clientRequest.setURI(request.getUri());
+        clientRequest.setURI(request.getUri().asURI());
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
         // parse request connection headers to be suppressed in request

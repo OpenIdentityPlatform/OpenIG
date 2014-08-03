@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +131,7 @@ public class StaticRequestFilter extends GenericFilter {
         String value = this.uri.eval(exchange, String.class);
         if (value != null) {
             try {
-                request.setUri(new URI(value));
+                request.setUri(value);
             } catch (URISyntaxException e) {
                 throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
             }

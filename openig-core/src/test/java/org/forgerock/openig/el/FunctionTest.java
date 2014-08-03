@@ -17,11 +17,10 @@
 
 package org.forgerock.openig.el;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Arrays;
 
 import org.forgerock.openig.handler.router.Files;
@@ -43,8 +42,8 @@ public class FunctionTest {
     }
 
     @Test
-    public void toStringTest() throws ExpressionException {
-        exchange.request.setUri(URI.create("http://www.forgerock.org/"));
+    public void toStringTest() throws Exception {
+        exchange.request.setUri("http://www.forgerock.org/");
         Object o = new Expression("${toString(exchange.request.uri)}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo(exchange.request.getUri().toString());

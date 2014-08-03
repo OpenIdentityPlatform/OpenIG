@@ -19,8 +19,6 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.net.URI;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -70,7 +68,7 @@ public class HttpBasicAuthFilterTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setMethod("GET");
-        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
+        exchange.request.setUri("http://test.com:123/path/to/resource.html");
         exchange.request.getHeaders().add("username", "Myname");
         exchange.request.getHeaders().add("password", "Mypass");
 
@@ -297,7 +295,7 @@ public class HttpBasicAuthFilterTest {
     private Exchange newExchange() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setUri(new URI("http://openig.forgerock.org"));
+        exchange.request.setUri("http://openig.forgerock.org");
         exchange.session = session;
         return exchange;
     }

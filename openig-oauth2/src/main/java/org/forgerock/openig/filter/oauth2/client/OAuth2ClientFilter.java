@@ -16,19 +16,13 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.getObject;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
-import static org.forgerock.openig.util.JsonValueUtil.asExpression;
-import static org.forgerock.openig.util.URIUtil.withQuery;
-import static org.forgerock.util.Utils.closeSilently;
-import static org.forgerock.util.Utils.joinAsString;
+import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.URIUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -874,8 +868,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 provider.setClientId(asExpression(providerConfig.get("clientId").required()));
                 provider.setClientSecret(asExpression(providerConfig.get("clientSecret").required()));
 
-                if (providerConfig.isDefined("wellKnownConfiguration")) {
-                    final URI uri = providerConfig.get("wellKnownConfiguration").asURI();
+                JsonValue knownConfiguration = providerConfig.get("wellKnownConfiguration");
+                if (!knownConfiguration.isNull()) {
+                    final URI uri = knownConfiguration.asURI();
                     if (uri != null) {
                         final Exchange exchange = new Exchange();
                         exchange.request = new Request();

@@ -15,19 +15,16 @@
  */
 package org.forgerock.openig.filter;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
-import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
-import static com.xebialabs.restito.semantics.Action.status;
-import static com.xebialabs.restito.semantics.Action.stringContent;
-import static com.xebialabs.restito.semantics.Condition.get;
-import static com.xebialabs.restito.semantics.Condition.method;
-import static com.xebialabs.restito.semantics.Condition.uri;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.xebialabs.restito.builder.stub.StubHttp.*;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.*;
+import static com.xebialabs.restito.semantics.Action.*;
+import static com.xebialabs.restito.semantics.Condition.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.http.HttpClient.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
@@ -75,6 +72,7 @@ import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.Stubber;
 import org.testng.annotations.Test;
 
+import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
 
 /**
@@ -235,7 +233,7 @@ public class GroovyScriptableFilterTest {
         // Create mock HTTP server.
         final StubServer server = new StubServer().run();
         whenHttp(server).match(get("/example")).then(status(HttpStatus.OK_200),
-                stringContent(JSON_CONTENT));
+                                                     stringContent(JSON_CONTENT));
         try {
             final int port = server.getPort();
             // @formatter:off
@@ -253,12 +251,47 @@ public class GroovyScriptableFilterTest {
             final Handler handler = mock(Handler.class);
             filter.filter(exchange, handler);
 
-            verifyHttp(server).once(method(Method.GET), uri("/example"));
+            verifyHttp(server).once(method(Method.GET), Condition.uri("/example"));
             assertThat(exchange.response.getStatus()).isEqualTo(200);
             assertThat(exchange.response.getEntity().getString()).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
         }
+    }
+
+    @Test
+    public void testRequestSetUriWithStringSetter() throws Exception {
+        // @formatter:off
+        final ScriptableFilter filter = newGroovyFilter(
+                "exchange.request.uri = 'http://www.example.com/example'",
+                "next.handle(exchange)");
+        // @formatter:on
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+
+        verify(handler).handle(exchange);
+        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com/example");
+    }
+
+    @Test
+    public void testRequestSetUriWithURISetter() throws Exception {
+        // @formatter:off
+        final ScriptableFilter filter = newGroovyFilter(
+                "import java.net.URI",
+                "exchange.request.uri = new URI('http://www.example.com/example')",
+                "next.handle(exchange)");
+        // @formatter:on
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+
+        verify(handler).handle(exchange);
+        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com/example");
     }
 
     @Test(enabled = true)

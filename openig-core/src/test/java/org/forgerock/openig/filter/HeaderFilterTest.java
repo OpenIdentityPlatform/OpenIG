@@ -18,8 +18,6 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.net.URI;
-
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -45,7 +43,7 @@ public class HeaderFilterTest {
         filter.getAddedHeaders().add("Location", "http://newtest.com:321${exchange.request.uri.path}");
 
         exchange.request.setMethod("DELETE");
-        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
+        exchange.request.setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
         Chain chain = new Chain(handler);
         chain.getFilters().add(filter);

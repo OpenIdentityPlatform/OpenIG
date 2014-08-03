@@ -19,10 +19,8 @@ package org.forgerock.openig.el;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.forgerock.json.fluent.JsonValue.field;
-import static org.forgerock.json.fluent.JsonValue.object;
+import static org.forgerock.json.fluent.JsonValue.*;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,7 +93,7 @@ public class ExpressionTest {
     public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setUri(new URI("http://test.com:123/path/to/resource.html"));
+        exchange.request.setUri("http://test.com:123/path/to/resource.html");
         Object o = new Expression("${exchange.request.uri.path}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("/path/to/resource.html");
@@ -117,7 +115,7 @@ public class ExpressionTest {
 
         // The following are used as examples in the OpenIG documentation, they should all be valid
         Request request = new Request();
-        request.setUri(new URI("http://wiki.example.com/wordpress/wp-login.php?action=login"));
+        request.setUri("http://wiki.example.com/wordpress/wp-login.php?action=login");
         request.setMethod("POST");
         request.getHeaders().putSingle("host", "wiki.example.com");
         request.getHeaders().putSingle("cookie", "SESSION=value; path=/");
@@ -256,7 +254,7 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         new Expression("${exchange.request.entity.json}").set(exchange, object(field("k1", "v1"),
-                field("k2", 123)));
+                                                                               field("k2", 123)));
         assertThat(exchange.request.getEntity()).isNotNull();
         assertThat(exchange.request.getEntity().getString())
                 .isEqualTo("{\"k1\":\"v1\",\"k2\":123}");

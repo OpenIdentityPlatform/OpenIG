@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.util.MutableUri.uri;
 
 import java.net.URI;
 
@@ -55,7 +56,7 @@ public class StaticRequestFilterTest {
         filter.filter(exchange, terminalHandler);
 
         assertThat(exchange.request).isNotNull();
-        assertThat(exchange.request.getUri()).isEqualTo(new URI(URI));
+        assertThat(exchange.request.getUri()).isEqualTo(uri(URI));
         assertThat(exchange.request.getMethod()).isEqualTo("GET");
         assertThat(exchange.request.getVersion()).isEqualTo("1.1");
     }

@@ -17,9 +17,9 @@
 package org.forgerock.openig.handler.saml;
 
 import static java.lang.String.format;
-import static java.util.Collections.list;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.util.Arrays.array;
+import static org.assertj.core.util.Arrays.*;
 
 import java.net.URI;
 import java.util.Map;

@@ -16,9 +16,11 @@
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 

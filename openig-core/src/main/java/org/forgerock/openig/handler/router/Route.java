@@ -31,7 +31,6 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.util.URIUtil;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route
@@ -166,7 +165,7 @@ class Route extends GenericHandler {
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         // Rebase the request URI if required before delegating
         if (baseURI != null) {
-            exchange.request.setUri(URIUtil.rebase(exchange.request.getUri(), baseURI));
+            exchange.request.getUri().rebase(baseURI);
         }
         handler.handle(exchange);
     }

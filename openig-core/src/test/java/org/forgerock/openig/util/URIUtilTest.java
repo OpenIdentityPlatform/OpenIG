@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
 
