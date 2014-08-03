@@ -97,10 +97,6 @@
   xlink:show="new">GenericHandler</link> that you can use if you intend to make
   your extensions configurable through the ${projectName} configuration
   resource.</para>
-
-  <para>${projectName} also allows standard Java Enterprise Edition servlets and
-  servlet filters to be embedded in the gateway, with initialization parameters
-  supplied through through the ${projectName} configuration resource.</para>
  </section>
 
  <section xml:id="custom-filter">
@@ -206,30 +202,6 @@
   object's configuration through the <link xlink:show="new"
   xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#config"
   >config</link> field.</para>
- </section>
-
- <section xml:id="custom-servlets-filters">
-  <title>Including Servlets and Servlet Filters</title>
-
- <indexterm>
-  <primary>Customizations</primary>
-  <secondary>Servlets</secondary>
- </indexterm>
-
-  <para>A servlet or servlet filter can be added as a heap object by including
-  it in the classpath, and identifying it in the ${projectName} heap configuration as
-  an <link xlink:href="reference#Servlet"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >javax.servlet.http.HttpServlet</link> or <link
-  xlink:href="reference#ServletFilter"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >javax.servlet.Filter</link> type, providing any appropriate initialization
-  parameters. A servlet can be dispatched directly by the <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/servlet/GatewayServlet.html"
-  >gateway servlet</link>, and servlets and filters can be flexibly dispatched
-  to through a <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/servlet/DispatchServlet.html"
-  >DispatchServlet</link>.</para>
  </section>
 
  <section xml:id="custom-sample-filter">

@@ -1,116 +1,135 @@
 {
-  "heap": {
-    "objects": [
-    {
-        "name": "HandlerServlet",
-        "comment": "Entry point that transforms Servlet request to handler request.",
-        "type": "HandlerServlet",
-        "config": {
-            "handler": "FindLoginPageChain",
-            "baseURI":"http://TARGETIP:PORT"
-        }
-    },
-    {
-        "name": "FindLoginPageChain",
-        "type": "Chain",
-        "config": {
-            "filters": ["IsLoginPage","FindLoginPage"],
-            "handler": "OutgoingChain" 
-        }   
-    },
-    {
-        "name": "FindLoginPage",
-        "type": "EntityExtractFilter",
-        "config": {
-            "messageType": "response",
-            "target": "${exchange.isLoginPage}",
-            "bindings": [
-                 {
-                     "key": "found",
-                     "pattern": "OpenAM\s\(Login\)",
-                     "template": "true"
-                 }
-             ]
-          }
-    },
-    {
-        "name": "IsLoginPage",
-        "type": "SwitchFilter",
-        "config": {
-            "onResponse": [
-                 {
-                    "condition": "${exchange.isLoginPage.found == 'true'}",
-                     "handler": "LoginChain"
-                 }
-             ]
-          }
-    },
-    {
-        "name": "LoginChain",
-        "type": "Chain",
-        "config": {
-            "filters": ["LoginRequest"],
-            "handler": "OutgoingChain"
-        }
-    },
-    {   
-        "name": "LoginRequest",
-        "type": "StaticRequestFilter",
-        "config": {
-            "method": "POST",
-            "uri": "http://TARGETIP:PORT/openam/UI/Login"
-            "form": {
-                "IDToken0":[""]
-                "IDToken1":["USERNAME"]
-                "IDToken2":["PASSWORD"]
-                "IDButton":["Log+In"]
-                "encoded":["false"]
-            },   
-            "headers": {
-                "host":["TARGETFQDN:PORT"]
-            }   
-            
-        }   
-    },
-   {
-        "name": "OutgoingChain",
-        "type": "Chain",
-        "config": {
-            "filters": ["CookieFilter","CaptureFilter"],
-            "handler": "ClientHandler" 
-        }   
-    },
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "handler": "FindLoginPageChain",
+                            "baseURI": "http://TARGETIP:PORT"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "FindLoginPageChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "IsLoginPage",
+                        "FindLoginPage"
+                    ],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {
+                "name": "FindLoginPage",
+                "type": "EntityExtractFilter",
+                "config": {
+                    "messageType": "response",
+                    "target": "${exchange.isLoginPage}",
+                    "bindings": [
+                        {
+                            "key": "found",
+                            "pattern": "OpenAM\s\(Login\)",
+                            "template": "true"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "IsLoginPage",
+                "type": "SwitchFilter",
+                "config": {
+                    "onResponse": [
+                        {
+                            "condition": "${exchange.isLoginPage.found == 'true'}",
+                            "handler": "LoginChain"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "LoginRequest"
+                    ],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://TARGETIP:PORT/openam/UI/Login",
+                    "form": {
+                        "IDToken0": [
+                            ""
+                        ],
+                        "IDToken1": [
+                            "USERNAME"
+                        ],
+                        "IDToken2": [
+                            "PASSWORD"
+                        ],
+                        "IDButton": [
+                            "Log+In"
+                        ],
+                        "encoded": [
+                            "false"
+                        ]
+                    },
+                    "headers": {
+                        "host": [
+                            "TARGETFQDN:PORT"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CookieFilter",
+                        "CaptureFilter"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
             {
                 "name": "CookieFilter",
                 "type": "CookieFilter",
+                "config": {}
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
                 "config": {
+                    "captureEntity": true,
+                    "file": "/tmp/gateway.log"
                 }
-         },
-
-    {   
-        "name": "CaptureFilter",
-        "type": "CaptureFilter",
-        "config": {
-            "captureEntity": true,
-            "file": "/tmp/gateway.log",
-        }       
-    },
-    {
-    "name": "LogSink",
-    "comment": "Default sink for logging information.",
-    "type": "ConsoleLogSink",
-    "config": {
-        "level": "DEBUG",
-    }
-}
-    {
-        "name": "ClientHandler",
-        "comment": "Responsible for sending all requests to remote servers.",
-        "type": "ClientHandler",
-        "config": {
+            },
+            {
+                "name": "LogSink",
+                "comment": "Default sink for logging information.",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG"
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "comment": "Responsible for sending all requests to remote servers.",
+                "type": "ClientHandler",
+                "config": {}
             }
-        }
-    ]
-  },
-  "servletObject": "HandlerServlet",
+        ]
+    },
+    "handlerObject": "DispatchHandler"
 }

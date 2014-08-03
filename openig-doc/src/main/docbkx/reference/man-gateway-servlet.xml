@@ -34,33 +34,49 @@
  <refmeta>
   <refentrytitle>Gateway Servlet</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>Gateway Servlet</refname>
   <refpurpose>entry point for all incoming requests</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Required configuration</primary>
    <secondary>Gateway servlet</secondary>
   </indexterm>
-  <para>The gateway servlet is the entry point for all incoming requests. It
-  is responsible for initializing a <link xlink:href="reference#heap-objects"
-  xlink:role="http://docbook.org/xlink/role/olink">heap of objects</link>, and
-  dispatching all requests to a configured servlet (which is itself a heap
-  object). The configuration of the gateway servlet is loaded from a
-  JSON-encoded configuration file, typically located at
-  <filename>${warConfigDir}/config.json</filename>.</para>
+
+  <para>
+   The gateway servlet is the entry point for all incoming requests.
+   It is responsible for initializing a
+   <link
+    xlink:show="new"
+    xlink:href="reference#heap-objects"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >heap of objects</link>,
+   and dispatching all requests to a configured handler.
+   The configuration of the gateway servlet is loaded
+   from a JSON-encoded configuration file,
+   expected by default at <filename>${warConfigDir}/config.json</filename>.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "heap": { <replaceable>heap-configuration object</replaceable> },
-     "servletObject": string
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+  "heap": { <replaceable>heap-configuration object</replaceable> },
+  "handlerObject": string
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
@@ -70,14 +86,16 @@
      configuration.</para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"servletObject"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handlerObject"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The name of the servlet heap object to dispatch all requests to.</para>
+     <para>The name of the handler heap object to dispatch all requests to.</para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"

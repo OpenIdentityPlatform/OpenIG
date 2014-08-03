@@ -263,11 +263,7 @@ sp.xml</computeroutput>
   <para>
    Consider the configuration, <filename>${warConfigDir}/config.json</filename>.
    In this configuration,
-   the "HandlerServlet" is the entry point to ${projectName} processing,
-   but its only function is to pass processing to a "DispatchHandler".
-  </para>
-
-  <para>
+   the "DispatchHandler" is the entry point to ${projectName} processing.
    The "DispatchHandler" provides an internal routing mechanism,
    based on the state of the exchange.
    If the incoming URI matches a SAML URI,

@@ -888,7 +888,7 @@ $ <userinput>java -Dopenig.base=/path/to/openig/files -jar start.jar</userinput>
 
     <para>
      Copy the template to <filename>${warConfigDir}/config.json</filename>.
-     Replace the "baseURI" of the "HandlerServlet"
+     Replace the "baseURI" of the "DispatchHandler"
      with that of the protected application.
     </para>
 

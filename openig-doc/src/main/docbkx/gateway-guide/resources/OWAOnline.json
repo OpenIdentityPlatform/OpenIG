@@ -6,15 +6,7 @@
                 "comment": "Default sink for logging information.",
                 "type": "ConsoleLogSink",
                 "config": {
-                    "level": "DEBUG",
-                }
-            },
-            {
-                "name": "HandlerServlet",
-                "type": "HandlerServlet",
-                "config": {
-                    "handler": "DispatchHandler",
-                    "baseURI":"https://65.55.171.158"
+                    "level": "DEBUG"
                 }
             },
             {
@@ -25,9 +17,11 @@
                         {
                             "condition": "${exchange.request.uri.path == '/owa/auth/logon.aspx'}",
                             "handler": "LoginChain",
+                            "baseURI": "https://65.55.171.158"
                         },
                         {
                             "handler": "OutgoingChain",
+                            "baseURI": "https://65.55.171.158"
                         }
                     ]
                 }
@@ -36,40 +30,61 @@
                 "name": "LoginChain",
                 "type": "Chain",
                 "config": {
-                    "filters": ["CryptoHeaderFilter","LoginRequest"],
+                    "filters": [
+                        "CryptoHeaderFilter",
+                        "LoginRequest"
+                    ],
                     "handler": "OutgoingChain"
                 }
             },
-            {   
+            {
                 "name": "CryptoHeaderFilter",
                 "type": "CryptoHeaderFilter",
                 "config": {
-                    "messageType":"REQUEST",
-                    "operation":"DECRYPT",
-                    "algorithm":"DES/ECB/NoPadding",
-                    "key":"DESKEY",
-                    "keyType":"DES",
-                    "charSet":"utf-8",
-                    "headers": ["password"],
-                },
+                    "messageType": "REQUEST",
+                    "operation": "DECRYPT",
+                    "algorithm": "DES/ECB/NoPadding",
+                    "key": "DESKEY",
+                    "keyType": "DES",
+                    "charSet": "utf-8",
+                    "headers": [
+                        "password"
+                    ]
+                }
             },
-            {  
+            {
                 "name": "LoginRequest",
                 "type": "StaticRequestFilter",
                 "config": {
                     "method": "POST",
                     "uri": "https://65.55.171.158/owa/auth/owaauth.dll",
-                    "headers" : {
-                        "Host": ["red001.mail.microsoftonline.com"],
-                        "Content-Type": ["Content-Type:application/x-www-form-urlencoded"],
-                    }
+                    "headers": {
+                        "Host": [
+                            "red001.mail.microsoftonline.com"
+                        ],
+                        "Content-Type": [
+                            "Content-Type:application/x-www-form-urlencoded"
+                        ]
+                    },
                     "form": {
-                        "destination": ["https://red001.mail.microsoftonline.com/owa/"],
-                        "forcedownlevel": ["0"],
-                        "trusted": ["0"],
-                        "username": ["${exchange.request.headers['username'][0]}"],
-                        "password": ["${exchange.request.headers['password'][0]}"],
-                        "isUtf8": ["1"],
+                        "destination": [
+                            "https://red001.mail.microsoftonline.com/owa/"
+                        ],
+                        "forcedownlevel": [
+                            "0"
+                        ],
+                        "trusted": [
+                            "0"
+                        ],
+                        "username": [
+                            "${exchange.request.headers['username'][0]}"
+                        ],
+                        "password": [
+                            "${exchange.request.headers['password'][0]}"
+                        ],
+                        "isUtf8": [
+                            "1"
+                        ]
                     }
                 }
             },
@@ -77,7 +92,10 @@
                 "name": "OutgoingChain",
                 "type": "Chain",
                 "config": {
-                    "filters": ["HeaderFilter","CaptureFilter"],
+                    "filters": [
+                        "HeaderFilter",
+                        "CaptureFilter"
+                    ],
                     "handler": "ClientHandler"
                 }
             },
@@ -85,25 +103,27 @@
                 "name": "HeaderFilter",
                 "type": "HeaderFilter",
                 "config": {
-                    "messageType":"REQUEST",
-                    "remove": ["password","username"],
-                 }
+                    "messageType": "REQUEST",
+                    "remove": [
+                        "password",
+                        "username"
+                    ]
+                }
             },
             {
                 "name": "CaptureFilter",
                 "type": "CaptureFilter",
                 "config": {
                     "captureEntity": false,
-                    "file": "/tmp/gateway.log",
+                    "file": "/tmp/gateway.log"
                 }
             },
             {
                 "name": "ClientHandler",
                 "type": "ClientHandler",
-                "config": {
-                }
-            },
+                "config": {}
+            }
         ]
     },
-    "servletObject": "HandlerServlet",
+    "handlerObject": "DispatchHandler"
 }

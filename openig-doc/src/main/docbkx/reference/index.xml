@@ -90,18 +90,6 @@
   <xinclude:include href="man-heap-objects.xml" />
  </reference>
 
- <reference xml:id="servlets-conf">
-  <title>Servlets</title>
-  <partintro>
-   <para>${projectName} includes objects that can create, initialize and dispatch
-   to Java Enterprise Edition Servlets and Servlet filters.</para>
-  </partintro>
-  <xinclude:include href="man-DispatchServlet.xml" />
-  <xinclude:include href="man-HandlerServlet.xml" />
-  <xinclude:include href="man-Servlet.xml" />
-  <xinclude:include href="man-ServletFilter.xml" />
- </reference>
-
  <reference xml:id="handlers-conf">
   <title>Handlers</title>
   <partintro>
@@ -143,6 +131,7 @@
  <reference  xml:id="misc-conf">
   <title>Miscellaneous Heap Objects</title>
   <xinclude:include href="man-ConsoleLogSink.xml" />
+  <xinclude:include href="man-HttpClient.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
  </reference>
 

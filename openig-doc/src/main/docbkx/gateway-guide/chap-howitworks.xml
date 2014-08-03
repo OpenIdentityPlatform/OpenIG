@@ -357,18 +357,6 @@
    modules.</para>
   </section>
 
-  <section xml:id="how-it-works-services">
-   <title>Services</title>
-
-   <para>
-    The Services model was designed to allow the integration of
-    value added features, such as Federation,
-    without requiring them to be tightly bound
-    to the ${projectName} implementation.
-    SAML 2.0 is an added service currently shipped with ${projectName}.
-   </para>
-  </section>
-
   <section xml:id="how-it-works-saml2">
    <title>${projectName} SAML 2.0 Federation</title>
 

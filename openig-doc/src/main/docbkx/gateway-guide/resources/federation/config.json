@@ -10,13 +10,6 @@
                 }
             },
             {
-                "name": "HandlerServlet",
-                "type": "HandlerServlet",
-                "config": {
-                    "handler": "DispatchHandler"
-                }
-            },
-            {
                 "name": "DispatchHandler",
                 "type": "DispatchHandler",
                 "config": {
@@ -95,5 +88,5 @@
             }
         ]
     },
-    "servletObject": "HandlerServlet"
+    "handlerObject": "DispatchHandler"
 }
