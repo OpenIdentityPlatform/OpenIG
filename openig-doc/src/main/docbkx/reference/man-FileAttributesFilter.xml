@@ -127,8 +127,7 @@
     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
     required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to in the event of
-     caught exceptions.</para>
+     <para>Expression that yields the value to be looked-up within the file.</para>
     </listitem>
    </varlistentry>
   </variablelist>
