@@ -60,6 +60,7 @@
          "method": string,
          "uri": string,
          "version": string,
+         "restore": boolean,
          "headers": {
              name: [ expression, ... ], ...
          },
@@ -92,6 +93,20 @@
      <para>Protocol version. Default: <literal>"HTTP/1.1"</literal>.</para>
     </listitem>
    </varlistentry>
+
+   <varlistentry>
+    <term><code>"restore"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to restore the original request after the exchange is handled.
+     </para>
+
+     <para>
+      Default: false
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry>
     <term><code>"headers"</code>: <emphasis>array of objects,
     required</emphasis></term>
