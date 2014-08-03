@@ -16,13 +16,15 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.header.LocationHeader;
 import org.forgerock.openig.http.Exchange;
@@ -36,7 +38,7 @@ import org.testng.annotations.Test;
 public class RedirectFilterTest {
 
     @Test
-    public void caseChangeSchemeHostAndPort() throws HandlerException, IOException, URISyntaxException {
+    public void caseChangeSchemeHostAndPort() throws Exception {
 
 
         String expectedResult = "https://proxy.example.com:443/path/to/redirected?a=1&b=2";
@@ -44,13 +46,13 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("https://proxy.example.com:443/"));
+        filter.setBaseURI(new Expression("https://proxy.example.com:443/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
     @Test
-    public void caseChangeHost() throws HandlerException, IOException, URISyntaxException {
+    public void caseChangeHost() throws Exception {
 
 
         String expectedResult = "http://proxy.example.com:8080/path/to/redirected?a=1&b=2";
@@ -58,13 +60,13 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("http://proxy.example.com:8080/"));
+        filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
     @Test
-    public void caseChangePort() throws HandlerException, IOException, URISyntaxException {
+    public void caseChangePort() throws Exception {
 
 
         String expectedResult = "http://app.example.com:9090/path/to/redirected?a=1&b=2";
@@ -72,13 +74,13 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("http://app.example.com:9090/"));
+        filter.setBaseURI(new Expression("http://app.example.com:9090/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
     @Test
-    public void caseChangeScheme() throws HandlerException, IOException, URISyntaxException {
+    public void caseChangeScheme() throws Exception {
 
 
         String expectedResult = "https://app.example.com/path/to/redirected?a=1&b=2";
@@ -86,32 +88,53 @@ public class RedirectFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("https://app.example.com/"));
+        filter.setBaseURI(new Expression("https://app.example.com/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
     @Test
-    public void caseNoChange() throws HandlerException, IOException, URISyntaxException {
+    public void caseNoChange() throws Exception {
 
         String expectedResult = "http://app.example.com:8080/path/to/redirected?a=1&b=2";
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("http://app.example.com:8080/"));
+        filter.setBaseURI(new Expression("http://app.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
     @Test
-    public void caseChangeHostWithEncodedLocation() throws HandlerException, IOException, URISyntaxException {
+    public void caseBaseUriAsExpression() throws Exception {
+        RedirectFilter filter = new RedirectFilter();
+        filter.setBaseURI(new Expression("http://${exchange.host}:8080"));
+        Handler next = mock(Handler.class);
+
+        Exchange exchange = new Exchange();
+        exchange.put("host", "app.example.com");
+
+        // Prepare a response
+        exchange.response = new Response();
+        exchange.response.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
+        exchange.response.setStatus(RedirectFilter.REDIRECT_STATUS_302);
+
+        filter.filter(exchange, next);
+
+        verify(next).handle(exchange);
+        assertThat(exchange.response.getHeaders().getFirst(LocationHeader.NAME))
+                .isEqualTo("http://app.example.com:8080/redirected");
+    }
+
+    @Test
+    public void caseChangeHostWithEncodedLocation() throws Exception {
         String expectedResult = "http://proxy.example.com:8080/path/a%20b/redirected?a=1&b=%3D2";
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/a%20b/redirected?a=1&b=%3D2");
 
         RedirectFilter filter = new RedirectFilter();
-        filter.setBaseURI(new URI("http://proxy.example.com:8080/"));
+        filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
