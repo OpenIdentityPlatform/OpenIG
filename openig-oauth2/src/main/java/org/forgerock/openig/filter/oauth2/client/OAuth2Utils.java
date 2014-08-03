@@ -20,7 +20,6 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERR
 import static org.forgerock.openig.util.URIUtil.withoutQueryAndFragment;
 import static org.forgerock.util.Utils.closeSilently;
 
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -32,7 +31,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.header.LocationHeader;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Response;
-import org.json.simple.parser.JSONParser;
 
 /**
  * Utility methods used by classes in this package.
@@ -65,13 +63,13 @@ final class OAuth2Utils {
     }
 
     static JsonValue getJsonContent(final Response response) throws OAuth2ErrorException {
-        final JSONParser parser = new JSONParser();
-        final InputStreamReader reader = new InputStreamReader(response.getEntity());
         try {
-            return new JsonValue(parser.parse(reader)).expect(Map.class);
+            return new JsonValue(response.getEntity().getJson()).expect(Map.class);
         } catch (final Exception e) {
             throw new OAuth2ErrorException(E_SERVER_ERROR,
                     "Received a malformed JSON response from the authorization server", e);
+        } finally {
+            closeSilently(response);
         }
     }
 
@@ -82,9 +80,7 @@ final class OAuth2Utils {
     }
 
     static void httpResponse(final Exchange exchange, final int status) {
-        if (exchange.response != null) {
-            closeSilently(exchange.response.getEntity());
-        }
+        closeSilently(exchange.response);
         exchange.response = new Response();
         exchange.response.setStatus(status);
     }

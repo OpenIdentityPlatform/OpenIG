@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -373,7 +374,7 @@ public class Functions extends FunctionMapper {
      */
     public static String read(final String filename) {
         try {
-            return asString(new FileInputStream(new File(filename)));
+            return asString(new FileInputStream(new File(filename)), Charset.defaultCharset());
         } catch (IOException e) {
             return null;
         }

@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * An input stream that can branch into separate input streams to perform divergent reads.
+ * An input stream that can branch into separate input streams to perform
+ * divergent reads.
  */
 public abstract class BranchingInputStream extends InputStream {
 
@@ -29,14 +30,25 @@ public abstract class BranchingInputStream extends InputStream {
      * Creates a new branch at this stream's current position.
      *
      * @return a new branching stream, in the same position as this branch.
-     * @throws IOException if an I/O exception occurs.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     public abstract BranchingInputStream branch() throws IOException;
 
     /**
      * Closes this branching stream and all of the branches created from it.
      *
-     * @throws IOException if an I/O exception occurs.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     public abstract void close() throws IOException;
+
+    /**
+     * Returns the parent branching input stream from which this branch was
+     * created, or {@code null} if this is the trunk.
+     *
+     * @return the parent branching input stream from which this branch was
+     *         created, or {@code null} if this is the trunk.
+     */
+    public abstract BranchingInputStream parent();
 }

@@ -29,7 +29,6 @@ import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -67,10 +66,7 @@ public class OpenAmAccessTokenResolverTest {
     }
 
     private Response response(final int status, final String content) {
-        Response response = new Response();
-        response.setStatus(status);
-        response.setEntity(new ByteArrayBranchingStream(content.getBytes()));
-        return response;
+        return new Response().setStatus(status).setEntity(content);
     }
 
     @Test

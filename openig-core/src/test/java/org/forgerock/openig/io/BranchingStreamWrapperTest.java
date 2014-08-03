@@ -289,7 +289,7 @@ public class BranchingStreamWrapperTest {
                     assertThat(Arrays.copyOfRange(BUFFERS[b], 0, length))
                             .isEqualTo(Arrays.copyOfRange(BYTES, offsets[b], offsets[b] + length));
                     offsets[b] += length;
-                    if (++counter >= 51 && branches[b].getParent() != null) {
+                    if (++counter >= 51 && branches[b].parent() != null) {
                         branches[b].close(); // every 51st read closes stream and its children
                         counter = 0;
                     }

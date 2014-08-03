@@ -18,10 +18,7 @@ package org.forgerock.openig.filter.oauth2.resolver;
 
 import static org.forgerock.util.Utils.closeSilently;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -31,12 +28,12 @@ import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.util.time.TimeService;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
@@ -141,19 +138,16 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
      * @return {@link JsonValue} representing the JSON content
      * @throws OAuth2TokenException if there was some errors during parsing
      */
-    private JsonValue asJson(final InputStream stream) throws OAuth2TokenException {
-        JSONParser parser = new JSONParser();
-        Object parsed = null;
+    private JsonValue asJson(final Entity entity) throws OAuth2TokenException {
         try {
-            parsed = parser.parse(new BufferedReader(new InputStreamReader(stream)));
+            return new JsonValue(entity.getJson());
         } catch (IOException e) {
             throw new OAuth2TokenException("io", "Cannot read response content", e);
         } catch (ParseException e) {
             throw new OAuth2TokenException("parse", "Cannot parse response content as JSON", e);
         } finally {
-            closeSilently(stream);
+            closeSilently(entity);
         }
-        return new JsonValue(parsed);
     }
 
 

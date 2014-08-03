@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -29,6 +30,9 @@ import java.util.Iterator;
  * Miscellaneous string utility methods.
  */
 public final class StringUtil {
+
+    /** Platform specific end of line character. */
+    private static final String EOL = System.getProperty("line.separator");
 
     /**
      * Static methods only.
@@ -65,21 +69,32 @@ public final class StringUtil {
     }
 
     /**
-     * Reads the provided input stream as a UTF-8 string and then closes the
-     * stream.
+     * Reads the provided input stream as a string and then closes the stream.
      *
      * @param is
      *            the input stream to be read.
-     * @return the UTF-8 content of the stream.
+     * @param charset
+     *            the character set encoding of the input stream.
+     * @return the content of the stream.
      * @throws IOException
      *             If an I/O error occurs.
      */
-    public static String asString(final InputStream is) throws IOException {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+    public static String asString(final InputStream is, Charset charset) throws IOException {
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));
         try {
-            return reader.readLine();
+            final String firstLine = reader.readLine();
+            if (firstLine == null) {
+                return "";
+            }
+            final StringBuilder builder = new StringBuilder(firstLine);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                builder.append(EOL);
+                builder.append(line);
+            }
+            return builder.toString();
         } finally {
             reader.close();
         }
     }
+
 }

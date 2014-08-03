@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -43,11 +42,9 @@ import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
 
@@ -224,11 +221,11 @@ public class CaptureFilter extends GenericFilter {
             return;
         }
         try {
-            Reader reader = HttpUtil.entityReader(message, true, null);
+            message.getEntity().push();
             try {
-                Streamer.stream(reader, writer);
+                message.getEntity().copyDecodedContentTo(writer);
             } finally {
-                closeSilently(reader);
+                message.getEntity().pop();
             }
         } catch (UnsupportedEncodingException uee) {
             writer.println("[entity contains data in unsupported encoding]");

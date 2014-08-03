@@ -17,19 +17,19 @@
 
 package org.forgerock.openig.servlet;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.util.Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.HeapUtil.getObject;
+import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -52,9 +52,7 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
-import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
@@ -247,7 +245,6 @@ public class GatewayServlet extends HttpServlet {
             exchange.request.setEntity(new BranchingStreamWrapper(request.getInputStream(), storage));
         }
         // remember request entity so that it (and its children) can be properly closed
-        final BranchingInputStream requestEntityTrunk = exchange.request.getEntity();
         exchange.session = new ServletSession(request);
         exchange.principal = request.getUserPrincipal();
         // handy servlet-specific attributes, sure to be abused by downstream filters
@@ -277,18 +274,11 @@ public class GatewayServlet extends HttpServlet {
                     }
                 }
                 // response entity (if applicable)
-                if (exchange.response.getEntity() != null) {
-                    final OutputStream out = response.getOutputStream();
-                    Streamer.stream(exchange.response.getEntity(), out);
-                    out.flush();
-                }
+                exchange.response.getEntity().copyRawContentTo(response.getOutputStream());
             }
         } finally {
             // final cleanup
-            closeSilently(requestEntityTrunk);
-            if (exchange.response != null) {
-                closeSilently(exchange.response.getEntity());
-            }
+            closeSilently(exchange.request, exchange.response);
         }
         timer.stop();
     }

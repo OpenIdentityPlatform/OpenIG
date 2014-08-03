@@ -45,8 +45,8 @@ public class WelcomeHandler extends GenericHandler {
             response.setStatus(200);
             response.setReason("OK");
             response.getHeaders().add("Content-Type", "text/html");
-            response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream("welcome.html"),
-                    storage));
+            response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream(
+                    "welcome.html"), storage));
             exchange.response = response;
         } finally {
             timer.stop();

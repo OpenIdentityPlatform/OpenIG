@@ -18,9 +18,6 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 
 import org.forgerock.openig.el.Expression;
@@ -111,7 +108,7 @@ public class StaticRequestFilterTest {
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
-        assertThat(exchange.request.getEntity()).isNull();
+        assertThat(exchange.request.getEntity().getString()).isEmpty();
     }
 
     @Test
@@ -134,14 +131,9 @@ public class StaticRequestFilterTest {
         assertThat(exchange.request.getMethod()).isEqualTo("POST");
         assertThat(exchange.request.getHeaders().getFirst("Content-Type")).isEqualTo(
                 "application/x-www-form-urlencoded");
-        assertThat(readFirstLine(exchange))
+        assertThat(exchange.request.getEntity().getString())
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
-    }
-
-    private static String readFirstLine(final Exchange exchange) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.request.getEntity()));
-        return reader.readLine();
     }
 }

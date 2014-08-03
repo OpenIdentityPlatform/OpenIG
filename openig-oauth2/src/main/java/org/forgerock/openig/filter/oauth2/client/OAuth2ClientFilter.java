@@ -635,7 +635,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 session.isAuthorized() ? prepareExchange(exchange, session) : session;
         next.handle(exchange);
         if (exchange.response.getStatus() == 401 && !session.isAuthorized()) {
-            closeSilently(exchange.response.getEntity());
+            closeSilently(exchange.response);
             exchange.response = null;
             sendRedirectForAuthorization(exchange);
         } else {
@@ -894,9 +894,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
                                     "Unable to read well-known OpenID Configuration from '"
                                             + exchange.request.getUri().toString() + "'", e);
                         } finally {
-                            if (exchange.response != null) {
-                                closeSilently(exchange.response.getEntity());
-                            }
+                            closeSilently(exchange.response);
                         }
                     }
                 } else {

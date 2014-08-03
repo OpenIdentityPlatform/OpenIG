@@ -21,14 +21,11 @@ package org.forgerock.openig.http;
 import static org.forgerock.openig.el.Functions.urlDecode;
 import static org.forgerock.openig.el.Functions.urlEncode;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.forgerock.openig.io.ByteArrayBranchingStream;
-import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.util.MultiValueMap;
 import org.forgerock.openig.util.URIUtil;
 
@@ -152,18 +149,18 @@ public class Form extends MultiValueMap<String, String> {
      * object. The object is not cleared beforehand, so this adds to any fields
      * already in place.
      *
-     * @param request the request to be parsed.
+     * @param request
+     *            the request to be parsed.
      * @return this form object.
-     * @throws IOException if an I/O exception occurs.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     public Form fromRequestEntity(Request request) throws IOException {
         if (request != null
                 && request.getEntity() != null
                 && "application/x-www-form-urlencoded".equalsIgnoreCase(request.getHeaders()
                         .getFirst("Content-Type"))) {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            Streamer.stream(request.getEntity(), bytes);
-            fromString(bytes.toString());
+            fromString(request.getEntity().getString());
         }
         return this;
     }
@@ -180,6 +177,6 @@ public class Form extends MultiValueMap<String, String> {
         request.setMethod("POST");
         request.getHeaders().putSingle("Content-Type", "application/x-www-form-urlencoded");
         request.getHeaders().putSingle("Content-Length", Integer.toString(form.length()));
-        request.setEntity(new ByteArrayBranchingStream(form.getBytes()));
+        request.getEntity().setString(form);
     }
 }

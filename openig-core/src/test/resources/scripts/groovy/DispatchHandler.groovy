@@ -20,14 +20,12 @@ switch (exchange.request.uri.path) {
                 exchange.request.headers.Password[0] == "hifalutin") {
 
             exchange.response.status = 200
-            exchange.response.entity = new ByteArrayBranchingStream(
-                    "<html><p>Welcome back, Babs!</p></html>".getBytes())
+            exchange.response.entity = "<html><p>Welcome back, Babs!</p></html>"
 
         } else {
 
             exchange.response.status = 403
-            exchange.response.entity = new ByteArrayBranchingStream(
-                    "<html><p>Authorization required</p></html>".getBytes())
+            exchange.response.entity = "<html><p>Authorization required</p></html>"
 
         }
 
@@ -36,9 +34,7 @@ switch (exchange.request.uri.path) {
     default:
 
         exchange.response.status = 401
-        exchange.response.entity = new ByteArrayBranchingStream(
-                "<html><p>Please <a href='./login'>log in</a>.</p></html>"
-                        .getBytes())
+        exchange.response.entity = "<html><p>Please <a href='./login'>log in</a>.</p></html>"
 
         break
 

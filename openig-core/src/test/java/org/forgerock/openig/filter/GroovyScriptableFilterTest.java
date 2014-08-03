@@ -15,17 +15,19 @@
  */
 package org.forgerock.openig.filter;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.*;
-import static com.xebialabs.restito.builder.verify.VerifyHttp.*;
-import static com.xebialabs.restito.semantics.Action.*;
-import static com.xebialabs.restito.semantics.Condition.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
+import static com.xebialabs.restito.semantics.Action.status;
+import static com.xebialabs.restito.semantics.Action.stringContent;
+import static com.xebialabs.restito.semantics.Condition.get;
+import static com.xebialabs.restito.semantics.Condition.method;
+import static com.xebialabs.restito.semantics.Condition.uri;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.StringUtil.asString;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
@@ -49,8 +51,8 @@ import org.forgerock.opendj.ldap.LDAPClientContext;
 import org.forgerock.opendj.ldap.LDAPListener;
 import org.forgerock.opendj.ldap.MemoryBackend;
 import org.forgerock.opendj.ldif.LDIFEntryReader;
-import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
@@ -60,7 +62,6 @@ import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
-import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
@@ -254,7 +255,7 @@ public class GroovyScriptableFilterTest {
 
             verifyHttp(server).once(method(Method.GET), uri("/example"));
             assertThat(exchange.response.getStatus()).isEqualTo(200);
-            assertThat(asString(exchange.response.getEntity())).isEqualTo(JSON_CONTENT);
+            assertThat(exchange.response.getEntity().getString()).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
         }
@@ -564,17 +565,17 @@ public class GroovyScriptableFilterTest {
         assertThat(exchange.response).isSameAs(expectedResponse);
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testReadJsonEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "assert exchange.request.jsonIn.person.firstName == 'Tim'",
-                "assert exchange.request.jsonIn.person.lastName == 'Yates'",
-                "assert exchange.request.jsonIn.person.address.country == 'UK'");
+                "assert exchange.request.entity.json.person.firstName == 'Tim'",
+                "assert exchange.request.entity.json.person.lastName == 'Yates'",
+                "assert exchange.request.entity.json.person.address.country == 'UK'");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(new ByteArrayBranchingStream(JSON_CONTENT.getBytes("UTF-8")));
+        exchange.request.setEntity(JSON_CONTENT);
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -583,11 +584,11 @@ public class GroovyScriptableFilterTest {
     public void testReadXmlEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "assert exchange.request.xmlIn.root.a"); // TODO
+                "assert exchange.request.entity.xml.root.a"); // TODO
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.request.setEntity(new ByteArrayBranchingStream(XML_CONTENT.getBytes("UTF-8")));
+        exchange.request.setEntity(XML_CONTENT);
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
     }
@@ -675,7 +676,7 @@ public class GroovyScriptableFilterTest {
         filter.filter(exchange, handler);
 
         assertThat(exchange.response.getStatus()).isEqualTo(200);
-        assertThat(asString(exchange.response.getEntity())).isEqualTo("hello world");
+        assertThat(exchange.response.getEntity().getString()).isEqualTo("hello world");
     }
 
     @Test(expectedExceptions = ScriptException.class)
@@ -746,28 +747,29 @@ public class GroovyScriptableFilterTest {
     public void testWriteJsonEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "exchange.request.jsonOut.person {",
-                "firstName 'Tim'",
-                "lastName 'Yates'",
-                "address {",
-                "city: 'Manchester'",
-                "country: 'UK'",
-                "zip: 'M1 2AB'",
-                "}",
+                "import groovy.json.*",
+                "exchange.request.entity.json = new JsonBuilder().person {",
+                    "firstName 'Tim'",
+                    "lastName 'Yates'",
+                    "address {",
+                        "city 'Manchester'",
+                        "country 'UK'",
+                        "zip 'M1 2AB'",
+                    "}",
                 "}");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(asString(exchange.request.getEntity())).isEqualTo(JSON_CONTENT);
+        assertThat(exchange.request.getEntity().getString()).isEqualTo(JSON_CONTENT);
     }
 
     @Test(enabled = false)
     public void testWriteXmlEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "exchange.request.xmlOut.root {",
+                "exchange.request.entity.xml.root {",
                 "a( a1:'one' ) {",
                 "b { mkp.yield( '3 < 5' ) }",
                 "c( a2:'two', 'blah' )",
@@ -778,7 +780,7 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.filter(exchange, handler);
-        assertThat(asString(exchange.request.getEntity())).isEqualTo(XML_CONTENT);
+        assertThat(exchange.request.getEntity().getString()).isEqualTo(XML_CONTENT);
     }
 
     private HeapImpl getHeap() throws Exception {
