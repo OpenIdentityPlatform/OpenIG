@@ -22,6 +22,8 @@ import static org.forgerock.util.Utils.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -72,6 +74,19 @@ final class OAuth2Utils {
         } finally {
             closeSilently(response);
         }
+    }
+
+    static List<String> getScopes(final Exchange exchange, final List<Expression> scopeExpressions)
+            throws HandlerException {
+        final List<String> scopeValues = new ArrayList<String>(scopeExpressions.size());
+        for (final Expression scope : scopeExpressions) {
+            final String result = scope.eval(exchange, String.class);
+            if (result == null) {
+                throw new HandlerException("Unable to determine the scope");
+            }
+            scopeValues.add(result);
+        }
+        return scopeValues;
     }
 
     static void httpRedirect(final Exchange exchange, final String uri) {

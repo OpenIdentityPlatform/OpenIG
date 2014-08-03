@@ -16,19 +16,22 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.util.Collections.emptyList;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.forgerock.openig.util.URIUtil.*;
+import static org.forgerock.openig.heap.HeapUtil.getObject;
+import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
+import static org.forgerock.openig.util.JsonValueUtil.asExpression;
+import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
+import static org.forgerock.openig.util.URIUtil.withQuery;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.SecureRandom;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +70,7 @@ import org.forgerock.util.time.TimeService;
  *
  * <pre>
  * "target"                       : expression,         [REQUIRED]
- * "scopes"                       : [ expressions ],    [REQUIRED]
+ * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
  * "failureHandler"               : handler,            [REQUIRED]
@@ -78,13 +81,14 @@ import org.forgerock.util.time.TimeService;
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "useJWTSession"                : boolean,            [OPTIONAL - default use Servlet session]
  * "providers"                    : array [
+ *     "name"                         : String,         [REQUIRED]
  *     "wellKnownConfiguration"       : String,         [OPTIONAL - if authorize and token end-points are specified]
  *     "authorizeEndpoint"            : uriExpression,  [REQUIRED - if no well-known configuration]
  *     "tokenEndpoint"                : uriExpression,  [REQUIRED - if no well-known configuration]
  *     "userInfoEndpoint"             : uriExpression,  [OPTIONAL - default no user info]
  *     "clientId"                     : expression,     [REQUIRED]
  *     "clientSecret"                 : expression,     [REQUIRED]
- * ]
+ *     "scopes"                       : [ expressions ],[OPTIONAL - overrides global scopes]
  * </pre>
  *
  * For example:
@@ -408,7 +412,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
 
     /**
      * Sets the expressions which will be used for obtaining the OAuth 2 scopes.
-     * This configuration parameter is required.
+     * This configuration parameter is optional.
      *
      * @param scopes
      *            The expressions which will be used for obtaining the OAuth 2
@@ -416,7 +420,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
      * @return This filter.
      */
     public OAuth2ClientFilter setScopes(final List<Expression> scopes) {
-        this.scopes = scopes;
+        this.scopes = scopes != null ? scopes : Collections.<Expression> emptyList();
         return this;
     }
 
@@ -499,16 +503,13 @@ public final class OAuth2ClientFilter extends GenericFilter {
         return providerName != null ? providers.get(providerName) : null;
     }
 
-    private List<String> getScopes(final Exchange exchange) throws HandlerException {
-        final List<String> scopeValues = new ArrayList<String>(scopes.size());
-        for (final Expression scope : scopes) {
-            final String result = scope.eval(exchange, String.class);
-            if (result == null) {
-                throw new HandlerException("Unable to determine the scope");
-            }
-            scopeValues.add(result);
+    private List<String> getScopes(final Exchange exchange, final OAuth2Provider provider)
+            throws HandlerException {
+        final List<String> providerScopes = provider.getScopes(exchange);
+        if (!providerScopes.isEmpty()) {
+            return providerScopes;
         }
-        return scopeValues;
+        return OAuth2Utils.getScopes(exchange, scopes);
     }
 
     private void handleAuthorizationCallback(final Exchange exchange) throws HandlerException,
@@ -748,7 +749,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private void sendAuthorizationRedirect(final Exchange exchange, final OAuth2Provider provider,
             final String gotoUri) throws HandlerException {
         final URI uri = provider.getAuthorizeEndpoint(exchange);
-        final List<String> requestedScopes = getScopes(exchange);
+        final List<String> requestedScopes = getScopes(exchange, provider);
         final Form query = new Form();
         if (uri.getRawQuery() != null) {
             query.fromString(uri.getRawQuery());
@@ -842,7 +843,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
         public Object create() throws HeapException {
             final OAuth2ClientFilter filter = new OAuth2ClientFilter();
             filter.setTarget(asExpression(config.get("target")));
-            filter.setScopes(config.get("scopes").required().asList(ofExpression()));
+            filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
             final Handler loginHandler = getObject(heap, config.get("loginHandler"), Handler.class);
             filter.setLoginHandler(loginHandler);
@@ -867,7 +868,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
                         new OAuth2Provider(providerConfig.get("name").required().asString());
                 provider.setClientId(asExpression(providerConfig.get("clientId").required()));
                 provider.setClientSecret(asExpression(providerConfig.get("clientSecret").required()));
-
+                provider.setScopes(providerConfig.get("scopes").defaultTo(emptyList()).asList(
+                        ofExpression()));
                 JsonValue knownConfiguration = providerConfig.get("wellKnownConfiguration");
                 if (!knownConfiguration.isNull()) {
                     final URI uri = knownConfiguration.asURI();
