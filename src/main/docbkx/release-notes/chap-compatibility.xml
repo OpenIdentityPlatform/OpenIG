@@ -111,6 +111,9 @@
  <section xml:id="removed">
   <title>Removed Functionality</title>
   
-  <para>No functionality has been removed from this release.</para>
+  <para>
+   Custom Servlet and Servlet Filter integration now requires additional development.
+   For an example, see the <literal>org.forgerock.openig.handler.saml</literal> package.
+  </para>
  </section>
 </chapter>

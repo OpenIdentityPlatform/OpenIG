@@ -2,14 +2,6 @@
     "heap": {
         "objects": [
             {
-                "name": "HandlerServlet",
-                "comment": "Transforms Servlet request to handler request.",
-                "type": "HandlerServlet",
-                "config": {
-                    "handler": "DispatchHandler"
-                }
-            },
-            {
                 "name": "DispatchHandler",
                 "type": "DispatchHandler",
                 "config": {
@@ -65,5 +57,5 @@
             }
         ]
     },
-    "servletObject": "HandlerServlet"
+    "handlerObject": "DispatchHandler"
 }

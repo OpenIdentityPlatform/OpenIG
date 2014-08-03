@@ -48,10 +48,13 @@
   declarative configuration artifacts. All configurable objects in ${projectName}
   are heap objects. Heap objects are created and initialized by associated
   "heaplets", which retrieve any objects an object depends on from the heap.
-  The heap configuration is included as an object in the <link
-  xlink:href="reference#gateway-servlet"
-  xlink:role="http://docbook.org/xlink/role/olink">gateway servlet</link>
-  configuration, and has the following format.</para>
+  The heap configuration is included as an object in the
+   <link
+    xlink:show="new"
+    xlink:href="reference#gateway-servlet"
+    xlink:role="http://docbook.org/xlink/role/olink"
+  >gateway servlet</link> configuration, and has the following format.
+  </para>
  </refsect1>
  <refsect1>
   <title>Usage</title>
@@ -79,18 +82,18 @@
    <varlistentry>
     <term><code>"type"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The class name of the object to be created. Example:
-     <literal>"HandlerServlet"</literal>. To determine the type name, see
-     the specific object documentation in this reference.</para>
+     <para>
+      The class name of the object to be created.
+      To determine the type name, see the object's documentation in this reference.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>
     <term><code>"config"</code>: <emphasis>object, required</emphasis></term>
     <listitem>
-     <para>The configuration that is specific to the heap object being created.
-     For an example, see the <link xlink:href="reference#HandlerServlet"
-     xlink:role="http://docbook.org/xlink/role/olink">HandlerServlet</link>
-     reference.</para>
+     <para>
+      The configuration that is specific to the heap object being created.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>

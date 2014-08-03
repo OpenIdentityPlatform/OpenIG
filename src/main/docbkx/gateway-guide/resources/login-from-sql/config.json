@@ -2,20 +2,13 @@
     "heap": {
         "objects": [
             {
-                "name": "HandlerServlet",
-                "type": "HandlerServlet",
-                "config": {
-                    "handler": "DispatchHandler",
-                    "baseURI": "http://www.example.com:8081"
-                }
-            },
-            {
                 "name": "DispatchHandler",
                 "type": "DispatchHandler",
                 "config": {
                     "bindings": [
                         {
-                            "handler": "OutgoingChain"
+                            "handler": "OutgoingChain",
+                            "baseURI": "http://www.example.com:8081"
                         }
                     ]
                 }
@@ -75,5 +68,5 @@
             }
         ]
     },
-    "servletObject": "HandlerServlet"
+    "handlerObject": "DispatchHandler"
 }
