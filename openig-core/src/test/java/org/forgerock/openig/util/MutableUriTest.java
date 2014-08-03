@@ -258,4 +258,42 @@ public class MutableUriTest {
                 .isEqualTo("http://www.example.com:8080/all/good/things?come=to&those=who#breakdance");
     }
 
+    // Tests for correct encoding of clear values with reserved characters in URI components
+    // -------------------------------------------------------------------------------------------
+    // Note: It appears that when we re-create a URI with decoded values that contains reserved
+    // characters ('=', '?', ...) the URI inner parser doesn't re-encode properly the reserved char
+    // for some components.
+    // -------------------------------------------------------------------------------------------
+
+    @Test(enabled = false)
+    public void shouldAcceptReservedCharactersInSetQuery() throws Exception {
+        MutableUri uri = uri("http://www.example.com");
+        uri.setQuery("x=?");
+        assertThat(uri.getQuery()).isEqualTo("x=?");
+        assertThat(uri.getRawQuery()).isEqualTo("x=%3F");
+    }
+
+    @Test(enabled = false)
+    public void shouldAcceptReservedCharactersInSetPath() throws Exception {
+        MutableUri uri = uri("http://www.example.com");
+        uri.setPath("/=");
+        assertThat(uri.getPath()).isEqualTo("/=");
+        assertThat(uri.getRawPath()).isEqualTo("/%3F");
+    }
+
+    @Test(enabled = false)
+    public void shouldAcceptReservedCharactersInSetFragment() throws Exception {
+        MutableUri uri = uri("http://www.example.com");
+        uri.setFragment("marker=");
+        assertThat(uri.getFragment()).isEqualTo("marker=");
+        assertThat(uri.getRawFragment()).isEqualTo("marker%3F");
+    }
+
+    @Test
+    public void shouldAcceptReservedCharactersInSetUserInfo() throws Exception {
+        MutableUri uri = uri("http://www.example.com");
+        uri.setUserInfo("test:pass?word");
+        assertThat(uri.getUserInfo()).isEqualTo("test:pass?word");
+        assertThat(uri.getRawUserInfo()).isEqualTo("test:pass%3Fword");
+    }
 }
