@@ -21,6 +21,8 @@ import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.common.JwtReconstruction;
@@ -42,6 +44,7 @@ public class OAuth2Provider {
     private Expression authorizeEndpoint;
     private Expression clientId;
     private Expression clientSecret;
+    private List<Expression> scopes;
     private Expression tokenEndpoint;
     private Expression userInfoEndpoint;
     private final boolean tokenEndpointUseBasicAuth = false; // Do we want to make this configurable?
@@ -96,6 +99,21 @@ public class OAuth2Provider {
      */
     public OAuth2Provider setClientSecret(final Expression clientSecret) {
         this.clientSecret = clientSecret;
+        return this;
+    }
+
+    /**
+     * Sets the expressions which will be used for obtaining the OAuth 2 scopes
+     * for this provider. This configuration parameter is optional and defaults
+     * to the set of scopes defined for the client filter.
+     *
+     * @param scopes
+     *            The expressions which will be used for obtaining the OAuth 2
+     *            scopes.
+     * @return This provider.
+     */
+    public OAuth2Provider setScopes(final List<Expression> scopes) {
+        this.scopes = scopes != null ? scopes : Collections.<Expression> emptyList();
         return this;
     }
 
@@ -212,6 +230,10 @@ public class OAuth2Provider {
 
     String getName() {
         return name;
+    }
+
+    List<String> getScopes(final Exchange exchange) throws HandlerException {
+        return OAuth2Utils.getScopes(exchange, scopes);
     }
 
     boolean hasUserInfoEndpoint() {
