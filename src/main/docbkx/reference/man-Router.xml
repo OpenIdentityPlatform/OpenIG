@@ -64,19 +64,36 @@
  </refsect1>
 
  <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "directory": expression,
+        "scanInterval": integer
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
   <title>Properties</title>
 
   <variablelist>
    <varlistentry>
-    <term><code>"directory"</code>: <emphasis>string</emphasis> (Optional)</term>
+    <term><code>"directory"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link></emphasis> (Optional)</term>
     <listitem>
      <para>
       Base directory from which to load configuration files for routes.
      </para>
 
      <para>
-      Default: <filename>${warConfigDir}/routes/</filename> (UNIX, Linux, Mac),
-      <filename>${windowsWarConfigDir}\routes\</filename> (Windows)
+      Default: <filename>${warRoutesDir}</filename> (UNIX, Linux, Mac),
+      <filename>${windowsWarRoutesDir}</filename> (Windows)
      </para>
     </listitem>
    </varlistentry>

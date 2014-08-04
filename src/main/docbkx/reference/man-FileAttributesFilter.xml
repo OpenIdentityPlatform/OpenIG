@@ -63,7 +63,7 @@
      "name": string,
      "type": "FileAttributesFilter",
      "config": {
-         "file": string,
+         "file": expression,
          "charset": string,
          "separator": string,
          "header": boolean,
@@ -78,7 +78,10 @@
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"file"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"file"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
      <para>The file containing the record to be read.</para>
     </listitem>
