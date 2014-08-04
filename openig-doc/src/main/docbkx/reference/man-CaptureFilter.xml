@@ -52,7 +52,7 @@
      "name": string,
      "type": "CaptureFilter",
      "config": {
-         "file": string,
+         "file": expression,
          "charset": string,
          "condition": expression,
          "captureEntity": boolean
@@ -63,7 +63,10 @@
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"file"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"file"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
      <para>The path of the file where captured output should be written.</para>
     </listitem>

@@ -55,7 +55,7 @@
          "messageType": string,
          "operation": string,
          "algorithm": string,
-         "key": string,
+         "key": expression,
          "keyType": string,
          "headers": [ string, ... ]
      }
@@ -91,7 +91,10 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><code>"key"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"key"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
      <para>Base64 encoded key value.</para>
     </listitem>
