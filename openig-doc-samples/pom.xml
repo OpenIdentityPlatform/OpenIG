@@ -55,13 +55,7 @@
     </dependency>
   </dependencies>
 
-  <properties>
-   <jarName>doc-samples-${project.version}</jarName>
-  </properties>
-
   <build>
-    <finalName>${jarName}</finalName>
-
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
