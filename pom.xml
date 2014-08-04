@@ -209,9 +209,11 @@
     <docTargetVersion>${project.version}</docTargetVersion>
     <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- http://docs.forgerock.org/en/openig/${project.version}/javadoc -->
     <downloadUrl>http://forgerock.org/downloads/openig-builds/</downloadUrl><!-- http://forgerock.com/download-stack/ -->
-    <openigWar>gateway-${project.version}.war</openigWar>
 
-    <sampleServerJar>doc-samples-${project.version}-jar-with-dependencies.jar</sampleServerJar>
+    <openigFinalName>OpenIG-${project.version}</openigFinalName>
+    <openigWar>${openigFinalName}.war</openigWar>
+
+    <sampleServerJar>openig-doc-samples-${project.version}-jar-with-dependencies.jar</sampleServerJar>
     <sampleServerDownloadUrl>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/${sampleServerJar}</sampleServerDownloadUrl>
     <sampleServerDownloadDirectory>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/</sampleServerDownloadDirectory>
     <!-- Empty this property to link to a release version: -->

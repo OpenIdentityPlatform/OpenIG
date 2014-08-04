@@ -51,7 +51,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>OpenIG-${project.version}</finalName>
+    <finalName>${openigFinalName}</finalName>
     <plugins>
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
