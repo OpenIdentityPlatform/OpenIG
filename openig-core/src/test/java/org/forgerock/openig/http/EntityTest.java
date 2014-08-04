@@ -66,6 +66,7 @@ public class EntityTest {
         assertThat(entity.getBytes()).isEmpty();
         assertThat(entity.getString()).isEmpty();
         assertThat(entity.toString()).isEmpty();
+        assertThat(entity.isEmpty()).isTrue();
         entity.push();
         assertThat(entity.getRawInputStream().available()).isEqualTo(0);
         entity.pop();
@@ -77,6 +78,7 @@ public class EntityTest {
         entity.setRawInputStream(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
+        assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -84,6 +86,7 @@ public class EntityTest {
     public void getJson() throws Exception {
         entity.setRawInputStream(mockJsonContent1);
         assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
+        assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -91,6 +94,7 @@ public class EntityTest {
     public void getJsonWhenEntityContainsInvalidJsonThrowsParseException() throws Exception {
         mockJsonContent1 = mockContent(INVALID_JSON);
         entity.setRawInputStream(mockJsonContent1);
+        assertThat(entity.isEmpty()).isFalse();
         try {
             entity.getJson();
         } finally {
@@ -127,6 +131,7 @@ public class EntityTest {
         entity.setRawInputStream(mockJsonContent1);
         assertThat(entity.getRawInputStream()).isSameAs(mockJsonContent1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
+        assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -135,6 +140,7 @@ public class EntityTest {
         entity.setRawInputStream(mockJsonContent1);
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
+        assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
     }
 

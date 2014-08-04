@@ -97,6 +97,19 @@ public final class Entity implements Closeable {
     }
 
     /**
+     * Returns {@literal true} if the entity is empty.
+     * This method does not read any actual content from the InputStream.
+     * @return {@literal true} if the entity is empty.
+     */
+    public boolean isEmpty() {
+        try {
+            return trunk.available() == 0;
+        } catch (IOException e) {
+            return true;
+        }
+    }
+
+    /**
      * Closes all resources associated with this entity. Any open streams will
      * be closed, and the underlying content reset back to a zero length.
      */

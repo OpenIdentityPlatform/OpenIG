@@ -399,7 +399,7 @@ public class HttpClient {
      */
     public Response execute(final Request request) throws IOException {
         final HttpRequestBase clientRequest =
-                request.getEntity() != null ? new EntityRequest(request) : new NonEntityRequest(request);
+                request.getEntity().isEmpty() ? new NonEntityRequest(request) : new EntityRequest(request);
         clientRequest.setURI(request.getUri().asURI());
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
