@@ -279,13 +279,13 @@
   </para>
 
   <para>
-   Create an OAuth 2.0 client profile with name <literal>OpenIG</literal>
+   Create an OAuth 2.0 client profile with name <literal>${projectName}</literal>
    and password <literal>password</literal>.
    The name is the OAuth 2.0 client_id, and the password is the client_secret.
   </para>
 
   <para>
-   Edit the <literal>OpenIG</literal> client profile
+   Edit the <literal>${projectName}</literal> client profile
    to add <literal>mail</literal> and <literal>employeenumber</literal> scopes
    to the Scope(s) list, and then save your work.
    In this tutorial,
@@ -415,7 +415,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
 
   <screen>
 $ <userinput>curl \
- --user "OpenIG:password" \
+ --user "${projectName}:password" \
  --data "grant_type=password&amp;username=demo&amp;password=changeit&amp;scope=mail%20employeenumber" \
  http://openam.example.com:8088/openam/oauth2/access_token</userinput>
 <computeroutput>{
