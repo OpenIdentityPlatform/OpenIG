@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='OAuth2ResourceServerFilter'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'
+          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+
+ <refmeta>
+  <refentrytitle>OAuth2ResourceServerFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>OAuth2ResourceServerFilter</refname>
+  <refpurpose>Validate an Exchange containing an OAuth 2.0 access token</refpurpose>
+ </refnamediv>
+
+ <refsect1 xml:id="OAuth2ResourceServerFilter-description">
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>OAuth2ResourceServerFilter</secondary>
+  </indexterm>
+
+  <para>
+   An OAuth2ResourceServerFilter is a filter
+   that validates an exchange containing an OAuth 2.0 access token.
+   The filter expects an OAuth 2.0 token
+   from the HTTP Authorization header of the request,
+   such as the following example header,
+   where the OAuth 2.0 access token is
+   <literal>1fc0e143-f248-4e50-9c13-1d710360cec9</literal>.
+  </para>
+
+  <programlisting language="http">
+Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9
+  </programlisting>
+
+  <para>
+   The filter extracts the access token,
+   and then validates it against the configured "tokenInfoEndpoint" URL.
+  </para>
+
+  <para>
+   On successful validation,
+   the filter includes the token info from the authorization server response
+   as JSON in the exchange.
+   Subsequent filters and handlers can access the token info
+   as <literal>exchange.oauth2AccessToken</literal>.
+  </para>
+
+  <para>
+   Regarding errors, if the filter configuration and access token
+   together result in an invalid request to the authorization server,
+   the filter returns an HTTP 400 Bad Request response to the user-agent.
+  </para>
+
+  <para>
+   If the access token is missing from the request,
+   the filter returns an HTTP 401 Unauthorized response to the user-agent.
+  </para>
+
+  <programlisting language="http">
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer realm="${projectName}"
+  </programlisting>
+
+  <para>
+   If the access token is not valid, for example because it has expired,
+   the filter also returns an HTTP 401 Unauthorized response to the user-agent.
+  </para>
+
+  <para>
+   If the scopes for the access token do not match the specified required scopes,
+   the filter returns an HTTP 403 Forbidden response to the user-agent.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+  "name": string,
+  "type": "OAuth2ResourceServerFilter",
+  "config": {
+    "httpHandler": string,
+    "requiredScopes": [ string, ... ],
+    "tokenInfoEndpoint": URL string,
+    "cacheExpiration": duration string,
+    "enforceHttps": boolean,
+    "realm": string
+  }
+}
+  </programlisting>
+
+  <para>
+   An alternative value for "type" is "OAuth2RSFilter".
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"httpHandler"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>
+      HTTP client handler to send token info requests.
+     </para>
+
+     <para>
+      Usually set this to the name of a
+      <link
+       xlink:show="new"
+       xlink:href="reference#ClientHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >ClientHandler</link> configured in the heap.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"requiredScopes"</code>: <emphasis>array of strings, required</emphasis></term>
+    <listitem>
+     <para>
+      The list of required OAuth 2.0 scopes for this protected resource.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"tokenInfoEndpoint"</code>: <emphasis>URL string, required</emphasis></term>
+    <listitem>
+     <para>
+      The URL to the token info endpoint of the OAuth 2.0 authorization server.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"cacheExpiration"</code>: <emphasis>duration string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Duration for which to cache OAuth 2.0 access tokens.
+     </para>
+
+     <xinclude:include href="../shared/itemizedlist-duration.xml" />
+
+     <para>
+      Default: 1 minute
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"enforceHttps"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to require that requests use the HTTPS scheme.
+     </para>
+
+     <para>
+      Default: true
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"realm"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      HTTP authentication realm to include
+      in the WWW-Authenticate response header field
+      when returning an HTTP 401 Unauthorized status
+      to a user-agent that need to authenticate.
+     </para>
+
+     <para>
+      Default: ${projectName}
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following example configures an OAuth 2.0 protected resource filter
+   that expects scopes "email" and "profile"
+   (and returns an HTTP 403 Forbidden status if the scopes are not present),
+   and validates access tokens against the OpenAM token info endpoint.
+   It caches access tokens for up to 2 minutes.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "ProtectedResourceFilter",
+    "type": "OAuth2ResourceServerFilter",
+    "config": {
+        "httpHandler": "ClientHandler",
+        "requiredScopes": [
+            "email",
+            "profile"
+        ],
+        "tokenInfoEndpoint": "https://openam.example.com:8443/openam/oauth2/tokeninfo",
+        "cacheExpiration": "2 minutes"
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/oauth2/OAuth2ResourceServerFilter.html"
+   >org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter</link></para>
+ </refsect1>
+
+ <refsect1>
+  <title>See Also</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6749"
+   >The OAuth 2.0 Authorization Framework</link>
+  </para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6750"
+   >OAuth 2.0 Bearer Token Usage</link>
+  </para>
+ </refsect1>
+</refentry>

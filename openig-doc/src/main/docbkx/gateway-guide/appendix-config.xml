@@ -119,6 +119,18 @@
   </programlisting>
  </example>
 
+ <example xml:id="config-oauth2-rs"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
+  <title>Configuration for an OAuth 2.0 Resource Server</title>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/oauth2-rs/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include config.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </example>
+
  <example xml:id="config-routing"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
   <title>Configuration for the Routing Tutorial</title>
 
