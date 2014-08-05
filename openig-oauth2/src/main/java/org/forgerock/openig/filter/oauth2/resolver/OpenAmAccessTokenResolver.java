@@ -99,7 +99,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
             client.handle(exchange);
 
             if (isResponseEmpty(exchange)) {
-                throw new OAuth2TokenException("empty", "Authorization Server did not returned an AccessToken");
+                throw new OAuth2TokenException("empty", "Authorization Server did not return an AccessToken");
             }
 
             JsonValue content = asJson(exchange.response.getEntity());
@@ -134,7 +134,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
 
     /**
      * Parse the response's content as a JSON structure.
-     * @param stream response's content
+     * @param entity stream response's content
      * @return {@link JsonValue} representing the JSON content
      * @throws OAuth2TokenException if there was some errors during parsing
      */

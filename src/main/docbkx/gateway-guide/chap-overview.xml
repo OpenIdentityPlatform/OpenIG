@@ -124,4 +124,52 @@
   </para>
  </section>
  -->
+
+ <section xml:id="oauth2-support">
+  <title>Quickly Add OAuth 2.0 Support</title>
+
+  <para>
+   OAuth 2.0 is modern federation alternative,
+   aimed at making it easy for users to delegate
+   third-party applications access to their protected resources
+   without having to share credentials with the third-party applications.
+   Like federation, OAuth 2.0 lets users benefit from new services
+   without having to create new accounts.
+   Instead they can use an existing account
+   with an OAuth 2.0-compliant identity provider,
+   such as Facebook, Google, or any provider using OpenAM.
+   Many mobile and web applications are moving to use OAuth 2.0.
+  </para>
+
+  <para>
+   With ${projectName}, you can add OAuth 2.0 support to existing protected resources,
+   and use ${projectName} capabilities to quickly develop new OAuth 2.0 applications.
+   ${projectName} can protect resources by using OAuth 2.0 (as resource server),
+   interoperating with client applications and identity providers,
+   so that your applications can
+   rely on delegated authorization for access to users' protected resources.
+  </para>
+
+  <para>
+   The following figure shows ${projectName} playing the role of resource server
+   in an OAuth 2.0 authorization code grant flow.
+  </para>
+
+  <mediaobject xml:id="figure-oauth2-support">
+   <imageobject>
+    <imagedata fileref="images/oauth2-support.png" format="PNG" />
+   </imageobject>
+   <textobject>
+    <para>
+     ${projectName} lets you quickly add OAuth 2.0 protection to
+     an existing resource server.
+    </para>
+   </textobject>
+  </mediaobject>
+
+  <para>
+   In addition, there is no need to modify servers housing protected resources
+   or to install plugins or policy agents on the servers.
+  </para>
+ </section>
 </chapter>

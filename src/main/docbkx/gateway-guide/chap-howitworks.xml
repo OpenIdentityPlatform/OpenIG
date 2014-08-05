@@ -295,6 +295,18 @@
     </listitem>
 
     <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#OAuth2ResourceServerFilter"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >OAuth2ResourceServerFilter</link>: acts as an OAuth 2.0 resource server,
+      validating OAuth 2.0 access tokens,
+      and injecting token information into the exchange.
+     </para>
+    </listitem>
+
+    <listitem>
      <para><link xlink:href="reference#RedirectFilter"
      xlink:role="http://docbook.org/xlink/role/olink"
      >RedirectFilter</link>: Rewrites Location headers on responses that

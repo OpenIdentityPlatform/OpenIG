@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id='chap-oauth-rs'
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <title>Configuring ${projectName} as an OAuth 2.0 Resource Server</title>
+
+ <para>
+  This chapter explains how ${projectName} acts as an OAuth 2.0 Resource Server,
+  and follows with a tutorial
+  that shows you how to use ${projectName} as a resource server.
+ </para>
+
+ <indexterm>
+  <primary>OAuth 2.0</primary>
+  <secondary>Resource server</secondary>
+ </indexterm>
+
+ <section xml:id="about-oauth2-rs">
+  <title>About ${projectName} as an OAuth 2.0 Resource Server</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6749"
+   >The OAuth 2.0 Authorization Framework</link> describes a way of
+   allowing a third-party application to access a user's resources
+   without having the user's credentials.
+   When resources are protected with OAuth 2.0,
+   users can use their credentials with an OAuth 2.0-compliant identity provider,
+   such as OpenAM, Facebook, Google and others
+   to access the resources, rather than setting up an account
+   with yet another third-party application.
+  </para>
+
+  <itemizedlist>
+   <para>
+    In OAuth 2.0, there are four entities involved.
+   </para>
+
+   <listitem>
+    <para>
+     The <firstterm>resource owner</firstterm> is the end user
+     who owns protected resources on a resource server.
+    </para>
+
+    <para>
+     For example, a resource owner has photos stored in a web service.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The <firstterm>resource server</firstterm> provides
+     the user's protected resources to authorized client applications.
+    </para>
+
+    <para>
+     In OAuth 2.0, an authorization server grants the client application
+     authorization based on the resource owner's consent.
+    </para>
+
+    <para>
+     For example, a web service holds user's photos.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The <firstterm>client</firstterm> is the application
+     that needs access to the protected resources.
+    </para>
+
+    <para>
+     For example, a photo printing service needs access to the user's photos.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The <firstterm>authorization server</firstterm> is the service
+     responsible for authenticating resource owners and obtaining their consent
+     to allow client applications to access their resources.
+    </para>
+
+    <para>
+     For example, OpenAM can act as the OAuth 2.0 authorization server
+     to authenticate resource owners and obtain their consent.
+     Other services can play this role as well.
+     Google and Facebook for example provide OAuth 2.0 authorization services.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   In OAuth 2.0, there are different grant mechanisms
+   whereby the client can obtain authorization.
+   One grant mechanism involves the client redirecting the resource owner's browser
+   to the authorization server to complete authentication and authorization.
+   You might have experienced this grant mechanism yourself
+   when logging in with your identity provider account to access a web service,
+   rather than creating a new account directly with the web service.
+   Whatever the grant mechanism,
+   the client's aim is to get an
+   OAuth 2.0 <firstterm>access token</firstterm> from the authorization server.
+  </para>
+
+  <para>
+   Access tokens are the credentials used to access protected resources.
+   An access token is just a string that represents the authorization
+   to access protected resources given by the authorization server.
+   An access token, like cash, is a bearer token.
+   This means that anyone who has the access token can use it to get the resources.
+   Access tokens therefore must be protected,
+   so requests involving them must go over HTTPS.
+   The advantage of access tokens over passwords or other credentials
+   is that access tokens can be granted and revoked
+   without exposing the user's credentials.
+  </para>
+
+  <para>
+   When the client requests access to protected resources,
+   it supplies the access token to the resource server housing the resources.
+   The resource server must then validate the access token.
+   If the access token is found to be valid,
+   then the resource server can let the client have access to the resources.
+  </para>
+
+  <para>
+   When ${projectName} acts therefore as an OAuth 2.0 resource server,
+   its role is to validate access tokens.
+   How an access token is validated is technically not covered
+   in the specifications for OAuth 2.0.
+   Typically the resource server validates an access token
+   by submitting the token to a token information endpoint.
+   The token information endpoint typically returns
+   the access token, when it expires,
+   and the OAuth 2.0 <firstterm>scopes</firstterm> associated with the token,
+   potentially with other information.
+   In OAuth 2.0, the token scopes are strings
+   that can identify the scope of access authorized to the client,
+   but can also be used for other purposes.
+   For example, OpenAM maps them to user profile attribute values by default,
+   and also allows custom scope handling plugins.
+  </para>
+
+  <para>
+   In the tutorial that follows,
+   you configure ${projectName} as a resource server,
+   and use OpenAM as the OAuth 2.0 authorization server.
+  </para>
+ </section>
+
+ <section xml:id="oauth2-rs-tutorial-before-you-start">
+  <title>Preparing the Tutorial</title>
+
+  <para>
+   In the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>,
+   you learned how to configure ${projectName}
+   to proxy traffic and capture request and response data.
+   You also learned how to configure ${projectName}
+   to use a static request to log in with hard-coded credentials.
+  </para>
+
+  <para>
+   This tutorial shows you how ${projectName}
+   can act as an OAuth 2.0 resource server,
+   validating OAuth 2.0 access tokens and including token info in the exchange.
+  </para>
+
+  <para>
+   This tutorial relies on OpenAM as an OAuth 2.0 authorization server.
+   As an OAuth 2.0 client of OpenAM, you get an access token.
+   You then submit the access token to ${projectName},
+   and ${projectName} acts as the resource server.
+  </para>
+
+  <para>
+   Before you start this tutorial,
+   prepare ${projectName} and the minimal HTTP server as you did for the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>.
+  </para>
+
+  <para>
+   ${projectName} should be running in Jetty,
+   configured to access the minimal HTTP server as described in that chapter.
+  </para>
+
+  <para>
+   The initial ${projectName} configuration file should look like the one used
+   to login with a hard-coded username and password, see
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-login-static-request"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for Hard-Coded Credentials</citetitle></link>.
+  </para>
+
+  <tip>
+   <para>
+    If you get stuck running the following samples,
+    know that you can activate ${projectName} debug logging
+    with a "ConsoleLogSink" configuration object.
+    Add it as the first object in the array of configuration objects.
+   </para>
+
+   <programlisting language="javascript">
+{
+    "name": "LogSink",
+    "type": "ConsoleLogSink",
+    "config": {
+        "level": "DEBUG"
+    }
+}
+   </programlisting>
+  </tip>
+ </section>
+
+ <section xml:id="oauth2-rs-tutorial-openam-config">
+  <title>Setting Up OpenAM as an Authorization Server</title>
+
+  <para>
+   Install and configure OpenAM on
+   <literal>http://openam.example.com:8088/openam</literal>
+   with the default configuration.
+   If you use a different configuration,
+   make sure you substitute in the tutorial accordingly.
+   Although this tutorial does not use HTTPS,
+   you must use HTTPS to protect access tokens in production environments.
+  </para>
+
+  <para>
+   Login to the OpenAM console as administrator,
+   and use the common task wizard, Configure OAuth2,
+   to configure an OAuth 2.0 authorization server in / (Top Level Realm).
+  </para>
+
+  <para>
+   Also create an OAuth 2.0 Client profile in / (Top Level Realm).
+   This allows you to request an OAuth 2.0 access token on behalf of the client.
+   In OpenAM console, browse to
+   Access Control > / (Top Level Realm) > Agents > OAuth 2.0 Client,
+   and then click New in the Agent table.
+  </para>
+
+  <para>
+   Create an OAuth 2.0 client profile with name <literal>OpenIG</literal>
+   and password <literal>password</literal>.
+   The name is the OAuth 2.0 client_id, and the password is the client_secret.
+  </para>
+
+  <para>
+   Edit the <literal>OpenIG</literal> client profile
+   to add <literal>mail</literal> and <literal>employeenumber</literal> scopes
+   to the Scope(s) list, and then save your work.
+   In this tutorial,
+   you overload these profile settings to pass credentials to ${projectName}.
+   This tutorial uses <literal>mail</literal>
+   and <literal>employeenumber</literal>
+   for the sake of simplicity.
+   Both of those attributes are part of a user's profile
+   out of the box with the default OpenAM configuration.
+   Neither of the attributes are needed for anything else in this tutorial.
+   So this tutorial uses <literal>mail</literal> to hold the username,
+   and <literal>employeenumber</literal> to hold the password.
+   In a real deployment, you would no doubt use other attributes
+   that depend on how the real user profiles are configured.
+  </para>
+
+  <para>
+   Finally, edit the OpenAM demo user to set credentials in
+   the Email Address and Employee Number fields of the demo user profile.
+   In OpenAM console, browse to the user profile under
+   Access Control > / (Top Level Realm) > Subjects > User > demo.
+   Set Email Address to <literal>george</literal>
+   and Employee Number to <literal>costanza</literal>.
+  </para>
+ </section>
+
+ <section xml:id="oauth2-rs-tutorial-gateway-config">
+  <title>Configuring ${projectName} as a Resource Server</title>
+
+  <para>
+   To configure ${projectName} as an OAuth 2.0 resource server, you use an
+   <link
+    xlink:show="new"
+    xlink:href="reference#OAuth2ResourceServerFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >OAuth2ResourceServerFilter</link>.
+  </para>
+
+  <para>
+   The filter expects an OAuth 2.0 access token
+   in an incoming <literal>Authorization</literal> request header,
+   such as the following.
+  </para>
+
+  <programlisting language="http">
+Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
+  </programlisting>
+
+  <para>
+   The filter then uses the access token to validate the token
+   and to retrieve token information from the authorization server.
+   On successful validation, the filter injects
+   the response from the authorization server into
+   <literal>exchange.oauth2AccessToken</literal>.
+  </para>
+
+  <para>
+   If no access token is present in the request,
+   or token validation does not complete successfully,
+   the filter returns an HTTP error status to the user-agent,
+   and ${projectName} does not continue processing the exchange.
+   This is done as specified in the RFC,
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6750"
+   >OAuth 2.0 Bearer Token Usage</link>.
+  </para>
+
+  <para>
+   You can therefore add additional filters and handlers to the chain
+   directly after the <literal>OAuth2ResourceServerFilter</literal>,
+   and expect to have the access token if the filter completes successfully.
+  </para>
+
+  <para>
+   To configure ${projectName} as an OAuth 2.0 resource server,
+   replace the <filename>config.json</filename> file
+   with the new configuration from the example,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-oauth2-rs"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for an OAuth 2.0 Resource Server</citetitle></link>.
+  </para>
+
+  <para>
+   Notice "ResourceServer" configuration.
+   This configuration includes
+   a client handler to send access token validation requests,
+   the list of required scopes that the filter expects to find in access tokens,
+   the OpenAM token info endpoint used to validate access tokens,
+   and <literal>"enforceHttps": false</literal> to allow testing
+   without having to set up keys and certificates.
+   (In production environments, do use HTTPS to protect access tokens.)
+  </para>
+
+  <para>
+   When the "ResourceServer" filter
+   has injected information for a valid access token into the exchange,
+   the "CaptureTokenInfo" filter dumps the token information to the log.
+   The "CaptureTokenInfo" filter also injects the credentials
+   from the user profile in OpenAM into the exchange.
+  </para>
+
+  <para>
+   Finally, the "LoginRequestFilter" logs a user in to the minimal HTTP server
+   by using the credentials injected from the token information.
+   In this simple configuration, all requests result in login attempts
+   against the minimal HTTP server.
+  </para>
+
+  <para>
+   After updating <filename>config.json</filename>,
+   restart Jetty server so that ${projectName} loads the new configuration.
+  </para>
+ </section>
+
+ <section xml:id="oauth2-rs-tutorial-test">
+  <title>Trying It Out</title>
+
+  <para>
+   To try your configuration, you need an access token.
+   Get an access token from OpenAM and use it to access ${projectName}
+   as in the following example,
+   which uses the OAuth 2.0 resource owner password credentials authorization grant.
+  </para>
+
+  <screen>
+$ <userinput>curl \
+ --user "OpenIG:password" \
+ --data "grant_type=password&amp;username=demo&amp;password=changeit&amp;scope=mail%20employeenumber" \
+ http://openam.example.com:8088/openam/oauth2/access_token</userinput>
+<computeroutput>{
+    "scope": "mail employeenumber",
+    "expires_in": 600,
+    "token_type": "Bearer",
+    "refresh_token": "7fe9b284-698e-4738-ad11-01b984920861",
+    "access_token": "b8102957-486b-47f2-bd2b-54faa55ec363"
+}</computeroutput>
+
+$ <userinput>curl \
+ --header "Authorization: Bearer b8102957-486b-47f2-bd2b-54faa55ec363" \
+ http://www.example.com:8080</userinput>
+<computeroutput>...<![CDATA[
+    <h1>User Information</h1>
+
+    <dl>
+        <dt>Username</dt>
+        <dd>george</dd>
+    </dl>
+
+    <h1>Request Information</h1>
+
+    <dl>
+        <dt>Method</dt>
+        <dd>POST</dd>
+
+        <dt>URI</dt>
+        <dd>/</dd>
+
+        <dt>Headers</dt>
+        <dd style="font-family: monospace; font-size: small;">...</dd>
+    </dl>
+]]></computeroutput>
+  </screen>
+
+  <para>
+   Also look in the Jetty server output to see the raw token information.
+   The raw token information looks something like the following.
+  </para>
+
+  <programlisting language="none">
+2014-08-04T16:43:38Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
+{
+    "access_token": "b8102957-486b-47f2-bd2b-54faa55ec363",
+    "mail": "george",
+    "employeenumber": "costanza",
+    "grant_type": "password",
+    "scope": [
+        "mail",
+        "employeenumber"
+    ],
+    "realm": "/",
+    "token_type": "Bearer",
+    "expires_in": 35
+}
+  </programlisting>
+
+  <para>
+   What is happening behind the scenes?
+  </para>
+
+  <para>
+   After ${projectName} gets the <command>curl</command> request,
+   the resource server filter validates the access token with OpenAM,
+   and injects the token information into the exchange.
+   (If the access token was missing or invalid,
+   then the resource server filter would have
+   returned an error status to the user-agent.
+   The OAuth 2.0 client would then have had to deal with the error.)
+  </para>
+
+  <para>
+   The "CaptureTokenInfo" filter logs the token information,
+   and also extracts the credentials to inject them into the exchange.
+   Finally the login filter uses the credentials to log the user in
+   to the minimal HTTP server,
+   which responds with the User Information page.
+  </para>
+ </section>
+</chapter>

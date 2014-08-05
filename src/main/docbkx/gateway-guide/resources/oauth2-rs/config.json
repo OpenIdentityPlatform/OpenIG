@@ -1,0 +1,75 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "ResourceServerChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter",
+                        "ResourceServer",
+                        "CaptureTokenInfo",
+                        "LoginRequestFilter"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "ResourceServer",
+                "type": "OAuth2ResourceServerFilter",
+                "config": {
+                    "httpHandler": "ClientHandler",
+                    "requiredScopes": [
+                        "mail",
+                        "employeenumber"
+                    ],
+                    "tokenInfoEndpoint": "http://openam.example.com:8088/openam/oauth2/tokeninfo",
+                    "enforceHttps": false
+                }
+            },
+            {
+                "name": "CaptureTokenInfo",
+                "type": "ScriptableFilter",
+                "config": {
+                    "type": "application/x-groovy",
+                    "source"
+                          : "logger.info(exchange.oauth2AccessToken.rawInfo.toString());
+                            exchange.username = exchange.oauth2AccessToken.rawInfo.get('mail').asString();
+                            exchange.password = exchange.oauth2AccessToken.rawInfo.get('employeenumber').asString();
+                            next.handle(exchange)"
+                }
+            },
+            {
+                "name": "LoginRequestFilter",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "${exchange.username}"
+                        ],
+                        "password": [
+                            "${exchange.password}"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handlerObject": "ResourceServerChain",
+    "baseURI": "http://www.example.com:8081"
+}
