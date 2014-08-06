@@ -179,18 +179,26 @@
      </para>
 
      <para>
-      Relative paths in the "file" field for Groovy scripts are relative to
-      <filename>${warGroovyDir}</filename>.
+      Relative paths in the "file" field are relative
+      to the base location for scripts.
+      The base location depends on the configuration.
+      For details see the section,
+      <link
+      xlink:show="new"
+      xlink:href="gateway-guide#install"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      ><citetitle>Installing ${projectName}</citetitle></link>.
      </para>
 
      <para>
-      This base location, <filename>${warGroovyDir}</filename>,
+      The base location for Groovy scripts
       is on the classpath when the scripts are executed.
       If therefore some Groovy scripts are not in the default package,
       but instead have their own package names,
       they belong in the directory corresponding to their package name.
       For example, a script in package <literal>com.example.groovy</literal>
-      belongs under <filename>scripts/groovy/com/example/groovy/</filename>.
+      belongs under
+      <filename><replaceable>openig-base</replaceable>/scripts/groovy/com/example/groovy/</filename>.
      </para>
     </listitem>
    </varlistentry>
