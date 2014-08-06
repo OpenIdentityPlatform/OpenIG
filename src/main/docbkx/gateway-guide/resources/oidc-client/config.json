@@ -1,0 +1,112 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "OpenIDConnectChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter",
+                        "OpenIDConnectClient"
+                    ],
+                    "handler": "OutgoingChain"
+                }
+            },
+            {
+                "name": "OpenIDConnectClient",
+                "type": "OAuth2ClientFilter",
+                "config": {
+                    "clientEndpoint": "/openid",
+                    "requireHttps": false,
+                    "requireLogin": true,
+                    "target": "${exchange.openid}",
+                    "scopes": [
+                        "openid",
+                        "profile"
+                    ],
+                    "failureHandler": "Dump",
+                    "providerHandler": "ClientHandler",
+                    "providers": [
+                        {
+                            "name": "openam",
+                            "wellKnownConfiguration":
+                              "http://openam.example.com:8088/openam/.well-known/openid-configuration",
+                            "clientId": "${projectName}",
+                            "clientSecret": "password"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Dump",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter"
+                    ],
+                    "handler": "DumpExchange"
+                }
+            },
+            {
+                "name": "DumpExchange",
+                "type": "ScriptableHandler",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "DumpExchange.groovy"
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "GetCredentials",
+                        "LoginRequestFilter",
+                        "CaptureFilter"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "GetCredentials",
+                "type": "ScriptableFilter",
+                "config": {
+                    "type": "application/x-groovy",
+                    "source": "exchange.username = exchange.openid.user_info.family_name;
+                               exchange.password = exchange.openid.user_info.name;
+                               next.handle(exchange)"
+                }
+            },
+            {
+                "name": "LoginRequestFilter",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "${exchange.username}"
+                        ],
+                        "password": [
+                            "${exchange.password}"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": true,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handlerObject": "OpenIDConnectChain"
+}

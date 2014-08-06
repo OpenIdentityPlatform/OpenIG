@@ -121,6 +121,7 @@
   <xinclude:include href="man-HeaderFilter.xml" />
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
+  <xinclude:include href="man-OAuth2ClientFilter.xml" />
   <xinclude:include href="man-OAuth2ResourceServerFilter.xml" />
   <xinclude:include href="man-RedirectFilter.xml" />
   <xinclude:include href="man-ScriptableFilter.xml" />
