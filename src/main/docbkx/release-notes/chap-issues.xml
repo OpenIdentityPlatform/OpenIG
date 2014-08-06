@@ -46,14 +46,29 @@
   </para>
 
   <para>TODO: Update for the release</para>
+  <!-- Only update this on a branch, not trunk. -->
  </section>
 
  <section xml:id="limitations">
   <title>Limitations</title>
   
   <para>
-   ${projectName} Federation does not run on Glassfish V3
-   due to conflicts with the Metro libraries.
+   For HTTPS, ${projectName} can check server certificates.
+   However mutual authentication,
+   where ${projectName} presents its client certificate,
+   is not supported if the client certificate
+   is not the first certificate in the HttpClient key store.
+  </para>
+
+  <para>
+   ${projectName} scripts are not sandboxed,
+   but instead have access to anything in their environment.
+   You must make sure that the scripts that ${projectName} loads are safe.
+  </para>
+
+  <para>
+   When acting as an OpenID Connect 1.0 relying party,
+   ${projectName} does not support dynamic registration.
   </para>
  </section>
  
@@ -66,5 +81,6 @@
   </para>
 
   <para>TODO: Update for the release</para>
+  <!-- Only update this on a branch, not trunk. -->
  </section>
 </chapter>
