@@ -298,6 +298,18 @@
      <para>
       <link
        xlink:show="new"
+       xlink:href="reference#OAuth2ClientFilter"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >OAuth2ClientFilter</link>:
+      acts as an OAuth 2.0 or OpenID Connect 1.0 client,
+      authenticating an end user using OAuth 2.0 delegated authorization.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
        xlink:href="reference#OAuth2ResourceServerFilter"
        xlink:role="http://docbook.org/xlink/role/olink"
       >OAuth2ResourceServerFilter</link>: acts as an OAuth 2.0 resource server,
