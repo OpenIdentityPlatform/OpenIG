@@ -55,6 +55,13 @@
     xlink:href="reference#Route"
     xlink:role="http://docbook.org/xlink/role/olink"
    >Route</link>.
+   See the
+   <link
+    xlink:show="new"
+    xlink:href="reference#Route-description"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Description</citetitle></link> section
+   of the Route reference for details.
   </para>
 
   <para>
@@ -76,6 +83,10 @@
     }
 }
   </programlisting>
+
+  <para>
+   An alternative value for "type" is "RouterHandler".
+  </para>
  </refsect1>
 
  <refsect1>
@@ -85,21 +96,27 @@
    <varlistentry>
     <term><code>"directory"</code>: <emphasis><link
      xlink:href="reference#Expressions"
-     xlink:role="http://docbook.org/xlink/role/olink">expression</link></emphasis> (Optional)</term>
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
     <listitem>
      <para>
       Base directory from which to load configuration files for routes.
      </para>
 
      <para>
-      Default: <filename>${warRoutesDir}</filename> (UNIX, Linux, Mac),
-      <filename>${windowsWarRoutesDir}</filename> (Windows)
+      Default: default base directory for route configuration files.
+      For details see the section,
+      <link
+       xlink:show="new"
+       xlink:href="gateway-guide#install"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      ><citetitle>Installing ${projectName}</citetitle></link>.
      </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term><code>"scanInterval"</code>: <emphasis>integer</emphasis> (Optional)</term>
+    <term><code>"scanInterval"</code>: <emphasis>integer, optional</emphasis></term>
     <listitem>
      <para>
       Interval in seconds after which ${projectName} scans
@@ -126,6 +143,6 @@
    <link
     xlink:show="new"
     xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/router/RouterHandler.html"
-   >org.forgerock.openig.handler.router.RouteHandler</link></para>
+   >org.forgerock.openig.handler.router.RouterHandler</link></para>
  </refsect1>
 </refentry>

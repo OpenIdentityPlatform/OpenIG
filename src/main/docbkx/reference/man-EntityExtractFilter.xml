@@ -25,12 +25,12 @@
   !
 -->
 <refentry xml:id='EntityExtractFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>EntityExtractFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -95,8 +95,18 @@
     xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
     required</emphasis></term>
     <listitem>
-     <para>Expression that yields the target object that contains the
-     extraction results.</para>
+     <para>
+      Expression that yields the target object that contains the extraction results.
+     </para>
+
+     <para>
+      The "bindings" determine what type of object is stored
+      in the target location.
+      The object stored in the target location is a Map&lt;String, String>.
+      You can then access its content with
+      <literal>${<replaceable>target</replaceable>.key}</literal>
+      or <literal>${<replaceable>target</replaceable>['key']}</literal>.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>

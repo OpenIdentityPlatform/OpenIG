@@ -61,6 +61,16 @@
    from a JSON-encoded configuration file,
    expected by default at <filename>${warConfigDir}/config.json</filename>.
   </para>
+
+  <para>
+   The gateway servlet also creates a default
+   <link
+    xlink:show="new"
+    xlink:href="reference#HttpClient"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >HttpClient</link> object to handle requests to servers.
+   You can override the default settings by configuring your own HttpClient.
+  </para>
  </refsect1>
 
  <refsect1>
@@ -69,7 +79,10 @@
   <programlisting language="javascript">
 {
   "heap": { <replaceable>heap-configuration object</replaceable> },
-  "handlerObject": string
+  "handlerObject": string,
+  "baseURI": string,
+  "logSink":  string,
+  "temporaryStorage": string
 }
   </programlisting>
  </refsect1>
@@ -81,16 +94,84 @@
    <varlistentry>
     <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
     <listitem>
-     <para>The <link xlink:href="reference#heap-objects"
-     xlink:role="http://docbook.org/xlink/role/olink">heap object</link>
-     configuration.</para>
+     <para>
+      The
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >heap object</link>
+      configuration.
+     </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
     <term><code>"handlerObject"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch all requests to.</para>
+     <para>
+      The name of the
+      <link
+       xlink:show="new"
+       xlink:href="reference#handlers-conf"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >handler</link>
+      heap object to dispatch all requests to.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"baseURI"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Overrides the existing request URI,
+      making requests relative to a new base URI.
+     </para>
+
+     <para>
+      Only scheme, host and port are used in the supplied URI.
+     </para>
+
+     <para>
+      Default: leave the request URI untouched.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"logSink"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>
+      The name of the LogSink heap object to which to send log messages.
+     </para>
+
+     <para>
+      Default: use the heap object named "LogSink".
+      Otherwise use an internally-created ConsoleLogSink object
+      that is named "LogSink" and that uses default settings.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"temporaryStorage"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>
+      The name of the
+      <link
+       xlink:show="new"
+       xlink:href="reference#TemporaryStorage"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >TemporaryStorage</link>
+      heap object where content is cached during processing.
+     </para>
+
+     <para>
+      Default: use the heap object named "TemporaryStorage".
+      Otherwise use an internally-created TemporaryStorage object
+      that is named "TemporaryStorage" and that uses default settings.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -98,8 +179,10 @@
 
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/servlet/GatewayServlet.html"
-  >org.forgerock.openig.servlet.GatewayServlet</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/servlet/GatewayServlet.html"
+   >org.forgerock.openig.servlet.GatewayServlet</link></para>
  </refsect1>
 </refentry>
