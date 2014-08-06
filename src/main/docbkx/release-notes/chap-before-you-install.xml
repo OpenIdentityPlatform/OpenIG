@@ -24,11 +24,11 @@
   !    
 -->
 <chapter xml:id='chap-before-you-install'
- xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Before You Install</title>
 
  <para>
@@ -55,7 +55,8 @@
   </para>
 
   <para>
-   If you install an OpenAM policy agent in the same container as ${projectName},
+   If you install an OpenAM policy agent
+   in the same container as ${projectName},
    then you must use a Java release that is supported
    with the policy agent as well.
   </para>
