@@ -39,19 +39,99 @@
  <section xml:id="changes">
   <title>Major Changes to Existing Functionality</title>
 
+  <para>
+   This release brings important new functionality
+   and many changes to ${projectName}.
+  </para>
+
   <itemizedlist>
+   <para>
+    If you are running older versions of ${projectName}
+    you must at minimum modify both the location
+    and also the content of your <filename>config.json</filename> file.
+   </para>
+
+   <para>
+    You must migrate the configuration by hand.
+   </para>
 
    <listitem>
     <para>
-     The configuration file location has changed.
+     The configuration file location and configuration layout have changed.
     </para>
 
     <para>
-     Configuration files are now stored
+     By default, configuration files are now stored
      under <filename>${warConfigDir}</filename>
      and <filename>${warSamlDir}</filename> on UNIX, Linux, and Mac OS X,
      and under <filename>${windowsWarConfigDir}</filename>
      and <filename>${windowsWarSamlDir}</filename> on Windows systems.
+    </para>
+
+    <para>
+     For details the <citetitle>Guide to ${projectName}</citetitle> section,
+     <link
+     xlink:show="new"
+     xlink:href="gateway-guide#install"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >Installing ${projectName}</link>.
+    </para>
+
+    <para>
+     As described in that section,
+     the base configuration directory can be changed
+     and can even be set at run time.
+     You must therefore take care to protect access to ${projectName},
+     both by protecting access to the environment at startup time,
+     and also by protecting access to configuration files at run time.
+    </para>
+
+    <para>
+     Notice that ${projectName} configuration can be split across multiple files.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Usage for some configuration objects has changed.
+     In particular, the top-level configuration object
+     now references a Handler rather than a Servlet.
+    </para>
+
+    <para>
+     When migrating your configuration, review current usage in the
+     <link
+     xlink:show="new"
+     xlink:href="reference#reference"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>${projectName} Reference</citetitle></link>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     ${projectName} supports runtime configuration changes,
+     as described in the <citetitle>Guide to ${projectName}</citetitle> chapter,
+     <link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-routing"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Routing Tutorial</citetitle></link>.
+    </para>
+
+    <para>
+     Notice that you can turn off runtime configuration changes.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     ${projectName} configuration Expressions can depend on runtime settings,
+     such as environment variables and system properties.
+    </para>
+
+    <para>
+     You must ensure that these settings are properly protected.
     </para>
    </listitem>
 
@@ -75,41 +155,15 @@
      ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
     </para>
    </listitem>
-
-   <listitem>
-    <para>
-     If you are running older versions of ${projectName}
-     you must modify your <filename>config.json</filename>.
-    </para>
-
-    <para><literal>"type"</literal> entries no longer require the full Java
-    package name. The <filename>config.json</filename> should no longer contain
-    any Java package names. For example, change lines such as the
-    following:</para>
-
-    <programlisting language="javascript"
-    >"type" : "com.apexidentity.filter.Chain"</programlisting>
-
-    <para>When you remove the full Java package name, the resulting line is as
-    follows.</para>
-
-    <programlisting language="javascript">"type" : "Chain"</programlisting>
-
-    <para>
-    The <literal>"operationType"</literal> field in the
-    <literal>"CryptoHeaderFilter"</literal> has been
-    changed to <literal>"operation"</literal>
-    </para>
-   </listitem>
-
   </itemizedlist>
-
  </section>
 
  <section xml:id="deprecated">
   <title>Deprecated Functionality</title>
   
-  <para>No functionality is deprecated in this release.</para>
+  <para>
+   No functionality is deprecated in this release.
+  </para>
  </section>
 
  <section xml:id="removed">
