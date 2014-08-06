@@ -68,7 +68,7 @@
 
   <programlisting language="javascript">
 {
-  "name": "HttpClient",
+  "name": string,
   "type": "HttpClient",
   "config": {
     "connections": number,
@@ -78,13 +78,17 @@
     "soTimeout": duration string,
     "connectionTimeout": duration string,
     "keystore": {
-        "file": string,
-        "password": expression
+        "file": expression,
+        "password": expression,
+        "alg": string,
+        "type": string
     },
     "truststore": {
-        "file": string,
-        "password": expression
-    }
+        "file": expression,
+        "password": expression,
+        "alg": string,
+        "type": string
+    },
   }
 }
   </programlisting>
@@ -218,7 +222,10 @@
       </para>
 
       <varlistentry>
-       <term><code>"file"</code> <emphasis>string, required</emphasis></term>
+       <term><code>"file"</code> <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required</emphasis></term>
        <listitem>
         <para>
          Absolute path name of the key store file
@@ -298,7 +305,10 @@
       </para>
 
       <varlistentry>
-       <term><code>"file"</code> <emphasis>string, required</emphasis></term>
+       <term><code>"file"</code> <emphasis><link
+         xlink:href="reference#Expressions"
+         xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required</emphasis></term>
        <listitem>
         <para>
          Absolute path name of the trust store file

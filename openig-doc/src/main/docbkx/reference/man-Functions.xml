@@ -525,7 +525,7 @@
   <title>toString</title>
   <literallayout class="monospaced">toString(object)</literallayout>
 
-  <para>Returns the string value of an aribtrary object.</para>
+  <para>Returns the string value of an arbitrary object.</para>
 
   <variablelist>
    <title>Parameters</title>

@@ -25,12 +25,12 @@
   !
 -->
 <refentry xml:id='FileAttributesFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>FileAttributesFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -73,6 +73,15 @@
          "value": expression
      }
 }</programlisting>
+
+  <para>
+   For an example see the section,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#tutorial-credentials-from-file"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Login With Credentials From a File</citetitle></link>.
+  </para>
  </refsect1>
  <refsect1>
   <title>Properties</title>
@@ -114,8 +123,19 @@
     xlink:role="http://docbook.org/xlink/role/olink">lvalue-expression</link>,
     required</emphasis></term>
     <listitem>
-     <para>Expression that yields the target object that will contain the
-     record.</para>
+     <para>
+      Expression that yields the target object to contain the record.
+     </para>
+
+     <para>
+      The target object is a Map&lt;String, String>,
+      where the "fields" are the keys.
+      For example, if the target is ${exchange.credentials} and the record has
+      a "username" field and a "password" field mentioned in the "fields" list,
+      Then you can access
+      the user name as <literal>${exchange.credentials.username}</literal>
+      and the password as <literal>${exchange.credentials.password}</literal>.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>

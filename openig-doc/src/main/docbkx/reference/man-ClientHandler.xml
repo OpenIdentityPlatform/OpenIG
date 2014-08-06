@@ -47,13 +47,8 @@
    <secondary>ClientHandler</secondary>
   </indexterm>
   <para>Submits exchange requests to remote servers.</para>
-
-  <note>
-   <para>This handler does not verify hostnames for outgoing SSL connections.
-   This is because ${projectName} usually accesses the SSL endpoint using a raw IP
-   address rather than a fully-qualified hostname.</para>
-  </note>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript">{
@@ -81,7 +76,15 @@
      </para>
 
      <para>
-      Default: <literal>"HttpClient"</literal>, which has the default settings
+      Default: use the heap object named "HttpClient",
+      which matches the name of the HttpClient object
+      created by the gateway servlet by default with default settings
+     </para>
+
+     <para>
+      If you overload that name
+      by configuring your own HttpClient object named "HttpClient",
+      then use that heap object.
      </para>
     </listitem>
    </varlistentry>
@@ -111,7 +114,7 @@
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/handler/ClientHandler.html"
+  xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/ClientHandler.html"
   >org.forgerock.openig.handler.ClientHandler</link></para>
  </refsect1>
 </refentry>

@@ -25,12 +25,12 @@
   !
 -->
 <refentry xml:id='CaptureFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>CaptureFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -92,53 +92,76 @@
     <term><code>"captureEntity"</code>: <emphasis>boolean,
     optional</emphasis></term>
     <listitem>
-     <para>Indicates that message entity should be captured. Default:
-     <literal>true</literal>.</para>
+     <para>
+      Whether the message entity should be captured.
+     </para>
+
+     <para>
+      The filter omits binary entities,
+      instead writing a <literal>[binary entity]</literal> marker to the file.
+     </para>
+
+     <para>
+      Default: true
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Examples</title>
+
   <para>Log the entire request and response:</para>
-  <programlisting language="javascript">{
-     "name": "LogToTemporaryFile",
-     "type": "CaptureFilter",
-     "config": {
-         "file": "/tmp/gateway.log",
-     }
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+    "name": "LogToTemporaryFile",
+    "type": "CaptureFilter",
+    "config": {
+        "file": "/tmp/gateway.log",
+    }
+}
+  </programlisting>
 
   <para>Log the request and response. Do not log the entity:</para>
-  <programlisting language="javascript">{
-     "name": "LogToTemporaryFile",
-     "type": "CaptureFilter",
-     "config": {
-         "file": "/tmp/gateway.log"
-         "captureEntity": false,
-     }
-}</programlisting>
 
-  <para>Normal usage of the CaptureFilter is to create an OutgoingChain.
-  This enables you to call filters like the CaptureFilter, before sending out
-  the request:</para>
-  <programlisting language="javascript">{
-     "name": "OutgoingChain",
-     "type": "Chain",
-     "config": {
-         "filters": [ "LogToTemporaryFile" ],
-         "handler": "ClientHandler"
-     }
- },
- {
-     "name": "LogToTemporaryFile",
-     "type": "CaptureFilter",
-     "config": {
-         "captureEntity": false,
-         "file": "/tmp/gateway.log",
-     }
-}</programlisting>
+  <programlisting language="javascript">
+{
+    "name": "LogToTemporaryFile",
+    "type": "CaptureFilter",
+    "config": {
+        "file": "/tmp/gateway.log"
+        "captureEntity": false,
+    }
+}
+  </programlisting>
+
+  <para>
+   You can use the CaptureFilter to capture the exchange
+   before sending the request and when receiving the response
+   as in the following example.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "OutgoingChain",
+    "type": "Chain",
+    "config": {
+        "filters": [ "LogToTemporaryFile" ],
+        "handler": "ClientHandler"
+    }
+},
+{
+    "name": "LogToTemporaryFile",
+    "type": "CaptureFilter",
+    "config": {
+        "captureEntity": false,
+        "file": "/tmp/gateway.log"
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"

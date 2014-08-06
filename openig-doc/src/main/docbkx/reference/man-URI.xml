@@ -21,104 +21,152 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2014 ForgeRock AS
   !
 -->
 <refentry xml:id='URI'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>URI</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>URI</refname>
   <refpurpose>Uniform Resource Identifier in HTTP exchange</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Exchange Object Model</primary>
    <secondary>URI</secondary>
   </indexterm>
-  <para>Represents a Uniform Resource Identifier (URI) reference in an exchange
-  object model. URI properties are read-only.</para>
+
+  <para>
+   Represents a Uniform Resource Identifier (URI) reference
+   in an exchange object model.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"scheme"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The scheme component of the URI, or <literal>null</literal> if the
-     scheme is undefined.</para>
+     <para>
+      The scheme component of the URI,
+      or <literal>null</literal> if the scheme is undefined.
+     </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
-    <term><code>"schemeSpecificPart"</code>: <emphasis>string</emphasis></term>
-    <listitem>
-     <para>The decoded scheme-specific part of the URI, never
-     <literal>null</literal>.</para>
-    </listitem>
-   </varlistentry>
+
    <varlistentry>
     <term><code>"authority"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The decoded authority component of the URI, or
-     <literal>null</literal> if the authority is undefined.</para>
+     <para>
+      The decoded authority component of the URI,
+      or <literal>null</literal> if the authority is undefined.
+     </para>
+
+     <para>
+      Use "rawAuthority" to access the raw (encoded) component.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"userInfo"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The decoded user-information component of the URI, or
-     <literal>null</literal> if the user information is undefined.</para>
+     <para>
+      The decoded user-information component of the URI,
+      or <literal>null</literal> if the user information is undefined.
+     </para>
+
+     <para>
+      Use "rawUserInfo" to access the raw (encoded) component.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"host"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The host component of the URI, or <literal>null</literal> if the
-     host is undefined.</para>
+     <para>
+      The host component of the URI,
+      or <literal>null</literal> if the host is undefined.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"port"</code>: <emphasis>number</emphasis></term>
     <listitem>
-     <para>The port component of the URI, or <literal>null</literal> if the
-     port is undefined.</para>
+     <para>
+      The port component of the URI,
+      or <literal>null</literal> if the port is undefined.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"path"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The decoded path component of the URI, or <literal>null</literal>
-     if the path is undefined.</para>
+     <para>
+      The decoded path component of the URI,
+      or <literal>null</literal> if the path is undefined.
+     </para>
+
+     <para>
+      Use "rawPath" to access the raw (encoded) component.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"query"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The decoded query component of the URI, or <literal>null</literal>
-     if the query is undefined.</para>
+     <para>
+      The decoded query component of the URI,
+      or <literal>null</literal> if the query is undefined.
+     </para>
+
+     <para>
+      Use "rawQuery" to access the raw (encoded) component.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"fragment"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>The decoded fragment component of the URI, or <literal>null</literal>
-     if the fragment is undefined.</para>
+     <para>
+      The decoded fragment component of the URI,
+      or <literal>null</literal> if the fragment is undefined.
+     </para>
+
+     <para>
+      Use "rawFragment" to access the raw (encoded) component.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/6/docs/api/java/net/URI.html"
-  >java.net.URI</link></para>
+  <para>
+   <link
+   xlink:show="new"
+   xlink:href="${javadocBase}/index.html?org/forgerock/openig/util/MutableUri.html"
+   >org.forgerock.openig.util.MutableUri</link>
+  </para>
  </refsect1>
 </refentry>
