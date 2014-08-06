@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id='chap-oauth2-client'
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <title>Configuring ${projectName} as an OAuth 2.0 Client</title>
+
+ <para>
+  This chapter explains how ${projectName} acts
+  as an OAuth 2.0 client or OpenID Connect 1.0 relying party,
+  and follows with a tutorial
+  that shows you how to use ${projectName}
+  as an OpenID Connect 1.0 relying party.
+ </para>
+
+ <indexterm>
+  <primary>OAuth 2.0</primary>
+  <secondary>Client</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>OpenID Connect 1.0</primary>
+  <secondary>Relying party</secondary>
+ </indexterm>
+
+ <section xml:id="about-oauth2-client">
+  <title>About ${projectName} as an OAuth 2.0 Client</title>
+
+  <para>
+   As described in the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-oauth-rs"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuring ${projectName} as an OAuth 2.0 Resource Server</citetitle></link>,
+   an OAuth 2.0 client is the third-party application that needs access
+   to a user's protected resources.
+   The client application therefore has the user (the OAuth 2.0 resource owner)
+   delegate authorization by authenticating
+   with an identity provider (the OAuth 2.0 authorization server)
+   using an existing account,
+   and then consenting to authorize access to protected resources
+   (on an OAuth 2.0 resource server).
+  </para>
+
+  <para>
+   ${projectName} can act as an OAuth 2.0 client when you configure an
+   <link
+    xlink:show="new"
+    xlink:href="reference#OAuth2ClientFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >OAuth2ClientFilter</link>.
+   The filter handles the process of allowing the user to select a provider,
+   and redirecting the user through the authentication and authorization steps
+   of an OAuth 2.0 authorization code grant,
+   which results in the authorization server returning an access token to the filter.
+   At the outcome of a successful authorization grant,
+   the filter injects the access token data
+   into a configurable target field of the exchange
+   so that subsequent filters and handlers have access
+   to the access token.
+   Subsequent requests can use the access token without re-authentication.
+  </para>
+
+  <para>
+   If the protected application is an OAuth 2.0 resource server,
+   then ${projectName} can send the access token with the resource request.
+  </para>
+
+ </section>
+
+ <section xml:id="about-oidc-rp">
+  <title>About ${projectName} as an OpenID Connect 1.0 Relying Party</title>
+
+  <para>
+   The specifications available through the
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6749"
+   >OpenID Connect</link> site describe an authentication layer built on OAuth 2.0,
+   which is OpenID Connect 1.0.
+  </para>
+
+  <para>
+   OpenID Connect 1.0 is a specific implementation of OAuth 2.0
+   where the identity provider holds the protected resource
+   that the third-party application aims to access.
+   This resource is the <firstterm>UserInfo</firstterm>,
+   information about the authenticated end-user expressed in a standard format.
+  </para>
+
+  <itemizedlist>
+   <para>
+    In OpenID Connect 1.0, the key entities are the following.
+   </para>
+
+   <listitem>
+    <para>
+     The <firstterm>end user</firstterm> (OAuth 2.0 resource owner)
+     whose user information the application needs to access.
+    </para>
+
+    <para>
+     The end user wants to use an application
+     through existing identity provider account
+     without signing up to and creating credentials for yet another web service.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The <firstterm>Relying Party</firstterm> (RP) (OAuth 2.0 client)
+     needs access to the end user's protected user information.
+    </para>
+
+    <para>
+     For example, an online mail application needs to know which end user
+     is accessing the application in order to present the correct inbox.
+    </para>
+
+    <para>
+     As another example, an online shopping site needs to know which end user
+     is accessing the site in order to present
+     the right offerings, account, and shopping cart.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The <firstterm>OpenID Provider</firstterm> (OP)
+     (OAuth 2.0 authorization server and also resource server)
+     that holds the user information and grants access.
+    </para>
+
+    <para>
+     The OP effectively has the end user consent to providing the RP
+     with access to some of its user information.
+     As OpenID Connect 1.0 defines unique identification for an account
+     (subject identifier + issuer identifier),
+     the RP can use this as a key to its own user profile.
+    </para>
+
+    <para>
+     In the case of the online mail application,
+     this key could be used to access the mailboxes and related account information.
+     In the case of the online shopping site,
+     this key could be used to access the offerings, account, shopping cart and so forth.
+     The key makes it possible to serve users as if they had local accounts.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   When ${projectName} acts therefore as an OpenID Connect 1.0 relying party,
+   its ultimate role is to retrieve user information from the OpenID provider,
+   and then to inject that information into the exchange
+   for use by subsequent filters and handlers.
+  </para>
+
+  <para>
+   In the tutorial that follows,
+   you configure ${projectName} as a relying party,
+   and use OpenAM as the OpenID Provider.
+  </para>
+ </section>
+
+ <section xml:id="oidc-rp-tutorial-before-you-start">
+  <title>Preparing the Tutorial</title>
+
+  <para>
+   In the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>,
+   you learned how to configure ${projectName}
+   to proxy traffic and capture request and response data.
+   You also learned how to configure ${projectName}
+   to use a static request to log in with hard-coded credentials.
+  </para>
+
+  <para>
+   This tutorial shows you how ${projectName}
+   can act as an OpenID Connect 1.0 relying party.
+  </para>
+
+  <para>
+   This tutorial relies on OpenAM as an OpenID Provider.
+   As a relying party, ${projectName} takes the end user to OpenAM
+   for authorization and an access token.
+   It then uses the access token to get end user information from OpenAM.
+  </para>
+
+  <para>
+   Before you start this tutorial,
+   prepare ${projectName} and the minimal HTTP server as you did for the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>.
+  </para>
+
+  <para>
+   ${projectName} should be running in Jetty,
+   configured to access the minimal HTTP server as described in that chapter.
+  </para>
+
+  <tip>
+   <para>
+    If you get stuck running the following samples,
+    know that you can activate ${projectName} debug logging
+    with a "ConsoleLogSink" configuration object.
+    Add it as the first object in the array of configuration objects.
+   </para>
+
+   <programlisting language="javascript">
+{
+    "name": "LogSink",
+    "type": "ConsoleLogSink",
+    "config": {
+        "level": "DEBUG"
+    }
+}
+   </programlisting>
+  </tip>
+ </section>
+
+ <section xml:id="oidc-rp-tutorial-openam-config">
+  <title>Setting Up OpenAM as an OpenID Provider</title>
+
+  <para>
+   Install and configure OpenAM on
+   <literal>http://openam.example.com:8088/openam</literal>
+   with the default configuration.
+   If you use a different configuration,
+   make sure you substitute in the tutorial accordingly.
+   Although this tutorial does not use HTTPS,
+   you must use HTTPS to protect access tokens and user information
+   in production environments.
+  </para>
+
+  <para>
+   Login to the OpenAM console as administrator,
+   and use the common task wizard, Configure OAuth2,
+   to configure an OAuth 2.0 authorization server in / (Top Level Realm).
+   This also configures OpenAM as an OpenID Provider.
+  </para>
+
+  <para>
+   Also create an OAuth 2.0 Client profile in / (Top Level Realm).
+   This allows ${projectName} to communicate with OpenAM as an OAuth 2.0 client.
+   In OpenAM console, browse to
+   Access Control > / (Top Level Realm) > Agents > OAuth 2.0 Client,
+   and then click New in the Agent table.
+  </para>
+
+  <para>
+   Create an OAuth 2.0 client profile with name <literal>${projectName}</literal>
+   and password <literal>password</literal>.
+   The name is the "clientId" value, and the password is the "clientSecret" value
+   that you use in the provider configuration in ${projectName}.
+  </para>
+
+  <para>
+   Edit the <literal>${projectName}</literal> client profile
+   to add the Redirection URI
+   <literal>http://www.example.com:8080/openid/callback</literal>.
+   Also add <literal>openid</literal> and <literal>profile</literal> scopes
+   to the Scope(s) list, and then save your work.
+   In this tutorial,
+   you overload these profile settings to pass credentials to ${projectName}.
+   This tutorial uses Full Name and Last Name for the sake of simplicity.
+   Both of those attributes are part of a user's profile
+   out of the box with the default OpenAM configuration.
+   Neither of the attributes are needed for anything else in this tutorial.
+   So this tutorial uses Last Name to hold the username,
+   and Full Name to hold the password.
+   In a real deployment, you would no doubt use other attributes,
+   depending upon the user profiles and on your requirements.
+  </para>
+
+  <para>
+   Finally, edit the OpenAM demo user to set credentials in
+   the Last Name and Full Name fields of the demo user profile.
+   In OpenAM console, browse to the user profile under
+   Access Control > / (Top Level Realm) > Subjects > User > demo.
+   Set Last Name to <literal>george</literal>
+   and Full Name to <literal>costanza</literal>.
+  </para>
+ </section>
+
+ <section xml:id="oidc-rp-tutorial-gateway-config">
+  <title>Configuring ${projectName} as a Relying Party</title>
+
+  <para>
+   To configure ${projectName} as an OpenID Connect 1.0 relying party,
+   replace the <filename>config.json</filename> file
+   with the new configuration from the example,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-oidc-client"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Configuration for an OAuth 2.0 Resource Server</citetitle></link>.
+  </para>
+
+  <para>
+   Also add the <filename>DumpExchange.groovy</filename> script from that section
+   under <filename>${warGroovyDir}</filename>
+   (<filename>${windowsWarGroovyDir}</filename> on Windows).
+   The script is called from the configuration on failure.
+  </para>
+
+  <para>
+   In the <filename>config.json</filename>,
+   consider the "OpenIDConnectClient" filter.
+   This configuration object has the
+   <link
+    xlink:show="new"
+    xlink:href="reference#OAuth2ClientFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >OAuth2ClientFilter</link> type.
+   This is the filter that enables ${projectName} to act as a relying party.
+  </para>
+
+  <para>
+   The filter is configured to work only with a single provider,
+   the OpenAM server you configured in
+   <xref linkend="oidc-rp-tutorial-openam-config" />.
+   If you had more than one provider configured,
+   you would need a "loginHandler" as well to help end users pick a provider.
+  </para>
+
+  <para>
+   The "OpenIDConnectClient" filter has
+   a base client endpoint of <literal>/openid</literal>.
+   Incoming requests to <literal>/openid/login</literal>
+   start the delegated authorization process.
+   Incoming requests to <literal>/openid/callback</literal>
+   are expected as redirects from the OP (as authorization server),
+   so this is why you set the redirect URI in the client profile in OpenAM to
+   <literal>http://www.example.com:8080/openid/callback</literal>.
+  </para>
+
+  <para>
+   The "OpenIDConnectClient" filter has <literal>"requireHttps": false</literal>
+   as a convenience for testing.
+   In production environments, require HTTPS.
+  </para>
+
+  <para>
+   The filter has <literal>"requireLogin": true</literal> to ensure you see
+   the delegated authorization process when you make your request.
+  </para>
+
+  <para>
+   In the "OpenIDConnectClient" filter, the target
+   for storing authorization state information is
+   <literal>${exchange.openid}</literal>,
+   so this is where subsequent filters and handlers can find
+   access token and user information.
+  </para>
+
+  <para>
+   The scopes are set to "openid" and "profile" as allowed for OpenID Connect 1.0.
+  </para>
+
+  <para>
+   Notice that on failure the filter dumps the current information in the exchange
+   into a web page response to the end user.
+   While this is helpful to you for debugging purposes,
+   it is not helpful to an end user.
+   In production environments, return a more user-friendly failure page.
+  </para>
+
+  <para>
+   Also in the "OpenIDConnectClient" filter,
+   the typical "ClientHandler" configures the HTTP client that communicates
+   with the OpenID Provider.
+  </para>
+
+  <para>
+   Returning to the top of the configuration,
+   notice that the "OpenIDConnectChain" invokes an "OutgoingChain" handler
+   after the filter injects the access token and user information
+   into <literal>exchange.openid</literal>.
+   The "OutgoingChain" in this case
+   extracts credentials from the user information by script ("GetCredentials"),
+   and then uses the credentials to log the user in to the minimal HTTP server
+   ("LoginRequestFilter").
+  </para>
+
+  <para>
+   In this simple configuration, all successful requests result in login attempts
+   against the minimal HTTP server.
+  </para>
+
+  <para>
+   After updating <filename>config.json</filename>,
+   restart Jetty server so that ${projectName} loads the new configuration.
+  </para>
+ </section>
+
+ <section xml:id="oidc-rp-tutorial-test">
+  <title>Trying It Out</title>
+
+  <para>
+   To try your configuration, browse to ${projectName} at
+   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+  </para>
+
+  <para>
+   When redirected to the OpenAM login page,
+   login as user <literal>demo</literal>, password <literal>changeit</literal>,
+   and then allow the application access to user information.
+  </para>
+
+  <para>
+   If successful, ${projectName} logs you into the minimal HTTP server
+   as George Costanza, and the minimal HTTP server returns George's page.
+  </para>
+
+  <para>
+   What is happening behind the scenes?
+  </para>
+
+  <para>
+   After ${projectName} gets the browser request,
+   the "OpenIDConnectClient" filter redirects you to authenticate with OpenAM
+   and consent to authorize access to user information.
+   After you authorize access, OpenAM returns an access token to the filter.
+   The filter then uses that access token to get the user information.
+   Before handling the next filter or handler in the exchange,
+   which is the "OutgoingChain",
+   the filter injects the authorization state information into
+   <literal>exchange.openid</literal>.
+  </para>
+
+  <para>
+   The "OutgoingChain" extracts credentials to re-inject them into the exchange.
+   Its login filter then uses the credentials to log the user in
+   to the minimal HTTP server, which responds with its User Information page.
+  </para>
+ </section>
+</chapter>

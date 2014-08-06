@@ -131,6 +131,34 @@
   </programlisting>
  </example>
 
+ <example xml:id="config-oidc-client"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
+  <title>Configuration for an OpenID Connect 1.0 Client</title>
+
+  <para>
+   The following listing shows <filename>config.json</filename>
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/oidc-client/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include config.json
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The following listing shows <filename>DumpExchange.groovy</filename>
+  </para>
+
+  <programlisting language="java">
+<xinclude:include href="resources/oidc-client/DumpExchange.groovy" parse="text">
+ <xinclude:fallback>
+  Failed to include DumpExchange.groovy
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+ </example>
+
  <example xml:id="config-routing"><?dbfo keep-together="auto"?><?dbfo pgwide="1"?>
   <title>Configuration for the Routing Tutorial</title>
 

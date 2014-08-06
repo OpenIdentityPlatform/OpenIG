@@ -126,7 +126,7 @@
  -->
 
  <section xml:id="oauth2-support">
-  <title>Quickly Add OAuth 2.0 Support</title>
+  <title>Quickly Add OAuth 2.0 &amp; OpenID Connect 1.0 Support</title>
 
   <para>
    OAuth 2.0 is modern federation alternative,
@@ -168,8 +168,57 @@
   </mediaobject>
 
   <para>
-   In addition, there is no need to modify servers housing protected resources
+   ${projectName} can also play the role of OAuth 2.0 client,
+   authenticating an end user using OAuth 2.0 delegated authorization
+   with an existing OAuth 2.0-compliant identity provider.
+   This means developers can quickly develop OAuth 2.0 client applications
+   without having to learn the intricacies of OAuth 2.0 authorization grant flows.
+   ${projectName} takes care of obtaining the access token
+   on behalf of your application and injects the access token for your use.
+  </para>
+
+  <para>
+   OpenID Connect 1.0 is an implementation of OAuth 2.0
+   whereby the protected resource is information about the user
+   or about the user's account with the identity provider.
+  </para>
+
+  <para>
+   As OAuth 2.0 client, ${projectName} can play the role
+   of OpenID Connect 1.0 relying party, obtaining user information
+   on behalf of your application.
+  </para>
+
+  <para>
+   The following figure shows ${projectName} playing the role of relying party,
+   where the mail server requires user information to show the right mailboxes.
+  </para>
+
+  <mediaobject xml:id="figure-oidc-support">
+   <imageobject>
+    <imagedata fileref="images/oidc-support.png" format="PNG" />
+   </imageobject>
+   <textobject>
+    <para>
+     ${projectName} lets you quickly make your application
+     an OAuth 2.0 client or OpenID Connect 1.0 relying party.
+    </para>
+   </textobject>
+  </mediaobject>
+
+  <para>
+   In addition, there is generally no need to modify
+   existing applications or servers housing protected resources
    or to install plugins or policy agents on the servers.
+  </para>
+
+  <para>
+   ${projectName} can for example inject user information into the URL,
+   adding a <replaceable>username</replaceable> as in
+   <literal>https://mail.example.com/mail/<replaceable>username</replaceable></literal>.
+   For some applications, you might choose to provide additional capabilities,
+   and so you might want to enhance the application to accept
+   additional user information from the provider in other ways.
   </para>
  </section>
 </chapter>

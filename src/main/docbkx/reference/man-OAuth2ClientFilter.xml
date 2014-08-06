@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='OAuth2ClientFilter'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
+
+ <refmeta>
+  <refentrytitle>OAuth2ClientFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>OAuth2ClientFilter</refname>
+  <refpurpose>Authenticate an end user with OAuth 2.0 delegated authorization</refpurpose>
+ </refnamediv>
+
+ <refsect1 xml:id="OAuth2ClientFilter-description">
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>OAuth2ClientFilter</secondary>
+  </indexterm>
+
+  <para>
+   An OAuth2ClientFilter is a filter
+   that authenticates an end user using OAuth 2.0 delegated authorization.
+   The filter can act as an OpenID Connect relying party
+   as well as an OAuth 2.0 client.
+  </para>
+
+  <para>
+   The filter configuration includes the client credentials
+   that are used to authenticate to identity providers.
+   The client credentials can be included directly in the configuration,
+   or retrieved in some other way using an
+   <link
+    xlink:show="new"
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >expression</link>.
+  </para>
+
+  <para>
+   In the case where all users share the same identity provider,
+   you can configure the filter as a client of a single provider.
+   You can also configure the filter to work with multiple providers,
+   taking the user to a login handler page&#8212;often full of provider logos,
+   and known as a <firstterm>Nascar page</firstterm>.
+   The name comes from Nascar race cars,
+   some of which are covered with sponsors' logos.&#8212;to choose a provider.
+  </para>
+
+  <variablelist>
+   <para>
+    What an OAuth2ClientFilter does depends on the incoming request URI.
+    In the following list <replaceable>clientEndpoint</replaceable>
+    represents the value of the "clientEndpoint" in the filter configuration.
+   </para>
+
+   <varlistentry>
+    <term><literal><replaceable>clientEndpoint</replaceable
+     >/login/<replaceable>provider</replaceable
+     >?goto=<replaceable>url</replaceable></literal></term>
+    <listitem>
+     <para>
+      Redirect the end user for authorization with the specified provider.
+     </para>
+
+     <para>
+      The provider then authenticates the end user
+      and obtains authorization consent from the end user
+      before redirecting the user-agent back to the callback client endpoint.
+     </para>
+
+     <para>
+      Ultimately if the entire process is successful,
+      the filter saves the authorization state in the exchange
+      and redirects the user-agent to the specified URL.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal><replaceable>clientEndpoint</replaceable
+     >/logout?goto=<replaceable>url</replaceable></literal></term>
+    <listitem>
+     <para>
+      Remove the authorization state for the end user
+      and redirect to the specified URL.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal><replaceable>clientEndpoint</replaceable
+     >/callback</literal></term>
+    <listitem>
+     <para>
+      Handle the callback from the OAuth 2.0 authorization server
+      that occurs as part of the authorization process.
+     </para>
+
+     <para>
+      If the callback is handled successfully,
+      the filter saves the authorization state
+      in the exchange at the specified "target" location
+      and redirects to the URL during login.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>Other request URIs</term>
+    <listitem>
+     <para>
+      Restore authorization state in the specified "target" location
+      and call the next filter or handler in the chain.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+  "name": string,
+  "type": "OAuth2ClientFilter",
+  "config": {
+    "clientEndpoint": expression,
+    "failureHandler": handler,
+    "loginHandler": handler,
+    "providerHandler": handler,
+    "providers": [ provider configuration, ... ],
+    "target": expression,
+    "defaultLoginGoto": expression,
+    "defaultLogoutGoto": expression,
+    "requireHttps": boolean,
+    "requireLogin": boolean,
+    "scopes": [ expression, ...],
+    "useJWTSession": boolean
+  }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"clientEndpoint"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
+    <listitem>
+     <para>
+      Base URI for the filter.
+     </para>
+
+     <para>
+      For example, if you set <literal>"clientEndpoint": "/openid"</literal>,
+      then the service URIs for this filter on your ${projectName} server
+      are <literal>/openid/login</literal>, <literal>/openid/logout</literal>,
+      and <literal>/openid/callback</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"failureHandler"</code>: <emphasis>handler, required</emphasis></term>
+    <listitem>
+     <para>
+      The name of the handler configuration object to invoke
+      when authentication fails.
+     </para>
+
+     <para>
+      If this handler is invoked, then the "target" in the exchange
+      is populated with information about the provider, and the error
+     </para>
+
+     <para>
+      The failure object in the "target" is a simple map.
+      It has the following layout.
+     </para>
+
+     <programlisting language="javascript">
+{
+    "provider": "provider name string",
+    "error": {
+        "realm": "optional string",
+        "scope": [ "optional required scope string", ... ],
+        "error": "optional string",
+        "error_description": "optional string",
+        "error_uri": "optional string"
+    },
+    "access_token": "string",
+    "id_token": "string",
+    "token_type": "Bearer",
+    "expires_in": "number",
+    "scope": [ "optional scope string", ... ],
+    "client_endpoint": "URL string"
+}
+     </programlisting>
+
+     <itemizedlist>
+      <para>
+       In the failure object, the following fields are not always present.
+       Their presence depends on when the failure occurs.
+      </para>
+
+      <listitem><para>"access_token"</para></listitem>
+      <listitem><para>"id_token"</para></listitem>
+      <listitem><para>"token_type"</para></listitem>
+      <listitem><para>"expires_in"</para></listitem>
+      <listitem><para>"scope"</para></listitem>
+      <listitem><para>"client_endpoint"</para></listitem>
+     </itemizedlist>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"loginHandler"</code>: <emphasis>handler,
+     required when multiple providers are configured</emphasis></term>
+    <listitem>
+     <para>
+      The name of the handler configuration object to invoke
+      if the user must choose a provider.
+     </para>
+
+     <para>
+      This handler allows the user to choose a provider,
+      as in the following example that allows the user to choose between
+      "openam" and "google".
+     </para>
+
+     <programlisting language="javascript"><![CDATA[
+ {
+    "name": "NascarPage",
+    "type": "StaticResponseHandler",
+    "config": {
+        "status": 200,
+        "entity": "<html><p><a
+                   href='/openid/login?provider=openam&goto=${urlEncode(exchange.request.uri)}'
+                   >OpenAM Login</a></p>
+                   <p><a
+                   href='/openid/login?provider=google&goto=${urlEncode(exchange.request.uri)}'
+                   >Google Login</a></p>
+                   </html>"
+    }
+}
+     ]]></programlisting>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"providerHandler"</code>: <emphasis>handler, required</emphasis></term>
+    <listitem>
+     <para>
+      The name of the handler configuration object to invoke
+      to communicate with the provider.
+     </para>
+
+     <para>
+      Usually set this to the name of a
+      <link
+       xlink:show="new"
+       xlink:href="reference#ClientHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >ClientHandler</link> configured in the heap,
+      or a chain that ends in a ClientHandler.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"providers"</code>:
+     <emphasis>array of provider configuration objects, required</emphasis></term>
+    <listitem>
+     <para>
+      One or more provider configuration objects
+      that indicate how the client communicates with authorization providers.
+     </para>
+
+     <para>
+      If the provider has a well-known configuration URL
+      as defined for OpenID Connect 1.0 Discovery
+      that returns JSON with at least authorization and token endpoint URLs,
+      then you can specify that URL in the provider configuration.
+      Otherwise, you must specify
+      at least the provider authorization and token endpoint URLs,
+      and optionally the user info endpoint URL.
+     </para>
+
+     <para>
+      Provider configuration objects have the following layout:
+     </para>
+
+     <programlisting language="javascript">
+{
+    "name": string,
+    "clientId": expression,
+    "clientSecret": expression,
+    "wellKnownConfiguration": URL string,
+    "authorizeEndpoint": URI expression,
+    "tokenEndpoint": URI expression,
+    "userInfoEndpoint": URI expression,
+    "scopes": [ "expression", ... ]
+}
+     </programlisting>
+
+     <variablelist>
+      <para>
+       The provider configuration object properties are as follows.
+      </para>
+
+      <varlistentry>
+       <term><code>"name"</code>: <emphasis>string, required</emphasis></term>
+       <listitem>
+        <para>
+         A name for the provider configuration.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"clientID"</code>: <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required</emphasis></term>
+       <listitem>
+        <para>
+         The <literal>client_id</literal> obtained
+         when registering with the provider.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"clientSecret"</code>: <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required</emphasis></term>
+       <listitem>
+        <para>
+         The <literal>client_secret</literal> obtained
+         when registering with the provider.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"wellKnownConfiguration"</code>: <emphasis>URL string,
+        required unless "authorizeEndpoint" and "tokenEndpoint" are specified</emphasis></term>
+       <listitem>
+        <para>
+         The URL to the well-known configuration resource
+         as described in OpenID Connect 1.0 Discovery.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"authorizeEndpoint"</code>: <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required unless obtained through "wellKnownConfiguration"</emphasis></term>
+       <listitem>
+        <para>
+         The URL to the provider's OAuth 2.0 authorization endpoint.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"tokenEndpoint"</code>: <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        required unless obtained through "wellKnownConfiguration"</emphasis></term>
+       <listitem>
+        <para>
+         The URL to the provider's OAuth 2.0 token endpoint.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"userInfoEndpoint"</code>: <emphasis><link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+        optional</emphasis></term>
+       <listitem>
+        <para>
+         The URL to the provider's OpenID Connect UserInfo endpoint.
+        </para>
+
+        <para>
+         Default: no UserInfo is obtained from the provider.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><code>"scopes"</code>: <emphasis>array of <link
+        xlink:href="reference#Expressions"
+        xlink:role="http://docbook.org/xlink/role/olink">expression</link>s,
+        optional</emphasis></term>
+       <listitem>
+        <para>
+         Overrides the list of scopes specified globally for the filter.
+        </para>
+
+        <para>
+         Default: use the list of scopes specified globally for the filter.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
+    <listitem>
+     <para>
+      Expression that yields the target object whose value is to be set.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"defaultLoginGoto"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
+    <listitem>
+     <para>
+      The URI to redirect to after successful authentication and authorization.
+     </para>
+
+     <para>
+      Default: return an empty page.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"defaultLogoutGoto"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
+    <listitem>
+     <para>
+      The URI to redirect to after successful logout.
+     </para>
+
+     <para>
+      Default: return an empty page.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"requireHttps"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to require that requests use the HTTPS scheme.
+     </para>
+
+     <para>
+      Default: true.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"requireLogin"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to require authentication for all incoming requests.
+     </para>
+
+     <para>
+      Default: true.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"scopes"</code>: <emphasis>array of <link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>s,
+     optional</emphasis></term>
+    <listitem>
+     <para>
+      Expression that yields the scope strings to request
+      of any providers contacted by this filter.
+     </para>
+
+     <para>
+      Instead of or in addition to specifying scopes globally here,
+      you can also specify a list of scopes per provider
+      in each provider's configuration.
+      Per-provider scope lists then override this list.
+     </para>
+
+     <para>
+      Default: do not specify scopes.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"useJWTSession"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to store authorization state in a JWT cookie on the user-agent.
+     </para>
+
+     <para>
+      At present this setting has no effect.
+      Authorization state is stored only in the session.
+     </para>
+
+     <para>
+      Default: false.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following example configures an OAuth 2.0 client filter.
+   The base client endpoint is <literal>/openid</literal>.
+   The filter uses well-known configuration endpoints
+   to obtain configuration information for OpenAM and for Google as providers.
+   The client credentials are not shown.
+  </para>
+
+  <para>
+   When a incoming request is made to <literal>/openid/login</literal>,
+   this filter takes the user to a "NascarPage" to choose an identity provider.
+   It then handles negotiation for authorization with the provider,
+   requesting the scopes defined in "scopes".
+  </para>
+
+  <para>
+   If the authorization process completes successfully,
+   then the filter injects the authorization state data
+   into <literal>exchange.openid</literal>.
+  </para>
+
+  <para>
+   At the end of the exchange, the aim of this configuration
+   is simply to dump the data obtained back in the response.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "OpenIDConnectClient",
+    "type": "OAuth2ClientFilter",
+    "config": {
+        "target"                : "${exchange.openid}",
+        "scopes"                : ["openid","profile","email"],
+        "clientEndpoint"        : "/openid",
+        "loginHandler"          : "NascarPage",
+        "failureHandler"        : "Dump",
+        "providerHandler"       : "ClientHandler",
+        "defaultLoginGoto"      : "/dump",
+        "defaultLogoutGoto"     : "/unprotected",
+        "requireHttps"          : false,
+        "requireLogin"          : true,
+        "providers"             : [
+            {
+                "name"          : "openam",
+                "wellKnownConfiguration"
+                                :
+                  "http://openam.example.com:8080/openam/.well-known/openid-configuration",
+                "clientId"      : "********",
+                "clientSecret"  : "********"
+            },
+            {
+                "name"          : "google",
+                "wellKnownConfiguration"
+                                :
+                  "https://accounts.google.com/.well-known/openid-configuration",
+                "clientId"      : "**************.apps.googleusercontent.com",
+                "clientSecret"  : "**************"
+            }
+        ]
+    }
+}
+  </programlisting>
+
+  <para>
+   Notice that this configuration is for development and testing purposes only,
+   and is not secure ("requireHttps": false).
+   Make sure you do require HTTPS in production environments.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/oauth2/client/OAuth2ClientFilter.html"
+   >org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter</link></para>
+ </refsect1>
+
+ <refsect1>
+  <title>See Also</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6749"
+   >The OAuth 2.0 Authorization Framework</link>
+  </para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://tools.ietf.org/html/rfc6750"
+   >OAuth 2.0 Bearer Token Usage</link>
+  </para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://openid.net/connect/"
+   >OpenID Connect</link> site,
+   in particular the list of standard OpenID Connect 1.0
+   <link
+    xlink:show="new"
+    xlink:href="http://openid.net/specs/openid-connect-basic-1_0.html#Scopes"
+    >scope values</link>
+  </para>
+ </refsect1>
+</refentry>
