@@ -143,9 +143,10 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
   <title>Read timed out error when sending a request</title>
 
   <para>
-   If a "baseURI" configuration setting is missing or incorrect,
-   ${projectName} can send outgoing requests to the wrong host and port.
-   You might therefore observe the following behavior.
+   If a "baseURI" configuration setting
+   causes a request to come back to ${projectName},
+   ${projectName} never produces a response to the request.
+   You then observe the following behavior.
   </para>
 
   <para>
@@ -158,8 +159,8 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
 
   <para>
    To fix this issue, make sure
-   that "baseURI" configuration settings are present if needed,
-   and that the settings are correct if present.
+   that "baseURI" configuration settings do not cause requests
+   to come back to ${projectName}.
   </para>
  </section>
 </chapter>
