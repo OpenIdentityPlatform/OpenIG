@@ -47,6 +47,22 @@
   <primary>OpenID Connect 1.0</primary>
   <secondary>Relying party</secondary>
  </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>OAuth 2.0</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>OpenID Connect 1.0</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>OAuth 2.0</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>OpenID Connect 1.0</secondary>
+ </indexterm>
 
  <section xml:id="about-oauth2-client">
   <title>About ${projectName} as an OAuth 2.0 Client</title>
