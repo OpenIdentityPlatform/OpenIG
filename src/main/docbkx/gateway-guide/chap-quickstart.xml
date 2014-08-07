@@ -631,20 +631,6 @@ $ <userinput>java -jar start.jar</userinput>
    <varlistentry>
     <term><link
       xlink:show="new"
-      xlink:href="gateway-guide#chap-usecases"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Detailed Use Cases</citetitle></link>
-    </term>
-    <listitem>
-     <para>
-      This chapter covers common use case request and response flows.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term><link
-      xlink:show="new"
       xlink:href="gateway-guide#chap-install"
       xlink:role="http://docbook.org/xlink/role/olink"
      ><citetitle>Installing ${projectName}</citetitle></link>
@@ -674,21 +660,6 @@ $ <userinput>java -jar start.jar</userinput>
    <varlistentry>
     <term><link
       xlink:show="new"
-      xlink:href="gateway-guide#chap-gateway-templates"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuration Templates</citetitle></link>
-    </term>
-    <listitem>
-     <para>
-      This chapter provides sample ${projectName} configuration files
-      for common use cases.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term><link
-      xlink:show="new"
       xlink:href="gateway-guide#chap-federation-tutorial"
       xlink:role="http://docbook.org/xlink/role/olink"
      ><citetitle>Tutorial For ${projectName} Federation</citetitle></link>
@@ -704,7 +675,7 @@ $ <userinput>java -jar start.jar</userinput>
    <varlistentry>
     <term><link
       xlink:show="new"
-      xlink:href="gateway-guide#chap-oath-rs"
+      xlink:href="gateway-guide#chap-oauth-rs"
       xlink:role="http://docbook.org/xlink/role/olink"
      ><citetitle>Configuring ${projectName} as an OAuth 2.0 Resource Server</citetitle></link>
     </term>
@@ -721,7 +692,7 @@ $ <userinput>java -jar start.jar</userinput>
    <varlistentry>
     <term><link
       xlink:show="new"
-      xlink:href="gateway-guide#chap-oath2-client"
+      xlink:href="gateway-guide#chap-oauth2-client"
       xlink:role="http://docbook.org/xlink/role/olink"
      ><citetitle>Configuring ${projectName} as an OAuth 2.0 Client</citetitle></link>
     </term>
@@ -747,6 +718,21 @@ $ <userinput>java -jar start.jar</userinput>
      <para>
       This chapter shows how to configure ${projectName}
       to allow dynamic configuration changes and route to multiple applications.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-gateway-templates"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuration Templates</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter provides sample ${projectName} configuration files
+      for common use cases.
      </para>
     </listitem>
    </varlistentry>
