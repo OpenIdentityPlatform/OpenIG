@@ -183,9 +183,40 @@
      <para>
       <link
        xlink:show="new"
+       xlink:href="reference#DispatchHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >DispatchHandler</link>: Dispatches to one of a list of handlers.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#Route"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Route</link>: Allows you to configure a separate JSON configuration file
+      that handles an Exchange when a specified condition is met.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
        xlink:href="reference#Router"
        xlink:role="http://docbook.org/xlink/role/olink"
       >Router</link>: Routes Exchange processing to separate configuration files.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="gateway-guide#federation-config-json"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >SamlFederationHandler</link>: Handles assertions from a SAML 2.0 IDP.
      </para>
     </listitem>
 
@@ -249,6 +280,17 @@
      The default behavior of ${projectName} is to accept and forward all cookies.
      Since this is not always the desirable behavior, the CookieFilter, when
      configured, allows you to suppress, manage, and relay cookies.</para>
+    </listitem>
+
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#CryptoHeaderFilter"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >CryptoHeaderFilter</link>:
+      Encrypts or decrypts headers in a request or response.
+     </para>
     </listitem>
 
     <listitem>

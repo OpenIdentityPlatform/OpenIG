@@ -719,7 +719,7 @@ etc/jetty-ssl.xml
 
    <step>
     <para>
-     Deploy the ${projectName} .war <emphasis>to the root context</emphasis>
+     Deploy the ${projectName} war file <emphasis>to the root context</emphasis>
      of the web application container.
     </para>
 
@@ -827,7 +827,7 @@ etc/jetty-ssl.xml
 
      <listitem>
       <para>
-       Unpack the ${projectName} .war,
+       Unpack the ${projectName} war file,
        and edit the <filename>WEB-INF/web.xml</filename> application descriptor
        to set the <literal>openig-base</literal> initialization parameter
        to the full path to the base location for ${projectName} files,
@@ -841,7 +841,7 @@ etc/jetty-ssl.xml
    <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
    <init-param>
      <param-name>openig-base</param-name>
-     <param-value>/path/to/openig/files</param-value>
+     <param-value>/path/to/openig</param-value>
    </init-param>
  </servlet>
 ]]>
@@ -856,10 +856,10 @@ etc/jetty-ssl.xml
 
       <screen>
 # On Linux, Mac OS X, and UNIX using Bash
-$ <userinput>export OPENIG_BASE=/path/to/openig/files</userinput>
+$ <userinput>export OPENIG_BASE=/path/to/openig</userinput>
 
 # On Windows
-C:><userinput>set OPENIG_BASE=c:\path\to\openig\files</userinput>
+C:><userinput>set OPENIG_BASE=c:\path\to\openig</userinput>
       </screen>
      </listitem>
 
@@ -872,7 +872,7 @@ C:><userinput>set OPENIG_BASE=c:\path\to\openig\files</userinput>
       </para>
 
       <screen>
-$ <userinput>java -Dopenig.base=/path/to/openig/files -jar start.jar</userinput>
+$ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
       </screen>
      </listitem>
     </itemizedlist>
