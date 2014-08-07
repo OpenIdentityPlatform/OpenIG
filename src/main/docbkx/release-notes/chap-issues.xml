@@ -57,7 +57,7 @@
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-31" xlink:show="new">OPENIG-31</link>: Cached HttpBasic authentication header can cause issues when a user changes password</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-29" xlink:show="new">OPENIG-29</link>:  Federation requires AssertionMapping settings, even though the mapping is optional</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-15" xlink:show="new">OPENIG-15</link>: Expressions needed in HeaderFilter and need to support backslashes</para></listitem>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-8" xlink:show="new">OPENIG-8</link>: OpenIG gateway removes Content-Length: 0 </para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-8" xlink:show="new">OPENIG-8</link>: ${projectName} gateway removes Content-Length: 0 </para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-4" xlink:show="new">OPENIG-4</link>: Boundary stripped off of multipart/form-data on POST operation</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-1" xlink:show="new">OPENIG-1</link>: File upload over HTTPS fails</para></listitem>
   </itemizedlist>
@@ -96,11 +96,11 @@
 
   <!-- List generated at 06:53:29 20140807 using http://bugster.forgerock.org/jira/rest/api/2/search?jql=project+%3D+OPENIG+AND+type+%3D+Bug+AND+labels+in+%28release-notes%29+AND+resolution+%3D+Unresolved&startAt=0&maxResults=500&fields=summary-->
   <itemizedlist>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: OpenIG doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: ${projectName} doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-221" xlink:show="new">OPENIG-221</link>: Cannot specify which certificate to present to server if server requires mutual authentication in https</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-85" xlink:show="new">OPENIG-85</link>: SqlAttributesFilter throws SQLException: Invalid operation for forward only resultset</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-78" xlink:show="new">OPENIG-78</link>: SqlAttributesFilter throws SQLException: Invalid column index</para></listitem>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-69" xlink:show="new">OPENIG-69</link>: OpenIG seems to remove the URI part of requests when using baseURI</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-69" xlink:show="new">OPENIG-69</link>: ${projectName} seems to remove the URI part of requests when using baseURI</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-56" xlink:show="new">OPENIG-56</link>: Temporary files leak</para></listitem>
   </itemizedlist>
  </section>
