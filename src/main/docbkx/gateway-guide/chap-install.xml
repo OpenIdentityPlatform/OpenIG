@@ -152,7 +152,7 @@
    <para>
     Certificate Authorities (CAs) are trusted signers
     with well-known certificates.
-    Browsers generally ship with with many well-known CA certificates.
+    Browsers generally ship with many well-known CA certificates.
     Java distributions also ship with many well-known CA certificates.
     Getting a certificate signed by a well-known CA generally costs money.
    </para>
