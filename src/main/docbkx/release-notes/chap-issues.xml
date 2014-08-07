@@ -45,8 +45,22 @@
    The following issues were fixed in release ${docTargetVersion}.
   </para>
 
-  <para>TODO: Update for the release</para>
-  <!-- Only update this on a branch, not trunk. -->
+  <!-- List generated at 06:52:59 20140807 using http://bugster.forgerock.org/jira/rest/api/2/search?jql=project+%3D+OPENIG+AND+type+%3D+Bug+AND+labels+in+%28release-notes%29+AND+fixVersion+%3D+%223.0.0%22+AND+status+%3D+Resolved&startAt=0&maxResults=500&fields=summary-->
+  <itemizedlist>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-76" xlink:show="new">OPENIG-76</link>: Documentation is not clear about what the CryptoHeaderFilter can encrypt/decrypt</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-67" xlink:show="new">OPENIG-67</link>: Shutdown problem when using Federation Gateway</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-62" xlink:show="new">OPENIG-62</link>: StaticRequestFilter overrides the Content-Type header</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-59" xlink:show="new">OPENIG-59</link>: Federation does not correctly handle XML signatures</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-51" xlink:show="new">OPENIG-51</link>: SSL mutual auth fails because client certificate is not presented to server</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-49" xlink:show="new">OPENIG-49</link>: Empty Expression string not handled correctly</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-36" xlink:show="new">OPENIG-36</link>: Problems with Expression examples in the reference documentation</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-31" xlink:show="new">OPENIG-31</link>: Cached HttpBasic authentication header can cause issues when a user changes password</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-29" xlink:show="new">OPENIG-29</link>:  Federation requires AssertionMapping settings, even though the mapping is optional</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-15" xlink:show="new">OPENIG-15</link>: Expressions needed in HeaderFilter and need to support backslashes</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-8" xlink:show="new">OPENIG-8</link>: OpenIG gateway removes Content-Length: 0 </para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-4" xlink:show="new">OPENIG-4</link>: Boundary stripped off of multipart/form-data on POST operation</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-1" xlink:show="new">OPENIG-1</link>: File upload over HTTPS fails</para></listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="limitations">
@@ -80,7 +94,14 @@
    at the time release ${docTargetVersion} became available.
   </para>
 
-  <para>TODO: Update for the release</para>
-  <!-- Only update this on a branch, not trunk. -->
+  <!-- List generated at 06:53:29 20140807 using http://bugster.forgerock.org/jira/rest/api/2/search?jql=project+%3D+OPENIG+AND+type+%3D+Bug+AND+labels+in+%28release-notes%29+AND+resolution+%3D+Unresolved&startAt=0&maxResults=500&fields=summary-->
+  <itemizedlist>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: OpenIG doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-221" xlink:show="new">OPENIG-221</link>: Cannot specify which certificate to present to server if server requires mutual authentication in https</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-85" xlink:show="new">OPENIG-85</link>: SqlAttributesFilter throws SQLException: Invalid operation for forward only resultset</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-78" xlink:show="new">OPENIG-78</link>: SqlAttributesFilter throws SQLException: Invalid column index</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-69" xlink:show="new">OPENIG-69</link>: OpenIG seems to remove the URI part of requests when using baseURI</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-56" xlink:show="new">OPENIG-56</link>: Temporary files leak</para></listitem>
+  </itemizedlist>
  </section>
 </chapter>
