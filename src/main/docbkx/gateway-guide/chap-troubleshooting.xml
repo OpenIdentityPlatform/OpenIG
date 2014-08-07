@@ -57,27 +57,6 @@ at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)
  </section>
 
  <section>
-  <title>Could not find local configuration file</title>
-
-  <programlisting language="none">
-HTTP ERROR 500
-Problem accessing /. Reason:
-
- could not find local configuration file at
- /var/root/.openig/config/config.json or bootstrap file at
- /var/root/.openig/config/_private_var_folders_...webinf.json
-  </programlisting>
-
-  <para>${projectName} could not find its configuration file in the home directory of
-  the user running the container where ${projectName} is deployed, in this case
-  <filename>/var/root/.openig/config/config.json</filename>.
-  As you can see from the error message, ${projectName} looks in a secondary location
-  determined at runtime by the container. The secondary location is only
-  necessary if you are running more than one ${projectName} on a single host and your
-  instances do not share a single configuration.</para>
- </section>
-
- <section>
   <title>Unexpected character (x) at position 1103</title>
 
   <programlisting language="none">
