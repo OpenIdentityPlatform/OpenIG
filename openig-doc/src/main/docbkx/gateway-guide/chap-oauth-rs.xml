@@ -41,6 +41,14 @@
   <primary>OAuth 2.0</primary>
   <secondary>Resource server</secondary>
  </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>OAuth 2.0</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>OAuth 2.0</secondary>
+ </indexterm>
 
  <section xml:id="about-oauth2-rs">
   <title>About ${projectName} as an OAuth 2.0 Resource Server</title>
