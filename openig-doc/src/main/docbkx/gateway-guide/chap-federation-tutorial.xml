@@ -180,7 +180,7 @@
   <para>
    Unpack the configuration files from the Fedlet you created
    in <xref linkend="fed-tutorial-configure-openam" />.
-   The Fedlet is packaged as a .zip file that contains a .war file
+   The Fedlet is packaged as a .zip file that contains a war file
    that in turn contains the configuration files to unpack.
    OpenAM displays the location of the .zip file
    upon successful creation of the Fedlet.
