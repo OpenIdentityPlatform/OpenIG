@@ -140,7 +140,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"logSink"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"logSink"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
       The name of the LogSink heap object to which to send log messages.
@@ -155,7 +155,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"temporaryStorage"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"temporaryStorage"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
       The name of the

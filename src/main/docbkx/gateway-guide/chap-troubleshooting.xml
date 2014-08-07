@@ -163,4 +163,35 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
    to come back to ${projectName}.
   </para>
  </section>
+
+ <section>
+  <title>${projectName} does not use new route configuration</title>
+
+  <para>
+   ${projectName} loads all configuration at startup.
+   By default, it then periodically reloads changed route configurations.
+  </para>
+
+  <para>
+   If you make changes to a route
+   that result in an invalid configuration,
+   ${projectName} logs errors,
+   but it keeps the previous, correct configuration,
+   and continues to use the old route.
+  </para>
+
+  <para>
+   ${projectName} only uses the new configuration
+   after you save a valid version or when you restart ${projectName}.
+  </para>
+
+  <para>
+   Of course, if you restart ${projectName} with an invalid route configuration,
+   then ${projectName} tries to load the invalid route at startup
+   and logs an error.
+   In that case, if there is no default handler to accept any incoming exchange
+   for the invalid route, then you see an error,
+   <literal>No handler to dispatch to</literal>.
+  </para>
+ </section>
 </chapter>
