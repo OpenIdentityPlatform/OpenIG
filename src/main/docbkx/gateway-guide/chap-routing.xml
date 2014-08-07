@@ -39,6 +39,14 @@
   <primary>Configuration</primary>
   <secondary>Multiple applications</secondary>
  </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>Run time changes</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Routing</secondary>
+ </indexterm>
 
  <para>
   Other tutorials in this guide demonstrate use of a single configuration file

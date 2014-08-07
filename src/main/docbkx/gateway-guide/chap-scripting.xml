@@ -35,6 +35,10 @@
  <indexterm>
   <primary>Scripting</primary>
  </indexterm>
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Scripting</secondary>
+ </indexterm>
 
  <para>
   To extend what you can do with Filters and Handlers,

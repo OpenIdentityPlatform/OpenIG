@@ -33,6 +33,11 @@
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Getting Started</title>
 
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Getting started</secondary>
+ </indexterm>
+
  <para>
   This chapter provides instructions to get ${projectName} up and running on Jetty,
   configured to serve as reverse proxy
@@ -692,6 +697,41 @@ $ <userinput>java -jar start.jar</userinput>
      <para>
       This chapter shows how to configure ${projectName} to get credentials
       from a SAML 2.0 Identity Provider.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-oath-rs"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuring ${projectName} as an OAuth 2.0 Resource Server</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter explains how ${projectName} acts
+      as an OAuth 2.0 Resource Server,
+      and follows with a tutorial
+      that shows you how to use ${projectName} as a resource server.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:show="new"
+      xlink:href="gateway-guide#chap-oath2-client"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Configuring ${projectName} as an OAuth 2.0 Client</citetitle></link>
+    </term>
+    <listitem>
+     <para>
+      This chapter explains how ${projectName} acts
+      as an OAuth 2.0 client or OpenID Connect 1.0 relying party,
+      and follows with a tutorial
+      that shows you how to use ${projectName}
+      as an OpenID Connect 1.0 relying party.
      </para>
     </listitem>
    </varlistentry>
