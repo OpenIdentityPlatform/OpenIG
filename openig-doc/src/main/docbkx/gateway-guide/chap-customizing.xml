@@ -116,42 +116,66 @@
   <secondary>Filters</secondary>
  </indexterm>
 
-  <para>The <literal>Filter</literal> interface exposes a <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
-  >filter</link> method, which takes an <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html"
-  >Exchange</link> object and the <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/Chain.html"
-  >Chain</link> of remaining filters and handler to dispatch to. Initially,
-  <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html#request"
-  >exchange.request</link> contains the request to be filtered. To pass the
-  request to the next filter or handler in the chain, the filter calls
-  <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
-  >chain.handle(exchange)</link>. After this call, <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html#response"
-  >exchange.response</link> contains the response that can be filtered.</para>
+  <para>
+   The <literal>Filter</literal> interface exposes a
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
+   >filter()</link> method,
+   which takes an
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html"
+   >Exchange</link> object
+   and the
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html"
+   >Chain</link> of remaining filters and handler to dispatch to.
+   Initially,
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
+   >exchange.request</link> contains the request to be filtered.
+   To pass the request to the next filter or handler in the chain,
+   the filter calls
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
+   >next.handle(exchange)</link>.
+   After this call,
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >exchange.response</link> contains the response that can be filtered.
+  </para>
 
-  <para>A filter might elect not to pass the request to the next filter or
-  handler, and instead handle the request itself. It can achieve this by
-  merely avoiding a call to <literal>chain.handle(exchange)</literal> and
-  creating its own response object in the exchange. The filter is also at
-  liberty to replace a response with another of its own. A filter can exist in
-  more than one chain, therefore should make no assumptions or correlations
-  using the chain it is supplied. The only valid use of a chain by a filter
-  is to call its <literal>handle</literal> method to dispatch the exchange to
-  the rest of the chain.</para>
+  <para>
+   A filter might elect not to pass the request to the next filter or handler,
+   and instead handle the request itself.
+   It can achieve this by merely avoiding a call
+   to <literal>next.handle(exchange)</literal>
+   and creating its own response object in the exchange.
+   The filter is also at liberty to replace a response with another of its own.
+   A filter can exist in more than one chain,
+   therefore should make no assumptions or correlations
+   using the chain it is supplied.
+   The only valid use of a chain by a filter is to call its
+   <literal>handle()</literal> method to dispatch the exchange
+   to the rest of the chain.
+  </para>
 
   <note>
-   <para>If an existing response exists in the exchange object and the filter
-   intends to replace it with its own, it must first check to see if the
-   existing response has an <link xlink:show="new"
-   xlink:href="${javadocBase}/org/forgerock/openig/http/Message.html#entity"
-   >entity</link>, and if it does, must call its <link xlink:show="new"
-   xlink:href="${javadocBase}/org/forgerock/openig/io/BranchingInputStream.html#close()"
-   >close</link> method in order to signal that the processing of the response
-   from a remote server is complete.</para>
+   <para>
+    If an existing response exists in the exchange object
+    and the filter intends to replace it with its own,
+    it must call the
+    <link
+     xlink:show="new"
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
+    >response.close()</link> method in order to signal
+    that the processing of the response from a remote server is complete.
+   </para>
   </note>
  </section>
 
@@ -163,27 +187,41 @@
   <secondary>Handlers</secondary>
  </indexterm>
 
-  <para>The <literal>Handler</literal> interface exposes a <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
-  >handle</link> method, which takes an <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html#response"
-  >Exchange</link> object. It processes the request in
-  <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html#request"
-  >exchange.request</link> and produces a response in <link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html#response"
-  >exchange.response</link>. A handler can elect to dispatch the exchange to
-  another handler or chain.</para>
+  <para>
+   The <literal>Handler</literal> interface exposes a
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
+   >handle()</link> method,
+   which takes an
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >Exchange</link> object.
+   It processes the request in
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
+   >exchange.request</link> and produces a response in
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >exchange.response</link>.
+   A handler can elect to dispatch the exchange to another handler or chain.
+  </para>
 
   <note>
-   <para>If an existing response exists in the exchange object and the filter
-   intends to replace it with its own, it must first check to see if the
-   existing response has an <link xlink:show="new"
-   xlink:href="${javadocBase}/org/forgerock/openig/http/Message.html#entity"
-   >entity</link>, and if it does, must call its <link xlink:show="new"
-   xlink:href="${javadocBase}/org/forgerock/openig/io/BranchingInputStream.html#close()"
-   >close</link> method in order to signal that the processing of the response
-   from a remote server is complete.</para>
+   <para>
+    If an existing response exists in the exchange object
+    and the filter intends to replace it with its own,
+    it must first check to see if the
+    it must call the
+    <link
+     xlink:show="new"
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
+    >response.close()</link> method in order to signal
+    that the processing of the response from a remote server is complete.
+   </para>
   </note>
  </section>
 
@@ -219,13 +257,13 @@
   <para>The following sample filter sets an arbitrary header in the incoming
   request and outgoing response.</para>
 
-  <programlisting language="java">package com.example.filter;
+  <programlisting language="java">
+package com.example.filter;
 
 // Java Standard Edition
 import java.io.IOException;
 
 // ${projectName} Core Library
-import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
@@ -240,9 +278,9 @@ public class HelloWorldFilter extends GenericFilter {
     @Override
     public void filter(Exchange exchange, Handler next)
             throws HandlerException, IOException {
-        exchange.request.headers.put(name, value); // set header in request
+        exchange.request.getHeaders().putSingle(name, value); // set header in request
         next.handle(exchange); // pass to remaining filters &amp; handler in chain
-        exchange.response.headers.put(name, value); // set header in response
+        exchange.response.getHeaders().putSingle(name, value); // set header in response
     }
 
     public static class Heaplet extends NestedHeaplet {
@@ -255,7 +293,7 @@ public class HelloWorldFilter extends GenericFilter {
             return filter;
         }
     }
-}</programlisting>
+}  </programlisting>
 
   <para>The corresponding heap object configuration is as follows.</para>
 

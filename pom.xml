@@ -63,6 +63,7 @@
               <filtering>true</filtering>
               <includes>
                 <include>**/*.txt</include>
+                <include>**/*.json</include>
               </includes>
             </resource>
             <resource>
@@ -70,6 +71,7 @@
               <filtering>false</filtering>
               <excludes>
                 <exclude>**/*.txt</exclude>
+                <include>**/*.json</include>
               </excludes>
             </resource>
           </resources>
@@ -229,12 +231,12 @@
     <warSamlDir>${warBase}/SAML</warSamlDir>
     <warTmpDir>${warBase}/tmp</warTmpDir>
 
-    <windowsWarBase>%appdata%\.openig</windowsWarBase>
+    <windowsWarBase>%appdata%\OpenIG</windowsWarBase>
     <windowsWarConfigDir>${windowsWarBase}\config</windowsWarConfigDir>
     <windowsWarRoutesDir>${windowsWarConfigDir}\routes</windowsWarRoutesDir>
     <windowsWarGroovyDir>${windowsWarBase}\scripts\groovy</windowsWarGroovyDir>
     <windowsWarSamlDir>${windowsWarBase}\SAML</windowsWarSamlDir>
-    <windowsWarTmpDir>${windowsWarBase}\SAML</windowsWarTmpDir>
+    <windowsWarTmpDir>${windowsWarBase}\tmp</windowsWarTmpDir>
 
     <frDocPluginVersion>2.1.3</frDocPluginVersion>
     <gaId>UA-23412190-11</gaId>

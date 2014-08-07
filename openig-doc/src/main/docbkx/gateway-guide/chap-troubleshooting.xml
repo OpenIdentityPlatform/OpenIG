@@ -42,18 +42,20 @@
   <title>Object not found in heap</title>
 
   <programlisting language="none">
-HTTP ERROR 500
-org.forgerock.openig.model.NodeException:
- ['file:/Users/george/.openig/config/config.json'].heap.objects[2]
-  .config.filterObjects[0]: object not found in heap
-at org.forgerock.openig.heaplet.HeapUtil.getRequiredObject(HeapUtil.java:54)
-at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:49)
+org.forgerock.json.fluent.JsonValueException: /handlerObject:
+   object Router2 not found in heap
+    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:69)
+    at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:188)
+    at org.eclipse.jetty.servlet.ServletHolder.initServlet(ServletHolder.java:595)
   </programlisting>
 
-  <para>You have a filter specified in the filterObjects list in the Chain
-  object that is not in <filename>config.json</filename>.  Make sure you have
-  added an entry for the Filter and have correctly spelled its name in the
-  filterObjects list.</para>
+  <para>
+   You have specified "handlerObject": "Router2"
+   in <filename>config.json</filename>,
+   but no handler configuration object named "Router2" exists.
+   Make sure you have added an entry for the handler
+   and that you have correctly spelled its name.
+  </para>
  </section>
 
  <section>

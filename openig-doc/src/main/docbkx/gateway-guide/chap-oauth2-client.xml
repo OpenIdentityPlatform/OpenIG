@@ -343,7 +343,7 @@
     xlink:show="new"
     xlink:href="gateway-guide#config-oidc-client"
     xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuration for an OAuth 2.0 Resource Server</citetitle></link>.
+   ><citetitle>Configuration for an OpenID Connect 1.0 Client</citetitle></link>.
   </para>
 
   <para>
@@ -354,7 +354,7 @@
   </para>
 
   <para>
-   In the <filename>config.json</filename>,
+   In the new <filename>config.json</filename> file,
    consider the "OpenIDConnectClient" filter.
    This configuration object has the
    <link
