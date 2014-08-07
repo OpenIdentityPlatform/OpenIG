@@ -140,7 +140,7 @@
 
    <listitem>
     <para>
-     Install the ${projectName} .war.
+     Install the ${projectName} war file.
     </para>
    </listitem>
 
@@ -262,7 +262,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><filename>${warSamlDir}/gateway.cot</filename></term>
+    <term><filename>${warSamlDir}/fedlet.cot</filename></term>
     <listitem>
      <para>
       Circle of trust for ${projectName} and the Identity Provider.
