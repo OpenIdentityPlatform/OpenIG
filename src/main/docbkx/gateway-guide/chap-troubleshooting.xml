@@ -159,4 +159,28 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
    ><citetitle>Configuring Deployment Containers</citetitle></link>.
   </para>
  </section>
+
+ <section>
+  <title>Read timed out error when sending a request</title>
+
+  <para>
+   If a "baseURI" configuration setting is missing or incorrect,
+   ${projectName} can send outgoing requests to the wrong host and port.
+   You might therefore observe the following behavior.
+  </para>
+
+  <para>
+   You send a request and ${projectName} seems to hang.
+   Then you see a failure message,
+   <literal>HTTP Status 500 - Read timed out</literal>,
+   accompanied by ${projectName} throwing an exception,
+   <literal>java.net.SocketTimeoutException: Read timed out</literal>.
+  </para>
+
+  <para>
+   To fix this issue, make sure
+   that "baseURI" configuration settings are present if needed,
+   and that the settings are correct if present.
+  </para>
+ </section>
 </chapter>
