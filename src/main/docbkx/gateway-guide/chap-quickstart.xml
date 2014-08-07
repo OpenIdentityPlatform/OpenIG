@@ -101,7 +101,7 @@
      <link
       xlink:href="${downloadUrl}"
       xlink:show="new"
-     >Download</link> the ${projectName} .war file.
+     >Download</link> the ${projectName} war file.
     </para>
    </step>
 
@@ -111,7 +111,7 @@
     </para>
 
     <para>
-     Copy the ${projectName} .war file as <filename>root.war</filename>
+     Copy the ${projectName} war file as <filename>root.war</filename>
      to the <filename>/path/to/jetty/webapps/</filename>.
     </para>
 

@@ -32,13 +32,7 @@
                     "target": "${exchange.credentials}",
                     "file": "/tmp/userfile",
                     "key": "email",
-                    "value": "george@example.com",
-                    "fields": [
-                        "username",
-                        "password",
-                        "fullname",
-                        "email"
-                    ]
+                    "value": "george@example.com"
                 }
             },
             {
