@@ -73,6 +73,15 @@
   >expressions</link>.
  </para>
 
+ <para>
+  Interface Stability:
+  <link
+   xlink:show="new"
+   xlink:href="reference#interface-stability"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Evolving</link>
+ </para>
+
  <section xml:id="extension-points">
   <title>Key Extension Points</title>
 

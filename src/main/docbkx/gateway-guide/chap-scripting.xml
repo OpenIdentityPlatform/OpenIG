@@ -48,6 +48,15 @@
  </para>
 
  <para>
+  Interface Stability:
+  <link
+   xlink:show="new"
+   xlink:href="reference#interface-stability"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Evolving</link>
+ </para>
+
+ <para>
   You add these Filters and Handlers to your configuration in the same way
   as for other Filters and Handlers.
   Each takes as its configuration the script's Internet media "type"
