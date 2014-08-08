@@ -1,5 +1,4 @@
 import org.forgerock.openig.http.Response
-import org.forgerock.openig.io.ByteArrayBranchingStream
 
 /*
  * This simplistic dispatcher matches the path part of the HTTP request.
