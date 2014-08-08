@@ -1,6 +1,5 @@
-import org.forgerock.opendj.ldap.AuthenticationException
+import org.forgerock.opendj.ldap.*
 import org.forgerock.openig.http.Response
-import org.forgerock.openig.io.ByteArrayBranchingStream
 
 /*
  * Perform LDAP authentication based on user credentials from a form.
