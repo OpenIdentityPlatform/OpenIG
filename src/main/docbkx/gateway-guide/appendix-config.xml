@@ -44,6 +44,8 @@
   <listitem><para><xref linkend="config-login-from-sql" /></para></listitem>
   <listitem><para><xref linkend="config-capture-and-replay" /></para></listitem>
   <listitem><para><xref linkend="config-federation" /></para></listitem>
+  <listitem><para><xref linkend="config-oauth2-rs" /></para></listitem>
+  <listitem><para><xref linkend="config-oidc-client" /></para></listitem>
   <listitem><para><xref linkend="config-routing" /></para></listitem>
  </itemizedlist>
 
