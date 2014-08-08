@@ -757,8 +757,17 @@ etc/jetty-ssl.xml
       <term><filename>${windowsWarRoutesDir}</filename></term>
       <listitem>
        <para>
-        ${projectName} configuration files,
-        where the main configuration file is <filename>config.json</filename>.
+        ${projectName} route configuration files.
+       </para>
+
+       <para>
+        See the chapter,
+        <link
+         xlink:show="new"
+         xlink:href="gateway-guide#chap-routing"
+         xlink:role="http://docbook.org/xlink/role/olink"
+        ><citetitle>Routing Tutorial</citetitle></link>,
+        for more information.
        </para>
       </listitem>
      </varlistentry>
