@@ -80,6 +80,13 @@
   </itemizedlist>
 
   <para>
+   ${projectName} expressions depend on Unified Expression Language 2.2,
+   which is available in containers that support Servlet 3.0 or later.
+   Some expressions can lead to a <literal>java.lang.NoSuchMethodError</literal>
+   in containers that support only Servlet 2.5 (and EL 2.1).
+  </para>
+
+  <para>
    See the <citetitle>Guide to ${projectName}</citetitle> section,
    <link
     xlink:href="gateway-guide#configure-container"
