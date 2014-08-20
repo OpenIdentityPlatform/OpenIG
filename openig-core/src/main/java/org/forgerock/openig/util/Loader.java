@@ -111,7 +111,7 @@ public final class Loader {
     }
 
     /**
-     * Loads services of a particualr type into a list.
+     * Loads services of a particular type into a list.
      *
      * @param serviceType the class type of services to load.
      * @param <E> service type
