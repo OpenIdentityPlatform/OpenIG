@@ -22,6 +22,7 @@ import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.ScriptException;
@@ -67,6 +68,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         private static final String CONFIG_OPTION_FILE = "file";
         private static final String CONFIG_OPTION_SOURCE = "source";
         private static final String CONFIG_OPTION_TYPE = "type";
+        private static final String CONFIG_OPTION_ARGS = "args";
 
         @Override
         public Object create() throws HeapException {
@@ -76,6 +78,9 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                                                       config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
                                                       HttpClient.class);
             component.setHttpClient(httpClient);
+            if (config.isDefined(CONFIG_OPTION_ARGS)) {
+                component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
+            }
             return component;
         }
 
@@ -140,6 +145,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     private HttpClient httpClient;
     private final LdapClient ldapClient = LdapClient.getInstance();
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
+    private Map<String, Object> args;
 
     /**
      * Creates a new scriptable heap object using the provided compiled script.
@@ -157,6 +163,15 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      */
     public void setHttpClient(final HttpClient client) {
         this.httpClient = client;
+    }
+
+    /**
+     * Sets the parameters which should be made available to scripts.
+     *
+     * @param args The parameters which should be made available to scripts.
+     */
+    public void setArgs(final Map<String, Object> args) {
+        this.args = args;
     }
 
     /**
@@ -207,6 +222,11 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         bindings.put("ldap", ldapClient);
         if (next != null) {
             bindings.put("next", next);
+        }
+        if (args != null) {
+            for (final Entry<String, Object> entry : args.entrySet()) {
+                bindings.put(entry.getKey(), entry.getValue());
+            }
         }
 
         // Redirect streams? E.g. in = request entity, out = response entity?
