@@ -35,6 +35,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +56,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Headers;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -189,6 +191,23 @@ public class GroovyScriptableFilterTest {
         assertThat(exchange.request.getHeaders().get("Authorization").toString())
                 .isEqualTo("[Basic YmplbnNlbjpoaWZhbHV0aW4=]");
         assertThat(exchange.request.getUri().getScheme()).isEqualTo("https");
+    }
+
+    @Test
+    public void testScriptWithParams() throws Exception {
+        final Map<String, Object> config = newFileConfigWithArgs("TestGroovyParameters.groovy");
+        final ScriptableFilter filter = (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
+                config), getHeap());
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        final Handler handler = mock(Handler.class);
+        filter.filter(exchange, handler);
+        final Headers headers = exchange.request.getHeaders();
+        assertThat(headers.get("title").toString()).isEqualTo("[Coffee time]");
+        assertThat(exchange.response.getStatus()).isEqualTo(418);
+        assertThat(exchange.response.getReason()).isEqualTo("Acceptable");
+        assertThat(exchange.response.getEntity().toString()).contains("1:koffie, 2:kafe, 3:cafe, 4:kafo");
     }
 
     @Test
@@ -850,10 +869,56 @@ public class GroovyScriptableFilterTest {
         return type.getName().replace('.', '/').concat(".class");
     }
 
-    private Map<String, Object> newFileConfig(final String groovyClass) {
+    private static Map<String, Object> newFileConfig(final String groovyClass) {
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
+        return config;
+    }
+
+    /**
+     * Equivalent to :
+     * <p>
+     * <pre>
+     * {
+     *     "name": "groovyFilter",
+     *     "type": "ScriptableFilter",
+     *     "config": {
+     *         "type": "application/x-groovy",
+     *         "file": "ScriptWithParams.groovy",
+     *         "args": {
+     *             "title": "Coffee time",
+     *             "status": 418,
+     *             "reason": [
+     *                 "Not Acceptable",
+     *                 "I'm a teapot",
+     *                 "Acceptable" ],
+     *             "names": {
+     *                 "1": "koffie",
+     *                 "2": "kafe",
+     *                 "3": "cafe",
+     *                 "4": "kafo"
+     *             }
+     *         }
+     *     }
+     * }
+     * </pre>
+     */
+    private static Map<String, Object> newFileConfigWithArgs(final String groovyClass) {
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", groovyClass);
+        final Map<String, Object> args = new LinkedHashMap<String, Object>();
+        args.put("title", "Coffee time");
+        args.put("status", "418");
+        args.put("reason", new String[] { "Not Acceptable", "I'm a teapot", "Acceptable" });
+        final Map<String, Object> coffeeNames = new LinkedHashMap<String, Object>();
+        coffeeNames.put("1", "koffie");
+        coffeeNames.put("2", "kafe");
+        coffeeNames.put("3", "cafe");
+        coffeeNames.put("4", "kafo");
+        args.put("names", coffeeNames);
+        config.put("args", args);
         return config;
     }
 
@@ -863,7 +928,7 @@ public class GroovyScriptableFilterTest {
         return new ScriptableFilter(script);
     }
 
-    private Stubber returnResponse(final Response response) {
+    private static Stubber returnResponse(final Response response) {
         return doAnswer(new Answer<Void>() {
             @Override
             public Void answer(final InvocationOnMock invocation) {
