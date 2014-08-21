@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
 
 /**
  * A strategy whose responsibility is to persist the user's OAuth2 session state

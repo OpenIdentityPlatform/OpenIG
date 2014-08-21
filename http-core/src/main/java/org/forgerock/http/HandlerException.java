@@ -15,7 +15,7 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.handler;
+package org.forgerock.http;
 
 /**
  * An exception that is thrown during handler operations.

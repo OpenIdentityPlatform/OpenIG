@@ -15,13 +15,9 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.filter;
+package org.forgerock.http;
 
 import java.io.IOException;
-
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
 
 /**
  * Filters the request and/or response of an HTTP exchange.

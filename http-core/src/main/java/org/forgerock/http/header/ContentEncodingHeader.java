@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.forgerock.http.Message;
 import org.forgerock.http.decoder.Decoder;
-import org.forgerock.http.http.Message;
 
 /**
  * Processes the <strong>{@code Content-Encoding}</strong> message header. For more information, see

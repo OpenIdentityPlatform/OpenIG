@@ -1,4 +1,4 @@
-import org.forgerock.http.http.Response
+import org.forgerock.http.Response
 /*
  * The parameters are stored directly in bindings. 
  * e.g. The json configuration looks like :

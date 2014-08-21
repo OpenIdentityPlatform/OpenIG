@@ -16,6 +16,7 @@
  */
 
 /**
- * Filters the requests and/or responses of HTTP exchanges.
+ * Models and manages elements of the Hypertext Transfer Protocol. For more information, see
+ * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>.
  */
-package org.forgerock.http.filter;
+package org.forgerock.http;

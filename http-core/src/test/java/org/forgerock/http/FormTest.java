@@ -15,14 +15,14 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.http;
+package org.forgerock.http;
 
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URISyntaxException;
 
-import org.forgerock.http.http.Form;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Form;
+import org.forgerock.http.Request;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")

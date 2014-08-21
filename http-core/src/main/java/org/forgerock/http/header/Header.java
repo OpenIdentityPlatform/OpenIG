@@ -17,7 +17,7 @@
 
 package org.forgerock.http.header;
 
-import org.forgerock.http.http.Message;
+import org.forgerock.http.Message;
 import org.forgerock.http.util.Indexed;
 
 /**

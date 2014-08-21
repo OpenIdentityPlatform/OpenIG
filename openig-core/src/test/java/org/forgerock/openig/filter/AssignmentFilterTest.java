@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.StaticResponseHandler;

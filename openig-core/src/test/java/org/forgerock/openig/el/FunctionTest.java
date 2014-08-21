@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.File;
 import java.util.Arrays;
 
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Request;
 import org.forgerock.openig.handler.router.Files;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;

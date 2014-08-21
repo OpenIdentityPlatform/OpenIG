@@ -25,10 +25,10 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
-import org.forgerock.http.http.Response;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
 import org.forgerock.http.io.NullOutputStream;
 import org.forgerock.openig.el.Expression;
 import org.mockito.Mock;

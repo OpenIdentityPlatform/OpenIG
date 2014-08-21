@@ -23,8 +23,8 @@ import static org.forgerock.openig.io.TemporaryStorageHeaplet.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Request;
 import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;

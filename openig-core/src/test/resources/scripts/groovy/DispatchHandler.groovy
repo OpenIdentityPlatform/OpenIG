@@ -1,4 +1,4 @@
-import org.forgerock.http.http.Response
+import org.forgerock.http.Response
 
 /*
  * This simplistic dispatcher matches the path part of the HTTP request.

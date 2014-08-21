@@ -1,4 +1,4 @@
-import org.forgerock.openig.http.Response
+import org.forgerock.http.Response
 import groovy.json.JsonOutput
 
 map = new LinkedHashMap(exchange)

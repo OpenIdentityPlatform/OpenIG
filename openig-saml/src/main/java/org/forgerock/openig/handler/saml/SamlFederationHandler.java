@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.HandlerException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;

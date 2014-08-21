@@ -28,10 +28,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.zip.GZIPOutputStream;
 
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
 import org.forgerock.http.header.ConnectionHeader;
 import org.forgerock.http.header.ContentEncodingHeader;
-import org.forgerock.http.http.Request;
-import org.forgerock.http.http.Response;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.challenge;
 
-import org.forgerock.http.http.Response;
+import org.forgerock.http.Response;
 
 /**
  * Builds an error {@link Response} when the request is invalid (missing param, malformed, ...).

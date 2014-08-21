@@ -16,11 +16,9 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.handler;
+package org.forgerock.http;
 
 import java.io.IOException;
-
-import org.forgerock.http.http.Exchange;
 
 /**
  * Handles an HTTP exchange request by producing an associated response.

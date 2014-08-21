@@ -17,7 +17,7 @@
 
 package org.forgerock.http.header;
 
-import org.forgerock.http.http.Message;
+import org.forgerock.http.Message;
 
 /**
  * Processes the <strong>{@code Content-Length}</strong> message header. For more information,

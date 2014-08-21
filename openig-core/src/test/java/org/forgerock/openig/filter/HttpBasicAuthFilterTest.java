@@ -19,12 +19,12 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
-import org.forgerock.http.http.Response;
-import org.forgerock.http.http.Session;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
+import org.forgerock.http.Session;
 import org.forgerock.openig.el.Expression;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;

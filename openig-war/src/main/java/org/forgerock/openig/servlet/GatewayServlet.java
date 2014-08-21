@@ -44,10 +44,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Request;
 import org.forgerock.http.io.BranchingStreamWrapper;
 import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.http.util.CaseInsensitiveSet;

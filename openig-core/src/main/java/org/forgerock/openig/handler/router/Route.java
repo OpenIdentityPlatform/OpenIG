@@ -22,9 +22,9 @@ import static org.forgerock.openig.util.JsonValueUtil.*;
 import java.io.IOException;
 import java.net.URI;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;

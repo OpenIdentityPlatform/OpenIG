@@ -15,7 +15,7 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.http;
+package org.forgerock.http;
 
 import java.util.ArrayList;
 import java.util.Date;

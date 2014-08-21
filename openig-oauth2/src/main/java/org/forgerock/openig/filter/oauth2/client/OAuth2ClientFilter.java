@@ -36,12 +36,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Form;
-import org.forgerock.http.http.Request;
-import org.forgerock.http.http.Response;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Form;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;

@@ -20,8 +20,8 @@ package org.forgerock.http.header;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forgerock.http.http.Cookie;
-import org.forgerock.http.http.Message;
+import org.forgerock.http.Cookie;
+import org.forgerock.http.Message;
 
 /**
  * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original

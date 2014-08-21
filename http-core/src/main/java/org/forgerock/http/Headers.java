@@ -11,21 +11,27 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2009 Sun Microsystems Inc.
+ * Portions Copyright 2010–2011 ApexIdentity Inc.
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.http;
+package org.forgerock.http;
 
-import java.util.Map;
+import java.util.List;
+
+import org.forgerock.http.util.CaseInsensitiveMap;
+import org.forgerock.http.util.MultiValueMap;
 
 /**
- * An interface for managing attributes across multiple requests from the same user agent.
- * Implementations should expose underlying container session attributes through this
- * interface if applicable.
- * <p>
- * New keys added to a session object should be named in a manner that avoids possible
- * collision with keys added by other objects in the heap.
+ * Message headers, a case-insensitive multiple-value map.
  */
-public interface Session extends Map<String, Object> {
+public class Headers extends MultiValueMap<String, String> {
+
+    /**
+     * Constructs a new instance of message headers.
+     */
+    public Headers() {
+        super(new CaseInsensitiveMap<List<String>>());
+    }
 }

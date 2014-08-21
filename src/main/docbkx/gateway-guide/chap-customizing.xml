@@ -264,11 +264,11 @@ package com.example.filter;
 import java.io.IOException;
 
 // ${projectName} Core Library
+import org.forgerock.http.Exchange;
+import org.forgerock.http.HandlerException;
 import org.forgerock.openig.filter.GenericFilter;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
 
 public class HelloWorldFilter extends GenericFilter {
 

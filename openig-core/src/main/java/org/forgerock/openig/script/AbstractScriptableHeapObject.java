@@ -27,10 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.ScriptException;
 
-import org.forgerock.http.filter.Filter;
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;

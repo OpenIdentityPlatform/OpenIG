@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forgerock.http.filter.Filter;
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.heap.HeapException;

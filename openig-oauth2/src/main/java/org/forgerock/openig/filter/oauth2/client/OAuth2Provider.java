@@ -24,10 +24,10 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Form;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Form;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Request;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.exceptions.JwtReconstructionException;

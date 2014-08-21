@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
 
-import org.forgerock.http.http.Form;
+import org.forgerock.http.Form;
 import org.forgerock.http.util.URIUtil;
 import org.testng.annotations.Test;
 

@@ -23,8 +23,8 @@ import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.io.IOException;
 
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.log.LogTimer;

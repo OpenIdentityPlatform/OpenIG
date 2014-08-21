@@ -14,10 +14,10 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.http.http;
+package org.forgerock.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.http.Entity.APPLICATION_JSON_CHARSET_UTF_8;
+import static org.forgerock.http.Entity.APPLICATION_JSON_CHARSET_UTF_8;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
+import org.forgerock.http.Entity;
+import org.forgerock.http.Request;
 import org.forgerock.http.header.ContentLengthHeader;
 import org.forgerock.http.header.ContentTypeHeader;
-import org.forgerock.http.http.Entity;
-import org.forgerock.http.http.Request;
 import org.forgerock.http.io.BranchingInputStream;
 import org.forgerock.http.io.ByteArrayBranchingStream;
 import org.json.simple.parser.JSONParser;

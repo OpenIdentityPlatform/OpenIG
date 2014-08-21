@@ -20,7 +20,7 @@ package org.forgerock.http.header;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.forgerock.http.http.Message;
+import org.forgerock.http.Message;
 
 /**
  * Processes the <strong>{@code Content-Type}</strong> message header. For more information,

@@ -12,10 +12,19 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011 ForgeRock AS.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
+package org.forgerock.http;
+
 /**
- * Handles HTTP exchange requests by generating responses.
+ * Indicates a type of HTTP message.
  */
-package org.forgerock.http.handler;
+public enum MessageType {
+
+    /** Message is an HTTP request. */
+    REQUEST,
+
+    /** Message is an HTTP response. */
+    RESPONSE
+}

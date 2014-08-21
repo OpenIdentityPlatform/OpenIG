@@ -21,10 +21,10 @@ import static org.forgerock.util.Reject.*;
 
 import java.io.IOException;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.handler.HandlerException;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Response;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HandlerException;
+import org.forgerock.http.Response;
 
 /**
  * This handler build an authentication challenge to be returned in the {@link Response} {@literal Authorization} HTTP

@@ -1,2 +1,2 @@
-import org.forgerock.http.http.Response
+import org.forgerock.http.Response
 exchange.response = new Response()

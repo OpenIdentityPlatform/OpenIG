@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.forgerock.http.http.Session;
+import org.forgerock.http.Session;
 
 /**
  * Exposes the session managed by the servlet container as an exchange session.

@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
-import org.forgerock.http.handler.Handler;
-import org.forgerock.http.http.Exchange;
-import org.forgerock.http.http.Request;
+import org.forgerock.http.Exchange;
+import org.forgerock.http.Handler;
+import org.forgerock.http.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.mockito.Mock;

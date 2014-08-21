@@ -14,7 +14,7 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.http.http;
+package org.forgerock.http;
 
 import static org.forgerock.util.Utils.closeSilently;
 
