@@ -22,11 +22,11 @@ import java.nio.charset.Charset;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.MessageType;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.MessageType;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
 import org.forgerock.util.encode.Base64;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

@@ -16,14 +16,16 @@
 package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.MutableUri.*;
+import static org.forgerock.http.util.MutableUri.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

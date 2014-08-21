@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.challenge;
 
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.http.Response;
 
 /**
  * Builds an error {@link Response} when the request does not contains any OAuth 2.0 Bearer token.

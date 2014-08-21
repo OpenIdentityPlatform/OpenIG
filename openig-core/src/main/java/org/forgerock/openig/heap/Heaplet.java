@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.heap;
 
+import org.forgerock.http.util.Indexed;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.util.Indexed;
 
 /**
  * Creates and initializes an object that is stored in a {@link Heap}. A heaplet can retrieve

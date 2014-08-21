@@ -22,17 +22,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Headers;
+import org.forgerock.http.http.Message;
+import org.forgerock.http.http.MessageType;
+import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
-import org.forgerock.openig.http.Message;
-import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.JsonValueUtil;
 
 /**

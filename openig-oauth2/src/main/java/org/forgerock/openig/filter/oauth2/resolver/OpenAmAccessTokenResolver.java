@@ -22,17 +22,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Entity;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Form;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.util.time.TimeService;
 import org.json.simple.parser.ParseException;
 

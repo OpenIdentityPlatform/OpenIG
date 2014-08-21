@@ -17,10 +17,11 @@ package org.forgerock.openig.filter;
 
 import java.io.IOException;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.filter.Filter;
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 

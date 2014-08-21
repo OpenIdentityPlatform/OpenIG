@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
+import static org.forgerock.http.util.URIUtil.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.util.URIUtil.*;
 import static org.forgerock.util.Utils.*;
 
 import java.net.URI;
@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.RedirectFilter;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.header.LocationHeader;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
 
 /**
  * Utility methods used by classes in this package.

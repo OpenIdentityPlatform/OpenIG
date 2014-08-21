@@ -20,7 +20,7 @@ package org.forgerock.openig.heap;
 import java.util.Collections;
 import java.util.Map;
 
-import org.forgerock.openig.util.Loader;
+import org.forgerock.http.util.Loader;
 
 /**
  * Loads {@link Heaplet} classes based on the class of object they create. Three methods of

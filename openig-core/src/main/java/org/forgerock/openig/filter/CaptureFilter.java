@@ -34,17 +34,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Message;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Message;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
 

@@ -23,17 +23,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.HttpUtil;
+import org.forgerock.http.http.Response;
+import org.forgerock.http.util.CaseInsensitiveMap;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpUtil;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.JsonValueUtil;
-import org.forgerock.openig.util.MultiValueMap;
 
 /**
  * Creates a static response in an HTTP exchange.

@@ -17,17 +17,17 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.util.MutableUri.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.io.TemporaryStorageHeaplet.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

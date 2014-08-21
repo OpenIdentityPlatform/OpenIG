@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.io;
 
+import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 

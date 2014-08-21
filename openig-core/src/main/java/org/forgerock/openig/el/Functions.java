@@ -37,8 +37,8 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.el.FunctionMapper;
 
+import org.forgerock.http.util.URIUtil;
 import org.forgerock.openig.util.StringUtil;
-import org.forgerock.openig.util.URIUtil;
 import org.forgerock.util.encode.Base64;
 
 /**

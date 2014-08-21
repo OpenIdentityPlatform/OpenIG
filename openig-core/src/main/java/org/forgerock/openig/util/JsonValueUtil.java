@@ -18,7 +18,7 @@
 package org.forgerock.openig.util;
 
 import static java.util.Collections.unmodifiableList;
-import static org.forgerock.openig.util.Loader.loadList;
+import static org.forgerock.http.util.Loader.loadList;
 
 import java.util.List;
 

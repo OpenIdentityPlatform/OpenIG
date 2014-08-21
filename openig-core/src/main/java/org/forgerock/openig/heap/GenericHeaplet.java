@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 

@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.handler;
 
+import org.forgerock.http.handler.Handler;
 import org.forgerock.openig.heap.GenericHeapObject;
 
 /**

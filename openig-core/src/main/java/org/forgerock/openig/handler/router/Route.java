@@ -22,15 +22,15 @@ import static org.forgerock.openig.util.JsonValueUtil.*;
 import java.io.IOException;
 import java.net.URI;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.http.Exchange;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route

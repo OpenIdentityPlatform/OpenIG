@@ -26,9 +26,9 @@ import static org.mockito.Mockito.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

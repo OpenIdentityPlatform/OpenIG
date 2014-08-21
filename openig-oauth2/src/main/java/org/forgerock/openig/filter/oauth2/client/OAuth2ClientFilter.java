@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.util.Collections.emptyList;
+import static org.forgerock.http.util.URIUtil.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
@@ -24,7 +25,6 @@ import static org.forgerock.openig.heap.HeapUtil.getObject;
 import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
 import static org.forgerock.openig.util.JsonValueUtil.asExpression;
 import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
-import static org.forgerock.openig.util.URIUtil.withQuery;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -36,18 +36,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Form;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.GenericFilter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.util.time.TimeService;
 

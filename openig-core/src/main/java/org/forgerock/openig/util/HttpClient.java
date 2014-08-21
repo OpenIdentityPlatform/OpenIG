@@ -64,20 +64,20 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.forgerock.http.header.ConnectionHeader;
+import org.forgerock.http.header.ContentEncodingHeader;
+import org.forgerock.http.header.ContentLengthHeader;
+import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
+import org.forgerock.http.io.BranchingStreamWrapper;
+import org.forgerock.http.io.TemporaryStorage;
+import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.header.ConnectionHeader;
-import org.forgerock.openig.header.ContentEncodingHeader;
-import org.forgerock.openig.header.ContentLengthHeader;
-import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.CaseInsensitiveSet;
 
 /**
  * Submits requests to remote servers. In this implementation, requests are

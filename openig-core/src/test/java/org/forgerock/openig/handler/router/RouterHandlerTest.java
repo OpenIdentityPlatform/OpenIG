@@ -33,12 +33,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.io.Streamer;
+import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.io.Streamer;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;

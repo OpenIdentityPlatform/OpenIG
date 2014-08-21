@@ -43,6 +43,14 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Headers;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
+import org.forgerock.http.http.Session;
+import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.LDAPClientContext;
@@ -51,16 +59,8 @@ import org.forgerock.opendj.ldap.MemoryBackend;
 import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.http.Session;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
@@ -213,7 +213,7 @@ public class GroovyScriptableFilterTest {
     @Test
     public void testConstructFromString() throws Exception {
         final String script =
-                "import org.forgerock.openig.http.Response;exchange.response = new Response()";
+                "import org.forgerock.http.http.Response;exchange.response = new Response()";
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
@@ -257,7 +257,7 @@ public class GroovyScriptableFilterTest {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
-                    "import org.forgerock.openig.http.*",
+                    "import org.forgerock.http.http.*",
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
@@ -356,7 +356,7 @@ public class GroovyScriptableFilterTest {
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
                     "import org.forgerock.opendj.ldap.*",
-                    "import org.forgerock.openig.http.Response",
+                    "import org.forgerock.http.http.Response",
                     "",
                     "username = exchange.request.headers.Username[0]",
                     "password = exchange.request.headers.Password[0]",
@@ -716,11 +716,10 @@ public class GroovyScriptableFilterTest {
 
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.http.*",
-                "import org.forgerock.openig.io.*",
+                "import org.forgerock.http.http.*",
                 "exchange.response = new Response()",
                 "exchange.response.status = 200",
-                "exchange.response.entity = new ByteArrayBranchingStream('hello world'.getBytes())");
+                "exchange.response.entity = 'hello world'");
         // @formatter:on
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -769,7 +768,7 @@ public class GroovyScriptableFilterTest {
     public void testSetResponse() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.http.Response",
+                "import org.forgerock.http.http.Response",
                 "exchange.response = new Response()",
                 "exchange.response.status = 404");
         // @formatter:on
@@ -785,7 +784,7 @@ public class GroovyScriptableFilterTest {
     public void testThrowHandlerException() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.handler.HandlerException",
+                "import org.forgerock.http.handler.HandlerException",
                 "throw new HandlerException(\"test\")");
         // @formatter:on
         final Exchange exchange = new Exchange();

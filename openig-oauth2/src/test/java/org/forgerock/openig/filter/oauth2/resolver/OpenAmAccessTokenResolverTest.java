@@ -24,11 +24,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Response;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

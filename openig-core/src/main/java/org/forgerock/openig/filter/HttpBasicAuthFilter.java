@@ -27,17 +27,17 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
+import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.util.encode.Base64;
 
 /**

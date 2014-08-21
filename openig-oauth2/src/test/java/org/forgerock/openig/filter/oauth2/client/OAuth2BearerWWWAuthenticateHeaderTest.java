@@ -22,7 +22,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2BearerWWWAuthentic
 import java.util.Arrays;
 import java.util.List;
 
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.http.Response;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

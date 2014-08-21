@@ -26,8 +26,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

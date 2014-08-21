@@ -25,12 +25,12 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Request;
+import org.forgerock.http.http.Response;
+import org.forgerock.http.io.NullOutputStream;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.NullOutputStream;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

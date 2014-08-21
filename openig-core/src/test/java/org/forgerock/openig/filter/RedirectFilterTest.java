@@ -22,13 +22,13 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.net.URI;
 
+import org.forgerock.http.handler.Handler;
+import org.forgerock.http.handler.HandlerException;
+import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.http.Exchange;
+import org.forgerock.http.http.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.header.LocationHeader;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
 import org.testng.annotations.Test;
 
 /**

@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.header.HeaderUtil.parseParameters;
-import static org.forgerock.openig.header.HeaderUtil.quote;
-import static org.forgerock.openig.header.HeaderUtil.split;
+import static org.forgerock.http.header.HeaderUtil.parseParameters;
+import static org.forgerock.http.header.HeaderUtil.quote;
+import static org.forgerock.http.header.HeaderUtil.split;
 import static org.forgerock.util.Utils.joinAsString;
 
 import java.util.Arrays;
@@ -27,9 +27,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.http.Form;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.http.Form;
 import org.forgerock.util.Reject;
 
 /**

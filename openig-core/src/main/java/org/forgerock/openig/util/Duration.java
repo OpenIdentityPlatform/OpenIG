@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.forgerock.http.util.CaseInsensitiveSet;
+
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
