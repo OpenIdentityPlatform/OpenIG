@@ -17,8 +17,11 @@
 
 package org.forgerock.openig.util;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import org.forgerock.openig.http.Form;
 
@@ -136,6 +139,38 @@ public final class URIUtil {
             return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
         } catch (final URISyntaxException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Returns the URL decoding of the provided string.
+     *
+     * @param value
+     *            the string to be URL decoded, which may be {@code null}.
+     * @return the URL decoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null}.
+     */
+    public static String urlDecode(String value) {
+        try {
+            return value != null ? URLDecoder.decode(value, "UTF-8") : null;
+        } catch (UnsupportedEncodingException e) {
+            return value;
+        }
+    }
+
+    /**
+     * Returns the URL encoding of the provided string.
+     *
+     * @param value
+     *            the string to be URL encoded, which may be {@code null}.
+     * @return the URL encoding of the provided string, or {@code null} if
+     *         {@code string} was {@code null}.
+     */
+    public static String urlEncode(String value) {
+        try {
+            return value != null ? URLEncoder.encode(value, "UTF-8") : null;
+        } catch (UnsupportedEncodingException e) {
+            return value;
         }
     }
 }
