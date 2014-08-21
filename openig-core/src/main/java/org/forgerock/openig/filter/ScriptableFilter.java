@@ -16,7 +16,6 @@
 package org.forgerock.openig.filter;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -29,7 +28,7 @@ import org.forgerock.openig.script.Script;
  * A scriptable filter. This filter acts as a simple wrapper around the
  * scripting engine. Scripts are provided with the following variable bindings:
  * <ul>
- * <li>{@link Map globals} - the Map of global variables which persist across
+ * <li>{@link java.util.Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for

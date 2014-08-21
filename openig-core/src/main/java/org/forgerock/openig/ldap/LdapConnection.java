@@ -18,14 +18,10 @@ package org.forgerock.openig.ldap;
 import java.io.Closeable;
 import java.util.Collection;
 
-import org.forgerock.i18n.LocalizedIllegalArgumentException;
 import org.forgerock.opendj.ldap.Connection;
-import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.DN;
 import org.forgerock.opendj.ldap.Entry;
-import org.forgerock.opendj.ldap.EntryNotFoundException;
 import org.forgerock.opendj.ldap.ErrorResultException;
-import org.forgerock.opendj.ldap.MultipleEntriesFoundException;
 import org.forgerock.opendj.ldap.SearchScope;
 import org.forgerock.opendj.ldap.requests.AddRequest;
 import org.forgerock.opendj.ldap.requests.BindRequest;
@@ -116,7 +112,7 @@ public final class LdapConnection implements Closeable {
      *             reason.
      * @throws UnsupportedOperationException
      *             If this connection does not support add operations.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code ldifLines} was empty, or contained invalid LDIF, or
      *             could not be decoded using the default schema.
      * @throws IllegalStateException
@@ -166,7 +162,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code name} could not be decoded using the default
      *             schema.
      * @throws UnsupportedOperationException
@@ -201,7 +197,7 @@ public final class LdapConnection implements Closeable {
      * Calling {@code close} on a connection that is already closed has no
      * effect.
      *
-     * @see Connections#uncloseable(Connection)
+     * @see org.forgerock.opendj.ldap.Connections#uncloseable(Connection)
      */
     @Override
     public void close() {
@@ -246,7 +242,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code name} or {@code AttributeDescription} could not be
      *             decoded using the default schema.
      * @throws UnsupportedOperationException
@@ -296,7 +292,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code name} could not be decoded using the default
      *             schema.
      * @throws UnsupportedOperationException
@@ -329,7 +325,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code name} could not be decoded using the default
      *             schema.
      * @throws UnsupportedOperationException
@@ -381,7 +377,7 @@ public final class LdapConnection implements Closeable {
      *             reason.
      * @throws UnsupportedOperationException
      *             If this connection does not support modify operations.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code ldifLines} was empty, or contained invalid LDIF, or
      *             could not be decoded using the default schema.
      * @throws IllegalStateException
@@ -430,7 +426,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code name} or {@code newRDN} could not be decoded using
      *             the default schema.
      * @throws UnsupportedOperationException
@@ -449,7 +445,7 @@ public final class LdapConnection implements Closeable {
      * Reads the named entry from the Directory Server.
      * <p>
      * If the requested entry is not returned by the Directory Server then the
-     * request will fail with an {@link EntryNotFoundException}. More
+     * request will fail with an {@link org.forgerock.opendj.ldap.EntryNotFoundException}. More
      * specifically, this method will never return {@code null}.
      * <p>
      * This method is equivalent to the following code:
@@ -487,7 +483,7 @@ public final class LdapConnection implements Closeable {
      * Reads the named entry from the Directory Server.
      * <p>
      * If the requested entry is not returned by the Directory Server then the
-     * request will fail with an {@link EntryNotFoundException}. More
+     * request will fail with an {@link org.forgerock.opendj.ldap.EntryNotFoundException}. More
      * specifically, this method will never return {@code null}.
      * <p>
      * This method is equivalent to the following code:
@@ -506,7 +502,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code baseObject} could not be decoded using the default
      *             schema.
      * @throws UnsupportedOperationException
@@ -668,10 +664,10 @@ public final class LdapConnection implements Closeable {
      * search request.
      * <p>
      * If the requested entry is not returned by the Directory Server then the
-     * request will fail with an {@link EntryNotFoundException}. More
+     * request will fail with an {@link org.forgerock.opendj.ldap.EntryNotFoundException}. More
      * specifically, this method will never return {@code null}. If multiple
      * matching entries are returned by the Directory Server then the request
-     * will fail with an {@link MultipleEntriesFoundException}.
+     * will fail with an {@link org.forgerock.opendj.ldap.MultipleEntriesFoundException}.
      *
      * @param request
      *            The search request.
@@ -696,10 +692,10 @@ public final class LdapConnection implements Closeable {
      * search parameters.
      * <p>
      * If the requested entry is not returned by the Directory Server then the
-     * request will fail with an {@link EntryNotFoundException}. More
+     * request will fail with an {@link org.forgerock.opendj.ldap.EntryNotFoundException}. More
      * specifically, this method will never return {@code null}. If multiple
      * matching entries are returned by the Directory Server then the request
-     * will fail with an {@link MultipleEntriesFoundException}.
+     * will fail with an {@link org.forgerock.opendj.ldap.MultipleEntriesFoundException}.
      * <p>
      * This method is equivalent to the following code:
      *
@@ -722,7 +718,7 @@ public final class LdapConnection implements Closeable {
      * @throws ErrorResultException
      *             If the result code indicates that the request failed for some
      *             reason.
-     * @throws LocalizedIllegalArgumentException
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
      *             If {@code baseObject} could not be decoded using the default
      *             schema or if {@code filter} is not a valid LDAP string
      *             representation of a filter.

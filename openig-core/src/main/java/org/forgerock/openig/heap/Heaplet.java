@@ -18,7 +18,6 @@
 package org.forgerock.openig.heap;
 
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.util.Indexed;
 
 /**
@@ -39,12 +38,17 @@ public interface Heaplet extends Indexed<Class> {
     /**
      * Called to request the heaplet create an object.
      *
-     * @param name the name of the object to be created.
-     * @param config the heaplet's configuration object.
-     * @param heap the heap where object dependencies can be retrieved.
+     * @param name
+     *            the name of the object to be created.
+     * @param config
+     *            the heaplet's configuration object.
+     * @param heap
+     *            the heap where object dependencies can be retrieved.
      * @return the object created by the heaplet.
-     * @throws HeapException if an exception occurred during creation of the object or any of its dependencies.
-     * @throws JsonValueException if the heaplet (or one of its dependencies) has a malformed configuration object.
+     * @throws HeapException
+     *             if an exception occurred during creation of the object or any of its dependencies.
+     * @throws org.forgerock.json.fluent.JsonValueException
+     *             if the heaplet (or one of its dependencies) has a malformed configuration object.
      */
     Object create(String name, JsonValue config, Heap heap) throws HeapException;
 

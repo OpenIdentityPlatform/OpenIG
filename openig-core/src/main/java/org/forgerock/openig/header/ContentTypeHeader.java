@@ -18,8 +18,6 @@
 package org.forgerock.openig.header;
 
 import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 
 import org.forgerock.openig.http.Message;
@@ -78,9 +76,9 @@ public class ContentTypeHeader implements Header {
     /**
      * Returns the character set encoding used to encode the message, or {@code null} if no character set was specified.
      *
-     * @throws IllegalCharsetNameException
+     * @throws java.nio.charset.IllegalCharsetNameException
      *             if the given charset name is illegal.
-     * @throws UnsupportedCharsetException
+     * @throws java.nio.charset.UnsupportedCharsetException
      *             if no support for the named charset is available.
      * @return The character set encoding used to encode the message or {@code null} if empty.
      */

@@ -32,7 +32,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.handler.DispatchHandler;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -43,8 +42,9 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.time.TimeService;
 
 /**
- * Auto-configured {@link DispatchHandler}. It looks for route configuration files (very similar to the
- * usual general config file) in a defined directory (by default it looks in {@literal config/routes/}).
+ * Auto-configured {@link org.forgerock.openig.handler.DispatchHandler}.
+ * It looks for route configuration files (very similar to the usual general config file)
+ * in a defined directory (by default it looks in {@literal config/routes/}).
  * <pre>
  *   {
  *     "name": "Router",
