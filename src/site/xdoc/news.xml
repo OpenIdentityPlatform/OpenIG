@@ -25,22 +25,28 @@
 -->
 <document xmlns="http://maven.apache.org/XDOC/2.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0
+                              http://maven.apache.org/xsd/xdoc-2.0.xsd">
   <properties>
     <title>OpenIG News</title>
     <author email="openig@forgerock.org">ForgeRock AS</author>
   </properties>
   <body>
     <section name="New Releases">
-      <p>May 15, 2012. ForgeRock has released OpenIG 2.1.0. You can get the
-        release from the<a href="http://www.forgerock.org/openig.html">download
-          page</a>. Documentation for OpenIG 2.1.0 is available at<a
-            href="http://docs.forgerock.org/en/openig/2.1.0/">docs.forgerock.org</a>.
+      <p>
+       August 11, 2014. ForgeRock has released OpenIG 3.0.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 3.0.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/3.0.0/">docs.forgerock.org</a>.
       </p>
 
-      <p>ForgeRock Identity Gateway release 2.0 is here !
-        <a href="http://www.forgerock.org/openig.html">Visit the download page</a>
-        to get started.
+      <p>
+       May 15, 2012. ForgeRock has released OpenIG 2.1.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 2.1.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/2.1.0/">docs.forgerock.org</a>.
       </p>
     </section>
   </body>

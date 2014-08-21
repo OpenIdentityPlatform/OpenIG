@@ -26,7 +26,8 @@
 <project name="${project.name}"
          xmlns="http://maven.apache.org/DECORATION/1.0.1"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1 http://maven.apache.org/xsd/decoration-1.0.1.xsd">
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1
+                             http://maven.apache.org/xsd/decoration-1.0.1.xsd">
 
   <skin>
     <groupId>org.forgerock.commons</groupId>
@@ -58,6 +59,7 @@
     </menu>
 
     <menu name="Released Documentation">
+      <item name="OpenIG 3.0.0" href="http://docs.forgerock.org/en/openig/3.0.0/" />
       <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
     </menu>
 
