@@ -36,7 +36,7 @@ import org.forgerock.util.promise.Function;
 public final class JsonValueUtil {
 
     /**
-     * List of alias service providers found at initialisation time.
+     * List of alias service providers found at initialization time.
      */
     private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
             unmodifiableList(loadList(ClassAliasResolver.class));
@@ -54,13 +54,6 @@ public final class JsonValueUtil {
      */
     private JsonValueUtil() { }
 
-    /**
-     * TODO: Description.
-     *
-     * @param value TODO.
-     * @return TODO.
-     * @throws JsonValueException if value is not a string or the named class could not be found.
-     */
     private static Class<?> classForName(JsonValue value) {
         String name = value.asString();
         // Looks for registered aliases first
