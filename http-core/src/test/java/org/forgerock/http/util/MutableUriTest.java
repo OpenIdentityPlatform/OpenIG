@@ -17,11 +17,11 @@
 package org.forgerock.http.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.util.MutableUri.*;
+import static org.forgerock.http.MutableUri.*;
 
 import java.net.URI;
 
-import org.forgerock.http.util.MutableUri;
+import org.forgerock.http.MutableUri;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")

@@ -14,9 +14,9 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.http.util;
+package org.forgerock.http;
 
-import static org.forgerock.http.util.URIUtil.*;
+import static org.forgerock.http.URIUtil.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;

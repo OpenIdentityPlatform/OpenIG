@@ -17,7 +17,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.util.Collections.emptyList;
-import static org.forgerock.http.util.URIUtil.withQuery;
+import static org.forgerock.http.URIUtil.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;

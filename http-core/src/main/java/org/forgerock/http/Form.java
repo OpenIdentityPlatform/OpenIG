@@ -19,8 +19,8 @@
 package org.forgerock.http;
 
 
-import static org.forgerock.http.util.URIUtil.urlDecode;
-import static org.forgerock.http.util.URIUtil.urlEncode;
+import static org.forgerock.http.URIUtil.urlDecode;
+import static org.forgerock.http.URIUtil.urlEncode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

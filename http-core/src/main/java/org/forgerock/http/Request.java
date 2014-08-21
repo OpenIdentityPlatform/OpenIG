@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.http.util.MutableUri;
-
 /**
  * A request message.
  */

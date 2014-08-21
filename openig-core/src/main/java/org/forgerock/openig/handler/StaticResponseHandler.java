@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.forgerock.http.Exchange;
 import org.forgerock.http.HandlerException;
-import org.forgerock.http.HttpUtil;
 import org.forgerock.http.Response;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
@@ -108,15 +107,11 @@ public class StaticResponseHandler extends GenericHandler {
     public void handle(Exchange exchange) throws HandlerException, IOException {
         LogTimer timer = logger.getTimer().start();
         Response response = new Response();
-        response.setStatus(this.status);
-        response.setReason(this.reason);
-        if (response.getReason() == null) {
-            // not explicit, derive from status
-            response.setReason(HttpUtil.getReason(response.getStatus()));
-        }
-        if (response.getReason() == null) {
-            // couldn't derive from status; say something
-            response.setReason("Uncertain");
+        if (this.reason == null) {
+            response.setStatusAndReason(this.status);
+        } else {
+            response.setStatus(this.status);
+            response.setReason(this.reason);
         }
         if (this.version != null) { // default in Message class
             response.setVersion(this.version);

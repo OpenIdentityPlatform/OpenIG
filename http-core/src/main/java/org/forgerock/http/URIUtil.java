@@ -15,15 +15,13 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.util;
+package org.forgerock.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-
-import org.forgerock.http.Form;
 
 /**
  * Utility class for performing operations on universal resource identifiers.

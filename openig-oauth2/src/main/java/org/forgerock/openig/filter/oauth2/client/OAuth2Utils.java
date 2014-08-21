@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.http.util.URIUtil.*;
+import static org.forgerock.http.URIUtil.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.util.Utils.*;
 
