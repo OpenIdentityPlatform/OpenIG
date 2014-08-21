@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
@@ -108,7 +107,7 @@ public abstract class GenericHeaplet implements Heaplet {
      * @throws HeapException
      *             if an exception occurred during creation of the heap object
      *             or any of its dependencies.
-     * @throws JsonValueException
+     * @throws org.forgerock.json.fluent.JsonValueException
      *             if the heaplet (or one of its dependencies) has a malformed
      *             configuration.
      */

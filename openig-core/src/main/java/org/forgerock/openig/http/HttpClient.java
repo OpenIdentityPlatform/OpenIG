@@ -65,7 +65,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.header.ConnectionHeader;
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentLengthHeader;
@@ -126,7 +125,8 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  *     <li>{@literal file}: path to the key store</li>
  *     <li>{@literal type}: key store type (defaults to {@literal JKS})</li>
  *     <li>{@literal alg}: certificate algorithm to use (defaults to {@literal SunX509})</li>
- *     <li>{@literal password}: mandatory for key store, optional for trust store, defined as an {@link Expression}</li>
+ *     <li>{@literal password}: mandatory for key store, optional for trust store, defined as an
+ *     {@link org.forgerock.openig.el.Expression}</li>
  * </ul>
  * <p>
  * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection

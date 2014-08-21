@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.forgerock.i18n.LocalizedIllegalArgumentException;
 import org.forgerock.opendj.ldap.ConnectionFactory;
 import org.forgerock.opendj.ldap.DN;
 import org.forgerock.opendj.ldap.ErrorResultException;
@@ -124,7 +123,7 @@ public final class LdapClient {
      * @param template The DN template.
      * @param attributeValues The attribute values to be substituted into the template.
      * @return The formatted template parsed as a {@code DN}.
-     * @throws LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
      * representation of a DN.
      * @see DN#format(String, Object...)
      */
@@ -140,7 +139,7 @@ public final class LdapClient {
      * @param template The filter template.
      * @param assertionValues The assertion values to be substituted into the template.
      * @return The formatted template parsed as a {@code Filter}.
-     * @throws LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
+     * @throws org.forgerock.i18n.LocalizedIllegalArgumentException If the formatted template is not a valid LDAP string
      * representation of a filter.
      * @see Filter#format(String, Object...)
      */
