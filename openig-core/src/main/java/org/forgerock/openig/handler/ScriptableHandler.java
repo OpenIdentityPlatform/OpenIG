@@ -29,7 +29,7 @@ import org.forgerock.openig.script.Script;
  * <li>{@link java.util.Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
- * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
+ * <li>{@link org.forgerock.openig.util.HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication

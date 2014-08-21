@@ -19,15 +19,15 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.io.IOException;
 
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.LogTimer;
+import org.forgerock.openig.util.HttpClient;
 
 /**
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched through the {@link

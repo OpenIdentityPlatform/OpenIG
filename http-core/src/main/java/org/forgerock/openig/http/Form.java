@@ -18,13 +18,16 @@
 
 package org.forgerock.openig.http;
 
+
+import static org.forgerock.openig.util.URIUtil.urlDecode;
+import static org.forgerock.openig.util.URIUtil.urlEncode;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.forgerock.openig.util.MultiValueMap;
-import org.forgerock.openig.util.URIUtil;
 
 /**
  * Form fields, a case-sensitive multi-string-valued map. The form can be read
@@ -52,7 +55,7 @@ public class Form extends MultiValueMap<String, String> {
         for (String param : s.split("&")) {
             String[] nv = param.split("=", 2);
             if (nv.length == 2) {
-                add(URIUtil.urlDecode(nv[0]), URIUtil.urlDecode(nv[1]));
+                add(urlDecode(nv[0]), urlDecode(nv[1]));
             }
         }
         return this;
@@ -71,7 +74,7 @@ public class Form extends MultiValueMap<String, String> {
                 if (sb.length() > 0) {
                     sb.append('&');
                 }
-                sb.append(URIUtil.urlEncode(name)).append('=').append(URIUtil.urlEncode(value));
+                sb.append(urlEncode(name)).append('=').append(urlEncode(value));
             }
         }
         return sb.toString();

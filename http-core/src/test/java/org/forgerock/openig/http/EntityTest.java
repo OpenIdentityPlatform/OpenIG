@@ -17,8 +17,6 @@
 package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.json.fluent.JsonValue.field;
-import static org.forgerock.json.fluent.JsonValue.object;
 import static org.forgerock.openig.http.Entity.APPLICATION_JSON_CHARSET_UTF_8;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -33,6 +31,7 @@ import org.forgerock.openig.header.ContentLengthHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.ByteArrayBranchingStream;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -42,8 +41,16 @@ public class EntityTest {
     private static final String INVALID_JSON = "invalid json";
     private static final String JSON_CONTENT1 = "{\"a\":1,\"b\":2}";
     private static final String JSON_CONTENT2 = "{\"c\":3,\"d\":4}";
-    private static final Object JSON_VALUE1 = object(field("a", 1L), field("b", 2L));
-    private static final Object JSON_VALUE2 = object(field("c", 3L), field("d", 4L));
+    private static final Object JSON_VALUE1;
+    private static final Object JSON_VALUE2;
+    static {
+        try {
+            JSON_VALUE1 = new JSONParser().parse(JSON_CONTENT1);
+            JSON_VALUE2 = new JSONParser().parse(JSON_CONTENT2);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private Entity entity;
     private Request message;

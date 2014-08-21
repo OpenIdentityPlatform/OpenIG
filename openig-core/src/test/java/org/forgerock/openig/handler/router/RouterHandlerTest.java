@@ -19,7 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorageHeaplet.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.mockito.Mockito.mock;

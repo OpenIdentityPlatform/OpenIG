@@ -17,7 +17,7 @@ package org.forgerock.openig.script;
 
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,10 +36,10 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.util.HttpClient;
 
 /**
  * An abstract scriptable heap object which should be used as the base class for

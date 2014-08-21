@@ -17,7 +17,7 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorageHeaplet.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 
 import java.io.InputStreamReader;

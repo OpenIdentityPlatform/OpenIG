@@ -41,9 +41,9 @@ import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
+import org.forgerock.openig.util.HttpClient;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.

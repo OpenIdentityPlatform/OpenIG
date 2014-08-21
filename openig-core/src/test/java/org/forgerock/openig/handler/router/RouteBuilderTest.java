@@ -18,7 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.io.TemporaryStorageHeaplet.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;

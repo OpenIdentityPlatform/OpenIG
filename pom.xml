@@ -36,6 +36,7 @@
   <url>http://openig.forgerock.org</url>
 
   <modules>
+    <module>http-core</module>
     <module>openig-core</module>
     <module>openig-war</module>
     <module>openig-saml</module>

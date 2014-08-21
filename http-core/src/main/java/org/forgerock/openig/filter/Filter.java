@@ -25,8 +25,6 @@ import org.forgerock.openig.http.Exchange;
 
 /**
  * Filters the request and/or response of an HTTP exchange.
- *
- * @see Chain
  */
 public interface Filter {
 
