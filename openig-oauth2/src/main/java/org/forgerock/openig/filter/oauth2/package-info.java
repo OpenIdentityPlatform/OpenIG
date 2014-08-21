@@ -22,8 +22,8 @@
  *     endpoint).
  *     <ul>
  *         <li>Produced {@link org.forgerock.openig.filter.oauth2.AccessToken} are cached for future re-use.</li>
- *         <li>Produced {@link org.forgerock.openig.filter.oauth2.AccessToken} are stored in the {@link org.forgerock
- *         .openig.http.Exchange} for downstream handlers/filters.</li>
+ *         <li>Produced {@link org.forgerock.openig.filter.oauth2.AccessToken} are stored in the 
+ *         {@link org.forgerock.openig.http.Exchange} for downstream handlers/filters.</li>
  *     </ul>
  *     </li>
  *     <li>It performs token validation: checking expiration time and required scopes compliance.</li>
