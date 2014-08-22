@@ -29,7 +29,6 @@ import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -39,11 +38,10 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.log.Logger;
 
 /**
  * An abstract scriptable heap object which should be used as the base class for
- * implementing {@link Filter filters} and {@link Handler handlers}. This heap
+ * implementing {@link org.forgerock.openig.filter.Filter filters} and {@link Handler handlers}. This heap
  * object acts as a simple wrapper around the scripting engine. Scripts are
  * provided with the following variable bindings:
  * <ul>
@@ -54,7 +52,7 @@ import org.forgerock.openig.log.Logger;
  * performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
- * <li>{@link Logger logger} - the OpenIG logger
+ * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
