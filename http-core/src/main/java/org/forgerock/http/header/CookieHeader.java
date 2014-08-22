@@ -52,7 +52,7 @@ public class CookieHeader implements Header {
      *
      * @param message the message to initialize the header from.
      */
-    public CookieHeader(Message<?> message) {
+    public CookieHeader(Message message) {
         fromMessage(message);
     }
 
@@ -84,7 +84,7 @@ public class CookieHeader implements Header {
     }
 
     @Override
-    public void fromMessage(Message<?> message) {
+    public void fromMessage(Message message) {
         if (message != null && message.getHeaders() != null) {
             fromString(HeaderUtil.join(message.getHeaders().get(getKey()), ','));
         }
@@ -129,7 +129,7 @@ public class CookieHeader implements Header {
     }
 
     @Override
-    public void toMessage(Message<?> message) {
+    public void toMessage(Message message) {
         String value = toString();
         if (value != null) {
             message.getHeaders().putSingle(getKey(), value);

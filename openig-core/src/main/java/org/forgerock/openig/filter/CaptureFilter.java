@@ -197,7 +197,7 @@ public class CaptureFilter extends GenericFilter {
         writer.flush();
     }
 
-    private void writeHeaders(final PrintWriter writer, Message<?> message) {
+    private void writeHeaders(final PrintWriter writer, Message message) {
         for (String key : message.getHeaders().keySet()) {
             for (String value : message.getHeaders().get(key)) {
                 writer.println(key + ": " + value);
@@ -205,7 +205,7 @@ public class CaptureFilter extends GenericFilter {
         }
     }
 
-    private void writeEntity(final PrintWriter writer, Message<?> message) throws IOException {
+    private void writeEntity(final PrintWriter writer, Message message) throws IOException {
         ContentTypeHeader contentType = new ContentTypeHeader(message);
         if (message.getEntity() == null || contentType.getType() == null) {
             return;

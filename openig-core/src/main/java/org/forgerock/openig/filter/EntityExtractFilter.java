@@ -121,7 +121,7 @@ public class EntityExtractFilter extends GenericFilter {
         timer.stop();
     }
 
-    private void process(Exchange exchange, Message<?> message) {
+    private void process(Exchange exchange, Message message) {
         HashMap<String, String> map = new HashMap<String, String>();
         if (message != null) {
             try {

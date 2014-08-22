@@ -77,7 +77,7 @@ public final class Entity implements Closeable {
     private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
     /** The encapsulating Message which may have content encoding headers. */
-    private final Message<?> message;
+    private final Message message;
 
     /** The input stream from which all all branches are created. */
     private BranchingInputStream trunk;
@@ -91,7 +91,7 @@ public final class Entity implements Closeable {
     /** Cached and lazily created String representation of the entity. */
     private String string;
 
-    Entity(final Message<?> message) {
+    Entity(final Message message) {
         this.message = message;
         setRawInputStream(EMPTY_STREAM);
     }

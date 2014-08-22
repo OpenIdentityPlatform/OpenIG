@@ -80,7 +80,7 @@ public class HeaderFilter extends GenericFilter {
      *
      * @param message the message to remove headers from and add headers to.
      */
-    private void process(Message<?> message, Exchange exchange) {
+    private void process(Message message, Exchange exchange) {
         for (String s : this.removedHeaders) {
             message.getHeaders().remove(s);
         }

@@ -25,7 +25,7 @@ import java.net.URISyntaxException;
 /**
  * A request message.
  */
-public final class Request extends Message<Request> {
+public final class Request extends MessageImpl<Request> {
 
     /** Exposes incoming request cookies. */
     private final RequestCookies cookies = new RequestCookies(this);
@@ -89,6 +89,12 @@ public final class Request extends Message<Request> {
         return uri;
     }
 
+    @Override
+    public Request setEntity(Object o) {
+        setEntity0(o);
+        return this;
+    }
+
     /**
      * Sets the method to be performed on the resource.
      *
@@ -119,7 +125,8 @@ public final class Request extends Message<Request> {
      * @param uri
      *            The fully-qualified string URI of the resource being accessed.
      * @return This request.
-     * @throws URISyntaxException if the given URI string is not well-formed.
+     * @throws URISyntaxException
+     *             if the given URI string is not well-formed.
      */
     public Request setUri(final String uri) throws URISyntaxException {
         return setUri(new MutableUri(uri));
@@ -137,7 +144,8 @@ public final class Request extends Message<Request> {
     }
 
     @Override
-    Request thisMessage() {
+    public Request setVersion(String version) {
+        setVersion0(version);
         return this;
-    }
+    };
 }

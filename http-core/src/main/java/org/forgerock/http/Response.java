@@ -21,7 +21,7 @@ package org.forgerock.http;
 /**
  * A response message.
  */
-public final class Response extends Message<Response> {
+public final class Response extends MessageImpl<Response> {
     /** The response status reason. */
     private String reason;
 
@@ -51,6 +51,12 @@ public final class Response extends Message<Response> {
      */
     public Integer getStatus() {
         return status;
+    }
+
+    @Override
+    public Response setEntity(Object o) {
+        setEntity0(o);
+        return this;
     }
 
     /**
@@ -92,9 +98,10 @@ public final class Response extends Message<Response> {
     }
 
     @Override
-    Response thisMessage() {
+    public Response setVersion(String version) {
+        setVersion0(version);
         return this;
-    }
+    };
 
     private static String getReason(int status) {
         switch (status) {

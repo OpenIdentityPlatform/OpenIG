@@ -77,7 +77,7 @@ public class RedirectFilter extends GenericFilter {
      * @param exchange the exchnage containing the response message containing the Location header
      */
     private void processResponse(Exchange exchange) throws HandlerException {
-        Message<?> message = exchange.response;
+        Message message = exchange.response;
         LocationHeader header = new LocationHeader(message);
         if (header.toString() != null) {
             try {

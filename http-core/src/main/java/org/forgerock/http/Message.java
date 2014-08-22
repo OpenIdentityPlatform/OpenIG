@@ -20,55 +20,31 @@ package org.forgerock.http;
 
 import java.io.Closeable;
 
-import org.forgerock.http.io.BranchingInputStream;
-
 /**
  * Elements common to requests and responses.
- *
- * @param <T>
- *            The sub-type of this message.
  */
-public abstract class Message<T extends Message<T>> implements Closeable {
-
-    /** Message entity body. */
-    private final Entity entity = new Entity(this);
-
-    /** Message header fields. */
-    private final Headers headers = new Headers();
-
-    /** Protocol version. Default: {@code HTTP/1.1}. */
-    private String version = "HTTP/1.1";
-
-    Message() {
-        // Hidden constructor.
-    }
+public interface Message extends Closeable {
 
     /**
      * Returns the entity.
      *
      * @return The entity.
      */
-    public final Entity getEntity() {
-        return entity;
-    }
+    Entity getEntity();
 
     /**
      * Returns the headers.
      *
      * @return The headers.
      */
-    public final Headers getHeaders() {
-        return headers;
-    }
+    Headers getHeaders();
 
     /**
      * Returns the protocol version. Default: {@code HTTP/1.1}.
      *
      * @return The protocol version.
      */
-    public final String getVersion() {
-        return version;
-    }
+    String getVersion();
 
     /**
      * Sets the content of the entity to the provided value. Calling this method
@@ -92,18 +68,7 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      *            The object whose value should be stored in the entity.
      * @return This message.
      */
-    public final T setEntity(Object o) {
-        if (o instanceof BranchingInputStream) {
-            entity.setRawInputStream((BranchingInputStream) o);
-        } else if (o instanceof byte[]) {
-            entity.setBytes((byte[]) o);
-        } else if (o instanceof String) {
-            entity.setString((String) o);
-        } else {
-            entity.setJson(o);
-        }
-        return thisMessage();
-    }
+    Message setEntity(Object o);
 
     /**
      * Sets the protocol version. Default: {@code HTTP/1.1}.
@@ -112,10 +77,7 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      *            The protocol version.
      * @return This message.
      */
-    public final T setVersion(final String version) {
-        this.version = version;
-        return thisMessage();
-    }
+    Message setVersion(final String version);
 
     /**
      * Closes all resources associated with the entity. Any open streams will be
@@ -123,9 +85,5 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      *
      * @see Entity#close()
      */
-    public void close() {
-        entity.close();
-    }
-
-    abstract T thisMessage();
+    void close();
 }
