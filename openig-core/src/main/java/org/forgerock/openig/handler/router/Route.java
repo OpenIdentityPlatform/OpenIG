@@ -35,7 +35,7 @@ import org.forgerock.openig.http.Exchange;
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
  * its own {@link org.forgerock.openig.heap.Heap} for scoping configuration objects. The route's heap inherits from the
  * global heap (it is possible to make reference to objects defined in the global scope from the route's heap).
- * 
+ *
  * <pre>
  * {
  *   "heap": {
@@ -61,7 +61,7 @@ import org.forgerock.openig.http.Exchange;
  *   "name": "my-route"
  * }
  * </pre>
- * 
+ *
  * In addition of the {@literal heap} property, a route needs to define a reference to its main handler using the
  * {@literal handler} property (needs to point to a {@link Handler} object declared in the local or global heap).
  *
@@ -72,7 +72,7 @@ import org.forgerock.openig.http.Exchange;
  *   <li>{@literal baseURI}: a string used to rebase the request URL.</li>
  *   <li>{@literal name}: a string used name this route (may be used in route ordering).</li>
  * </ul>
- * 
+ *
  * @see RouterHandler
  * @since 2.2
  */
