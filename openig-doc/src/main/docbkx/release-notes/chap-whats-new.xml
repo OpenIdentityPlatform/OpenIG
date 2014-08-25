@@ -48,5 +48,14 @@
    <para>TODO: Update for the release</para>
   </listitem>
 
+  <listitem>
+   <para>
+    ${projectName} script configurations can now include arguments (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-240"
+    >OPENIG-240</link>).
+   </para>
+  </listitem>
  </itemizedlist>
  </chapter>

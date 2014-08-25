@@ -177,7 +177,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testBasicAuthFilterFromFile() throws Exception {
-        final Map<String, Object> config = newFileConfig("BasicAuthFilter.groovy");
+        final Map<String, Object> config = newFileConfigWithCredentials("BasicAuthFilter.groovy");
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
                         config), getHeap());
@@ -873,6 +873,36 @@ public class GroovyScriptableFilterTest {
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
+        return config;
+    }
+
+    /**
+     * Equivalent to :
+     * <p>
+     * <pre>
+     * {
+     *     "name": "BasicAuth",
+     *     "type": "ScriptableFilter",
+     *     "config": {
+     *         "type": "application/x-groovy",
+     *         "file": "BasicAuthFilter.groovy",
+     *         "args": {
+     *             "username": "bjensen",
+     *             "password": "hifalutin"
+     *             }
+     *         }
+     * }
+     * </pre>
+     */
+    private static Map<String, Object> newFileConfigWithCredentials(final String groovyClass) {
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", groovyClass);
+
+        final Map<String, Object> args = new LinkedHashMap<String, Object>();
+        args.put("username", "bjensen");
+        args.put("password", "hifalutin");
+        config.put("args", args);
         return config;
     }
 
