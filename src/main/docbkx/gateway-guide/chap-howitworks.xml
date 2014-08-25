@@ -214,9 +214,9 @@
      <para>
       <link
        xlink:show="new"
-       xlink:href="gateway-guide#federation-config-json"
+       xlink:href="reference#SamlFederationHandler"
        xlink:role="http://docbook.org/xlink/role/olink"
-      >SamlFederationHandler</link>: Handles assertions from a SAML 2.0 IDP.
+      >SamlFederationHandler</link>: Plays the role of SAML 2.0 Service Provider.
      </para>
     </listitem>
 
