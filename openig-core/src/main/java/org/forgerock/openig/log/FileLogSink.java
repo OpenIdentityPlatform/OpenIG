@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import static org.forgerock.openig.util.JsonValueUtil.evaluate;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -114,11 +116,11 @@ public class FileLogSink implements LogSink {
         return (level.compareTo(this.level) >= 0);
     }
 
-    /** Creates and initializes a console sink in a heap environment. */
+    /** Creates and initializes a file log sink in a heap environment. */
     public static class Heaplet extends NestedHeaplet {
         @Override
         public Object create() throws HeapException {
-            File file = config.get("file").required().asFile();
+            File file = new File(evaluate(config.get("file").required()));
             try {
                 // try opening file to ensure it's writable at config time
                 FileOutputStream out = new FileOutputStream(file, true);

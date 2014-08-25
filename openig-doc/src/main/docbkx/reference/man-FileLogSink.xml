@@ -20,11 +20,10 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Copyright 2014 ForgeRock AS
   !
 -->
-<refentry xml:id='ConsoleLogSink'
+<refentry xml:id='FileLogSink'
           xmlns='http://docbook.org/ns/docbook'
           version='5.0' xml:lang='en'
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -33,12 +32,12 @@
           xmlns:xlink='http://www.w3.org/1999/xlink'
           xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <refmeta>
-  <refentrytitle>ConsoleLogSink</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>FileLogSink</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
 
  <refnamediv>
-  <refname>ConsoleLogSink</refname>
-  <refpurpose>log to standard error</refpurpose>
+  <refname>FileLogSink</refname>
+  <refpurpose>log to a file</refpurpose>
  </refnamediv>
 
  <refsect1>
@@ -46,11 +45,11 @@
 
   <indexterm>
    <primary>Miscellaneous Heap Objects</primary>
-   <secondary>ConsoleLogSink</secondary>
+   <secondary>FileLogSink</secondary>
   </indexterm>
 
   <para>
-   A log sink that writes log entries to the standard error stream.
+   A log sink that writes log entries to a file using the UTF-8 character set.
   </para>
  </refsect1>
 
@@ -60,8 +59,9 @@
   <programlisting language="javascript">
 {
      "name": string,
-     "type": "ConsoleLogSink",
+     "type": "FileLogSink",
      "config": {
+         "file": expression,
          "level": string
      }
 }
@@ -72,6 +72,19 @@
   <title>Properties</title>
 
   <variablelist>
+   <varlistentry>
+    <term><code>"file"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
+
+    <listitem>
+     <para>
+      The path to the log file.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <xinclude:include href="../shared/varlistentry-log-level.xml" />
   </variablelist>
  </refsect1>
@@ -82,9 +95,9 @@
   <programlisting language="javascript">
 {
      "name": "LogSink",
-     "comment": "Default sink for logging information.",
-     "type": "ConsoleLogSink",
+     "type": "FileLogSink",
      "config": {
+         "file": "${system['log'] ? system['log'] : '/tmp/proxy.log'}",
          "level": "DEBUG"
      }
 }
@@ -97,8 +110,8 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/ConsoleLogSink.html"
-   >org.forgerock.openig.log.ConsoleLogSink</link>
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/FileLogSink.html"
+   >org.forgerock.openig.log.FileLogSink</link>
   </para>
  </refsect1>
 </refentry>

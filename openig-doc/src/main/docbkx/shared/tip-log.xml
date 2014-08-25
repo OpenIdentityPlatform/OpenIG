@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<tip xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+     xsi:schemaLocation='http://docbook.org/ns/docbook
+                         http://docbook.org/xml/5.0/xsd/docbook.xsd'
+     xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <para>
+  If you get stuck running the following samples,
+  know that you can activate ${projectName} debug logging
+  with a log sink configuration object, such as a
+  <link
+   xlink:show="new"
+   xlink:href="reference#ConsoleLogSink"
+   xlink:role="http://docbook.org/xlink/role/olink"
+   >ConsoleLogSink</link>.
+  Add the log configuration to the array of configuration objects.
+ </para>
+
+ <programlisting language="javascript">
+{
+  "name": "LogSink",
+  "type": "ConsoleLogSink",
+  "config": {
+      "level": "DEBUG"
+  }
+}
+ </programlisting>
+
+ <para>
+  ${projectName} looks for the configuration object named "LogSink".
+  If none exists, it creates a "ConsoleLogSink" with the default configuration.
+  By default the "level" is set to "INFO".
+ </para>
+
+ <para>
+  Alternatively, to send log messages to a file you can use a
+  <link
+   xlink:show="new"
+   xlink:href="reference#FileLogSink"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >FileLogSink</link>.
+ </para>
+</tip>
