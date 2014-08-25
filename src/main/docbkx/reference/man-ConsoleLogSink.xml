@@ -25,19 +25,21 @@
   !
 -->
 <refentry xml:id='ConsoleLogSink'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>ConsoleLogSink</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>ConsoleLogSink</refname>
   <refpurpose>log to standard error</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
   <indexterm>
@@ -46,6 +48,7 @@
   </indexterm>
   <para>A log sink that writes log entries to the standard error stream.</para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript">{
@@ -56,40 +59,69 @@
      }
 }</programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"level"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
-     <para>The level of log entries to display in the console. Must be one of:
-     <literal>OFF</literal>, <literal>ERROR</literal>,
-     <literal>WARNING</literal>, <literal>INFO</literal>,
-     <literal>CONFIG</literal>, <literal>STAT</literal>,
-     <literal>DEBUG</literal>, <literal>TRACE</literal>, <literal>ALL</literal>.
-     Default: <literal>INFO</literal>.</para>
+     <para>
+      The level of log entries to display in the console.
+     </para>
+
+     <para>
+      Must be one of:
+      <literal>OFF</literal>,
+      <literal>ERROR</literal>,
+      <literal>WARNING</literal>,
+      <literal>INFO</literal>,
+      <literal>CONFIG</literal>,
+      <literal>STAT</literal>,
+      <literal>DEBUG</literal>,
+      <literal>TRACE</literal>,
+      <literal>ALL</literal>.
+     </para>
+
+     <para>
+      Default: <literal>INFO</literal>.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
+
+  <programlisting language="javascript">
+{
      "name": "LogSink",
      "comment": "Default sink for logging information.",
      "type": "ConsoleLogSink",
      "config": {
          "level": "DEBUG"
      }
-}</programlisting>
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/log/ConsoleLogSink.html"
-  >org.forgerock.openig.log.ConsoleLogSink</link></para>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/log/LogLevel.html"
-  >org.forgerock.openig.log.LogLevel</link></para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/ConsoleLogSink.html"
+   >org.forgerock.openig.log.ConsoleLogSink</link>
+  </para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/http://openig.forgerock.org/apidocs/index.html?org/forgerock/openig/log/LogLevel.html"
+   >org.forgerock.openig.log.LogLevel</link>
+  </para>
  </refsect1>
 </refentry>
