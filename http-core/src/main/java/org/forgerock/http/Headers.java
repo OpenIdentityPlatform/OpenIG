@@ -34,4 +34,20 @@ public class Headers extends MultiValueMap<String, String> {
     public Headers() {
         super(new CaseInsensitiveMap<List<String>>());
     }
+
+    /**
+     * Adds the provider header but only if it is non-empty.
+     *
+     * @param header
+     *            The header.
+     * @return This object.
+     */
+    public Headers putSingle(Header header) {
+        // Only include the header if it is not empty.
+        String value = header.toString();
+        if (value != null && !value.isEmpty()) {
+            putSingle(header.getName(), value);
+        }
+        return this;
+    }
 }

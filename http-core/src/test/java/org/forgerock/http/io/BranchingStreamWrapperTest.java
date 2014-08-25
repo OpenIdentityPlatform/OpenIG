@@ -17,15 +17,14 @@
 
 package org.forgerock.http.io;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.forgerock.http.io.BranchingStreamWrapper;
-import org.forgerock.http.io.TemporaryStorage;
+import org.forgerock.util.Factory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -52,7 +51,7 @@ public class BranchingStreamWrapperTest {
     private static final byte[] BYTES = new byte[BUFSIZE];
 
     /** Buffer factory, which will switch from memory to file storage in each test. */
-    private static final TemporaryStorage STORAGE = new TemporaryStorage();
+    private static final Factory<Buffer> STORAGE = IO.newTemporaryStorage();
 
     /** Stores content read in concurrent branches for comparison. */
     private static final byte[][] BUFFERS = new byte[BRANCHES][BUFSIZE];

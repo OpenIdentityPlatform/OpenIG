@@ -78,7 +78,7 @@ public class RedirectFilter extends GenericFilter {
      */
     private void processResponse(Exchange exchange) throws HandlerException {
         Message message = exchange.response;
-        LocationHeader header = new LocationHeader(message);
+        LocationHeader header = LocationHeader.valueOf(message);
         if (header.toString() != null) {
             try {
                 URI currentURI = new URI(header.toString());

@@ -16,8 +16,11 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.nullOutputStream;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +32,6 @@ import org.forgerock.http.Exchange;
 import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
-import org.forgerock.http.io.NullOutputStream;
 import org.forgerock.openig.el.Expression;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -186,10 +188,7 @@ public class CaptureFilterTest {
         PrintWriter requestWriter = new PrintWriter(writer);
 
         // 2nd time the getWriter() method is called, it will return a no-op writer
-        when(provider.getWriter()).thenReturn(
-                requestWriter,
-                new PrintWriter(new NullOutputStream())
-        );
+        when(provider.getWriter()).thenReturn(requestWriter, new PrintWriter(nullOutputStream()));
 
         // returns a handle to the writer for content verification
         return writer;

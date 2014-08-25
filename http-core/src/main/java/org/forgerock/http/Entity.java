@@ -34,8 +34,7 @@ import org.forgerock.http.header.ContentEncodingHeader;
 import org.forgerock.http.header.ContentLengthHeader;
 import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.io.BranchingInputStream;
-import org.forgerock.http.io.ByteArrayBranchingStream;
-import org.forgerock.http.io.Streamer;
+import org.forgerock.http.io.IO;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -70,8 +69,8 @@ public final class Entity implements Closeable {
     static final String APPLICATION_JSON_CHARSET_UTF_8 = "application/json; charset=UTF-8";
 
     /** Default content stream. */
-    private static final ByteArrayBranchingStream EMPTY_STREAM = new ByteArrayBranchingStream(
-            new byte[0]);
+    private static final BranchingInputStream EMPTY_STREAM = IO
+            .newBranchingInputStream(new byte[0]);
 
     /** Default character set to use if not specified, per RFC 2616. */
     private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
@@ -93,12 +92,13 @@ public final class Entity implements Closeable {
 
     Entity(final Message message) {
         this.message = message;
-        setRawInputStream(EMPTY_STREAM);
+        setRawContentInputStream(EMPTY_STREAM);
     }
 
     /**
-     * Returns {@literal true} if the entity is empty.
-     * This method does not read any actual content from the InputStream.
+     * Returns {@literal true} if the entity is empty. This method does not read
+     * any actual content from the InputStream.
+     *
      * @return {@literal true} if the entity is empty.
      */
     public boolean isEmpty() {
@@ -115,7 +115,7 @@ public final class Entity implements Closeable {
      */
     @Override
     public void close() {
-        setRawInputStream(EMPTY_STREAM);
+        setRawContentInputStream(EMPTY_STREAM);
     }
 
     /**
@@ -131,7 +131,7 @@ public final class Entity implements Closeable {
      *             If an IO error occurred while copying the decoded content.
      */
     public void copyDecodedContentTo(final OutputStream out) throws IOException {
-        Streamer.stream(getDecodedInputStream(head), out);
+        IO.stream(getDecodedInputStream(head), out);
         out.flush();
     }
 
@@ -148,7 +148,7 @@ public final class Entity implements Closeable {
      *             If an IO error occurred while copying the decoded content.
      */
     public void copyDecodedContentTo(final Writer out) throws IOException {
-        Streamer.stream(getBufferedReader(head, null), out);
+        IO.stream(getBufferedReader(head, null), out);
         out.flush();
     }
 
@@ -164,7 +164,7 @@ public final class Entity implements Closeable {
      *             If an IO error occurred while copying the raw content.
      */
     public void copyRawContentTo(final OutputStream out) throws IOException {
-        Streamer.stream(head, out);
+        IO.stream(head, out);
         out.flush();
     }
 
@@ -225,7 +225,7 @@ public final class Entity implements Closeable {
      *
      * @return An input stream representing the raw content of this entity.
      */
-    public InputStream getRawInputStream() {
+    public InputStream getRawContentInputStream() {
         return head;
     }
 
@@ -359,11 +359,11 @@ public final class Entity implements Closeable {
     public void setBytes(final byte[] value) {
         if (value == null || value.length == 0) {
             message.getHeaders().putSingle(ContentLengthHeader.NAME, "0");
-            setRawInputStream(EMPTY_STREAM);
+            setRawContentInputStream(EMPTY_STREAM);
         } else {
             message.getHeaders()
                     .putSingle(ContentLengthHeader.NAME, Integer.toString(value.length));
-            setRawInputStream(new ByteArrayBranchingStream(value));
+            setRawContentInputStream(IO.newBranchingInputStream(value));
         }
     }
 
@@ -394,7 +394,7 @@ public final class Entity implements Closeable {
      * @param is
      *            The input stream.
      */
-    public void setRawInputStream(final BranchingInputStream is) {
+    public void setRawContentInputStream(final BranchingInputStream is) {
         closeSilently(trunk); // Closes all sub-branches
         trunk = is != null ? is : EMPTY_STREAM;
         head = trunk;
@@ -443,7 +443,7 @@ public final class Entity implements Closeable {
             return charset;
         }
         // use Content-Type charset if not explicitly specified
-        final Charset contentType = new ContentTypeHeader(message).getCharset();
+        final Charset contentType = ContentTypeHeader.valueOf(message).getCharset();
         if (contentType != null) {
             return contentType;
         }
@@ -458,6 +458,6 @@ public final class Entity implements Closeable {
 
     private InputStream getDecodedInputStream(final InputStream is)
             throws UnsupportedEncodingException, IOException {
-        return new ContentEncodingHeader(message).decode(is);
+        return ContentEncodingHeader.valueOf(message).decode(is);
     }
 }

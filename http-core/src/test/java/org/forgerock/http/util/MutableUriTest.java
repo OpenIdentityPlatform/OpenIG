@@ -16,8 +16,8 @@
 
 package org.forgerock.http.util;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.MutableUri.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
 
 import java.net.URI;
 

@@ -17,103 +17,82 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseMultiValuedHeader;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 
 /**
- * Processes the <strong>{@code Connection}</strong> message header. For more information, see
- * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.10.
+ * Processes the <strong>{@code Connection}</strong> message header. For more
+ * information, see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>
+ * §14.10.
  */
 public class ConnectionHeader implements Header {
-
-    /** The name of the header that this object represents. */
-    public static final String NAME = "Connection";
-
-    /** A list of connection-tokens. */
-    private final List<String> tokens = new ArrayList<String>();
-
-    /**
-     * Constructs a new empty header.
-     */
-    public ConnectionHeader() {
-        // Nothing to do.
-    }
-
     /**
      * Constructs a new header, initialized from the specified message.
      *
-     * @param message the message to initialize the header from.
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public ConnectionHeader(Message message) {
-        fromMessage(message);
+    public static ConnectionHeader valueOf(final Message message) {
+        return new ConnectionHeader(parseMultiValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from.
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public ConnectionHeader(String string) {
-        fromString(string);
+    public static ConnectionHeader valueOf(final String string) {
+        return new ConnectionHeader(parseMultiValuedHeader(string));
     }
 
-    private void clear() {
-        tokens.clear();
+    /** The name of this header. */
+    public static final String NAME = "Connection";
+
+    /** A list of connection tokens. */
+    private final List<String> tokens;
+
+    /**
+     * Constructs a new empty header.
+     */
+    public ConnectionHeader() {
+        this(new ArrayList<String>(1));
     }
 
     /**
-     * Returns the list of connection-tokens.
+     * Constructs a new header with the provided connection tokens.
      *
-     * @return The list of connection-tokens.
+     * @param tokens
+     *            The connection tokens.
+     */
+    public ConnectionHeader(final List<String> tokens) {
+        this.tokens = tokens;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    /**
+     * Returns the list of connection tokens.
+     *
+     * @return The list of connection tokens.
      */
     public List<String> getTokens() {
         return tokens;
     }
 
     @Override
-    public String getKey() {
-        return NAME;
-    }
-
-    @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            fromString(HeaderUtil.join(message.getHeaders().get(NAME), ','));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        clear();
-        if (string != null) {
-            tokens.addAll(HeaderUtil.split(string, ','));
-        }
-    }
-
-    @Override
-    public void toMessage(Message message) {
-        String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
-    }
-
-    @Override
     public String toString() {
         // will return null if empty
         return HeaderUtil.join(tokens, ',');
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this || (o instanceof ConnectionHeader
-                && tokens.equals(((ConnectionHeader) o).tokens));
-    }
-
-    @Override
-    public int hashCode() {
-        return tokens.hashCode();
     }
 }

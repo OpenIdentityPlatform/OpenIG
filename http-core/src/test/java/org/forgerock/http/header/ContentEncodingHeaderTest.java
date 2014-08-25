@@ -30,8 +30,6 @@ import java.util.zip.GZIPOutputStream;
 
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
-import org.forgerock.http.header.ConnectionHeader;
-import org.forgerock.http.header.ContentEncodingHeader;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -66,7 +64,7 @@ public class ContentEncodingHeaderTest {
 
     @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
     public void testContentEncodingHeaderAllowsNullOrEmptyString(final String cheader) {
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
+        final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(cheader);
         assertThat(ceh.toString()).isNull();
     }
 
@@ -76,8 +74,8 @@ public class ContentEncodingHeaderTest {
         assertThat(response.getHeaders().get(NAME)).isNull();
         response.getHeaders().putSingle(NAME, cheader);
 
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(response);
-        assertThat(ceh.getKey()).isEqualTo(NAME);
+        final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(response);
+        assertThat(ceh.getName()).isEqualTo(NAME);
         assertThat(ceh.getCodings().size()).isEqualTo(1);
         assertThat(ceh.getCodings().get(0)).isEqualTo(cheader);
     }
@@ -88,7 +86,7 @@ public class ContentEncodingHeaderTest {
         assertThat(request.getHeaders().get(NAME)).isNull();
         request.getHeaders().putSingle(NAME, cheader);
 
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(request);
+        final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(request);
         assertThat(ceh.getCodings().size()).isEqualTo(1);
         assertThat(ceh.getCodings().get(0)).isEqualTo(cheader);
     }
@@ -98,7 +96,7 @@ public class ContentEncodingHeaderTest {
         final Response response = new Response();
         assertThat(response.getHeaders().get(NAME)).isNull();
 
-        final ContentEncodingHeader ch = new ContentEncodingHeader(response);
+        final ContentEncodingHeader ch = ContentEncodingHeader.valueOf(response);
         assertThat(ch.getCodings()).isEmpty();
         assertThat(ch.getCodings().size()).isEqualTo(0);
     }
@@ -107,8 +105,8 @@ public class ContentEncodingHeaderTest {
     public void testContentEncodingHeaderToMessageRequest(final String cheader) {
         final Request request = new Request();
         assertThat(request.getHeaders().getFirst(NAME)).isNull();
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
-        ceh.toMessage(request);
+        final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(cheader);
+        request.getHeaders().putSingle(ceh);
 
         assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(cheader);
     }
@@ -118,39 +116,10 @@ public class ContentEncodingHeaderTest {
         final Response response = new Response();
         assertThat(response.getHeaders().get(NAME)).isNull();
 
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
-        ceh.toMessage(response);
+        final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(cheader);
+        response.getHeaders().putSingle(ceh);
 
         assertThat(response.getHeaders().get(NAME)).isNull();
-    }
-
-    @Test(dataProvider = "contentEncodingHeaders")
-    public void testEqualitySucceed(final String cheader) {
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, cheader);
-
-        final ContentEncodingHeader ceh2 = new ContentEncodingHeader();
-        ceh2.fromMessage(response);
-
-        assertThat(ceh2).isInstanceOf(ContentEncodingHeader.class);
-        assertThat(ceh2.getCodings()).isEqualTo(ceh.getCodings());
-        assertThat(ceh2).isEqualTo(ceh);
-    }
-
-    @Test(dataProvider = "contentEncodingHeaders")
-    public void testEqualityFails(final String cheader) {
-        final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, new ConnectionHeader("Keep-Alive").toString());
-
-        final ConnectionHeader ch2 = new ConnectionHeader(response);
-
-        assertThat(ceh).isNotEqualTo(ch2);
     }
 
     @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
@@ -158,7 +127,7 @@ public class ContentEncodingHeaderTest {
         InputStream in = null;
         InputStream out = null;
         try {
-            final ContentEncodingHeader ceh = new ContentEncodingHeader(cheader);
+            final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf(cheader);
             in = new ByteArrayInputStream(getStringToDecodeToCompressedBytes());
             out = ceh.decode(in);
             // The decode has no effects.
@@ -174,7 +143,7 @@ public class ContentEncodingHeaderTest {
         try {
             byte[] compressedBytes = getStringToDecodeToCompressedBytes();
 
-            final ContentEncodingHeader ceh = new ContentEncodingHeader("gzip");
+            final ContentEncodingHeader ceh = ContentEncodingHeader.valueOf("gzip");
             br = new BufferedReader(new InputStreamReader(ceh.decode(new ByteArrayInputStream(compressedBytes))));
             String line;
             while ((line = br.readLine()) != null) {
@@ -202,6 +171,6 @@ public class ContentEncodingHeaderTest {
 
         final String toDecode = "The 'compress' content encoding header is not supported.";
         final InputStream is = new ByteArrayInputStream(toDecode.getBytes());
-        new ContentEncodingHeader("compress").decode(is);
+        ContentEncodingHeader.valueOf("compress").decode(is);
     }
 }

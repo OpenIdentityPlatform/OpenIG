@@ -17,52 +17,123 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseMultiValuedHeader;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.forgerock.http.Cookie;
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 
 /**
- * Processes the <strong>{@code Cookie}</strong> request message header. For more information, see the original
- * <a href="http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html">
- *     Netscape specification</a>,
- * <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and
- * <a href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
+ * Processes the <strong>{@code Cookie}</strong> request message header. For
+ * more information, see the original <a href=
+ * "http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html"
+ * > Netscape specification</a>, <a
+ * href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and <a
+ * href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
  * <p>
- * Note: This implementation is designed to be forgiving when parsing malformed cookies.
+ * Note: This implementation is designed to be forgiving when parsing malformed
+ * cookies.
  */
 public class CookieHeader implements Header {
+    private static CookieHeader valueOf(final List<String> values) {
+        List<Cookie> cookies = new ArrayList<Cookie>(values.size());
+        Integer version = null;
+        Cookie cookie = new Cookie();
+        for (String s1 : values) {
+            for (String s2 : HeaderUtil.split(s1, ';')) {
+                String[] nvp = HeaderUtil.parseParameter(s2);
+                if (nvp[0].length() > 0 && nvp[0].charAt(0) != '$') {
+                    if (cookie.getName() != null) {
+                        // existing cookie was being parsed
+                        cookies.add(cookie);
+                    }
+                    cookie = new Cookie();
+                    // inherit previous parsed version
+                    cookie.setVersion(version);
+                    cookie.setName(nvp[0]);
+                    cookie.setValue(nvp[1]);
+                } else if ("$Version".equalsIgnoreCase(nvp[0])) {
+                    cookie.setVersion(version = parseInteger(nvp[1]));
+                } else if ("$Path".equalsIgnoreCase(nvp[0])) {
+                    cookie.setPath(nvp[1]);
+                } else if ("$Domain".equalsIgnoreCase(nvp[0])) {
+                    cookie.setDomain(nvp[1]);
+                } else if ("$Port".equalsIgnoreCase(nvp[0])) {
+                    cookie.getPort().clear();
+                    parsePorts(cookie.getPort(), nvp[1]);
+                }
+            }
+        }
+        if (cookie.getName() != null) {
+            // last cookie being parsed
+            cookies.add(cookie);
+        }
+        return new CookieHeader(cookies);
+    }
 
-    /** The name of the header that this object represents. */
-    public static final String NAME = "Cookie";
+    private static void parsePorts(List<Integer> list, String s) {
+        for (String port : s.split(",")) {
+            Integer p = parseInteger(port);
+            if (p != null) {
+                list.add(p);
+            }
+        }
+    }
 
-    /** Request message cookies. */
-    private final List<Cookie> cookies = new ArrayList<Cookie>();
-
-    /**
-     * Constructs a new empty header.
-     */
-    public CookieHeader() {
-        // Nothing to do.
+    private static Integer parseInteger(String s) {
+        try {
+            return Integer.valueOf(s);
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
     }
 
     /**
      * Constructs a new header, initialized from the specified message.
      *
-     * @param message the message to initialize the header from.
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public CookieHeader(Message message) {
-        fromMessage(message);
+    public static CookieHeader valueOf(final Message message) {
+        return valueOf(parseMultiValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from.
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public CookieHeader(String string) {
-        fromString(string);
+    public static CookieHeader valueOf(final String string) {
+        return valueOf(parseMultiValuedHeader(string));
+    }
+
+    /** The name of this header. */
+    public static final String NAME = "Cookie";
+
+    /** Request message cookies. */
+    private final List<Cookie> cookies;
+
+    /**
+     * Constructs a new empty header.
+     */
+    public CookieHeader() {
+        this(new ArrayList<Cookie>(1));
+    }
+
+    /**
+     * Constructs a new header with the provided cookies.
+     *
+     * @param cookies
+     *            The cookies.
+     */
+    public CookieHeader(List<Cookie> cookies) {
+        this.cookies = cookies;
     }
 
     /**
@@ -74,66 +145,9 @@ public class CookieHeader implements Header {
         return cookies;
     }
 
-    private void clear() {
-        cookies.clear();
-    }
-
     @Override
-    public String getKey() {
+    public String getName() {
         return NAME;
-    }
-
-    @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            fromString(HeaderUtil.join(message.getHeaders().get(getKey()), ','));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        clear();
-        if (string != null) {
-            Integer version = null;
-            Cookie cookie = new Cookie();
-            for (String s1 : HeaderUtil.split(string, ',')) {
-                for (String s2 : HeaderUtil.split(s1, ';')) {
-                    String[] nvp = HeaderUtil.parseParameter(s2);
-                    if (nvp[0].length() > 0 && nvp[0].charAt(0) != '$') {
-                        if (cookie.getName() != null) {
-                            // existing cookie was being parsed
-                            cookies.add(cookie);
-                        }
-                        cookie = new Cookie();
-                        // inherit previous parsed version
-                        cookie.setVersion(version);
-                        cookie.setName(nvp[0]);
-                        cookie.setValue(nvp[1]);
-                    } else if ("$Version".equalsIgnoreCase(nvp[0])) {
-                        cookie.setVersion(version = parseInteger(nvp[1]));
-                    } else if ("$Path".equalsIgnoreCase(nvp[0])) {
-                        cookie.setPath(nvp[1]);
-                    } else if ("$Domain".equalsIgnoreCase(nvp[0])) {
-                        cookie.setDomain(nvp[1]);
-                    } else if ("$Port".equalsIgnoreCase(nvp[0])) {
-                        cookie.getPort().clear();
-                        parsePorts(cookie.getPort(), nvp[1]);
-                    }
-                }
-            }
-            if (cookie.getName() != null) {
-                // last cookie being parsed
-                cookies.add(cookie);
-            }
-        }
-    }
-
-    @Override
-    public void toMessage(Message message) {
-        String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(getKey(), value);
-        }
     }
 
     @Override
@@ -173,33 +187,6 @@ public class CookieHeader implements Header {
         }
         // return null if empty
         return sb.length() > 0 ? sb.toString() : null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this || (o instanceof CookieHeader && cookies.equals(((CookieHeader) o).cookies));
-    }
-
-    @Override
-    public int hashCode() {
-        return cookies.hashCode();
-    }
-
-    private void parsePorts(List<Integer> list, String s) {
-        for (String port : s.split(",")) {
-            Integer p = parseInteger(port);
-            if (p != null) {
-                list.add(p);
-            }
-        }
-    }
-
-    private Integer parseInteger(String s) {
-        try {
-            return Integer.valueOf(s);
-        } catch (NumberFormatException nfe) {
-            return null;
-        }
     }
 
     private String portList(List<Integer> ports) {

@@ -29,7 +29,7 @@ import java.io.RandomAccessFile;
  * a buffer concurrently, threads that append to the buffer should synchronize on the instance
  * of this object.
  */
-public class FileBuffer implements Buffer {
+final class FileBuffer implements Buffer {
 
     /** File to store buffered data in. */
     private RandomAccessFile raf;
@@ -37,15 +37,7 @@ public class FileBuffer implements Buffer {
     /** Maximum file size, after which an {@link OverflowException} will be thrown. */
     private final int limit;
 
-    /**
-     * Constructs a new file buffer.
-     *
-     * @param file the file to use as storage for the buffer.
-     * @param limit the buffer length limit, after which an {@link OverflowException} will be thrown.
-     * @throws FileNotFoundException if the file cannot be created or opened for writing.
-     * @throws SecurityException if a security manager denies access to the specified file.
-     */
-    public FileBuffer(File file, int limit) throws FileNotFoundException {
+    FileBuffer(File file, int limit) throws FileNotFoundException {
         raf = new RandomAccessFile(file, "rw");
         this.limit = limit;
     }

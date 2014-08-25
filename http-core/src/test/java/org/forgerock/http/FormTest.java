@@ -17,12 +17,10 @@
 
 package org.forgerock.http;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")

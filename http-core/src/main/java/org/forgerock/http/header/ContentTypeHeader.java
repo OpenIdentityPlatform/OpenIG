@@ -17,70 +17,110 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
+
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 
 /**
- * Processes the <strong>{@code Content-Type}</strong> message header. For more information,
- * see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.17.
+ * Processes the <strong>{@code Content-Type}</strong> message header. For more
+ * information, see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>
+ * §14.17.
  */
 public class ContentTypeHeader implements Header {
-
-    /** The name of the header that this object represents. */
-    public static final String NAME = "Content-Type";
-
-    /** The type/sub-type of the message. */
-    private String type = null;
-
-    /** The character set used in encoding the message. */
-    private String charset = null;
-
-    /** The boundary value provided in multipart messages. */
-    private String boundary = null;
-
-    /**
-     * Constructs a new empty header.
-     */
-    public ContentTypeHeader() {
-    }
 
     /**
      * Constructs a new header, initialized from the specified message.
      *
-     * @param message the message to initialize the header from.
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentTypeHeader(Message message) {
-        fromMessage(message);
+    public static ContentTypeHeader valueOf(final Message message) {
+        return valueOf(parseSingleValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from.
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentTypeHeader(String string) {
-        fromString(string);
+    public static ContentTypeHeader valueOf(final String string) {
+        List<String> parts = HeaderUtil.split(string, ';');
+        if (parts.size() > 0) {
+            String type = parts.get(0);
+            final Map<String, String> parameters = HeaderUtil.parseParameters(parts);
+            String charset = parameters.get("charset");
+            String boundary = parameters.get("boundary");
+            return new ContentTypeHeader(type, charset, boundary);
+        } else {
+            return new ContentTypeHeader(null, null, null);
+        }
+    }
+
+    /** The name of this header. */
+    public static final String NAME = "Content-Type";
+
+    /** The type/sub-type of the message. */
+    private final String type;
+
+    /** The character set used in encoding the message. */
+    private final String charset;
+
+    /** The boundary value provided in multipart messages. */
+    private final String boundary;
+
+    /**
+     * Constructs a new empty header whose type, charset, and boundary are all
+     * {@code null}.
+     */
+    public ContentTypeHeader() {
+        this(null, null, null);
     }
 
     /**
-     * Returns the media type of the underlying data or {@code null} if none specified.
+     * Constructs a new header with the provided parameters.
      *
-     * @return The media type of the underlying data or {@code null} if none specified.
+     * @param type
+     *            The type/sub-type of the message.
+     * @param charset
+     *            The character set used in encoding the message.
+     * @param boundary
+     *            The boundary value provided in multipart messages.
+     */
+    public ContentTypeHeader(String type, String charset, String boundary) {
+        this.type = type;
+        this.charset = charset;
+        this.boundary = boundary;
+    }
+
+    /**
+     * Returns the media type of the underlying data or {@code null} if none
+     * specified.
+     *
+     * @return The media type of the underlying data or {@code null} if none
+     *         specified.
      */
     public String getType() {
-        return type != null ? type : null;
+        return type;
     }
 
     /**
-     * Returns the character set encoding used to encode the message, or {@code null} if no character set was specified.
+     * Returns the character set encoding used to encode the message, or
+     * {@code null} if no character set was specified.
      *
+     * @return The character set encoding used to encode the message or
+     *         {@code null} if empty.
      * @throws java.nio.charset.IllegalCharsetNameException
      *             if the given charset name is illegal.
      * @throws java.nio.charset.UnsupportedCharsetException
      *             if no support for the named charset is available.
-     * @return The character set encoding used to encode the message or {@code null} if empty.
      */
     public Charset getCharset() {
         return charset != null ? Charset.forName(charset) : null;
@@ -92,82 +132,27 @@ public class ContentTypeHeader implements Header {
      * @return The encapsulation boundary or {@code null} if none specified.
      */
     public String getBoundary() {
-        return boundary != null ? boundary : null;
-    }
-
-    private void clear() {
-        type = null;
-        charset = null;
-        boundary = null;
+        return boundary;
     }
 
     @Override
-    public String getKey() {
+    public String getName() {
         return NAME;
     }
 
     @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            fromString(message.getHeaders().getFirst(NAME));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        clear();
-        List<String> parts = HeaderUtil.split(string, ';');
-        if (parts.size() > 0) {
-            type = parts.get(0);
-            charset = HeaderUtil.parseParameters(parts).get("charset");
-            boundary = HeaderUtil.parseParameters(parts).get("boundary");
-        }
-    }
-
-    @Override
-    public void toMessage(Message message) {
-        String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
-    }
-
-    @Override
     public String toString() {
+        if (type == null || type.isEmpty()) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
-        if (type != null) {
-            sb.append(type);
-            if (charset != null) {
-                sb.append("; charset=").append(charset);
-            }
-            if (boundary != null) {
-                sb.append("; boundary=").append(boundary);
-            }
+        sb.append(type);
+        if (charset != null) {
+            sb.append("; charset=").append(charset);
+        }
+        if (boundary != null) {
+            sb.append("; boundary=").append(boundary);
         }
         return sb.length() > 0 ? sb.toString() : null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || !(o instanceof ContentTypeHeader)) {
-            return false;
-        }
-        ContentTypeHeader ct = (ContentTypeHeader) o;
-        return ((type == null && ct.type == null)
-                || (type != null && type.equals(ct.type)))
-                && ((charset == null && ct.charset == null)
-                || (charset != null && charset.equals(ct.charset)))
-                && ((boundary == null && ct.boundary == null)
-                || (boundary != null && boundary.equals(ct.boundary)));
-    }
-
-    @Override
-    public int hashCode() {
-        return (type == null ? 0 : type.hashCode())
-                ^ (charset == null ? 0 : charset.hashCode())
-                ^ (boundary == null ? 0 : boundary.hashCode());
     }
 }

@@ -15,13 +15,11 @@
  */
 package org.forgerock.http.header;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.header.ContentLengthHeader.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.header.ContentLengthHeader.NAME;
 
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
-import org.forgerock.http.header.ConnectionHeader;
-import org.forgerock.http.header.ContentLengthHeader;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -55,21 +53,21 @@ public class ContentLengthHeaderTest {
 
     @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
     public void testContentLengthHeaderAllowsNullOrEmptyString(final String cheader) {
-        final ContentLengthHeader clh = new ContentLengthHeader(cheader);
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf(cheader);
         assertThat(clh.getLength()).isEqualTo(-1);
         assertThat(clh.toString()).isNull();
     }
 
     @Test
     public void testContentLengthHeaderSucceedParsingStringValue() {
-        final ContentLengthHeader clh = new ContentLengthHeader("1024");
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf("1024");
         assertThat(clh.getLength()).isEqualTo(1024);
-        assertThat(clh.getKey()).isEqualTo(NAME);
+        assertThat(clh.getName()).isEqualTo(NAME);
     }
 
     @Test
     public void testContentLengthHeaderFailsParsingStringValue() {
-        final ContentLengthHeader clh = new ContentLengthHeader("invalidContentLengthHeader");
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf("invalidContentLengthHeader");
         assertThat(clh.getLength()).isEqualTo(-1);
         assertThat(clh.toString()).isNull();
     }
@@ -80,8 +78,8 @@ public class ContentLengthHeaderTest {
         assertThat(response.getHeaders().get(NAME)).isNull();
         response.getHeaders().putSingle(NAME, String.valueOf(LENGTH_DEFAULT_VALUE));
 
-        final ContentLengthHeader clh = new ContentLengthHeader(response);
-        assertThat(clh.getKey()).isEqualTo(NAME);
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf(response);
+        assertThat(clh.getName()).isEqualTo(NAME);
         assertThat(clh.getLength()).isEqualTo(LENGTH_DEFAULT_VALUE);
     }
 
@@ -91,8 +89,8 @@ public class ContentLengthHeaderTest {
         assertThat(response.getHeaders().get(NAME)).isNull();
         response.getHeaders().putSingle(NAME, "invalid");
 
-        final ContentLengthHeader clh = new ContentLengthHeader(response);
-        assertThat(clh.getKey()).isEqualTo(NAME);
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf(response);
+        assertThat(clh.getName()).isEqualTo(NAME);
         assertThat(clh.getLength()).isEqualTo(-1);
         assertThat(clh.toString()).isNull();
     }
@@ -101,9 +99,10 @@ public class ContentLengthHeaderTest {
     public void testContentLengthHeaderToMessageRequest() {
         final Request request = new Request();
         assertThat(request.getHeaders().getFirst(NAME)).isNull();
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
+        final ContentLengthHeader clh =
+                ContentLengthHeader.valueOf(String.valueOf(LENGTH_DEFAULT_VALUE));
         // Inserts the content length header to the request header.
-        clh.toMessage(request);
+        request.getHeaders().putSingle(clh);
         assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(String.valueOf(LENGTH_DEFAULT_VALUE));
     }
 
@@ -111,15 +110,15 @@ public class ContentLengthHeaderTest {
     public void testContentLengthHeaderToMessageRequestFails() {
         final Request request = new Request();
         assertThat(request.getHeaders().getFirst(NAME)).isNull();
-        final ContentLengthHeader clh = new ContentLengthHeader("invalid_value");
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf("invalid_value");
         // Inserts the content length header to the request header.
-        clh.toMessage(request);
+        request.getHeaders().putSingle(clh);
         assertThat(request.getHeaders().getFirst(NAME)).isNullOrEmpty();
     }
 
     @Test(dataProvider = "validDataProvider")
     public void testContentLengthHeaderToStringSucceed(final Object cth) {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(cth));
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf(String.valueOf(cth));
         assertThat(clh.toString()).isEqualTo(String.valueOf(cth));
     }
 
@@ -127,36 +126,8 @@ public class ContentLengthHeaderTest {
     // header. Eg. for -99, the length should be -1. Potential vulnerability.
     @Test(enabled = false, dataProvider = "invalidDataProvider")
     public void testContentLengthHeaderToStringIsNullWithInvalidValues(final Object cth) {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(cth));
+        final ContentLengthHeader clh = ContentLengthHeader.valueOf(String.valueOf(cth));
         assertThat(clh.getLength()).isEqualTo(-1);
         assertThat(clh.toString()).isNull();
-    }
-
-    @Test
-    public void testEqualitySucceed() {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, String.valueOf(LENGTH_DEFAULT_VALUE));
-
-        final ContentLengthHeader clh2 = new ContentLengthHeader();
-        clh2.fromMessage(response);
-
-        assertThat(clh).isInstanceOf(ContentLengthHeader.class);
-        assertThat(clh2).isEqualTo(clh);
-    }
-
-    @Test
-    public void testEqualityFails() {
-        final ContentLengthHeader lh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, new ConnectionHeader("Keep-Alive").toString());
-
-        final ConnectionHeader lh2 = new ConnectionHeader(response);
-
-        assertThat(lh).isNotEqualTo(lh2);
     }
 }

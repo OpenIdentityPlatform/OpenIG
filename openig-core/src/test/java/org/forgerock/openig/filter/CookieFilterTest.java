@@ -327,11 +327,11 @@ public class CookieFilterTest {
         cookie.setValue("Default Value");
         cookie.setDomain(domain);
         cookie.setPath("/");
-        CookieHeader header = new CookieHeader(exchange.request);
+        CookieHeader header = CookieHeader.valueOf(exchange.request);
         header.getCookies().add(cookie);
 
         // Serialize the newly created Cookie inside the request
-        header.toMessage(exchange.request);
+        exchange.request.getHeaders().putSingle(header);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

@@ -26,14 +26,13 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import org.forgerock.http.Entity;
-import org.forgerock.http.Request;
 import org.forgerock.http.header.ContentLengthHeader;
 import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.io.BranchingInputStream;
-import org.forgerock.http.io.ByteArrayBranchingStream;
-import org.json.simple.parser.JSONParser;
+import org.forgerock.http.io.IO;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -43,15 +42,13 @@ public class EntityTest {
     private static final String INVALID_JSON = "invalid json";
     private static final String JSON_CONTENT1 = "{\"a\":1,\"b\":2}";
     private static final String JSON_CONTENT2 = "{\"c\":3,\"d\":4}";
-    private static final Object JSON_VALUE1;
-    private static final Object JSON_VALUE2;
+    private static final Map<String, Object> JSON_VALUE1 = new LinkedHashMap<String, Object>();
+    private static final Map<String, Object> JSON_VALUE2 = new LinkedHashMap<String, Object>();
     static {
-        try {
-            JSON_VALUE1 = new JSONParser().parse(JSON_CONTENT1);
-            JSON_VALUE2 = new JSONParser().parse(JSON_CONTENT2);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        JSON_VALUE1.put("a", 1L);
+        JSON_VALUE1.put("b", 2L);
+        JSON_VALUE2.put("c", 3L);
+        JSON_VALUE2.put("d", 4L);
     }
 
     private Entity entity;
@@ -69,7 +66,7 @@ public class EntityTest {
 
     @Test
     public void entityIsEmptyByDefault() throws Exception {
-        assertThat(entity.getRawInputStream().available()).isEqualTo(0);
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
         assertThat(entity.newDecodedContentInputStream().available()).isEqualTo(0);
         assertThat(entity.newDecodedContentReader(null).readLine()).isNull();
         assertThat(entity.getBytes()).isEmpty();
@@ -77,14 +74,14 @@ public class EntityTest {
         assertThat(entity.toString()).isEmpty();
         assertThat(entity.isEmpty()).isTrue();
         entity.push();
-        assertThat(entity.getRawInputStream().available()).isEqualTo(0);
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
         entity.pop();
         entity.close();
     }
 
     @Test
     public void getBytes() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
         assertThat(entity.isEmpty()).isFalse();
@@ -93,7 +90,7 @@ public class EntityTest {
 
     @Test
     public void getJson() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
         assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
@@ -102,7 +99,7 @@ public class EntityTest {
     @Test(expectedExceptions = ParseException.class)
     public void getJsonWhenEntityContainsInvalidJsonThrowsParseException() throws Exception {
         mockJsonContent1 = mockContent(INVALID_JSON);
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.isEmpty()).isFalse();
         try {
             entity.getJson();
@@ -124,21 +121,21 @@ public class EntityTest {
          * We cannot use the mock content here because it is bypassed during
          * calling getParent() on the stream.
          */
-        final ByteArrayBranchingStream content = new ByteArrayBranchingStream(bytes(JSON_CONTENT1));
-        entity.setRawInputStream(content);
+        final BranchingInputStream content = IO.newBranchingInputStream(bytes(JSON_CONTENT1));
+        entity.setRawContentInputStream(content);
         entity.push();
-        assertThat(entity.getRawInputStream()).isNotSameAs(content);
-        entity.getRawInputStream().close();
-        assertThat(entity.getRawInputStream()).isNotSameAs(content);
+        assertThat(entity.getRawContentInputStream()).isNotSameAs(content);
+        entity.getRawContentInputStream().close();
+        assertThat(entity.getRawContentInputStream()).isNotSameAs(content);
         entity.pop();
-        assertThat(entity.getRawInputStream()).isSameAs(content);
+        assertThat(entity.getRawContentInputStream()).isSameAs(content);
         assertThat(content.available()).isEqualTo(JSON_CONTENT1.length());
     }
 
     @Test
     public void getRawInputStream() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
-        assertThat(entity.getRawInputStream()).isSameAs(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
+        assertThat(entity.getRawContentInputStream()).isSameAs(mockJsonContent1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
         assertThat(entity.isEmpty()).isFalse();
         verify(mockJsonContent1, never()).close();
@@ -146,7 +143,7 @@ public class EntityTest {
 
     @Test
     public void getString() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
         assertThat(entity.isEmpty()).isFalse();
@@ -155,7 +152,7 @@ public class EntityTest {
 
     @Test
     public void setBytes() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setBytes(bytes(JSON_CONTENT2));
         assertThatContentIsJsonContent2();
@@ -165,15 +162,15 @@ public class EntityTest {
 
     @Test
     public void setBytesNullBecomesEmptyStream() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setBytes(null);
-        assertThat(entity.getRawInputStream().available()).isEqualTo(0);
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
     }
 
     @Test
     public void setJson() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setJson(JSON_VALUE2);
         assertThatContentIsJsonContent2();
@@ -183,17 +180,17 @@ public class EntityTest {
 
     @Test
     public void setJsonNullIsJsonNull() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setJson(null);
-        assertThat(entity.getRawInputStream().available()).isEqualTo("null".length());
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo("null".length());
     }
 
     @Test
     public void setRawInputStream() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
-        entity.setRawInputStream(mockJsonContent2);
+        entity.setRawContentInputStream(mockJsonContent2);
         assertThatContentIsJsonContent2();
         assertThatContentLengthHeaderIsNotPresent();
         assertThatContentyTypeHeaderIsNotPresent();
@@ -201,15 +198,15 @@ public class EntityTest {
 
     @Test
     public void setRawInputStreamNullBecomesEmptyStream() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
-        entity.setRawInputStream(null);
-        assertThat(entity.getRawInputStream().available()).isEqualTo(0);
+        entity.setRawContentInputStream(null);
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
     }
 
     @Test
     public void setString() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setString(JSON_CONTENT2);
         assertThatContentIsJsonContent2();
@@ -219,10 +216,10 @@ public class EntityTest {
 
     @Test
     public void setStringNullBecomesEmptyStream() throws Exception {
-        entity.setRawInputStream(mockJsonContent1);
+        entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
         entity.setString(null);
-        assertThat(entity.getRawInputStream().available()).isEqualTo(0);
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
     }
 
     private void assertThatContentIsJsonContent1() throws IOException, ParseException {
@@ -233,11 +230,11 @@ public class EntityTest {
 
     private void assertThatContentIsJsonContent2() throws IOException,
             UnsupportedEncodingException, ParseException {
-        assertThat(entity.getRawInputStream()).isNotSameAs(mockJsonContent1);
+        assertThat(entity.getRawContentInputStream()).isNotSameAs(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT2));
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT2);
         assertThat(entity.getJson()).isEqualTo(JSON_VALUE2);
-        assertThat(entity.getRawInputStream().available()).isEqualTo(JSON_CONTENT2.length());
+        assertThat(entity.getRawContentInputStream().available()).isEqualTo(JSON_CONTENT2.length());
         verify(mockJsonContent1).close();
     }
 
@@ -264,7 +261,7 @@ public class EntityTest {
     }
 
     private BranchingInputStream mockContent(final byte[] bytes) {
-        return mock(BranchingInputStream.class, delegatesTo(new ByteArrayBranchingStream(bytes)));
+        return mock(BranchingInputStream.class, delegatesTo(IO.newBranchingInputStream(bytes)));
     }
 
     /**

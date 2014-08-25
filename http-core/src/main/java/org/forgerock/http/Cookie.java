@@ -99,12 +99,16 @@ public class Cookie {
         final Cookie other = (Cookie) obj;
         return objectsAreEqual(comment, other.comment)
                 && objectsAreEqual(commentURL, other.commentURL)
-                && objectsAreEqual(discard, other.discard) && objectsAreEqual(domain, other.domain)
+                && objectsAreEqual(discard, other.discard)
+                && objectsAreEqual(domain, other.domain)
                 && objectsAreEqual(expires, other.expires)
                 && objectsAreEqual(httpOnly, other.httpOnly)
-                && objectsAreEqual(maxAge, other.maxAge) && objectsAreEqual(name, other.name)
-                && objectsAreEqual(path, other.path) && objectsAreEqual(port, other.port)
-                && objectsAreEqual(secure, other.secure) && objectsAreEqual(value, other.value)
+                && objectsAreEqual(maxAge, other.maxAge)
+                && objectsAreEqual(name, other.name)
+                && objectsAreEqual(path, other.path)
+                && objectsAreEqual(port, other.port)
+                && objectsAreEqual(secure, other.secure)
+                && objectsAreEqual(value, other.value)
                 && objectsAreEqual(version, other.version);
     }
 

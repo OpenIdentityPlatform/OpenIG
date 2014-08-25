@@ -17,73 +17,37 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
+
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 
 /**
- * Processes the <strong>{@code Content-Length}</strong> message header. For more information,
- * see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.13.
+ * Processes the <strong>{@code Content-Length}</strong> message header. For
+ * more information, see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC
+ * 2616</a> §14.13.
  */
 public class ContentLengthHeader implements Header {
-
-    /** The name of the header that this object represents. */
-    public static final String NAME = "Content-Length";
-
-    /** The content length, or {@code -1} if not specified. */
-    private long length = -1;
-
-    /**
-     * Constructs a new empty header.
-     */
-    public ContentLengthHeader() {
-    }
-
     /**
      * Constructs a new header, initialized from the specified message.
      *
-     * @param message the message to initialize the header from.
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentLengthHeader(Message message) {
-        fromMessage(message);
+    public static ContentLengthHeader valueOf(final Message message) {
+        return valueOf(parseSingleValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from.
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentLengthHeader(String string) {
-        fromString(string);
-    }
-
-    private void clear() {
-        length = -1;
-    }
-
-    /**
-     * Returns the content length.
-     *
-     * @return The content length.
-     */
-    public long getLength() {
-        return length;
-    }
-
-    @Override
-    public String getKey() {
-        return NAME;
-    }
-
-    @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            // expect only one header value
-            fromString(message.getHeaders().getFirst(NAME));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        clear();
+    public static ContentLengthHeader valueOf(final String string) {
+        long length = -1;
         if (string != null) {
             try {
                 length = Long.parseLong(string);
@@ -91,28 +55,51 @@ public class ContentLengthHeader implements Header {
                 // will remain default of -1 from clear() call above
             }
         }
+        return new ContentLengthHeader(length);
+    }
+
+    /** The name of this header. */
+    public static final String NAME = "Content-Length";
+
+    /** The content length, or {@code -1} if not specified. */
+    private long length;
+
+    /**
+     * Constructs a new empty header whose length is set to -1.
+     */
+    public ContentLengthHeader() {
+        this(-1);
+    }
+
+    /**
+     * Constructs a new header with the provided content length.
+     *
+     * @param length
+     *            The content length, or {@code -1} if no content length has
+     *            been set.
+     */
+    public ContentLengthHeader(long length) {
+        this.length = length;
+    }
+
+    /**
+     * Returns the content length, or {@code -1} if no content length has been
+     * set.
+     *
+     * @return The content length, or {@code -1} if no content length has been
+     *         set.
+     */
+    public long getLength() {
+        return length;
     }
 
     @Override
-    public void toMessage(Message message) {
-        String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
+    public String getName() {
+        return NAME;
     }
 
     @Override
     public String toString() {
         return length >= 0 ? Long.toString(length) : null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this || (o instanceof ContentLengthHeader && length == ((ContentLengthHeader) o).length);
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (length ^ length >>> 32);
     }
 }

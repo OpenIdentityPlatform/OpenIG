@@ -15,25 +15,27 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap;
-
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
+package org.forgerock.http;
 
 /**
- * A generic base class for heap objects with handy injected heap objects. This
- * implementation provides reasonable safe defaults, to be overridden by the
- * concrete object's heaplet.
+ * An HTTP message header.
  */
-public class GenericHeapObject {
-
-    /** Provides methods for various logging activities. */
-    public Logger logger = new Logger(new NullLogSink(), getClass().getSimpleName());
+public interface Header {
 
     /**
-     * Allocates temporary buffers for caching streamed content during
-     * processing.
+     * Returns the name of the header, as it would canonically appear within an
+     * HTTP message.
+     *
+     * @return The name of the header, as it would canonically appear within an
+     *         HTTP message.
      */
-    public TemporaryStorage storage = new TemporaryStorage();
+    String getName();
+
+    /**
+     * Returns the header as a single string value. If the header is empty, this
+     * method will return {@code null}.
+     *
+     * @return The header as a single string value or {@code null} if empty.
+     */
+    String toString();
 }

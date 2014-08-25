@@ -17,6 +17,8 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseMultiValuedHeader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -24,53 +26,72 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 import org.forgerock.http.decoder.Decoder;
 
 /**
- * Processes the <strong>{@code Content-Encoding}</strong> message header. For more information, see
- * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.11.
+ * Processes the <strong>{@code Content-Encoding}</strong> message header. For
+ * more information, see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC
+ * 2616</a> §14.11.
  */
 public class ContentEncodingHeader implements Header {
-
-    /** The name of the header that this object represents. */
+    /** The name of this header. */
     public static final String NAME = "Content-Encoding";
 
-    /** The content-coding(s), in the order they are applied to the entity. */
-    private final List<String> codings = new ArrayList<String>();
+    /** The content coding, in the order they are applied to the entity. */
+    private final List<String> codings;
 
     /**
      * Constructs a new empty header.
      */
     public ContentEncodingHeader() {
+        this(new ArrayList<String>(1));
+    }
+
+    /**
+     * Constructs a new header with the provided content encodings.
+     *
+     * @param codings
+     *            The content encodings.
+     */
+    public ContentEncodingHeader(final List<String> codings) {
+        this.codings = codings;
     }
 
     /**
      * Constructs a new header, initialized from the specified message.
      *
-     * @param message the message to initialize the header from.
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentEncodingHeader(Message message) {
-        fromMessage(message);
+    public static ContentEncodingHeader valueOf(final Message message) {
+        return new ContentEncodingHeader(parseMultiValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
-     * @param string the value to initialize the header from.
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public ContentEncodingHeader(String string) {
-        fromString(string);
+    public static ContentEncodingHeader valueOf(final String string) {
+        return new ContentEncodingHeader(parseMultiValuedHeader(string));
     }
 
     /**
-     * Returns an input stream that decodes the specified input stream, given the
-     * content-codings that are specified in the {@code codings} list.
+     * Returns an input stream that decodes the specified input stream, given
+     * the content-codings that are specified in the {@code codings} list.
      *
-     * @param in the input stream to decode.
+     * @param in
+     *            the input stream to decode.
      * @return an input stream that provides the decoded content.
-     * @throws IOException if an I/O exception occurs.
-     * @throws UnsupportedEncodingException if an unsupported content-encoding is specified.
+     * @throws IOException
+     *             if an I/O exception occurs.
+     * @throws UnsupportedEncodingException
+     *             if an unsupported content-encoding is specified.
      */
     public InputStream decode(InputStream in) throws IOException, UnsupportedEncodingException {
         // decode in the reverse order that encoding was applied
@@ -85,62 +106,23 @@ public class ContentEncodingHeader implements Header {
         return in;
     }
 
-    private void clear() {
-        codings.clear();
-    }
-
     /**
-     * Returns the content-coding(s).
+     * Returns the list of content codings.
      *
-     * @return The list of the content-coding(s).
+     * @return The list of content codings.
      */
     public List<String> getCodings() {
         return codings;
     }
 
     @Override
-    public String getKey() {
+    public String getName() {
         return NAME;
-    }
-
-    @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            fromString(HeaderUtil.join(message.getHeaders().get(NAME), ','));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        clear();
-        if (string != null) {
-            codings.addAll(HeaderUtil.split(string, ','));
-        }
-    }
-
-    @Override
-    public void toMessage(Message message) {
-        String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
     }
 
     @Override
     public String toString() {
         // will return null if empty
         return HeaderUtil.join(codings, ',');
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this
-                || (o instanceof ContentEncodingHeader
-                        && codings.equals(((ContentEncodingHeader) o).codings));
-    }
-
-    @Override
-    public int hashCode() {
-        return codings.hashCode();
     }
 }

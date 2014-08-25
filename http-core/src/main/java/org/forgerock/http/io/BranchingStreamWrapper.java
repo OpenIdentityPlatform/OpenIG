@@ -25,13 +25,14 @@ import java.util.List;
 import org.forgerock.util.Factory;
 
 /**
- * Wraps an standard input stream with a stream that can branch to perform divergent reads.
- * All divergence between branches is maintained in a temporary buffer.
+ * Wraps an standard input stream with a stream that can branch to perform
+ * divergent reads. All divergence between branches is maintained in a temporary
+ * buffer.
  * <p>
- * <strong>Note:</strong> This stream and any branches it creates are not safe for use by
- * multiple concurrent threads.
+ * <strong>Note:</strong> This stream and any branches it creates are not safe
+ * for use by multiple concurrent threads.
  */
-public class BranchingStreamWrapper extends BranchingInputStream {
+final class BranchingStreamWrapper extends BranchingInputStream {
 
     /** A shared object by all branches of the same input stream. */
     private Trunk trunk;
@@ -42,17 +43,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     /** This branch's position relative to the trunk buffer. */
     private int position;
 
-    /**
-     * Constructs a new branching input stream to wrap another input stream.
-     * <p>
-     * If the stream being wrapped is a branching input stream, this constructor will simply
-     * branch off of that existing stream rather than wrapping it with another branching
-     * input stream.
-     *
-     * @param in the stream to be wrapped.
-     * @param bufferFactory an object that can create new temporary buffers (e.g. @link TemporaryStorage}).
-     */
-    public BranchingStreamWrapper(InputStream in, Factory<Buffer> bufferFactory) {
+    BranchingStreamWrapper(InputStream in, Factory<Buffer> bufferFactory) {
         if (in instanceof BranchingStreamWrapper) {
             // branch off of existing trunk
             BranchingStreamWrapper bsw = (BranchingStreamWrapper) in;
@@ -83,42 +74,17 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         return parent;
     }
 
-    /**
-     * Reads the next byte of data from the input stream.
-     *
-     * @return the next byte of data, or {@code -1} if the end of the stream is reached.
-     * @throws IOException if an I/O exception occurs.
-     */
     @Override
     public int read() throws IOException {
         byte[] b = new byte[1];
         return (read(b, 0, 1) > 0 ? (b[0] & 0xff) : -1);
     }
 
-    /**
-     * Reads some number of bytes from the input stream and stores them into the buffer
-     * array {@code b}.
-     *
-     * @param b the buffer into which the data is read.
-     * @return the total number of bytes read into the buffer, or {@code -1} is there is no more data because the
-     * end of the stream has been reached.
-     * @throws IOException if an I/O exception occurs.
-     */
     @Override
     public int read(byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
 
-    /**
-     * Reads up to {@code len} bytes of data from the input stream into an array of bytes.
-     *
-     * @param b the buffer into which the data is read.
-     * @param off the start offset in array {@code b} at which the data is written.
-     * @param len the maximum number of bytes to read.
-     * @return the total number of bytes read into the buffer, or {@code -1} if there is no more data because the
-     * end of the stream has been reached.
-     * @throws IOException if an I/O exception occurs.
-     */
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         if (off < 0 || len < 0 || len > b.length - off) {
@@ -137,13 +103,6 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         return n;
     }
 
-    /**
-     * Skips over and discards {@code n} bytes of data from this input stream.
-     *
-     * @param n the number of bytes to be skipped.
-     * @return the actual number of bytes skipped.
-     * @throws IOException if an I/O exception occurs.
-     */
     @Override
     public long skip(long n) throws IOException {
         if (n < 0) {
@@ -155,17 +114,9 @@ public class BranchingStreamWrapper extends BranchingInputStream {
             return trunk.in.skip(n);
         }
         // stream nowhere, just to buffer (or unbuffer) the result skipped
-        return Streamer.stream(this, new NullOutputStream(), (int) Math.min(Integer.MAX_VALUE, n));
+        return IO.stream(this, IO.nullOutputStream(), (int) Math.min(Integer.MAX_VALUE, n));
     }
 
-    /**
-     * Returns an estimate of the number of bytes that can be read (or skipped over) from this input stream without
-     * blocking by the next invocation of a method for this input stream.
-     *
-     * @return an estimate of the number of bytes that can be read (or skipped over) from this input stream.
-     * @throws IOException
-     *             if an I/O exception occurs.
-     */
     @Override
     public int available() throws IOException {
         notClosed();
@@ -203,7 +154,8 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     private void closeBranches() throws IOException {
         // multiple calls are harmless
         if (trunk != null) {
-            ArrayList<BranchingStreamWrapper> branches = new ArrayList<BranchingStreamWrapper>(trunk.branches);
+            ArrayList<BranchingStreamWrapper> branches =
+                    new ArrayList<BranchingStreamWrapper>(trunk.branches);
             for (BranchingStreamWrapper branch : branches) {
                 if (branch.parent == this) {
                     // recursively closes its children
@@ -217,7 +169,7 @@ public class BranchingStreamWrapper extends BranchingInputStream {
      * Closes this branching stream and all of the branches created from it.
      *
      * @throws Throwable
-     *         may be raised by super.finalize().
+     *             may be raised by super.finalize().
      */
     @Override
     public void finalize() throws Throwable {
@@ -230,10 +182,11 @@ public class BranchingStreamWrapper extends BranchingInputStream {
     }
 
     /**
-     * Closes the trunk buffer if there is no divergence between branches and all remaining
-     * branch positions are outside the buffer.
+     * Closes the trunk buffer if there is no divergence between branches and
+     * all remaining branch positions are outside the buffer.
      *
-     * @throws IOException if an I/O exception occurs.
+     * @throws IOException
+     *             if an I/O exception occurs.
      */
     private void reviewBuffer() throws IOException {
         if (trunk.buffer == null) {
@@ -292,11 +245,17 @@ public class BranchingStreamWrapper extends BranchingInputStream {
         /** Keeps track of all branches on this trunk. */
         private final List<BranchingStreamWrapper> branches =
                 new ArrayList<BranchingStreamWrapper>();
+
         /** The input stream being wrapped by the branches. */
         private final InputStream in;
+
         /** An object that creates new temporary buffers. */
         private final Factory<Buffer> bufferFactory;
-        /** A buffer to track diverging streams. Is {@code null} if there is no divergence. */
+
+        /**
+         * A buffer to track diverging streams. Is {@code null} if there is no
+         * divergence.
+         */
         private Buffer buffer;
 
         private Trunk(InputStream in, Factory<Buffer> factory) {

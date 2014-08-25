@@ -21,14 +21,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * A buffer that uses a byte array for data storage. The byte array starts at a prescribed
- * initial length, and grows exponentially up to the prescribed limit.
+ * A buffer that uses a byte array for data storage. The byte array starts at a
+ * prescribed initial length, and grows exponentially up to the prescribed
+ * limit.
  * <p>
- * <strong>Note:</strong> This implementation is not synchronized. If multiple threads access
- * a buffer concurrently, threads that append to the buffer should synchronize on the instance
- * of this object.
+ * <strong>Note:</strong> This implementation is not synchronized. If multiple
+ * threads access a buffer concurrently, threads that append to the buffer
+ * should synchronize on the instance of this object.
  */
-public class MemoryBuffer implements Buffer {
+final class MemoryBuffer implements Buffer {
 
     /** The byte array storing buffer data. */
     byte[] data; // package scope to give TemporaryBuffer access without intermediate copy
@@ -39,13 +40,7 @@ public class MemoryBuffer implements Buffer {
     /** Current length of the buffer. */
     private int length = 0;
 
-    /**
-     * Constructs a new memory buffer.
-     *
-     * @param initial the initial size of the byte array to create.
-     * @param limit the buffer length limit, after which an {@link OverflowException} will be thrown.
-     */
-    public MemoryBuffer(int initial, int limit) {
+    MemoryBuffer(int initial, int limit) {
         data = new byte[initial];
         this.limit = limit;
     }

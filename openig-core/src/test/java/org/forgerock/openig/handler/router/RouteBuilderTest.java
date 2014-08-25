@@ -16,18 +16,18 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.MutableUri.*;
-import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorageHeaplet.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
+import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Exchange;
 import org.forgerock.http.Request;
-import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

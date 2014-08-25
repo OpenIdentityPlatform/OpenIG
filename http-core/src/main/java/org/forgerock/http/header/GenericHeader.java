@@ -15,27 +15,40 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.io;
+package org.forgerock.http.header;
 
-import java.io.OutputStream;
+import org.forgerock.http.Header;
 
 /**
- * An output stream that discards all data written to it. GNDN.
+ * An undecoded HTTP message header.
  */
-public class NullOutputStream extends OutputStream {
+public class GenericHeader implements Header {
+    /** The header name. */
+    private String name;
 
-    @Override
-    public void write(int b) {
-        // goes nowhere, does nothing
+    /** The header value. */
+    private String value;
+
+    /**
+     * Constructs a new header with the provided name and value.
+     *
+     * @param name
+     *            The header name.
+     * @param value
+     *            The header value.
+     */
+    public GenericHeader(String name, String value) {
+        this.name = value;
+        this.value = value;
     }
 
     @Override
-    public void write(byte[] b) {
-        // goes nowhere, does nothing
+    public String getName() {
+        return name;
     }
 
     @Override
-    public void write(byte[] b, int off, int len) {
-        // goes nowhere, does nothing
+    public String toString() {
+        return value;
     }
 }

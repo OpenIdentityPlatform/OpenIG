@@ -151,7 +151,7 @@ public class RedirectFilterTest {
 
         filter.filter(exchange, handler);
 
-        LocationHeader header = new LocationHeader(exchange.response);
+        LocationHeader header = LocationHeader.valueOf(exchange.response);
         assertThat(header.toString()).isNotNull();
         assertThat(expectedResult).isEqualTo(header.toString());
     }

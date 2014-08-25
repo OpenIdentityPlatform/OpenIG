@@ -21,7 +21,7 @@ import static java.lang.String.format;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.HeapUtil.getObject;
 import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.io.TemporaryStorageHeaplet.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -49,12 +49,12 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.HandlerException;
 import org.forgerock.http.Request;
 import org.forgerock.http.URIUtil;
-import org.forgerock.http.io.BranchingStreamWrapper;
-import org.forgerock.http.io.TemporaryStorage;
+import org.forgerock.http.io.IO;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.LogTimer;
@@ -243,7 +243,7 @@ public class GatewayServlet extends HttpServlet {
         // include request entity if appears to be provided with request
         if ((request.getContentLength() > 0 || request.getHeader("Transfer-Encoding") != null)
                 && !NON_ENTITY_METHODS.contains(exchange.request.getMethod())) {
-            exchange.request.setEntity(new BranchingStreamWrapper(request.getInputStream(), storage));
+            exchange.request.setEntity(IO.newBranchingInputStream(request.getInputStream(), storage));
         }
         // remember request entity so that it (and its children) can be properly closed
         exchange.session = new ServletSession(request);

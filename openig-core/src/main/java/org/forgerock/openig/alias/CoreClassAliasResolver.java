@@ -19,7 +19,6 @@ package org.forgerock.openig.alias;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
 import org.forgerock.openig.filter.Chain;
@@ -42,6 +41,7 @@ import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.util.HttpClient;
 

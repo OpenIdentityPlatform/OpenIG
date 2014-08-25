@@ -17,14 +17,14 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.io.TemporaryStorageHeaplet.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.json.simple.parser.JSONParser;
 import org.testng.annotations.Test;

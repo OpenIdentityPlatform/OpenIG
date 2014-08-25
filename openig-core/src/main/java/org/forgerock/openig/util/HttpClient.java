@@ -18,11 +18,11 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.String.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.forgerock.openig.util.Duration.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.forgerock.openig.util.Duration.duration;
+import static org.forgerock.openig.util.JsonValueUtil.evaluate;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,12 +71,12 @@ import org.forgerock.http.header.ConnectionHeader;
 import org.forgerock.http.header.ContentEncodingHeader;
 import org.forgerock.http.header.ContentLengthHeader;
 import org.forgerock.http.header.ContentTypeHeader;
-import org.forgerock.http.io.BranchingStreamWrapper;
-import org.forgerock.http.io.TemporaryStorage;
+import org.forgerock.http.io.IO;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 
 /**
@@ -176,10 +176,10 @@ public class HttpClient {
         public EntityRequest(final Request request) {
             this.method = request.getMethod();
             final InputStreamEntity entity =
-                    new InputStreamEntity(request.getEntity().getRawInputStream(),
-                            new ContentLengthHeader(request).getLength());
-            entity.setContentType(new ContentTypeHeader(request).toString());
-            entity.setContentEncoding(new ContentEncodingHeader(request).toString());
+                    new InputStreamEntity(request.getEntity().getRawContentInputStream(),
+                            ContentLengthHeader.valueOf(request).getLength());
+            entity.setContentType(ContentTypeHeader.valueOf(request).toString());
+            entity.setContentEncoding(ContentEncodingHeader.valueOf(request).toString());
             setEntity(entity);
         }
 
@@ -405,7 +405,7 @@ public class HttpClient {
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
         // parse request connection headers to be suppressed in request
-        suppressConnection.addAll(new ConnectionHeader(request).getTokens());
+        suppressConnection.addAll(ConnectionHeader.valueOf(request).getTokens());
         // request headers
         for (final String name : request.getHeaders().keySet()) {
             if (!SUPPRESS_REQUEST_HEADERS.contains(name) && !suppressConnection.contains(name)) {
@@ -420,8 +420,7 @@ public class HttpClient {
         // response entity
         final HttpEntity clientResponseEntity = clientResponse.getEntity();
         if (clientResponseEntity != null) {
-            response.setEntity(new BranchingStreamWrapper(clientResponseEntity.getContent(),
-                    storage));
+            response.setEntity(IO.newBranchingInputStream(clientResponseEntity.getContent(), storage));
         }
         // response status line
         final StatusLine statusLine = clientResponse.getStatusLine();
@@ -430,7 +429,7 @@ public class HttpClient {
         response.setReason(statusLine.getReasonPhrase());
         // parse response connection headers to be suppressed in response
         suppressConnection.clear();
-        suppressConnection.addAll(new ConnectionHeader(response).getTokens());
+        suppressConnection.addAll(ConnectionHeader.valueOf(response).getTokens());
         // response headers
         for (final HeaderIterator i = clientResponse.headerIterator(); i.hasNext();) {
             final Header header = i.nextHeader();

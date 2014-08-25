@@ -17,7 +17,7 @@
 
 package org.forgerock.http.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 

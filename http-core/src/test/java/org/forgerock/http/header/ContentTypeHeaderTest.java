@@ -15,14 +15,14 @@
  */
 package org.forgerock.http.header;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.header.ContentTypeHeader.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.header.ContentTypeHeader.NAME;
 
 import java.nio.charset.Charset;
 
+import org.forgerock.http.Message;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
-import org.forgerock.http.header.ContentTypeHeader;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -53,7 +53,7 @@ public class ContentTypeHeaderTest {
 
     @Test(dataProvider = "nullOrEmptyDataProvider", dataProviderClass = StaticProvider.class)
     public void testContentTypeHeaderAllowsNullOrEmptyString(final String cheader) {
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(cheader);
         assertThat(cth.getType()).isNull();
         assertThat(cth.getCharset()).isNull();
         assertThat(cth.getBoundary()).isNull();
@@ -62,8 +62,7 @@ public class ContentTypeHeaderTest {
 
     @Test
     public void testContentTypeHeaderFromNullMessage() {
-        final ContentTypeHeader cth = new ContentTypeHeader();
-        cth.fromMessage(null);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf((Message) null);
         assertThat(cth.getType()).isNull();
         assertThat(cth.getCharset()).isNull();
         assertThat(cth.getBoundary()).isNull();
@@ -73,7 +72,7 @@ public class ContentTypeHeaderTest {
     @Test(dataProvider = "contentTypeHeaderProvider")
     public void testContentTypeHeaderFromString(final String cheader, final String type, final String charset,
             final String boundary) {
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(cheader);
         assertThat(cth.getType()).isEqualTo(type);
         assertThat(cth.getCharset()).isEqualTo(charset != null ? Charset.forName(charset) : null);
         assertThat(cth.getBoundary()).isEqualTo(boundary);
@@ -84,15 +83,15 @@ public class ContentTypeHeaderTest {
             final String boundary) {
         final Request request = new Request();
         assertThat(request.getHeaders().get(NAME)).isNull();
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
-        cth.toMessage(request);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(cheader);
+        request.getHeaders().putSingle(cth);
         assertThat(request.getHeaders().get(NAME)).isNotEmpty();
         assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(cheader);
     }
 
     @Test
     public void testContentTypeHeaderFromInvalidString() {
-        final ContentTypeHeader cth = new ContentTypeHeader(INVALID_CT_HEADER);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(INVALID_CT_HEADER);
         assertThat(cth.getType()).isEqualTo(INVALID_CT_HEADER);
         assertThat(cth.getCharset()).isEqualTo(null);
         assertThat(cth.getBoundary()).isEqualTo(null);
@@ -108,7 +107,7 @@ public class ContentTypeHeaderTest {
         assertThat(response.getHeaders().get(NAME)).isNotNull();
 
         // Creates content-type header from response.
-        final ContentTypeHeader cth = new ContentTypeHeader(response);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(response);
         assertThat(cth.getType()).isEqualTo(type);
         assertThat(cth.getCharset()).isEqualTo(charset != null ? Charset.forName(charset) : null);
         assertThat(cth.getBoundary()).isEqualTo(boundary);
@@ -124,56 +123,9 @@ public class ContentTypeHeaderTest {
         assertThat(request.getHeaders().get(NAME)).isNotNull();
 
         // Creates content-type header from request.
-        final ContentTypeHeader cth = new ContentTypeHeader(request);
+        final ContentTypeHeader cth = ContentTypeHeader.valueOf(request);
         assertThat(cth.getType()).isEqualTo(type);
         assertThat(cth.getCharset()).isEqualTo(charset != null ? Charset.forName(charset) : null);
         assertThat(cth.getBoundary()).isEqualTo(boundary);
-    }
-
-    @Test(dataProvider = "contentTypeHeaderProvider")
-    public void testEqualitySucceed(final String cheader, final String type, final String charset,
-            final String boundary) {
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, cheader);
-
-        final ContentTypeHeader cth2 = new ContentTypeHeader();
-        cth2.fromMessage(response);
-        assertThat(cth2.getType()).isEqualTo(cth.getType());
-        assertThat(cth2.getCharset()).isEqualTo(cth.getCharset());
-        assertThat(cth2.getBoundary()).isEqualTo(cth.getBoundary());
-        assertThat(cth2).isEqualTo(cth);
-    }
-
-    @Test(dataProvider = "contentTypeHeaderProvider")
-    public void testEqualityFails(final String cheader, final String type, final String charset,
-            final String boundary) {
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
-        final Response response = new Response();
-
-        assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, INVALID_CT_HEADER);
-
-        final ContentTypeHeader cth2 = new ContentTypeHeader();
-        cth2.fromMessage(response);
-
-        assertThat(cth2).isNotEqualTo(cth);
-    }
-
-    @Test(dataProvider = "contentTypeHeaderProvider")
-    public void testEqualityFailsIfNull(final String cheader, final String type, final String charset,
-            final String boundary) {
-        final ContentTypeHeader cth = new ContentTypeHeader(cheader);
-        final Response response = new Response();
-        assertThat(response.getHeaders().get(NAME)).isNull();
-
-        response.getHeaders().putSingle(NAME, null);
-
-        final ContentTypeHeader cth2 = new ContentTypeHeader();
-        cth2.fromMessage(response);
-
-        assertThat(cth).isNotEqualTo(cth2);
     }
 }

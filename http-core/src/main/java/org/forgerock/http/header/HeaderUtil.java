@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Message;
 import org.forgerock.http.util.CaseInsensitiveMap;
 
 /**
@@ -36,18 +37,20 @@ public final class HeaderUtil {
     }
 
     /**
-     * Parses an HTTP header value, splitting it into multiple values around the specified
-     * separator. Quoted strings are not split into multiple values if they contain separator
-     * characters. All leading and trailing white space in values is trimmed. All quotations
-     * remain intact.
+     * Parses an HTTP header value, splitting it into multiple values around the
+     * specified separator. Quoted strings are not split into multiple values if
+     * they contain separator characters. All leading and trailing white space
+     * in values is trimmed. All quotations remain intact.
      * <p>
-     * Note: This method is liberal in its interpretation of malformed header values; namely
-     * the incorrect use of string and character quoting mechanisms and unquoted white space.
-     * If a {@code null} or empty string is supplied as a value, this method yields an empty
-     * list.
+     * Note: This method is liberal in its interpretation of malformed header
+     * values; namely the incorrect use of string and character quoting
+     * mechanisms and unquoted white space. If a {@code null} or empty string is
+     * supplied as a value, this method yields an empty list.
      *
-     * @param value the header value to be split.
-     * @param separator the separator character to split headers around.
+     * @param value
+     *            the header value to be split.
+     * @param separator
+     *            the separator character to split headers around.
      * @return A list of string representing the split values of the header.
      */
     public static List<String> split(final String value, final char separator) {
@@ -97,12 +100,14 @@ public final class HeaderUtil {
     }
 
     /**
-     * Joins a collection of header values into a single header value, with a specified
-     * specified separator. A {@code null} or empty collection of header values yeilds a
-     * {@code null} return value.
+     * Joins a collection of header values into a single header value, with a
+     * specified specified separator. A {@code null} or empty collection of
+     * header values yeilds a {@code null} return value.
      *
-     * @param values the values to be joined.
-     * @param separator the separator to separate values within the returned value.
+     * @param values
+     *            the values to be joined.
+     * @param separator
+     *            the separator to separate values within the returned value.
      * @return a single header value, with values separated by the separator.
      */
     public static String join(final Collection<String> values, final char separator) {
@@ -124,24 +129,28 @@ public final class HeaderUtil {
     }
 
     /**
-     * Splits a single HTTP header parameter name and value from an input string value. The
-     * input string value is presumed to have been extracted from a collection provided by the
-     * {@link #split(String, char)} method.
+     * Splits a single HTTP header parameter name and value from an input string
+     * value. The input string value is presumed to have been extracted from a
+     * collection provided by the {@link #split(String, char)} method.
      * <p>
      * This method returns the parameter name-value pair split into an array of
-     * {@code String}s. Element {@code [0]} contains the parameter name; element {@code [1]}
-     * contains contains the parameter value or {@code null} if there is no value.
+     * {@code String}s. Element {@code [0]} contains the parameter name; element
+     * {@code [1]} contains contains the parameter value or {@code null} if
+     * there is no value.
      * <p>
-     * A value that is contained within a quoted-string is processed such that the surrounding
-     * '"' (quotation mark) characters are removed and single-character quotations hold the
-     * character being quoted without the escape '\' (backslash) character. All white space
-     * outside of the quoted-string is removed. White space within the quoted-string is
+     * A value that is contained within a quoted-string is processed such that
+     * the surrounding '"' (quotation mark) characters are removed and
+     * single-character quotations hold the character being quoted without the
+     * escape '\' (backslash) character. All white space outside of the
+     * quoted-string is removed. White space within the quoted-string is
      * retained.
      * <p>
-     * Note: This method is liberal in its interpretation of a malformed header value; namely
-     * the incorrect use of string and character quoting mechanisms and unquoted white space.
+     * Note: This method is liberal in its interpretation of a malformed header
+     * value; namely the incorrect use of string and character quoting
+     * mechanisms and unquoted white space.
      *
-     * @param value the string to parse the name-value parameter from.
+     * @param value
+     *            the string to parse the name-value parameter from.
      * @return the name-value pair split into a {@code String} array.
      */
     public static String[] parseParameter(final String value) {
@@ -189,27 +198,31 @@ public final class HeaderUtil {
     }
 
     /**
-     * Parses a set of HTTP header parameters from a collection of values. The input
-     * collection of values is presumed to have been provided from the
+     * Parses a set of HTTP header parameters from a collection of values. The
+     * input collection of values is presumed to have been provided from the
      * {@link #split(String, char)} method.
      * <p>
-     * A well-formed parameter contains an attribute and optional value, separated by an '='
-     * (equals sign) character. If the parameter contains no value, it is represented by a
-     * {@code null} value in the returned map.
+     * A well-formed parameter contains an attribute and optional value,
+     * separated by an '=' (equals sign) character. If the parameter contains no
+     * value, it is represented by a {@code null} value in the returned map.
      * <p>
-     * Values that are contained in quoted-strings are processed such that the surrounding
-     * '"' (quotation mark) characters are removed and single-character quotations hold the
-     * character being quoted without the escape '\' (backslash) character. All white space
-     * outside of quoted-strings is removed. White space within quoted-strings is retained.
+     * Values that are contained in quoted-strings are processed such that the
+     * surrounding '"' (quotation mark) characters are removed and
+     * single-character quotations hold the character being quoted without the
+     * escape '\' (backslash) character. All white space outside of
+     * quoted-strings is removed. White space within quoted-strings is retained.
      * <p>
-     * Note: This method is liberal in its interpretation of malformed header values; namely
-     * the incorrect use of string and character quoting mechanisms and unquoted white space.
+     * Note: This method is liberal in its interpretation of malformed header
+     * values; namely the incorrect use of string and character quoting
+     * mechanisms and unquoted white space.
      *
-     * @param values the HTTP header parameters.
+     * @param values
+     *            the HTTP header parameters.
      * @return a map of parameter name-value pairs.
      */
     public static Map<String, String> parseParameters(final Collection<String> values) {
-        final CaseInsensitiveMap<String> map = new CaseInsensitiveMap<String>(new HashMap<String, String>());
+        final CaseInsensitiveMap<String> map =
+                new CaseInsensitiveMap<String>(new HashMap<String, String>());
         if (values != null) {
             for (final String value : values) {
                 final String[] param = parseParameter(value);
@@ -222,11 +235,13 @@ public final class HeaderUtil {
     }
 
     /**
-     * Encloses a string in quotation marks. Quotation marks and backslash characters are
-     * escaped with the single-character quoting mechanism. For more information, see
-     * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §2.2.
+     * Encloses a string in quotation marks. Quotation marks and backslash
+     * characters are escaped with the single-character quoting mechanism. For
+     * more information, see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC
+     * 2616</a> §2.2.
      *
-     * @param value the value to be enclosed in quotation marks.
+     * @param value
+     *            the value to be enclosed in quotation marks.
      * @return the value enclosed in quotation marks.
      */
     public static String quote(final String value) {
@@ -244,5 +259,49 @@ public final class HeaderUtil {
         }
         sb.append('"');
         return sb.toString();
+    }
+
+    /**
+     * Parses the named header from the message as a multi-valued comma
+     * separated value. If there are multiple headers present then they are
+     * first merged and then {@link #split(String, char) split}.
+     *
+     * @param message
+     *            The HTTP request or response.
+     * @param name
+     *            The name of the header.
+     * @return A list of strings representing the split values of the header,
+     *         which may be empty if the header was not present in the message.
+     */
+    public static List<String> parseMultiValuedHeader(Message message, String name) {
+        final List<String> values = message != null ? message.getHeaders().get(name) : null;
+        return parseMultiValuedHeader(join(values, ','));
+    }
+
+    /**
+     * Parses the header content as a multi-valued comma separated value.
+     *
+     * @param header
+     *            The HTTP header content.
+     * @return A list of strings representing the split values of the header,
+     *         which may be empty if the header was {@code null} or empty.
+     */
+    public static List<String> parseMultiValuedHeader(final String header) {
+        return split(header, ',');
+    }
+
+    /**
+     * Parses the named single-valued header from the message. If there are
+     * multiple headers present then only the first is used.
+     *
+     * @param message
+     *            The HTTP request or response.
+     * @param name
+     *            The name of the header.
+     * @return The header value, or {@code null} if the header was not present
+     *         in the message.
+     */
+    public static String parseSingleValuedHeader(Message message, String name) {
+        return message != null ? message.getHeaders().getFirst(name) : null;
     }
 }

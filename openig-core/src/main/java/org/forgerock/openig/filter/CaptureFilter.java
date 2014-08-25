@@ -206,7 +206,7 @@ public class CaptureFilter extends GenericFilter {
     }
 
     private void writeEntity(final PrintWriter writer, Message message) throws IOException {
-        ContentTypeHeader contentType = new ContentTypeHeader(message);
+        ContentTypeHeader contentType = ContentTypeHeader.valueOf(message);
         if (message.getEntity() == null || contentType.getType() == null) {
             return;
         }

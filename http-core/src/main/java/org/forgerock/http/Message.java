@@ -55,7 +55,7 @@ public interface Message extends Closeable {
      * The parameter will be handled depending on its type as follows:
      * <ul>
      * <li>{@code BranchingInputStream} - equivalent to calling
-     * {@link Entity#setRawInputStream}
+     * {@link Entity#setRawContentInputStream}
      * <li>{@code byte[]} - equivalent to calling {@link Entity#setBytes}
      * <li>{@code String} - equivalent to calling {@link Entity#setString}
      * <li>{@code Object} - equivalent to calling {@link Entity#setJson}.

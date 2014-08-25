@@ -16,41 +16,63 @@
 
 package org.forgerock.http.header;
 
+import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
+
+import org.forgerock.http.Header;
 import org.forgerock.http.Message;
 
 /**
- * Processes the <strong>{@code Location}</strong> message header. For more information see
- * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> §14.30.
+ * Processes the <strong>{@code Location}</strong> message header. For more
+ * information see <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>
+ * §14.30.
  */
 public final class LocationHeader implements Header {
 
-    /** The name of the header that this object represents. */
+    /**
+     * Constructs a new header, initialized from the specified message.
+     *
+     * @param message
+     *            The message to initialize the header from.
+     * @return The parsed header.
+     */
+    public static LocationHeader valueOf(final Message message) {
+        return valueOf(parseSingleValuedHeader(message, NAME));
+    }
+
+    /**
+     * Constructs a new header, initialized from the specified string value.
+     *
+     * @param string
+     *            The value to initialize the header from.
+     * @return The parsed header.
+     */
+    public static LocationHeader valueOf(final String string) {
+        return new LocationHeader(string);
+    }
+
+    /** The name of this header. */
     public static final String NAME = "Location";
 
-    /** The location URI value from the header, or empty string if not specified. */
-    private String locationURI = "";
+    /**
+     * The location URI value from the header, or {@code null}.
+     */
+    private final String locationUri;
 
-    /** Constructs a new empty <strong>{@code LocationHeader}</strong>. **/
+    /**
+     * Constructs a new empty header whose location is {@code null}.
+     */
     public LocationHeader() {
-        // Nothing to do.
+        this(null);
     }
 
     /**
-     * Constructs a new <strong>{@code LocationHeader}</strong>, initialized from the specified message.
+     * Constructs a new header with the provided location URI.
      *
-     * @param message The message to initialize the header from.
+     * @param locationUri
+     *            The location URI, or {@code null} if no location has been set.
      */
-    public LocationHeader(Message message) {
-        fromMessage(message);
-    }
-
-    /**
-     * Constructs a new <strong>{@code LocationHeader}</strong>, initialized from the specified String value.
-     *
-     * @param string The value to initialize the header from.
-     */
-    public LocationHeader(String string) {
-        fromString(string);
+    public LocationHeader(String locationUri) {
+        this.locationUri = locationUri != null && locationUri.isEmpty() ? null : locationUri;
     }
 
     /**
@@ -58,53 +80,17 @@ public final class LocationHeader implements Header {
      *
      * @return The location URI or {@code null} if empty.
      */
-    public String getLocationURI() {
-        return "".equals(locationURI) ? null : locationURI;
+    public String getLocationUri() {
+        return locationUri;
     }
 
     @Override
-    public String getKey() {
+    public String getName() {
         return NAME;
     }
 
     @Override
-    public void fromMessage(Message message) {
-        if (message != null && message.getHeaders() != null) {
-            // expect only one header value
-            fromString(message.getHeaders().getFirst(NAME));
-        }
-    }
-
-    @Override
-    public void fromString(String string) {
-        locationURI = "";
-        if (string != null) {
-            locationURI = string;
-        }
-    }
-
-    @Override
-    public void toMessage(Message message) {
-        final String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
-    }
-
-    @Override
     public String toString() {
-        return getLocationURI();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this
-            || (o instanceof LocationHeader
-                && locationURI.equals(((LocationHeader) o).locationURI));
-    }
-
-    @Override
-    public int hashCode() {
-        return locationURI.hashCode();
+        return locationUri;
     }
 }

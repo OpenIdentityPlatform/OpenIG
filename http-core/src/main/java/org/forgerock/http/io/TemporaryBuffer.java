@@ -21,11 +21,11 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * A buffer that fist uses memory, then a temporary file for data storage. Initially, a
- * {@link MemoryBuffer} is used; when the memory buffer limit is exceeded it promotes to
- * the use of a {@link FileBuffer}.
+ * A buffer that first uses memory, then a temporary file for data storage.
+ * Initially, a {@link MemoryBuffer} is used; when the memory buffer limit is
+ * exceeded it promotes to the use of a {@link FileBuffer}.
  */
-public class TemporaryBuffer implements Buffer {
+final class TemporaryBuffer implements Buffer {
 
     /** File used for temporary storage. */
     private File file = null;
@@ -39,17 +39,8 @@ public class TemporaryBuffer implements Buffer {
     /** The buffer currently in use. */
     private Buffer buffer;
 
-    /**
-     * Constructs a new temporary buffer.
-     *
-     * @param initialLength the initial length of memory buffer byte array.
-     * @param memoryLimit the length limit of the memory buffer.
-     * @param fileLimit the length limit of the file buffer.
-     * @param directory the directory where temporary files are created, or {@code null} to use the system-dependent
-     * default temporary directory.
-     */
-    public TemporaryBuffer(int initialLength, int memoryLimit, int fileLimit, File directory) {
-        buffer = new MemoryBuffer(initialLength, memoryLimit);
+    TemporaryBuffer(int initialLength, int memoryLimit, int fileLimit, File directory) {
+        buffer = IO.newMemoryBuffer(initialLength, memoryLimit);
         this.fileLimit = fileLimit;
         this.directory = directory;
     }
@@ -107,7 +98,7 @@ public class TemporaryBuffer implements Buffer {
         if (buffer instanceof MemoryBuffer) {
             MemoryBuffer membuf = (MemoryBuffer) buffer;
             file = File.createTempFile("buf", null, directory);
-            buffer = new FileBuffer(file, fileLimit);
+            buffer = IO.newFileBuffer(file, fileLimit);
             // accesses byte array directly
             buffer.append(membuf.data, 0, membuf.length());
             membuf.close();

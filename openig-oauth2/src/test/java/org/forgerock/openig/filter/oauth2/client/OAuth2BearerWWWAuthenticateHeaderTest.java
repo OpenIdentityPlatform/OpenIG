@@ -51,40 +51,24 @@ public class OAuth2BearerWWWAuthenticateHeaderTest {
             String error, String errorDescription) {
         final Response response = new Response();
         response.getHeaders().putSingle(NAME, header);
-        OAuth2BearerWWWAuthenticateHeader parsed = new OAuth2BearerWWWAuthenticateHeader(response);
+        OAuth2BearerWWWAuthenticateHeader parsed =
+                OAuth2BearerWWWAuthenticateHeader.valueOf(response);
         assertEquals(parsed, header, realm, scopes, error, errorDescription);
     }
 
     @Test(dataProvider = "validHeaders")
     public void testConstructFromString(final String header, String realm, List<String> scopes,
             String error, String errorDescription) {
-        OAuth2BearerWWWAuthenticateHeader parsed = new OAuth2BearerWWWAuthenticateHeader(header);
-        assertEquals(parsed, header, realm, scopes, error, errorDescription);
-    }
-
-    @Test(dataProvider = "validHeaders")
-    public void testFromMessage(final String header, String realm, List<String> scopes,
-            String error, String errorDescription) {
-        final Response response = new Response();
-        response.getHeaders().putSingle(NAME, header);
-        OAuth2BearerWWWAuthenticateHeader parsed = new OAuth2BearerWWWAuthenticateHeader();
-        parsed.fromMessage(response);
-        assertEquals(parsed, header, realm, scopes, error, errorDescription);
-    }
-
-    @Test(dataProvider = "validHeaders")
-    public void testFromString(final String header, String realm, List<String> scopes,
-            String error, String errorDescription) {
-        OAuth2BearerWWWAuthenticateHeader parsed = new OAuth2BearerWWWAuthenticateHeader();
-        parsed.fromString(header);
+        OAuth2BearerWWWAuthenticateHeader parsed =
+                OAuth2BearerWWWAuthenticateHeader.valueOf(header);
         assertEquals(parsed, header, realm, scopes, error, errorDescription);
     }
 
     @Test
     public void testIs() {
         OAuth2BearerWWWAuthenticateHeader parsed =
-                new OAuth2BearerWWWAuthenticateHeader(
-                        "Bearer realm=\"example\", scope=\"openid\", error=\"invalid_token\", "
+                OAuth2BearerWWWAuthenticateHeader
+                        .valueOf("Bearer realm=\"example\", scope=\"openid\", error=\"invalid_token\", "
                                 + "error_description=\"The access token expired\"");
         assertThat(parsed.getOAuth2Error().is(OAuth2Error.E_INVALID_TOKEN)).isTrue();
         assertThat(parsed.getOAuth2Error().is(OAuth2Error.E_ACCESS_DENIED)).isFalse();

@@ -17,9 +17,8 @@
 
 package org.forgerock.http.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.forgerock.http.util.FieldMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

@@ -15,12 +15,11 @@
  */
 package org.forgerock.http.header;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forgerock.http.header.HeaderUtil;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

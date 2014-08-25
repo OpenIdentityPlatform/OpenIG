@@ -63,7 +63,7 @@ abstract class MessageImpl<T extends MessageImpl<T>> implements Message {
 
     final void setEntity0(final Object o) {
         if (o instanceof BranchingInputStream) {
-            entity.setRawInputStream((BranchingInputStream) o);
+            entity.setRawContentInputStream((BranchingInputStream) o);
         } else if (o instanceof byte[]) {
             entity.setBytes((byte[]) o);
         } else if (o instanceof String) {

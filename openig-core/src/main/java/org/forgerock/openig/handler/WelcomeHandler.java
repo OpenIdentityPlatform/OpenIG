@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.forgerock.http.Exchange;
 import org.forgerock.http.HandlerException;
 import org.forgerock.http.Response;
-import org.forgerock.http.io.BranchingStreamWrapper;
+import org.forgerock.http.io.IO;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.log.LogTimer;
@@ -46,7 +46,7 @@ public class WelcomeHandler extends GenericHandler {
             response.setStatus(200);
             response.setReason("OK");
             response.getHeaders().add("Content-Type", "text/html");
-            response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream(
+            response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
                     "welcome.html"), storage));
             exchange.response = response;
         } finally {

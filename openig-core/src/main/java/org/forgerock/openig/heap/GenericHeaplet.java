@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.heap;
 
-import static org.forgerock.openig.io.TemporaryStorageHeaplet.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 
 import java.util.Arrays;
@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.forgerock.http.io.TemporaryStorage;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 

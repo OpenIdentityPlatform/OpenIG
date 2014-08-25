@@ -640,7 +640,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
 
     private void handleResourceAccessFailure(final Response response) throws OAuth2ErrorException {
         final OAuth2BearerWWWAuthenticateHeader header =
-                new OAuth2BearerWWWAuthenticateHeader(response);
+                OAuth2BearerWWWAuthenticateHeader.valueOf(response);
         final OAuth2Error error = header.getOAuth2Error();
         final OAuth2Error bestEffort =
                 OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
