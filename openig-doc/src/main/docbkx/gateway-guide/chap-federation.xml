@@ -238,11 +238,29 @@
     <term><filename>${warConfigDir}/config.json</filename></term>
     <listitem>
      <para>
-      This is the core configuration file for ${projectName}.
-      You must configure both this file
+      This is the core configuration file for ${projectName},
+      where you configure a
+      <link
+       xlink:show="new"
+       xlink:href="reference#SamlFederationHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >SamlFederationHandler</link>.
+      If this file uses a
+      <link
+       xlink:show="new"
+       xlink:href="reference#Router"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Router</link>, you can configure the handler in a route file.
+     </para>
+
+     <para>
+      You must configure both the ${projectName} core configuration,
       and also the XML files specific to the Federation component.
       The reason there are two sets of configuration files
       is that the Federation component includes a federation library from OpenAM.
+     </para>
+
+     <para>
       In order to configure the Federation component you must tag swap the XML files.
       If you are familiar with the workflow in the OpenAM console
       you can instead generate a Fedlet and directly copy the configuration files
@@ -336,243 +354,15 @@
    You must still nevertheless get the metadata from the IDP,
    and then copy it to <filename>idp.xml</filename> in the same directory.
   </para>
- </section>
-
- <section xml:id="federation-config-json">
-  <title>Federation Configuration Details</title>
 
   <para>
-   The following sample configuration is corresponds to a scenario
-   where ${projectName} receives a SAML assertion from OpenAM,
-   and then logs the user in to the protected application
-   using the username and password from the assertion.
-   Descriptions of the fields follow the example.
+   Once you have the Fedlet configuration files set up, add the
+   <link
+    xlink:show="new"
+    xlink:href="reference#SamlFederationHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >SamlFederationHandler</link> object to the ${projectName} configuration.
   </para>
-
-  <programlisting language="javascript">
-{
-    "name": "SamlFederationHandler",
-    "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
-    "config": {
-        "assertionMapping": {
-            "username": "mail",
-            "password": "mailPassword"
-        },
-        "redirectURI": "/login",
-        "logoutURI": "/logout"
-    }
-}
-  </programlisting>
-
-  <variablelist>
-   <varlistentry>
-    <term>"name" (required)</term>
-    <listitem>
-     <para>
-      Name of the Federation component of ${projectName}.
-      Do not modify this value.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"type" (required)</term>
-    <listitem>
-     <para>
-      Class name of the Federation handler.
-      Do not modify this value.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"assertionMapping" (required)</term>
-    <listitem>
-     <para>
-      The "assertionMapping" defines how to transform attributes
-      from the incoming assertion to attribute value pairs in ${projectName}.
-      Each entry in the <literal>assertionMapping</literal> is of the form
-      <literal><replaceable>localName</replaceable>:
-       <replaceable>incomingName</replaceable></literal>,
-      where <replaceable>incomingName</replaceable>
-      is used to fetch the value from the incoming assertion,
-      and <replaceable>localName</replaceable>
-      is the name of the attribute set in the session.
-     </para>
-
-     <para>
-      The following statements correspond to the sample shown above.
-     </para>
-
-     <para>
-      If the incoming assertion contains the statement:</para>
-
-     <literallayout class="monospaced">mail = george@example.com</literallayout>
-     <literallayout class="monospaced">mailPassword = costanza</literallayout>
-
-     <para>Then the following values are set in the session:</para>
-
-     <literallayout class="monospaced">username = george@example.com</literallayout>
-     <literallayout class="monospaced">password = costanza</literallayout>
-
-     <para>
-      For this to work,
-      you must edit the &lt;Attribute name="attributeMap"> element
-      in the SP extended metadata file,
-      <filename>${warSamlDir}/sp-extended.xml</filename>,
-      so that it matches the assertion mapping configured in the IDP metadata.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"redirectURI" (required)</term>
-    <listitem>
-     <para>
-      Set this to the page that the filter used to HTTP POST a login form
-      recognizes as the login page for the protected application.
-     </para>
-
-     <para>
-      This is how ${projectName} and the Federation component work together
-      to provide single sign-on.
-      When ${projectName} detects the login page of the protected application,
-      it redirects to the Federation component.
-      Once the Federation handler validates the SAML exchanges with the IDP,
-      and sets the required session attributes,
-      it redirects back to the login page of the protected application.
-      This allows the filter used to HTTP POST a login form to finish the job
-      by creating a login form to post to the application
-      based on the credentials retrieved from the session attributes.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"assertionConsumerEndpoint" (optional)</term>
-    <listitem>
-     <para>
-      Default: "fedletapplication" (same as the Fedlet)
-     </para>
-
-     <para>
-      If you modify this attribute you must change the metadata to match.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"authnContext" (optional)</term>
-    <listitem>
-     <para>
-      An authentication context to use when sending the request to the IDP,
-      such as <literal>PasswordProtectedTransport</literal>.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"authnContextDelimiter" (optional)</term>
-    <listitem>
-     <para>
-      The authentication context delimiter used
-      when there are multiple authentication contexts in the assertion.
-     </para>
-
-     <para>
-      Default: <literal>|</literal>
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"logoutURI" (optional)</term>
-    <listitem>
-     <para>
-      Set this to the URI that logs the user out of the protected application.
-     </para>
-
-     <para>
-      You only need to set this if the application
-      uses the single logout feature of the Identity Provider.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"sessionIndexMapping" (optional)</term>
-    <listitem>
-     <para>
-      The IDP sends the <literal>sessionIndex</literal> for the user
-      in the assertion.
-      The value contained in the assertion is set as
-      the value of the attribute <literal>sessionIndex</literal> in the session.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"singleLogoutEndpoint" (optional)</term>
-    <listitem>
-     <para>
-      Default: "fedletSLORedirect" (same as the Fedlet)
-     </para>
-
-     <para>
-      If you modify this attribute you must change the metadata to match.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"singleLogoutEndpointSoap" (optional)</term>
-    <listitem>
-     <para>
-      Default: "fedletSloSoap" (same as the Fedlet)
-     </para>
-
-     <para>
-      If you modify this attribute you must change the metadata to match.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"SPinitiatedSLOEndpoint" (optional)</term>
-    <listitem>
-     <para>
-      Default: "SPInitiatedSLO"
-     </para>
-
-     <para>
-      If you modify this attribute you must change the metadata to match.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"SPinitiatedSSOEndpoint" (optional)</term>
-    <listitem>
-     <para>
-      Default: "SPInitiatedSSO"
-     </para>
-
-     <para>
-      If you modify this attribute you must change the metadata to match.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>"subjectMapping" (optional)</term>
-    <listitem>
-     <para>
-      The value contained in the assertion subject is set as
-      the value of the attribute <literal>subjectName</literal> in the session.
-     </para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
  </section>
 
  <section xml:id="federation-example-settings">

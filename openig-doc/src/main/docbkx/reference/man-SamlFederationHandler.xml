@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id='SamlFederationHandler'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
+ <refmeta>
+  <refentrytitle>SamlFederationHandler</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>SamlFederationHandler</refname>
+  <refpurpose>play the role of SAML 2.0 Service Provider</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>SamlFederationHandler</secondary>
+  </indexterm>
+
+  <para>
+   A handler to play the role of SAML 2.0 Service Provider (SP).
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
+    "config": {
+        "assertionMapping": map object,
+        "redirectURI": string,
+        "assertionConsumerEndpoint": string,
+        "authnContext": string,
+        "authnContextDelimiter": string,
+        "logoutURI": string,
+        "sessionIndexMapping": string,
+        "singleLogoutEndpoint": string,
+        "singleLogoutEndpointSoap": string,
+        "SPinitiatedSLOEndpoint": string,
+        "SPinitiatedSSOEndpoint": string,
+        "subjectMapping": string
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"assertionMapping"</code>: <emphasis>map object, required</emphasis></term>
+    <listitem>
+     <para>
+      The "assertionMapping" defines how to transform attributes
+      from the incoming assertion to attribute value pairs in ${projectName}.
+      Each entry in the <literal>assertionMapping</literal> is of the form
+      <literal><replaceable>localName</replaceable>:
+       <replaceable>incomingName</replaceable></literal>,
+      where <replaceable>incomingName</replaceable>
+      is used to fetch the value from the incoming assertion,
+      and <replaceable>localName</replaceable>
+      is the name of the attribute set in the session.
+     </para>
+
+     <para>
+      The following shows an example of an "assertionMapping" object.
+     </para>
+
+     <programlisting language="javascript">
+{
+    "username": "mail",
+    "password": "mailPassword"
+}
+     </programlisting>
+
+     <para>
+      If the incoming assertion contains the statement:
+     </para>
+
+     <literallayout class="monospaced">mail = george@example.com</literallayout>
+     <literallayout class="monospaced">mailPassword = costanza</literallayout>
+
+     <para>
+      Then the following values are set in the session:
+     </para>
+
+     <literallayout class="monospaced">username = george@example.com</literallayout>
+     <literallayout class="monospaced">password = costanza</literallayout>
+
+     <para>
+      For this to work,
+      you must edit the &lt;Attribute name="attributeMap"> element
+      in the SP extended metadata file,
+      <filename>${warSamlDir}/sp-extended.xml</filename>,
+      so that it matches the assertion mapping
+      configured in the SAML 2.0 Identity Provider (IDP) metadata.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"redirectURI"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>
+      Set this to the page that the filter used to HTTP POST a login form
+      recognizes as the login page for the protected application.
+     </para>
+
+     <para>
+      This is how ${projectName} and the Federation component work together
+      to provide single sign-on.
+      When ${projectName} detects the login page of the protected application,
+      it redirects to the Federation component.
+      Once the Federation handler validates the SAML exchanges with the IDP,
+      and sets the required session attributes,
+      it redirects back to the login page of the protected application.
+      This allows the filter used to HTTP POST a login form to finish the job
+      by creating a login form to post to the application
+      based on the credentials retrieved from the session attributes.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"assertionConsumerEndpoint"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default: "fedletapplication" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"authnContext"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      An authentication context to use when sending the request to the IDP,
+      such as <literal>PasswordProtectedTransport</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"authnContextDelimiter"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The authentication context delimiter used
+      when there are multiple authentication contexts in the assertion.
+     </para>
+
+     <para>
+      Default: <literal>|</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"logoutURI"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Set this to the URI that logs the user out of the protected application.
+     </para>
+
+     <para>
+      You only need to set this if the application
+      uses the single logout feature of the Identity Provider.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"sessionIndexMapping"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The IDP sends the <literal>sessionIndex</literal> for the user
+      in the assertion.
+      The value contained in the assertion is set as
+      the value of the attribute <literal>sessionIndex</literal> in the session.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"singleLogoutEndpoint"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default: "fedletSLORedirect" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"singleLogoutEndpointSoap"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default: "fedletSloSoap" (same as the Fedlet)
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"SPinitiatedSLOEndpoint"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default: "SPInitiatedSLO"
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"SPinitiatedSSOEndpoint"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default: "SPInitiatedSSO"
+     </para>
+
+     <para>
+      If you modify this attribute you must change the metadata to match.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"subjectMapping"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The value contained in the assertion subject is set as
+      the value of the attribute <literal>subjectName</literal> in the session.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following sample configuration is corresponds to a scenario
+   where ${projectName} receives a SAML 2.0 assertion from the IDP,
+   and then logs the user in to the protected application
+   using the username and password from the assertion.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "SamlFederationHandler",
+    "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
+    "config": {
+        "assertionMapping": {
+            "username": "mail",
+            "password": "mailPassword"
+        },
+        "redirectURI": "/login",
+        "logoutURI": "/logout"
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/saml/SamlFederationHandler.html"
+   >org.forgerock.openig.handler.saml.SamlFederationHandler</link>
+  </para>
+ </refsect1>
+</refentry>
