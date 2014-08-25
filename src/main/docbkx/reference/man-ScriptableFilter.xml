@@ -57,6 +57,23 @@
    </para>
 
    <varlistentry>
+    <term>Any parameters passed as "args"</term>
+    <listitem>
+     <para>
+      You can use the configuration to pass parameters to the script
+      by specifying an "args" map.
+     </para>
+
+     <para>
+      Take care when naming keys in the "args" map.
+      If you reuse the name of another global object,
+      then you overwrite the global object value
+      with the specified "args" value.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term><literal>exchange</literal></term>
     <listitem>
      <para>
@@ -163,7 +180,8 @@
     "config": {
         "type": string,
         "file": string,    // Use either "file"
-        "source": string   // or "source", but not both.
+        "source": string,  // or "source", but not both.
+        "args": map
     }
 }
   </programlisting>
@@ -228,6 +246,51 @@
     </listitem>
    </varlistentry>
 
+   <varlistentry>
+    <term><code>"args"</code>: <emphasis>map, optional</emphasis></term>
+    <listitem>
+     <para>
+      Parameters passed from the configuration to the script.
+     </para>
+
+     <para>
+      The configuration object is a map
+      whose values can be scalars, arrays, objects and so forth,
+      as in the following example.
+     </para>
+
+     <programlisting language="javascript">
+{
+    "args": {
+        "title": "Coffee time",
+        "status": 418,
+        "reason": [
+            "Not Acceptable",
+            "I'm a teapot",
+            "Acceptable"
+        ],
+        "names": {
+            "1": "koffie",
+            "2": "kafe",
+            "3": "cafe",
+            "4": "kafo"
+        }
+    }
+}
+     </programlisting>
+
+     <para>
+      The script can then access the "args" parameters
+      in the same way as other global objects.
+      The following example sets the response reason to "I'm a teapot".
+     </para>
+
+     <programlisting language="java">
+exchange.response.reason = reason[1]
+     </programlisting>
+    </listitem>
+   </varlistentry>
+
   </variablelist>
 
  </refsect1>
@@ -238,7 +301,7 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/org/forgerock/openig/filter/ScriptableFilter.html"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/ScriptableFilter.html"
    >org.forgerock.openig.filter.ScriptableFilter</link>
   </para>
  </refsect1>

@@ -62,6 +62,8 @@
   Each takes as its configuration the script's Internet media "type"
   and either a "source" script included in the JSON configuration,
   or a "file" script that ${projectName} reads from a file.
+  The configuration can also optionally supply "args"
+  in order to pass parameters to the script.
  </para>
 
  <para>
@@ -186,7 +188,7 @@ capture(exchange.response)
 
   <para>
    The following script, for use in a <literal>ScriptableFilter</literal>,
-   adds an Authorization header based on a hard-coded username and password.
+   adds an Authorization header based on a username and password combination.
   </para>
 
   <programlisting language="java">
