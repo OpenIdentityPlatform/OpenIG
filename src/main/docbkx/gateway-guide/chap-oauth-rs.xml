@@ -28,7 +28,8 @@
          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
          xsi:schemaLocation='http://docbook.org/ns/docbook
                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
-         xmlns:xlink='http://www.w3.org/1999/xlink'>
+         xmlns:xlink='http://www.w3.org/1999/xlink'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Configuring ${projectName} as an OAuth 2.0 Resource Server</title>
 
  <para>
@@ -239,24 +240,7 @@
    ><citetitle>Configuration for Hard-Coded Credentials</citetitle></link>.
   </para>
 
-  <tip>
-   <para>
-    If you get stuck running the following samples,
-    know that you can activate ${projectName} debug logging
-    with a "ConsoleLogSink" configuration object.
-    Add it as the first object in the array of configuration objects.
-   </para>
-
-   <programlisting language="javascript">
-{
-    "name": "LogSink",
-    "type": "ConsoleLogSink",
-    "config": {
-        "level": "DEBUG"
-    }
-}
-   </programlisting>
-  </tip>
+  <xinclude:include href="../shared/tip-log.xml" />
  </section>
 
  <section xml:id="oauth2-rs-tutorial-openam-config">

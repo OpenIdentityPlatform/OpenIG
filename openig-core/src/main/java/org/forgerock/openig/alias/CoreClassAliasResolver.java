@@ -44,6 +44,8 @@ import org.forgerock.openig.handler.router.RouterHandler;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
+import org.forgerock.openig.log.FileLogSink;
+import org.forgerock.openig.log.NullLogSink;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -63,9 +65,11 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("ExceptionFilter", ExceptionFilter.class);
         ALIASES.put("FileAttributesFilter", FileAttributesFilter.class);
+        ALIASES.put("FileLogSink", FileLogSink.class);
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("HttpClient", HttpClient.class);
+        ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("RedirectFilter", RedirectFilter.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);

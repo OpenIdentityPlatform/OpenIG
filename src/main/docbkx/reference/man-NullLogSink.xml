@@ -20,25 +20,23 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Copyright 2014 ForgeRock AS
   !
 -->
-<refentry xml:id='ConsoleLogSink'
+<refentry xml:id='NullLogSink'
           xmlns='http://docbook.org/ns/docbook'
           version='5.0' xml:lang='en'
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
           xsi:schemaLocation='http://docbook.org/ns/docbook
                               http://docbook.org/xml/5.0/xsd/docbook.xsd'
-          xmlns:xlink='http://www.w3.org/1999/xlink'
-          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
-  <refentrytitle>ConsoleLogSink</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>NullLogSink</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
 
  <refnamediv>
-  <refname>ConsoleLogSink</refname>
-  <refpurpose>log to standard error</refpurpose>
+  <refname>NullLogSink</refname>
+  <refpurpose>discards log messages</refpurpose>
  </refnamediv>
 
  <refsect1>
@@ -46,11 +44,11 @@
 
   <indexterm>
    <primary>Miscellaneous Heap Objects</primary>
-   <secondary>ConsoleLogSink</secondary>
+   <secondary>NullLogSink</secondary>
   </indexterm>
 
   <para>
-   A log sink that writes log entries to the standard error stream.
+   A log sink that discards all log messages.
   </para>
  </refsect1>
 
@@ -60,20 +58,10 @@
   <programlisting language="javascript">
 {
      "name": string,
-     "type": "ConsoleLogSink",
-     "config": {
-         "level": string
-     }
+     "type": "NullLogSink",
+     "config": {}
 }
   </programlisting>
- </refsect1>
-
- <refsect1>
-  <title>Properties</title>
-
-  <variablelist>
-   <xinclude:include href="../shared/varlistentry-log-level.xml" />
-  </variablelist>
  </refsect1>
 
  <refsect1>
@@ -82,11 +70,8 @@
   <programlisting language="javascript">
 {
      "name": "LogSink",
-     "comment": "Default sink for logging information.",
-     "type": "ConsoleLogSink",
-     "config": {
-         "level": "DEBUG"
-     }
+     "type": "NullLogSink",
+     "config": {}
 }
   </programlisting>
  </refsect1>
@@ -97,8 +82,8 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/ConsoleLogSink.html"
-   >org.forgerock.openig.log.ConsoleLogSink</link>
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/log/NullLogSink.html"
+   >org.forgerock.openig.log.NullLogSink</link>
   </para>
  </refsect1>
 </refentry>

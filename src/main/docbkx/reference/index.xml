@@ -133,6 +133,8 @@
  <reference  xml:id="misc-conf">
   <title>Miscellaneous Heap Objects</title>
   <xinclude:include href="man-ConsoleLogSink.xml" />
+  <xinclude:include href="man-FileLogSink.xml" />
+  <xinclude:include href="man-NullLogSink.xml" />
   <xinclude:include href="man-HttpClient.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
  </reference>
