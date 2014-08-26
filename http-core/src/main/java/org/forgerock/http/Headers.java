@@ -27,6 +27,18 @@ import org.forgerock.http.util.MultiValueMap;
  * Message headers, a case-insensitive multiple-value map.
  */
 public class Headers extends MultiValueMap<String, String> {
+    /*
+     * TODO: if this class implemented MultiValueMap<String, Header> then we
+     * could lazily convert header values on demand. Subsequent changes to the
+     * headers (assuming they are mutable) would then be reflected when the
+     * headers are re-serialized. For example, a filter could modify the cookies
+     * and have those changes automatically applied when the header is
+     * re-encoded when it is forwarded. However, changing the type of map values
+     * from String to Header may have implications on our EL and scripting
+     * support. For example, previously it was possible to do
+     * "request.headers.Connection = [ 'token1', 'token2' ]" in Groovy, but it
+     * may not be possible with if the values are Headers.
+     */
 
     /**
      * Constructs a new instance of message headers.
