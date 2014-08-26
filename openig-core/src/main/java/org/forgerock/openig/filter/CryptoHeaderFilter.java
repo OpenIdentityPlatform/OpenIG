@@ -39,12 +39,12 @@ import org.forgerock.http.Exchange;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HandlerException;
 import org.forgerock.http.Message;
-import org.forgerock.http.MessageType;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.log.LogTimer;
+import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.encode.Base64;
 
 /**

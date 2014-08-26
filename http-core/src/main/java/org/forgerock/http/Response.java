@@ -188,4 +188,13 @@ public final class Response extends MessageImpl<Response> {
         }
         return "Uncertain"; // not specified per RFC 2616
     }
+
+    /**
+     * Returns {@code true} if this response represents an HTTP error.
+     *
+     * @return {@code true} if this response represents an HTTP error.
+     */
+    public boolean isError() {
+        return getStatus() < 200 || getStatus() >= 300;
+    }
 }

@@ -30,7 +30,6 @@ import org.forgerock.http.Exchange;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HandlerException;
 import org.forgerock.http.Message;
-import org.forgerock.http.MessageType;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
@@ -39,6 +38,7 @@ import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
+import org.forgerock.openig.util.MessageType;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either

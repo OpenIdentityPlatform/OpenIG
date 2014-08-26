@@ -27,13 +27,13 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.HandlerException;
 import org.forgerock.http.Headers;
 import org.forgerock.http.Message;
-import org.forgerock.http.MessageType;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.MessageType;
 
 /**
  * Removes headers from and adds headers to a message.

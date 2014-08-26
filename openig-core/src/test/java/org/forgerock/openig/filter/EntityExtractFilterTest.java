@@ -25,11 +25,11 @@ import java.util.regex.Pattern;
 
 import org.forgerock.http.Exchange;
 import org.forgerock.http.Handler;
-import org.forgerock.http.MessageType;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.regex.PatternTemplate;
+import org.forgerock.openig.util.MessageType;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

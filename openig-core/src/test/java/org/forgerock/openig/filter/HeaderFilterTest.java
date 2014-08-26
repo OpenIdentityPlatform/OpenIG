@@ -19,10 +19,10 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.http.Exchange;
-import org.forgerock.http.MessageType;
 import org.forgerock.http.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
+import org.forgerock.openig.util.MessageType;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

@@ -11,20 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Copyright 2014 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.SuccessHandler;
+
 /**
- * Indicates a type of HTTP message.
+ * A call-back which is notified when an asynchronous HTTP request has
+ * completed.
  */
-public enum MessageType {
+public interface ResponseHandler extends SuccessHandler<Response>,
+        FailureHandler<ResponseException> {
 
-    /** Message is an HTTP request. */
-    REQUEST,
-
-    /** Message is an HTTP response. */
-    RESPONSE
 }
