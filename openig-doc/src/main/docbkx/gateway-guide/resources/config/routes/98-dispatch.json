@@ -1,0 +1,55 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${matches(exchange.request.uri.path, '^/login')}",
+                            "handler": "LoginChain"
+                        },
+                        {
+                            "handler": "Dispatcher"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "HeaderFilter"
+                    ],
+                    "handler": "Dispatcher"
+                }
+            },
+            {
+                "name": "HeaderFilter",
+                "type": "HeaderFilter",
+                "config": {
+                    "messageType": "REQUEST",
+                    "add": {
+                        "Username": [
+                            "bjensen"
+                        ],
+                        "Password": [
+                            "hifalutin"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Dispatcher",
+                "type": "ScriptableHandler",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "DispatchHandler.groovy"
+                }
+            }
+        ]
+    },
+    "handler": "DispatchHandler"
+}

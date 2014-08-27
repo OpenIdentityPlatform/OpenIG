@@ -1,0 +1,48 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "SqlAuthChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "SqlFilter",
+                        "LoginRequest"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "SqlFilter",
+                "type": "ScriptableFilter",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "SqlAccessFilter.groovy"
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "${exchange.request.headers['Username'][0]}"
+                        ],
+                        "password": [
+                            "${exchange.request.headers['Password'][0]}"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handler": "SqlAuthChain",
+    "condition": "${matches(exchange.request.uri.path, '^/db')}"
+}
