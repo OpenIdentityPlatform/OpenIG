@@ -1,0 +1,41 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LdapAuthChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "LdapFilter"
+                    ],
+                    "handler": "ResponseHandler"
+                }
+            },
+            {
+                "name": "LdapFilter",
+                "type": "ScriptableFilter",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "LdapAuthFilter.groovy"
+                }
+            },
+            {
+                "name": "ResponseHandler",
+                "type": "ScriptableHandler",
+                "config": {
+                    "type": "application/x-groovy",
+                    "source":
+                        "import org.forgerock.openig.http.Response;
+                         dn = exchange.request.headers['Ldap-User-Dn'][0];
+                         entity = '<html><p>Ldap-User-Dn: ' + dn + '</p></html>';
+
+                         exchange.response = new Response();
+                         exchange.response.status = 200;
+                         exchange.response.entity = entity;"
+                }
+            }
+        ]
+    },
+    "handler": "LdapAuthChain",
+    "condition": "${matches(exchange.request.uri.path, '^/ldap')}"
+}

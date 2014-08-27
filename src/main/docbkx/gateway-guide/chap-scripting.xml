@@ -69,7 +69,9 @@
  <para>
   The following example defines a <literal>ScriptableFilter</literal>,
   written in the Groovy language,
-  and stored in a file named <filename>SimpleFormLogin.groovy</filename>.
+  and stored in a file named
+  <filename>${warGroovyDir}/SimpleFormLogin.groovy</filename>
+  (<filename>${windowsWarGroovyDir}\SimpleFormLogin.groovy</filename> on Windows).
  </para>
 
  <programlisting language="java">
@@ -125,6 +127,16 @@
   This chapter demonstrates some of what you might do using scripts.
  </para>
 
+ <para>
+  If you want to try these scripts,
+  first install and configure ${projectName} as described in the chapter on
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-quickstart"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Getting Started</citetitle></link>.
+ </para>
+
  <section xml:id="scripting-dispatch">
   <title>Scripting Dispatch</title>
 
@@ -152,6 +164,50 @@
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
+
+  <para>
+   To try this handler, save the script
+   as <filename>${warGroovyDir}/DispatchHandler.groovy</filename>
+   (<filename>${windowsGroovyDir}\DispatchHandler.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Next, add the following route to your configuration
+   as <filename>${warRoutesDir}/98-dispatch.json</filename>
+   (<filename>${windowsRoutesDir}\98-dispatch.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/98-dispatch.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route sets up the headers required by the script when the user logs in.
+  </para>
+
+  <para>
+   To try it out, browse to
+   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+  </para>
+
+  <para>
+   The response from the script says <literal>Please
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/login"
+   >log in</link>.</literal>
+   When you click the "log in" link,
+   the "HeaderFilter" sets Username and Password headers in the request,
+   and passes the request to the script.
+  </para>
+
+  <para>
+   The script then responds, <literal>Welcome back, Babs!</literal>
+  </para>
  </section>
 
 <!--
@@ -201,6 +257,82 @@ parse="text"
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
+
+  <para>
+   To try this filter, save the script
+   as <filename>${warGroovyDir}/BasicAuthFilter.groovy</filename>
+   (<filename>${windowsGroovyDir}\BasicAuthFilter.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Also save the following handler script
+   as <filename>${warGroovyDir}/DumpExchange.groovy</filename>
+   (<filename>${windowsGroovyDir}\DumpExchange.groovy</filename> on Windows).
+   This script dumps request data so you can examine the results of the filter.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include href="resources/scripts/groovy/DumpExchange.groovy" parse="text">
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   Next, add the following route to your configuration
+   as <filename>${warRoutesDir}/09-basic.json</filename>
+   (<filename>${windowsRoutesDir}\09-basic.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/09-basic.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   When the request path matches <literal>/basic</literal>
+   the route calls the "BasicAuth" filter,
+   and then responds with a JSON representation of the exchange
+   including the request data.
+  </para>
+
+  <para>
+   To try it out, browse to
+   <link xlink:show="new" xlink:href="http://www.example.com:8080/basic" />.
+  </para>
+
+  <para>
+   The response from the script shows
+   the "Authorization" header in the request data,
+   and also indicates that the "scheme" is now HTTPS.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "principal": null,
+    "request": {
+        "headers": {
+            "Authorization": [
+                "Basic YmplbnNlbjpoaWZhbHV0aW4="
+            ],
+            ...
+        },
+        ...
+        "uri": {
+            ...,
+            "scheme": "https",
+            ...,
+            "path": "/basic"
+        },
+        "method": "GET"
+    },
+    ...
+}
+  </programlisting>
  </section>
 
  <section xml:id="scripting-ldap-auth">
@@ -240,6 +372,56 @@ parse="text"
     xlink:href="http://docs.forgerock.org/en/opendj/2.6.0/apidocs/index.html?org/forgerock/opendj/ldap/AttributeParser.html"
    >AttributeParser</link>.
   </para>
+
+  <para>
+   To try this out, first install an LDAP directory server such as
+   <link xlink:show="new" xlink:href="http://opendj.forgerock.org/">OpenDJ</link>.
+   Also import some sample users who can authenticate over LDAP.
+   With OpenDJ, you can generate sample users at installation time.
+  </para>
+
+  <para>
+   Next, save the script
+   as <filename>${warGroovyDir}/LdapAuthFilter.groovy</filename>
+   (<filename>${windowsGroovyDir}\LdapAuthFilter.groovy</filename> on Windows).
+   If the directory server installation does not match
+   the assumptions made in the script,
+   adjust the script to use the correct settings for your installation.
+  </para>
+
+  <para>
+   Finally, add the following route to your configuration
+   as <filename>${warRoutesDir}/10-ldap.json</filename>
+   (<filename>${windowsRoutesDir}\10-ldap.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/10-ldap.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route calls the "LdapAuthFilter" script
+   to authenticate the user over LDAP.
+   On successful authentication, it response with the the bind DN.
+  </para>
+
+  <para>
+   To try it out, browse to a URL
+   where query string parameters specify a valid username and password, such as
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/ldap?username=user.0&amp;password=password"
+   />.
+  </para>
+
+  <para>
+   The response from the script shows the DN:
+   <literal>Ldap-User-Dn: uid=user.0,ou=People,dc=example,dc=com</literal>.
+  </para>
  </section>
 
 <!--
@@ -267,7 +449,7 @@ parse="text"
    which is found in the form data of the request.
    The script then sets the credentials in headers,
    making sure the scheme is HTTPS to protect the request
-   when it leaves the gateway.
+   when it leaves ${projectName}.
   </para>
 
   <programlisting language="java">
@@ -297,6 +479,63 @@ parse="text"
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
- </section>
 
+  <para>
+   To try this out, first follow the tutorial on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#tutorial-credentials-from-sql"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Login With Credentials From a Database</citetitle></link>.
+   When everything in that tutorial works,
+   you know that ${projectName} can connect to the database,
+   lookup users by email address,
+   and successfully authenticate to the sample application.
+  </para>
+
+  <para>
+   Next, save the scripts
+   as <filename>${warGroovyDir}/SqlAccessFilter.groovy</filename>
+   (<filename>${windowsGroovyDir}\SqlAccessFilter.groovy</filename> on Windows),
+   and as <filename>${warGroovyDir}/SqlClient.groovy</filename>
+   (<filename>${windowsGroovyDir}\SqlClient.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Finally, add the following route to your configuration
+   as <filename>${warRoutesDir}/11-db.json</filename>
+   (<filename>${windowsRoutesDir}\11-db.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/11-db.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route calls the "SqlFilter" script to look up credentials over SQL.
+   It then uses calls a "LoginRequest" to build a static request.
+   Although the script sets the scheme to HTTPS,
+   the "LoginRequest" filter ignores that and resets the URI.
+   This is to make it easier for you to try this out,
+   without having to worry about setting up HTTPS.
+  </para>
+
+  <para>
+   To try it out, browse to a URL
+   where a query string parameter specifies a valid email address, such as
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/db?mail=george@example.com"
+   />.
+  </para>
+
+  <para>
+   If the lookup and authentication are successful,
+   you see the profile page of the sample application.
+  </para>
+ </section>
 </chapter>

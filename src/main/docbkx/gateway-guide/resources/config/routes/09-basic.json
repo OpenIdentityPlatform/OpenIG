@@ -1,0 +1,38 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "BasicAuth"
+                    ],
+                    "handler": "DumpExchange"
+                }
+            },
+            {
+                "name": "BasicAuth",
+                "type": "ScriptableFilter",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "BasicAuthFilter.groovy",
+                    "args": {
+                        "username": "bjensen",
+                        "password": "hifalutin"
+                    }
+                }
+            },
+            {
+                "name": "DumpExchange",
+                "type": "ScriptableHandler",
+                "config": {
+                    "type": "application/x-groovy",
+                    "file": "DumpExchange.groovy"
+                }
+            }
+        ]
+    },
+    "handler": "LoginChain",
+    "condition": "${matches(exchange.request.uri.path, '^/basic')}"
+}
