@@ -72,10 +72,10 @@
                             ""
                         ],
                         "IDToken1": [
-                            "USERNAME"
+                            "MY_USERNAME"
                         ],
                         "IDToken2": [
-                            "PASSWORD"
+                            "MY_PASSWORD"
                         ],
                         "IDButton": [
                             "Log+In"
@@ -96,8 +96,7 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CookieFilter",
-                        "CaptureFilter"
+                        "CookieFilter"
                     ],
                     "handler": "ClientHandler"
                 }
@@ -108,28 +107,11 @@
                 "config": {}
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": true,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
-                "name": "LogSink",
-                "comment": "Default sink for logging information.",
-                "type": "ConsoleLogSink",
-                "config": {
-                    "level": "DEBUG"
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "comment": "Responsible for sending all requests to remote servers.",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

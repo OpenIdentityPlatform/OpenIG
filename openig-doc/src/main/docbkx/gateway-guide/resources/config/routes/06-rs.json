@@ -6,20 +6,11 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CaptureFilter",
                         "ResourceServer",
                         "CaptureTokenInfo",
                         "LoginRequestFilter"
                     ],
                     "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
                 }
             },
             {
@@ -31,7 +22,8 @@
                         "mail",
                         "employeenumber"
                     ],
-                    "tokenInfoEndpoint": "http://openam.example.com:8088/openam/oauth2/tokeninfo",
+                    "tokenInfoEndpoint"
+                        : "http://openam.example.com:8088/openam/oauth2/tokeninfo",
                     "enforceHttps": false
                 }
             },
@@ -41,10 +33,10 @@
                 "config": {
                     "type": "application/x-groovy",
                     "source"
-                          : "logger.info(exchange.oauth2AccessToken.rawInfo.toString());
-                            exchange.username = exchange.oauth2AccessToken.rawInfo.get('mail').asString();
-                            exchange.password = exchange.oauth2AccessToken.rawInfo.get('employeenumber').asString();
-                            next.handle(exchange)"
+                        : "logger.info(exchange.oauth2AccessToken.rawInfo.toString());
+                        exchange.username = exchange.oauth2AccessToken.rawInfo.get('mail').asString();
+                        exchange.password = exchange.oauth2AccessToken.rawInfo.get('employeenumber').asString();
+                        next.handle(exchange)"
                 }
             },
             {
@@ -70,6 +62,6 @@
             }
         ]
     },
-    "handlerObject": "ResourceServerChain",
-    "baseURI": "http://www.example.com:8081"
+    "handler": "ResourceServerChain",
+    "condition": "${matches(exchange.request.uri.path, '^/rs')}"
 }

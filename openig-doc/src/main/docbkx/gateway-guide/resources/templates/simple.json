@@ -7,18 +7,13 @@
                 "config": {
                     "bindings": [
                         {
-                            "condition": "${exchange.request.uri.scheme == 'http'}",
-                            "handler": "OutgoingChain",
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": "LoginChain",
                             "baseURI": "http://TARGETIP"
                         },
                         {
-                            "condition": "${exchange.request.uri.path == '/login'}",
-                            "handler": "LoginChain",
-                            "baseURI": "https://TARGETIP"
-                        },
-                        {
-                            "handler": "OutgoingChain",
-                            "baseURI": "https://TARGETIP"
+                            "handler": "ClientHandler",
+                            "baseURI": "http://TARGETIP"
                         }
                     ]
                 }
@@ -27,35 +22,34 @@
                 "name": "LoginChain",
                 "type": "Chain",
                 "config": {
-                    "filters": [],
-                    "handler": "OutgoingChain"
-                }
-            },
-            {
-                "name": "OutgoingChain",
-                "type": "Chain",
-                "config": {
                     "filters": [
-                        "CaptureFilter"
+                        "LoginRequest"
                     ],
                     "handler": "ClientHandler"
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
                 "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
+                    "method": "POST",
+                    "uri": "https://TARGETIP/login",
+                    "form": {
+                        "USER": [
+                            "MY_USERNAME"
+                        ],
+                        "PASSWORD": [
+                            "MY_PASSWORD"
+                        ]
+                    }
                 }
             },
             {
                 "name": "ClientHandler",
-                "comment": "Sends all requests to remote servers.",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

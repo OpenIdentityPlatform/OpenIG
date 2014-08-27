@@ -7,21 +7,25 @@
                 "config": {
                     "bindings": [
                         {
-                            "handler": "OutgoingChain",
-                            "baseURI": "http://www.example.com:8081"
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": "LoginChain",
+                            "baseURI": "http://TARGETIP"
+                        },
+                        {
+                            "handler": "ClientHandler",
+                            "baseURI": "http://TARGETIP"
                         }
                     ]
                 }
             },
             {
-                "name": "OutgoingChain",
+                "name": "LoginChain",
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "LoginRequest",
-                        "CaptureFilter"
+                        "LoginRequest"
                     ],
-                    "handler": "DefaultHandler"
+                    "handler": "ClientHandler"
                 }
             },
             {
@@ -29,31 +33,23 @@
                 "type": "StaticRequestFilter",
                 "config": {
                     "method": "POST",
-                    "uri": "http://www.example.com:8081",
+                    "uri": "https://TARGETIP/login",
                     "form": {
-                        "username": [
-                            "demo"
+                        "USER": [
+                            "${exchange.request.headers['username'][0]}"
                         ],
-                        "password": [
-                            "changeit"
+                        "PASSWORD": [
+                            "${exchange.request.headers['password'][0]}"
                         ]
                     }
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
-                "name": "DefaultHandler",
+                "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

@@ -6,18 +6,17 @@
                 "type": "Chain",
                 "config": {
                     "filters": [],
-                    "handler": "DefaultHandler"
+                    "handler": "ClientHandler"
                 }
             },
             {
-                "name": "DefaultHandler",
+                "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "name": "Community",
     "handler": "CommunityChain",
-    "condition": "${exchange.request.form.site[0] == 'community'}",
+    "condition": "${matches(exchange.request.uri.query, 'site=org')}",
     "baseURI": "http://forgerock.org:80/"
 }

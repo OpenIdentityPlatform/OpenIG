@@ -35,37 +35,31 @@
  <title>Configuration Templates</title>
 
  <para>
-  This chapter contains templates of common configurations.
-  Start with one of the templates and then modify to suit your deployment.
-  Read the summary of each template to find the right match for your application.
-  If you are not sure about the characteristics of your application,
-  start with the basic Application Capture template.
-  This template allows you to setup basic proxying
-  and capture the traffic of the login sequence in a flat file,
-  which then allows you to analyze the application
-  and subsequently choose the right template or add your own configuration.
+  This chapter contains template routes for common configurations.
  </para>
 
- <note>
-  <itemizedlist>
-   <listitem>
-    <para>All templates have the <link xlink:href="reference#CaptureFilter"
-    xlink:role="http://docbook.org/xlink/role/olink">CaptureFilter</link>
-    enabled by default. Remove the capture filter from the outgoing chain
-    before running the gateway in production. Capturing is typically used only
-    for initial development or debugging and may rapidly fill up your available
-    disk space if left enabled.</para>
-   </listitem>
-   <listitem>
-    <para>Substitute the <literal>TARGETIP</literal> tag with the IP address of
-    your application.</para>
-   </listitem>
-   <listitem>
-    <para>Modify the <literal>LoginRequest</literal> filter to match the form
-    required for login by your target application.</para>
-   </listitem>
-  </itemizedlist>
- </note>
+ <para>
+  Before you use one of the templates here,
+  install and configure ${projectName} with a Router and default route
+  as described in the chapter on
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-quickstart"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Getting Started</citetitle></link>.
+ </para>
+
+ <para>
+  Next, take one of the templates and then modify it to suit your deployment.
+  Read the summary of each template to find the right match for your application.
+ </para>
+
+ <para>
+  When you move to use ${projectName} in production,
+  be sure to turn off DEBUG level logging,
+  and to remove "CaptureFilters" to avoid filling up disk space.
+  Also consider locking down the Router configuration.
+ </para>
 
  <section xml:id="template-proxy-capture">
   <title>Proxy &amp; Capture</title>
@@ -76,22 +70,32 @@
   </indexterm>
 
   <para>
-   Proxies all requests and captures them in a flat file.
-   Use this template if you need to analyze the traffic for your application.
-   Simply change the <literal>baseURI</literal>
-   to be that of the target application,
-   restart ${projectName},
+   If you installed and configured ${projectName}
+   with a Router and default route as described in the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>,
+   then you already proxy &amp; capture
+   both the application requests coming in and the server responses going out.
+  </para>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   with a "DispatchHandler" to change the scheme to HTTPS on login.
+   Simply change the "baseURI" to that of the target application,
    and login to the application.
-   The entire sequence is logged to the flat file.
   </para>
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/capture.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/capture.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
  </section>
@@ -113,13 +117,21 @@
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginSimple.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/simple.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of your application.
+   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   and adapt the "LoginRequest" for your application.
+  </para>
  </section>
 
  <section xml:id="template-login-cookie">
@@ -140,13 +152,21 @@
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginWithCookie.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/cookie.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of your application.
+   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   and adapt the "LoginRequest" for your application.
+  </para>
  </section>
 
  <section xml:id="template-login-extract-cookie-filters">
@@ -165,13 +185,6 @@
    and use the <literal>CookieFilter</literal> to ensure
    the cookies from the application are replayed on each request.
    The sample application in this template is OpenAM.
-   If you change the <literal>TARGETIP:PORT</literal>
-   to be the IP address of OpenAM,
-   the <literal>TARGETDN:PORT</literal>
-   to be the fully qualified name and port of OpenAM
-   and modify <literal>USERNAME</literal> and <literal>PASSWORD</literal>
-   in the <literal>LoginRequest</literal>
-   you automatically log <literal>USERNAME</literal> into OpenAM.
   </para>
 
   <note>
@@ -190,13 +203,23 @@
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginWithCookieExtract.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/extract-cookie.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of OpenAM,
+   <literal>TARGETFQDN</literal> with the fully qualified domain name of OpenAM,
+   and <literal>PORT</literal> with the port on which OpenAM listens.
+   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>
+   to match those of your OpenAM user.
+  </para>
  </section>
 
  <section xml:id="template-login-hidden-value">
@@ -214,13 +237,21 @@
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginHiddenValue.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/extract-hidden.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of your application.
+   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   and adapt the "LoginRequest" for your application.
+  </para>
  </section>
 
  <section xml:id="template-http-and-https">
@@ -235,25 +266,29 @@
    Proxies traffic to an application listening on ports 80 and 443.
    The assumption is the application uses HTTPS for authentication
    and HTTP for the general application features.
-   Assuming the login will all take place on port 443,
-   you will need to add the login filters and handlers
+   Assuming all login requests go to port 443,
+   you must add the login filters and handlers
    to the <literal>LoginChain</literal>.
-   To get started quickly, modify the <literal>baseURI</literal>
-   to be the <literal>IPAddress</literal> of your target application.
-   This should allow you to proxy all traffic to the application.
-   Then add the logic for the <literal>LoginChain</literal>
-   using the flow from one of the login templates.
   </para>
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginMixed.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/http-https.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of your application.
+   Also add the necessary filter configurations
+   that are required for login with your application,
+   and then change <literal>MY_FILTERS</literal> to identify the added filters.
+  </para>
  </section>
 
  <section xml:id="template-am-integration-headers">
@@ -271,13 +306,20 @@
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/loginAMHeaders.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/openam-headers.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   This template is a replacement for the default route,
+   <filename>${warRoutesDir}/99-default.json</filename>,
+   Substitute <literal>TARGETIP</literal> with the IP address of your application.
+   Also adapt the "LoginRequest" for your application.
+  </para>
  </section>
 
  <section xml:id="template-owa-online">
@@ -289,7 +331,7 @@
   </indexterm>
 
   <para>
-   Logs the user into Microsoft Online Outlook Web Access.
+   Logs the user into Microsoft Online Outlook Web Access (OWA).
    This template shows how you would use ${projectName}
    and the OpenAM password capture feature to integrate with OWA.
    You can follow the
@@ -297,18 +339,28 @@
     xlink:show="new"
     xlink:href="gateway-guide#chap-password-capture-replay-tutorial"
     xlink:role="http://docbook.org/xlink/role/olink"
-   >Tutorial On Password Capture &amp; Replay</link> tutorial
-   and substitute this template.
+   >Tutorial On Password Capture &amp; Replay</link> tutorial,
+   and substitute this template as a replacement for the default route.
   </para>
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-    <xinclude:include parse="text" href="resources/OWAOnline.json">
-     <xinclude:fallback>
-      Failed to include JSON
-     </xinclude:fallback>
-    </xinclude:include>
+<xinclude:include parse="text" href="resources/templates/owa.json">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
    </programlisting>
   </informalexample>
+
+  <para>
+   Change <literal>DESKEY</literal> to the actual key value
+   that you generated when following the instructions in
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#password-capture-configuration"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Configuring Password Capture</link>.
+  </para>
  </section>
 </chapter>

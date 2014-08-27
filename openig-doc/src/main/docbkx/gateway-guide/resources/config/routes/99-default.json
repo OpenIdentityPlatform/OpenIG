@@ -1,0 +1,12 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handler": "ClientHandler"
+}

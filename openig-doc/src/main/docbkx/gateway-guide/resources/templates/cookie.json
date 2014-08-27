@@ -7,12 +7,12 @@
                 "config": {
                     "bindings": [
                         {
-                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "condition": "${exchange.request.uri.path == '/eum/login'}",
                             "handler": "LoginChain",
                             "baseURI": "http://TARGETIP"
                         },
                         {
-                            "handler": "OutgoingChain",
+                            "handler": "ClientHandler",
                             "baseURI": "http://TARGETIP"
                         }
                     ]
@@ -23,9 +23,30 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
+                        "SwitchFilter"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "SwitchFilter",
+                "type": "SwitchFilter",
+                "config": {
+                    "onResponse": [
+                        {
+                            "handler": "LoginRequestHandler"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "LoginRequestHandler",
+                "type": "Chain",
+                "config": {
+                    "filters": [
                         "LoginRequest"
                     ],
-                    "handler": "OutgoingChain"
+                    "handler": "ClientHandler"
                 }
             },
             {
@@ -36,39 +57,25 @@
                     "uri": "https://TARGETIP/login",
                     "form": {
                         "USER": [
-                            "${exchange.request.headers['username'][0]}"
+                            "MY_USERNAME"
                         ],
                         "PASSWORD": [
-                            "${exchange.request.headers['password'][0]}"
+                            "MY_PASSWORD"
+                        ]
+                    },
+                    "headers": {
+                        "cookie": [
+                            "${exchange.response.headers['Set-Cookie'][0]}"
                         ]
                     }
                 }
             },
             {
-                "name": "OutgoingChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "CaptureFilter"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "comment": "Responsible for sending all requests to remote servers.",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

@@ -2,28 +2,15 @@
     "heap": {
         "objects": [
             {
-                "name": "DispatchHandler",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "handler": "OutgoingChain",
-                            "baseURI": "http://www.example.com:8081"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "OutgoingChain",
+                "name": "LoginChain",
                 "type": "Chain",
                 "config": {
                     "filters": [
                         "CryptoHeaderFilter",
                         "LoginRequest",
-                        "HeaderFilter",
-                        "CaptureFilter"
+                        "HeaderFilter"
                     ],
-                    "handler": "DefaultHandler"
+                    "handler": "ClientHandler"
                 }
             },
             {
@@ -69,19 +56,12 @@
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": true,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
-                "name": "DefaultHandler",
+                "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "LoginChain",
+    "condition": "${matches(exchange.request.uri.path, '^/replay')}"
 }

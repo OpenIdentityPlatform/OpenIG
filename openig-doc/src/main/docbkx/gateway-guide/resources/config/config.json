@@ -2,25 +2,32 @@
     "heap": {
         "objects": [
             {
-                "name": "DispatchHandler",
+                "name": "LogSink",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG"
+                }
+            },
+            {
+                "name": "Dispatcher",
                 "type": "DispatchHandler",
                 "config": {
                     "bindings": [
                         {
-                            "handler": "OutgoingChain",
+                            "handler": "DefaultChain",
                             "baseURI": "http://www.example.com:8081"
                         }
                     ]
                 }
             },
             {
-                "name": "OutgoingChain",
+                "name": "DefaultChain",
                 "type": "Chain",
                 "config": {
                     "filters": [
                         "CaptureFilter"
                     ],
-                    "handler": "DefaultHandler"
+                    "handler": "Router"
                 }
             },
             {
@@ -32,11 +39,11 @@
                 }
             },
             {
-                "name": "DefaultHandler",
-                "type": "ClientHandler",
+                "name": "Router",
+                "type": "Router",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handlerObject": "Dispatcher"
 }
