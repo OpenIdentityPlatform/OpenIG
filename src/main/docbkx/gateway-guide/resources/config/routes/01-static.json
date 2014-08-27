@@ -1,0 +1,39 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LoginChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "LoginRequest"
+                    ],
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "LoginRequest",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "POST",
+                    "uri": "http://www.example.com:8081",
+                    "form": {
+                        "username": [
+                            "demo"
+                        ],
+                        "password": [
+                            "changeit"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "config": {}
+            }
+        ]
+    },
+    "handler": "LoginChain",
+    "condition": "${matches(exchange.request.uri.path, '^/static')}"
+}

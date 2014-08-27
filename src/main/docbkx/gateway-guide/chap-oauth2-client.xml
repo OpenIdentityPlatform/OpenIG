@@ -248,8 +248,6 @@
    ${projectName} should be running in Jetty,
    configured to access the minimal HTTP server as described in that chapter.
   </para>
-
-  <xinclude:include href="../shared/tip-log.xml" />
  </section>
 
  <section xml:id="oidc-rp-tutorial-openam-config">
@@ -294,8 +292,11 @@
    <literal>http://www.example.com:8080/openid/callback</literal>.
    Also add <literal>openid</literal> and <literal>profile</literal> scopes
    to the Scope(s) list, and then save your work.
+  </para>
+
+  <para>
    In this tutorial,
-   you overload these profile settings to pass credentials to ${projectName}.
+   you overload the profile settings to pass credentials to ${projectName}.
    This tutorial uses Full Name and Last Name for the sake of simplicity.
    Both of those attributes are part of a user's profile
    out of the box with the default OpenAM configuration.
@@ -306,14 +307,46 @@
    depending upon the user profiles and on your requirements.
   </para>
 
-  <para>
-   Finally, edit the OpenAM demo user to set credentials in
-   the Last Name and Full Name fields of the demo user profile.
-   In OpenAM console, browse to the user profile under
-   Access Control > / (Top Level Realm) > Subjects > User > demo.
-   Set Last Name to <literal>george</literal>
-   and Full Name to <literal>costanza</literal>.
-  </para>
+  <orderedlist>
+   <para>
+    To overload the profile,
+    create a user whose additional credentials you set in
+    the Full Name and Last Name fields,
+    or edit the existing user <literal>george</literal> if you have already
+    created the profile for another tutorial.
+   </para>
+
+   <listitem>
+    <para>
+     In OpenAM console,
+     under Access Control > / (Top Level Realm) > Subjects > User,
+     click New to create the user profile.
+    </para>
+
+    <para>
+     If the profile already exists in the table,
+     then click the link to open the profile for editing.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Set the ID to <literal>george</literal>,
+     the password to <literal>costanza</literal>,
+     the Last Name to <literal>george</literal>,
+     and the Full Name to <literal>costanza</literal>
+     before clicking OK (or Save).
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     When finished, log out of OpenAM console by clicking the log out button.
+     It is not enough simply to close the browser tab,
+     as the OpenAM session remains active until you log out or quit the browser.
+    </para>
+   </listitem>
+  </orderedlist>
  </section>
 
  <section xml:id="oidc-rp-tutorial-gateway-config">
@@ -321,110 +354,155 @@
 
   <para>
    To configure ${projectName} as an OpenID Connect 1.0 relying party,
-   replace the <filename>config.json</filename> file
-   with the new configuration from the example,
-   <link
-    xlink:show="new"
-    xlink:href="gateway-guide#config-oidc-client"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuration for an OpenID Connect 1.0 Client</citetitle></link>.
+   add a new route to the ${projectName} configuration,
+   by including the following route configuration file
+   as <filename>${warRoutesDir}/07-openid.json</filename>.
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/07-openid.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   On Windows, the file name should be
+   <filename>${warRoutesDir}\07-openid.json</filename>.
   </para>
 
   <para>
-   Also add the <filename>DumpExchange.groovy</filename> script from that section
-   under <filename>${warGroovyDir}</filename>
-   (<filename>${windowsWarGroovyDir}</filename> on Windows).
+   Also add the following script that is used by the route
+   as <filename>${warGroovyDir}/DumpExchange.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\DumpExchange.groovy</filename> on Windows).
    The script is called from the configuration on failure.
   </para>
 
-  <para>
-   In the new <filename>config.json</filename> file,
-   consider the "OpenIDConnectClient" filter.
-   This configuration object has the
-   <link
-    xlink:show="new"
-    xlink:href="reference#OAuth2ClientFilter"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   >OAuth2ClientFilter</link> type.
-   This is the filter that enables ${projectName} to act as a relying party.
-  </para>
+  <programlisting language="java">
+<xinclude:include href="resources/scripts/groovy/DumpExchange.groovy" parse="text">
+ <xinclude:fallback>
+  Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
 
-  <para>
-   The filter is configured to work only with a single provider,
-   the OpenAM server you configured in
-   <xref linkend="oidc-rp-tutorial-openam-config" />.
-   If you had more than one provider configured,
-   you would need a "loginHandler" as well to help end users pick a provider.
-  </para>
+  <itemizedlist>
+   <para>
+    Notice the following features of the new route.
+   </para>
 
-  <para>
-   The "OpenIDConnectClient" filter has
-   a base client endpoint of <literal>/openid</literal>.
-   Incoming requests to <literal>/openid/login</literal>
-   start the delegated authorization process.
-   Incoming requests to <literal>/openid/callback</literal>
-   are expected as redirects from the OP (as authorization server),
-   so this is why you set the redirect URI in the client profile in OpenAM to
-   <literal>http://www.example.com:8080/openid/callback</literal>.
-  </para>
+   <listitem>
+    <para>
+     At the global level the route changes the base URI for requests
+     to ensure that the initial exchange happens
+     between ${projectName} and OpenAM, which is the OpenID Provider.
+     This route sends only the final request to the protected application.
+    </para>
+   </listitem>
 
-  <para>
-   The "OpenIDConnectClient" filter has <literal>"requireHttps": false</literal>
-   as a convenience for testing.
-   In production environments, require HTTPS.
-  </para>
+   <listitem>
+    <para>
+     The "OpenIDConnectClient" filter has the
+     <link
+      xlink:show="new"
+      xlink:href="reference#OAuth2ClientFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >OAuth2ClientFilter</link> type.
+     This is the filter that enables ${projectName} to act as a relying party.
+    </para>
 
-  <para>
-   The filter has <literal>"requireLogin": true</literal> to ensure you see
-   the delegated authorization process when you make your request.
-  </para>
+    <para>
+     The filter is configured to work only with a single provider,
+     the OpenAM server you configured in
+     <xref linkend="oidc-rp-tutorial-openam-config" />.
+     If you had more than one provider configured,
+     you would need a "loginHandler" as well to help end users pick a provider.
+    </para>
 
-  <para>
-   In the "OpenIDConnectClient" filter, the target
-   for storing authorization state information is
-   <literal>${exchange.openid}</literal>,
-   so this is where subsequent filters and handlers can find
-   access token and user information.
-  </para>
+    <para>
+     The "OpenIDConnectClient" filter has
+     a base client endpoint of <literal>/openid</literal>.
+     Incoming requests to <literal>/openid/login</literal>
+     start the delegated authorization process.
+     Incoming requests to <literal>/openid/callback</literal>
+     are expected as redirects from the OP (as authorization server),
+     so this is why you set the redirect URI in the client profile in OpenAM to
+     <literal>http://www.example.com:8080/openid/callback</literal>.
+    </para>
 
-  <para>
-   The scopes are set to "openid" and "profile" as allowed for OpenID Connect 1.0.
-  </para>
+    <para>
+     The "OpenIDConnectClient" filter has <literal>"requireHttps": false</literal>
+     as a convenience for testing.
+     In production environments, require HTTPS.
+    </para>
 
-  <para>
-   Notice that on failure the filter dumps the current information in the exchange
-   into a web page response to the end user.
-   While this is helpful to you for debugging purposes,
-   it is not helpful to an end user.
-   In production environments, return a more user-friendly failure page.
-  </para>
+    <para>
+     The filter has <literal>"requireLogin": true</literal> to ensure you see
+     the delegated authorization process when you make your request.
+    </para>
 
-  <para>
-   Also in the "OpenIDConnectClient" filter,
-   the typical "ClientHandler" configures the HTTP client that communicates
-   with the OpenID Provider.
-  </para>
+    <para>
+     In the "OpenIDConnectClient" filter, the target
+     for storing authorization state information is
+     <literal>${exchange.openid}</literal>,
+     so this is where subsequent filters and handlers can find
+     access token and user information.
+    </para>
 
-  <para>
-   Returning to the top of the configuration,
-   notice that the "OpenIDConnectChain" invokes an "OutgoingChain" handler
-   after the filter injects the access token and user information
-   into <literal>exchange.openid</literal>.
-   The "OutgoingChain" in this case
-   extracts credentials from the user information by script ("GetCredentials"),
-   and then uses the credentials to log the user in to the minimal HTTP server
-   ("LoginRequestFilter").
-  </para>
+    <para>
+     The scopes are set to "openid" and "profile" as allowed for OpenID Connect 1.0.
+    </para>
 
-  <para>
-   In this simple configuration, all successful requests result in login attempts
-   against the minimal HTTP server.
-  </para>
+    <para>
+     Notice that on failure the filter dumps the current information in the exchange
+     into a web page response to the end user.
+     While this is helpful to you for debugging purposes,
+     it is not helpful to an end user.
+     In production environments, return a more user-friendly failure page.
+    </para>
 
-  <para>
-   After updating <filename>config.json</filename>,
-   restart Jetty server so that ${projectName} loads the new configuration.
-  </para>
+    <para>
+     Also in the "OpenIDConnectClient" filter,
+     the typical "ClientHandler" configures the HTTP client that communicates
+     with the OpenID Provider.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Returning to the top of the configuration,
+     notice that the "OpenIDConnectChain" invokes an "OutgoingChain" handler
+     after the filter injects the access token and user information
+     into <literal>exchange.openid</literal>.
+     The "OutgoingChain" in this case
+     extracts credentials from the user information by script ("GetCredentials"),
+     and then uses the credentials to log the user in to the minimal HTTP server
+     ("LoginRequestFilter").
+    </para>
+
+    <para>
+     With this configuration, all successful requests result in login attempts
+     against the minimal HTTP server.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The "LoginRequestFilter" retrieves
+     the username and password from the exchange
+     and replaces the original HTTP GET request
+     with an HTTP POST login request
+     that contains the credentials to authenticate.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The route matches requests to <literal>/openid</literal>.
+    </para>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="oidc-rp-tutorial-test">
@@ -432,12 +510,12 @@
 
   <para>
    To try your configuration, browse to ${projectName} at
-   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+   <link xlink:show="new" xlink:href="http://www.example.com:8080/openid" />.
   </para>
 
   <para>
    When redirected to the OpenAM login page,
-   login as user <literal>demo</literal>, password <literal>changeit</literal>,
+   login as user <literal>george</literal>, password <literal>costanza</literal>,
    and then allow the application access to user information.
   </para>
 

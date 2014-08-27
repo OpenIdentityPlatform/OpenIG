@@ -1,0 +1,20 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "SamlFederationHandler",
+                "type": "SamlFederationHandler",
+                "config": {
+                    "assertionMapping": {
+                        "username": "mail",
+                        "password": "employeenumber"
+                    },
+                    "subjectMapping": "subjectName",
+                    "redirectURI": "/federate"
+                }
+            }
+        ]
+    },
+    "handler": "SamlFederationHandler",
+    "condition": "${matches(exchange.request.uri.path, '^/saml')}"
+}

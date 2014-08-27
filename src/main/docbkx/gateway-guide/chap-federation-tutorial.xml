@@ -24,12 +24,13 @@
   !    
 -->
 <chapter xml:id='chap-federation-tutorial'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+         xmlns='http://docbook.org/ns/docbook'
+         version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Tutorial For ${projectName} Federation</title>
 
  <indexterm>
@@ -168,16 +169,6 @@
   <title>Configuring ${projectName} For Federation</title>
 
   <para>
-   Replace the existing ${projectName} configuration file
-   with the new configuration from the example,
-   <link
-    xlink:show="new"
-    xlink:href="gateway-guide#config-federation"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
-  </para>
-
-  <para>
    Unpack the configuration files from the Fedlet you created
    in <xref linkend="fed-tutorial-configure-openam" />.
    The Fedlet is packaged as a .zip file that contains a war file
@@ -212,6 +203,132 @@ sp.xml</computeroutput>
    type <literal>%appdata%</literal> as the file path,
    and press Enter.
   </para>
+
+  <para>
+   Restart Jetty after preparing the SAML configuration files.
+  </para>
+
+  <itemizedlist>
+   <para>
+    Add two new routes to the ${projectName} configuration.
+   </para>
+
+   <listitem>
+    <para>
+     Add a route that injects credentials into the exchange
+     based on attribute values from the SAML assertion
+     returned on successful authentication.
+    </para>
+
+    <para>
+     The configuration file to add in this case is
+     <filename>${warRoutesDir}/05-saml.json</filename>
+    </para>
+
+    <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/05-saml.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${warRoutesDir}\05-saml.json</filename>.
+    </para>
+
+    <itemizedlist>
+     <para>
+      Notice the following features of the new route.
+     </para>
+
+     <listitem>
+      <para>
+       The "SamlFederationHandler" extracts credentials
+       from the attributes returned in the SAML 2.0 assertion.
+       It then redirects to the <literal>/federate</literal> route.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The route matches requests to <literal>/saml</literal>.
+      </para>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add a route that handles requests to perform SAML federation.
+    </para>
+
+    <para>
+     The configuration file to add in this case is
+     <filename>${warRoutesDir}/05-federate.json</filename>
+    </para>
+
+    <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/05-federate.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${warRoutesDir}\05-federate.json</filename>.
+    </para>
+
+    <itemizedlist>
+     <para>
+      Notice the following features of the new route.
+     </para>
+
+     <listitem>
+      <para>
+       The "DispatchHandler" dispatches requests
+       to the "SPInitiatedSSORedirectHandler"
+       if the username has not yet been populated in the exchange,
+       meaning the user has not yet authenticated with the IDP.
+       Otherwise, if the credentials have been inserted into the exchange,
+       the "DispatchHandler" dispatches requests
+       to the "LoginChain" to log the user in to the protected application.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The "SPInitiatedSSORedirectHandler" redirects
+       to the Service Provider initiated single sign-on end point
+       to initiate SAML 2.0 web browser SSO.
+       After authentication is successful
+       and the "SamlFederationHandler" has injected credentials into the exchange,
+       the user-agent ends up redirected to this same route.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The "LoginRequest" filter retrieves
+       the username and password from the exchange
+       and replaces your browser's original HTTP GET request
+       with an HTTP POST login request
+       that contains the credentials to authenticate.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The route matches requests to <literal>/federate</literal>.
+       This is the route you use to test the configuration.
+      </para>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="fed-tutorial-testing">
@@ -238,8 +355,8 @@ sp.xml</computeroutput>
    <listitem>
     <para>
      For SP initiated SSO,
-     either browse to ${projectName} protecting the application,
-     at <link xlink:show="new" xlink:href="http://www.example.com:8080/" />,
+     either browse to the URL for the new route,
+     at <link xlink:show="new" xlink:href="http://www.example.com:8080/federate" />,
      or click
      <link
       xlink:show="new"
@@ -261,38 +378,39 @@ sp.xml</computeroutput>
   </para>
 
   <para>
-   Consider the configuration, <filename>${warConfigDir}/config.json</filename>.
-   In this configuration,
-   the "DispatchHandler" is the entry point to ${projectName} processing.
-   The "DispatchHandler" provides an internal routing mechanism,
-   based on the state of the exchange.
-   If the incoming URI matches a SAML URI,
-   then the "SamlFederationHandler" can process an incoming SAML 2.0 assertion,
-   and also set the attributes from the assertion in the session.
-   This condition is not met until the user has authenticated.
+   The initial incoming requests matches the <literal>/federate</literal> route.
+   As the user is not yet authenticated,
+   the "SPInitiatedSSORedirectHandler" sends a redirect to initiate SSO.
   </para>
 
   <para>
-   If no user name is set in the session of the exchange,
-   the "DispatchHandler" considers that the user has not yet authenticated.
-   This condition is met when the user has not yet authenticated.
-   In this case the "DispatchHandler" dispatches to the static request handler,
-   "SPInitiatedSSORedirectHandler",
-   which redirects the user-agent to
-   the Identity Provider for SAML 2.0 single sign-on.
+   The user authenticates with the Identity Provider for SAML 2.0 single sign-on.
    After authentication, the Identity Provider redirects the user-agent back to
-   a SAML URI on the Service Provider (${projectName}),
-   and so the request is dispatched to
-   the "SamlFederationHandler" mentioned above.
+   the SAML URI on the Service Provider (${projectName}),
+   which you configured for the Fedlet as <literal>/saml</literal>.
+   The "SamlFederationHandler" gets the request to this route.
+   The request holds the SAML 2.0 assertion whose attributes contain credentials.
   </para>
 
   <para>
-   Once the attributes from the assertion are set in the session,
-   then the exchange is dispatched to the "LoginChain".
+   The "SamlFederationHandler" processes an incoming SAML 2.0 assertion,
+   injecting credentials values from the assertion into the exchange session.
+   The "SamlFederationHandler" then redirects
+   to the <literal>/federate</literal> route.
+  </para>
+
+  <para>
+   On the <literal>/federate</literal> route,
+   once the attributes from the assertion are set in the session,
+   ${projectName} dispatches the exchange to the "LoginChain".
    The "LoginRequest" static request filter in the "LoginChain"
    uses the attribute values to replace the request
    with an HTTP POST of login form data
    to log the user in to the protected application.
+  </para>
+
+  <para>
+   ${projectName} returns the response page showing that the user has logged in.
   </para>
  </section>
 </chapter>

@@ -2,22 +2,10 @@
     "heap": {
         "objects": [
             {
-                "name": "LogSink",
-                "comment": "Default sink for logging information.",
-                "type": "ConsoleLogSink",
-                "config": {
-                    "level": "DEBUG"
-                }
-            },
-            {
                 "name": "DispatchHandler",
                 "type": "DispatchHandler",
                 "config": {
                     "bindings": [
-                        {
-                            "condition": "${matches(exchange.request.uri.path, '^/saml')}",
-                            "handler": "SamlFederationHandler"
-                        },
                         {
                             "condition": "${empty exchange.session.username}",
                             "handler": "SPInitiatedSSORedirectHandler",
@@ -28,18 +16,6 @@
                             "baseURI": "http://www.example.com:8081"
                         }
                     ]
-                }
-            },
-            {
-                "name": "SamlFederationHandler",
-                "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
-                "config": {
-                    "assertionMapping": {
-                        "username": "mail",
-                        "password": "employeenumber"
-                    },
-                    "subjectMapping": "subjectName",
-                    "redirectURI": "/"
                 }
             },
             {
@@ -88,5 +64,6 @@
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler",
+    "condition": "${matches(exchange.request.uri.path, '^/federate')}"
 }

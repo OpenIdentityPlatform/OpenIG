@@ -2,39 +2,27 @@
     "heap": {
         "objects": [
             {
-                "name": "DispatchHandler",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "handler": "OutgoingChain",
-                            "baseURI": "http://www.example.com:8081"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "OutgoingChain",
+                "name": "LoginChain",
                 "type": "Chain",
                 "config": {
                     "filters": [
                         "CredentialsFromSql",
-                        "LoginRequest",
-                        "CaptureFilter"
+                        "LoginRequest"
                     ],
-                    "handler": "DefaultHandler"
+                    "handler": "ClientHandler"
                 }
             },
             {
                 "name": "CredentialsFromSql",
                 "type": "SqlAttributesFilter",
                 "config": {
-                    "target": "${exchange.credentials}",
                     "dataSource": "java:comp/env/jdbc/forgerock",
-                    "preparedStatement": "SELECT username, password FROM users WHERE email = ?;",
+                    "preparedStatement":
+                        "SELECT username, password FROM users WHERE email = ?;",
                     "parameters": [
                         "george@example.com"
-                    ]
+                    ],
+                    "target": "${exchange.credentials}"
                 }
             },
             {
@@ -54,19 +42,12 @@
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
-                "name": "DefaultHandler",
+                "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "LoginChain",
+    "condition": "${matches(exchange.request.uri.path, '^/sql')}"
 }

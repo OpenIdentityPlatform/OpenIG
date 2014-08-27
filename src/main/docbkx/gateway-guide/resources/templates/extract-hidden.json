@@ -12,7 +12,7 @@
                             "baseURI": "http://TARGETIP"
                         },
                         {
-                            "handler": "OutgoingChain",
+                            "handler": "ClientHandler",
                             "baseURI": "http://TARGETIP"
                         }
                     ]
@@ -23,9 +23,25 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
+                        "HiddenValueExtract",
                         "LoginRequest"
                     ],
-                    "handler": "OutgoingChain"
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "HiddenValueExtract",
+                "type": "EntityExtractFilter",
+                "config": {
+                    "messageType": "response",
+                    "target": "${exchange.hiddenValue}",
+                    "bindings": [
+                        {
+                            "key": "value",
+                            "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
+                            "template": "$1"
+                        }
+                    ]
                 }
             },
             {
@@ -36,39 +52,23 @@
                     "uri": "https://TARGETIP/login",
                     "form": {
                         "USER": [
-                            "myusername"
+                            "MY_USERNAME"
                         ],
                         "PASSWORD": [
-                            "mypassword"
+                            "MY_PASSWORD"
+                        ],
+                        "hiddenValue": [
+                            "${exchange.hiddenValue.value}"
                         ]
                     }
                 }
             },
             {
-                "name": "OutgoingChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "CaptureFilter"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "comment": "Responsible for sending all requests to remote servers.",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

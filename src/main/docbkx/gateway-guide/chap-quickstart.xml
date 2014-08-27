@@ -261,20 +261,23 @@ INFO: Press Ctrl+C to stop the server.</computeroutput>
     </para>
 
     <para>
-     Copy the basic configuration file from the example,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#config-proxy-and-capture"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>,
-     to <filename>${warConfigDir}/config.json</filename>.
+     Add the following base configuration file
+     as <filename>${warConfigDir}/config.json</filename>.
      By default, ${projectName} looks for <filename>config.json</filename>
      in the <filename>${warConfigDir}</filename> directory.
     </para>
 
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
     <screen>
 $ <userinput>mkdir -p ${warConfigDir}</userinput>
-$ <userinput>cp config.json ${warConfigDir}/config.json</userinput>
+$ <userinput>vi ${warConfigDir}/config.json</userinput>
     </screen>
 
     <para>
@@ -295,6 +298,46 @@ $ <userinput>cp config.json ${warConfigDir}/config.json</userinput>
      from <filename>/tmp/gateway.log</filename>
      to a file system location that works for Windows systems,
      such as <filename>C:\Temp\gateway.log</filename>.
+    </para>
+
+    <para>
+     If you adapt this base configuration for production use,
+     make sure to adjust the log level,
+     and to avoid using the "CaptureFilter"
+     that generates several log message lines for each request and response.
+     Also consider editing the router based on recommendations in the section,
+     <link
+      xlink:show="new"
+      xlink:href="gateway-guide#routing-lockdown"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>Locking Down Route Configurations</citetitle></link>.
+    </para>
+   </step>
+
+   <step>
+    <para>
+     Add the following default route configuration file
+     as <filename>${warRoutesDir}/99-default.json</filename>.
+     By default, the Router defined in the base configuration file
+     looks for routes in the <filename>${warRoutesDir}</filename> directory.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/99-default.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <screen>
+$ <userinput>mkdir ${warRoutesDir}</userinput>
+$ <userinput>vi ${warRoutesDir}/99-default.json</userinput>
+    </screen>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${warRoutesDir}\99-default.json</filename>.
     </para>
    </step>
 
@@ -403,6 +446,64 @@ $ <userinput>java -jar start.jar</userinput>
    should take you to the home page of the minimal HTTP server.
   </para>
 
+  <para>
+   What just happened?
+  </para>
+
+  <para>
+   When your browser goes to <literal>http://www.example.com:8080/</literal>,
+   it is actually connecting to ${projectName} deployed in Jetty.
+   ${projectName} proxies all traffic it receives to the protected application at
+   <literal>http://www.example.com:8080/</literal>,
+   and returns responses from the application to your browser.
+   It does this based on the configuration that you set up.
+  </para>
+
+  <para>
+   Consider the base configuration file first, <filename>config.json</filename>.
+   The base configuration file specifies a "handlerObject" named "Dispatcher".
+   ${projectName} calls this handler when it receives an incoming request.
+   In addition, it uses the "LogSink" to log debug messages to the console.
+   Alternatively, to send log messages to a file you can use a
+   <link
+    xlink:show="new"
+    xlink:href="reference#FileLogSink"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >"FileLogSink"</link>, rather than a "ConsoleLogSink".
+  </para>
+
+  <para>
+   The "Dispatcher" in turn changes the request URI
+   to point the request to the sample application to protect.
+   The "Dispatcher" passes the request to the "DefaultChain" handler.
+  </para>
+
+  <para>
+   The default "DefaultChain" calls a "CaptureFilter" and then a "Router".
+   On the way in, after passing through the "CaptureFilter",
+   the request goes to the "Router".
+   On the way out the response returned by the "Router"
+   also passes through the "CaptureFilter".
+   You can see the results in the file
+   specified by the "CaptureFilter" configuration.
+  </para>
+
+  <para>
+   The "Router" routes processing to separate route configurations.
+  </para>
+
+  <para>
+   For now the only route available is the the default route you added,
+   <filename>99-default.json</filename>.
+   The default route calls a "ClientHandler" with the default configuration.
+   This "ClientHandler" simply proxies the request to and the response from
+   the sample application to protect
+   without changing either the request or the response.
+   Therefore, the browser request is sent unchanged to the sample application
+   and the response from the sample application
+   is returned unchanged to your browser.
+  </para>
+
   <orderedlist>
    <para>
     Now change the ${projectName} configuration to log you in automatically
@@ -411,110 +512,33 @@ $ <userinput>java -jar start.jar</userinput>
 
    <listitem>
     <para>
-     Edit the configuration file, <filename>config.json</filename>,
-     to automatically log you in as username <literal>demo</literal>,
-     password <literal>password</literal>.
-    </para>
-
-    <orderedlist>
-     <para>
-      To do this, make the following two changes to the file.
-     </para>
-
-     <listitem>
-      <para>
-       Between the <literal>"OutgoingChain"</literal> object
-       and the "CaptureFilter" object,
-       add a new <literal>StaticRequestFilter</literal> configuration object.
-      </para>
-
-      <para>
-       The <literal>StaticRequestFilter</literal> performs
-       an HTTP POST of the username and password as form data.
-       ${projectName} supports a variety of ways to get the credentials,
-       but for now just hard code them into the configuration.
-      </para>
-
-      <para>
-       The new filter configuration object should look like this:
-      </para>
-
-      <programlisting language="javascript">
-{
-    "name": "LoginRequest",
-    "type": "StaticRequestFilter",
-    "config": {
-        "method": "POST",
-        "uri": "http://www.example.com:8081",
-        "form": {
-            "username": [
-                "demo"
-            ],
-            "password": [
-                "changeit"
-            ]
-        }
-    }
-}
-      </programlisting>
-
-      <para>
-       Do not forget to add the comma after the object,
-       so that your configuration file remains valid JSON.
-      </para>
-     </listitem>
-
-     <listitem>
-      <para>
-       Edit the list of filters in the "OutgoingChain" object
-       to include your new filter before the "CaptureFilter".
-      </para>
-
-      <para>
-       The full "OutgoingChain" object should now look like this:
-      </para>
-
-      <programlisting language="javascript">
-{
-    "name": "OutgoingChain",
-    "type": "Chain",
-    "config": {
-        "filters": [
-            "LoginRequest",
-            "CaptureFilter"
-        ],
-        "handler": "DefaultHandler"
-    }
-}
-      </programlisting>
-     </listitem>
-    </orderedlist>
-
-    <para>
-     Make sure that the configuration is valid JSON,
-     and then save your changes.
+     Add a route to automatically log you in as
+     username <literal>demo</literal>, password <literal>password</literal>.
     </para>
 
     <para>
-     The resulting configuration file should be very close to the example,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#config-login-static-request"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuration for Hard-Coded Credentials</citetitle></link>.
+     Add the following route configuration file
+     as <filename>${warRoutesDir}/01-static.json</filename>.
+    </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/01-static.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${warRoutesDir}\01-static.json</filename>.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     Restart the Jetty server where ${projectName} is deployed.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     Access the home page again,
-     <link xlink:show="new" xlink:href="http://www.example.com:8080/" />.
+     Access the new route,
+     <link xlink:show="new" xlink:href="http://www.example.com:8080/static" />.
     </para>
 
     <para>
@@ -534,14 +558,6 @@ $ <userinput>java -jar start.jar</userinput>
   </para>
 
   <para>
-   When your browser goes to <literal>http://www.example.com:8080/</literal>,
-   it is actually connecting to ${projectName} deployed in Jetty.
-   ${projectName} proxies all traffic it receives to the protected application at
-   <literal>http://www.example.com:8080/</literal>,
-   and returns responses from the application to your browser.
-  </para>
-
-  <para>
    With the original configuration,
    ${projectName} does not change requests or responses,
    but only proxies requests and responses,
@@ -551,7 +567,15 @@ $ <userinput>java -jar start.jar</userinput>
   <para>
    After you change the configuration,
    ${projectName} continues to capture request and response data.
-   And ${projectName} also replaces your browser's original HTTP GET request
+   When your request does not goes to the default route,
+   but instead goes to <literal>/static</literal>,
+   then the condition on the new route you added matches the request.
+   ${projectName} therefore uses the new route you added.
+  </para>
+
+  <para>
+   Using the route configuration in <filename>01-static.json</filename>,
+   ${projectName} replaces your browser's original HTTP GET request
    with an HTTP POST login request containing credentials to authenticate.
    As a result, instead of the home page with a login form,
    ${projectName} logs you in directly,

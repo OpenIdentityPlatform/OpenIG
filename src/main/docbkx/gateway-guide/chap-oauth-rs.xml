@@ -229,18 +229,6 @@
    ${projectName} should be running in Jetty,
    configured to access the minimal HTTP server as described in that chapter.
   </para>
-
-  <para>
-   The initial ${projectName} configuration file should look like the one used
-   to login with a hard-coded username and password, see
-   <link
-    xlink:show="new"
-    xlink:href="gateway-guide#config-login-static-request"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuration for Hard-Coded Credentials</citetitle></link>.
-  </para>
-
-  <xinclude:include href="../shared/tip-log.xml" />
  </section>
 
  <section xml:id="oauth2-rs-tutorial-openam-config">
@@ -294,14 +282,45 @@
    that depend on how the real user profiles are configured.
   </para>
 
-  <para>
-   Finally, edit the OpenAM demo user to set credentials in
-   the Email Address and Employee Number fields of the demo user profile.
-   In OpenAM console, browse to the user profile under
-   Access Control > / (Top Level Realm) > Subjects > User > demo.
-   Set Email Address to <literal>george</literal>
-   and Employee Number to <literal>costanza</literal>.
-  </para>
+  <orderedlist>
+   <para>
+    Finally, create a user whose additional credentials you set in
+    the Email Address and Employee Number fields
+    if you have not already done so for another tutorial.
+   </para>
+
+   <listitem>
+    <para>
+     In OpenAM console,
+     under Access Control > / (Top Level Realm) > Subjects > User,
+     click New to create the user profile.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Set the ID to <literal>george</literal>,
+     the password to <literal>costanza</literal>,
+     and fill the other required fields as you like
+     before clicking OK.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Click the user name to edit the profile again,
+     setting Email Address to <literal>george</literal>
+     and Employee Number to <literal>costanza</literal>
+     before clicking Save.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     When finished, log out of OpenAM console.
+    </para>
+   </listitem>
+  </orderedlist>
  </section>
 
  <section xml:id="oauth2-rs-tutorial-gateway-config">
@@ -354,45 +373,74 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
 
   <para>
    To configure ${projectName} as an OAuth 2.0 resource server,
-   replace the <filename>config.json</filename> file
-   with the new configuration from the example,
-   <link
-    xlink:show="new"
-    xlink:href="gateway-guide#config-oauth2-rs"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuration for an OAuth 2.0 Resource Server</citetitle></link>.
+   add a new route to the ${projectName} configuration,
+   by including the following route configuration file
+   as <filename>${warRoutesDir}/06-rs.json</filename>.
   </para>
 
-  <para>
-   Notice "ResourceServer" configuration.
-   This configuration includes
-   a client handler to send access token validation requests,
-   the list of required scopes that the filter expects to find in access tokens,
-   the OpenAM token info endpoint used to validate access tokens,
-   and <literal>"enforceHttps": false</literal> to allow testing
-   without having to set up keys and certificates.
-   (In production environments, do use HTTPS to protect access tokens.)
-  </para>
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/06-rs.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
 
   <para>
-   When the "ResourceServer" filter
-   has injected information for a valid access token into the exchange,
-   the "CaptureTokenInfo" filter dumps the token information to the log.
-   The "CaptureTokenInfo" filter also injects the credentials
-   from the user profile in OpenAM into the exchange.
+   On Windows, the file name should be
+   <filename>${warRoutesDir}\06-rs.json</filename>.
   </para>
 
-  <para>
-   Finally, the "LoginRequestFilter" logs a user in to the minimal HTTP server
-   by using the credentials injected from the token information.
-   In this simple configuration, all requests result in login attempts
-   against the minimal HTTP server.
-  </para>
+  <itemizedlist>
+   <para>
+    Notice the following features of the new route.
+   </para>
 
-  <para>
-   After updating <filename>config.json</filename>,
-   restart Jetty server so that ${projectName} loads the new configuration.
-  </para>
+   <listitem>
+    <para>
+     The "ResourceServer" filter includes
+     a client handler to send access token validation requests,
+     the list of required scopes that the filter expects to find in access tokens,
+     the OpenAM token info endpoint used to validate access tokens,
+     and <literal>"enforceHttps": false</literal> to allow testing
+     without having to set up keys and certificates.
+     (In production environments, do use HTTPS to protect access tokens.)
+    </para>
+
+    <para>
+     After successfully using the token info endpoint
+     to validate an access token,
+     the "ResourceServer" filter injects data
+     from the response into the exchange.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     After the "ResourceServer" filter
+     has injected information for a valid access token into the exchange,
+     the "CaptureTokenInfo" filter dumps the token information to the log.
+     The "CaptureTokenInfo" filter also injects the credentials
+     from the user profile in OpenAM into the exchange.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The "LoginRequest" filter retrieves
+     the username and password from the exchange
+     and replaces the original HTTP GET request
+     with an HTTP POST login request
+     that contains the credentials to authenticate.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The route matches requests to <literal>/rs</literal>.
+    </para>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="oauth2-rs-tutorial-test">
@@ -408,19 +456,19 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
   <screen>
 $ <userinput>curl \
  --user "${projectName}:password" \
- --data "grant_type=password&amp;username=demo&amp;password=changeit&amp;scope=mail%20employeenumber" \
+ --data "grant_type=password&amp;username=george&amp;password=costanza&amp;scope=mail%20employeenumber" \
  http://openam.example.com:8088/openam/oauth2/access_token</userinput>
 <computeroutput>{
     "scope": "mail employeenumber",
-    "expires_in": 600,
+    "expires_in": 60,
     "token_type": "Bearer",
-    "refresh_token": "7fe9b284-698e-4738-ad11-01b984920861",
-    "access_token": "b8102957-486b-47f2-bd2b-54faa55ec363"
+    "refresh_token": "80963b0e-8283-434b-ba11-ce01ef0e93b6",
+    "access_token": "09b8c30d-a2f6-40b4-8506-82b43c3a96b1"
 }</computeroutput>
 
 $ <userinput>curl \
- --header "Authorization: Bearer b8102957-486b-47f2-bd2b-54faa55ec363" \
- http://www.example.com:8080</userinput>
+ --header "Authorization: Bearer 09b8c30d-a2f6-40b4-8506-82b43c3a96b1" \
+ http://www.example.com:8080/rs</userinput>
 <computeroutput>...<![CDATA[
     <h1>User Information</h1>
 
@@ -450,9 +498,9 @@ $ <userinput>curl \
   </para>
 
   <programlisting language="none">
-2014-08-04T16:43:38Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
+2014-08-27T05:55:02Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
 {
-    "access_token": "b8102957-486b-47f2-bd2b-54faa55ec363",
+    "access_token": "09b8c30d-a2f6-40b4-8506-82b43c3a96b1",
     "mail": "george",
     "employeenumber": "costanza",
     "grant_type": "password",
@@ -462,7 +510,7 @@ $ <userinput>curl \
     ],
     "realm": "/",
     "token_type": "Bearer",
-    "expires_in": 35
+    "expires_in": 42
 }
   </programlisting>
 
@@ -483,8 +531,8 @@ $ <userinput>curl \
   <para>
    The "CaptureTokenInfo" filter logs the token information,
    and also extracts the credentials to inject them into the exchange.
-   Finally the login filter uses the credentials to log the user in
-   to the minimal HTTP server,
+   Finally the "LoginRequest" filter uses the credentials
+   to log the user in to the minimal HTTP server,
    which responds with the User Information page.
   </para>
  </section>

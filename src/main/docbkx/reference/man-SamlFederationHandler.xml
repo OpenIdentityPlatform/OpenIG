@@ -58,7 +58,7 @@
   <programlisting language="javascript">
 {
     "name": string,
-    "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
+    "type": "SamlFederationHandler",
     "config": {
         "assertionMapping": map object,
         "redirectURI": string,

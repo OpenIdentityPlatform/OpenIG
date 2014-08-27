@@ -2,14 +2,6 @@
     "heap": {
         "objects": [
             {
-                "name": "LogSink",
-                "comment": "Default sink for logging information.",
-                "type": "ConsoleLogSink",
-                "config": {
-                    "level": "DEBUG"
-                }
-            },
-            {
                 "name": "DispatchHandler",
                 "type": "DispatchHandler",
                 "config": {
@@ -93,8 +85,7 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "HeaderFilter",
-                        "CaptureFilter"
+                        "HeaderFilter"
                     ],
                     "handler": "ClientHandler"
                 }
@@ -111,19 +102,11 @@
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
                 "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "DispatchHandler"
+    "handler": "DispatchHandler"
 }

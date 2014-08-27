@@ -6,7 +6,6 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CaptureFilter",
                         "OpenIDConnectClient"
                     ],
                     "handler": "OutgoingChain"
@@ -24,7 +23,7 @@
                         "openid",
                         "profile"
                     ],
-                    "failureHandler": "Dump",
+                    "failureHandler": "DumpExchange",
                     "providerHandler": "ClientHandler",
                     "providers": [
                         {
@@ -35,16 +34,6 @@
                             "clientSecret": "password"
                         }
                     ]
-                }
-            },
-            {
-                "name": "Dump",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "CaptureFilter"
-                    ],
-                    "handler": "DumpExchange"
                 }
             },
             {
@@ -61,8 +50,7 @@
                 "config": {
                     "filters": [
                         "GetCredentials",
-                        "LoginRequestFilter",
-                        "CaptureFilter"
+                        "LoginRequestFilter"
                     ],
                     "handler": "ClientHandler"
                 }
@@ -72,9 +60,10 @@
                 "type": "ScriptableFilter",
                 "config": {
                     "type": "application/x-groovy",
-                    "source": "exchange.username = exchange.openid.user_info.family_name;
-                               exchange.password = exchange.openid.user_info.name;
-                               next.handle(exchange)"
+                    "source":
+                        "exchange.username = exchange.openid.user_info.family_name;
+                         exchange.password = exchange.openid.user_info.name;
+                         next.handle(exchange)"
                 }
             },
             {
@@ -94,19 +83,13 @@
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": true,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
                 "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "OpenIDConnectChain"
+    "handler": "OpenIDConnectChain",
+    "condition": "${matches(exchange.request.uri.path, '^/openid')}",
+    "baseURI": "http://www.example.com:8080"
 }

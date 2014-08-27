@@ -6,9 +6,20 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
+                        "CredentialsFromFile",
                         "LoginRequest"
                     ],
-                    "handler": "DefaultHandler"
+                    "handler": "ClientHandler"
+                }
+            },
+            {
+                "name": "CredentialsFromFile",
+                "type": "FileAttributesFilter",
+                "config": {
+                    "target": "${exchange.credentials}",
+                    "file": "/tmp/userfile",
+                    "key": "email",
+                    "value": "george@example.com"
                 }
             },
             {
@@ -19,21 +30,21 @@
                     "uri": "http://www.example.com:8081",
                     "form": {
                         "username": [
-                            "george"
+                            "${exchange.credentials.username}"
                         ],
                         "password": [
-                            "costanza"
+                            "${exchange.credentials.password}"
                         ]
                     }
                 }
             },
             {
-                "name": "DefaultHandler",
+                "name": "ClientHandler",
                 "type": "ClientHandler",
                 "config": {}
             }
         ]
     },
     "handler": "LoginChain",
-    "name": "zDefault"
+    "condition": "${matches(exchange.request.uri.path, '^/file')}"
 }

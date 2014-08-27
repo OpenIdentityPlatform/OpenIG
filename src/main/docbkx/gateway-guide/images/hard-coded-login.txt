@@ -39,12 +39,12 @@ Browser->DNS: Look up www.example.com
 
 DNS->Browser: Return address for ${projectName}
 
-Browser->Gateway: Send HTTP GET request to http://www.example.com
+Browser->Gateway: Send HTTP GET request to http://www.example.com:8080/static
 
 Gateway->App: Replace request with HTTP POST of login form
 
 App->Gateway: Validate login & send response
 
-Gateway->Browser: Response from http://www.example.com
+Gateway->Browser: Response from http://www.example.com:8080
 
 @enduml
