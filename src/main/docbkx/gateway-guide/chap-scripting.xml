@@ -168,7 +168,7 @@
   <para>
    To try this handler, save the script
    as <filename>${warGroovyDir}/DispatchHandler.groovy</filename>
-   (<filename>${windowsGroovyDir}\DispatchHandler.groovy</filename> on Windows).
+   (<filename>${windowsWarGroovyDir}\DispatchHandler.groovy</filename> on Windows).
   </para>
 
   <para>
@@ -261,13 +261,13 @@ parse="text"
   <para>
    To try this filter, save the script
    as <filename>${warGroovyDir}/BasicAuthFilter.groovy</filename>
-   (<filename>${windowsGroovyDir}\BasicAuthFilter.groovy</filename> on Windows).
+   (<filename>${windowsWarGroovyDir}\BasicAuthFilter.groovy</filename> on Windows).
   </para>
 
   <para>
    Also save the following handler script
    as <filename>${warGroovyDir}/DumpExchange.groovy</filename>
-   (<filename>${windowsGroovyDir}\DumpExchange.groovy</filename> on Windows).
+   (<filename>${windowsWarGroovyDir}\DumpExchange.groovy</filename> on Windows).
    This script dumps request data so you can examine the results of the filter.
   </para>
 
@@ -383,7 +383,7 @@ parse="text"
   <para>
    Next, save the script
    as <filename>${warGroovyDir}/LdapAuthFilter.groovy</filename>
-   (<filename>${windowsGroovyDir}\LdapAuthFilter.groovy</filename> on Windows).
+   (<filename>${windowsWarGroovyDir}\LdapAuthFilter.groovy</filename> on Windows).
    If the directory server installation does not match
    the assumptions made in the script,
    adjust the script to use the correct settings for your installation.
@@ -496,9 +496,9 @@ parse="text"
   <para>
    Next, save the scripts
    as <filename>${warGroovyDir}/SqlAccessFilter.groovy</filename>
-   (<filename>${windowsGroovyDir}\SqlAccessFilter.groovy</filename> on Windows),
+   (<filename>${windowsWarGroovyDir}\SqlAccessFilter.groovy</filename> on Windows),
    and as <filename>${warGroovyDir}/SqlClient.groovy</filename>
-   (<filename>${windowsGroovyDir}\SqlClient.groovy</filename> on Windows).
+   (<filename>${windowsWarGroovyDir}\SqlClient.groovy</filename> on Windows).
   </para>
 
   <para>
