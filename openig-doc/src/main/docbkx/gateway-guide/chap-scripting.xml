@@ -174,7 +174,7 @@
   <para>
    Next, add the following route to your configuration
    as <filename>${warRoutesDir}/98-dispatch.json</filename>
-   (<filename>${windowsRoutesDir}\98-dispatch.json</filename> on Windows).
+   (<filename>${windowsWarRoutesDir}\98-dispatch.json</filename> on Windows).
   </para>
 
   <programlisting language="javascript">
@@ -282,7 +282,7 @@ parse="text"
   <para>
    Next, add the following route to your configuration
    as <filename>${warRoutesDir}/09-basic.json</filename>
-   (<filename>${windowsRoutesDir}\09-basic.json</filename> on Windows).
+   (<filename>${windowsWarRoutesDir}\09-basic.json</filename> on Windows).
   </para>
 
   <programlisting language="javascript">
@@ -392,7 +392,7 @@ parse="text"
   <para>
    Finally, add the following route to your configuration
    as <filename>${warRoutesDir}/10-ldap.json</filename>
-   (<filename>${windowsRoutesDir}\10-ldap.json</filename> on Windows).
+   (<filename>${windowsWarRoutesDir}\10-ldap.json</filename> on Windows).
   </para>
 
   <programlisting language="javascript">
@@ -504,7 +504,7 @@ parse="text"
   <para>
    Finally, add the following route to your configuration
    as <filename>${warRoutesDir}/11-db.json</filename>
-   (<filename>${windowsRoutesDir}\11-db.json</filename> on Windows).
+   (<filename>${windowsWarRoutesDir}\11-db.json</filename> on Windows).
   </para>
 
   <programlisting language="javascript">
