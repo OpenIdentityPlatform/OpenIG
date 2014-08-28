@@ -235,7 +235,7 @@ sp.xml</computeroutput>
 
     <para>
      On Windows, the file name should be
-     <filename>${windowsRoutesDir}\05-saml.json</filename>.
+     <filename>${windowsWarRoutesDir}\05-saml.json</filename>.
     </para>
 
     <itemizedlist>
@@ -279,7 +279,7 @@ sp.xml</computeroutput>
 
     <para>
      On Windows, the file name should be
-     <filename>${windowsRoutesDir}\05-federate.json</filename>.
+     <filename>${windowsWarRoutesDir}\05-federate.json</filename>.
     </para>
 
     <itemizedlist>
