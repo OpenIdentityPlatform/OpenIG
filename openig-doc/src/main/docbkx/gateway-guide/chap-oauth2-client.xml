@@ -369,7 +369,7 @@
 
   <para>
    On Windows, the file name should be
-   <filename>${warRoutesDir}\07-openid.json</filename>.
+   <filename>${windowsRoutesDir}\07-openid.json</filename>.
   </para>
 
   <para>

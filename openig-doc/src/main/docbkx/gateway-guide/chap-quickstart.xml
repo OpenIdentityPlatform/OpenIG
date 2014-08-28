@@ -337,7 +337,7 @@ $ <userinput>vi ${warRoutesDir}/99-default.json</userinput>
 
     <para>
      On Windows, the file name should be
-     <filename>${warRoutesDir}\99-default.json</filename>.
+     <filename>${windowsRoutesDir}\99-default.json</filename>.
     </para>
    </step>
 
@@ -531,7 +531,7 @@ $ <userinput>java -jar start.jar</userinput>
 
     <para>
      On Windows, the file name should be
-     <filename>${warRoutesDir}\01-static.json</filename>.
+     <filename>${windowsRoutesDir}\01-static.json</filename>.
     </para>
    </listitem>
 

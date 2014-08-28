@@ -388,7 +388,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
 
   <para>
    On Windows, the file name should be
-   <filename>${warRoutesDir}\06-rs.json</filename>.
+   <filename>${windowsRoutesDir}\06-rs.json</filename>.
   </para>
 
   <itemizedlist>
