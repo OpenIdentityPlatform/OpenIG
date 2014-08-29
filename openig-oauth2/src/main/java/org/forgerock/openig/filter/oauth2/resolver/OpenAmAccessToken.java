@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.*;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -81,7 +82,12 @@ public class OpenAmAccessToken implements AccessToken {
     }
 
     @Override
-    public JsonValue getRawInfo() {
+    public Map<String, Object> getInfo() {
+        return rawInfo.asMap();
+    }
+
+    @Override
+    public JsonValue asJsonValue() {
         return rawInfo;
     }
 

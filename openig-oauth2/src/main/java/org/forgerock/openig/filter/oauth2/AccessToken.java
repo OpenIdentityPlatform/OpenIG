@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -54,9 +55,16 @@ public interface AccessToken {
     long getExpiresAt();
 
     /**
+     * Returns the raw JSON as a map.
+     *
+     * @return the raw JSON as a map.
+     */
+    Map<String, Object> getInfo();
+
+    /**
      * Returns the raw JSON as returned by the {@literal tokeninfo} endpoint.
      *
      * @return the raw JSON as returned by the {@literal tokeninfo} endpoint.
      */
-    JsonValue getRawInfo();
+    JsonValue asJsonValue();
 }
