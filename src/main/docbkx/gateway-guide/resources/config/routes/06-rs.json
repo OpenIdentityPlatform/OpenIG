@@ -32,10 +32,10 @@
                 "type": "ScriptableFilter",
                 "config": {
                     "type": "application/x-groovy",
-                    "source"
-                        : "logger.info(exchange.oauth2AccessToken.rawInfo.toString());
-                        exchange.username = exchange.oauth2AccessToken.rawInfo.get('mail').asString();
-                        exchange.password = exchange.oauth2AccessToken.rawInfo.get('employeenumber').asString();
+                    "source":
+                        "logger.info(exchange.oauth2AccessToken.info as String);
+                        exchange.username = exchange.oauth2AccessToken.info.mail;
+                        exchange.password = exchange.oauth2AccessToken.info.employeenumber;
                         next.handle(exchange)"
                 }
             },

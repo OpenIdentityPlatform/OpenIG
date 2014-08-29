@@ -463,11 +463,11 @@ $ <userinput>curl \
     "expires_in": 60,
     "token_type": "Bearer",
     "refresh_token": "80963b0e-8283-434b-ba11-ce01ef0e93b6",
-    "access_token": "09b8c30d-a2f6-40b4-8506-82b43c3a96b1"
+    "access_token": "ddf31dac-e23a-446c-bd21-db60cf19b9f3"
 }</computeroutput>
 
 $ <userinput>curl \
- --header "Authorization: Bearer 09b8c30d-a2f6-40b4-8506-82b43c3a96b1" \
+ --header "Authorization: Bearer ddf31dac-e23a-446c-bd21-db60cf19b9f3" \
  http://www.example.com:8080/rs</userinput>
 <computeroutput>...<![CDATA[
     <h1>User Information</h1>
@@ -493,25 +493,20 @@ $ <userinput>curl \
   </screen>
 
   <para>
-   Also look in the Jetty server output to see the raw token information.
-   The raw token information looks something like the following.
+   Also look in the Jetty server output to see the access token information.
+   The access token information looks something like the following.
   </para>
 
   <programlisting language="none">
-2014-08-27T05:55:02Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
-{
-    "access_token": "09b8c30d-a2f6-40b4-8506-82b43c3a96b1",
-    "mail": "george",
-    "employeenumber": "costanza",
-    "grant_type": "password",
-    "scope": [
-        "mail",
-        "employeenumber"
-    ],
-    "realm": "/",
-    "token_type": "Bearer",
-    "expires_in": 42
-}
+2014-08-29T14:48:10Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
+[access_token:ddf31dac-e23a-446c-bd21-db60cf19b9f3,
+mail:george,
+employeenumber:costanza,
+grant_type:password,
+scope:[mail, employeenumber],
+realm:/,
+token_type:Bearer,
+expires_in:42]
   </programlisting>
 
   <para>
