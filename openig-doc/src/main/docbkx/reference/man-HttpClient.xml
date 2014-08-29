@@ -216,6 +216,12 @@
       Configuration of the key store holding this client's keys and certificates.
      </para>
 
+     <para>
+      If you do not configure a key store,
+      then the client cannot present a certificate,
+      and so cannot play the client role in mutual authentication.
+     </para>
+
      <variablelist>
       <para>
        The "keystore" object has the following fields.
@@ -297,6 +303,13 @@
      <para>
       Configuration of the trust store holding server certificates
       that this client trusts.
+     </para>
+
+     <para>
+      If you do not configure a trust store,
+      then the client uses the default Java trust store.
+      The default Java trust store depends on the Java environment.
+      For example, <filename>$JAVA_HOME/lib/security/cacerts</filename>.
      </para>
 
      <variablelist>
