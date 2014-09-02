@@ -19,6 +19,7 @@ package org.forgerock.openig.filter.oauth2;
 import static java.lang.String.*;
 import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Duration.duration;
+import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -29,7 +30,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
@@ -67,7 +67,8 @@ import org.forgerock.util.time.TimeService;
  *           "cacheExpiration": "2 minutes",
  *           "enforceHttps": false,
  *           "httpHandler": "ClientHandler",
- *           "realm": "Informative realm name"
+ *           "realm": "Informative realm name",
+ *           "target": "${exchange.oauth2AccessToken}"
  *         }
  * }
  * </pre>
@@ -94,6 +95,9 @@ import org.forgerock.util.time.TimeService;
  * <p>
  * The {@literal realm} optional attribute specifies the name of the realm used in the authentication challenges
  * returned back to the client in case of errors.
+ * <p>
+ * The {@literal target} optional attribute specifies the expression which will be used for storing the OAuth 2.0 access
+ * token information in the exchange. Defaults to {@code ${exchange.oauth2AccessToken}}.
  *
  * @see Duration
  */
@@ -102,7 +106,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     /**
      * The key under which downstream handlers will find the access token in the {@link Exchange}.
      */
-    public static final String ACCESS_TOKEN_KEY = "oauth2AccessToken";
+    public static final String DEFAULT_ACCESS_TOKEN_KEY = "oauth2AccessToken";
 
     /**
      * Name of the realm when none is specified in the heaplet.
@@ -118,6 +122,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final Handler invalidToken;
     private final Handler invalidRequest;
     private final Handler insufficientScope;
+    private final Expression target;
 
     /**
      * Creates a new {@code OAuth2Filter}.
@@ -128,11 +133,15 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      *         A {@code BearerTokenExtractor} instance.
      * @param time
      *         A {@link TimeService} instance used to check if token is expired or not.
+     * @param target
+     *            The {@literal target} optional attribute specifies the expression which will be used for storing the
+     *            OAuth 2.0 access token information in the exchange. Should not be null.
      */
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
-                                      final TimeService time) {
-        this(resolver, extractor, time, Collections.<String>emptySet(), DEFAULT_REALM_NAME);
+                                      final TimeService time,
+                                      final Expression target) {
+        this(resolver, extractor, time, Collections.<String>emptySet(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -148,12 +157,16 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      *         A set of scopes to be checked in the resolved access tokens.
      * @param realm
      *         Name of the realm (used in authentication challenge returned in case of error).
+     * @param target
+     *            The {@literal target} optional attribute specifies the expression which will be used for storing the
+     *            OAuth 2.0 access token information in the exchange. Should not be null.
      */
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
                                       final Set<String> scopes,
-                                      final String realm) {
+                                      final String realm,
+                                      final Expression target) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
@@ -162,6 +175,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         this.invalidToken = new InvalidTokenChallengeHandler(realm);
         this.invalidRequest = new InvalidRequestChallengeHandler(realm);
         this.insufficientScope = new InsufficientScopeChallengeHandler(realm, scopes);
+        this.target = target;
     }
 
     @Override
@@ -202,7 +216,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             }
 
             // Store the AccessToken in the exchange for downstream handlers
-            exchange.put(ACCESS_TOKEN_KEY, accessToken);
+            target.set(exchange, accessToken);
 
             // Call the rest of the chain
             next.handle(exchange);
@@ -262,15 +276,19 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
-            Filter filter = new OAuth2ResourceServerFilter(resolver,
+            final Expression target = asExpression(config.get("target").defaultTo(
+                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+
+            final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                                                            new BearerTokenExtractor(),
                                                            time,
                                                            scopes,
-                                                           realm);
+                                                           realm,
+                                                           target);
+
             if (config.get("enforceHttps").defaultTo(Boolean.TRUE).asBoolean()) {
                 try {
-                    filter = new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"),
-                                                filter);
+                    return new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"), filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
                 }
