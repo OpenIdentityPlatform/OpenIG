@@ -26,6 +26,8 @@ import static org.mockito.Mockito.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
@@ -136,16 +138,32 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange).containsKey(ACCESS_TOKEN_KEY);
+        assertThat(exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
         verify(nextHandler).handle(exchange);
     }
 
-    private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) {
+    @Test
+    public void shouldStoreAccessTokenInTargetInTheExchange() throws Exception {
+        final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
+                new BearerTokenExtractor(),
+                time,
+                new Expression("${exchange.myToken}"));
+
+        final Exchange exchange = buildAuthorizedExchange();
+        filter.filter(exchange, nextHandler);
+
+        assertThat(exchange).containsKey("myToken");
+        assertThat(exchange.get("myToken")).isInstanceOf(AccessToken.class);
+        verify(nextHandler).handle(exchange);
+    }
+
+    private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) throws ExpressionException {
         return new OAuth2ResourceServerFilter(resolver,
                                               new BearerTokenExtractor(),
                                               time,
                                               asSet(scopes),
-                                              DEFAULT_REALM_NAME);
+                                              DEFAULT_REALM_NAME,
+                                              new Expression(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
     }
 
     private static Set<String> asSet(final String... scopes) {
