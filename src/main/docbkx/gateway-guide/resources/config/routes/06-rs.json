@@ -24,7 +24,8 @@
                     ],
                     "tokenInfoEndpoint"
                         : "http://openam.example.com:8088/openam/oauth2/tokeninfo",
-                    "enforceHttps": false
+                    "enforceHttps": false,
+                    "target": "${exchange.token}"
                 }
             },
             {
@@ -33,9 +34,10 @@
                 "config": {
                     "type": "application/x-groovy",
                     "source":
-                        "logger.info(exchange.oauth2AccessToken.info as String);
-                        exchange.username = exchange.oauth2AccessToken.info.mail;
-                        exchange.password = exchange.oauth2AccessToken.info.employeenumber;
+                        "import org.forgerock.json.fluent.JsonValue;
+                        logger.info(exchange.token.asJsonValue() as String);
+                        exchange.username = exchange.token.info.mail;
+                        exchange.password = exchange.token.info.employeenumber;
                         next.handle(exchange)"
                 }
             },

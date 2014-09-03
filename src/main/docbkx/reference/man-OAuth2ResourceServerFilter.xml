@@ -71,9 +71,8 @@ Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9
   <para>
    On successful validation,
    the filter includes the token info from the authorization server response
-   as JSON in the exchange.
-   Subsequent filters and handlers can access the token info
-   as <literal>exchange.oauth2AccessToken</literal>.
+   as JSON in the exchange at the location specified by the "target" setting.
+   Subsequent filters and handlers can access the token info through the exchange.
   </para>
 
   <para>
@@ -116,7 +115,8 @@ WWW-Authenticate: Bearer realm="${projectName}"
     "tokenInfoEndpoint": URL string,
     "cacheExpiration": duration string,
     "enforceHttps": boolean,
-    "realm": string
+    "realm": string,
+    "target": expression
   }
 }
   </programlisting>
@@ -206,6 +206,24 @@ WWW-Authenticate: Bearer realm="${projectName}"
 
      <para>
       Default: ${projectName}
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+     xlink:show="new"
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
+    <listitem>
+     <para>
+      Where to store the OAuth 2.0 access token in the exchange,
+      such as <literal>${exchange.token}</literal>.
+     </para>
+
+     <para>
+      Default: <literal>${exchange.oauth2AccessToken}</literal>
      </para>
     </listitem>
    </varlistentry>

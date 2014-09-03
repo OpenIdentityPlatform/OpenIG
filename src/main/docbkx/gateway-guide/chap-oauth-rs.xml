@@ -350,7 +350,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
    and to retrieve token information from the authorization server.
    On successful validation, the filter injects
    the response from the authorization server into
-   <literal>exchange.oauth2AccessToken</literal>.
+   the location set by the "target" in the configuration.
   </para>
 
   <para>
@@ -411,7 +411,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
      After successfully using the token info endpoint
      to validate an access token,
      the "ResourceServer" filter injects data
-     from the response into the exchange.
+     from the response into <literal>exchange.token</literal>.
     </para>
    </listitem>
 
@@ -498,15 +498,20 @@ $ <userinput>curl \
   </para>
 
   <programlisting language="none">
-2014-08-29T14:48:10Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
-[access_token:ddf31dac-e23a-446c-bd21-db60cf19b9f3,
-mail:george,
-employeenumber:costanza,
-grant_type:password,
-scope:[mail, employeenumber],
-realm:/,
-token_type:Bearer,
-expires_in:42]
+2014-09-03T06:59:27Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
+{
+    "access_token": "ddf31dac-e23a-446c-bd21-db60cf19b9f3",
+    "mail": "george",
+    "employeenumber": "costanza",
+    "grant_type": "password",
+    "scope": [
+        "mail",
+        "employeenumber"
+    ],
+    "realm": "/",
+    "token_type": "Bearer",
+    "expires_in": 42
+}
   </programlisting>
 
   <para>
