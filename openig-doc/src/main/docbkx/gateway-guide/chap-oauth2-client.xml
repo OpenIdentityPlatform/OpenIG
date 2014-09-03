@@ -30,7 +30,7 @@
                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
          xmlns:xlink='http://www.w3.org/1999/xlink'
          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Configuring ${projectName} as an OAuth 2.0 Client</title>
+ <title>${projectName} as an OAuth 2.0 Client</title>
 
  <para>
   This chapter explains how ${projectName} acts
@@ -69,12 +69,12 @@
   <title>About ${projectName} as an OAuth 2.0 Client</title>
 
   <para>
-   As described in the chapter on
+   As described in the chapter,
    <link
     xlink:show="new"
-    xlink:href="gateway-guide#chap-oauth-rs"
+    xlink:href="gateway-guide#chap-oauth2-rs"
     xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Configuring ${projectName} as an OAuth 2.0 Resource Server</citetitle></link>,
+   ><citetitle>${projectName} as an OAuth 2.0 Resource Server</citetitle></link>,
    an OAuth 2.0 client is the third-party application that needs access
    to a user's protected resources.
    The client application therefore has the user (the OAuth 2.0 resource owner)

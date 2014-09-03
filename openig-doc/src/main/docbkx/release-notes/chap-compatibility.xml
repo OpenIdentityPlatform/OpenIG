@@ -44,6 +44,11 @@
    and many changes to ${projectName}.
   </para>
 
+  <para>
+   TODO update for next release.
+   The following changes are from 3.0.0.
+  </para>
+
   <itemizedlist>
    <para>
     If you are running older versions of ${projectName}
@@ -116,7 +121,7 @@
       xlink:show="new"
       xlink:href="gateway-guide#chap-routing"
       xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Routing Tutorial</citetitle></link>.
+     ><citetitle>Configuring Routes</citetitle></link>.
     </para>
 
     <para>
@@ -146,13 +151,7 @@
       xlink:show="new"
       xlink:href="gateway-guide#chap-federation-tutorial"
       xlink:role="http://docbook.org/xlink/role/olink"
-     >Tutorial For ${projectName} Federation</link>,
-     or read the example configuration file,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#config-federation"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
+     ><citetitle>${projectName} as a SAML 2.0 Service Provider</citetitle></link>.
     </para>
    </listitem>
   </itemizedlist>
@@ -160,18 +159,29 @@
 
  <section xml:id="deprecated">
   <title>Deprecated Functionality</title>
-  
+
+  <para>
+   TODO update for next release.
+  </para>
+
+  <!--
   <para>
    No functionality is deprecated in this release.
   </para>
+  -->
  </section>
 
  <section xml:id="removed">
   <title>Removed Functionality</title>
-  
+
   <para>
-   Custom Servlet and Servlet Filter integration now requires additional development.
-   For an example, see the <literal>org.forgerock.openig.handler.saml</literal> package.
+   TODO update for next release.
   </para>
+
+  <!--
+  <para>
+   No functionality has been removed in this release.
+  </para>
+  -->
  </section>
 </chapter>

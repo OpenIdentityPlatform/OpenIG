@@ -82,12 +82,12 @@
   </para>
 
   <para>
-   For examples of route configurations, see the
+   For examples of route configurations see the chapter,
    <link
     xlink:show="new"
     xlink:href="gateway-guide#chap-routing"
     xlink:role="http://docbook.org/xlink/role/olink"
-   >Routing Tutorial</link>.
+   ><citetitle>Configuring Routes</citetitle></link>.
   </para>
  </refsect1>
 

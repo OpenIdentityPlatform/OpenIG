@@ -31,10 +31,10 @@
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Installing ${projectName}</title>
+ <title>Installation in Detail</title>
 
  <para>
-  This chapter covers everything you need to install ${projectName}.
+  This chapter covers more advanced installation procedures.
  </para>
 
  <indexterm>
@@ -766,7 +766,7 @@ etc/jetty-ssl.xml
          xlink:show="new"
          xlink:href="gateway-guide#chap-routing"
          xlink:role="http://docbook.org/xlink/role/olink"
-        ><citetitle>Routing Tutorial</citetitle></link>,
+        ><citetitle>Configuring Routes</citetitle></link>,
         for more information.
        </para>
       </listitem>
@@ -804,9 +804,9 @@ etc/jetty-ssl.xml
         See the chapter,
         <link
          xlink:show="new"
-         xlink:href="gateway-guide#chap-scripting"
+         xlink:href="gateway-guide#chap-extending"
          xlink:role="http://docbook.org/xlink/role/olink"
-         ><citetitle>Scripting Filters &amp; Handlers</citetitle></link>,
+         ><citetitle>Extending ${projectName}</citetitle></link>,
         for more information.
        </para>
       </listitem>

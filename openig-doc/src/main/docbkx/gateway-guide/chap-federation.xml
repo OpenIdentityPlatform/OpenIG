@@ -24,105 +24,123 @@
   !    
 -->
 <chapter xml:id='chap-federation'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
- <title>Using ${projectName} Federation</title>
+         xmlns='http://docbook.org/ns/docbook'
+         version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>${projectName} as a SAML 2.0 Service Provider</title>
 
  <para>
-  The Federation component of ${projectName} is
-  a standards based authentication service used by ${projectName}
-  to validate a user and retrieve key attributes of the user
-  in order to log them in to applications that ${projectName} protects.
-  The Federation component implements Security Assertion Markup Language 2.0.
+  This chapter has two aims.
+  First, it aims to help you understand how
+  ${projectName} works as a SAML 2.0 service provider,
+  and what that entails in terms of setup and configuration.
+  Second, it aims to show you how to configure ${projectName}
+  as a SAML 2.0 federation service provider,
+  logging users in to a protected application
+  with information from a SAML assertion.
  </para>
 
- <para>
-  Security Assertion Markup Language (SAML) 2.0 is a standard
-  for exchanging security information across organizational boundaries.
-  SAML 2.0 enables web single sign-on (SSO), for example,
-  where the service managing the user's identity
-  does not necessarily belong to the same organization
-  and does not necessarily use the same software
-  as the service that the user wants to access.
- </para>
+ <indexterm>
+  <primary>SAML 2.0</primary>
+ </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>SAML 2.0</secondary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>SAML 2.0</secondary>
+ </indexterm>
 
- <para>
-  In SAML 2.0, the service managing the user's identity
-  is called the <firstterm>Identity Provider</firstterm> (IDP).
-  The service that the user wants to access
-  is called the <firstterm>Service Provider</firstterm> (SP).
-  Provider organizations agree on the security information they want to exchange,
-  and then they mutually configure access to each others' services,
-  so that the SAML 2.0 federation capability is ready for use.
-  The group of providers sets up a <firstterm>circle of trust</firstterm>,
-  which is a list of services participating in the federation.
-  In order to be able to configure access to services in the circle of trust,
-  the providers share SAML 2.0 <firstterm>metadata</firstterm>
-  describing their services in an XML format defined by the SAML 2.0 standard.
- </para>
+ <section xml:id="about-saml2">
+  <title>About SAML 2.0 Federation</title>
 
- <para>
-  ${projectName} plays the role of SAML 2.0 SP.
-  You must therefore configure ${projectName} as SP to access IDP services
-  in order for the Federation component to be operational.
- </para>
-
- <para>
-  For SAML 2.0 web SSO, the user authenticates with the IDP.
-  This can start either with the user visiting the IDP site and logging in,
-  or with the user visiting the SP site and being directed to the IDP to log in.
-  On successful authentication, the IDP sends
-  an assertion statement about the authentication to the SP.
-  This assertion statement attests which user the IDP authenticated,
-  when the authentication succeeded, how long the assertion is valid, and so forth.
-  It can optionally contain attribute values for the user who authenticated.
-  (${projectName} can then, for example, use the attribute values
-  to log a user into a protected application.)
-  The assertion can optionally be signed and encrypted.
- </para>
-
- <orderedlist>
   <para>
-   There are two ways that the ${projectName} federation component can be invoked:
+   The Federation component of ${projectName} is
+   a standards based authentication service used by ${projectName}
+   to validate a user and retrieve key attributes of the user
+   in order to log them in to applications that ${projectName} protects.
+   The Federation component implements Security Assertion Markup Language 2.0.
   </para>
 
-  <listitem>
+  <para>
+   Security Assertion Markup Language (SAML) 2.0 is a standard
+   for exchanging security information across organizational boundaries.
+   SAML 2.0 enables web single sign-on (SSO), for example,
+   where the service managing the user's identity
+   does not necessarily belong to the same organization
+   and does not necessarily use the same software
+   as the service that the user wants to access.
+  </para>
+
+  <para>
+   In SAML 2.0, the service managing the user's identity
+   is called the <firstterm>Identity Provider</firstterm> (IDP).
+   The service that the user wants to access
+   is called the <firstterm>Service Provider</firstterm> (SP).
+   Provider organizations agree on the security information they want to exchange,
+   and then they mutually configure access to each others' services,
+   so that the SAML 2.0 federation capability is ready for use.
+   The group of providers sets up a <firstterm>circle of trust</firstterm>,
+   which is a list of services participating in the federation.
+   In order to be able to configure access to services in the circle of trust,
+   the providers share SAML 2.0 <firstterm>metadata</firstterm>
+   describing their services in an XML format defined by the SAML 2.0 standard.
+  </para>
+
+  <para>
+   ${projectName} plays the role of SAML 2.0 SP.
+   You must therefore configure ${projectName} as SP to access IDP services
+   in order for the Federation component to be operational.
+  </para>
+
+  <para>
+   For SAML 2.0 web SSO, the user authenticates with the IDP.
+   This can start either with the user visiting the IDP site and logging in,
+   or with the user visiting the SP site and being directed to the IDP to log in.
+   On successful authentication, the IDP sends
+   an assertion statement about the authentication to the SP.
+   This assertion statement attests which user the IDP authenticated,
+   when the authentication succeeded, how long the assertion is valid, and so forth.
+   It can optionally contain attribute values for the user who authenticated.
+   (${projectName} can then, for example, use the attribute values
+   to log a user into a protected application.)
+   The assertion can optionally be signed and encrypted.
+  </para>
+
+  <orderedlist>
    <para>
-    IDP initiated SSO,
-    where the remote Identity Provider sends
-    an unsolicited authentication statement to ${projectName}
+    There are two ways that the ${projectName} federation component can be invoked:
    </para>
-  </listitem>
 
-  <listitem>
-   <para>
-    SP initiated SSO,
-    where ${projectName} calls the Federation component to
-    initiate federated SSO with the Identity Provider
-   </para>
-  </listitem>
- </orderedlist>
+   <listitem>
+    <para>
+     IDP initiated SSO,
+     where the remote Identity Provider sends
+     an unsolicited authentication statement to ${projectName}
+    </para>
+   </listitem>
 
- <para>
-  In both cases, the job of the Federation component is
-  to validate the user
-  and to pass the required attributes to ${projectName}
-  so that it can log the user into protected applications.
- </para>
+   <listitem>
+    <para>
+     SP initiated SSO,
+     where ${projectName} calls the Federation component to
+     initiate federated SSO with the Identity Provider
+    </para>
+   </listitem>
+  </orderedlist>
 
- <para>
-  See the
-  <link
-   xlink:show="new"
-   xlink:href="gateway-guide#chap-federation-tutorial"
-   xlink:role="http://docbook.org/xlink/role/olink"
-  ><citetitle>Tutorial For ${projectName} Federation</citetitle></link>
-  in order to try this out with OpenAM playing the role of Identity Provider.
- </para>
+  <para>
+   In both cases, the job of the Federation component is
+   to validate the user
+   and to pass the required attributes to ${projectName}
+   so that it can log the user into protected applications.
+  </para>
+ </section>
 
  <section xml:id="federation-installation">
   <title>Installation Overview</title>
@@ -459,5 +477,369 @@ $ <userinput>ssoadm \
  --entityid http://openam.example.com:8088/openam \
  --meta-data-file /tmp/idp.xml</userinput>
   </screen>
+ </section>
+
+ <section xml:id="fed-tutorial-before-you-start">
+  <title>Preparing to Try ${projectName} as a SAML 2.0 Service Provider</title>
+
+  <para>
+   The following sections in this chapter are a tutorial on setting up
+   OpenAM to send a SAML 2.0 assertion to ${projectName} containing user credentials,
+   and ${projectName} to validate the assertion and use the credentials
+   to log the user in to the protected application.
+  </para>
+
+  <para>
+   Before you start this tutorial,
+   prepare ${projectName} and the minimal HTTP server as you did for the chapter on
+  <link
+   xlink:show="new"
+   xlink:href="gateway-guide#chap-quickstart"
+   xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>.
+  </para>
+
+  <para>
+   ${projectName} should be running in Jetty,
+   configured to access the minimal HTTP server as described in that chapter.
+  </para>
+
+  <para>
+   The initial ${projectName} configuration file should look like the one used
+   to proxy requests through to the HTTP server
+   and to capture request and response data, see
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#config-proxy-and-capture"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
+  </para>
+
+  <para>
+   To test your setup, access the HTTP server home page through ${projectName} at
+   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+   Login as username <literal>george</literal>, password <literal>costanza</literal>.
+   You should see a page showing the username and some information about the request.
+  </para>
+
+  <para>
+   In this tutorial, it is assumed that you are familiar
+   with SAML 2.0 federation and with the components involved, including OpenAM.
+   For OpenAM documentation, see
+   <link xlink:show="new" xlink:href="http://docs.forgerock.org/en/openam/" />.
+  </para>
+ </section>
+
+ <section xml:id="fed-tutorial-configure-openam">
+  <title>Configuring OpenAM</title>
+
+  <para>
+   Install and configure OpenAM on
+   <literal>http://openam.example.com:8088/openam</literal>
+   with the default configuration.
+   If you use a different configuration,
+   make sure you substitute in the tutorial accordingly.
+  </para>
+
+  <para>
+   Login to the OpenAM console as administrator,
+   and use the common task wizard to create a hosted Identity Provider.
+   This tutorial does not address PKI configuration for validation and encryption,
+   though ${projectName} is capable of handling both when properly configured,
+   just as any OpenAM Fedlet can handle both.
+   Configure the Attribute Mapping to map the
+   the <literal>mail</literal> attribute to <literal>mail</literal>
+   and the <literal>employeenumber</literal> attribute to <literal>employeenumber</literal>.
+   You can use the <literal>test</literal> certificate
+   in the Identity Provider configuration for signing in this example.
+  </para>
+
+  <para>
+   Then use the common task wizard to create a Fedlet.
+   Set the Name to <literal>${projectName}</literal>.
+   Set the Destination URL to <literal>http://www.example.com:8080/saml</literal>.
+   Also configure the Attribute Mapping for the Fedlet to map the
+   the <literal>mail</literal> attribute to <literal>mail</literal>
+   and the <literal>employeenumber</literal> attribute to <literal>employeenumber</literal>.
+  </para>
+
+  <para>
+   Why map these attributes?
+   The SAML 2.0 attribute mapping indicates that the SP, ${projectName},
+   wants the IDP, OpenAM in this case,
+   to get the values of these attributes from the user profile
+   and then send them to the SP, ${projectName}.
+   ${projectName} can then use the values of the attributes,
+   in this case <literal>mail</literal> and <literal>employeenumber</literal>,
+   to log the user in to the application it protects.
+  </para>
+
+  <para>
+   This tutorial uses <literal>mail</literal>
+   and <literal>employeenumber</literal>
+   for the sake of simplicity.
+   Both of those attributes are part of a user's profile
+   out of the box with the default OpenAM configuration.
+   Neither of the attributes are needed for anything else in this tutorial.
+   So this tutorial uses <literal>mail</literal> to hold the username,
+   and <literal>employeenumber</literal> to hold the password.
+   In a real deployment, you would no doubt use other attributes
+   that depend on how the real user profiles are configured.
+  </para>
+
+  <para>
+   Use the OpenAM console to create a user subject in the top level realm
+   with Email Address <literal>george</literal>
+   and Employee Number <literal>costanza</literal>.
+  </para>
+ </section>
+
+ <section xml:id="fed-tutorial-configure-federation">
+  <title>Configuring ${projectName} For Federation</title>
+
+  <para>
+   Unpack the configuration files from the Fedlet you created
+   in <xref linkend="fed-tutorial-configure-openam" />.
+   The Fedlet is packaged as a .zip file that contains a war file
+   that in turn contains the configuration files to unpack.
+   OpenAM displays the location of the .zip file
+   upon successful creation of the Fedlet.
+   If you followed the instructions above, the .zip is
+   <filename>$HOME/openam/myfedlets/${projectName}/Fedlet.zip</filename>
+   on the system where OpenAM runs.
+  </para>
+
+  <screen>
+$ <userinput>cd $HOME/openam/myfedlets/${projectName}</userinput>
+$ <userinput>unzip Fedlet.zip fedlet.war</userinput>
+$ <userinput>unzip fedlet.war conf/*</userinput>
+$ <userinput>mkdir ${warSamlDir}</userinput>
+$ <userinput>cp conf/* ${warSamlDir}</userinput>
+$ <userinput>ls -1 ${warSamlDir}</userinput>
+<computeroutput>FederationConfig.properties
+fedlet.cot
+idp-extended.xml
+idp.xml
+sp-extended.xml
+sp.xml</computeroutput>
+  </screen>
+
+  <para>
+   On Windows, the SAML configuration files belong in
+   <filename>${windowsWarSamlDir}</filename>.
+   To locate the <filename>%appdata%</filename> folder for your version of Windows,
+   open Windows Explorer,
+   type <literal>%appdata%</literal> as the file path,
+   and press Enter.
+  </para>
+
+  <para>
+   Restart Jetty after preparing the SAML configuration files.
+  </para>
+
+  <itemizedlist>
+   <para>
+    Add two new routes to the ${projectName} configuration.
+   </para>
+
+   <listitem>
+    <para>
+     Add a route that injects credentials into the exchange
+     based on attribute values from the SAML assertion
+     returned on successful authentication.
+    </para>
+
+    <para>
+     The configuration file to add in this case is
+     <filename>${warRoutesDir}/05-saml.json</filename>
+    </para>
+
+    <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/05-saml.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${windowsWarRoutesDir}\05-saml.json</filename>.
+    </para>
+
+    <itemizedlist>
+     <para>
+      Notice the following features of the new route.
+     </para>
+
+     <listitem>
+      <para>
+       The "SamlFederationHandler" extracts credentials
+       from the attributes returned in the SAML 2.0 assertion.
+       It then redirects to the <literal>/federate</literal> route.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The route matches requests to <literal>/saml</literal>.
+      </para>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <para>
+     Add a route that handles requests to perform SAML federation.
+    </para>
+
+    <para>
+     The configuration file to add in this case is
+     <filename>${warRoutesDir}/05-federate.json</filename>
+    </para>
+
+    <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/05-federate.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+    </programlisting>
+
+    <para>
+     On Windows, the file name should be
+     <filename>${windowsWarRoutesDir}\05-federate.json</filename>.
+    </para>
+
+    <itemizedlist>
+     <para>
+      Notice the following features of the new route.
+     </para>
+
+     <listitem>
+      <para>
+       The "DispatchHandler" dispatches requests
+       to the "SPInitiatedSSORedirectHandler"
+       if the username has not yet been populated in the exchange,
+       meaning the user has not yet authenticated with the IDP.
+       Otherwise, if the credentials have been inserted into the exchange,
+       the "DispatchHandler" dispatches requests
+       to the "LoginChain" to log the user in to the protected application.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The "SPInitiatedSSORedirectHandler" redirects
+       to the Service Provider initiated single sign-on end point
+       to initiate SAML 2.0 web browser SSO.
+       After authentication is successful
+       and the "SamlFederationHandler" has injected credentials into the exchange,
+       the user-agent ends up redirected to this same route.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The "LoginRequest" filter retrieves
+       the username and password from the exchange
+       and replaces your browser's original HTTP GET request
+       with an HTTP POST login request
+       that contains the credentials to authenticate.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The route matches requests to <literal>/federate</literal>.
+       This is the route you use to test the configuration.
+      </para>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+  </itemizedlist>
+ </section>
+
+ <section xml:id="fed-tutorial-testing">
+  <title>Trying It Out</title>
+
+  <itemizedlist>
+   <para>
+    Log out of OpenAM console,
+    and then test whether everything is properly configured.
+   </para>
+
+   <listitem>
+    <para>
+     For IDP initiated SSO, click
+     <link
+      xlink:show="new"
+      xlink:href="http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=${projectName}&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      >this IDP initiated SSO link</link>,
+     and then login to OpenAM
+     with username <literal>george</literal>, password <literal>costanza</literal>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     For SP initiated SSO,
+     either browse to the URL for the new route,
+     at <link xlink:show="new" xlink:href="http://www.example.com:8080/federate" />,
+     or click
+     <link
+      xlink:show="new"
+      xlink:href="http://www.example.com:8080/saml/SPInitiatedSSO?metaAlias=/sp&amp;idpEntityID=http://openam.example.com:8088/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      >this SP initiated SSO link</link>,
+     and then login to OpenAM
+     with username <literal>george</literal>, password <literal>costanza</literal>.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   However you initiate single sign-on,
+   you should wind up viewing the page you normally see after logging in.
+  </para>
+
+  <para>
+   What is happening behind the scenes?
+  </para>
+
+  <para>
+   The initial incoming requests matches the <literal>/federate</literal> route.
+   As the user is not yet authenticated,
+   the "SPInitiatedSSORedirectHandler" sends a redirect to initiate SSO.
+  </para>
+
+  <para>
+   The user authenticates with the Identity Provider for SAML 2.0 single sign-on.
+   After authentication, the Identity Provider redirects the user-agent back to
+   the SAML URI on the Service Provider (${projectName}),
+   which you configured for the Fedlet as <literal>/saml</literal>.
+   The "SamlFederationHandler" gets the request to this route.
+   The request holds the SAML 2.0 assertion whose attributes contain credentials.
+  </para>
+
+  <para>
+   The "SamlFederationHandler" processes an incoming SAML 2.0 assertion,
+   injecting credentials values from the assertion into the exchange session.
+   The "SamlFederationHandler" then redirects
+   to the <literal>/federate</literal> route.
+  </para>
+
+  <para>
+   On the <literal>/federate</literal> route,
+   once the attributes from the assertion are set in the session,
+   ${projectName} dispatches the exchange to the "LoginChain".
+   The "LoginRequest" static request filter in the "LoginChain"
+   uses the attribute values to replace the request
+   with an HTTP POST of login form data
+   to log the user in to the protected application.
+  </para>
+
+  <para>
+   ${projectName} returns the response page showing that the user has logged in.
+  </para>
  </section>
 </chapter>
