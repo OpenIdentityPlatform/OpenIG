@@ -94,7 +94,7 @@
         <configuration>
           <projectName>${projectName}</projectName>
           <projectVersion>${docTargetVersion}</projectVersion>
-          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary workaround pending #QOZ-985-23233 -->
+          <latestJson>http://docs.forgerock.org/latest.json</latestJson>
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
           <docbkxSourceDirectory>${filteredDocSources}</docbkxSourceDirectory><!-- Workaround pending fix for DOCS-178 -->
         </configuration>
