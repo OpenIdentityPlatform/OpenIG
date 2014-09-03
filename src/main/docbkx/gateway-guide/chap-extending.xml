@@ -1,0 +1,827 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id="chap-extending"
+         xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation="http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xinclude="http://www.w3.org/2001/XInclude">
+ <title>Extending ${projectName}</title>
+
+ <para>
+  This chapter looks at extending what ${projectName} can do
+  beyond what you get out of the box.
+ </para>
+
+ <para>
+  To extend what you can do with Filters and Handlers,
+  ${projectName} supports dynamic scripting languages like Groovy
+  through the use of <literal>ScriptableFilter</literal>
+  and <literal>ScriptableHandler</literal> objects.
+ </para>
+
+ <para>
+  If scripting is not enough, be aware that
+  ${projectName} includes a complete
+  <link
+   xlink:show="new"
+   xlink:href="${javadocBase}/index.html"
+   >application programming interface</link>,
+  designed to allow you to customize ${projectName} as required.
+  Customizing ${projectName} can be used to perform complex server interactions
+  or intensive data transformations
+  that you cannot achieve with scripts or existing handlers, filters and
+  <link
+   xlink:show="new"
+   xlink:href="reference#Expressions"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >expressions</link>.
+ </para>
+
+ <para>
+  Interface Stability:
+  <link
+   xlink:show="new"
+   xlink:href="reference#interface-stability"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >Evolving</link>
+ </para>
+
+ <section xml:id="about-scripting">
+  <title>About Scripting</title>
+
+  <para>
+   You add these Filters and Handlers to your configuration in the same way
+   as for other Filters and Handlers.
+   Each takes as its configuration the script's Internet media "type"
+   and either a "source" script included in the JSON configuration,
+   or a "file" script that ${projectName} reads from a file.
+   The configuration can also optionally supply "args"
+   in order to pass parameters to the script.
+  </para>
+
+  <para>
+   The following example defines a <literal>ScriptableFilter</literal>,
+   written in the Groovy language,
+   and stored in a file named
+   <filename>${warGroovyDir}/SimpleFormLogin.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\SimpleFormLogin.groovy</filename> on Windows).
+  </para>
+
+  <programlisting language="java">
+ {
+     "name": "SimpleFormLogin",
+     "type": "ScriptableFilter",
+     "config": {
+         "type": "application/x-groovy",
+         "file": "SimpleFormLogin.groovy"
+     }
+ }
+  </programlisting>
+
+  <para>
+   Relative paths in the "file" field depend on how ${projectName} is installed.
+   If ${projectName} is installed in an application server,
+   then paths for Groovy scripts are relative to
+   <filename>${warGroovyDir}</filename>.
+  </para>
+
+  <para>
+   This base location <filename>${warGroovyDir}</filename>
+   is on the classpath when the scripts are executed.
+   If therefore some Groovy scripts are not in the default package,
+   but instead have their own package names,
+   they belong in the directory corresponding to their package name.
+   For example, a script in package <literal>com.example.groovy</literal>
+   belongs under <filename>${warGroovyDir}/com/example/groovy/</filename>.
+  </para>
+
+  <para>
+   ${projectName} provides scripts with several global variables at run time,
+   enabling them to access the Exchange,
+   to store variables across executions,
+   to write messages to the logs,
+   and to make requests to a web service or to an LDAP directory service,
+   in addition to Groovy's built-in functionality.
+   For details, see the reference documentation for
+   <link
+    xlink:show="new"
+    xlink:href="reference#ScriptableFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >ScriptableFilter</link>
+   and
+   <link
+    xlink:show="new"
+    xlink:href="reference#ScriptableHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >ScriptableHandler</link>.
+  </para>
+
+  <para>
+   This chapter demonstrates some of what you might do using scripts.
+  </para>
+
+  <para>
+   If you want to try these scripts,
+   first install and configure ${projectName} as described in the chapter on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-quickstart"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Getting Started</citetitle></link>.
+  </para>
+ </section>
+
+ <section xml:id="scripting-dispatch">
+  <title>Scripting Dispatch</title>
+
+  <para>
+   In order to route requests, especially when the conditions are complicated,
+   you can use a <literal>ScriptableHandler</literal> instead of a
+   <link
+    xlink:show="new"
+    xlink:href="reference#DispatchHandler"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >DispatchHandler</link>.
+  </para>
+
+  <para>
+   The following script demonstrates a simple dispatch handler.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/DispatchHandler.groovy"
+ parse="text"
+ >
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   To try this handler, save the script
+   as <filename>${warGroovyDir}/DispatchHandler.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\DispatchHandler.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Next, add the following route to your configuration
+   as <filename>${warRoutesDir}/98-dispatch.json</filename>
+   (<filename>${windowsWarRoutesDir}\98-dispatch.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/98-dispatch.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route sets up the headers required by the script when the user logs in.
+  </para>
+
+  <para>
+   To try it out, browse to
+   <link xlink:show="new" xlink:href="http://www.example.com:8080" />.
+  </para>
+
+  <para>
+   The response from the script says <literal>Please
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/login"
+   >log in</link>.</literal>
+   When you click the "log in" link,
+   the "HeaderFilter" sets Username and Password headers in the request,
+   and passes the request to the script.
+  </para>
+
+  <para>
+   The script then responds, <literal>Welcome back, Babs!</literal>
+  </para>
+ </section>
+
+ <!--
+  <section xml:id="scripting-capture">
+   <title>Scripting Proxy &amp; Capture</title>
+
+   <para>
+    The following script filters the HTTP exchange to log information
+    from the HTTP request and the HTTP response,
+    proxying the request as is to the server,
+    and returning the response as is to the client.
+   </para>
+
+   <programlisting language="java">
+ // TODO: need a Capture similar to CaptureFilter but without the condition
+ capture = globals.get("capture", { -> new Capture("/tmp/gateway.log") })
+ capture(exchange.request)
+ http.execute(exchange) // next.handle(exchange) if this were a filter
+ capture(exchange.response)
+   </programlisting>
+  </section>
+ -->
+
+ <section xml:id="scripting-http-basic">
+  <title>Scripting HTTP Basic Authentication</title>
+
+  <para>
+   HTTP Basic authentication calls for the user agent such as a browser
+   to send a user name and password to the server in an Authorization header.
+   HTTP Basic authentication relies on an encrypted connection
+   to protect the user name and password credentials,
+   which are base64-encoded in the Authorization header, not encrypted.
+  </para>
+
+  <para>
+   The following script, for use in a <literal>ScriptableFilter</literal>,
+   adds an Authorization header based on a username and password combination.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/BasicAuthFilter.groovy"
+ parse="text"
+ >
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   To try this filter, save the script
+   as <filename>${warGroovyDir}/BasicAuthFilter.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\BasicAuthFilter.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Also save the following handler script
+   as <filename>${warGroovyDir}/DumpExchange.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\DumpExchange.groovy</filename> on Windows).
+   This script dumps request data so you can examine the results of the filter.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include href="resources/scripts/groovy/DumpExchange.groovy" parse="text">
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   Next, add the following route to your configuration
+   as <filename>${warRoutesDir}/09-basic.json</filename>
+   (<filename>${windowsWarRoutesDir}\09-basic.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/09-basic.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   When the request path matches <literal>/basic</literal>
+   the route calls the "BasicAuth" filter,
+   and then responds with a JSON representation of the exchange
+   including the request data.
+  </para>
+
+  <para>
+   To try it out, browse to
+   <link xlink:show="new" xlink:href="http://www.example.com:8080/basic" />.
+  </para>
+
+  <para>
+   The response from the script shows
+   the "Authorization" header in the request data,
+   and also indicates that the "scheme" is now HTTPS.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "principal": null,
+    "request": {
+        "headers": {
+            "Authorization": [
+                "Basic YmplbnNlbjpoaWZhbHV0aW4="
+            ],
+            ...
+        },
+        ...
+        "uri": {
+            ...,
+            "scheme": "https",
+            ...,
+            "path": "/basic"
+        },
+        "method": "GET"
+    },
+    ...
+}
+  </programlisting>
+ </section>
+
+ <section xml:id="scripting-ldap-auth">
+  <title>Scripting LDAP Authentication</title>
+
+  <para>
+   Many organizations use an LDAP directory service to store user profiles
+   including authentication credentials.
+   The LDAP directory service securely stores user passwords
+   in a highly-available, central service capable of
+   handling thousands of authentications per second.
+  </para>
+
+  <para>
+   The following script, for use in a <literal>ScriptableFilter</literal>,
+   performs simple authentication against an LDAP server
+   based on request form fields
+   <literal>username</literal> and <literal>password</literal>.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/LdapAuthFilter.groovy"
+ parse="text"
+ >
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   For the list of methods to specify which type of objects to return,
+   see the OpenDJ LDAP SDK Javadoc for
+   <link
+    xlink:show="new"
+    xlink:href="http://docs.forgerock.org/en/opendj/2.6.0/apidocs/index.html?org/forgerock/opendj/ldap/AttributeParser.html"
+   >AttributeParser</link>.
+  </para>
+
+  <para>
+   To try this out, first install an LDAP directory server such as
+   <link xlink:show="new" xlink:href="http://opendj.forgerock.org/">OpenDJ</link>.
+   Also import some sample users who can authenticate over LDAP.
+   With OpenDJ, you can generate sample users at installation time.
+  </para>
+
+  <para>
+   Next, save the script
+   as <filename>${warGroovyDir}/LdapAuthFilter.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\LdapAuthFilter.groovy</filename> on Windows).
+   If the directory server installation does not match
+   the assumptions made in the script,
+   adjust the script to use the correct settings for your installation.
+  </para>
+
+  <para>
+   Finally, add the following route to your configuration
+   as <filename>${warRoutesDir}/10-ldap.json</filename>
+   (<filename>${windowsWarRoutesDir}\10-ldap.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/10-ldap.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route calls the "LdapAuthFilter" script
+   to authenticate the user over LDAP.
+   On successful authentication, it response with the the bind DN.
+  </para>
+
+  <para>
+   To try it out, browse to a URL
+   where query string parameters specify a valid username and password, such as
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/ldap?username=user.0&amp;password=password"
+   />.
+  </para>
+
+  <para>
+   The response from the script shows the DN:
+   <literal>Ldap-User-Dn: uid=user.0,ou=People,dc=example,dc=com</literal>.
+  </para>
+ </section>
+
+ <!--
+  <section xml:id="scripting-entity-access">
+   <title>Scripting &amp; Entity Access</title>
+
+   <para>
+    TODO - pending https://bugster.forgerock.org/jira/browse/OPENIG-84
+   </para>
+  </section>
+ -->
+
+ <section xml:id="scripting-sql">
+  <title>Scripting SQL Queries</title>
+
+  <para>
+   You can use a <literal>ScriptableFilter</literal>
+   to look up information in a relational database
+   and include the results in the Exchange.
+  </para>
+
+  <para>
+   The following filter looks up user credentials in a database
+   given the user's email address,
+   which is found in the form data of the request.
+   The script then sets the credentials in headers,
+   making sure the scheme is HTTPS to protect the request
+   when it leaves ${projectName}.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlAccessFilter.groovy"
+ parse="text"
+ >
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The previous script demonstrates a <literal>ScriptableFilter</literal>
+   that uses a <literal>SqlClient</literal> class defined in another script.
+   The following code listing shows the <literal>SqlClient</literal> class.
+  </para>
+
+  <programlisting language="java">
+<xinclude:include
+ href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlClient.groovy"
+ parse="text"
+ >
+ <xinclude:fallback>
+   Failed to include script
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   To try this out, first follow the tutorial on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#tutorial-credentials-from-sql"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Login With Credentials From a Database</citetitle></link>.
+   When everything in that tutorial works,
+   you know that ${projectName} can connect to the database,
+   lookup users by email address,
+   and successfully authenticate to the sample application.
+  </para>
+
+  <para>
+   Next, save the scripts
+   as <filename>${warGroovyDir}/SqlAccessFilter.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\SqlAccessFilter.groovy</filename> on Windows),
+   and as <filename>${warGroovyDir}/SqlClient.groovy</filename>
+   (<filename>${windowsWarGroovyDir}\SqlClient.groovy</filename> on Windows).
+  </para>
+
+  <para>
+   Finally, add the following route to your configuration
+   as <filename>${warRoutesDir}/11-db.json</filename>
+   (<filename>${windowsWarRoutesDir}\11-db.json</filename> on Windows).
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/11-db.json" parse="text">
+ <xinclude:fallback>
+   Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   The route calls the "SqlFilter" script to look up credentials over SQL.
+   It then uses calls a "LoginRequest" to build a static request.
+   Although the script sets the scheme to HTTPS,
+   the "LoginRequest" filter ignores that and resets the URI.
+   This is to make it easier for you to try this out,
+   without having to worry about setting up HTTPS.
+  </para>
+
+  <para>
+   To try it out, browse to a URL
+   where a query string parameter specifies a valid email address, such as
+   <link
+    xlink:show="new"
+    xlink:href="http://www.example.com:8080/db?mail=george@example.com"
+   />.
+  </para>
+
+  <para>
+   If the lookup and authentication are successful,
+   you see the profile page of the sample application.
+  </para>
+ </section>
+
+ <section xml:id="about-custom-extensions">
+  <title>About Developing Custom Extensions</title>
+
+  <para>
+   If scripting is not enough, be aware that
+   ${projectName} includes a complete Java
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html"
+   >application programming interface</link>,
+   designed to allow you to customize ${projectName} as required.
+   Customizing ${projectName} can be used to perform complex server interactions
+   or intensive data transformations
+   that you cannot achieve with scripts or existing handlers, filters and
+   <link
+    xlink:show="new"
+    xlink:href="reference#Expressions"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >expressions</link>.
+  </para>
+ </section>
+
+ <section xml:id="extension-points">
+  <title>Key Extension Points</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Extension points</secondary>
+ </indexterm>
+
+  <para>The two primary extension points are the interfaces:
+   <link
+    xlink:href="${javadocBase}/org/forgerock/openig/filter/Filter.html"
+    xlink:show="new"
+   >Filter</link> (for processing a request and/or response en route) and
+   <link
+    xlink:href="${javadocBase}/org/forgerock/openig/handler/Handler.html"
+    xlink:show="new"
+   >Handler</link> (for generating responses from requests).
+   These interfaces are similar to the Java Enterprise Edition
+   <literal>Filter</literal> and <literal>Servlet</literal> interfaces, with
+   some differences in the semantics of messages. While you can simply implement
+   these interfaces, there are also included convenience classes:
+   <link
+    xlink:href="${javadocBase}/org/forgerock/openig/filter/GenericFilter.html"
+    xlink:show="new"
+   >GenericFilter</link> and
+   <link
+    xlink:href="${javadocBase}/org/forgerock/openig/handler/GenericHandler.html"
+    xlink:show="new"
+   >GenericHandler</link> that you can use if you intend to make
+   your extensions configurable through the ${projectName} configuration
+   resource.
+  </para>
+ </section>
+
+ <section xml:id="custom-filter">
+  <title>Implementing a Filter</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Filters</secondary>
+ </indexterm>
+
+  <para>
+   The <literal>Filter</literal> interface exposes a
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
+   >filter()</link> method,
+   which takes an
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html"
+   >Exchange</link> object
+   and the
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html"
+   >Chain</link> of remaining filters and handler to dispatch to.
+   Initially,
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
+   >exchange.request</link> contains the request to be filtered.
+   To pass the request to the next filter or handler in the chain,
+   the filter calls
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
+   >next.handle(exchange)</link>.
+   After this call,
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >exchange.response</link> contains the response that can be filtered.
+  </para>
+
+  <para>
+   A filter might elect not to pass the request to the next filter or handler,
+   and instead handle the request itself.
+   It can achieve this by merely avoiding a call
+   to <literal>next.handle(exchange)</literal>
+   and creating its own response object in the exchange.
+   The filter is also at liberty to replace a response with another of its own.
+   A filter can exist in more than one chain,
+   therefore should make no assumptions or correlations
+   using the chain it is supplied.
+   The only valid use of a chain by a filter is to call its
+   <literal>handle()</literal> method to dispatch the exchange
+   to the rest of the chain.
+  </para>
+
+  <note>
+   <para>
+    If an existing response exists in the exchange object
+    and the filter intends to replace it with its own,
+    it must call the
+    <link
+     xlink:show="new"
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
+    >response.close()</link> method in order to signal
+    that the processing of the response from a remote server is complete.
+   </para>
+  </note>
+ </section>
+
+ <section xml:id="custom-handler">
+  <title>Implementing a Handler</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Handlers</secondary>
+ </indexterm>
+
+  <para>
+   The <literal>Handler</literal> interface exposes a
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
+   >handle()</link> method,
+   which takes an
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >Exchange</link> object.
+   It processes the request in
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
+    >exchange.request</link> and produces a response in
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
+   >exchange.response</link>.
+   A handler can elect to dispatch the exchange to another handler or chain.
+  </para>
+
+  <note>
+   <para>
+    If an existing response exists in the exchange object
+    and the filter intends to replace it with its own,
+    it must first check to see if the
+    it must call the
+    <link
+     xlink:show="new"
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
+    >response.close()</link> method in order to signal
+    that the processing of the response from a remote server is complete.
+   </para>
+  </note>
+ </section>
+
+ <section xml:id="custom-heap-config">
+  <title>Heap Object Configuration</title>
+
+ <indexterm>
+  <primary>Customizations</primary>
+  <secondary>Heap objects</secondary>
+ </indexterm>
+
+  <para>
+   Objects are added to the heap and supplied with configuration artifacts
+   at initialization time. To be integrated with the configuration, a class must
+   have an accompanying implementation of the
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/heap/Heaplet.html"
+   >Heaplet</link> interface. The easiest and most common way of exposing the
+   heaplet is to extend the
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/heap/NestedHeaplet.html"
+   >NestedHeaplet</link> class in a nested class in the class you want to create
+   and initialize and implementing its
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#create()"
+   >create</link> method.
+  </para>
+
+  <para>
+   Within the <literal>create</literal> method, you can access the
+   object's configuration through the
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#config"
+   >config</link> field.
+  </para>
+ </section>
+
+ <section xml:id="custom-sample-filter">
+  <title>Sample Filter</title>
+
+  <para>The following sample filter sets an arbitrary header in the incoming
+  request and outgoing response.</para>
+
+  <programlisting language="java">
+package com.example.filter;
+
+// Java Standard Edition
+import java.io.IOException;
+
+// ${projectName} Core Library
+import org.forgerock.openig.filter.GenericFilter;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
+
+public class HelloWorldFilter extends GenericFilter {
+
+    public String name;
+    public String value;
+
+    @Override
+    public void filter(Exchange exchange, Handler next)
+            throws HandlerException, IOException {
+        exchange.request.getHeaders().putSingle(name, value); // set header in request
+        next.handle(exchange); // pass to remaining filters &amp; handler in chain
+        exchange.response.getHeaders().putSingle(name, value); // set header in response
+    }
+
+    public static class Heaplet extends NestedHeaplet {
+
+        @Override
+        public Object create() throws HeapException {
+            HelloWorldFilter filter = new HelloWorldFilter();
+            filter.name = config.get("name").required().asString(); // required
+            filter.value = config.get("value").required().asString(); // req'd
+            return filter;
+        }
+    }
+}  </programlisting>
+
+  <para>The corresponding heap object configuration is as follows.</para>
+
+  <programlisting language="javascript">{
+     "name": "HelloWorldFilter",
+     "type": "com.example.filter.HelloWorldFilter",
+     "config": {
+         "name": "X-Hello",
+         "value": "World"
+     }
+}</programlisting>
+ </section>
+</chapter>

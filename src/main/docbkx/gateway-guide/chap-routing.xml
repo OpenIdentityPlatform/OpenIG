@@ -30,7 +30,7 @@
                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xinclude="http://www.w3.org/2001/XInclude">
- <title>Routing Tutorial</title>
+ <title>Configuring Routes</title>
 
  <indexterm>
   <primary>Routing</primary>

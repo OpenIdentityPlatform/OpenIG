@@ -334,12 +334,12 @@
    Logs the user into Microsoft Online Outlook Web Access (OWA).
    This template shows how you would use ${projectName}
    and the OpenAM password capture feature to integrate with OWA.
-   You can follow the
+   You can follow the chapter on
    <link
     xlink:show="new"
     xlink:href="gateway-guide#chap-password-capture-replay-tutorial"
     xlink:role="http://docbook.org/xlink/role/olink"
-   >Tutorial On Password Capture &amp; Replay</link> tutorial,
+   ><citetitle>Getting Login Credentials From OpenAM</citetitle></link>,
    and substitute this template as a replacement for the default route.
   </para>
 

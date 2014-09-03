@@ -9,19 +9,15 @@
                 }
             },
             {
-                "name": "Dispatcher",
-                "type": "DispatchHandler",
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
                 "config": {
-                    "bindings": [
-                        {
-                            "handler": "DefaultChain",
-                            "baseURI": "http://www.example.com:8081"
-                        }
-                    ]
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log"
                 }
             },
             {
-                "name": "DefaultChain",
+                "name": "Chain",
                 "type": "Chain",
                 "config": {
                     "filters": [
@@ -31,19 +27,12 @@
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
-                "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
-                }
-            },
-            {
                 "name": "Router",
                 "type": "Router",
                 "config": {}
             }
         ]
     },
-    "handlerObject": "Dispatcher"
+    "handlerObject": "Chain",
+    "baseURI": "http://www.example.com:8081"
 }
