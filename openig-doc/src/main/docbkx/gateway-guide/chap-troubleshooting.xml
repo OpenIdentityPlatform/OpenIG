@@ -24,21 +24,22 @@
   !    
 -->
 <chapter xml:id='chap-troubleshooting'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'>
  <title>Troubleshooting</title>
 
  <indexterm>
   <primary>Troubleshooting</primary>
  </indexterm>
 
- <para>This chapter covers common problems and their solutions.</para>
+ <para>
+  This chapter covers common problems and their solutions.
+ </para>
 
- <section>
+ <section xml:id="troubleshooting-object-not-found-in-heap">
   <title>Object not found in heap</title>
 
   <programlisting language="none">
@@ -58,7 +59,7 @@ org.forgerock.json.fluent.JsonValueException: /handlerObject:
   </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-unexpected-character">
   <title>Unexpected character (x) at position 1103</title>
 
   <programlisting language="none">
@@ -68,21 +69,29 @@ Problem accessing /. Reason:
 Unexpected character (x) at position 1103
   </programlisting>
 
-  <para>This error usually means a missing double quote or a missing bracket
-  in the configuration file.  Use a JSON editor or JSON validation tool
-  such as <link xlink:show="new" xlink:href="http://jsonlint.com/"
-  >JSONLint</link> to make sure your JSON is valid.</para>
+  <para>
+   This error usually means a missing double quote
+   or a missing bracket in the configuration file.
+   Use a JSON editor or JSON validation tool such as
+   <link
+    xlink:show="new"
+    xlink:href="http://jsonlint.com/"
+   >JSONLint</link> to make sure your JSON is valid.
+  </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-flat-file-values-not-correct">
   <title>The values in the flat file are incorrect</title>
 
-  <para>Ensure the flat file is readable by the user running the container for
-  ${projectName}. Values are all characters, including space and tabs, between the
-  separator, so make sure the values are not padded with spaces.</para>
+  <para>
+   Ensure the flat file is readable
+   by the user running the container for ${projectName}.
+   Values are all characters, including space and tabs,
+   between the separator, so make sure the values are not padded with spaces.
+  </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-problem-accessing-url">
   <title>Problem accessing URL</title>
 
   <programlisting language="none">
@@ -99,34 +108,47 @@ at org.forgerock.openig.filter.LoggingFilter.filter(LoggingFilter.java:86)
 at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
   </programlisting>
 
-  <para>This error is typically encountered when using the <link
-  xlink:href="reference#AssignmentFilter"
-  xlink:role="http://docbook.org/xlink/role/olink">AssignmentFilter</link> and
-  setting a string value for one of the Headers. All headers are stored in
-  Lists so the header must be addressed with a subscript. For example, if you
-  try to set <literal>exchange.request.headers['Location']</literal> for a
-  redirect in the response object, you should instead set
-  <literal>exchange.request.headers['Location'][0]</literal>. A header without
-  a subscript leads to the error above.</para>
+  <para>
+   This error is typically encountered when using the
+   <link
+    xlink:href="reference#AssignmentFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >AssignmentFilter</link>
+   and setting a string value for one of the Headers.
+   All headers are stored in Lists
+   so the header must be addressed with a subscript.
+  </para>
+
+  <para>
+   For example, if you try to set
+   <literal>exchange.request.headers['Location']</literal>
+   for a redirect in the response object, you should instead set
+   <literal>exchange.request.headers['Location'][0]</literal>.
+   A header without a subscript leads to the error above.
+  </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-static-response-handler-blank-page">
   <title>StaticResponseHandler results in a blank page</title>
 
-  <para>You must define an entity for the response. For example:</para>
+  <para>
+   You must define an entity for the response as in the following example.
+  </para>
 
-  <programlisting language="javascript">{
+  <programlisting language="javascript"><![CDATA[
+{
     "name": "AccessDeniedHandler",
-    "type": "org.forgerock.openig.handler.StaticResponseHandler",
+    "type": "StaticResponseHandler",
     "config": {
         "status": 403,
         "reason": "Forbidden",
-        "entity": "&lt;html>&lt;h2>User does not have permission&lt;/h2>&lt;/html>"
+        "entity": "<html><p>User does not have permission</p></html>"
     }
-}</programlisting>
+}
+  ]]></programlisting>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-not-logging-users-in">
   <title>${projectName} is not logging users in</title>
 
   <para>
@@ -141,7 +163,7 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
   </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-read-timeout-sending-request">
   <title>Read timed out error when sending a request</title>
 
   <para>
@@ -166,7 +188,7 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
   </para>
  </section>
 
- <section>
+ <section xml:id="troubleshooting-new-route-not-used">
   <title>${projectName} does not use new route configuration</title>
 
   <para>
