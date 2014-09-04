@@ -59,6 +59,53 @@ org.forgerock.json.fluent.JsonValueException: /handlerObject:
   </para>
  </section>
 
+ <section xml:id="troubleshooting-config-field-ignored">
+  <title>${projectName} ignores a configuration field</title>
+
+  <para>
+   ${projectName} ignores the configuration,
+   and nothing appears in debug log output.
+  </para>
+
+  <para>
+   If you are more lucky, this can also manifest itself
+   by an error such as the following.
+  </para>
+
+  <programlisting language="none">
+Caused by:
+org.forgerock.json.fluent.JsonValueException:
+ /heap/objects/2/config/handler: Expecting a value
+    at org.forgerock.json.fluent.JsonValue.required(JsonValue.java:1398)
+    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:67)
+    at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:102)
+    at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:83)
+    at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:107)
+    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:67)
+...
+  </programlisting>
+
+  <para>
+   When ${projectName} does not recognize an argument name,
+   it ignores the argument.
+   This is both a feature and a limitation of the JSON format.
+  </para>
+
+  <para>
+   This is a feature because it allows you
+   to add comments by using the field name <literal>"comment"</literal>,
+   or to comment out a field using a single character,
+   as in <literal>"_captureEntity": true</literal>
+   rather than <literal>"captureEntity": true</literal>.
+  </para>
+
+  <para>
+   This is a limitation because spelling errors
+   in field names for optional settings
+   cause ${projectName} to silently ignore the field.
+  </para>
+ </section>
+
  <section xml:id="troubleshooting-unexpected-character">
   <title>Unexpected character (x) at position 1103</title>
 
