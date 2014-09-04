@@ -80,6 +80,12 @@
   </itemizedlist>
 
   <para>
+   You must deploy ${projectName} to the root context of the container.
+   Deployment in other context causes unexpected results,
+   and cannot be supported.
+  </para>
+
+  <para>
    ${projectName} expressions depend on Unified Expression Language 2.2,
    which is available in containers that support Servlet 3.0 or later.
    Some expressions can lead to a <literal>java.lang.NoSuchMethodError</literal>
