@@ -19,6 +19,7 @@ package org.forgerock.openig.util;
 
 import static java.lang.String.*;
 import static java.util.Collections.*;
+import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Loader.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.promise.Function;
 
@@ -208,4 +210,30 @@ public final class JsonValueUtil {
         return OF_EXPRESSION;
     }
 
+    /**
+     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
+     * objects.
+     *
+     * @param heap
+     *         the heap to query for references resolution
+     * @param type
+     *         expected object type
+     * @param <T>
+     *         expected object type
+     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
+     * objects.
+     */
+    public static <T> Function<JsonValue, T, HeapException> ofRequiredHeapObject(final Heap heap,
+                                                                                 final Class<T> type) {
+        return new Function<JsonValue, T, HeapException>() {
+            @Override
+            public T apply(final JsonValue value) throws HeapException {
+                if ((value.isNull()) || (!value.isString())) {
+                    throw new JsonValueException(value, format("%s cannot be turned into a heap object reference",
+                                                               value));
+                }
+                return getRequiredObject(heap, value, type);
+            }
+        };
+    }
 }
