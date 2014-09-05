@@ -18,8 +18,8 @@ package org.forgerock.openig.handler;
 
 import java.io.IOException;
 
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.BranchingStreamWrapper;
@@ -56,7 +56,7 @@ public class WelcomeHandler extends GenericHandler {
     /**
      * Creates and initializes a static response handler in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             return new WelcomeHandler();

@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,8 +25,8 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Response;
@@ -141,7 +141,7 @@ public class StaticResponseHandler extends GenericHandler {
     /**
      * Creates and initializes a static response handler in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             final int status = config.get("status").required().asInteger();

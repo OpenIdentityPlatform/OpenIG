@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.util.ISO8601;
 
 /**
@@ -61,7 +61,7 @@ public class ConsoleLogSink implements LogSink {
     /**
      * Creates and initializes a console sink in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             ConsoleLogSink sink = new ConsoleLogSink();

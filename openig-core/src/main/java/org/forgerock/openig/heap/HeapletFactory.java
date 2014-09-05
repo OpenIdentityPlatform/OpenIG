@@ -16,24 +16,19 @@
 
 package org.forgerock.openig.heap;
 
-@SuppressWarnings("javadoc")
-public class HeapObject {
+/**
+ * Builds {@link Heaplet} instances.
+ * A {@link HeapletFactory} can manage multiple Heaplet types.
+ */
+public interface HeapletFactory {
 
-    public boolean destroyed = false;
-    public String message = null;
-
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            HeapObject heapObject = new HeapObject();
-            heapObject.message = config.get("message").asString();
-            return heapObject;
-        }
-
-        @Override
-        public void destroy() {
-            ((HeapObject) object).destroyed = true;
-        }
-    }
+    /**
+     * Returns a new {@link Heaplet} instance that know how to build the given {@literal type}.
+     *
+     * @param type
+     *         the type that the created heaplet must support.
+     * @return a new {@link Heaplet} instance that know how to build the given {@literal type}, may return {@code null}
+     * if the given type is not supported by this factory.
+     */
+    Heaplet newInstance(final Class<?> type);
 }

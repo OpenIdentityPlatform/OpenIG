@@ -20,8 +20,8 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValueUtil.asExpression;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -30,9 +30,9 @@ import java.util.Arrays;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -176,7 +176,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
     }
 
     /** Creates and initializes an HTTP basic authentication filter in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             Handler failureHandler =

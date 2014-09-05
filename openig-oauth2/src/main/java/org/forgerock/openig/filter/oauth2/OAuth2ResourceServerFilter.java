@@ -18,7 +18,7 @@ package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.heap.HeapUtil.*;
-import static org.forgerock.openig.util.Duration.duration;
+import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.IOException;
@@ -40,8 +40,8 @@ import org.forgerock.openig.filter.oauth2.challenge.NoAuthenticationChallengeHan
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.log.LogTimer;
@@ -248,7 +248,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     }
 
     /** Creates and initializes an OAuth2 filter in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         private ThreadSafeCache<String, AccessToken> cache;
         private ScheduledExecutorService executorService;

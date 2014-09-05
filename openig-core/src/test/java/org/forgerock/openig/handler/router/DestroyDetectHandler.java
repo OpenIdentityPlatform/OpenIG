@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 
 @SuppressWarnings("javadoc")
@@ -36,7 +36,7 @@ public class DestroyDetectHandler implements Handler {
     public void handle(final Exchange exchange) throws HandlerException, IOException {
     }
 
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {

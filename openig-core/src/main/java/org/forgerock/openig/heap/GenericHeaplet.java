@@ -61,9 +61,6 @@ public abstract class GenericHeaplet implements Heaplet {
     protected Object object;
 
     @Override
-    public abstract Class<?> getKey();
-
-    @Override
     public Object create(String name, JsonValue config, Heap heap) throws HeapException {
         this.name = name;
         this.config = config.required().expect(Map.class);
