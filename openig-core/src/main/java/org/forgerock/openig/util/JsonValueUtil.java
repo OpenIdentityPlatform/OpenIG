@@ -207,4 +207,5 @@ public final class JsonValueUtil {
     public static final Function<JsonValue, Expression, HeapException> ofExpression() {
         return OF_EXPRESSION;
     }
+
 }

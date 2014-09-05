@@ -16,8 +16,12 @@
 
 package org.forgerock.openig.alias;
 
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
@@ -69,6 +73,8 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("HttpClient", HttpClient.class);
+        ALIASES.put("KeyManager", KeyManager.class);
+        ALIASES.put("KeyStore", KeyStore.class);
         ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("RedirectFilter", RedirectFilter.class);
         ALIASES.put("Router", RouterHandler.class);
@@ -81,6 +87,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
         ALIASES.put("TemporaryStorage", TemporaryStorage.class);
+        ALIASES.put("TrustManager", TrustManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
     }
 
