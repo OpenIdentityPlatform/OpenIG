@@ -19,12 +19,27 @@ package org.forgerock.openig.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.heap.Heap;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class JsonValueUtilTest {
+
+    @Mock
+    private Heap heap;
+
+    @BeforeMethod
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void shouldEvaluateLeafJsonValueWithExpression() throws Exception {
@@ -70,5 +85,37 @@ public class JsonValueUtilTest {
     public void shouldFailForIncorrectValueExpression() throws Exception {
         JsonValue mapValue = json(object(field("one", "incorrect ${expression")));
         evaluateJsonStaticExpression(mapValue.get("one"));
+    }
+
+    @Test
+    public void shouldTransformListOfReferencesToListOfHeapObjectsWithSingleReference() throws Exception {
+        when(heap.get("RefOne")).thenReturn("Resolved object #1");
+        JsonValue list = json(array("RefOne"));
+
+        assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
+                .containsExactly("Resolved object #1");
+    }
+
+    @Test
+    public void shouldTransformListOfReferencesToListOfHeapObjectsWithMultipleReferences() throws Exception {
+        when(heap.get("RefOne")).thenReturn("Resolved object #1");
+        when(heap.get("RefTwo")).thenReturn("Resolved object #2");
+        when(heap.get("RefThree")).thenReturn("Resolved object #3");
+        JsonValue list = json(array("RefOne", "RefTwo", "RefThree"));
+
+        assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
+                .containsExactly("Resolved object #1", "Resolved object #2", "Resolved object #3");
+    }
+
+    @Test(expectedExceptions = JsonValueException.class)
+    public void shouldFailForUnresolvableReferences() throws Exception {
+        JsonValue list = json(array("RefOne"));
+        list.asList(ofRequiredHeapObject(heap, String.class));
+    }
+
+    @Test(expectedExceptions = JsonValueException.class)
+    public void shouldFailForIncorrectUseOfReferences() throws Exception {
+        JsonValue list = json(array(42));
+        list.asList(ofRequiredHeapObject(heap, String.class));
     }
 }
