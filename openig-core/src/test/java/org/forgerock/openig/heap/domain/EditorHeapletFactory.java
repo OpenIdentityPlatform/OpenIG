@@ -14,26 +14,26 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap;
+package org.forgerock.openig.heap.domain;
+
+import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Heaplet;
+import org.forgerock.openig.heap.HeapletFactory;
 
 @SuppressWarnings("javadoc")
-public class HeapObject {
+public class EditorHeapletFactory implements HeapletFactory {
+    @Override
+    public Heaplet newInstance(final Class<?> type) {
+        return Editor.class.equals(type) ? new EditorHeaplet() : null;
+    }
 
-    public boolean destroyed = false;
-    public String message = null;
-
-    public static class Heaplet extends GenericHeaplet {
+    public static class EditorHeaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {
-            HeapObject heapObject = new HeapObject();
-            heapObject.message = config.get("message").asString();
-            return heapObject;
-        }
-
-        @Override
-        public void destroy() {
-            ((HeapObject) object).destroyed = true;
+            return new Editor();
         }
     }
+
 }

@@ -33,8 +33,8 @@ import java.util.regex.Pattern;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -359,7 +359,7 @@ public class CookieFilter extends GenericFilter {
     /**
      * Creates and initializes a cookie filter in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             CookieFilter filter = new CookieFilter();

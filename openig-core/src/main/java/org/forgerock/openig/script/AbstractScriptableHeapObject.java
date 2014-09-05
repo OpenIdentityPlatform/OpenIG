@@ -15,9 +15,9 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.http.HttpClient.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,8 +32,8 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
@@ -62,7 +62,7 @@ import org.forgerock.openig.log.LogTimer;
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
-    protected static abstract class AbstractScriptableHeaplet extends NestedHeaplet {
+    protected static abstract class AbstractScriptableHeaplet extends GenericHeaplet {
         private static final String CONFIG_OPTION_FILE = "file";
         private static final String CONFIG_OPTION_SOURCE = "source";
         private static final String CONFIG_OPTION_TYPE = "type";

@@ -26,8 +26,8 @@ import java.util.Map;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.SeparatedValuesFile;
@@ -105,7 +105,7 @@ public class FileAttributesFilter extends GenericFilter {
     }
 
     /** Creates and initializes a separated values file attribute provider in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             SeparatedValuesFile sources = new SeparatedValuesFile(new File(evaluate(config.get("file").required())),

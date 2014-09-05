@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.handler.saml;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +32,8 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
@@ -70,7 +70,7 @@ public class SamlFederationHandler extends GenericHandler {
     /**
      * Reads the actual federation servlet from the JSON configuration file.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             final Map<String, String> attributeMapping = new HashMap<String, String>();

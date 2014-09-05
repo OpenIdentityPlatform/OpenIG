@@ -16,15 +16,13 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.getObject;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.util.JsonValueUtil.asExpression;
-import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
-import static org.forgerock.openig.util.URIUtil.withQuery;
+import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.URIUtil.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -42,8 +40,8 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
@@ -838,7 +836,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     /** Creates and initializes the filter in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             final OAuth2ClientFilter filter = new OAuth2ClientFilter();

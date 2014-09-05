@@ -18,13 +18,13 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.http.HttpClient.*;
 
 import java.io.IOException;
 
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.log.LogTimer;
@@ -69,7 +69,7 @@ public class ClientHandler extends GenericHandler {
     }
 
     /** Creates and initializes a client handler in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             HttpClient httpClient = getRequiredObject(heap,

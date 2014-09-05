@@ -69,8 +69,8 @@ import org.forgerock.openig.header.ConnectionHeader;
 import org.forgerock.openig.header.ContentEncodingHeader;
 import org.forgerock.openig.header.ContentLengthHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
@@ -445,7 +445,7 @@ public class HttpClient {
     /**
      * Creates and initializes a http client object in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {

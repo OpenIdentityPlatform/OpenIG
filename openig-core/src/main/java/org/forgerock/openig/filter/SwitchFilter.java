@@ -26,9 +26,9 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
@@ -115,7 +115,7 @@ public class SwitchFilter extends GenericFilter {
     /**
      * Creates and initializes an expect filter in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             SwitchFilter result = new SwitchFilter();

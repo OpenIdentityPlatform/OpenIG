@@ -14,26 +14,8 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap;
+package org.forgerock.openig.heap.domain;
 
 @SuppressWarnings("javadoc")
-public class HeapObject {
-
-    public boolean destroyed = false;
-    public String message = null;
-
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            HeapObject heapObject = new HeapObject();
-            heapObject.message = config.get("message").asString();
-            return heapObject;
-        }
-
-        @Override
-        public void destroy() {
-            ((HeapObject) object).destroyed = true;
-        }
-    }
+public class Publisher {
 }
