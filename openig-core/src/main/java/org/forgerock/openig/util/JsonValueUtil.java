@@ -17,11 +17,14 @@
 
 package org.forgerock.openig.util;
 
-import static java.util.Collections.unmodifiableList;
-import static org.forgerock.openig.util.Loader.loadList;
+import static java.lang.String.*;
+import static java.util.Collections.*;
+import static org.forgerock.openig.util.Loader.*;
 
 import java.util.List;
 
+import org.forgerock.json.fluent.JsonException;
+import org.forgerock.json.fluent.JsonTransformer;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
@@ -48,6 +51,25 @@ public final class JsonValueUtil {
                     return asExpression(value);
                 }
             };
+
+    /**
+     * Resolves a String-based {@link JsonValue} instance that may contains an {@link Expression}.
+     */
+    private static final JsonTransformer EXPRESSION_TRANSFORMER = new JsonTransformer() {
+        @Override
+        public void transform(final JsonValue value) {
+            if (value.isString()) {
+                try {
+                    Expression expression = new Expression(value.asString());
+                    value.setObject(expression.eval(null, String.class));
+                } catch (ExpressionException e) {
+                    throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
+                                                   value.asString(),
+                                                   value.getPointer()), e);
+                }
+            }
+        }
+    };
 
     /**
      * Private constructor for utility class.
@@ -158,6 +180,23 @@ public final class JsonValueUtil {
             return expression.eval(null, String.class);
         }
         return null;
+    }
+
+    /**
+     * Evaluates the given JSON value using an Expression and wraps the returned value as a new JsonValue. This only
+     * change value of String types JsonValues, other types are ignored. This mechanism only perform change on the given
+     * JsonValue object (child nodes are left unchanged).
+     *
+     * @param value
+     *         the JSON value to be evaluated.
+     * @return a new JsonValue instance containing the resolved expression (or the original wrapped value if it was not
+     * changed)
+     * @throws JsonException
+     *         if the expression cannot be evaluated (syntax error or resolution error).
+     */
+    public static JsonValue evaluateJsonStaticExpression(final JsonValue value) {
+        // Returned a transformed, deep object copy
+        return new JsonValue(value, singleton(EXPRESSION_TRANSFORMER));
     }
 
     /**
