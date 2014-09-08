@@ -79,7 +79,7 @@
   <programlisting language="javascript">
 {
   "heap": { <replaceable>heap-configuration object</replaceable> },
-  "handlerObject": string,
+  "handler": string,
   "baseURI": string,
   "logSink":  string,
   "temporaryStorage": string
@@ -107,7 +107,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handlerObject"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
      <para>
       The name of the

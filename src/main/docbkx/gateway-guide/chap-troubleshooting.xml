@@ -43,7 +43,7 @@
   <title>Object not found in heap</title>
 
   <programlisting language="none">
-org.forgerock.json.fluent.JsonValueException: /handlerObject:
+org.forgerock.json.fluent.JsonValueException: /handler:
    object Router2 not found in heap
     at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:69)
     at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:188)
@@ -51,7 +51,7 @@ org.forgerock.json.fluent.JsonValueException: /handlerObject:
   </programlisting>
 
   <para>
-   You have specified "handlerObject": "Router2"
+   You have specified "handler": "Router2"
    in <filename>config.json</filename>,
    but no handler configuration object named "Router2" exists.
    Make sure you have added an entry for the handler

@@ -68,7 +68,7 @@
    is responsible for reloading the route configuration.
    Use a Router to call route handlers,
    rather than calling a route directly
-   as the "handlerObject" of the gateway servlet.
+   as the "handler" of the gateway servlet.
    By default the Router rereads the configurations periodically,
    so that configuration changes to routes apply without restarting ${projectName}.
   </para>

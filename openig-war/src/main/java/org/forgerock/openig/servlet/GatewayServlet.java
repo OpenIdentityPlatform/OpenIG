@@ -23,6 +23,7 @@ import static org.forgerock.openig.heap.HeapUtil.getObject;
 import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
@@ -185,14 +186,16 @@ public class GatewayServlet extends HttpServlet {
             heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.init(config.get("heap").required().expect(Map.class));
 
-            handler = getRequiredObject(heap, config.get("handlerObject"), Handler.class);
-            baseURI = config.get("baseURI").asURI();
             // As all heaplets can specify their own storage and logger,
-            // those two lines provide custom logger or storage available.
+            // these two lines provide custom logger or storage available.
             logger = new Logger(getObject(heap, config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                     LogSink.class), "GatewayServlet");
             storage = getRequiredObject(heap, config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
+            handler =
+                    getRequiredObject(heap, getWithDeprecation(config, logger, "handler",
+                            "handlerObject"), Handler.class);
+            baseURI = config.get("baseURI").asURI();
         } catch (final ServletException e) {
             throw e;
         } catch (final Exception e) {
