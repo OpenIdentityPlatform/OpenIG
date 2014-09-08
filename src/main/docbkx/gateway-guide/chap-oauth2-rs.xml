@@ -402,7 +402,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
      a client handler to send access token validation requests,
      the list of required scopes that the filter expects to find in access tokens,
      the OpenAM token info endpoint used to validate access tokens,
-     and <literal>"enforceHttps": false</literal> to allow testing
+     and <literal>"requireHttps": false</literal> to allow testing
      without having to set up keys and certificates.
      (In production environments, do use HTTPS to protect access tokens.)
     </para>

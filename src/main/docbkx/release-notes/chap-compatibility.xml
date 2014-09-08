@@ -40,118 +40,22 @@
   <title>Major Changes to Existing Functionality</title>
 
   <para>
-   This release brings important new functionality
-   and many changes to ${projectName}.
+   This release brings the following changes to ${projectName}.
   </para>
 
   <para>
    TODO update for next release.
-   The following changes are from 3.0.0.
   </para>
 
   <itemizedlist>
    <para>
-    If you are running older versions of ${projectName}
-    you must at minimum modify both the location
-    and also the content of your <filename>config.json</filename> file.
-   </para>
-
-   <para>
-    You must migrate the configuration by hand.
+    This release includes the following changes
+    compared to ${projectName} 3.0.0.
    </para>
 
    <listitem>
     <para>
-     The configuration file location and configuration layout have changed.
-    </para>
-
-    <para>
-     By default, configuration files are now stored
-     under <filename>${warConfigDir}</filename>
-     and <filename>${warSamlDir}</filename> on UNIX, Linux, and Mac OS X,
-     and under <filename>${windowsWarConfigDir}</filename>
-     and <filename>${windowsWarSamlDir}</filename> on Windows systems.
-    </para>
-
-    <para>
-     For details the <citetitle>Guide to ${projectName}</citetitle> section,
-     <link
-     xlink:show="new"
-     xlink:href="gateway-guide#install"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >Installing ${projectName}</link>.
-    </para>
-
-    <para>
-     As described in that section,
-     the base configuration directory can be changed
-     and can even be set at run time.
-     You must therefore take care to protect access to ${projectName},
-     both by protecting access to the environment at startup time,
-     and also by protecting access to configuration files at run time.
-    </para>
-
-    <para>
-     Notice that ${projectName} configuration can be split across multiple files.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     Usage for some configuration objects has changed.
-     In particular, the top-level configuration object
-     now references a Handler rather than a Servlet.
-    </para>
-
-    <para>
-     When migrating your configuration, review current usage in the
-     <link
-     xlink:show="new"
-     xlink:href="reference#reference"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>${projectName} Reference</citetitle></link>.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     ${projectName} supports runtime configuration changes,
-     as described in the <citetitle>Guide to ${projectName}</citetitle> chapter,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#chap-routing"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuring Routes</citetitle></link>.
-    </para>
-
-    <para>
-     Notice that you can turn off runtime configuration changes.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     ${projectName} configuration Expressions can depend on runtime settings,
-     such as environment variables and system properties.
-    </para>
-
-    <para>
-     You must ensure that these settings are properly protected.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     As SAML 2.0 federation support is now integrated into the
-     main ${projectName} .war file,
-     the way of configuring dispatch to the Federation component has changed.
-     For an example of how the configuration is handled now,
-     see the <citetitle>Guide to ${projectName}</citetitle> chapter,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#chap-federation-tutorial"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>${projectName} as a SAML 2.0 Service Provider</citetitle></link>.
+     See <xref linkend="deprecated" /> for a list of configuration changes.
     </para>
    </listitem>
   </itemizedlist>
@@ -161,8 +65,101 @@
   <title>Deprecated Functionality</title>
 
   <para>
-   TODO update for next release.
+   This release deprecates the following configuration settings.
   </para>
+
+    <table>
+     <title>Configuration settings</title>
+
+     <tgroup cols="3">
+      <colspec colnum="1" colwidth="1*"/>
+      <colspec colnum="2" colwidth="1*"/>
+      <colspec colnum="3" colwidth="1*"/>
+
+      <thead>
+       <row>
+        <entry>
+         Configuration Object
+        </entry>
+
+        <entry>
+         <link
+          xlink:show="new"
+          xlink:href="admin-guide#interface-stability"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >Deprecated</link> Settings
+        </entry>
+
+        <entry>
+         Newer
+         <link
+          xlink:show="new"
+          xlink:href="admin-guide#interface-stability"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >Evolving</link> Settings
+        </entry>
+       </row>
+      </thead>
+
+      <tbody>
+       <row>
+        <entry>
+         <link
+          xlink:show="new"
+          xlink:href="reference#gateway-servlet"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >gateway servlet</link>
+        </entry>
+
+        <entry>
+         "handlerObject"
+        </entry>
+
+        <entry>
+         New name: "handler"
+        </entry>
+       </row>
+
+       <row>
+        <entry morerows="2">
+         <link
+          xlink:show="new"
+          xlink:href="reference#OAuth2ResourceServerFilter"
+          xlink:role="http://docbook.org/xlink/role/olink"
+          >OAuth2ResourceServerFilter</link>
+        </entry>
+
+        <entry>
+         "enforceHttps"
+        </entry>
+
+        <entry>
+         New name: "requireHttps"
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "httpHandler"
+        </entry>
+
+        <entry>
+         New name: "providerHandler"
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "requiredScopes"
+        </entry>
+
+        <entry>
+         New name: "scopes"
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
 
   <!--
   <para>

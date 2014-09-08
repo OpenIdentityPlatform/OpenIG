@@ -110,11 +110,11 @@ WWW-Authenticate: Bearer realm="${projectName}"
   "name": string,
   "type": "OAuth2ResourceServerFilter",
   "config": {
-    "httpHandler": string,
-    "requiredScopes": [ string, ... ],
+    "providerHandler": string,
+    "scopes": [ string, ... ],
     "tokenInfoEndpoint": URL string,
     "cacheExpiration": duration string,
-    "enforceHttps": boolean,
+    "requireHttps": boolean,
     "realm": string,
     "target": expression
   }
@@ -131,7 +131,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
 
   <variablelist>
    <varlistentry>
-    <term><code>"httpHandler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"providerHandler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
      <para>
       HTTP client handler to send token info requests.
@@ -149,7 +149,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
    </varlistentry>
 
    <varlistentry>
-    <term><code>"requiredScopes"</code>: <emphasis>array of strings, required</emphasis></term>
+    <term><code>"scopes"</code>: <emphasis>array of strings, required</emphasis></term>
     <listitem>
      <para>
       The list of required OAuth 2.0 scopes for this protected resource.
@@ -182,7 +182,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
    </varlistentry>
 
    <varlistentry>
-    <term><code>"enforceHttps"</code>: <emphasis>boolean, optional</emphasis></term>
+    <term><code>"requireHttps"</code>: <emphasis>boolean, optional</emphasis></term>
     <listitem>
      <para>
       Whether to require that requests use the HTTPS scheme.
@@ -246,8 +246,8 @@ WWW-Authenticate: Bearer realm="${projectName}"
     "name": "ProtectedResourceFilter",
     "type": "OAuth2ResourceServerFilter",
     "config": {
-        "httpHandler": "ClientHandler",
-        "requiredScopes": [
+        "providerHandler": "ClientHandler",
+        "scopes": [
             "email",
             "profile"
         ],
