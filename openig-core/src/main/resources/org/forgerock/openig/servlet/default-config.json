@@ -50,5 +50,5 @@
             }
         ]
     },
-    "handlerObject": "_Router"
+    "handler": "_Router"
 }

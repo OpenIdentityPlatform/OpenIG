@@ -461,7 +461,7 @@ $ <userinput>java -jar start.jar</userinput>
 
   <para>
    Consider the base configuration file first, <filename>config.json</filename>.
-   The base configuration file specifies a "handlerObject" named "Dispatcher".
+   The base configuration file specifies a "handler" named "Dispatcher".
    ${projectName} calls this handler when it receives an incoming request.
    In addition, it uses the "LogSink" to log debug messages to the console.
    Alternatively, to send log messages to a file you can use a

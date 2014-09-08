@@ -33,6 +33,6 @@
             }
         ]
     },
-    "handlerObject": "Chain",
+    "handler": "Chain",
     "baseURI": "http://www.example.com:8081"
 }
