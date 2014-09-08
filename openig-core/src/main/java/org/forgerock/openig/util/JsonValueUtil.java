@@ -33,6 +33,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.util.promise.Function;
 
 /**
@@ -206,7 +207,7 @@ public final class JsonValueUtil {
      *
      * @return A function for transforming JsonValues to expressions.
      */
-    public static final Function<JsonValue, Expression, HeapException> ofExpression() {
+    public static Function<JsonValue, Expression, HeapException> ofExpression() {
         return OF_EXPRESSION;
     }
 
@@ -235,5 +236,59 @@ public final class JsonValueUtil {
                 return getRequiredObject(heap, value, type);
             }
         };
+    }
+
+    /**
+     * Returns the named property from the provided JSON object, falling back to
+     * zero or more deprecated property names. This method will log a warning if
+     * only a deprecated property is found or if two equivalent property names
+     * are found.
+     *
+     * @param config
+     *            The configuration object.
+     * @param logger
+     *            The logger which should be used for deprecation warnings.
+     * @param name
+     *            The non-deprecated property name.
+     * @param deprecatedNames
+     *            The deprecated property names ordered from newest to oldest.
+     * @return The request property.
+     */
+    public static JsonValue getWithDeprecation(JsonValue config, Logger logger, String name,
+            String... deprecatedNames) {
+        String found = config.isDefined(name) ? name : null;
+        for (String deprecatedName : deprecatedNames) {
+            if (config.isDefined(deprecatedName)) {
+                if (found == null) {
+                    found = deprecatedName;
+                    warnForDeprecation(config, logger, name, found);
+                } else {
+                    logger.warning("Cannot use both '" + deprecatedName + "' and '" + found
+                            + "' attributes, " + "will use configuration from '" + found
+                            + "' attribute");
+                    break;
+                }
+            }
+        }
+        return found == null ? config.get(name) : config.get(found);
+    }
+
+    /**
+     * Issues a warning that the configuration property {@code oldName} is
+     * deprecated and that the property {@code newName} should be used instead.
+     *
+     * @param config
+     *            The configuration object.
+     * @param logger
+     *            The logger which should be used for deprecation warnings.
+     * @param name
+     *            The non-deprecated property name.
+     * @param deprecatedName
+     *            The deprecated property name.
+     */
+    public static void warnForDeprecation(final JsonValue config, final Logger logger,
+            final String name, final String deprecatedName) {
+        logger.warning(format("[%s] The '%s' attribute is deprecated, please use '%s' instead",
+                config.getPointer(), deprecatedName, name));
     }
 }

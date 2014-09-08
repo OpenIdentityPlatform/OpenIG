@@ -56,24 +56,23 @@ import org.forgerock.util.time.TimeService;
  *
  * It extracts the token and validate it against the {@literal token-info-endpoint} URL provided in the configuration.
  *
- * Here is a sample configuration:
  * <pre>
  * {
  *         "name": "ProtectedResourceFilter",
  *         "type": "org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter",
  *         "config": {
- *           "requiredScopes": [ "email", "profile" ],
+ *           "scopes": [ "email", "profile" ],
  *           "tokenInfoEndpoint": "https://openam.example.com:8443/openam/oauth2/tokeninfo",
  *           "cacheExpiration": "2 minutes",
- *           "enforceHttps": false,
- *           "httpHandler": "ClientHandler",
+ *           "requireHttps": false,
+ *           "providerHandler": "ClientHandler",
  *           "realm": "Informative realm name",
  *           "target": "${exchange.oauth2AccessToken}"
  *         }
  * }
  * </pre>
  *
- * {@literal requiredScopes}, {@literal tokenInfoEndpoint} and {@literal httpHandler} are the 3 only mandatory
+ * {@literal scopes}, {@literal tokenInfoEndpoint} and {@literal providerHandler} are the 3 only mandatory
  * configuration attributes.
  * <p>
  * If {@literal cacheExpiration} is not set, the default is to keep the {@link AccessToken}s for 1 minute.
@@ -85,11 +84,11 @@ import org.forgerock.util.time.TimeService;
  *     "cacheExpiration": "10 min, 30 sec"
  * </pre>
  * <p>
- * {@literal httpHandler} is a name reference to another handler available in the heap. It will be used to perform
+ * {@literal providerHandler} is a name reference to another handler available in the heap. It will be used to perform
  * access token validation against the {@literal tokenInfoEndpoint} URL.
  * It is usually a reference to some {@link org.forgerock.openig.handler.ClientHandler}.
  * <p>
- * The {@literal enforceHttps} optional attribute control if this filter only accepts requests targeting the HTTPS
+ * The {@literal requireHttps} optional attribute control if this filter only accepts requests targeting the HTTPS
  * scheme. By default, it is enabled (only URI starting with {@literal https://...} will be accepted,
  * an Exception is thrown otherwise).
  * <p>
@@ -97,7 +96,7 @@ import org.forgerock.util.time.TimeService;
  * returned back to the client in case of errors.
  * <p>
  * The {@literal target} optional attribute specifies the expression which will be used for storing the OAuth 2.0 access
- * token information in the exchange. Defaults to {@code ${exchange.oauth2AccessToken}}.
+ * token information in the exchange. Defaults to <tt>${exchange.oauth2AccessToken}</tt>.
  *
  * @see Duration
  */
@@ -255,10 +254,10 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
         @Override
         public Object create() throws HeapException {
+            Handler httpHandler =
+                    getRequiredObject(heap, getWithDeprecation(config, logger, "providerHandler",
+                            "httpHandler").required(), Handler.class);
 
-            Handler httpHandler = getRequiredObject(heap,
-                                                    config.get("httpHandler").required(),
-                                                    Handler.class);
             TimeService time = TimeService.SYSTEM;
             AccessTokenResolver resolver = new OpenAmAccessTokenResolver(
                     httpHandler,
@@ -272,7 +271,9 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             cache.setTimeout(expiration);
             resolver = new CachingAccessTokenResolver(resolver, cache);
 
-            HashSet<String> scopes = new HashSet<String>(config.get("requiredScopes").required().asList(String.class));
+            HashSet<String> scopes =
+                    new HashSet<String>(getWithDeprecation(config, logger, "scopes",
+                            "requiredScopes").required().asList(String.class));
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
@@ -286,7 +287,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                                            realm,
                                                            target);
 
-            if (config.get("enforceHttps").defaultTo(Boolean.TRUE).asBoolean()) {
+            if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
+                    Boolean.TRUE).asBoolean()) {
                 try {
                     return new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"), filter);
                 } catch (ExpressionException e) {

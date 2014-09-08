@@ -17,14 +17,14 @@
                 "name": "ResourceServer",
                 "type": "OAuth2ResourceServerFilter",
                 "config": {
-                    "httpHandler": "ClientHandler",
-                    "requiredScopes": [
+                    "providerHandler": "ClientHandler",
+                    "scopes": [
                         "mail",
                         "employeenumber"
                     ],
                     "tokenInfoEndpoint"
                         : "http://openam.example.com:8088/openam/oauth2/tokeninfo",
-                    "enforceHttps": false,
+                    "requireHttps": false,
                     "target": "${exchange.token}"
                 }
             },

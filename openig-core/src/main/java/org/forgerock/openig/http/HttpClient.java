@@ -512,7 +512,7 @@ public class HttpClient {
             TrustManager[] trustManagers = null;
             if (config.isDefined("truststore")) {
                 // This attribute is deprecated: warn the user
-                warnForDeprecation(config, "truststore", "trustManager");
+                warnForDeprecation(config, logger, "trustManager", "truststore");
 
                 JsonValue store = config.get("truststore");
                 File truststoreFile = store.get("file").required().asFile();
@@ -548,7 +548,7 @@ public class HttpClient {
             KeyManager[] keyManagers = null;
             if (config.isDefined("keystore")) {
                 // This attribute is deprecated: warn the user
-                warnForDeprecation(config, "keystore", "keyManager");
+                warnForDeprecation(config, logger, "keyManager", "keystore");
 
                 JsonValue store = config.get("keystore");
                 File keystoreFile = store.get("file").required().asFile();
@@ -575,13 +575,6 @@ public class HttpClient {
                 keyManagers = managers.toArray(new KeyManager[managers.size()]);
             }
             return keyManagers;
-        }
-
-        private void warnForDeprecation(final JsonValue config, final String oldName, final String newName) {
-            logger.warning(format("[%s] The '%s' attribute is deprecated, please use '%s' instead",
-                                  config.getPointer(),
-                                  oldName,
-                                  newName));
         }
 
         private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile,

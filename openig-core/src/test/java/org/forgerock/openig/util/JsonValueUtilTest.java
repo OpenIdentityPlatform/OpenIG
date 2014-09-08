@@ -19,12 +19,14 @@ package org.forgerock.openig.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.log.Logger;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -117,5 +119,56 @@ public class JsonValueUtilTest {
     public void shouldFailForIncorrectUseOfReferences() throws Exception {
         JsonValue list = json(array(42));
         list.asList(ofRequiredHeapObject(heap, String.class));
+    }
+
+    @Test
+    public void getWithDeprecationReturnsNonDeprecatedValue() {
+        JsonValue config = json(object(field("new", "value")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "new", "old").asString()).isEqualTo("value");
+        verifyZeroInteractions(logger);
+    }
+
+    @Test
+    public void getWithDeprecationReturnsNullValue() {
+        JsonValue config = json(object(field("new", "value")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "missing", "old").asString()).isNull();
+        verifyZeroInteractions(logger);
+    }
+
+    @Test
+    public void getWithDeprecationReturnsDeprecatedValue1() {
+        JsonValue config = json(object(field("old", "value")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "new", "old").asString()).isEqualTo("value");
+        verify(logger).warning(anyString());
+    }
+
+    @Test
+    public void getWithDeprecationReturnsDeprecatedValue2() {
+        JsonValue config = json(object(field("older", "value")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
+                "value");
+        verify(logger).warning(anyString());
+    }
+
+    @Test
+    public void getWithDeprecationReturnsMostRecentValue1() {
+        JsonValue config = json(object(field("new", "value1"), field("old", "value2")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
+                "value1");
+        verify(logger).warning(anyString());
+    }
+
+    @Test
+    public void getWithDeprecationReturnsMostRecentValue2() {
+        JsonValue config = json(object(field("old", "value1"), field("older", "value2")));
+        Logger logger = mock(Logger.class);
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
+                "value1");
+        verify(logger, times(2)).warning(anyString());
     }
 }
