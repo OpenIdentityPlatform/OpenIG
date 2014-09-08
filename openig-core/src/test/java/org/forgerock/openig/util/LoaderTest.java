@@ -17,7 +17,6 @@ package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class LoaderTest {
     }
 
     @Test
-    public void loadMap() throws IOException {
+    public void loadMap() {
         final Map<String, Color> map = Loader.loadMap(String.class, Color.class);
         assertThat(map).isNotNull();
         assertThat(map.size()).isGreaterThanOrEqualTo(2);
