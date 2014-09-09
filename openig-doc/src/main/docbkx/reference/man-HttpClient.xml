@@ -112,7 +112,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"connectionTimeout"</code>: <emphasis>duration string, required</emphasis></term>
+    <term><code>"connectionTimeout"</code>: <emphasis>duration string, optional</emphasis></term>
     <listitem>
      <para>
       Amount of time to wait to establish a connection, expressed as a duration
@@ -281,7 +281,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"soTimeout"</code>: <emphasis>duration string, required</emphasis></term>
+    <term><code>"soTimeout"</code>: <emphasis>duration string, optional</emphasis></term>
     <listitem>
      <para>
       Socket timeout, after which stalled connections are destroyed,
