@@ -294,6 +294,38 @@
    The configuration can specify additional objects as well,
    for example objects that perform logging, that cache content,
    or that specify settings to use when connecting to services.
+   For example, you can configure an "HttpClient"
+   that ${projectName} uses to connect to servers.
+   The following "HttpClient" configuration uses defaults for all settings,
+   except "hostnameVerifier", which it configures to
+   verify host names in SSL certificates in the same way as most browsers.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "HttpClient",
+    "type": "HttpClient",
+    "config": {
+        "hostnameVerifier": "BROWSER_COMPATIBLE"
+    }
+}
+  </programlisting>
+
+  <para>
+   Routes, described in <xref linkend="routing" />,
+   inherit settings from their parent configurations.
+   This means that you can
+   configure global objects in the base configuration for example,
+   and then reference the objects by name
+   in any other ${projectName} configuration.
+  </para>
+
+  <para>
+   In addition, ${projectName} creates
+   some utility objects with default settings,
+   including "HttpClient", "LogSink", and "TemporaryStorage".
+   You can reference these objects by name without configuring them
+   even if you do not override the default configurations.
   </para>
  </section>
 
