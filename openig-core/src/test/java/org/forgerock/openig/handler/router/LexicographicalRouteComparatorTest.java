@@ -43,8 +43,8 @@ public class LexicographicalRouteComparatorTest {
     public void testName(final String min, final String max) throws Exception {
         LexicographicalRouteComparator comparator = new LexicographicalRouteComparator();
 
-        Route a = new Route(new HeapImpl(), null, min, null, null);
-        Route b = new Route(new HeapImpl(), null, max, null, null);
+        Route a = new Route(new HeapImpl(), null, null, min, null, null);
+        Route b = new Route(new HeapImpl(), null, null, max, null, null);
 
         assertThat(comparator.compare(a, b)).isLessThan(0);
         assertThat(comparator.compare(b, a)).isGreaterThan(0);

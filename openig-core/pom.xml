@@ -80,6 +80,10 @@
       <version>2.6.9</version>
     </dependency>
     <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>json-web-token</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <version>2.3.4</version>

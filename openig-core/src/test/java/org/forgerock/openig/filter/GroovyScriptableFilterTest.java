@@ -28,6 +28,7 @@ import static org.forgerock.openig.log.LogSink.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Connection;
@@ -413,6 +414,9 @@ public class GroovyScriptableFilterTest {
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public void close() throws IOException { }
     }
 
     @Test(enabled = true)

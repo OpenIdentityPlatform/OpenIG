@@ -23,10 +23,19 @@ import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.util.HashMap;
+
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.handler.GenericHandler;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
+import org.forgerock.openig.http.Response;
+import org.forgerock.openig.http.Session;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
@@ -39,6 +48,9 @@ public class RouteBuilderTest {
 
     @Mock
     private Heap heap;
+
+    @Mock
+    private Session session;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -92,4 +104,45 @@ public class RouteBuilderTest {
 
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
+
+    @Test
+    public void testSessionRouteLoading() throws Exception {
+        RouteBuilder builder = new RouteBuilder(heap);
+        Route route = builder.build(getTestResourceFile("session-route.json"));
+
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.session = new SimpleMapSession();
+
+        route.handle(exchange);
+
+        assertThat(exchange.session).isEmpty();
+        assertThat(exchange.response.getHeaders().getFirst("Set-Cookie")).isNotNull();
+
+    }
+
+    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void close() throws IOException { }
+    }
+
+    public static class SessionHandler extends GenericHandler {
+
+        @Override
+        public void handle(final Exchange exchange) throws HandlerException, IOException {
+            exchange.response = new Response();
+            exchange.session.put("ForgeRock", "OpenIG");
+        }
+
+        public static class Heaplet extends GenericHeaplet {
+
+            @Override
+            public Object create() throws HeapException {
+                return new SessionHandler();
+            }
+        }
+    }
+
 }

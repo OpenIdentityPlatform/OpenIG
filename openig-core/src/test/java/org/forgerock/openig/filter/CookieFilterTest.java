@@ -19,6 +19,7 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -336,5 +337,8 @@ public class CookieFilterTest {
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public void close() throws IOException { }
     }
 }
