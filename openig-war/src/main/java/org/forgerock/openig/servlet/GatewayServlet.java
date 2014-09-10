@@ -75,13 +75,13 @@ import org.json.simple.parser.ParseException;
  *      "heap": {
  *          ...
  *      },
- *      "handlerObject": "DispatchHandler",
+ *      "handler": "DispatchHandler",
  *      "baseURI": "http://localhost:8080",
  *      "logSink":  "myCustomLogSink",
  *      "temporaryStorage": "myCustomStorage"
  *   }
  * </pre>
- * {@literal handlerObject} is the only mandatory configuration attribute.
+ * {@literal handler} is the only mandatory configuration attribute.
  */
 public class GatewayServlet extends HttpServlet {
 
