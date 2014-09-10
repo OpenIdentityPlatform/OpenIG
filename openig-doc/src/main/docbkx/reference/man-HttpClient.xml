@@ -77,18 +77,8 @@
     "hostnameVerifier": string,
     "soTimeout": duration string,
     "connectionTimeout": duration string,
-    "keystore": {
-        "file": expression,
-        "password": expression,
-        "alg": string,
-        "type": string
-    },
-    "truststore": {
-        "file": expression,
-        "password": expression,
-        "alg": string,
-        "type": string
-    },
+    "keyManager": string | array of strings,
+    "trustManager": string | array of strings,
   }
 }
   </programlisting>
@@ -209,74 +199,31 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"keystore"</code>: <emphasis>object, optional</emphasis></term>
+    <term><code>"keyManager"</code>: <emphasis>string | array of strings, optional</emphasis></term>
     <listitem>
 
      <para>
-      Configuration of the key store holding this client's keys and certificates.
+      Reference to the key manager(s)
+      that handle(s) this client's keys and certificates.
      </para>
 
      <para>
-      If you do not configure a key store,
+      You can specify either a single
+      <link
+       xlink:show="new"
+       xlink:href="reference#KeyManager"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >KeyManager</link> name, as in
+      <literal>"keyManager": "MyKeyManager"</literal>,
+      or an array of KeyManager names, as in
+      <literal>"keyManager": [ "FirstKeyManager", "SecondKeyManager" ]</literal>.
+     </para>
+
+     <para>
+      If you do not configure a key manager,
       then the client cannot present a certificate,
       and so cannot play the client role in mutual authentication.
      </para>
-
-     <variablelist>
-      <para>
-       The "keystore" object has the following fields.
-      </para>
-
-      <varlistentry>
-       <term><code>"file"</code> <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required</emphasis></term>
-       <listitem>
-        <para>
-         Absolute path name of the key store file
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"password"</code> <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required</emphasis></term>
-       <listitem>
-        <para>
-         Password for the key store
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"alg"</code> <emphasis>string, optional</emphasis></term>
-       <listitem>
-        <para>
-         Certificate algorithm to use
-        </para>
-
-        <para>
-         Default: SunX509
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"type"</code> <emphasis>string, optional</emphasis></term>
-       <listitem>
-        <para>
-         Key store format
-        </para>
-
-        <para>
-         Default: JKS
-        </para>
-       </listitem>
-      </varlistentry>
-     </variablelist>
     </listitem>
    </varlistentry>
 
@@ -297,76 +244,32 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"truststore"</code>: <emphasis>object, optional</emphasis></term>
+    <term><code>"trustManager"</code>: <emphasis>string | array of strings, optional</emphasis></term>
     <listitem>
 
      <para>
-      Configuration of the trust store holding server certificates
-      that this client trusts.
+      Reference to the trust manager(s)
+      that handle(s) peers' public key certificates.
      </para>
 
      <para>
-      If you do not configure a trust store,
-      then the client uses the default Java trust store.
+      You can specify either a single
+      <link
+       xlink:show="new"
+       xlink:href="reference#TrustManager"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >TrustManager</link> name, as in
+      <literal>"trustManager": "MyTrustManager"</literal>,
+      or an array of KeyManager names, as in
+      <literal>"trustManager": [ "FirstTrustManager", "SecondTrustManager" ]</literal>.
+     </para>
+
+     <para>
+      If you do not configure a trust manager,
+      then the client uses only the default Java trust store.
       The default Java trust store depends on the Java environment.
       For example, <filename>$JAVA_HOME/lib/security/cacerts</filename>.
      </para>
-
-     <variablelist>
-      <para>
-       The "truststore" object has the following fields.
-      </para>
-
-      <varlistentry>
-       <term><code>"file"</code> <emphasis><link
-         xlink:href="reference#Expressions"
-         xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required</emphasis></term>
-       <listitem>
-        <para>
-         Absolute path name of the trust store file
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"alg"</code> <emphasis>string, optional</emphasis></term>
-       <listitem>
-        <para>
-         Certificate algorithm to use
-        </para>
-
-        <para>
-         Default: SunX509
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"password"</code> <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        optional</emphasis></term>
-       <listitem>
-        <para>
-         Password for the trust store
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"type"</code> <emphasis>string, optional</emphasis></term>
-       <listitem>
-        <para>
-         Key store format
-        </para>
-
-        <para>
-         Default: JKS
-        </para>
-       </listitem>
-      </varlistentry>
-     </variablelist>
     </listitem>
    </varlistentry>
   </variablelist>

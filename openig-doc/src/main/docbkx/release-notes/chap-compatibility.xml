@@ -121,6 +121,44 @@
        </row>
 
        <row>
+        <entry morerows="1">
+         <link
+          xlink:show="new"
+          xlink:href="reference#HttpClient"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >HttpClient</link>
+        </entry>
+
+        <entry>
+         "keystore"
+        </entry>
+
+        <entry>
+         Replaced by "keyManager", which takes one or more
+         <link
+          xlink:show="new"
+          xlink:href="reference#KeyManager"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >KeyManager</link> names
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "truststore"
+        </entry>
+
+        <entry>
+         Replaced by "trustManager", which takes one or more
+         <link
+          xlink:show="new"
+          xlink:href="reference#TrustManager"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >TrustManager</link> names
+        </entry>
+       </row>
+
+       <row>
         <entry morerows="2">
          <link
           xlink:show="new"
