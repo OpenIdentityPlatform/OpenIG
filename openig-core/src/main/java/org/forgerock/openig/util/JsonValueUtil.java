@@ -22,7 +22,9 @@ import static java.util.Collections.*;
 import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Loader.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonTransformer;
@@ -236,6 +238,71 @@ public final class JsonValueUtil {
                 return getRequiredObject(heap, value, type);
             }
         };
+    }
+
+    /**
+     * Verify that the given parameter object is of a JSON compatible type (recursively). If no exception is thrown that
+     * means the parameter can be used in the JWT session (that is a JSON value).
+     *
+     * @param trail
+     *         pointer to the verified object
+     * @param value
+     *         object to verify
+     */
+    public static void checkJsonCompatibility(final String trail, final Object value) {
+
+        // Null is OK
+        if (value == null) {
+            return;
+        }
+
+        Class<?> type = value.getClass();
+        Object object = value;
+
+        // JSON supports Boolean
+        if (object instanceof Boolean) {
+            return;
+        }
+
+        // JSON supports Chars (as String)
+        if (object instanceof Character) {
+            return;
+        }
+
+        // JSON supports Numbers (Long, Float, ...)
+        if (object instanceof Number) {
+            return;
+        }
+
+        // JSON supports String
+        if (object instanceof CharSequence) {
+            return;
+        }
+
+        // Consider array like a List
+        if (type.isArray()) {
+            object = Arrays.asList((Object[]) value);
+        }
+
+        if (object instanceof List) {
+            List<?> list = (List<?>) object;
+            for (int i = 0; i < list.size(); i++) {
+                checkJsonCompatibility(format("%s[%d]", trail, i), list.get(i));
+            }
+            return;
+        }
+
+        if (object instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) object;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                checkJsonCompatibility(format("%s/%s", trail, entry.getKey()), entry.getValue());
+            }
+            return;
+        }
+
+        throw new IllegalArgumentException(format(
+                "The object referenced through '%s' cannot be safely serialized as JSON",
+                trail));
     }
 
     /**

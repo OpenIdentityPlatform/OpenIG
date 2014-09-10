@@ -16,11 +16,15 @@
 
 package org.forgerock.openig.util;
 
+import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
@@ -119,6 +123,66 @@ public class JsonValueUtilTest {
     public void shouldFailForIncorrectUseOfReferences() throws Exception {
         JsonValue list = json(array(42));
         list.asList(ofRequiredHeapObject(heap, String.class));
+    }
+
+    @Test
+    public void testJsonCompatibilityBoxedPrimitiveType() throws Exception {
+        JsonValueUtil.checkJsonCompatibility("boolean", true);
+        JsonValueUtil.checkJsonCompatibility("integer", 1);
+        JsonValueUtil.checkJsonCompatibility("short", (short) 12);
+        JsonValueUtil.checkJsonCompatibility("long", -42L);
+        JsonValueUtil.checkJsonCompatibility("float", 42.3F);
+        JsonValueUtil.checkJsonCompatibility("double", 3.14159D);
+        JsonValueUtil.checkJsonCompatibility("char", 'a');
+        JsonValueUtil.checkJsonCompatibility("byte", (byte) 'c');
+    }
+
+    @Test
+    public void testJsonCompatibilityWithCharSequences() throws Exception {
+        JsonValueUtil.checkJsonCompatibility("string", "a string");
+        JsonValueUtil.checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
+        JsonValueUtil.checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
+    }
+
+    @Test
+    public void testJsonCompatibilityWithArrayOfString() throws Exception {
+        String[] strings = {"one", "two", "three"};
+        JsonValueUtil.checkJsonCompatibility("array", strings);
+    }
+
+    @Test
+    public void testJsonCompatibilityWithListOfString() throws Exception {
+        String[] strings = {"one", "two", "three"};
+        JsonValueUtil.checkJsonCompatibility("array", asList(strings));
+    }
+
+    @Test
+    public void testJsonCompatibilityWithMapOfString() throws Exception {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("one", "one");
+        map.put("two", "two");
+        map.put("three", "three");
+        JsonValueUtil.checkJsonCompatibility("map", map);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotAcceptUnsupportedTypes() throws Exception {
+        JsonValueUtil.checkJsonCompatibility("object", new Object());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*'list\\[1\\]'.*")
+    public void shouldWriteErrorTrailForIncorrectList() throws Exception {
+        JsonValueUtil.checkJsonCompatibility("list", asList("one", new Object(), "three"));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*'map/object'.*")
+    public void shouldWriteErrorTrailForIncorrectMap() throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("one", "one");
+        map.put("object", new Object());
+        JsonValueUtil.checkJsonCompatibility("map", map);
     }
 
     @Test

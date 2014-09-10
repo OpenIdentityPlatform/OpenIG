@@ -17,14 +17,14 @@
 
 package org.forgerock.openig.servlet;
 
-import static java.lang.String.format;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.HeapUtil.getObject;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
-import static org.forgerock.util.Utils.closeSilently;
+import static java.lang.String.*;
+import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.heap.HeapUtil.*;
+import static org.forgerock.openig.http.SessionFactory.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,6 +53,8 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
+import org.forgerock.openig.http.Session;
+import org.forgerock.openig.http.SessionFactory;
 import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
@@ -136,6 +138,11 @@ public class GatewayServlet extends HttpServlet {
     private TemporaryStorage storage;
 
     /**
+     * Factory to create OpenIG sessions.
+     */
+    private SessionFactory sessionFactory;
+
+    /**
      * Default constructor invoked from web container. The servlet will be assumed to be running as a web application
      * and obtain its configuration from the default web {@linkplain Environment environment}.
      */
@@ -192,6 +199,8 @@ public class GatewayServlet extends HttpServlet {
                     LogSink.class), "GatewayServlet");
             storage = getRequiredObject(heap, config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
+            // Let the user change the type of session to use
+            sessionFactory = (SessionFactory) heap.get(SESSION_FACTORY_HEAP_KEY);
             handler =
                     getRequiredObject(heap, getWithDeprecation(config, logger, "handler",
                             "handlerObject"), Handler.class);
@@ -249,7 +258,8 @@ public class GatewayServlet extends HttpServlet {
             exchange.request.setEntity(new BranchingStreamWrapper(request.getInputStream(), storage));
         }
         // remember request entity so that it (and its children) can be properly closed
-        exchange.session = new ServletSession(request);
+        // TODO consider moving this below (when the exchange will be fully configured)
+        exchange.session = newSession(request, exchange);
         exchange.principal = request.getUserPrincipal();
         // handy servlet-specific attributes, sure to be abused by downstream filters
         exchange.put(HttpServletRequest.class.getName(), request);
@@ -260,6 +270,9 @@ public class GatewayServlet extends HttpServlet {
                 handler.handle(exchange);
             } catch (final HandlerException he) {
                 throw new ServletException(he);
+            } finally {
+                // Close the session before writing back the actual response message to the User-Agent
+                closeSilently(exchange.session);
             }
             /*
              * Support for OPENIG-94/95 - The wrapped servlet may have already committed its response w/o creating a new
@@ -285,5 +298,12 @@ public class GatewayServlet extends HttpServlet {
             closeSilently(exchange.request, exchange.response);
         }
         timer.stop();
+    }
+
+    private Session newSession(final HttpServletRequest request, final Exchange exchange) {
+        if (sessionFactory != null) {
+            return sessionFactory.build(exchange);
+        }
+        return new ServletSession(request);
     }
 }
