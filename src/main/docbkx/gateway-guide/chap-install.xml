@@ -125,8 +125,23 @@
    </para>
 
    <para>
-    The web application container where ${projectName} runs
-    is responsible for setting up TLS connections.
+    When ${projectName} is acting as a server,
+    the web application container where ${projectName} runs
+    is responsible for setting up TLS connections
+    with client applications that connect to ${projectName}.
+    For details, see <xref linkend="jetty-https" />
+    or <xref linkend="tomcat-https" />.
+   </para>
+
+   <para>
+    When ${projectName} is acting as a client, the
+    <link
+     xlink:show="new"
+     xlink:href="reference#HttpClient"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >HttpClient</link> configuration sets up TLS connections
+    from ${projectName} to other servers.
+    For details, see <xref linkend="client-side-security" />.
    </para>
 
    <para>
@@ -164,37 +179,15 @@
     Whereas it is often enough
     to install a certificate signed by a well-known CA
     in the server key store as the basis of trust for HTTPS connections,
-    self-signed certificates must also be installed in all clients.<footnote>
-     <para>
-      When ${projectName} acts as a client
-      of a protected application or other server
-      whose certificate is not recognized out of the box by the Java environment,
-      then you must also install that certificate
-      in the key store for the ${projectName} web application container.
-     </para>
+    self-signed certificates must also be installed in all clients.
+   </para>
 
-     <para>
-      The following command installs a trusted signer's certificate,
-      <filename>ca.crt</filename>, in a Java Key Store file.
-     </para>
-
-     <screen>
-$ <userinput>keytool \
- -import \
- -trustcacerts \
- -keystore /path/to/container/keystore \
- -file ca.crt \
- -alias ca-cert \
- -storepass password</userinput>
-     </screen>
-
-     <para>
-      The <option>-trustcacerts</option> option says
-      to trust this as a signing certificate,
-      and so works both with self-signed certificates
-      and also with certificates used to sign server certificates.
-     </para>
-    </footnote>
+   <para>
+    Like self-signed certificates,
+    the signing certificates of less well-known CAs
+    are also unlikely to be found in the default trust store.
+    You might therefore need to install those signing certificates
+    on the client side as well.
    </para>
 
    <para>
@@ -225,9 +218,6 @@ $ <userinput>keytool \
     The Java Secure Socket Extension (JSSE), part of the Java environment,
     provides security services that ${projectName} uses to secure connections.
     You can set security and system properties to configure the JSSE.
-    For example, you can set the key store and password,
-    the trust store and password (useful when ${projectName} acts as a client),
-    the cipher suites to enable for use, and other properties.
     For a list of properties you can use to customize the JSSE in Oracle Java,
     see the <citetitle>Customization</citetitle> section of the
     <link
@@ -295,7 +285,7 @@ $ <userinput>keytool \
    </section>
 
    <section xml:id="tomcat-https">
-    <title>Configuring Tomcat For HTTPS</title>
+    <title>Configuring Tomcat For HTTPS (Server-Side)</title>
 
     <para>
      To get Tomcat up quickly on an SSL port
@@ -463,7 +453,7 @@ $ <userinput>keytool \
    </section>
 
   <section xml:id="jetty-https">
-   <title>Configuring Jetty For HTTPS</title>
+   <title>Configuring Jetty For HTTPS (Server-Side)</title>
 
    <para>
     To get Jetty up quickly on an SSL port, follow the steps in this section.
@@ -986,5 +976,190 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
     </stepalternatives>
    </step>
   </procedure>
+ </section>
+
+ <section xml:id="client-side-security">
+  <title>Configuring ${projectName} For HTTPS (Client-Side)</title>
+
+  <para>
+   For ${projectName} to connect to a server securely over HTTPS,
+   ${projectName} must be able to trust the server.
+   The default settings rely on the Java environment trust store
+   to trust server certificates.
+   The Java environment default trust store includes
+   public key signing certificates
+   from many well-known Certificate Authorities (CAs).
+   If all servers present certificates signed by these CAs,
+   then you have nothing to configure.
+  </para>
+
+  <para>
+   If however the server certificates are self-signed
+   or signed by a CA whose certificate is not trusted out of the box,
+   then you can configure a
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyStore"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyStore</link>,
+   <link
+    xlink:show="new"
+    xlink:href="reference#TrustManager"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >TrustManager</link>,
+   and optionally a
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyManager"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyManager</link>
+   to reference when configuring an
+   <link
+    xlink:show="new"
+    xlink:href="reference#HttpClient"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >HttpClient</link>
+   to enable ${projectName} to trust servers when acting as a client.
+  </para>
+
+  <para>
+   The KeyStore holds the servers' certificates or the CA signing certificate.
+   The TrustManager allows ${projectName} to handle the certificates
+   in the KeyStore when deciding whether to trust a server certificate.
+   The optional KeyManager allows ${projectName} to present its certificate
+   from the key store when the server must authenticate ${projectName} as client.
+   The HttpClient references whatever TrustManager and KeyManager you configure.
+  </para>
+
+  <para>
+   You can configure each of these either globally for the ${projectName} server,
+   of locally for a particular ClientHandler configuration.
+  </para>
+
+  <para>
+   The Java KeyStore holds the peer servers' public key certificates
+   (and optionally the ${projectName} certificate and private key).
+   For example, suppose you have a certificate file, <filename>ca.crt</filename>,
+   that holds the trusted signer's certificate
+   of the CA who signed the server certificates
+   of the servers in your deployment.
+   In that case, you could import the certificate into a Java Key Store file,
+   <filename>/path/to/keystore.jks</filename>.
+  </para>
+
+  <screen>
+$ <userinput>keytool \
+ -import \
+ -trustcacerts \
+ -keystore /path/to/keystore \
+ -file ca.crt \
+ -alias ca-cert \
+ -storepass changeit</userinput>
+  </screen>
+
+  <para>
+   You could then configure the following "KeyStore" for ${projectName}
+   that holds the trusted certificate.
+   Notice that the "file" field takes an expression that evaluates to a URL,
+   starting with a scheme such as <literal>file://</literal>.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "MyKeyStore",
+    "type": "KeyStore",
+    "config": {
+        "file": "file:///path/to/keystore",
+        "password": "changeit"
+    }
+}
+  </programlisting>
+
+  <para>
+   The TrustManager handles the certificates in the KeyStore
+   when deciding whether to trust the server certificate.
+   The TrustManager references your KeyStore.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "MyTrustManager",
+    "type": "TrustManager",
+    "config": {
+        "keystore": "MyKeyStore"
+    }
+}
+  </programlisting>
+
+  <variablelist>
+   <para>
+    The HttpClient configuration has the following security settings.
+   </para>
+
+   <varlistentry>
+    <term>"trustManager"</term>
+    <listitem>
+     <para>
+      This references your TrustManager.
+     </para>
+
+     <para>
+      Recall that you must configure this
+      when your server certificates are not trusted out of the box.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>"hostnameVerifier"</term>
+    <listitem>
+     <para>
+      This defines how the HttpClient verifies host names in server certificates.
+     </para>
+
+     <para>
+      By default, host name verification is turned off.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>"keyManager"</term>
+    <listitem>
+     <para>
+      This references your optional KeyManager.
+     </para>
+
+     <para>
+      Configure this if servers request that ${projectName} present
+      its certificate as part of mutual authentication.
+     </para>
+
+     <para>
+      In that case, generate a key pair for ${projectName},
+      and have the certificate signed by a well-known CA.
+      See the <command>keytool</command> documentation for instructions.
+      You can use a different key store for the KeyManager
+      than you use for the TrustManager.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   The following HttpClient configuration references "MyTrustManager"
+   and sets browser-compatible host name verification.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "HttpClient",
+    "type": "HttpClient",
+    "config": {
+        "hostnameVerifier": "BROWSER_COMPATIBLE",
+        "trustManager": "MyTrustManager"
+    }
+}
+  </programlisting>
  </section>
 </chapter>
