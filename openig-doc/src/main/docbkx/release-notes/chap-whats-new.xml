@@ -50,6 +50,36 @@
 
   <listitem>
    <para>
+    ${projectName} can now store session information
+    in encrypted JSON Web Token (JWT) cookies on the user-agent (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-278"
+    >OPENIG-278</link>).
+    By default, ${projectName} continues to back session information
+    with HttpSession from the container where ${projectName} runs.
+   </para>
+
+   <para>
+    With this change, you can specify the session storage
+    at the global level, or in a particular route configuration.
+    For details, see
+    <link
+     xlink:show="new"
+     xlink:href="reference#JwtSession"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >JwtSession</link>
+    and
+    <link
+     xlink:show="new"
+     xlink:href="gateway-guide#keystore-for-jwt-encryption"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>Setting Up Keys For JWT Encryption</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} script configurations can now include arguments (
     <link
      xlink:show="new"

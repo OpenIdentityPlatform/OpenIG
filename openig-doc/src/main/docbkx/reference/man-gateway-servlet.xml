@@ -63,13 +63,34 @@
   </para>
 
   <para>
-   The gateway servlet also creates a default
+   The gateway servlet creates a default
    <link
     xlink:show="new"
     xlink:href="reference#HttpClient"
     xlink:role="http://docbook.org/xlink/role/olink"
    >HttpClient</link> object to handle requests to servers.
    You can override the default settings by configuring your own HttpClient.
+  </para>
+
+  <para>
+   The gateway servlet also looks for an object named "Session" in the heap.
+   If it finds such an object,
+   it uses that object as the default session producer.
+   For example, to store session information
+   in an HTTP cookie on the user-agent,
+   you can define a "JwtSession" named "Session"
+   in <filename>config.json</filename>.
+   In you do that, however, stored session information must
+   fit the constraints for storage in a JWT and in a cookie,
+   as described in the
+   <link
+    xlink:show="new"
+    xlink:href="reference#JwtSession"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >reference documentation for JwtSession</link>.
+   If no such object is found,
+   <literal>exchange.session</literal> is based on the Servlet HttpSession
+   that is handled by the container where ${projectName} runs.
   </para>
  </refsect1>
 

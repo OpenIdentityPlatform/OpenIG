@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id="JwtSession"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refmeta>
+  <refentrytitle>JwtSession</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>JwtSession</refname>
+  <refpurpose>store sessions in encrypted JWT cookies</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>JwtSession</secondary>
+  </indexterm>
+
+  <para>
+   A JwtSession object holds settings for storing session information
+   in encrypted JSON Web Token (JWT) cookies.
+  </para>
+
+  <para>
+   In this context "encrypted JWT cookie" means an HTTP cookie
+   whose value is an encrypted JWT.
+   The payload of the encrypted JWT is
+   a JSON representation of the session information.
+  </para>
+
+  <para>
+   The JWT cookie lifetime is "Session" (not persistent),
+   meaning the user-agent deletes the JWT cookie when it shuts down.
+  </para>
+
+  <para>
+   When using this storage implementation,
+   you must use data types for session information that can be mapped to
+   <link
+    xlink:show="new"
+    xlink:href="http://json.org"
+   >JavaScript Object Notation</link> (JSON).
+   JSON allows strings, numbers,
+   <literal>true</literal>, <literal>false</literal>, <literal>null</literal>,
+   as well as arrays and JSON objects composed of the same primitives.
+   Java and Groovy types that can be mapped include
+   Java primitive types and <literal>null</literal>,
+   String and CharSequence objects,
+   as well as List and Map objects.
+  </para>
+
+  <para>
+   As browser cookie storage capacity is limited to 4 KB,
+   and encryption adds overhead,
+   take care to limit the size of any JSON that you store.
+   Rather than store larger data in the session information,
+   consider storing a reference instead.
+  </para>
+
+  <para>
+   When an exchange enters a route that uses a new session type,
+   the scope of the session information becomes limited to the route.
+   ${projectName} builds a new session object
+   and does not propagate any existing session information to the new object.
+   <literal>exchange.session</literal> references the new session object.
+   When the exchange then exits the route,
+   the session object is closed, and serialized to a JWT cookie in this case,
+   and <literal>exchange.session</literal> references the previous session object.
+   Session information set inside the route is no longer available.
+  </para>
+
+  <para>
+   An HTTP client that performs multiple requests in a session
+   that modify the content of its session
+   can encounter inconsistencies in the session information.
+   This is because ${projectName} does not share JwtSessions across threads.
+   Instead, each thread has its own JwtSession objects
+   that it modifies as necessary,
+   writing its own session to the JWT cookie
+   regardless of what other threads do.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "JwtSession",
+    "config": {
+        "keystore": string,
+        "alias": string,
+        "password": configuration expression,
+        "cookieName": string
+    }
+}
+  </programlisting>
+
+  <para>
+   An alternative value for "type" is "JwtSessionFactory".
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"keystore"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Name of the
+      <link
+       xlink:show="new"
+       xlink:href="reference#KeyStore"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >KeyStore</link> holding the key pair
+      with the private key used to encrypt the JWT.
+     </para>
+
+     <para>
+      Default: When no "keystore" is specified,
+      ${projectName} generates a unique key pair,
+      and stores the key pair in memory.
+      With JWTs encrypted using a unique key pair generated at runtime,
+      ${projectName} cannot decrypt the JWTs after a restart,
+      nor can it decrypt such JWTs encrypted by another ${projectName} server.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"alias"</code>: <emphasis>string,
+     required when "keystore" is used</emphasis></term>
+    <listitem>
+     <para>
+      Alias for the private key.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"password"</code>: <emphasis>configuration <link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required when "keystore" is used</emphasis></term>
+
+    <listitem>
+     <para>
+      The password to read the private key from the key store.
+     </para>
+
+     <para>
+      The expression used here is independent of the
+      <link
+       xlink:show="new"
+       xlink:href="reference#Exchange"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >exchange</link>,
+      so do not use expressions that reference exchange properties.
+      You can, however, use
+      <literal>${env['<replaceable>variable</replaceable>']}</literal>,
+      <literal>${system['<replaceable>property</replaceable>']}</literal>,
+      and all the built-in
+      <link
+       xlink:show="new"
+       xlink:href="reference#Functions"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >functions</link>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"cookieName"</code> <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The name of the JWT cookie stored on the user-agent.
+     </para>
+
+     <para>
+      Default: <literal>openig-jwt-session</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following example defines a JwtSession
+   for storing session information
+   in a JWT token cookie named <literal>${projectName}</literal>.
+   The JWT is encrypted with a private key
+   that is recovered using the alias <literal>private-key</literal>,
+   and stored in the key store specified by "MyKeyStore".
+   The password is both the password for the key store and also the private key.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "JwtSession",
+    "type": "JwtSession",
+    "config": {
+        "keystore": "MyKeyStore",
+        "alias": "private-key",
+        "password": "changeit",
+        "cookieName": "${projectName}"
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/jwt/JwtSessionFactory.html"
+   >org.forgerock.openig.jwt.JwtSessionFactory</link>
+  </para>
+ </refsect1>
+</refentry>

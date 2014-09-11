@@ -92,9 +92,41 @@
  </refsect1>
 
  <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "heap": { <replaceable>heap-configuration object</replaceable> },
+    "handler": string,
+    "baseURI": string,
+    "condition": expression,
+    "name": string,
+    "session": string
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
   <title>Properties</title>
 
   <variablelist>
+   <varlistentry>
+    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+       >Heap object</link> configuration for objects local to this route.
+     </para>
+
+     <para>
+      Objects referenced but not defined here are inherited from the parent.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry>
     <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
@@ -151,6 +183,20 @@
 
      <para>
       Default: Route configuration file name
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"session"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      Name of the session storage implementation used by this route.
+     </para>
+
+     <para>
+      Default: do not change the session storage implementation
+      for <literal>exchange.session</literal>.
      </para>
     </listitem>
    </varlistentry>
