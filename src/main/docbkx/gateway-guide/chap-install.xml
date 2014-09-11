@@ -1162,4 +1162,112 @@ $ <userinput>keytool \
 }
   </programlisting>
  </section>
+
+ <section xml:id="keystore-for-jwt-encryption">
+  <title>Setting Up Keys For JWT Encryption</title>
+
+  <para>
+   You can use
+   <link
+    xlink:show="new"
+    xlink:href="reference#JwtSession"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >JwtSession</link> to configure ${projectName}
+   to store session information in JWT cookies on the user-agent,
+   rather than storing the information
+   in the container where ${projectName} runs.
+  </para>
+
+  <para>
+   In order to encrypt the JWTs, ${projectName} needs cryptographic keys.
+   ${projectName} can generate its own key pair in memory,
+   but that key pair disappears on restart
+   and cannot be shared across ${projectName} servers.
+  </para>
+
+  <para>
+   Alternatively, ${projectName} can use keys from a key store.
+   The following steps describe how to prepare the key store for JWT encryption.
+  </para>
+
+  <procedure>
+   <step>
+    <para>
+     Generate the key pair in a new key store file
+     by using the Java <command>keytool</command> command.
+    </para>
+
+    <para>
+     The following command generates a Java Key Store format file,
+     <filename>/path/to/keystore.jks</filename>,
+     holding a key pair with alias <literal>jwe-key</literal>.
+     Notice that both the key store and the private key have the same password.
+    </para>
+
+    <screen>
+$ <userinput>keytool \
+ -genkey \
+ -alias jwe-key \
+ -keyalg rsa \
+ -keystore /path/to/keystore.jks \
+ -storepass changeit \
+ -keypass changeit \
+ -dname "CN=www.example.com,O=Example Corp"</userinput>
+    </screen>
+   </step>
+
+   <step>
+    <para>
+     Add a
+     <link
+      xlink:show="new"
+      xlink:href="reference#KeyStore"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyStore</link>
+     to your configuration that references the key store file.
+    </para>
+
+    <programlisting language="javascript">
+{
+    "name": "MyKeyStore",
+    "type": "KeyStore",
+    "config": {
+        "file": "file:///path/to/keystore.jks",
+        "password": "changeit"
+    }
+}
+    </programlisting>
+   </step>
+
+   <step>
+    <para>
+     Add a JwtSession to your configuration that references your KeyStore.
+    </para>
+
+    <programlisting language="javascript">
+{
+    "name": "MyJwtSession",
+    "type": "JwtSession",
+    "config": {
+        "keystore": "MyKeyStore",
+        "alias": "jwe-key",
+        "password": "changeit",
+        "cookieName": "${projectName}"
+    }
+}
+    </programlisting>
+   </step>
+
+   <step>
+    <para>
+     Specify your JwtSession object in the top-level configuration,
+     or in the route configuration.
+    </para>
+
+    <programlisting language="javascript">
+"session": "MyJwtSession"
+    </programlisting>
+   </step>
+  </procedure>
+ </section>
 </chapter>

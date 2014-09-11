@@ -135,6 +135,7 @@
   <title>Miscellaneous Heap Objects</title>
   <xinclude:include href="man-ConsoleLogSink.xml" />
   <xinclude:include href="man-FileLogSink.xml" />
+  <xinclude:include href="man-JwtSession.xml" />
   <xinclude:include href="man-KeyManager.xml" />
   <xinclude:include href="man-KeyStore.xml" />
   <xinclude:include href="man-NullLogSink.xml" />
