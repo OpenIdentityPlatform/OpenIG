@@ -168,6 +168,10 @@
   <para>
    Routes can also have their own names, used to order them lexicographically.
    If no name is specified, the Route file name is used.
+   Route file names have the extension <literal>.json</literal>.
+   In other words, a router only scans for files
+   with the <literal>.json</literal> extension,
+   and ignores files with other extensions.
   </para>
 
   <para>

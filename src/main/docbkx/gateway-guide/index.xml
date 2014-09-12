@@ -52,6 +52,11 @@
     <personname>
      <firstname>Jamie </firstname><surname>Nelson</surname>
     </personname>
+   </author>
+   <author>
+    <personname>
+     <firstname>Guillaume </firstname><surname>Sauthier</surname>
+    </personname>
     <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
   </authorgroup>

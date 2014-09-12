@@ -643,6 +643,79 @@ Content-Length: 33
   ]]></programlisting>
  </section>
 
+ <section xml:id="config-comments">
+  <title>Comments in ${projectName} Configuration Files</title>
+
+  <para>
+   JSON does not specify a notation for comments.
+  </para>
+
+  <para>
+   However, when ${projectName} does not recognize a JSON field name,
+   it ignores the field.
+   This makes it possible to use comments in configuration files.
+  </para>
+
+  <variablelist>
+   <para>
+    To make your configuration files easier to read,
+    use the following conventions when commenting.
+   </para>
+
+   <varlistentry>
+    <term>"comment"</term>
+    <listitem>
+     <para>
+      Use the "comment" fields to add text comments.
+     </para>
+
+     <para>
+      The following "CaptureFilter" configuration includes a text comment.
+     </para>
+
+     <programlisting language="javascript">
+{
+    "name": "CaptureFilter",
+    "type": "CaptureFilter",
+    "comment": "Write request and response information to /tmp/gateway.log",
+    "config": {
+        "captureEntity": false,
+        "file": "/tmp/gateway.log"
+    }
+}
+     </programlisting>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>"_<replaceable>field-name</replaceable>"</term>
+    <listitem>
+     <para>
+      Use an underscore (<literal>_</literal>) to comment a field temporarily.
+     </para>
+
+     <para>
+      The following "CaptureFilter" configuration has
+      <literal>"captureEntity": false</literal> commented out.
+      As a result, it uses the default setting
+      (<literal>"captureEntity": true</literal>).
+     </para>
+
+     <programlisting language="javascript">
+{
+    "name": "CaptureFilter",
+    "type": "CaptureFilter",
+    "config": {
+        "_captureEntity": false,
+        "file": "/tmp/gateway.log"
+    }
+}
+     </programlisting>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </section>
+
  <section xml:id="where-to-go-from-here">
   <title>Where To Go From Here</title>
 
