@@ -265,4 +265,90 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
    <literal>No handler to dispatch to</literal>.
   </para>
  </section>
+
+ <section xml:id="troubleshooting-skip-a-route">
+  <title>Make ${projectName} skip a route</title>
+
+  <para>
+   If you have copied routes from another ${projectName} server,
+   those routes might depend on environment or container configuration
+   that you have not yet configured locally.
+  </para>
+
+  <para>
+   You can work around this problem by changing the route file extension.
+   A router ignores route files
+   that do not have the <literal>.json</literal> extension.
+  </para>
+
+  <para>
+   For example, suppose you copy route all sample route configurations
+   from the documentation, and then start ${projectName}
+   without first configuring your container.
+   This can result in an error such as the following.
+  </para>
+
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="none">
+org.forgerock.json.fluent.JsonValueException: /heap/objects/1/config/dataSource:
+   javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
+ at org.forgerock.openig.filter.SqlAttributesFilter$Heaplet.create(SqlAttributesFilter.java:175)
+ at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:80)
+ at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:107)
+ at org.forgerock.openig.heap.HeapImpl.init(HeapImpl.java:97)
+ at org.forgerock.openig.handler.router.RouteBuilder.createHeap(RouteBuilder.java:105)
+ at org.forgerock.openig.handler.router.RouteBuilder.build(RouteBuilder.java:66)
+ at org.forgerock.openig.handler.router.RouterHandler.onAddedFile(RouterHandler.java:197)
+ at org.forgerock.openig.handler.router.RouterHandler.onChanges(RouterHandler.java:179)
+ at org.forgerock.openig.handler.router.DirectoryMonitor.scan(DirectoryMonitor.java:138)
+   </programlisting>
+  </informalexample>
+
+  <para>
+   This arises from the route in <filename>03-sql.json</filename>,
+   which defines an "SqlAttributesFilter"
+   that depends on a JNDI data source configured in the container.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "CredentialsFromSql",
+    "type": "SqlAttributesFilter",
+    "config": {
+        "dataSource": "java:comp/env/jdbc/forgerock",
+        "preparedStatement":
+            "SELECT username, password FROM users WHERE email = ?;",
+        "parameters": [
+            "george@example.com"
+        ],
+        "target": "${exchange.credentials}"
+    }
+}
+  </programlisting>
+
+  <para>
+   To prevent ${projectName} from loading the route configuration
+   until you have had time to configure the container,
+   change the file extension to render the route inactive.
+  </para>
+
+  <screen>
+$ <userinput>mv ~/.openig/config/routes/03-sql.json ~/.openig/config/routes/03-sql.inactive</userinput>
+  </screen>
+
+  <para>
+   If necessary, restart the container
+   to force ${projectName} to reload the configuration.
+  </para>
+
+  <para>
+   When you have configured the data source in the container,
+   change the file extension back to <literal>.json</literal>
+   to render the route active again.
+  </para>
+
+  <screen>
+$ <userinput>mv ~/.openig/config/routes/03-sql.inactive ~/.openig/config/routes/03-sql.json</userinput>
+  </screen>
+ </section>
 </chapter>
