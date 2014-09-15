@@ -18,7 +18,6 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.http.HttpClient.*;
 
 import java.io.IOException;
@@ -72,9 +71,9 @@ public class ClientHandler extends GenericHandler {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            HttpClient httpClient = getRequiredObject(heap,
-                                                      config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
-                                                      HttpClient.class);
+            HttpClient httpClient = heap.getRequiredObject(
+                    config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
+                    HttpClient.class);
             return new ClientHandler(httpClient);
         }
     }

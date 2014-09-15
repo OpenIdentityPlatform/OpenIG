@@ -17,6 +17,9 @@
 
 package org.forgerock.openig.heap;
 
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
+
 /**
  * Manages a collection of associated objects created and initialized by {@link Heaplet}
  * objects. A heap object may be lazily initialized, meaning that it or its dependencies
@@ -36,4 +39,33 @@ public interface Heap {
      *             if a heaplet (or one of its dependencies) has a malformed configuration object.
      */
     Object get(String name) throws HeapException;
+
+    /**
+     * Retrieves an object with the specified reference, or {@code null} if the reference is {@code null}.
+     * If the reference is an inline object declaration, an anonymous object is added to the heap and returned.
+     *
+     * @param reference a JSON value containing either the name of the heap object to retrieve or an inline declaration.
+     * @param type the expected type of the heap object.
+     * @param <T> expected instance type
+     * @return the referenced heap object or {@code null} if name contains {@code null}.
+     * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
+     * @throws JsonValueException if the reference is not a string, or the specified heap object
+     * has the wrong type or the reference is not a valid inline declaration.
+     */
+    <T> T getObject(JsonValue reference, Class<T> type) throws HeapException;
+
+    /**
+     * Retrieves an object with the specified reference. If the object does not exist or the inline
+     * declaration cannot be build, a {@link JsonValueException} is thrown.
+     * If the reference is an inline object declaration, an anonymous object is added to the heap and returned.
+     *
+     * @param reference a JSON value containing the name of the heap object to retrieve.
+     * @param type the expected type of the heap object.
+     * @param <T> expected instance type
+     * @return the specified heap object.
+     * @throws HeapException if there was an exception creating the heap object or any of its dependencies.
+     * @throws JsonValueException if the name contains {@code null}, is not a string, or the specified heap object
+     * could not be retrieved or has the wrong type or the reference is not a valid inline declaration.
+     */
+    <T> T getRequiredObject(JsonValue reference, Class<T> type) throws HeapException;
 }

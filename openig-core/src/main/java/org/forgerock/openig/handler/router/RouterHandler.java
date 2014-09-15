@@ -37,7 +37,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.time.TimeService;
 
@@ -291,8 +290,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
 
             RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
-            handler.setDefaultHandler(HeapUtil.getObject(heap, config.get("defaultHandler"),
-                    Handler.class));
+            handler.setDefaultHandler(heap.getObject(config.get("defaultHandler"),
+                                                     Handler.class));
             return handler;
         }
 

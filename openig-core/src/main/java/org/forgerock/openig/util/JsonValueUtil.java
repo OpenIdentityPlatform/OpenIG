@@ -19,7 +19,6 @@ package org.forgerock.openig.util;
 
 import static java.lang.String.*;
 import static java.util.Collections.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Loader.*;
 
 import java.util.Arrays;
@@ -231,11 +230,7 @@ public final class JsonValueUtil {
         return new Function<JsonValue, T, HeapException>() {
             @Override
             public T apply(final JsonValue value) throws HeapException {
-                if ((value.isNull()) || (!value.isString())) {
-                    throw new JsonValueException(value, format("%s cannot be turned into a heap object reference",
-                                                               value));
-                }
-                return getRequiredObject(heap, value, type);
+                return heap.getRequiredObject(value, type);
             }
         };
     }

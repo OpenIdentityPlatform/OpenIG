@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -30,7 +29,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.http.SessionFactory;
@@ -133,8 +131,8 @@ class Route extends GenericHandler {
      */
     public Route(final HeapImpl heap, final JsonValue config, final String defaultName) throws HeapException {
         this(heap,
-             getRequiredObject(heap, config.get("handler"), Handler.class),
-             HeapUtil.getObject(heap, config.get("session"), SessionFactory.class),
+             heap.getRequiredObject(config.get("handler"), Handler.class),
+             heap.getObject(config.get("session"), SessionFactory.class),
              config.get("name").defaultTo(defaultName).asString(),
              asExpression(config.get("condition")),
              config.get("baseURI").asURI());

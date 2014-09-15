@@ -1,0 +1,24 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "top-level",
+                "type": "org.forgerock.openig.heap.domain.UseListOfReferences",
+                "config": {
+                    "list-ref": [
+                        {
+                            "type": "org.forgerock.openig.heap.domain.ReferencedObject",
+                            "config": {}
+                        },
+                        {
+                            "type": "org.forgerock.openig.heap.domain.ReferencedObject",
+                            "config": {
+                                "name": "buried-down-object"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

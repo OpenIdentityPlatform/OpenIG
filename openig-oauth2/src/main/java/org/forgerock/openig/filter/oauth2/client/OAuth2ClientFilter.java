@@ -20,7 +20,6 @@ import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 import static org.forgerock.openig.util.URIUtil.*;
 import static org.forgerock.util.Utils.*;
@@ -843,12 +842,12 @@ public final class OAuth2ClientFilter extends GenericFilter {
             filter.setTarget(asExpression(config.get("target")));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
-            final Handler loginHandler = getObject(heap, config.get("loginHandler"), Handler.class);
+            final Handler loginHandler = heap.getObject(config.get("loginHandler"), Handler.class);
             filter.setLoginHandler(loginHandler);
-            filter.setFailureHandler(getRequiredObject(heap, config.get("failureHandler"),
+            filter.setFailureHandler(heap.getRequiredObject(config.get("failureHandler"),
                     Handler.class));
             final Handler providerHandler =
-                    getRequiredObject(heap, config.get("providerHandler"), Handler.class);
+                    heap.getRequiredObject(config.get("providerHandler"), Handler.class);
             filter.setProviderHandler(providerHandler);
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto")));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto")));

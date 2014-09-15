@@ -28,7 +28,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
@@ -135,7 +134,7 @@ public class SwitchFilter extends GenericFilter {
 
         private Case asCase(JsonValue value) throws HeapException {
             return new Case(JsonValueUtil.asExpression(value.get("condition")),
-                            HeapUtil.getRequiredObject(heap, value.get("handler"), Handler.class));
+                            heap.getRequiredObject(value.get("handler"), Handler.class));
         }
     }
 }

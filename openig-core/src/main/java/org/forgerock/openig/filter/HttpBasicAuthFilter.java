@@ -32,7 +32,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -180,7 +179,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             Handler failureHandler =
-                    HeapUtil.getRequiredObject(heap, config.get("failureHandler"), Handler.class);
+                    heap.getRequiredObject(config.get("failureHandler"), Handler.class);
 
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(asExpression(config.get("username").required()),
                                                                  asExpression(config.get("password").required()),

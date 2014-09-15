@@ -19,7 +19,6 @@ package org.forgerock.openig.servlet;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.http.SessionFactory.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
@@ -195,14 +194,14 @@ public class GatewayServlet extends HttpServlet {
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
-            logger = new Logger(getObject(heap, config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+            logger = new Logger(heap.getObject(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                     LogSink.class), "GatewayServlet");
-            storage = getRequiredObject(heap, config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
+            storage = heap.getRequiredObject(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
             // Let the user change the type of session to use
             sessionFactory = (SessionFactory) heap.get(SESSION_FACTORY_HEAP_KEY);
             handler =
-                    getRequiredObject(heap, getWithDeprecation(config, logger, "handler",
+                    heap.getRequiredObject(getWithDeprecation(config, logger, "handler",
                             "handlerObject"), Handler.class);
             baseURI = config.get("baseURI").asURI();
         } catch (final ServletException e) {
