@@ -71,7 +71,7 @@ public class ExceptionFilter extends GenericFilter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            return new ExceptionFilter(heap.getRequiredObject(config.get("handler"), Handler.class));
+            return new ExceptionFilter(heap.resolve(config.get("handler"), Handler.class));
         }
     }
 }

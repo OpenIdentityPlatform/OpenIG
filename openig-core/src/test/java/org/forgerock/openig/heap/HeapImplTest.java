@@ -39,7 +39,7 @@ public class HeapImplTest {
     public void testPutAndGetObjectLocally() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put("Open", "IG");
-        assertThat(heap.get("Open")).isEqualTo("IG");
+        assertThat(heap.get("Open", String.class)).isEqualTo("IG");
     }
 
     @Test
@@ -49,7 +49,7 @@ public class HeapImplTest {
 
         HeapImpl child = new HeapImpl(parent);
 
-        assertThat(child.get("Open")).isEqualTo("IG");
+        assertThat(child.get("Open", String.class)).isEqualTo("IG");
     }
 
     @Test
@@ -60,7 +60,7 @@ public class HeapImplTest {
         HeapImpl child = new HeapImpl(parent);
         parent.put("Open", "AM");
 
-        assertThat(child.get("Open")).isEqualTo("AM");
+        assertThat(child.get("Open", String.class)).isEqualTo("AM");
     }
 
     @Test
@@ -68,7 +68,7 @@ public class HeapImplTest {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-object-creation.json"));
 
-        HeapObject heapObject = (HeapObject) heap.get("heap-object");
+        HeapObject heapObject = heap.get("heap-object", HeapObject.class);
         assertThat(heapObject).isNotNull();
 
         heap.destroy();
@@ -80,9 +80,9 @@ public class HeapImplTest {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-object-creation-same-type.json"));
 
-        HeapObject heapObject = (HeapObject) heap.get("heap-object");
+        HeapObject heapObject = heap.get("heap-object", HeapObject.class);
         assertThat(heapObject.message).isEqualTo("one");
-        HeapObject heapObject2 = (HeapObject) heap.get("heap-object-2");
+        HeapObject heapObject2 = heap.get("heap-object-2", HeapObject.class);
         assertThat(heapObject2.message).isEqualTo("two");
 
         heap.destroy();
@@ -98,7 +98,7 @@ public class HeapImplTest {
                 field("config", object())));
         HeapImpl heap = buildDefaultHeap();
 
-        HeapObject object = heap.getRequiredObject(declaration, HeapObject.class);
+        HeapObject object = heap.resolve(declaration, HeapObject.class);
 
         assertThat(object).isNotNull();
 
@@ -112,10 +112,10 @@ public class HeapImplTest {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-inline-declaration.json"));
 
-        Reference useNormalRef = (Reference) heap.get("use-normal-ref");
+        Reference useNormalRef = heap.get("use-normal-ref", Reference.class);
         assertThat(useNormalRef.getObject().message).isEqualTo("referenced");
 
-        Reference useInlineRef = (Reference) heap.get("use-inline-ref");
+        Reference useInlineRef = heap.get("use-inline-ref", Reference.class);
         assertThat(useInlineRef.getObject().message).isEqualTo("inlined");
 
         heap.destroy();
@@ -128,7 +128,7 @@ public class HeapImplTest {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-encapsulated-declaration.json"));
 
-        TheOne neo = (TheOne) heap.get("neo");
+        TheOne neo = heap.get("neo", TheOne.class);
         assertThat(neo.matrix).isNotNull();
         assertThat(neo.matrix.architect).isNotNull();
         assertThat(neo.matrix.architect.name).isEqualTo("The Great Architect");
@@ -139,7 +139,7 @@ public class HeapImplTest {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-listed-inline-declaration.json"));
 
-        UseListOfReferences neo = (UseListOfReferences) heap.get("top-level");
+        UseListOfReferences neo = heap.get("top-level", UseListOfReferences.class);
         assertThat(neo.references).hasSize(2);
 
         ReferencedObject ref1 = neo.references.get(0);

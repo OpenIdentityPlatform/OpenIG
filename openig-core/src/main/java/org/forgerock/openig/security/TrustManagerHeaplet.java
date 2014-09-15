@@ -50,7 +50,7 @@ public class TrustManagerHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
-        KeyStore keyStore = heap.getRequiredObject(storeRef, KeyStore.class);
+        KeyStore keyStore = heap.resolve(storeRef, KeyStore.class);
         String algorithm = config.get("alg").defaultTo(TrustManagerFactory.getDefaultAlgorithm()).asString();
 
         TrustManagerFactory factory;

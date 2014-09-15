@@ -131,8 +131,8 @@ class Route extends GenericHandler {
      */
     public Route(final HeapImpl heap, final JsonValue config, final String defaultName) throws HeapException {
         this(heap,
-             heap.getRequiredObject(config.get("handler"), Handler.class),
-             heap.getObject(config.get("session"), SessionFactory.class),
+             heap.resolve(config.get("handler"), Handler.class),
+             heap.resolve(config.get("session"), SessionFactory.class, true),
              config.get("name").defaultTo(defaultName).asString(),
              asExpression(config.get("condition")),
              config.get("baseURI").asURI());

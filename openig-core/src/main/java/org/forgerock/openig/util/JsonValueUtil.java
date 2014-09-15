@@ -230,7 +230,7 @@ public final class JsonValueUtil {
         return new Function<JsonValue, T, HeapException>() {
             @Override
             public T apply(final JsonValue value) throws HeapException {
-                return heap.getRequiredObject(value, type);
+                return heap.resolve(value, type);
             }
         };
     }

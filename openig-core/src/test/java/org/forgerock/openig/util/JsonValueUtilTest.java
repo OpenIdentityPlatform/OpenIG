@@ -109,7 +109,7 @@ public class JsonValueUtilTest {
 
     @Test
     public void shouldTransformListOfReferencesToListOfHeapObjectsWithSingleReference() throws Exception {
-        when(heap.getRequiredObject(argThat(hasValue("RefOne")), eq(String.class))).thenReturn("Resolved object #1");
+        when(heap.resolve(argThat(hasValue("RefOne")), eq(String.class))).thenReturn("Resolved object #1");
         JsonValue list = json(array("RefOne"));
 
         assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
@@ -118,7 +118,7 @@ public class JsonValueUtilTest {
 
     @Test
     public void shouldTransformListOfReferencesToListOfHeapObjectsWithMultipleReferences() throws Exception {
-        when(heap.getRequiredObject(any(JsonValue.class), eq(String.class)))
+        when(heap.resolve(any(JsonValue.class), eq(String.class)))
                 .thenReturn("Resolved object #1", "Resolved object #2", "Resolved object #3");
         JsonValue list = json(array("RefOne", "RefTwo", "RefThree"));
 

@@ -53,7 +53,7 @@ public class KeyManagerHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
-        KeyStore keyStore = heap.getRequiredObject(storeRef, KeyStore.class);
+        KeyStore keyStore = heap.resolve(storeRef, KeyStore.class);
         String password = evaluate(config.get("password").required());
         String algorithm = config.get("alg").defaultTo(KeyManagerFactory.getDefaultAlgorithm()).asString();
 

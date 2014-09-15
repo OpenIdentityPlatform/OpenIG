@@ -27,7 +27,7 @@ public class Matrix {
         @Override
         public Object create() throws HeapException {
             Matrix matrix = new Matrix();
-            matrix.architect = heap.getRequiredObject(config.get("architect-ref"), Architect.class);
+            matrix.architect = heap.resolve(config.get("architect-ref"), Architect.class);
             return matrix;
         }
     }

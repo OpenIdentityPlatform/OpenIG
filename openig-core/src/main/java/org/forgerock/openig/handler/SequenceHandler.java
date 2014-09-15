@@ -99,7 +99,7 @@ public class SequenceHandler extends GenericHandler {
             final SequenceHandler sequenceHandler = new SequenceHandler();
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Handler handler = heap.getRequiredObject(jv.get("handler"), Handler.class);
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final Expression postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
                 sequenceHandler.addBinding(handler, postcondition);
             }
