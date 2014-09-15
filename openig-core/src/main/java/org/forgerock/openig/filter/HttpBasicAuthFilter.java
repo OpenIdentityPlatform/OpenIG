@@ -179,7 +179,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             Handler failureHandler =
-                    heap.getRequiredObject(config.get("failureHandler"), Handler.class);
+                    heap.resolve(config.get("failureHandler"), Handler.class);
 
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(asExpression(config.get("username").required()),
                                                                  asExpression(config.get("password").required()),

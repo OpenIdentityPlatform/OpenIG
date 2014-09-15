@@ -136,7 +136,7 @@ public class DispatchHandler extends GenericHandler {
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Expression expression = JsonValueUtil.asExpression(jv.get("condition"));
-                final Handler handler = heap.getRequiredObject(jv.get("handler"), Handler.class);
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final URI uri = jv.get("baseURI").asURI();
                 dispatchHandler.addBinding(expression, handler, uri);
             }

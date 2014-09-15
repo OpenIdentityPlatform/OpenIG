@@ -116,7 +116,7 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
             KeyPair keyPair = null;
             JsonValue keystoreValue = config.get("keystore");
             if (!keystoreValue.isNull()) {
-                KeyStore keyStore = heap.getRequiredObject(keystoreValue, KeyStore.class);
+                KeyStore keyStore = heap.resolve(keystoreValue, KeyStore.class);
 
                 String alias = config.get("alias").required().asString();
                 String password = evaluate(config.get("password").required());

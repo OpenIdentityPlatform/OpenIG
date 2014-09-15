@@ -71,7 +71,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
-            HttpClient httpClient = heap.getRequiredObject(config.get("httpClient")
+            HttpClient httpClient = heap.resolve(config.get("httpClient")
                                                                  .defaultTo(HTTP_CLIENT_HEAP_KEY),
                                                            HttpClient.class);
             component.setHttpClient(httpClient);
@@ -95,7 +95,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 throws HeapException;
 
         private final Script compileScript() throws HeapException {
-            final Environment environment = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
+            final Environment environment = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
 
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {
                 throw new JsonValueException(config, "The configuration option '"

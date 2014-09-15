@@ -67,11 +67,11 @@ public abstract class GenericHeaplet implements Heaplet {
         this.heap = heap;
         if (!SPECIAL_OBJECTS.contains(name)) {
             this.logger = new Logger(
-                    heap.getObject(
+                    heap.resolve(
                             config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                            LogSink.class),
+                            LogSink.class, true),
                     name);
-            this.storage = heap.getRequiredObject(
+            this.storage = heap.resolve(
                     config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
         }

@@ -264,7 +264,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         public Object create() throws HeapException {
 
             // By default, uses the config/routes from the environment
-            Environment env = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
+            Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
             File directory = new File(env.getConfigDirectory(), "routes");
 
             // Configuration can override that value
@@ -290,8 +290,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
 
             RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
-            handler.setDefaultHandler(heap.getObject(config.get("defaultHandler"),
-                                                     Handler.class));
+            handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
+                                                     Handler.class, true));
             return handler;
         }
 

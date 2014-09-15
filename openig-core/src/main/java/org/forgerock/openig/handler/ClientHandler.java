@@ -71,7 +71,7 @@ public class ClientHandler extends GenericHandler {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            HttpClient httpClient = heap.getRequiredObject(
+            HttpClient httpClient = heap.resolve(
                     config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
                     HttpClient.class);
             return new ClientHandler(httpClient);

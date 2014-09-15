@@ -30,7 +30,7 @@ public class Reference {
         @Override
         public Object create() throws HeapException {
             Reference reference = new Reference();
-            reference.object = heap.getRequiredObject(config.get("object-ref"), HeapObject.class);
+            reference.object = heap.resolve(config.get("object-ref"), HeapObject.class);
             return reference;
         }
     }

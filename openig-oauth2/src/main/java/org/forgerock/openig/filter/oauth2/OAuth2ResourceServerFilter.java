@@ -254,7 +254,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             Handler httpHandler =
-                    heap.getRequiredObject(getWithDeprecation(config, logger, "providerHandler",
+                    heap.resolve(getWithDeprecation(config, logger, "providerHandler",
                             "httpHandler").required(), Handler.class);
 
             TimeService time = TimeService.SYSTEM;

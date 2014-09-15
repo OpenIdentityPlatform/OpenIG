@@ -134,7 +134,7 @@ public class SwitchFilter extends GenericFilter {
 
         private Case asCase(JsonValue value) throws HeapException {
             return new Case(JsonValueUtil.asExpression(value.get("condition")),
-                            heap.getRequiredObject(value.get("handler"), Handler.class));
+                            heap.resolve(value.get("handler"), Handler.class));
         }
     }
 }

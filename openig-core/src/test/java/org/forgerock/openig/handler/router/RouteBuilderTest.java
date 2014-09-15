@@ -37,6 +37,7 @@ import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -55,8 +56,8 @@ public class RouteBuilderTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY)).thenReturn(new TemporaryStorage());
-        when(heap.get(LOGSINK_HEAP_KEY)).thenReturn(new NullLogSink());
+        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY, TemporaryStorage.class)).thenReturn(new TemporaryStorage());
+        when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
     }
 
     @Test

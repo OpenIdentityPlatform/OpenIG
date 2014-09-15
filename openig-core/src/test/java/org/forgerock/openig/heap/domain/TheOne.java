@@ -29,7 +29,7 @@ public class TheOne {
         public Object create() throws HeapException {
             TheOne theOne = new TheOne();
             theOne.name = name;
-            theOne.matrix = heap.getRequiredObject(config.get("matrix-ref"), Matrix.class);
+            theOne.matrix = heap.resolve(config.get("matrix-ref"), Matrix.class);
             return theOne;
         }
     }

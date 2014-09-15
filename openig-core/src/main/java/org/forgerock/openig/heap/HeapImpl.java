@@ -82,7 +82,7 @@ public class HeapImpl implements Heap {
         }
         // instantiate all objects, recursively allocating dependencies
         for (String name : heaplets.keySet()) {
-            get(name);
+            get(name, Object.class);
         }
     }
 
@@ -113,7 +113,7 @@ public class HeapImpl implements Heap {
     }
 
     @Override
-    public synchronized Object get(String name) throws HeapException {
+    public synchronized <T> T get(final String name, final Class<T> type) throws HeapException {
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);
@@ -125,26 +125,30 @@ public class HeapImpl implements Heap {
                 objects.put(name, object);
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.get(name);
+                return parent.get(name, type);
             }
         }
-        return object;
+        return type.cast(object);
     }
 
     @Override
-    public <T> T getObject(final JsonValue reference, final Class<T> type) throws HeapException {
-        if (reference.isNull()) {
+    public <T> T resolve(final JsonValue reference, final Class<T> type) throws HeapException {
+        return resolve(reference, type, false);
+    }
+
+    @Override
+    public <T> T resolve(final JsonValue reference, final Class<T> type, final boolean optional) throws HeapException {
+
+        // If optional if set, accept that the provided reference may wrap a null
+        if (optional && reference.isNull()) {
             return null;
         }
-        return getRequiredObject(reference, type);
-    }
 
-    @Override
-    public <T> T getRequiredObject(final JsonValue reference, final Class<T> type) throws HeapException {
+        // Otherwise we require a value
         JsonValue required = reference.required();
         if (required.isString()) {
             // handle named reference
-            T value = type.cast(get(required.asString()));
+            T value = get(required.asString(), type);
             if (value == null) {
                 throw new JsonValueException(reference, "Object " + reference.asString() + " not found in heap");
             }
@@ -154,7 +158,7 @@ public class HeapImpl implements Heap {
             String generated = required.getPointer().toString();
             required.put("name", generated);
             addDeclaration(required);
-            T value = type.cast(get(generated));
+            T value = get(generated, type);
             if (value == null) {
                 throw new JsonValueException(reference, "Reference is not a valid heap object");
             }

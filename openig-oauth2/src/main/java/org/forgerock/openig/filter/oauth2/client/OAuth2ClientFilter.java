@@ -842,12 +842,12 @@ public final class OAuth2ClientFilter extends GenericFilter {
             filter.setTarget(asExpression(config.get("target")));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
-            final Handler loginHandler = heap.getObject(config.get("loginHandler"), Handler.class);
+            final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
             filter.setLoginHandler(loginHandler);
-            filter.setFailureHandler(heap.getRequiredObject(config.get("failureHandler"),
+            filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
                     Handler.class));
             final Handler providerHandler =
-                    heap.getRequiredObject(config.get("providerHandler"), Handler.class);
+                    heap.resolve(config.get("providerHandler"), Handler.class);
             filter.setProviderHandler(providerHandler);
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto")));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto")));

@@ -103,7 +103,7 @@ public class SamlFederationHandler extends GenericHandler {
              * Get the gateway configuration directory and set it as a system property to override the default openFed
              * location. Federation config files will reside in the SAML directory.
              */
-            Environment environment = (Environment) heap.get("Environment");
+            Environment environment = heap.get(Environment.ENVIRONMENT_HEAP_KEY, Environment.class);
             String samlDirectory = new File(environment.getBaseDirectory(), "SAML").getPath();
             logger.info(format("FederationServlet init directory: %s", samlDirectory));
             Properties p = System.getProperties();
