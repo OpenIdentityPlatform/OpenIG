@@ -17,7 +17,6 @@
 package org.forgerock.openig.security;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 
 import java.security.KeyStore;
 
@@ -51,7 +50,7 @@ public class TrustManagerHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
-        KeyStore keyStore = getRequiredObject(heap, storeRef, KeyStore.class);
+        KeyStore keyStore = heap.getRequiredObject(storeRef, KeyStore.class);
         String algorithm = config.get("alg").defaultTo(TrustManagerFactory.getDefaultAlgorithm()).asString();
 
         TrustManagerFactory factory;

@@ -20,7 +20,6 @@ package org.forgerock.openig.http;
 
 import static java.lang.String.*;
 import static java.util.concurrent.TimeUnit.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 import static org.forgerock.util.Utils.*;
@@ -536,7 +535,7 @@ public class HttpClient {
                 if (trustManagerConfig.isList()) {
                     managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap, TrustManager.class)));
                 } else {
-                    managers.add(getRequiredObject(heap, trustManagerConfig, TrustManager.class));
+                    managers.add(heap.getRequiredObject(trustManagerConfig, TrustManager.class));
                 }
                 trustManagers = managers.toArray(new TrustManager[managers.size()]);
             }
@@ -570,7 +569,7 @@ public class HttpClient {
                 if (keyManagerConfig.isList()) {
                     managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap, KeyManager.class)));
                 } else {
-                    managers.add(getRequiredObject(heap, keyManagerConfig, KeyManager.class));
+                    managers.add(heap.getRequiredObject(keyManagerConfig, KeyManager.class));
                 }
                 keyManagers = managers.toArray(new KeyManager[managers.size()]);
             }

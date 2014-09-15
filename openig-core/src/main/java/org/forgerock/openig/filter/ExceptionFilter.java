@@ -25,7 +25,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
@@ -72,7 +71,7 @@ public class ExceptionFilter extends GenericFilter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            return new ExceptionFilter(HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class));
+            return new ExceptionFilter(heap.getRequiredObject(config.get("handler"), Handler.class));
         }
     }
 }

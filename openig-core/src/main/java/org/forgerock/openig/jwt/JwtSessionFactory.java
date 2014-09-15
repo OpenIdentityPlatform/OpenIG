@@ -35,7 +35,6 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.http.SessionFactory;
@@ -117,7 +116,7 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
             KeyPair keyPair = null;
             JsonValue keystoreValue = config.get("keystore");
             if (!keystoreValue.isNull()) {
-                KeyStore keyStore = HeapUtil.getRequiredObject(heap, keystoreValue, KeyStore.class);
+                KeyStore keyStore = heap.getRequiredObject(keystoreValue, KeyStore.class);
 
                 String alias = config.get("alias").required().asString();
                 String password = evaluate(config.get("password").required());

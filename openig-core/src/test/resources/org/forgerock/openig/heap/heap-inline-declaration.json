@@ -1,0 +1,33 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "use-normal-ref",
+                "type": "org.forgerock.openig.heap.Reference",
+                "config": {
+                    "object-ref": "heap-object"
+                }
+            },
+            {
+                "name": "heap-object",
+                "type": "org.forgerock.openig.heap.HeapObject",
+                "config": {
+                    "message": "referenced"
+                }
+            },
+            {
+                "name": "use-inline-ref",
+                "type": "org.forgerock.openig.heap.Reference",
+                "config": {
+                    "object-ref":             {
+                        "type": "org.forgerock.openig.heap.HeapObject",
+                        "config": {
+                            "message": "inlined"
+                        }
+                    }
+                }
+            }
+
+        ]
+    }
+}

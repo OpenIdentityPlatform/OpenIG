@@ -20,7 +20,10 @@ import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
@@ -28,9 +31,14 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.log.Logger;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -41,6 +49,12 @@ public class JsonValueUtilTest {
 
     @Mock
     private Heap heap;
+
+    @Mock
+    private Handler handler;
+
+    @Captor
+    private ArgumentCaptor<JsonValue> captor;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -95,7 +109,7 @@ public class JsonValueUtilTest {
 
     @Test
     public void shouldTransformListOfReferencesToListOfHeapObjectsWithSingleReference() throws Exception {
-        when(heap.get("RefOne")).thenReturn("Resolved object #1");
+        when(heap.getRequiredObject(argThat(hasValue("RefOne")), eq(String.class))).thenReturn("Resolved object #1");
         JsonValue list = json(array("RefOne"));
 
         assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
@@ -104,25 +118,12 @@ public class JsonValueUtilTest {
 
     @Test
     public void shouldTransformListOfReferencesToListOfHeapObjectsWithMultipleReferences() throws Exception {
-        when(heap.get("RefOne")).thenReturn("Resolved object #1");
-        when(heap.get("RefTwo")).thenReturn("Resolved object #2");
-        when(heap.get("RefThree")).thenReturn("Resolved object #3");
+        when(heap.getRequiredObject(any(JsonValue.class), eq(String.class)))
+                .thenReturn("Resolved object #1", "Resolved object #2", "Resolved object #3");
         JsonValue list = json(array("RefOne", "RefTwo", "RefThree"));
 
         assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
                 .containsExactly("Resolved object #1", "Resolved object #2", "Resolved object #3");
-    }
-
-    @Test(expectedExceptions = JsonValueException.class)
-    public void shouldFailForUnresolvableReferences() throws Exception {
-        JsonValue list = json(array("RefOne"));
-        list.asList(ofRequiredHeapObject(heap, String.class));
-    }
-
-    @Test(expectedExceptions = JsonValueException.class)
-    public void shouldFailForIncorrectUseOfReferences() throws Exception {
-        JsonValue list = json(array(42));
-        list.asList(ofRequiredHeapObject(heap, String.class));
     }
 
     @Test
@@ -234,5 +235,20 @@ public class JsonValueUtilTest {
         assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
                 "value1");
         verify(logger, times(2)).warning(anyString());
+    }
+
+    private static Matcher<JsonValue> hasValue(final Object value) {
+        return new BaseMatcher<JsonValue>() {
+            @Override
+            public boolean matches(final Object item) {
+                JsonValue json = (JsonValue) item;
+                return value.equals(json.getObject());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendText(value.toString());
+            }
+        };
     }
 }

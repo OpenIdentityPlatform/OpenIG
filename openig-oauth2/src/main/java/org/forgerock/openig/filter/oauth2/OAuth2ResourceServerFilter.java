@@ -17,7 +17,6 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.heap.HeapUtil.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
@@ -255,7 +254,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             Handler httpHandler =
-                    getRequiredObject(heap, getWithDeprecation(config, logger, "providerHandler",
+                    heap.getRequiredObject(getWithDeprecation(config, logger, "providerHandler",
                             "httpHandler").required(), Handler.class);
 
             TimeService time = TimeService.SYSTEM;

@@ -27,7 +27,6 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
@@ -99,9 +98,9 @@ public class Chain extends GenericHandler {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Chain chain = new Chain(HeapUtil.getRequiredObject(heap, config.get("handler"), Handler.class));
+            Chain chain = new Chain(heap.getRequiredObject(config.get("handler"), Handler.class));
             for (JsonValue filter : config.get("filters").required().expect(List.class)) {
-                chain.filters.add(HeapUtil.getRequiredObject(heap, filter, Filter.class));
+                chain.filters.add(heap.getRequiredObject(filter, Filter.class));
             }
             return chain;
         }
