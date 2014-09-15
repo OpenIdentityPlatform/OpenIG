@@ -5,47 +5,39 @@
                 "name": "_Router",
                 "type": "Router",
                 "config": {
-                    "defaultHandler": "_DefaultRoute"
-                }
-            },
-            {
-                "name": "_DefaultRoute",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
-                            "handler": "_200Welcome"
-                        },
-                        {
-                            "condition": "${exchange.request.uri.path == '/'}",
-                            "handler": "_405MethodNotAllowed"
-                        },
-                        {
-                            "handler": "_404NotFound"
+                    "defaultHandler": {
+                        "type": "DispatchHandler",
+                        "config": {
+                            "bindings": [
+                                {
+                                    "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
+                                    "handler": {
+                                        "type": "WelcomeHandler",
+                                        "config": {}
+                                    }
+                                },
+                                {
+                                    "condition": "${exchange.request.uri.path == '/'}",
+                                    "handler": {
+                                        "type": "StaticResponseHandler",
+                                        "config": {
+                                            "status": 405,
+                                            "reason": "Method Not Allowed"
+                                        }
+                                    }
+                                },
+                                {
+                                    "handler": {
+                                        "type": "StaticResponseHandler",
+                                        "config": {
+                                            "status": 404,
+                                            "reason": "Not Found"
+                                        }
+                                    }
+                                }
+                            ]
                         }
-                    ]
-                }
-            },
-            {
-                "name": "_200Welcome",
-                "type": "WelcomeHandler",
-                "config": {}
-            },
-            {
-                "name": "_405MethodNotAllowed",
-                "type": "StaticResponseHandler",
-                "config": {
-                    "status": 405,
-                    "reason": "Method Not Allowed"
-                }
-            },
-            {
-                "name": "_404NotFound",
-                "type": "StaticResponseHandler",
-                "config": {
-                    "status": 404,
-                    "reason": "Not Found"
+                    }
                 }
             }
         ]
