@@ -21,6 +21,7 @@ package org.forgerock.openig.heap;
 
 import static java.lang.String.format;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class HeapImpl implements Heap {
             addDeclaration(object);
         }
         // instantiate all objects, recursively allocating dependencies
-        for (String name : heaplets.keySet()) {
+        for (String name : new ArrayList<String>(heaplets.keySet())) {
             get(name, Object.class);
         }
     }
