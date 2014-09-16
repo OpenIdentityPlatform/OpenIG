@@ -295,7 +295,7 @@
   <programlisting language="javascript">
 {
     "name": "SamlFederationHandler",
-    "type": "org.forgerock.openig.handler.saml.SamlFederationHandler",
+    "type": "SamlFederationHandler",
     "config": {
         "assertionMapping": {
             "username": "mail",
