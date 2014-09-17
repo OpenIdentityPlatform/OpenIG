@@ -65,5 +65,6 @@
         ]
     },
     "handler": "DispatchHandler",
-    "condition": "${matches(exchange.request.uri.path, '^/federate')}"
+    "condition": "${matches(exchange.request.uri.path, '^/federate')}",
+    "session": "JwtSession"
 }

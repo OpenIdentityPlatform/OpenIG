@@ -478,8 +478,8 @@ public class GroovyScriptableFilterTest {
             Set<String> cnValues = new HashSet<String>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
-            assertThat(exchange.session.get("cn")).isEqualTo(cnValues);
-            assertThat(exchange.session.get("description"))
+            assertThat(exchange.get("cn")).isEqualTo(cnValues);
+            assertThat(exchange.get("description"))
                     .isEqualTo("New description set by my script");
             assertThat(exchange.request.getHeaders().get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");

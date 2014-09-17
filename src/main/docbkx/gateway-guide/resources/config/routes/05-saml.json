@@ -16,5 +16,6 @@
         ]
     },
     "handler": "SamlFederationHandler",
-    "condition": "${matches(exchange.request.uri.path, '^/saml')}"
+    "condition": "${matches(exchange.request.uri.path, '^/saml')}",
+    "session": "JwtSession"
 }
