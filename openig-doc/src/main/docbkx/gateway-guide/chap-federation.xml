@@ -685,6 +685,21 @@ sp.xml</computeroutput>
        The route matches requests to <literal>/saml</literal>.
       </para>
      </listitem>
+
+     <listitem>
+      <para>
+       The route uses the "JwtSession" session implementation,
+       meaning it stores encrypted session information in a browser cookie.
+       The name is a reference to the "JwtSession" object
+       defined in <filename>config.json</filename>.
+       For details, see the reference for
+       <link
+        xlink:show="new"
+        xlink:href="reference#JwtSession"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >JwtSession</link>.
+      </para>
+     </listitem>
     </itemizedlist>
    </listitem>
 
@@ -753,6 +768,12 @@ sp.xml</computeroutput>
       <para>
        The route matches requests to <literal>/federate</literal>.
        This is the route you use to test the configuration.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       The route also uses the "JwtSession" session implementation.
       </para>
      </listitem>
     </itemizedlist>

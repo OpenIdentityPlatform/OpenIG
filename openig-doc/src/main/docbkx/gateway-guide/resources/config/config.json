@@ -9,6 +9,11 @@
                 }
             },
             {
+                "name": "JwtSession",
+                "type": "JwtSession",
+                "config": {}
+            },
+            {
                 "name": "CaptureFilter",
                 "type": "CaptureFilter",
                 "config": {
