@@ -978,6 +978,284 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
   </procedure>
  </section>
 
+ <section xml:id="load-balancing">
+  <title>Preparing For Load Balancing &amp; Failover</title>
+
+  <para>
+   For a high scale or highly available deployment,
+   you can prepare a pool of ${projectName} servers
+   with nearly identical configurations,
+   and then load balance requests across the pool,
+   routing around any servers that become unavailable.
+   Load balancing allows the service to handle more load.
+  </para>
+
+  <para>
+   Before you spread requests across multiple servers, however,
+   you must determine what to do with state information
+   that ${projectName} saves in the exchange,
+   or retrieves locally from the ${projectName} server system.
+   If information is retrieved locally,
+   then also consider setting up failover
+   so that if one server becomes unavailable,
+   another server in the pool can take its place.
+   The benefit of failover is
+   that a server failure can be invisible to client applications.
+  </para>
+
+  <itemizedlist>
+   <para>
+    ${projectName} can save state information in the exchange in several ways.
+   </para>
+
+   <listitem>
+    <para>
+     Handlers including a
+     <link
+      xlink:href="reference#SamlFederationHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SamlFederationHandler</link>
+     or a custom
+     <link
+      xlink:href="reference#ScriptableHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableHandler</link>
+     can store information in the exchange.
+     Most handlers depend on information in the exchange,
+     some of which is first stored by ${projectName}.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Filters including those having types
+     <link
+      xlink:href="reference#AssignmentFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >AssignmentFilter</link>,
+     <link
+      xlink:href="reference#HeaderFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >HeaderFilter</link>,
+     <link
+      xlink:href="reference#OAuth2ClientFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >OAuth2ClientFilter</link>,
+     <link
+      xlink:href="reference#OAuth2ResourceServerFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >OAuth2ResourceServerFilter</link>,
+     <link
+      xlink:href="reference#ScriptableFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableFilter</link>,
+     <link
+      xlink:href="reference#SqlAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SqlAttributesFilter</link>,
+     and
+     <link
+      xlink:href="reference#StaticRequestFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >StaticRequestFilter</link>
+     can store information in the exchange.
+     Most filters depend on information in the exchange,
+     some of which is first stored by ${projectName}.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    ${projectName} can also retrieve information locally in several ways.
+   </para>
+
+   <listitem>
+    <para>
+     Filters and handlers including
+     <link
+      xlink:href="reference#FileAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+      >FileAttributesFilter</link>,
+     <link
+      xlink:href="reference#ScriptableFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableFilter</link>,
+     <link
+      xlink:href="reference#ScriptableHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableHandler</link>,
+     and
+     <link
+      xlink:href="reference#SqlAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SqlAttributesFilter</link>
+     can depend on local system files or container configuration.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   By default the exchange data resides in memory in the container
+   where ${projectName} runs.
+   This includes the default session implementation,
+   which is backed by the HttpSession that the container handles.
+   You can opt to store session data on the user-agent instead, however.
+   For details and to consider whether your data fits, see
+   <link
+    xlink:href="reference#JwtSession"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    xlink:show="new"
+   >JwtSession</link>.
+   When you use the <literal>JwtSession</literal> implementation,
+   be sure to share the encryption keys across all servers,
+   so that any server can read session cookies from any other.
+  </para>
+
+  <para>
+   If your data does not fit in an HTTP cookie,
+   for example because when encrypted it is larger than 4 KB,
+   consider storing a reference in the cookie,
+   and then retrieve the data by using another filter.
+   ${projectName} logs warning messages if the JwtSession cookie is too large.
+   Using a reference can also work when a server becomes unavailable,
+   and the load balancer must fail requests over to another server in the pool.
+  </para>
+
+  <para>
+   If some data attached to an exchange must be stored on the server side,
+   then you have additional configuration steps to perform
+   for session stickiness and for session replication.
+   Session stickiness means that the load balancer sends all requests
+   from the same client session to the same server.
+   Session stickiness helps to ensure that a client request goes
+   to the server holding the original session data.
+   Session replication involves writing session data
+   either to other servers or to a data store,
+   so that if one server goes down,
+   other servers can read the session data and continue processing.
+   Session replication helps when one server fails,
+   allowing another server to take its place
+   without having to start the session over again.
+   If you set up session stickiness but not session replication,
+   when a server crashes the client session information for that server is lost,
+   and the client must start again with a new session.
+  </para>
+
+  <para>
+   How you configure session stickiness and session replication
+   depends on your load balancer and on your container.
+  </para>
+
+  <itemizedlist>
+   <para>
+    Apache Tomcat can help with session stickiness,
+    and a Tomcat cluster can handle session replication.
+   </para>
+
+   <listitem>
+    <para>
+     If you choose to use the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/connectors-doc/"
+     >Apache Tomcat connector</link> (mod_jk) on your web server
+     to perform load balancing, then see the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/connectors-doc/generic_howto/loadbalancers.html"
+     ><citetitle>LoadBalancer HowTo</citetitle></link> for details.
+    </para>
+
+    <para>
+     Notice in that HowTo that
+     you configure the <literal>jvmRoute</literal> attribute
+     in the Tomcat server configuration,
+     <filename>/path/to/tomcat/conf/server.xml</filename>,
+     to identify the server.
+     The connector can use this identifier to achieve session stickiness.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     A Tomcat
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/tomcat-7.0-doc/config/cluster.html"
+     >cluster</link> configuration can handle session replication.
+     When setting up a cluster configuration, the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/tomcat-7.0-doc/config/cluster-manager.html"
+     >ClusterManager</link> defines the session replication implementation.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    Jetty has provisions for session stickiness,
+    and also for session replication through clustering.
+   </para>
+
+   <listitem>
+    <para>
+     Jetty's persistent session mechanism appends a node ID to the session ID,
+     in the same way Tomcat appends the <literal>jvmRoute</literal> value
+     to the session cookie.
+     This can be useful for session stickiness
+     if your load balancer examines the session ID.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:show="new"
+      xlink:href="http://www.eclipse.org/jetty/documentation/current/session-clustering-jdbc.html"
+     >Session Clustering with a Database</link>
+     describes how to configure Jetty to persist sessions over JDBC,
+     allowing session replication.
+    </para>
+
+    <para>
+     Unless it is set up to be highly available,
+     the database can be a single point of failure in this case.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:show="new"
+      xlink:href="http://www.eclipse.org/jetty/documentation/current/session-clustering-mongodb.html"
+     >Session Clustering with MongoDB</link>
+     describes how to configure Jetty to persist sessions in MongoDB,
+     allowing session replication.
+    </para>
+
+    <para>
+     The Jetty documentation recommends this implementation
+     when session data is seldom written but often read.
+    </para>
+   </listitem>
+  </itemizedlist>
+ </section>
+
  <section xml:id="client-side-security">
   <title>Configuring ${projectName} For HTTPS (Client-Side)</title>
 
