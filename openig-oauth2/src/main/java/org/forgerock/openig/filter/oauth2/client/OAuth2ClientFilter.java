@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.format;
 import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
@@ -66,7 +67,7 @@ import org.forgerock.util.time.TimeService;
  * Configuration options:
  *
  * <pre>
- * "target"                       : expression,         [REQUIRED]
+ * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
  * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
@@ -166,6 +167,10 @@ import org.forgerock.util.time.TimeService;
  * </pre>
  */
 public final class OAuth2ClientFilter extends GenericFilter {
+
+    /** The expression which will be used for storing authorization information in the exchange. */
+    public static final String DEFAULT_TOKEN_KEY = "openid";
+
     private Expression clientEndpoint;
     private Expression defaultLoginGoto;
     private Expression defaultLogoutGoto;
@@ -481,7 +486,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
          * is to have something which is difficult to guess. However, if the
          * nonce is pushed to the user agent in a cookie, rather than stored
          * server side in a session, then it will be possible to construct a
-         * cookie and state which have the same valueand thereby create a fake
+         * cookie and state which have the same value and thereby create a fake
          * call-back from the authorization server. This will not be possible
          * using a CSRF, but a hacker might snoop the cookie and fake up a
          * call-back with a matching state. Is this threat possible? Even if it
@@ -838,8 +843,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
+
             final OAuth2ClientFilter filter = new OAuth2ClientFilter();
-            filter.setTarget(asExpression(config.get("target")));
+
+            filter.setTarget(asExpression(config.get("target").defaultTo(
+                    format("${exchange.%s}", DEFAULT_TOKEN_KEY))));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
             final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
