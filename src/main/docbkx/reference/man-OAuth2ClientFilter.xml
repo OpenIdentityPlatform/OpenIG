@@ -453,10 +453,15 @@
     <term><code>"target"</code>: <emphasis><link
      xlink:href="reference#Expressions"
      xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-     required</emphasis></term>
+     optional</emphasis></term>
     <listitem>
      <para>
-      Expression that yields the target object whose value is to be set.
+      Expression that yields the target object whose value is to be set,
+      such as <literal>${exchange.openid}</literal>.
+     </para>
+     
+     <para>
+      Default: <literal>${exchange.openid}</literal>
      </para>
     </listitem>
    </varlistentry>
