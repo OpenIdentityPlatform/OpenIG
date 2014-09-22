@@ -15,8 +15,7 @@
  */
 
 /**
- * Simple server for use when getting started,
- * intended for those following along with the product documentation.
+ * Samples for those following along with the product documentation.
  */
 
 package org.forgerock.openig.doc;

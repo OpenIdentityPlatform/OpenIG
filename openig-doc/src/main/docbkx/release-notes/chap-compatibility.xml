@@ -66,6 +66,12 @@
 
   <para>
    This release deprecates the following configuration settings.
+   Deprecation is defined in the <citetitle>Reference</citetitle> appendix on
+   <link
+    xlink:show="new"
+    xlink:href="admin-guide#interface-stability"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>ForgeRock Product Interface Stability</citetitle></link>.
   </para>
 
     <table>
@@ -198,6 +204,15 @@
       </tbody>
      </tgroup>
     </table>
+
+  <para>
+   This release deprecates the
+   <link
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
+    xlink:show="new"
+   >NestedHeaplet</link> class.
+   The class is likely to be removed in a future release.
+  </para>
 
   <!--
   <para>

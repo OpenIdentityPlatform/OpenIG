@@ -750,9 +750,10 @@
    heaplet is to extend the
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/org/forgerock/openig/heap/NestedHeaplet.html"
-   >NestedHeaplet</link> class in a nested class in the class you want to create
-   and initialize and implementing its
+    xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html"
+   >GenericHeaplet</link> class
+   in a nested class of the class you want to create and initialize,
+   overriding the heaplet's
    <link
     xlink:show="new"
     xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#create()"
@@ -760,8 +761,8 @@
   </para>
 
   <para>
-   Within the <literal>create</literal> method, you can access the
-   object's configuration through the
+   Within the <literal>create</literal> method,
+   you can access the object's configuration through the
    <link
     xlink:show="new"
     xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#config"
@@ -772,56 +773,41 @@
  <section xml:id="custom-sample-filter">
   <title>Sample Filter</title>
 
-  <para>The following sample filter sets an arbitrary header in the incoming
-  request and outgoing response.</para>
+  <para>
+   The following sample filter sets an arbitrary header
+   in the incoming request and outgoing response.
+  </para>
 
-  <programlisting language="java">
-package com.example.filter;
+  <?hard-pagebreak?>
 
-// Java Standard Edition
-import java.io.IOException;
+  <programlisting language="java"
+   >[jcp:org.forgerock.openig.doc.SampleFilter:--- JCite ---]</programlisting>
 
-// ${projectName} Core Library
-import org.forgerock.openig.filter.GenericFilter;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
-import org.forgerock.openig.http.Exchange;
+  <para>
+   When you set the sample filter "type" in the configuration,
+   you need to provide the fully qualified class name,
+   as in <literal>"type": "org.forgerock.openig.doc.SampleFilter"</literal>.
+   You can however implement a class alias resolver
+   to make it possible to use a short name instead,
+   as in <literal>"type": "SampleFilter"</literal>.
+  </para>
 
-public class HelloWorldFilter extends GenericFilter {
+  <programlisting language="java"
+  >[jcp:org.forgerock.openig.doc.SampleClassAliasResolver:--- JCite ---]</programlisting>
 
-    public String name;
-    public String value;
+  <para>
+   The corresponding heap object configuration then looks as follows.
+  </para>
 
-    @Override
-    public void filter(Exchange exchange, Handler next)
-            throws HandlerException, IOException {
-        exchange.request.getHeaders().putSingle(name, value); // set header in request
-        next.handle(exchange); // pass to remaining filters &amp; handler in chain
-        exchange.response.getHeaders().putSingle(name, value); // set header in response
+  <programlisting language="javascript">
+{
+    "name": "SampleFilter",
+    "type": "SampleFilter",
+    "config": {
+        "name": "X-Greeting",
+        "value": "Hello world"
     }
-
-    public static class Heaplet extends NestedHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            HelloWorldFilter filter = new HelloWorldFilter();
-            filter.name = config.get("name").required().asString(); // required
-            filter.value = config.get("value").required().asString(); // req'd
-            return filter;
-        }
-    }
-}  </programlisting>
-
-  <para>The corresponding heap object configuration is as follows.</para>
-
-  <programlisting language="javascript">{
-     "name": "HelloWorldFilter",
-     "type": "com.example.filter.HelloWorldFilter",
-     "config": {
-         "name": "X-Hello",
-         "value": "World"
-     }
-}</programlisting>
+}
+  </programlisting>
  </section>
 </chapter>
