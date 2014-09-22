@@ -69,7 +69,7 @@
    Deprecation is defined in the <citetitle>Reference</citetitle> appendix on
    <link
     xlink:show="new"
-    xlink:href="admin-guide#interface-stability"
+    xlink:href="reference#interface-stability"
     xlink:role="http://docbook.org/xlink/role/olink"
    ><citetitle>ForgeRock Product Interface Stability</citetitle></link>.
   </para>
@@ -91,7 +91,7 @@
         <entry>
          <link
           xlink:show="new"
-          xlink:href="admin-guide#interface-stability"
+          xlink:href="reference#interface-stability"
           xlink:role="http://docbook.org/xlink/role/olink"
          >Deprecated</link> Settings
         </entry>
@@ -100,7 +100,7 @@
          Newer
          <link
           xlink:show="new"
-          xlink:href="admin-guide#interface-stability"
+          xlink:href="reference#interface-stability"
           xlink:role="http://docbook.org/xlink/role/olink"
          >Evolving</link> Settings
         </entry>
