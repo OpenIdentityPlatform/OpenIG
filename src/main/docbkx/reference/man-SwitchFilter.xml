@@ -25,114 +25,155 @@
   !
 -->
 <refentry xml:id='SwitchFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>SwitchFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>SwitchFilter</refname>
   <refpurpose>divert exchange to other handler</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Filters</primary>
    <secondary>SwitchFilter</secondary>
   </indexterm>
-  <para>Conditionally diverts the exchange to another handler. If a
-  <literal>condition</literal> evaluates to <literal>true</literal>, then the
-  exchange is dispatched to the associated <literal>handler</literal> with no
-  further processing by the switch filter.</para>
+
+  <para>
+   Conditionally diverts the exchange to another handler.
+   If a <literal>condition</literal> evaluates to <literal>true</literal>,
+   then the exchange is dispatched to the associated <literal>handler</literal>
+   with no further processing by the switch filter.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "name": string,
-     "type": "SwitchFilter",
-     "config": {
-         "onRequest": [
-             {
-                 "condition": expression,
-                 "handler": string,
-             }, ...
-         ],
-         "onResponse": [
-             {
-                 "condition": expression,
-                 "handler": string,
-             }, ...
-         ]
-     }
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "SwitchFilter",
+    "config": {
+        "onRequest": [
+            {
+                "condition": expression,
+                "handler": string,
+
+            },
+            ...
+        ],
+        "onResponse": [
+            {
+                "condition": expression,
+                "handler": string,
+
+            },
+            ...
+        ]
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
-    <term><code>"onRequest"</code>: <emphasis>array of objects,
-    optional</emphasis></term>
+    <term><code>"onRequest"</code>: <emphasis>array of objects, optional</emphasis></term>
     <listitem>
-     <para>Conditions to test (and handler to dispatch to, if
-     <literal>true</literal>) before the exchange is handled.</para>
+     <para>
+      Conditions to test (and handler to dispatch to, if <literal>true</literal>)
+      before the exchange is handled.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"onResponse"</code>: <emphasis>array of objects,
-    optional</emphasis></term>
+    <term><code>"onResponse"</code>: <emphasis>array of objects, optional</emphasis></term>
     <listitem>
-     <para>Conditions to test (and handler to dispatch to, if
-     <literal>true</literal>) after the exchange is handled.</para>
+     <para>
+      Conditions to test (and handler to dispatch to, if <literal>true</literal>)
+      after the exchange is handled.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"condition"</code>: <emphasis><link
-    xlink:href="reference#Expressions"
-    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-    optional</emphasis></term>
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
     <listitem>
-     <para>Condition to evaluate to determine if exchange should be dispatched
-     to handler. Default: unconditional dispatch to handler.</para>
+     <para>
+      Condition to evaluate to determine
+      if exchange should be dispatched to handler.
+     </para>
+
+     <para>
+      Default: unconditional dispatch to handler.
+     </para>
     </listitem>
    </varlistentry>
    <varlistentry>
     <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to if condition
-     yields <literal>true</literal>.</para>
+     <para>
+      The name of the handler heap object to dispatch to
+      if condition yields <literal>true</literal>.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Example</title>
-  <para>This example intercepts the response if it is equal to 200 and executes
-  the LoginRequestHandler. This filter might be used in a login flow where the
-  request for the login page must go through to the target, but the response
-  should be intercepted in order to send the login form to the application.
-  This is typical for scenarios where there is a hidden value or cookie
-  returned in the login page which must be sent in the login form:</para>
-  <programlisting language="javascript">{
-     "name": "SwitchFilter",
-     "type": "SwitchFilter",
-     "config": {
-         "onResponse": [
-             {
-                 "condition": "${exchange.response.status == 200}",
-                 "handler": "LoginRequestHandler"
-             }
-         ]
-     }
-}</programlisting>
+
+  <para>
+   This example intercepts the response if it is equal to 200
+   and executes the LoginRequestHandler.
+   This filter might be used in a login flow
+   where the request for the login page must go through to the target,
+   but the response should be intercepted
+   in order to send the login form to the application.
+   This is typical for scenarios
+   where there is a hidden value or cookie returned in the login page,
+   which must be sent in the login form.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "SwitchFilter",
+    "type": "SwitchFilter",
+    "config": {
+        "onResponse": [
+            {
+                "condition": "${exchange.response.status == 200}",
+                "handler": "LoginRequestHandler"
+            }
+        ]
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/SwitchFilter.html"
-  >org.forgerock.openig.filter.SwitchFilter</link></para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/SwitchFilter.html"
+   >org.forgerock.openig.filter.SwitchFilter</link>
+  </para>
  </refsect1>
 </refentry>

@@ -25,49 +25,63 @@
   !
 -->
 <refentry xml:id='SequenceHandler'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
+
  <refmeta>
   <refentrytitle>SequenceHandler</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>SequenceHandler</refname>
   <refpurpose>process exchange through sequence of handlers</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Handlers</primary>
    <secondary>SequenceHandler</secondary>
   </indexterm>
-  <para>Processes an exchange through a sequence of handlers. This allows
-  multi-request processing such as retrieving a form, extracting form content
-  (for example, nonce) and submitting in a subsequent request. Each
-  <literal>handler</literal> in the <literal>bindings</literal> is dispatched
-  to in order; the binding <literal>postcondition</literal> determines if the
-  sequence should continue.</para>
+
+  <para>
+   Processes an exchange through a sequence of handlers.
+   This allows multi-request processing such as retrieving a form,
+   extracting form content (for example, nonce)
+   and submitting in a subsequent request.
+   Each <literal>handler</literal> in the <literal>bindings</literal>
+   is dispatched to in order;
+   the binding <literal>postcondition</literal> determines
+   if the sequence should continue.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "name": string,
-     "type": "SequenceHandler",
-     "config": {
-         "bindings": [
-             {
-                 "handler": string,
-                 "postcondition": expression
-             }
-         ]
-     }
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "SequenceHandler",
+    "config": {
+        "bindings": [
+            {
+                "handler": string,
+                "postcondition": expression
+            }
+        ]
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"bindings"</code>: <emphasis>array of objects,
@@ -77,12 +91,14 @@
      sequence continues.</para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
      <para>The name of the handler heap object to dispatch to.</para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"postcondition"</code>: <emphasis><link
     xlink:href="reference#Expressions"
@@ -95,10 +111,14 @@
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/handler/SequenceHandler.html"
-  >org.forgerock.openig.handler.SequenceHandler</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/SequenceHandler.html"
+   >org.forgerock.openig.handler.SequenceHandler</link>
+  </para>
  </refsect1>
 </refentry>
