@@ -25,27 +25,32 @@
   !
 -->
 <refentry xml:id='Chain'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Chain</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>Chain</refname>
   <refpurpose>dispatch exchange to ordered list of filters</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
   <indexterm>
    <primary>Handlers</primary>
    <secondary>Chain</secondary>
   </indexterm>
-  <para>A chain is responsible for dispatching an exchange to an ordered list
-  of filters, and finally a handler.</para>
+
+  <para>
+   A chain is responsible for dispatching an exchange
+   to an ordered list of filters, and finally a handler.
+  </para>
+
  </refsect1>
  <refsect1>
   <title>Usage</title>
@@ -59,27 +64,35 @@
 }
 </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"filters"</code>: <emphasis>array of strings, required</emphasis></term>
     <listitem>
-     <para>The names of the filter heap objects to dispatch the exchange to,
-     in order.</para>
+     <para>
+      The names of the filter heap objects to dispatch the exchange to, in order.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>The name of the handler object to dispatch to once the exchange has
-     traversed all of the specified filters.</para>
+     <para>
+      The name of the handler object to dispatch to
+      once the exchange has traversed all of the specified filters.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Example</title>
+
   <programlisting language="javascript">{
      "name": "LoginChain",
      "type": "Chain",
@@ -89,10 +102,14 @@
      }
 }</programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/Chain.html"
-  >org.forgerock.openig.filter.Chain</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/filter/Chain.html"
+   >org.forgerock.openig.filter.Chain</link>
+  </para>
  </refsect1>
 </refentry>
