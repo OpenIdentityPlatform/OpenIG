@@ -1,0 +1,13 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "CustomHeapObject",
+                "type": "org.forgerock.openig.heap.HeapObject",
+                "config": {
+                    "message": "Custom Message"
+                }
+            }
+        ]
+    }
+}

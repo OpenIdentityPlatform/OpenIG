@@ -20,6 +20,7 @@ package org.forgerock.openig.heap;
 // TODO: consider detecting cyclic dependencies
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +92,8 @@ public class HeapImpl implements Heap {
      * Add the given JsonValue as a new object declaration in this heap. The given object must be a valid object
      * declaration ({@literal name}, {@literal type} and {@literal config} attributes). If not, a JsonValueException
      * will be thrown. After this method is called, a new object is available in the heap.
+     * 
+     * <p>The {@literal config} attribute is optional and accordingly, if empty or null, its declaration can be omitted.
      *
      * @param object
      *         object declaration to add to the heap.
@@ -110,7 +113,7 @@ public class HeapImpl implements Heap {
         objects.remove(name);
         heaplets.put(name, heaplet);
         // objects[n].config (object)
-        configs.put(name, object.get("config").required().expect(Map.class));
+        configs.put(name, object.get("config").defaultTo(emptyMap()).expect(Map.class));
     }
 
     @Override
