@@ -92,7 +92,7 @@ public class HeapImpl implements Heap {
      * Add the given JsonValue as a new object declaration in this heap. The given object must be a valid object
      * declaration ({@literal name}, {@literal type} and {@literal config} attributes). If not, a JsonValueException
      * will be thrown. After this method is called, a new object is available in the heap.
-     * 
+     *
      * <p>The {@literal config} attribute is optional and accordingly, if empty or null, its declaration can be omitted.
      *
      * @param object
