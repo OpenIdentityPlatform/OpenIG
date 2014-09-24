@@ -65,7 +65,7 @@
     "name": string,
     "type": "KeyManager",
     "config": {
-        "keystore": string,
+        "keystore": KeyStore reference,
         "password": expression,
         "alg": string
     }
@@ -78,12 +78,19 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"keystore"</code>: <emphasis>string, required</emphasis></term>
-
+    <term><code>"keystore"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#KeyStore"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyStore</link> reference, optional</emphasis></term>
     <listitem>
      <para>
-      The name of the key store configuration object
-      that references the store for the actual keys.
+      The key store that references the store for the actual keys.
+     </para>
+
+     <para>
+      Provide either the name of the KeyStore object defined in the heap,
+      or the inline KeyStore configuration object inline.
      </para>
     </listitem>
    </varlistentry>
@@ -121,7 +128,7 @@
 
   <para>
    The following example configures a key manager
-   that depends on "MyKeyStore".
+   that depends on a "KeyStore" configuration.
    The key store takes a password supplied as a Java system property
    when starting the container where ${projectName} runs,
    as in <option>-Dkeypass=<replaceable>password</replaceable></option>.
@@ -133,7 +140,13 @@
     "name": "MyKeyManager",
     "type": "KeyManager",
     "config": {
-        "keystore": "MyKeyStore",
+        "keystore": {
+            "type": "KeyStore",
+            "config": {
+                "file": "file://${env['HOME']}/keystore.jks",
+                "password": "${system['keypass']}"
+            }
+        },
         "password": "${system['keypass']}"
     }
 }

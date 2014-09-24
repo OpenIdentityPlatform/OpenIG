@@ -1,112 +1,101 @@
 {
-    "heap": {
-        "objects": [
+  "heap": {
+    "objects": [
+      {
+        "name": "DispatchHandler",
+        "type": "DispatchHandler",
+        "config": {
+          "bindings": [
             {
-                "name": "DispatchHandler",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "condition": "${exchange.request.uri.path == '/owa/auth/logon.aspx'}",
-                            "handler": "LoginChain",
-                            "baseURI": "https://65.55.171.158"
-                        },
-                        {
-                            "handler": "OutgoingChain",
-                            "baseURI": "https://65.55.171.158"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "LoginChain",
+              "condition": "${exchange.request.uri.path == '/owa/auth/logon.aspx'}",
+              "handler": {
                 "type": "Chain",
                 "config": {
-                    "filters": [
-                        "CryptoHeaderFilter",
-                        "LoginRequest"
-                    ],
-                    "handler": "OutgoingChain"
-                }
-            },
-            {
-                "name": "CryptoHeaderFilter",
-                "type": "CryptoHeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "operation": "DECRYPT",
-                    "algorithm": "DES/ECB/NoPadding",
-                    "key": "DESKEY",
-                    "keyType": "DES",
-                    "charSet": "utf-8",
-                    "headers": [
-                        "password"
-                    ]
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "https://65.55.171.158/owa/auth/owaauth.dll",
-                    "headers": {
-                        "Host": [
-                            "red001.mail.microsoftonline.com"
-                        ],
-                        "Content-Type": [
-                            "Content-Type:application/x-www-form-urlencoded"
+                  "filters": [
+                    {
+                      "type": "CryptoHeaderFilter",
+                      "config": {
+                        "messageType": "REQUEST",
+                        "operation": "DECRYPT",
+                        "algorithm": "DES/ECB/NoPadding",
+                        "key": "DESKEY",
+                        "keyType": "DES",
+                        "charSet": "utf-8",
+                        "headers": [
+                          "password"
                         ]
+                      }
                     },
-                    "form": {
-                        "destination": [
+                    {
+                      "type": "StaticRequestFilter",
+                      "config": {
+                        "method": "POST",
+                        "uri": "https://65.55.171.158/owa/auth/owaauth.dll",
+                        "headers": {
+                          "Host": [
+                            "red001.mail.microsoftonline.com"
+                          ],
+                          "Content-Type": [
+                            "Content-Type:application/x-www-form-urlencoded"
+                          ]
+                        },
+                        "form": {
+                          "destination": [
                             "https://red001.mail.microsoftonline.com/owa/"
-                        ],
-                        "forcedownlevel": [
+                          ],
+                          "forcedownlevel": [
                             "0"
-                        ],
-                        "trusted": [
+                          ],
+                          "trusted": [
                             "0"
-                        ],
-                        "username": [
+                          ],
+                          "username": [
                             "${exchange.request.headers['username'][0]}"
-                        ],
-                        "password": [
+                          ],
+                          "password": [
                             "${exchange.request.headers['password'][0]}"
-                        ],
-                        "isUtf8": [
+                          ],
+                          "isUtf8": [
                             "1"
-                        ]
+                          ]
+                        }
+                      }
                     }
+                  ],
+                  "handler": "OutgoingChain"
                 }
+              },
+              "baseURI": "https://65.55.171.158"
             },
             {
-                "name": "OutgoingChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "HeaderFilter"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "HeaderFilter",
-                "type": "HeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "remove": [
-                        "password",
-                        "username"
-                    ]
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
+              "handler": "OutgoingChain",
+              "baseURI": "https://65.55.171.158"
             }
-        ]
-    },
-    "handler": "DispatchHandler"
+          ]
+        }
+      },
+      {
+        "name": "OutgoingChain",
+        "type": "Chain",
+        "config": {
+          "filters": [
+            {
+              "type": "HeaderFilter",
+              "config": {
+                "messageType": "REQUEST",
+                "remove": [
+                  "password",
+                  "username"
+                ]
+              }
+            }
+          ],
+          "handler": {
+            "type": "ClientHandler"
+          }
+        }
+      }
+    ]
+  },
+  "handler": "DispatchHandler"
 }

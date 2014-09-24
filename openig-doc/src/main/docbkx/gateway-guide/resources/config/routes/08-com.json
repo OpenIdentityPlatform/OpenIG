@@ -8,11 +8,6 @@
                     "filters": [],
                     "handler": "ClientHandler"
                 }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
             }
         ]
     },

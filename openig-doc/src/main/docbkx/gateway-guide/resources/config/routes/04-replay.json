@@ -6,59 +6,48 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CryptoHeaderFilter",
-                        "LoginRequest",
-                        "HeaderFilter"
+                        {
+                            "type": "CryptoHeaderFilter",
+                            "config": {
+                                "messageType": "REQUEST",
+                                "operation": "DECRYPT",
+                                "algorithm": "DES/ECB/NoPadding",
+                                "key": "DESKEY",
+                                "keyType": "DES",
+                                "charSet": "utf-8",
+                                "headers": [
+                                    "password"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "StaticRequestFilter",
+                            "config": {
+                                "method": "POST",
+                                "uri": "http://www.example.com:8081",
+                                "form": {
+                                    "username": [
+                                        "${exchange.request.headers['username'][0]}"
+                                    ],
+                                    "password": [
+                                        "${exchange.request.headers['password'][0]}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "HeaderFilter",
+                            "config": {
+                                "messageType": "REQUEST",
+                                "remove": [
+                                    "password",
+                                    "username"
+                                ]
+                            }
+                        }
                     ],
                     "handler": "ClientHandler"
                 }
-            },
-            {
-                "name": "CryptoHeaderFilter",
-                "type": "CryptoHeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "operation": "DECRYPT",
-                    "algorithm": "DES/ECB/NoPadding",
-                    "key": "DESKEY",
-                    "keyType": "DES",
-                    "charSet": "utf-8",
-                    "headers": [
-                        "password"
-                    ]
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "http://www.example.com:8081",
-                    "form": {
-                        "username": [
-                            "${exchange.request.headers['username'][0]}"
-                        ],
-                        "password": [
-                            "${exchange.request.headers['password'][0]}"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "HeaderFilter",
-                "type": "HeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "remove": [
-                        "password",
-                        "username"
-                    ]
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
             }
         ]
     },

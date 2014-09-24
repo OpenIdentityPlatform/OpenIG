@@ -82,7 +82,7 @@
     "config": {
         "username": expression,
         "password": expression,
-        "failureHandler": string,
+        "failureHandler": Handler reference,
         "cacheHeader": boolean
     }
 }
@@ -118,10 +118,19 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"failureHandler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"failureHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler heap object to dispatch to if authentication fails.
+      Dispatch to this Handler if authentication fails.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>

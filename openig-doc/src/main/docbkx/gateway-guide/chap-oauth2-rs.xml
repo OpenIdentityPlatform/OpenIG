@@ -378,13 +378,15 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
    as <filename>${warRoutesDir}/06-rs.json</filename>.
   </para>
 
-  <programlisting language="javascript">
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="javascript">
 <xinclude:include href="resources/config/routes/06-rs.json" parse="text">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
-  </programlisting>
+   </programlisting>
+  </informalexample>
 
   <para>
    On Windows, the file name should be
@@ -398,7 +400,7 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
 
    <listitem>
     <para>
-     The "ResourceServer" filter includes
+     The "OAuth2ResourceServerFilter" includes
      a client handler to send access token validation requests,
      the list of required scopes that the filter expects to find in access tokens,
      the OpenAM token info endpoint used to validate access tokens,
@@ -410,24 +412,24 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
     <para>
      After successfully using the token info endpoint
      to validate an access token,
-     the "ResourceServer" filter injects data
+     the "OAuth2ResourceServerFilter" injects data
      from the response into <literal>exchange.token</literal>.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     After the "ResourceServer" filter
+     After the "OAuth2ResourceServerFilter"
      has injected information for a valid access token into the exchange,
-     the "CaptureTokenInfo" filter dumps the token information to the log.
-     The "CaptureTokenInfo" filter also injects the credentials
+     the "ScriptableFilter" dumps the token information to the log.
+     The "ScriptableFilter" also injects the credentials
      from the user profile in OpenAM into the exchange.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     The "LoginRequest" filter retrieves
+     The "StaticRequestFilter" retrieves
      the username and password from the exchange
      and replaces the original HTTP GET request
      with an HTTP POST login request
@@ -529,9 +531,9 @@ $ <userinput>curl \
   </para>
 
   <para>
-   The "CaptureTokenInfo" filter logs the token information,
+   The "ScriptableFilter" logs the token information,
    and also extracts the credentials to inject them into the exchange.
-   Finally the "LoginRequest" filter uses the credentials
+   Finally the "StaticRequestFilter" uses the credentials
    to log the user in to the minimal HTTP server,
    which responds with the User Information page.
   </para>

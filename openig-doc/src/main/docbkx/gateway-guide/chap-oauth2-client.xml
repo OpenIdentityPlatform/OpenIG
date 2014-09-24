@@ -359,13 +359,15 @@
    as <filename>${warRoutesDir}/07-openid.json</filename>.
   </para>
 
-  <programlisting language="javascript">
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="javascript">
 <xinclude:include href="resources/config/routes/07-openid.json" parse="text">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
+  </informalexample>
 
   <para>
    On Windows, the file name should be
@@ -403,7 +405,7 @@
 
    <listitem>
     <para>
-     The "OpenIDConnectClient" filter has the
+     The first filter in the "OpenIDConnectRelyingParty" chain has the
      <link
       xlink:show="new"
       xlink:href="reference#OAuth2ClientFilter"
@@ -421,7 +423,7 @@
     </para>
 
     <para>
-     The "OpenIDConnectClient" filter has
+     The "OAuth2ClientFilter" has
      a base client endpoint of <literal>/openid</literal>.
      Incoming requests to <literal>/openid/login</literal>
      start the delegated authorization process.
@@ -432,7 +434,7 @@
     </para>
 
     <para>
-     The "OpenIDConnectClient" filter has <literal>"requireHttps": false</literal>
+     The "OAuth2ClientFilter" has <literal>"requireHttps": false</literal>
      as a convenience for testing.
      In production environments, require HTTPS.
     </para>
@@ -443,19 +445,21 @@
     </para>
 
     <para>
-     In the "OpenIDConnectClient" filter, the target
-     for storing authorization state information is
+     In the "OAuth2ClientFilter",
+     the target for storing authorization state information is
      <literal>${exchange.openid}</literal>,
      so this is where subsequent filters and handlers can find
      access token and user information.
     </para>
 
     <para>
-     The scopes are set to "openid" and "profile" as allowed for OpenID Connect 1.0.
+     The scopes are set to "openid" and "profile"
+     as allowed for OpenID Connect 1.0.
     </para>
 
     <para>
-     Notice that on failure the filter dumps the current information in the exchange
+     Notice that on failure the filter
+     dumps the current information in the exchange
      into a web page response to the end user.
      While this is helpful to you for debugging purposes,
      it is not helpful to an end user.
@@ -463,7 +467,7 @@
     </para>
 
     <para>
-     Also in the "OpenIDConnectClient" filter,
+     Also in the "OAuth2ClientFilter",
      the typical "ClientHandler" configures the HTTP client that communicates
      with the OpenID Provider.
     </para>
@@ -471,14 +475,11 @@
 
    <listitem>
     <para>
-     Returning to the top of the configuration,
-     notice that the "OpenIDConnectChain" invokes an "OutgoingChain" handler
-     after the filter injects the access token and user information
-     into <literal>exchange.openid</literal>.
-     The "OutgoingChain" in this case
-     extracts credentials from the user information by script ("GetCredentials"),
-     and then uses the credentials to log the user in to the minimal HTTP server
-     ("LoginRequestFilter").
+     After the filter injects the access token and user information
+     into <literal>exchange.openid</literal>,
+     ${projectName} invokes a "Chain".
+     The "Chain" uses the credentials to log the user in
+     to the minimal HTTP server.
     </para>
 
     <para>
@@ -489,7 +490,7 @@
 
    <listitem>
     <para>
-     The "LoginRequestFilter" retrieves
+     The "StaticRequestFilter" retrieves
      the username and password from the exchange
      and replaces the original HTTP GET request
      with an HTTP POST login request
@@ -530,19 +531,21 @@
 
   <para>
    After ${projectName} gets the browser request,
-   the "OpenIDConnectClient" filter redirects you to authenticate with OpenAM
+   the "OAuth2ClientFilter" redirects you to authenticate with OpenAM
    and consent to authorize access to user information.
    After you authorize access, OpenAM returns an access token to the filter.
-   The filter then uses that access token to get the user information.
-   Before handling the next filter or handler in the exchange,
-   which is the "OutgoingChain",
-   the filter injects the authorization state information into
-   <literal>exchange.openid</literal>.
   </para>
 
   <para>
-   The "OutgoingChain" extracts credentials to re-inject them into the exchange.
-   Its login filter then uses the credentials to log the user in
+   The filter then uses that access token to get the user information.
+   The filter injects the authorization state information into
+   <literal>exchange.openid</literal>.
+   The "OpenIDConnectRelyingParty" chain then calls its handler,
+   which as another "Chain".
+  </para>
+
+  <para>
+   This "Chain" uses the credentials to log the user in
    to the minimal HTTP server, which responds with its User Information page.
   </para>
  </section>

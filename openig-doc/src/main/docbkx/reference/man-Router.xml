@@ -78,7 +78,7 @@
     "name": "Router",
     "type": "Router",
     "config": {
-        "defaultHandler": string,
+        "defaultHandler": Handler reference,
         "directory": expression,
         "scanInterval": integer
     }
@@ -95,15 +95,19 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"defaultHandler"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"defaultHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, optional</emphasis></term>
     <listitem>
      <para>
-      Name of a
-      <link
-       xlink:show="new"
-       xlink:href="reference#handlers-conf"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >Handler</link> configuration object.
+      Default handler for this Router.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>

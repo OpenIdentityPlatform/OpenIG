@@ -713,13 +713,15 @@ sp.xml</computeroutput>
      <filename>${warRoutesDir}/05-federate.json</filename>
     </para>
 
-    <programlisting language="javascript">
+    <informalexample><?dbfo pgwide="1"?>
+     <programlisting language="javascript">
 <xinclude:include href="resources/config/routes/05-federate.json" parse="text">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
-    </programlisting>
+     </programlisting>
+    </informalexample>
 
     <para>
      On Windows, the file name should be
@@ -734,18 +736,18 @@ sp.xml</computeroutput>
      <listitem>
       <para>
        The "DispatchHandler" dispatches requests
-       to the "SPInitiatedSSORedirectHandler"
+       to the "StaticResponseHandler"
        if the username has not yet been populated in the exchange,
        meaning the user has not yet authenticated with the IDP.
        Otherwise, if the credentials have been inserted into the exchange,
        the "DispatchHandler" dispatches requests
-       to the "LoginChain" to log the user in to the protected application.
+       to the "Chain" to log the user in to the protected application.
       </para>
      </listitem>
 
      <listitem>
       <para>
-       The "SPInitiatedSSORedirectHandler" redirects
+       The "StaticResponseHandler" redirects
        to the Service Provider initiated single sign-on end point
        to initiate SAML 2.0 web browser SSO.
        After authentication is successful
@@ -756,7 +758,7 @@ sp.xml</computeroutput>
 
      <listitem>
       <para>
-       The "LoginRequest" filter retrieves
+       The "StaticRequestFilter" retrieves
        the username and password from the exchange
        and replaces your browser's original HTTP GET request
        with an HTTP POST login request
@@ -852,8 +854,8 @@ sp.xml</computeroutput>
   <para>
    On the <literal>/federate</literal> route,
    once the attributes from the assertion are set in the session,
-   ${projectName} dispatches the exchange to the "LoginChain".
-   The "LoginRequest" static request filter in the "LoginChain"
+   ${projectName} dispatches the exchange to the "Chain".
+   The "StaticRequestFilter" in the "Chain"
    uses the attribute values to replace the request
    with an HTTP POST of login form data
    to log the user in to the protected application.

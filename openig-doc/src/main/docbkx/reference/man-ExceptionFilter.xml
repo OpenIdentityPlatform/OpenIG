@@ -58,13 +58,15 @@
  <refsect1>
   <title>Usage</title>
 
-  <programlisting language="javascript">{
+  <programlisting language="javascript">
+{
      "name": string,
      "type": "ExceptionFilter",
      "config": {
-         "handler": string,
+         "handler": Handler reference
      }
-}</programlisting>
+}
+  </programlisting>
 
  </refsect1>
  <refsect1>
@@ -72,11 +74,19 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler heap object to dispatch to
-      in the event of caught exceptions.
+      Dispatch to this handler in the event of caught exceptions.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>

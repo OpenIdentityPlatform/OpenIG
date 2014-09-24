@@ -224,8 +224,7 @@
         "objects": [
             {
                 "name": "My Router",
-                "type": "Router",
-                "config": {}
+                "type": "Router"
             }
         ]
     },
@@ -243,8 +242,7 @@
 
   <itemizedlist>
    <para>
-    Notice also that each configuration object has
-    a "name", a "type", and a "config".
+    Each configuration object has a "name", a "type", and a "config".
    </para>
 
    <listitem>
@@ -279,8 +277,12 @@
 
     <para>
      When all the configuration settings for the type are optional,
-     an empty "config" object, <literal>{}</literal>,
-     signifies that ${projectName} uses default settings.
+     the "config" field is also optional, as in this example.
+     If all configuration settings are optional,
+     then omitting the "config" field,
+     or setting the "config" field to an empty object, "config": {},
+     or setting "config": null
+     all signify that the object uses default settings.
     </para>
    </listitem>
   </itemizedlist>
@@ -505,53 +507,47 @@
             {
                 "name": "Chain",
                 "type": "Chain",
-                "comment": "Base configuration defines CaptureFilter used here",
+                "comment": "Base configuration defines CaptureFilter",
                 "config": {
                     "filters": [
-                        "MyRequestHeaderFilter",
-                        "MyResponseHeaderFilter",
+                        {
+                            "type": "HeaderFilter",
+                            "comment": "Same header on all requests",
+                            "config": {
+                                "messageType": "REQUEST",
+                                "add": {
+                                    "X-MyHeaderFilter": [
+                                        "Added by HeaderFilter to request"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "HeaderFilter",
+                            "comment": "Remove X-Powered-By from response",
+                            "config": {
+                                "messageType": "RESPONSE",
+                                "remove": [
+                                    "X-Powered-By"
+                                ]
+                            }
+                        },
                         "CaptureFilter"
                     ],
-                    "handler": "MyResponseHandler"
-                }
-            },
-            {
-                "name": "MyRequestHeaderFilter",
-                "type": "HeaderFilter",
-                "comment": "Same header on all requests",
-                "config": {
-                    "messageType": "REQUEST",
-                    "add": {
-                        "X-MyHeaderFilter": [
-                            "Added by MyHeaderFilter to the request flow"
-                        ]
+                    "handler": {
+                        "type": "StaticResponseHandler",
+                        "comment": "Same response to all requests",
+                        "config": {
+                            "status": 200,
+                            "reason": "OK",
+                            "headers": {
+                                "X-Powered-By": [
+                                    "${projectName}"
+                                ]
+                            },
+                            "entity": "<html><p>Hello, World!</p></html>"
+                        }
                     }
-                }
-            },
-            {
-                "name": "MyResponseHeaderFilter",
-                "type": "HeaderFilter",
-                "comment": "Remove X-Powered-By from response",
-                "config": {
-                    "messageType": "RESPONSE",
-                    "remove": [
-                        "X-Powered-By"
-                    ]
-                }
-            },
-            {
-                "name": "MyResponseHandler",
-                "type": "StaticResponseHandler",
-                "comment": "Same response to all requests",
-                "config": {
-                    "status": 200,
-                    "reason": "OK",
-                    "headers": {
-                        "X-Powered-By": [
-                            "${projectName}"
-                        ]
-                    },
-                    "entity": "<html><p>Hello, World!</p></html>"
                 }
             }
         ]
@@ -567,13 +563,13 @@
 
    <listitem>
     <para>
-     "MyRequestHeaderFilter" adds a header to the incoming request.
+     The first "HeaderFilter" adds a header to the incoming request.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     "MyResponseHeaderFilter" deals with responses,
+     The second "HeaderFilter" deals with responses,
      so it simply passes the exchange to the next filter.
     </para>
    </listitem>
@@ -586,7 +582,7 @@
 
    <listitem>
     <para>
-     "MyResponseHandler" itself produces a response
+     The "StaticResponseHandler" itself produces a response
      having an entity body and a header.
     </para>
    </listitem>
@@ -599,13 +595,13 @@
 
    <listitem>
     <para>
-     "MyResponseHeaderFilter" removes the header added to the response.
+     The second "HeaderFilter" removes the header added to the response.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     "MyRequestHeaderFilter" deals with requests,
+     The first "HeaderFilter" deals with requests,
      so it simply passes the outgoing exchange back to ${projectName}.
     </para>
    </listitem>
@@ -624,7 +620,7 @@ Accept: */*
 
 ### Captured incoming request (inside ${projectName} exchange)
 GET / HTTP/1.1
-X-MyHeaderFilter: Added by MyHeaderFilter to the request flow
+X-MyHeaderFilter: Added by HeaderFilter to request
 Accept: */*
 Host: www.example.com:8080
 

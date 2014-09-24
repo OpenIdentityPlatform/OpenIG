@@ -312,12 +312,11 @@ org.forgerock.json.fluent.JsonValueException: /heap/objects/1/config/dataSource:
 
   <programlisting language="javascript">
 {
-    "name": "CredentialsFromSql",
     "type": "SqlAttributesFilter",
     "config": {
         "dataSource": "java:comp/env/jdbc/forgerock",
         "preparedStatement":
-            "SELECT username, password FROM users WHERE email = ?;",
+          "SELECT username, password FROM users WHERE email = ?;",
         "parameters": [
             "george@example.com"
         ],

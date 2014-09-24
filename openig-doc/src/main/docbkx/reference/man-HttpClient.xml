@@ -77,8 +77,8 @@
     "hostnameVerifier": string,
     "soTimeout": duration string,
     "connectionTimeout": duration string,
-    "keyManager": string | array of strings,
-    "trustManager": string | array of strings,
+    "keyManager": KeyManager reference(s),
+    "trustManager": TrustManager reference(s),
   }
 }
   </programlisting>
@@ -199,23 +199,31 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"keyManager"</code>: <emphasis>string | array of strings, optional</emphasis></term>
+    <term><code>"keyManager"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#KeyManager"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyManager</link> reference(s), optional</emphasis></term>
     <listitem>
 
      <para>
-      Reference to the key manager(s)
-      that handle(s) this client's keys and certificates.
+      The key manager(s) that handle(s) this client's keys and certificates.
      </para>
 
      <para>
-      You can specify either a single
-      <link
-       xlink:show="new"
-       xlink:href="reference#KeyManager"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >KeyManager</link> name, as in
-      <literal>"keyManager": "MyKeyManager"</literal>,
-      or an array of KeyManager names, as in
+      The value of this field can be a single reference,
+      or an array of references.
+     </para>
+
+     <para>
+      Provide either the name(s) of KeyManager object(s) defined in the heap,
+      or specify the configuration object(s) inline.
+     </para>
+
+     <para>
+      You can specify either a single KeyManager,
+      as in <literal>"keyManager": "MyKeyManager"</literal>,
+      or an array of KeyManagers, as in
       <literal>"keyManager": [ "FirstKeyManager", "SecondKeyManager" ]</literal>.
      </para>
 
@@ -244,12 +252,24 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"trustManager"</code>: <emphasis>string | array of strings, optional</emphasis></term>
+    <term><code>"trustManager"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#TrustManager"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >TrustManager</link> reference(s), optional</emphasis></term>
     <listitem>
+     <para>
+      The trust managers that handle(s) peers' public key certificates.
+     </para>
 
      <para>
-      Reference to the trust manager(s)
-      that handle(s) peers' public key certificates.
+      The value of this field can be a single reference,
+      or an array of references.
+     </para>
+
+     <para>
+      Provide either the name(s) of TrustManager object(s) defined in the heap,
+      or specify the configuration object(s) inline.
      </para>
 
      <para>
@@ -258,9 +278,9 @@
        xlink:show="new"
        xlink:href="reference#TrustManager"
        xlink:role="http://docbook.org/xlink/role/olink"
-      >TrustManager</link> name, as in
+      >TrustManager</link>, as in
       <literal>"trustManager": "MyTrustManager"</literal>,
-      or an array of KeyManager names, as in
+      or an array of KeyManagers, as in
       <literal>"trustManager": [ "FirstTrustManager", "SecondTrustManager" ]</literal>.
      </para>
 
@@ -280,24 +300,41 @@
 
   <programlisting language="javascript">
 {
-  "name": "HttpClient",
-  "type": "HttpClient",
-  "config": {
-    "connections": 64,
-    "disableReuseConnection": true,
-    "disableRetries": true,
-    "hostnameVerifier": "ALLOW_ALL",
-    "soTimeout": "10 seconds",
-    "connectionTimeout": "10 seconds",
-    "keystore": {
-        "file": "/path/to/keystore.jks",
-        "password": "changeit"
-    },
-    "truststore": {
-        "file": "/path/to/keystore.jks",
-        "password": "changeit"
+    "name": "HttpClient",
+    "type": "HttpClient",
+    "config": {
+        "connections": 64,
+        "disableReuseConnection": true,
+        "disableRetries": true,
+        "hostnameVerifier": "BROWSER_COMPATIBLE",
+        "soTimeout": "10 seconds",
+        "connectionTimeout": "10 seconds",
+        "keyManager": {
+            "type": "KeyManager",
+            "config": {
+                "keystore": {
+                    "type": "KeyStore",
+                    "config": {
+                        "file": "file://${env['HOME']}/keystore.jks",
+                        "password": "${system['keypass']}"
+                    }
+                },
+                "password": "${system['keypass']}"
+            }
+        },
+        "trustManager": {
+            "type": "TrustManager",
+            "config": {
+                "keystore": {
+                    "type": "KeyStore",
+                    "config": {
+                        "file": "file://${env['HOME']}/truststore.jks",
+                        "password": "${system['trustpass']}"
+                    }
+                }
+            }
+        }
     }
-  }
 }
   </programlisting>
  </refsect1>

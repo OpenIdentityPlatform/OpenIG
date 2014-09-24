@@ -6,40 +6,31 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "SqlFilter",
-                        "LoginRequest"
+                        {
+                            "type": "ScriptableFilter",
+                            "config": {
+                                "type": "application/x-groovy",
+                                "file": "SqlAccessFilter.groovy"
+                            }
+                        },
+                        {
+                            "type": "StaticRequestFilter",
+                            "config": {
+                                "method": "POST",
+                                "uri": "http://www.example.com:8081",
+                                "form": {
+                                    "username": [
+                                        "${exchange.request.headers['Username'][0]}"
+                                    ],
+                                    "password": [
+                                        "${exchange.request.headers['Password'][0]}"
+                                    ]
+                                }
+                            }
+                        }
                     ],
                     "handler": "ClientHandler"
                 }
-            },
-            {
-                "name": "SqlFilter",
-                "type": "ScriptableFilter",
-                "config": {
-                    "type": "application/x-groovy",
-                    "file": "SqlAccessFilter.groovy"
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "http://www.example.com:8081",
-                    "form": {
-                        "username": [
-                            "${exchange.request.headers['Username'][0]}"
-                        ],
-                        "password": [
-                            "${exchange.request.headers['Password'][0]}"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
             }
         ]
     },

@@ -28,7 +28,8 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://docbook.org/ns/docbook
                               http://docbook.org/xml/5.0/xsd/docbook.xsd"
-          xmlns:xlink="http://www.w3.org/1999/xlink">
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:xinclude="http://www.w3.org/2001/XInclude">
  <refmeta>
   <refentrytitle>JwtSession</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -119,7 +120,7 @@
     "name": string,
     "type": "JwtSession",
     "config": {
-        "keystore": string,
+        "keystore": KeyStore reference,
         "alias": string,
         "password": configuration expression,
         "cookieName": string
@@ -137,16 +138,20 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"keystore"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"keystore"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#KeyStore"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyStore</link> reference, optional</emphasis></term>
     <listitem>
      <para>
-      Name of the
-      <link
-       xlink:show="new"
-       xlink:href="reference#KeyStore"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >KeyStore</link> holding the key pair
+      The key store holding the key pair
       with the private key used to encrypt the JWT.
+     </para>
+
+     <para>
+      Provide either the name of the KeyStore object defined in the heap,
+      or the inline KeyStore configuration object inline.
      </para>
 
      <para>
@@ -181,24 +186,7 @@
       The password to read the private key from the key store.
      </para>
 
-     <para>
-      The expression used here is independent of the
-      <link
-       xlink:show="new"
-       xlink:href="reference#Exchange"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >exchange</link>,
-      so do not use expressions that reference exchange properties.
-      You can, however, use
-      <literal>${env['<replaceable>variable</replaceable>']}</literal>,
-      <literal>${system['<replaceable>property</replaceable>']}</literal>,
-      and all the built-in
-      <link
-       xlink:show="new"
-       xlink:href="reference#Functions"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >functions</link>.
-     </para>
+     <xinclude:include href="../shared/para-configuration-expression.xml" />
     </listitem>
    </varlistentry>
 
@@ -226,7 +214,7 @@
    in a JWT token cookie named <literal>${projectName}</literal>.
    The JWT is encrypted with a private key
    that is recovered using the alias <literal>private-key</literal>,
-   and stored in the key store specified by "MyKeyStore".
+   and stored in the key store.
    The password is both the password for the key store and also the private key.
   </para>
 
@@ -235,9 +223,15 @@
     "name": "JwtSession",
     "type": "JwtSession",
     "config": {
-        "keystore": "MyKeyStore",
+        "keystore": {
+            "type": "KeyStore",
+            "config": {
+                "file": "file://${env['HOME']}/keystore.jks",
+                "password": "${system['keypass']}"
+            }
+        },
         "alias": "private-key",
-        "password": "changeit",
+        "password": "${system['keypass']}",
         "cookieName": "${projectName}"
     }
 }

@@ -8,7 +8,29 @@
                     "bindings": [
                         {
                             "condition": "${exchange.request.uri.path == '/login'}",
-                            "handler": "LoginChain",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri": "https://TARGETIP/login",
+                                                "form": {
+                                                    "USER": [
+                                                      "${exchange.request.headers['username'][0]}"
+                                                    ],
+                                                    "PASSWORD": [
+                                                      "${exchange.request.headers['password'][0]}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
                             "baseURI": "http://TARGETIP"
                         },
                         {
@@ -19,35 +41,8 @@
                 }
             },
             {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "LoginRequest"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "https://TARGETIP/login",
-                    "form": {
-                        "USER": [
-                            "${exchange.request.headers['username'][0]}"
-                        ],
-                        "PASSWORD": [
-                            "${exchange.request.headers['password'][0]}"
-                        ]
-                    }
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
+                "type": "ClientHandler"
             }
         ]
     },

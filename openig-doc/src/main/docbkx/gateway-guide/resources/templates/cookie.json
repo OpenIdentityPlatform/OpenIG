@@ -8,33 +8,29 @@
                     "bindings": [
                         {
                             "condition": "${exchange.request.uri.path == '/eum/login'}",
-                            "handler": "LoginChain",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "SwitchFilter",
+                                            "config": {
+                                                "onResponse": [
+                                                    {
+                                                        "handler": "LoginRequestHandler"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
                             "baseURI": "http://TARGETIP"
                         },
                         {
-                            "handler": "ClientHandler",
+                            "handler":"ClientHandler",
                             "baseURI": "http://TARGETIP"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "SwitchFilter"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "SwitchFilter",
-                "type": "SwitchFilter",
-                "config": {
-                    "onResponse": [
-                        {
-                            "handler": "LoginRequestHandler"
                         }
                     ]
                 }
@@ -44,36 +40,33 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "LoginRequest"
+                        {
+                            "type": "StaticRequestFilter",
+                            "config": {
+                                "method": "POST",
+                                "uri": "https://TARGETIP/login",
+                                "form": {
+                                    "USER": [
+                                        "MY_USERNAME"
+                                    ],
+                                    "PASSWORD": [
+                                        "MY_PASSWORD"
+                                    ]
+                                },
+                                "headers": {
+                                    "cookie": [
+                                        "${exchange.response.headers['Set-Cookie'][0]}"
+                                    ]
+                                }
+                            }
+                        }
                     ],
                     "handler": "ClientHandler"
                 }
             },
             {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "https://TARGETIP/login",
-                    "form": {
-                        "USER": [
-                            "MY_USERNAME"
-                        ],
-                        "PASSWORD": [
-                            "MY_PASSWORD"
-                        ]
-                    },
-                    "headers": {
-                        "cookie": [
-                            "${exchange.response.headers['Set-Cookie'][0]}"
-                        ]
-                    }
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
+                "type": "ClientHandler"
             }
         ]
     },

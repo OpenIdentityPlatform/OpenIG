@@ -10,8 +10,11 @@
             },
             {
                 "name": "JwtSession",
-                "type": "JwtSession",
-                "config": {}
+                "type": "JwtSession"
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
             },
             {
                 "name": "CaptureFilter",
@@ -22,22 +25,19 @@
                 }
             },
             {
-                "name": "Chain",
+                "name": "CaptureAndRoute",
                 "type": "Chain",
                 "config": {
                     "filters": [
                         "CaptureFilter"
                     ],
-                    "handler": "Router"
+                    "handler": {
+                        "type": "Router"
+                    }
                 }
-            },
-            {
-                "name": "Router",
-                "type": "Router",
-                "config": {}
             }
         ]
     },
-    "handler": "Chain",
+    "handler": "CaptureAndRoute",
     "baseURI": "http://www.example.com:8081"
 }

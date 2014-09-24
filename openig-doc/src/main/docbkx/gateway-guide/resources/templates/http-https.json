@@ -13,7 +13,15 @@
                         },
                         {
                             "condition": "${exchange.request.uri.path == '/login'}",
-                            "handler": "LoginChain",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        "MY_FILTERS"
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
                             "baseURI": "https://TARGETIP"
                         },
                         {
@@ -24,19 +32,8 @@
                 }
             },
             {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "MY_FILTERS"
-                    ],
-                    "handler": "OutgoingChain"
-                }
-            },
-            {
                 "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
+                "type": "ClientHandler"
             }
         ]
     },
