@@ -23,8 +23,8 @@ import static org.forgerock.openig.log.LogSink.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.domain.ReferencedObject;
 import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
@@ -35,6 +35,55 @@ import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
+
+    @Test
+    public void shouldAllowNoConfigAttribute() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-without-config-attribute.json"));
+
+        assertThat(heap.get("heap-object", HeapObject.class)).isNotNull();
+
+        heap.destroy();
+    }
+
+    @Test
+    public void shouldAllowNullConfigAttribute() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-null-config-attribute.json"));
+
+        assertThat(heap.get("heap-object", HeapObject.class)).isNotNull();
+
+        heap.destroy();
+    }
+
+    @Test
+    public void shouldAllowEmptyConfigAttribute() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-empty-config-attribute.json"));
+
+        assertThat(heap.get("heap-object", HeapObject.class)).isNotNull();
+
+        heap.destroy();
+    }
+
+    @Test
+    public void testSimpleConfigAttribute() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-simple-config-attribute.json"));
+        final HeapObject heapObject = heap.get("CustomHeapObject", HeapObject.class);
+        assertThat(heapObject.message).isEqualTo("Custom Message");
+        heap.destroy();
+    }
+
+    @Test(expectedExceptions = JsonValueException.class,
+            expectedExceptionsMessageRegExp = ".*Expecting a java\\.util\\.Map")
+    public void shouldNotAllowInvalidConfig() throws Exception {
+
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-invalid-config-attribute.json"));
+
+    }
+
     @Test
     public void testPutAndGetObjectLocally() throws Exception {
         HeapImpl heap = new HeapImpl();
