@@ -61,7 +61,7 @@
      "name": string,
      "type": "FileLogSink",
      "config": {
-         "file": expression,
+         "file": configuration expression,
          "level": string
      }
 }
@@ -73,7 +73,7 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"file"</code>: <emphasis><link
+    <term><code>"file"</code>: <emphasis>configuration <link
      xlink:href="reference#Expressions"
      xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
      required</emphasis></term>
@@ -82,6 +82,8 @@
      <para>
       The path to the log file.
      </para>
+
+     <xinclude:include href="../shared/para-configuration-expression.xml" />
     </listitem>
    </varlistentry>
 

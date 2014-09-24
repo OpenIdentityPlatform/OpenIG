@@ -461,7 +461,7 @@ $ <userinput>java -jar start.jar</userinput>
 
   <para>
    Consider the base configuration file first, <filename>config.json</filename>.
-   The base configuration file specifies a "handler" named "Dispatcher".
+   The base configuration file specifies a "handler" named "CaptureAndRoute".
    ${projectName} calls this handler when it receives an incoming request.
    In addition, it uses the "LogSink" to log debug messages to the console.
    Alternatively, to send log messages to a file you can use a
@@ -473,15 +473,15 @@ $ <userinput>java -jar start.jar</userinput>
   </para>
 
   <para>
-   The "Dispatcher" in turn changes the request URI
+   The "baseURI" setting in turn changes the request URI
    to point the request to the sample application to protect.
-   The "Dispatcher" passes the request to the "DefaultChain" handler.
+   The "CaptureAndRoute" passes the request to the "DefaultChain" handler.
   </para>
 
   <para>
-   The default "DefaultChain" calls a "CaptureFilter" and then a "Router".
+   The "CaptureAndRoute" chain calls a filter and then a handler.
    On the way in, after passing through the "CaptureFilter",
-   the request goes to the "Router".
+   the request goes to the "Router" handler.
    On the way out the response returned by the "Router"
    also passes through the "CaptureFilter".
    You can see the results in the file

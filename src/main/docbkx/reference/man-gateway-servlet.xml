@@ -100,10 +100,10 @@
   <programlisting language="javascript">
 {
   "heap": { <replaceable>heap-configuration object</replaceable> },
-  "handler": string,
+  "handler": Handler reference,
   "baseURI": string,
-  "logSink":  string,
-  "temporaryStorage": string
+  "logSink":  LogSink reference,
+  "temporaryStorage": TemporaryStorage reference
 }
   </programlisting>
  </refsect1>
@@ -128,16 +128,19 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the
-      <link
-       xlink:show="new"
-       xlink:href="reference#handlers-conf"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >handler</link>
-      heap object to dispatch all requests to.
+      Dispatch all requests to this handler.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>
@@ -161,10 +164,15 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"logSink"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"logSink"</code>: <emphasis>LogSink reference, optional</emphasis></term>
     <listitem>
      <para>
-      The name of the LogSink heap object to which to send log messages.
+      Send log messages to this LogSink.
+     </para>
+
+     <para>
+      Provide either the name of a LogSink object defined in the heap,
+      or an inline LogSink configuration object.
      </para>
 
      <para>
@@ -176,16 +184,20 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"temporaryStorage"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"temporaryStorage"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#TemporaryStorage"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >TemporaryStorage</link> reference, optional</emphasis></term>
     <listitem>
      <para>
-      The name of the
-      <link
-       xlink:show="new"
-       xlink:href="reference#TemporaryStorage"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >TemporaryStorage</link>
-      heap object where content is cached during processing.
+      Cache content during processing
+      based on this TemporaryStorage configuration.
+     </para>
+
+     <para>
+      Provide either the name of a TemporaryStorage object defined in the heap,
+      or an inline TemporaryStorage configuration object.
      </para>
 
      <para>

@@ -70,7 +70,7 @@
     "config": {
         "bindings": [
             {
-                "handler": string,
+                "handler": Handler reference,
                 "postcondition": expression
             }
         ]
@@ -93,9 +93,20 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to.</para>
+     <para>
+      Dispatch to this handler.
+     </para>
+
+     <para>
+      Either the name of the handler heap object to dispatch to,
+      or an inline Handler configuration object.
+     </para>
     </listitem>
    </varlistentry>
 

@@ -97,11 +97,11 @@
   <programlisting language="javascript">
 {
     "heap": { <replaceable>heap-configuration object</replaceable> },
-    "handler": string,
+    "handler": Handler reference,
     "baseURI": string,
     "condition": expression,
     "name": string,
-    "session": string
+    "session": Session reference
 }
   </programlisting>
  </refsect1>
@@ -128,10 +128,19 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      Name of the main handler for this route.
+      For this route, dispatch the exchange to this handler.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>
@@ -188,10 +197,20 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"session"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"session"</code>: <emphasis>Session reference, optional</emphasis></term>
     <listitem>
      <para>
-      Name of the session storage implementation used by this route.
+      Session storage implementation used by this route, such as a
+      <link
+       xlink:show="new"
+       xlink:href="reference#JwtSesssion"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >JwtSession</link>.
+     </para>
+
+     <para>
+      Provider either the name of a session storage object defined in the heap,
+      or an inline session storage configuration object.
      </para>
 
      <para>

@@ -130,7 +130,7 @@
    <filename>${warRoutesDir}/99-default.json</filename>,
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "LoginRequest" for your application.
+   and adapt the "StaticRequestFilter" for your application.
   </para>
  </section>
 
@@ -165,7 +165,7 @@
    <filename>${warRoutesDir}/99-default.json</filename>,
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "LoginRequest" for your application.
+   and adapt the "StaticRequestFilter" for your application.
   </para>
  </section>
 
@@ -180,21 +180,21 @@
   <para>
    For applications that return the login page
    when the user tries to access a page without a valid session.
-   This template shows how to use the <literal>ExtractFilter</literal>
+   This template shows how to use the "ExtractFilter"
    to find the login page on the response
-   and use the <literal>CookieFilter</literal> to ensure
+   and use the "CookieFilter" to ensure
    the cookies from the application are replayed on each request.
    The sample application in this template is OpenAM.
   </para>
 
   <note>
    <para>
-    Without the <literal>CookieFilter</literal> in the <literal>OutgoingChain</literal>
+    Without the "CookieFilter" in the "OutgoingChain"
     the cookie set in the login page response would not get set in the browser
     since that request is intercepted before it gets to the browser.
     The simplest way to deal with this situation is
     to let ${projectName} manage all the cookies
-    by enabling the <literal>CookieFilter</literal>.
+    by enabling the "CookieFilter".
     The side effect of ${projectName} managing cookies is
     none of the cookies are sent to the browser,
     but are managed locally by ${projectName}.
@@ -250,7 +250,7 @@
    <filename>${warRoutesDir}/99-default.json</filename>,
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "LoginRequest" for your application.
+   and adapt the "StaticRequestFilter" for your application.
   </para>
  </section>
 
@@ -267,8 +267,7 @@
    The assumption is the application uses HTTPS for authentication
    and HTTP for the general application features.
    Assuming all login requests go to port 443,
-   you must add the login filters and handlers
-   to the <literal>LoginChain</literal>.
+   you must add the login filters and handlers to the "Chain".
   </para>
 
   <informalexample><?dbfo pgwide="1"?>
@@ -318,7 +317,7 @@
    This template is a replacement for the default route,
    <filename>${warRoutesDir}/99-default.json</filename>,
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also adapt the "LoginRequest" for your application.
+   Also adapt the "StaticRequestFilter" for your application.
   </para>
  </section>
 

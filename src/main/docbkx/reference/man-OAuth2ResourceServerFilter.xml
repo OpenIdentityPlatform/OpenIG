@@ -110,7 +110,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
   "name": string,
   "type": "OAuth2ResourceServerFilter",
   "config": {
-    "providerHandler": string,
+    "providerHandler": Handler reference,
     "scopes": [ string, ... ],
     "tokenInfoEndpoint": URL string,
     "cacheExpiration": duration string,
@@ -131,10 +131,19 @@ WWW-Authenticate: Bearer realm="${projectName}"
 
   <variablelist>
    <varlistentry>
-    <term><code>"providerHandler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"providerHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      HTTP client handler to send token info requests.
+      Invoke this HTTP client handler to send token info requests.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>

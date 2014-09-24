@@ -6,42 +6,33 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CredentialsFromFile",
-                        "LoginRequest"
+                        {
+                            "type": "FileAttributesFilter",
+                            "config": {
+                                "target": "${exchange.credentials}",
+                                "file": "/tmp/userfile",
+                                "key": "email",
+                                "value": "george@example.com"
+                            }
+                        },
+                        {
+                            "type": "StaticRequestFilter",
+                            "config": {
+                                "method": "POST",
+                                "uri": "http://www.example.com:8081",
+                                "form": {
+                                    "username": [
+                                        "${exchange.credentials.username}"
+                                    ],
+                                    "password": [
+                                        "${exchange.credentials.password}"
+                                    ]
+                                }
+                            }
+                        }
                     ],
                     "handler": "ClientHandler"
                 }
-            },
-            {
-                "name": "CredentialsFromFile",
-                "type": "FileAttributesFilter",
-                "config": {
-                    "target": "${exchange.credentials}",
-                    "file": "/tmp/userfile",
-                    "key": "email",
-                    "value": "george@example.com"
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "http://www.example.com:8081",
-                    "form": {
-                        "username": [
-                            "${exchange.credentials.username}"
-                        ],
-                        "password": [
-                            "${exchange.credentials.password}"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
             }
         ]
     },

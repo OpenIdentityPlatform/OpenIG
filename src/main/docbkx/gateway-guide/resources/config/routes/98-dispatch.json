@@ -7,38 +7,35 @@
                 "config": {
                     "bindings": [
                         {
-                            "condition": "${matches(exchange.request.uri.path, '^/login')}",
-                            "handler": "LoginChain"
+                            "condition":
+                              "${matches(exchange.request.uri.path, '^/login')}",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "HeaderFilter",
+                                            "config": {
+                                                "messageType": "REQUEST",
+                                                "add": {
+                                                    "Username": [
+                                                        "bjensen"
+                                                    ],
+                                                    "Password": [
+                                                        "hifalutin"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "Dispatcher"
+                                }
+                            }
                         },
                         {
                             "handler": "Dispatcher"
                         }
                     ]
-                }
-            },
-            {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "HeaderFilter"
-                    ],
-                    "handler": "Dispatcher"
-                }
-            },
-            {
-                "name": "HeaderFilter",
-                "type": "HeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "add": {
-                        "Username": [
-                            "bjensen"
-                        ],
-                        "Password": [
-                            "hifalutin"
-                        ]
-                    }
                 }
             },
             {

@@ -68,7 +68,7 @@
         "bindings": [
             {
                 "condition": expression,
-                "handler": string,
+                "handler": Handler reference,
                 "baseURI": string,
             }, ...
         ]
@@ -105,11 +105,20 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler heap object to dispatch to
+      Dispatch to this handler
       if the associated condition yields <literal>true</literal>.
+     </para>
+
+     <para>
+      Provider either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>
@@ -176,7 +185,7 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/org/forgerock/openig/handler/DispatchHandler.html"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/DispatchHandler.html"
    >org.forgerock.openig.handler.DispatchHandler</link>
   </para>
  </refsect1>

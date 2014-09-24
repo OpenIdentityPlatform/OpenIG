@@ -58,8 +58,8 @@
      "name": string,
      "type": "Chain",
      "config": {
-         "filters": [ string, ... ],
-         "handler": string
+         "filters": [ Filter reference, ... ],
+         "handler": Handler reference
      }
 }
 </programlisting>
@@ -70,19 +70,38 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"filters"</code>: <emphasis>array of strings, required</emphasis></term>
+    <term><code>"filters"</code>: <emphasis>array of <link
+      xlink:show="new"
+      xlink:href="reference#filters-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Filter</link> references, required</emphasis></term>
     <listitem>
      <para>
-      The names of the filter heap objects to dispatch the exchange to, in order.
+      An array of names of Filter objects defined in the heap,
+      and inline Filter configuration objects.
+     </para>
+
+     <para>
+      The chain dispatches to dispatch the exchange to these Filters
+      in the order they appear in the array.
      </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler object to dispatch to
+      Either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
+     </para>
+
+     <para>
+      The chain dispatches to this handler
       once the exchange has traversed all of the specified filters.
      </para>
     </listitem>

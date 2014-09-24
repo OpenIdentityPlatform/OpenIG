@@ -314,7 +314,8 @@
 
   <para>
    When the request path matches <literal>/basic</literal>
-   the route calls the "BasicAuth" filter,
+   the route calls the "LoginChain",
+   which runs the "ScriptableFilter",
    and then responds with a JSON representation of the exchange
    including the request data.
   </para>
@@ -388,7 +389,7 @@
    see the OpenDJ LDAP SDK Javadoc for
    <link
     xlink:show="new"
-    xlink:href="http://docs.forgerock.org/en/opendj/2.6.0/apidocs/index.html?org/forgerock/opendj/ldap/AttributeParser.html"
+    xlink:href="http://docs.forgerock.org/en/opendj/2.6.9/apidocs/index.html?org/forgerock/opendj/ldap/AttributeParser.html"
    >AttributeParser</link>.
   </para>
 
@@ -423,9 +424,9 @@
   </programlisting>
 
   <para>
-   The route calls the "LdapAuthFilter" script
+   The route calls the "LdapAuthFilter.groovy" script
    to authenticate the user over LDAP.
-   On successful authentication, it response with the the bind DN.
+   On successful authentication, it responds with the the bind DN.
   </para>
 
   <para>
@@ -535,10 +536,10 @@
   </programlisting>
 
   <para>
-   The route calls the "SqlFilter" script to look up credentials over SQL.
-   It then uses calls a "LoginRequest" to build a static request.
+   The route calls the "ScriptableFilter" to look up credentials over SQL.
+   It then uses calls a "StaticRequestFilter" to build a login request.
    Although the script sets the scheme to HTTPS,
-   the "LoginRequest" filter ignores that and resets the URI.
+   the "StaticRequestFilter" ignores that and resets the URI.
    This is to make it easier for you to try this out,
    without having to worry about setting up HTTPS.
   </para>

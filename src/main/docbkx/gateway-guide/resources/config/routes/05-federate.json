@@ -8,59 +8,48 @@
                     "bindings": [
                         {
                             "condition": "${empty exchange.session.username}",
-                            "handler": "SPInitiatedSSORedirectHandler",
+                            "handler": {
+                                "type": "StaticResponseHandler",
+                                "config": {
+                                    "status": 302,
+                                    "reason": "Found",
+                                    "headers": {
+                                        "Location": [
+                                            "http://www.example.com:8080/saml/SPInitiatedSSO"
+                                        ]
+                                    }
+                                }
+                            },
                             "baseURI": "http://www.example.com:8081"
                         },
                         {
-                            "handler": "LoginChain",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri": "http://www.example.com:8081",
+                                                "form": {
+                                                    "username": [
+                                                        "${exchange.session.username}"
+                                                    ],
+                                                    "password": [
+                                                        "${exchange.session.password}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
                             "baseURI": "http://www.example.com:8081"
                         }
                     ]
                 }
-            },
-            {
-                "name": "SPInitiatedSSORedirectHandler",
-                "type": "StaticResponseHandler",
-                "config": {
-                    "status": 302,
-                    "reason": "Found",
-                    "headers": {
-                        "Location": [
-                            "http://www.example.com:8080/saml/SPInitiatedSSO"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "LoginRequest"
-                    ],
-                    "handler": "ClientHandler"
-                }
-            },
-            {
-                "name": "LoginRequest",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "POST",
-                    "uri": "http://www.example.com:8081",
-                    "form": {
-                        "username": [
-                            "${exchange.session.username}"
-                        ],
-                        "password": [
-                            "${exchange.session.password}"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "config": {}
             }
         ]
     },
