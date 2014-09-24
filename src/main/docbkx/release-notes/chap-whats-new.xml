@@ -108,7 +108,7 @@
     the <filename>config.json</filename> file like this:
    </para>
 
-   <programlisting>
+   <programlisting language="javascript">
 {
     "heap": {
         "objects": [
