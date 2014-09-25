@@ -24,11 +24,12 @@
   !    
 -->
 <preface xml:id='preface'
- xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Preface</title>
  
  <para>This reference covers ${projectName} configuration.</para>
@@ -37,10 +38,161 @@
   <title>Who Should Use this Reference</title>
   
   <para>
-   This references is written for access management designers, developers,
-   and administrators using ${projectName}.
-   For API specifications, see the appropriate Javadoc.
+   This reference is for ${projectName} designers, developers, and administrators.
   </para>
+
+  <para>
+   For API specifications, see the appropriate
+   <link xlink:show="new" xlink:href="${javadocBase}">Javadoc</link>.
+  </para>
+ </section>
+
+ <section xml:id="field-value-conventions">
+  <title>Field Value Conventions</title>
+
+  <para>
+   ${projectName} configuration uses
+   <link xlink:show="new" xlink:href="http://json.org">JSON</link> notation.
+  </para>
+
+  <indexterm>
+   <primary>Field value conventions</primary>
+  </indexterm>
+
+  <variablelist>
+   <para>
+    This reference uses the following terms
+    when referring to the values that configuration object fields take.
+   </para>
+
+   <varlistentry xml:id="definition-array">
+    <term>array</term>
+    <listitem>
+     <para>
+      <link xlink:show="new" xlink:href="http://json.org">JSON</link> array.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-boolean">
+    <term>boolean</term>
+    <listitem>
+     <para>
+      Either <literal>true</literal> or <literal>false</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-configuration-expression">
+    <term>configuration expression</term>
+    <listitem>
+     <para>
+      Expression for which no exchange is available.
+     </para>
+
+     <xinclude:include href="../shared/para-configuration-expression.xml" />
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-duration">
+    <term>duration</term>
+    <listitem>
+     <xinclude:include href="../shared/itemizedlist-duration.xml" />
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-expression">
+    <term>expression</term>
+    <listitem>
+     <para>
+      See
+      <link
+       xlink:show="new"
+       xlink:href="reference#Expressions"
+       xlink:role="http://docbook.org/xlink/role/olink">expression</link>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-lvalue-expression">
+    <term>lvalue-expression</term>
+    <listitem>
+     <para>
+      Expression yielding an object whose value is to be set.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-number">
+    <term>number</term>
+    <listitem>
+     <para>
+      <link xlink:show="new" xlink:href="http://json.org">JSON</link> number.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-object">
+    <term>object</term>
+    <listitem>
+     <para>
+      <link xlink:show="new" xlink:href="http://json.org">JSON</link> object
+      where the content depends on the object's type.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-pattern">
+    <term>pattern</term>
+    <listitem>
+     <para>
+      A regular expression according to the rules for the Java
+      <link
+       xlink:show="new"
+       xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+      >Pattern</link> class.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-pattern-template">
+    <term>pattern-template</term>
+    <listitem>
+     <para>
+      Template for referencing capturing groups in a pattern
+      by using <literal>$<replaceable>n</replaceable></literal>,
+      where <replaceable>n</replaceable> is
+      the index number of the capturing group starting from zero.
+     </para>
+
+     <para>
+      For example, if the pattern is <literal>"\w+\s*=\s*(\w)+"</literal>,
+      the pattern-template is <literal>"$1"</literal>,
+      and the text to match is <literal>"key = value"</literal>,
+      the pattern-template yields <literal>"value"</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-reference">
+    <term>reference</term>
+    <listitem>
+     <para>
+      Either references an object configured in the heap by the object's "name"
+      or uses a local, inline configuration object where the "name" is optional.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry xml:id="definition-string">
+    <term>string</term>
+    <listitem>
+     <para>
+      <link xlink:show="new" xlink:href="http://json.org">JSON</link> string.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </section>
 
  <xinclude:include href="../shared/sec-formatting-conventions.xml" />

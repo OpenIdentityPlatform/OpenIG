@@ -112,6 +112,13 @@
      <para>
       The configuration that is specific to the heap object being created.
      </para>
+
+     <para>
+      If all the fields are optional
+      and the configuration uses only default settings,
+      you can omit the "config" field
+      instead of including an empty "config" object as the field value.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>

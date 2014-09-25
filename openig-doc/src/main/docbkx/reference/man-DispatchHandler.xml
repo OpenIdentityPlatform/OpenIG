@@ -117,7 +117,7 @@
      </para>
 
      <para>
-      Provider either the name of a Handler object defined in the heap,
+      Provide either the name of a Handler object defined in the heap,
       or an inline Handler configuration object.
      </para>
     </listitem>
