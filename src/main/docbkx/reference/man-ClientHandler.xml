@@ -75,7 +75,7 @@
      </para>
 
      <para>
-      Provider either the name of an HttpClient object defined in the heap,
+      Provide either the name of an HttpClient object defined in the heap,
       or an inline HttpClient configuration object.
      </para>
 

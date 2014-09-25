@@ -27,7 +27,8 @@
 <refentry xml:id='SwitchFilter'
           xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-          xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
           xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>SwitchFilter</refentrytitle><manvolnum>5</manvolnum>
@@ -133,7 +134,7 @@
      </para>
 
      <para>
-      Provider either the name of a Handler object defined in the heap,
+      Provide either the name of a Handler object defined in the heap,
       or an inline Handler configuration object.
      </para>
     </listitem>

@@ -60,7 +60,7 @@
     "name": string,
     "type": "SamlFederationHandler",
     "config": {
-        "assertionMapping": map object,
+        "assertionMapping": object,
         "redirectURI": string,
         "assertionConsumerEndpoint": string,
         "authnContext": string,
@@ -82,12 +82,12 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"assertionMapping"</code>: <emphasis>map object, required</emphasis></term>
+    <term><code>"assertionMapping"</code>: <emphasis>object, required</emphasis></term>
     <listitem>
      <para>
       The "assertionMapping" defines how to transform attributes
       from the incoming assertion to attribute value pairs in ${projectName}.
-      Each entry in the <literal>assertionMapping</literal> is of the form
+      Each entry in the <literal>assertionMapping</literal> object has the form
       <literal><replaceable>localName</replaceable>:
        <replaceable>incomingName</replaceable></literal>,
       where <replaceable>incomingName</replaceable>

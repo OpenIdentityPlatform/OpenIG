@@ -61,11 +61,11 @@
     <listitem>
      <para>
       You can use the configuration to pass parameters to the script
-      by specifying an "args" map.
+      by specifying an "args" object.
      </para>
 
      <para>
-      Take care when naming keys in the "args" map.
+      Take care when naming keys in the "args" object.
       If you reuse the name of another global object,
       then you overwrite the global object value
       with the specified "args" value.
@@ -96,11 +96,11 @@
     <term><literal>globals</literal></term>
     <listitem>
      <para>
-      This
+      This object is a
       <link
        xlink:href="http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html"
        xlink:show="new"
-      >Map</link> holds variables that persist across successive invocations.
+      >Map</link> that holds variables that persist across successive invocations.
      </para>
     </listitem>
    </varlistentry>
@@ -166,7 +166,7 @@
         "type": string,
         "file": string,    // Use either "file"
         "source": string,  // or "source", but not both.
-        "args": map
+        "args": object
     }
 }
   </programlisting>
