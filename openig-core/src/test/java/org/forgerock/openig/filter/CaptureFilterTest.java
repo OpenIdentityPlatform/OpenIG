@@ -28,11 +28,11 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

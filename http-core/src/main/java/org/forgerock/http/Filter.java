@@ -11,40 +11,41 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Copyright 2014 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
-import java.io.IOException;
+import org.forgerock.util.promise.Promise;
 
 /**
+ * TODO: rename to Filter?
+ * <p>
  * Filters the request and/or response of an HTTP exchange.
  */
 public interface Filter {
-
     /**
-     * Filters the request and/or response of an exchange. Initially, {@code exchange.request}
-     * contains the request to be filtered. To pass the request to the next filter or handler
-     * in the chain, the filter calls {@code next.handle(exchange)}. After this call,
-     * {@code exchange.response} contains the response that can be filtered.
+     * Filters the request and/or response of an exchange. To pass the request
+     * to the next filter or handler in the chain, the filter calls
+     * {@code next.handle(context, request, handler)}.
      * <p>
-     * This method may elect not to pass the request to the next filter or handler, and instead
-     * handle the request itself. It can achieve this by merely avoiding a call to
-     * {@code next.handle(exchange)} and creating its own response object the exchange. The
-     * filter is also at liberty to replace a response with another of its own after the call
-     * to {@code next.handle(exchange)}.
-     * <p>
-     * <strong>Important note:</strong> If an existing response exists in the exchange object
-     * and the filter intends to replace it with its own, it must first check to see if the
-     * existing response has an entity, and if it does, must call its {@code close} method in
-     * order to signal that the processing of the response from a remote server is complete.
+     * This method may elect not to pass the request to the next filter or
+     * handler, and instead handle the request itself. It can achieve this by
+     * merely avoiding a call to {@code next.handle(context, request, handler)}
+     * and creating its own response object. The filter is also at liberty to
+     * replace a response with another of its own by wrapping and intercepting
+     * the response handler.
      *
-     * @param exchange the exchange containing the request and response to filter.
-     * @param next the next filter or handler in the chain to handle the exchange.
-     * @throws HandlerException if an exception occurred handling the exchange.
-     * @throws IOException if an I/O exception occurred.
+     * @param context
+     *            The request context.
+     * @param request
+     *            The request.
+     * @param next
+     *            The next filter or handler in the chain to handle the
+     *            exchange.
+     * @throws ResponseException
+     *             If an exception occurs that prevents handling of the request.
      */
-    void filter(Exchange exchange, Handler next) throws HandlerException, IOException;
+    Promise<Response, ResponseException> filter(Context context, Request request, Handler next)
+            throws ResponseException;
 }

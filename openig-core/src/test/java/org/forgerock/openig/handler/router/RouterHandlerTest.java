@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.io.IO;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;

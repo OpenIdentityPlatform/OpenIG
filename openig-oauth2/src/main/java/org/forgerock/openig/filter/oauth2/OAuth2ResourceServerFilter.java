@@ -27,13 +27,10 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Filter;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
@@ -42,8 +39,11 @@ import org.forgerock.openig.filter.oauth2.challenge.InvalidRequestChallengeHandl
 import org.forgerock.openig.filter.oauth2.challenge.InvalidTokenChallengeHandler;
 import org.forgerock.openig.filter.oauth2.challenge.NoAuthenticationChallengeHandler;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.Duration;
 import org.forgerock.util.time.TimeService;

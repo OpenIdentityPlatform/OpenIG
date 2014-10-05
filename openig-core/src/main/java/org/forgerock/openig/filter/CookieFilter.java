@@ -31,16 +31,16 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.MutableUri;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.StringUtil;
 

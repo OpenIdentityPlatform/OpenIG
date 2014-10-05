@@ -22,10 +22,10 @@ import java.nio.charset.Charset;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.encode.Base64;
 import org.mockito.Mock;

@@ -21,11 +21,9 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Request;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

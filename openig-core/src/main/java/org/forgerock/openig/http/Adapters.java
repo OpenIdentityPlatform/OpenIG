@@ -14,16 +14,28 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.http;
+package org.forgerock.openig.http;
 
-import org.forgerock.util.promise.FailureHandler;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.http.Context;
+import org.forgerock.http.Request;
 
 /**
- * A call-back which is notified when an asynchronous HTTP request has
- * completed.
+ * Adapters for converting between HTTP framework and legacy OpenIG APIs.
  */
-public interface ResponseHandler extends SuccessHandler<Response>,
-        FailureHandler<ResponseException> {
+public final class Adapters {
 
+    private Adapters() {
+        // Prevent instantiation.
+    }
+
+    public Exchange asExchange(Context context, Request request) {
+        final Exchange exchange = new Exchange();
+        exchange.exchange = exchange;
+        exchange.principal = context.getPrincipal();
+        exchange.session = context.getSession();
+        exchange.request = request;
+        // FIXME: exchange field map should write through to context attributes.
+        exchange.putAll(context.getAttributes());
+        return exchange;
+    }
 }

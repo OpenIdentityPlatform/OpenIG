@@ -24,10 +24,10 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.http.Exchange;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.util.ExtensibleFieldMap;
+import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")

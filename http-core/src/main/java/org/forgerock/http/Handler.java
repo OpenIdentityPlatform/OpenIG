@@ -18,9 +18,11 @@
 
 package org.forgerock.http;
 
-import java.io.IOException;
+import org.forgerock.util.promise.Promise;
 
 /**
+ * TODO: rename to Handler?
+ * <p>
  * Handles an HTTP exchange request by producing an associated response.
  */
 public interface Handler {
@@ -28,17 +30,17 @@ public interface Handler {
     /**
      * Called to request the handler respond to the request.
      * <p>
-     * A handler that doesn't hand-off an exchange to another handler downstream is
-     * responsible for creating the response in the exchange object.
-     * <p>
-     * <strong>Important note:</strong> If an existing response exists in the exchange object
-     * and the handler intends to replace it with its own, it must first check to see if the
-     * existing response has an entity, and if it does, must call its {@code close} method in
-     * order to signal that the processing of the response from a remote server is complete.
+     * A handler that doesn't hand-off an exchange to another handler downstream
+     * is responsible for creating the response and returning it via the
+     * response handler or by throwing a {@code ResponseException}.
      *
-     * @param exchange the exchange containing the request to handle.
-     * @throws HandlerException if an exception occurs that prevents handling of the request.
-     * @throws IOException if an I/O exception occurs.
+     * @param context
+     *            The request context.
+     * @param request
+     *            The request.
+     * @throws ResponseException
+     *             If an exception occurs that prevents handling of the request.
      */
-    void handle(Exchange exchange) throws HandlerException, IOException;
+    Promise<Response, ResponseException> handle(Context context, Request request)
+            throws ResponseException;
 }

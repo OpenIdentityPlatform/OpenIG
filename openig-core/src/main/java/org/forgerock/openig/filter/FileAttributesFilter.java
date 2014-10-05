@@ -23,12 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;

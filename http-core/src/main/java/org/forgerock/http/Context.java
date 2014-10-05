@@ -39,4 +39,16 @@ public final class Context {
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
+    public Principal getPrincipal() {
+        return principal;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
 }

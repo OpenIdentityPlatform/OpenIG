@@ -64,7 +64,6 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpProtocolParams;
-import org.forgerock.http.Exchange;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.header.ConnectionHeader;
@@ -76,6 +75,7 @@ import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 

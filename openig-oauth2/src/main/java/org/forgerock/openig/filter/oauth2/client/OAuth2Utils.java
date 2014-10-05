@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Response;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.RedirectFilter;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.http.Exchange;
 
 /**
  * Utility methods used by classes in this package.

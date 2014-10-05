@@ -23,6 +23,8 @@ import java.io.IOException;
  * TODO: re-use CREST ResourceException?
  */
 public class ResponseException extends IOException {
+    private static final long serialVersionUID = 7012424171155584261L;
+
     private final Response response;
 
     public ResponseException(int status) {
@@ -44,6 +46,10 @@ public class ResponseException extends IOException {
     public ResponseException(final Response response, String message, final Throwable cause) {
         super(message, cause);
         this.response = response;
+    }
+
+    public Response getResponse() {
+        return response;
     }
 
 }

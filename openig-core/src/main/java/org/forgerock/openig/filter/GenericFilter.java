@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.filter;
 
-import org.forgerock.http.Filter;
 import org.forgerock.openig.heap.GenericHeapObject;
 
 /**

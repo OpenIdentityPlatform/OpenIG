@@ -24,17 +24,17 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.Exchange;
 import org.forgerock.http.Form;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Request;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
 /**

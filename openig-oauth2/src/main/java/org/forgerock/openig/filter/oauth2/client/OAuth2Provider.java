@@ -24,15 +24,15 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-import org.forgerock.http.Exchange;
 import org.forgerock.http.Form;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Request;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.exceptions.JwtReconstructionException;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.encode.Base64;
 
 /**

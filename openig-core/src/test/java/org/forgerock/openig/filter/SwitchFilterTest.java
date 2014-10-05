@@ -18,9 +18,9 @@ package org.forgerock.openig.filter;
 
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.http.Exchange;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

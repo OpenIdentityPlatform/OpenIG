@@ -18,12 +18,11 @@ package org.forgerock.openig.handler;
 
 import java.io.IOException;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Response;
 import org.forgerock.http.io.IO;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
 /**

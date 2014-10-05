@@ -23,10 +23,10 @@ import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KE
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.mockito.Mockito.when;
 
-import org.forgerock.http.Exchange;
 import org.forgerock.http.Request;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;

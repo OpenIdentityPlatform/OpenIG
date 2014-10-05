@@ -20,12 +20,12 @@ import static java.lang.Boolean.*;
 
 import java.io.IOException;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Filter;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.filter.GenericFilter;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.http.Exchange;
 
 /**
  * A {@link EnforcerFilter} makes sure that the handled {@link Exchange} verifies a condition.

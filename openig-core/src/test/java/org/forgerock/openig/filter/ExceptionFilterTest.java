@@ -18,11 +18,11 @@ package org.forgerock.openig.filter;
 
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.http.Response;
 import org.forgerock.http.io.BranchingInputStream;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

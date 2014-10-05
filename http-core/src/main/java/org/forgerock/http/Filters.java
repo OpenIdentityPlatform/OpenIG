@@ -17,9 +17,6 @@
 
 package org.forgerock.http;
 
-import static org.forgerock.http.Handlers.asHandler;
-import static org.forgerock.http.Handlers.handleResponse;
-
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -28,24 +25,11 @@ import java.util.Collection;
  */
 public class Filters {
 
-    public static AsyncFilter asAsyncFilter(final Filter2 filter) {
-        return new AsyncFilter() {
-
-            @Override
-            public void filter(final Context context, final Request request,
-                    final ResponseHandler callback, final AsyncHandler next)
-                    throws ResponseException {
-                handleResponse(callback, filter.filter(context, request, asHandler(next)));
-            }
-
-        };
-    }
-
-    public static AsyncFilter compose(final AsyncFilter... filters) {
+    public static Filter compose(final Filter... filters) {
         return compose(Arrays.asList(filters));
     }
 
-    public static AsyncFilter compose(final Collection<AsyncFilter> filters) {
+    public static Filter compose(final Collection<Filter> filters) {
         // TODO: return a subsequence of filters.
         return null;
     }

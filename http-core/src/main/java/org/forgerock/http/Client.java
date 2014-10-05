@@ -55,7 +55,7 @@ public final class Client implements Closeable {
      */
     public Response send(Request request) throws ResponseException {
         try {
-            return sendAsync(request, null).getOrThrow();
+            return sendAsync(request).getOrThrow();
         } catch (InterruptedException e) {
             // FIXME: is a 408 time out the best status code?
             throw new ResponseException(408);
@@ -68,12 +68,9 @@ public final class Client implements Closeable {
      *
      * @param request
      *            The HTTP request to send.
-     * @param handler
-     *            A response handler which will be notified when the HTTP
-     *            request completes. May be {@code null}.
      * @return The HTTP response if the response has a 2xx status code.
      */
-    public Promise<Response, ResponseException> sendAsync(Request request, ResponseHandler handler) {
+    public Promise<Response, ResponseException> sendAsync(Request request) {
         // TODO: delegate to underlying implementation.
         return null;
     }

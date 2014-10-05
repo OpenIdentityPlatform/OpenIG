@@ -25,7 +25,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.forgerock.http.Exchange;
+import org.forgerock.openig.http.Exchange;
 
 /**
  * Adapts a given {@link HttpServletRequest} to make uses of the {@link Exchange} in some places.

@@ -19,8 +19,8 @@ package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.forgerock.http.Exchange;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")

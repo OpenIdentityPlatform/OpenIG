@@ -16,28 +16,31 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http;
+package org.forgerock.openig.handler;
+
+import java.io.IOException;
+
+import org.forgerock.openig.http.Exchange;
 
 /**
- * TODO: proposed new interface for synchronous handlers.
- * <p>
  * Handles an HTTP exchange request by producing an associated response.
  */
-public interface Handler2 {
+public interface Handler {
+
     /**
      * Called to request the handler respond to the request.
      * <p>
-     * A handler that doesn't hand-off an exchange to another handler downstream
-     * is responsible for creating the response and returning it or by throwing
-     * a {@code ResponseException}.
+     * A handler that doesn't hand-off an exchange to another handler downstream is
+     * responsible for creating the response in the exchange object.
+     * <p>
+     * <strong>Important note:</strong> If an existing response exists in the exchange object
+     * and the handler intends to replace it with its own, it must first check to see if the
+     * existing response has an entity, and if it does, must call its {@code close} method in
+     * order to signal that the processing of the response from a remote server is complete.
      *
-     * @param context
-     *            The request context.
-     * @param request
-     *            The request.
-     * @return The response.
-     * @throws ResponseException
-     *             If an exception occurs that prevents handling of the request.
+     * @param exchange the exchange containing the request to handle.
+     * @throws HandlerException if an exception occurs that prevents handling of the request.
+     * @throws IOException if an I/O exception occurs.
      */
-    Response handle(Context context, Request request) throws ResponseException;
+    void handle(Exchange exchange) throws HandlerException, IOException;
 }

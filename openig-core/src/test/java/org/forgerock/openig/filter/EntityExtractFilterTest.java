@@ -23,11 +23,11 @@ import static org.mockito.Mockito.*;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.MessageType;
 import org.mockito.Mock;

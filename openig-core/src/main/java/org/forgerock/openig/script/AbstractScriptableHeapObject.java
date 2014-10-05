@@ -27,15 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.ScriptException;
 
-import org.forgerock.http.Exchange;
-import org.forgerock.http.Filter;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HandlerException;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.filter.Filter;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.NestedHeaplet;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
