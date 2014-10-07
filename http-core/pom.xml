@@ -23,6 +23,7 @@
     <version>3.1.0-SNAPSHOT</version>
   </parent>
   <artifactId>http-core</artifactId>
+  <packaging>bundle</packaging>
   <name>HTTP Core library</name>
   <dependencies>
     <dependency>
@@ -63,6 +64,21 @@
         <filtering>true</filtering>
       </resource>
     </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>
+              org.forgerock.http;version=${project.version}
+            </Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>
 
