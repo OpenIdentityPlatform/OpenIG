@@ -40,6 +40,8 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 public class HttpServlet extends javax.servlet.http.HttpServlet {
 
@@ -57,6 +59,34 @@ public class HttpServlet extends javax.servlet.http.HttpServlet {
         super.init(config);
 
         syncFactory = ServletApiVersionAdapter.getInstance(getServletContext());
+
+        handler = loadHandler();
+    }
+
+    private Handler loadHandler() {
+
+        ServiceLoader<HttpHandler> handlers = ServiceLoader.load(HttpHandler.class);
+
+        if (handlers == null) {
+            //TODO should throw exception
+            return null;
+        }
+
+        Iterator<HttpHandler> iterator = handlers.iterator();
+
+        if (!iterator.hasNext()) {
+            //TODO should throw exception
+            return null;
+        }
+
+        Handler handler = iterator.next();
+
+        if (iterator.hasNext()) {
+            //TODO probably should throw exception? or at least log issue
+            return null;
+        }
+
+        return handler;
     }
 
     @Override
