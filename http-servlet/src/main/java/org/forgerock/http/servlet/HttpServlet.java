@@ -25,9 +25,13 @@ import java.io.IOException;
 
 public class HttpServlet extends javax.servlet.http.HttpServlet {
 
+    private ServletApiVersionAdapter syncFactory;
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+
+        syncFactory = ServletApiVersionAdapter.getInstance(getServletContext());
     }
 
     @Override
