@@ -19,6 +19,10 @@ package org.forgerock.openig.heap;
 
 // TODO: consider detecting cyclic dependencies
 
+import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,30 +80,44 @@ public class HeapImpl implements Heap {
     public synchronized void init(JsonValue config) throws HeapException {
         // process configuration object model structure
         for (JsonValue object : config.get("objects").required().expect(List.class)) {
-            object.required().expect(Map.class);
-            Heaplet heaplet = Heaplets.getHeaplet(JsonValueUtil.asClass(object.get("type").required()));
-            if (heaplet == null) {
-                throw new JsonValueException(object.get("type"), "no heaplet available to initialize object");
-            }
-            // objects[n].name (string)
-            String name = object.get("name").required().asString();
-            if (heaplets.get(name) != null) {
-                throw new JsonValueException(object.get("name"), "object already defined");
-            }
-            // remove pre-allocated objects to be replaced
-            objects.remove(name);
-            heaplets.put(name, heaplet);
-            // objects[n].config (object)
-            configs.put(name, object.get("config").required().expect(Map.class));
+            addDeclaration(object);
         }
         // instantiate all objects, recursively allocating dependencies
-        for (String name : heaplets.keySet()) {
-            get(name);
+        for (String name : new ArrayList<String>(heaplets.keySet())) {
+            get(name, Object.class);
         }
     }
 
+    /**
+     * Add the given JsonValue as a new object declaration in this heap. The given object must be a valid object
+     * declaration ({@literal name}, {@literal type} and {@literal config} attributes). If not, a JsonValueException
+     * will be thrown. After this method is called, a new object is available in the heap.
+     *
+     * <p>The {@literal config} attribute is optional and accordingly, if empty or null, its declaration can be omitted.
+     *
+     * @param object
+     *         object declaration to add to the heap.
+     */
+    private void addDeclaration(final JsonValue object) {
+        object.required().expect(Map.class);
+        Heaplet heaplet = Heaplets.getHeaplet(JsonValueUtil.asClass(object.get("type").required()));
+        if (heaplet == null) {
+            throw new JsonValueException(object.get("type"), "no heaplet available to initialize object");
+        }
+        // objects[n].name (string)
+        String name = object.get("name").required().asString();
+        if (heaplets.get(name) != null) {
+            throw new JsonValueException(object.get("name"), "object already defined");
+        }
+        // remove pre-allocated objects to be replaced
+        objects.remove(name);
+        heaplets.put(name, heaplet);
+        // objects[n].config (object)
+        configs.put(name, object.get("config").defaultTo(emptyMap()).expect(Map.class));
+    }
+
     @Override
-    public synchronized Object get(String name) throws HeapException {
+    public synchronized <T> T get(final String name, final Class<T> type) throws HeapException {
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);
@@ -111,10 +129,48 @@ public class HeapImpl implements Heap {
                 objects.put(name, object);
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.get(name);
+                return parent.get(name, type);
             }
         }
-        return object;
+        return type.cast(object);
+    }
+
+    @Override
+    public <T> T resolve(final JsonValue reference, final Class<T> type) throws HeapException {
+        return resolve(reference, type, false);
+    }
+
+    @Override
+    public <T> T resolve(final JsonValue reference, final Class<T> type, final boolean optional) throws HeapException {
+
+        // If optional if set, accept that the provided reference may wrap a null
+        if (optional && reference.isNull()) {
+            return null;
+        }
+
+        // Otherwise we require a value
+        JsonValue required = reference.required();
+        if (required.isString()) {
+            // handle named reference
+            T value = get(required.asString(), type);
+            if (value == null) {
+                throw new JsonValueException(reference, "Object " + reference.asString() + " not found in heap");
+            }
+            return value;
+        } else if (required.isMap()) {
+            // handle inline declaration
+            String generated = required.getPointer().toString();
+            required.put("name", generated);
+            addDeclaration(required);
+            T value = get(generated, type);
+            if (value == null) {
+                throw new JsonValueException(reference, "Reference is not a valid heap object");
+            }
+            return value;
+        }
+        throw new JsonValueException(reference,
+                                     format("JsonValue[%s] is neither a String nor a Map (inline declaration)",
+                                            reference.getPointer()));
     }
 
     /**

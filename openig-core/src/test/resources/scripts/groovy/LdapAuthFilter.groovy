@@ -39,13 +39,13 @@ try {
     // When you read multi-valued attributes, use the parse() method,
     // with an AttributeParser method
     // that specifies the type of object to return.
-    exchange.session.cn = user.cn?.parse().asSetOfString()
+    exchange.cn = user.cn?.parse().asSetOfString()
 
     // When you write attribute values, set them directly.
     user.description = "New description set by my script"
 
     // Here is how you might read a single value of a multi-valued attribute:
-    exchange.session.description = user.description?.parse().asString()
+    exchange.description = user.description?.parse().asString()
 
     // Call the next handler. This returns when the request has been handled.
     next.handle(exchange)

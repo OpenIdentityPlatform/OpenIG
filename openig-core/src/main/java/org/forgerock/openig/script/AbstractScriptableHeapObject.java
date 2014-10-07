@@ -16,7 +16,6 @@
 package org.forgerock.openig.script;
 
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
 import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.io.IOException;
@@ -29,21 +28,19 @@ import javax.script.ScriptException;
 
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.HttpClient;
 
 /**
  * An abstract scriptable heap object which should be used as the base class for
- * implementing {@link Filter filters} and {@link Handler handlers}. This heap
+ * implementing {@link org.forgerock.openig.filter.Filter filters} and {@link Handler handlers}. This heap
  * object acts as a simple wrapper around the scripting engine. Scripts are
  * provided with the following variable bindings:
  * <ul>
@@ -54,7 +51,7 @@ import org.forgerock.openig.util.HttpClient;
  * performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
- * <li>{@link Logger logger} - the OpenIG logger
+ * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
  * </ul>
@@ -64,7 +61,7 @@ import org.forgerock.openig.util.HttpClient;
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
-    protected static abstract class AbstractScriptableHeaplet extends NestedHeaplet {
+    protected static abstract class AbstractScriptableHeaplet extends GenericHeaplet {
         private static final String CONFIG_OPTION_FILE = "file";
         private static final String CONFIG_OPTION_SOURCE = "source";
         private static final String CONFIG_OPTION_TYPE = "type";
@@ -74,9 +71,9 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
-            HttpClient httpClient = getRequiredObject(heap,
-                                                      config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
-                                                      HttpClient.class);
+            HttpClient httpClient = heap.resolve(config.get("httpClient")
+                                                                 .defaultTo(HTTP_CLIENT_HEAP_KEY),
+                                                           HttpClient.class);
             component.setHttpClient(httpClient);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
@@ -98,7 +95,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 throws HeapException;
 
         private final Script compileScript() throws HeapException {
-            final Environment environment = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
+            final Environment environment = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
 
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {
                 throw new JsonValueException(config, "The configuration option '"

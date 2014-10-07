@@ -31,10 +31,10 @@
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'
  xmlns:xinclude='http://www.w3.org/2001/XInclude'>
- <title>Installing ${projectName}</title>
+ <title>Installation in Detail</title>
 
  <para>
-  This chapter covers everything you need to install ${projectName}.
+  This chapter covers more advanced installation procedures.
  </para>
 
  <indexterm>
@@ -125,8 +125,23 @@
    </para>
 
    <para>
-    The web application container where ${projectName} runs
-    is responsible for setting up TLS connections.
+    When ${projectName} is acting as a server,
+    the web application container where ${projectName} runs
+    is responsible for setting up TLS connections
+    with client applications that connect to ${projectName}.
+    For details, see <xref linkend="jetty-https" />
+    or <xref linkend="tomcat-https" />.
+   </para>
+
+   <para>
+    When ${projectName} is acting as a client, the
+    <link
+     xlink:show="new"
+     xlink:href="reference#HttpClient"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >HttpClient</link> configuration sets up TLS connections
+    from ${projectName} to other servers.
+    For details, see <xref linkend="client-side-security" />.
    </para>
 
    <para>
@@ -164,37 +179,15 @@
     Whereas it is often enough
     to install a certificate signed by a well-known CA
     in the server key store as the basis of trust for HTTPS connections,
-    self-signed certificates must also be installed in all clients.<footnote>
-     <para>
-      When ${projectName} acts as a client
-      of a protected application or other server
-      whose certificate is not recognized out of the box by the Java environment,
-      then you must also install that certificate
-      in the key store for the ${projectName} web application container.
-     </para>
+    self-signed certificates must also be installed in all clients.
+   </para>
 
-     <para>
-      The following command installs a trusted signer's certificate,
-      <filename>ca.crt</filename>, in a Java Key Store file.
-     </para>
-
-     <screen>
-$ <userinput>keytool \
- -import \
- -trustcacerts \
- -keystore /path/to/container/keystore \
- -file ca.crt \
- -alias ca-cert \
- -storepass password</userinput>
-     </screen>
-
-     <para>
-      The <option>-trustcacerts</option> option says
-      to trust this as a signing certificate,
-      and so works both with self-signed certificates
-      and also with certificates used to sign server certificates.
-     </para>
-    </footnote>
+   <para>
+    Like self-signed certificates,
+    the signing certificates of less well-known CAs
+    are also unlikely to be found in the default trust store.
+    You might therefore need to install those signing certificates
+    on the client side as well.
    </para>
 
    <para>
@@ -225,9 +218,6 @@ $ <userinput>keytool \
     The Java Secure Socket Extension (JSSE), part of the Java environment,
     provides security services that ${projectName} uses to secure connections.
     You can set security and system properties to configure the JSSE.
-    For example, you can set the key store and password,
-    the trust store and password (useful when ${projectName} acts as a client),
-    the cipher suites to enable for use, and other properties.
     For a list of properties you can use to customize the JSSE in Oracle Java,
     see the <citetitle>Customization</citetitle> section of the
     <link
@@ -295,7 +285,7 @@ $ <userinput>keytool \
    </section>
 
    <section xml:id="tomcat-https">
-    <title>Configuring Tomcat For HTTPS</title>
+    <title>Configuring Tomcat For HTTPS (Server-Side)</title>
 
     <para>
      To get Tomcat up quickly on an SSL port
@@ -463,7 +453,7 @@ $ <userinput>keytool \
    </section>
 
   <section xml:id="jetty-https">
-   <title>Configuring Jetty For HTTPS</title>
+   <title>Configuring Jetty For HTTPS (Server-Side)</title>
 
    <para>
     To get Jetty up quickly on an SSL port, follow the steps in this section.
@@ -766,7 +756,7 @@ etc/jetty-ssl.xml
          xlink:show="new"
          xlink:href="gateway-guide#chap-routing"
          xlink:role="http://docbook.org/xlink/role/olink"
-        ><citetitle>Routing Tutorial</citetitle></link>,
+        ><citetitle>Configuring Routes</citetitle></link>,
         for more information.
        </para>
       </listitem>
@@ -804,9 +794,9 @@ etc/jetty-ssl.xml
         See the chapter,
         <link
          xlink:show="new"
-         xlink:href="gateway-guide#chap-scripting"
+         xlink:href="gateway-guide#chap-extending"
          xlink:role="http://docbook.org/xlink/role/olink"
-         ><citetitle>Scripting Filters &amp; Handlers</citetitle></link>,
+         ><citetitle>Extending ${projectName}</citetitle></link>,
         for more information.
        </para>
       </listitem>
@@ -984,6 +974,577 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
       </para>
      </step>
     </stepalternatives>
+   </step>
+  </procedure>
+ </section>
+
+ <section xml:id="load-balancing">
+  <title>Preparing For Load Balancing &amp; Failover</title>
+
+  <para>
+   For a high scale or highly available deployment,
+   you can prepare a pool of ${projectName} servers
+   with nearly identical configurations,
+   and then load balance requests across the pool,
+   routing around any servers that become unavailable.
+   Load balancing allows the service to handle more load.
+  </para>
+
+  <para>
+   Before you spread requests across multiple servers, however,
+   you must determine what to do with state information
+   that ${projectName} saves in the exchange,
+   or retrieves locally from the ${projectName} server system.
+   If information is retrieved locally,
+   then also consider setting up failover
+   so that if one server becomes unavailable,
+   another server in the pool can take its place.
+   The benefit of failover is
+   that a server failure can be invisible to client applications.
+  </para>
+
+  <itemizedlist>
+   <para>
+    ${projectName} can save state information in the exchange in several ways.
+   </para>
+
+   <listitem>
+    <para>
+     Handlers including a
+     <link
+      xlink:href="reference#SamlFederationHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SamlFederationHandler</link>
+     or a custom
+     <link
+      xlink:href="reference#ScriptableHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableHandler</link>
+     can store information in the exchange.
+     Most handlers depend on information in the exchange,
+     some of which is first stored by ${projectName}.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Filters including those having types
+     <link
+      xlink:href="reference#AssignmentFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >AssignmentFilter</link>,
+     <link
+      xlink:href="reference#HeaderFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >HeaderFilter</link>,
+     <link
+      xlink:href="reference#OAuth2ClientFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >OAuth2ClientFilter</link>,
+     <link
+      xlink:href="reference#OAuth2ResourceServerFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >OAuth2ResourceServerFilter</link>,
+     <link
+      xlink:href="reference#ScriptableFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableFilter</link>,
+     <link
+      xlink:href="reference#SqlAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SqlAttributesFilter</link>,
+     and
+     <link
+      xlink:href="reference#StaticRequestFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >StaticRequestFilter</link>
+     can store information in the exchange.
+     Most filters depend on information in the exchange,
+     some of which is first stored by ${projectName}.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    ${projectName} can also retrieve information locally in several ways.
+   </para>
+
+   <listitem>
+    <para>
+     Filters and handlers including
+     <link
+      xlink:href="reference#FileAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+      >FileAttributesFilter</link>,
+     <link
+      xlink:href="reference#ScriptableFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableFilter</link>,
+     <link
+      xlink:href="reference#ScriptableHandler"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >ScriptableHandler</link>,
+     and
+     <link
+      xlink:href="reference#SqlAttributesFilter"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      xlink:show="new"
+     >SqlAttributesFilter</link>
+     can depend on local system files or container configuration.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   By default the exchange data resides in memory in the container
+   where ${projectName} runs.
+   This includes the default session implementation,
+   which is backed by the HttpSession that the container handles.
+   You can opt to store session data on the user-agent instead, however.
+   For details and to consider whether your data fits, see
+   <link
+    xlink:href="reference#JwtSession"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    xlink:show="new"
+   >JwtSession</link>.
+   When you use the <literal>JwtSession</literal> implementation,
+   be sure to share the encryption keys across all servers,
+   so that any server can read session cookies from any other.
+  </para>
+
+  <para>
+   If your data does not fit in an HTTP cookie,
+   for example because when encrypted it is larger than 4 KB,
+   consider storing a reference in the cookie,
+   and then retrieve the data by using another filter.
+   ${projectName} logs warning messages if the JwtSession cookie is too large.
+   Using a reference can also work when a server becomes unavailable,
+   and the load balancer must fail requests over to another server in the pool.
+  </para>
+
+  <para>
+   If some data attached to an exchange must be stored on the server side,
+   then you have additional configuration steps to perform
+   for session stickiness and for session replication.
+   Session stickiness means that the load balancer sends all requests
+   from the same client session to the same server.
+   Session stickiness helps to ensure that a client request goes
+   to the server holding the original session data.
+   Session replication involves writing session data
+   either to other servers or to a data store,
+   so that if one server goes down,
+   other servers can read the session data and continue processing.
+   Session replication helps when one server fails,
+   allowing another server to take its place
+   without having to start the session over again.
+   If you set up session stickiness but not session replication,
+   when a server crashes the client session information for that server is lost,
+   and the client must start again with a new session.
+  </para>
+
+  <para>
+   How you configure session stickiness and session replication
+   depends on your load balancer and on your container.
+  </para>
+
+  <itemizedlist>
+   <para>
+    Apache Tomcat can help with session stickiness,
+    and a Tomcat cluster can handle session replication.
+   </para>
+
+   <listitem>
+    <para>
+     If you choose to use the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/connectors-doc/"
+     >Apache Tomcat connector</link> (mod_jk) on your web server
+     to perform load balancing, then see the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/connectors-doc/generic_howto/loadbalancers.html"
+     ><citetitle>LoadBalancer HowTo</citetitle></link> for details.
+    </para>
+
+    <para>
+     Notice in that HowTo that
+     you configure the <literal>jvmRoute</literal> attribute
+     in the Tomcat server configuration,
+     <filename>/path/to/tomcat/conf/server.xml</filename>,
+     to identify the server.
+     The connector can use this identifier to achieve session stickiness.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     A Tomcat
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/tomcat-7.0-doc/config/cluster.html"
+     >cluster</link> configuration can handle session replication.
+     When setting up a cluster configuration, the
+     <link
+      xlink:show="new"
+      xlink:href="http://tomcat.apache.org/tomcat-7.0-doc/config/cluster-manager.html"
+     >ClusterManager</link> defines the session replication implementation.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    Jetty has provisions for session stickiness,
+    and also for session replication through clustering.
+   </para>
+
+   <listitem>
+    <para>
+     Jetty's persistent session mechanism appends a node ID to the session ID,
+     in the same way Tomcat appends the <literal>jvmRoute</literal> value
+     to the session cookie.
+     This can be useful for session stickiness
+     if your load balancer examines the session ID.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:show="new"
+      xlink:href="http://www.eclipse.org/jetty/documentation/current/session-clustering-jdbc.html"
+     >Session Clustering with a Database</link>
+     describes how to configure Jetty to persist sessions over JDBC,
+     allowing session replication.
+    </para>
+
+    <para>
+     Unless it is set up to be highly available,
+     the database can be a single point of failure in this case.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:show="new"
+      xlink:href="http://www.eclipse.org/jetty/documentation/current/session-clustering-mongodb.html"
+     >Session Clustering with MongoDB</link>
+     describes how to configure Jetty to persist sessions in MongoDB,
+     allowing session replication.
+    </para>
+
+    <para>
+     The Jetty documentation recommends this implementation
+     when session data is seldom written but often read.
+    </para>
+   </listitem>
+  </itemizedlist>
+ </section>
+
+ <section xml:id="client-side-security">
+  <title>Configuring ${projectName} For HTTPS (Client-Side)</title>
+
+  <para>
+   For ${projectName} to connect to a server securely over HTTPS,
+   ${projectName} must be able to trust the server.
+   The default settings rely on the Java environment trust store
+   to trust server certificates.
+   The Java environment default trust store includes
+   public key signing certificates
+   from many well-known Certificate Authorities (CAs).
+   If all servers present certificates signed by these CAs,
+   then you have nothing to configure.
+  </para>
+
+  <para>
+   If however the server certificates are self-signed
+   or signed by a CA whose certificate is not trusted out of the box,
+   then you can configure a
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyStore"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyStore</link>,
+   <link
+    xlink:show="new"
+    xlink:href="reference#TrustManager"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >TrustManager</link>,
+   and optionally a
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyManager"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyManager</link>
+   to reference when configuring an
+   <link
+    xlink:show="new"
+    xlink:href="reference#HttpClient"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >HttpClient</link>
+   to enable ${projectName} to trust servers when acting as a client.
+  </para>
+
+  <para>
+   The KeyStore holds the servers' certificates or the CA signing certificate.
+   The TrustManager allows ${projectName} to handle the certificates
+   in the KeyStore when deciding whether to trust a server certificate.
+   The optional KeyManager allows ${projectName} to present its certificate
+   from the key store when the server must authenticate ${projectName} as client.
+   The HttpClient references whatever TrustManager and KeyManager you configure.
+  </para>
+
+  <para>
+   You can configure each of these either globally for the ${projectName} server,
+   of locally for a particular ClientHandler configuration.
+  </para>
+
+  <para>
+   The Java KeyStore holds the peer servers' public key certificates
+   (and optionally the ${projectName} certificate and private key).
+   For example, suppose you have a certificate file, <filename>ca.crt</filename>,
+   that holds the trusted signer's certificate
+   of the CA who signed the server certificates
+   of the servers in your deployment.
+   In that case, you could import the certificate into a Java Key Store file,
+   <filename>/path/to/keystore.jks</filename>.
+  </para>
+
+  <screen>
+$ <userinput>keytool \
+ -import \
+ -trustcacerts \
+ -keystore /path/to/keystore \
+ -file ca.crt \
+ -alias ca-cert \
+ -storepass changeit</userinput>
+  </screen>
+
+  <para>
+   You could then configure the following "KeyStore" for ${projectName}
+   that holds the trusted certificate.
+   Notice that the "file" field takes an expression that evaluates to a URL,
+   starting with a scheme such as <literal>file://</literal>.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "MyKeyStore",
+    "type": "KeyStore",
+    "config": {
+        "file": "file:///path/to/keystore",
+        "password": "changeit"
+    }
+}
+  </programlisting>
+
+  <para>
+   The TrustManager handles the certificates in the KeyStore
+   when deciding whether to trust the server certificate.
+   The TrustManager references your KeyStore.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "MyTrustManager",
+    "type": "TrustManager",
+    "config": {
+        "keystore": "MyKeyStore"
+    }
+}
+  </programlisting>
+
+  <variablelist>
+   <para>
+    The HttpClient configuration has the following security settings.
+   </para>
+
+   <varlistentry>
+    <term>"trustManager"</term>
+    <listitem>
+     <para>
+      This references your TrustManager.
+     </para>
+
+     <para>
+      Recall that you must configure this
+      when your server certificates are not trusted out of the box.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>"hostnameVerifier"</term>
+    <listitem>
+     <para>
+      This defines how the HttpClient verifies host names in server certificates.
+     </para>
+
+     <para>
+      By default, host name verification is turned off.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>"keyManager"</term>
+    <listitem>
+     <para>
+      This references your optional KeyManager.
+     </para>
+
+     <para>
+      Configure this if servers request that ${projectName} present
+      its certificate as part of mutual authentication.
+     </para>
+
+     <para>
+      In that case, generate a key pair for ${projectName},
+      and have the certificate signed by a well-known CA.
+      See the <command>keytool</command> documentation for instructions.
+      You can use a different key store for the KeyManager
+      than you use for the TrustManager.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   The following HttpClient configuration references "MyTrustManager"
+   and sets browser-compatible host name verification.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "HttpClient",
+    "type": "HttpClient",
+    "config": {
+        "hostnameVerifier": "BROWSER_COMPATIBLE",
+        "trustManager": "MyTrustManager"
+    }
+}
+  </programlisting>
+ </section>
+
+ <section xml:id="keystore-for-jwt-encryption">
+  <title>Setting Up Keys For JWT Encryption</title>
+
+  <para>
+   You can use
+   <link
+    xlink:show="new"
+    xlink:href="reference#JwtSession"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >JwtSession</link> to configure ${projectName}
+   to store session information in JWT cookies on the user-agent,
+   rather than storing the information
+   in the container where ${projectName} runs.
+  </para>
+
+  <para>
+   In order to encrypt the JWTs, ${projectName} needs cryptographic keys.
+   ${projectName} can generate its own key pair in memory,
+   but that key pair disappears on restart
+   and cannot be shared across ${projectName} servers.
+  </para>
+
+  <para>
+   Alternatively, ${projectName} can use keys from a key store.
+   The following steps describe how to prepare the key store for JWT encryption.
+  </para>
+
+  <procedure>
+   <step>
+    <para>
+     Generate the key pair in a new key store file
+     by using the Java <command>keytool</command> command.
+    </para>
+
+    <para>
+     The following command generates a Java Key Store format file,
+     <filename>/path/to/keystore.jks</filename>,
+     holding a key pair with alias <literal>jwe-key</literal>.
+     Notice that both the key store and the private key have the same password.
+    </para>
+
+    <screen>
+$ <userinput>keytool \
+ -genkey \
+ -alias jwe-key \
+ -keyalg rsa \
+ -keystore /path/to/keystore.jks \
+ -storepass changeit \
+ -keypass changeit \
+ -dname "CN=www.example.com,O=Example Corp"</userinput>
+    </screen>
+   </step>
+
+   <step>
+    <para>
+     Add a
+     <link
+      xlink:show="new"
+      xlink:href="reference#KeyStore"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyStore</link>
+     to your configuration that references the key store file.
+    </para>
+
+    <programlisting language="javascript">
+{
+    "name": "MyKeyStore",
+    "type": "KeyStore",
+    "config": {
+        "file": "file:///path/to/keystore.jks",
+        "password": "changeit"
+    }
+}
+    </programlisting>
+   </step>
+
+   <step>
+    <para>
+     Add a JwtSession to your configuration that references your KeyStore.
+    </para>
+
+    <programlisting language="javascript">
+{
+    "name": "MyJwtSession",
+    "type": "JwtSession",
+    "config": {
+        "keystore": "MyKeyStore",
+        "alias": "jwe-key",
+        "password": "changeit",
+        "cookieName": "${projectName}"
+    }
+}
+    </programlisting>
+   </step>
+
+   <step>
+    <para>
+     Specify your JwtSession object in the top-level configuration,
+     or in the route configuration.
+    </para>
+
+    <programlisting language="javascript">
+"session": "MyJwtSession"
+    </programlisting>
    </step>
   </procedure>
  </section>

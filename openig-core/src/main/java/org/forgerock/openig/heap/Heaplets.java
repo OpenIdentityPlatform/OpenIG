@@ -17,18 +17,17 @@
 
 package org.forgerock.openig.heap;
 
-import java.util.Collections;
-import java.util.Map;
+import static java.util.Collections.*;
 
 import org.forgerock.http.util.Loader;
+import java.util.List;
 
 /**
  * Loads {@link Heaplet} classes based on the class of object they create. Three methods of
  * locating the heaplet class are attempted, in the following order:
  * <ol>
- * <li>The {@link Loader} class attempts to locate a {@code org.forgerock.openig.heap.Heaplet}
- * interface implementation, where the index key exported by {@link Heaplet#getKey() getKey()}
- * is the class being created.</li>
+ * <li>The {@link Loader} class attempts to locate a {@code HeapletFactory}
+ * interface implementation suitable for the class being created.</li>
  * <li>A nested {@code Heaplet} class is searched for. Example: creating
  * {@code com.example.Foo} would search for a heaplet class named
  * {@code com.example.Foo$Heaplet}.</li>
@@ -39,10 +38,8 @@ import org.forgerock.http.util.Loader;
  */
 public final class Heaplets {
 
-    /** Services mapped from class created to heaplet implementation. */
-    @SuppressWarnings("rawtypes")
-    private static final Map<Class, Heaplet> SERVICES = Collections.unmodifiableMap(Loader
-            .loadMap(Class.class, Heaplet.class));
+    /** List of classpath-discovered {@link HeapletFactory} services. */
+    private static final List<HeapletFactory> SERVICES = unmodifiableList(Loader.loadList(HeapletFactory.class));
 
     /** Static methods only. */
     private Heaplets() {
@@ -56,12 +53,20 @@ public final class Heaplets {
      * @return the heaplet that creates the specified class, or {@code null} if not found.
      */
     public static Heaplet getHeaplet(Class<?> c) {
+
+        Heaplet heaplet;
+
         // try service loader
-        Heaplet heaplet = SERVICES.get(c);
-        if (heaplet == null) {
-            // try nested class
-            heaplet = Loader.newInstance(c.getName() + "$Heaplet", Heaplet.class);
+        for (HeapletFactory factory : SERVICES) {
+            heaplet = factory.newInstance(c);
+            if (heaplet != null) {
+                return heaplet;
+            }
         }
+
+        // try nested class
+        heaplet = Loader.newInstance(c.getName() + "$Heaplet", Heaplet.class);
+
         if (heaplet == null) {
             // try standalone class
             heaplet = Loader.newInstance(c.getName() + "Heaplet", Heaplet.class);

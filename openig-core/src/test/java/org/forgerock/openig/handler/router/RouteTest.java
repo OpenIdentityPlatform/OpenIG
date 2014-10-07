@@ -23,12 +23,17 @@ import static org.mockito.Mockito.*;
 import java.net.URI;
 
 import org.forgerock.http.Request;
+import org.forgerock.http.Session;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.SessionFactory;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -38,26 +43,36 @@ public class RouteTest {
     @Mock
     private Handler handler;
 
+    @Mock
+    private Session original;
+
+    @Mock
+    private Session scoped;
+
+    @Mock
+    private SessionFactory sessionFactory;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(sessionFactory.build(any(Exchange.class))).thenReturn(scoped);
     }
 
     @Test
     public void testRouteAcceptingTheExchange() throws Exception {
-        Route route = createRoute(new Expression("${true}"), null);
+        Route route = createRoute(null, new Expression("${true}"), null);
         assertThat(route.accept(new Exchange())).isTrue();
     }
 
     @Test
     public void testRouteRejectingTheExchange() throws Exception {
-        Route route = createRoute(new Expression("${false}"), null);
+        Route route = createRoute(null, new Expression("${false}"), null);
         assertThat(route.accept(new Exchange())).isFalse();
     }
 
     @Test
     public void testRouteIsDelegatingTheExchange() throws Exception {
-        Route route = createRoute(null, null);
+        Route route = createRoute(null, null, null);
 
         Exchange exchange = new Exchange();
         route.handle(exchange);
@@ -67,7 +82,7 @@ public class RouteTest {
 
     @Test
     public void testRouteIsRebasingTheRequestUri() throws Exception {
-        Route route = createRoute(null, new URI("https://localhost:443"));
+        Route route = createRoute(null, null, new URI("https://localhost:443"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -78,9 +93,60 @@ public class RouteTest {
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
 
-    private Route createRoute(final Expression condition, final URI baseURI) {
+
+    @Test
+    public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
+
+        Route route = createRoute(sessionFactory, null, null);
+        Exchange exchange = new Exchange();
+        exchange.session = original;
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(final InvocationOnMock invocation) throws Throwable {
+                Exchange item = (Exchange) invocation.getArguments()[0];
+                assertThat(item.session).isSameAs(scoped);
+                return null;
+            }
+        }).when(handler).handle(exchange);
+
+        route.handle(exchange);
+
+        verify(handler).handle(exchange);
+        assertThat(exchange.session).isSameAs(original);
+    }
+
+    @Test
+    public void shouldReplaceBackTheOriginalSessionForUpStreamHandlersWhenExceptionsAreThrown() throws Exception {
+
+        Route route = createRoute(sessionFactory, null, null);
+        Exchange exchange = new Exchange();
+        exchange.session = original;
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(final InvocationOnMock invocation) throws Throwable {
+                Exchange item = (Exchange) invocation.getArguments()[0];
+                assertThat(item.session).isSameAs(scoped);
+                throw new HandlerException();
+            }
+        }).when(handler).handle(exchange);
+
+        try {
+            route.handle(exchange);
+            failBecauseExceptionWasNotThrown(HandlerException.class);
+        } catch (Exception e) {
+            assertThat(exchange.session).isSameAs(original);
+        }
+
+    }
+
+    private Route createRoute(final SessionFactory sessionFactory,
+                              final Expression condition,
+                              final URI baseURI) {
         return new Route(new HeapImpl(),
                          handler,
+                         sessionFactory,
                          "router",
                          condition,
                          baseURI);

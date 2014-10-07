@@ -19,8 +19,8 @@ package org.forgerock.openig.io;
 
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.io.IO;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.util.Factory;
 
 /**
@@ -55,7 +55,7 @@ public class TemporaryStorage implements Factory<Buffer> {
     /**
      * Creates and initializes a temporary storage object in a heap environment.
      */
-    public class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             return new TemporaryStorage(IO.newTemporaryStorage(config.get("directory").asFile(),

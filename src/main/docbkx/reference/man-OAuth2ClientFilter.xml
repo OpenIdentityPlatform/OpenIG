@@ -157,10 +157,10 @@
   "type": "OAuth2ClientFilter",
   "config": {
     "clientEndpoint": expression,
-    "failureHandler": handler,
-    "loginHandler": handler,
-    "providerHandler": handler,
-    "providers": [ provider configuration, ... ],
+    "failureHandler": Handler reference,
+    "loginHandler": Handler reference,
+    "providerHandler": Handler reference,
+    "providers": [ provider configuration object, ... ],
     "target": expression,
     "defaultLoginGoto": expression,
     "defaultLogoutGoto": expression,
@@ -197,11 +197,19 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"failureHandler"</code>: <emphasis>handler, required</emphasis></term>
+    <term><code>"failureHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler configuration object to invoke
-      when authentication fails.
+      Invoke this Handler if authentication fails.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>
@@ -250,12 +258,20 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"loginHandler"</code>: <emphasis>handler,
+    <term><code>"loginHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference,
      required when multiple providers are configured</emphasis></term>
     <listitem>
      <para>
-      The name of the handler configuration object to invoke
-      if the user must choose a provider.
+      Invoke this Handler the user must choose a provider.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>
@@ -284,11 +300,19 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"providerHandler"</code>: <emphasis>handler, required</emphasis></term>
+    <term><code>"providerHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      The name of the handler configuration object to invoke
-      to communicate with the provider.
+      Invoke this HTTP client handler to communicate with the provider.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>
@@ -453,10 +477,15 @@
     <term><code>"target"</code>: <emphasis><link
      xlink:href="reference#Expressions"
      xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-     required</emphasis></term>
+     optional</emphasis></term>
     <listitem>
      <para>
-      Expression that yields the target object whose value is to be set.
+      Expression that yields the target object whose value is to be set,
+      such as <literal>${exchange.openid}</literal>.
+     </para>
+     
+     <para>
+      Default: <literal>${exchange.openid}</literal>
      </para>
     </listitem>
    </varlistentry>

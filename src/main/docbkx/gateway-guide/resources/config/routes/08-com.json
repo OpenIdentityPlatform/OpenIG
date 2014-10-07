@@ -1,0 +1,17 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "ForgeRockChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [],
+                    "handler": "ClientHandler"
+                }
+            }
+        ]
+    },
+    "handler": "ForgeRockChain",
+    "condition": "${matches(exchange.request.uri.query, 'site=com')}",
+    "baseURI": "http://forgerock.com:80/"
+}

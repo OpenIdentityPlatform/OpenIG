@@ -71,9 +71,8 @@ Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9
   <para>
    On successful validation,
    the filter includes the token info from the authorization server response
-   as JSON in the exchange.
-   Subsequent filters and handlers can access the token info
-   as <literal>exchange.oauth2AccessToken</literal>.
+   as JSON in the exchange at the location specified by the "target" setting.
+   Subsequent filters and handlers can access the token info through the exchange.
   </para>
 
   <para>
@@ -111,12 +110,13 @@ WWW-Authenticate: Bearer realm="${projectName}"
   "name": string,
   "type": "OAuth2ResourceServerFilter",
   "config": {
-    "httpHandler": string,
-    "requiredScopes": [ string, ... ],
+    "providerHandler": Handler reference,
+    "scopes": [ string, ... ],
     "tokenInfoEndpoint": URL string,
     "cacheExpiration": duration string,
-    "enforceHttps": boolean,
-    "realm": string
+    "requireHttps": boolean,
+    "realm": string,
+    "target": expression
   }
 }
   </programlisting>
@@ -131,10 +131,19 @@ WWW-Authenticate: Bearer realm="${projectName}"
 
   <variablelist>
    <varlistentry>
-    <term><code>"httpHandler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"providerHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
      <para>
-      HTTP client handler to send token info requests.
+      Invoke this HTTP client handler to send token info requests.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
 
      <para>
@@ -149,7 +158,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
    </varlistentry>
 
    <varlistentry>
-    <term><code>"requiredScopes"</code>: <emphasis>array of strings, required</emphasis></term>
+    <term><code>"scopes"</code>: <emphasis>array of strings, required</emphasis></term>
     <listitem>
      <para>
       The list of required OAuth 2.0 scopes for this protected resource.
@@ -182,7 +191,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
    </varlistentry>
 
    <varlistentry>
-    <term><code>"enforceHttps"</code>: <emphasis>boolean, optional</emphasis></term>
+    <term><code>"requireHttps"</code>: <emphasis>boolean, optional</emphasis></term>
     <listitem>
      <para>
       Whether to require that requests use the HTTPS scheme.
@@ -209,6 +218,24 @@ WWW-Authenticate: Bearer realm="${projectName}"
      </para>
     </listitem>
    </varlistentry>
+
+   <varlistentry>
+    <term><code>"target"</code>: <emphasis><link
+     xlink:show="new"
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     optional</emphasis></term>
+    <listitem>
+     <para>
+      Where to store the OAuth 2.0 access token in the exchange,
+      such as <literal>${exchange.token}</literal>.
+     </para>
+
+     <para>
+      Default: <literal>${exchange.oauth2AccessToken}</literal>
+     </para>
+    </listitem>
+   </varlistentry>
   </variablelist>
  </refsect1>
 
@@ -228,8 +255,8 @@ WWW-Authenticate: Bearer realm="${projectName}"
     "name": "ProtectedResourceFilter",
     "type": "OAuth2ResourceServerFilter",
     "config": {
-        "httpHandler": "ClientHandler",
-        "requiredScopes": [
+        "providerHandler": "ClientHandler",
+        "scopes": [
             "email",
             "profile"
         ],

@@ -18,11 +18,11 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.forgerock.openig.util.Duration.duration;
-import static org.forgerock.openig.util.JsonValueUtil.evaluate;
-import static org.forgerock.util.Utils.closeSilently;
+import static java.lang.String.*;
+import static java.util.concurrent.TimeUnit.*;
+import static org.forgerock.openig.util.Duration.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,10 +30,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.http.Header;
@@ -73,8 +77,8 @@ import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
@@ -102,7 +106,9 @@ import org.forgerock.openig.log.Logger;
  *       "truststore": {
  *           "file": "/path/to/keystore.jks",
  *           "password": "changeit"
- *       }
+ *       },
+ *       "keyManager": [ "RefToKeyManager", ... ]
+ *       "trustManager": [ "RefToTrustManager", ... ]
  *     }
  *   }
  * </pre>
@@ -121,7 +127,8 @@ import org.forgerock.openig.log.Logger;
  *     <li>{@literal STRICT}</li>
  * </ul>
  * <p>
- * The {@literal keystore} and {@literal truststore} optional attributes are both supporting the following attributes:
+ * The <strong>deprecated</strong> {@literal keystore} and {@literal truststore} optional attributes are both
+ * supporting the following attributes:
  * <ul>
  *     <li>{@literal file}: path to the key store</li>
  *     <li>{@literal type}: key store type (defaults to {@literal JKS})</li>
@@ -130,6 +137,14 @@ import org.forgerock.openig.log.Logger;
  *     {@link org.forgerock.openig.el.Expression}</li>
  * </ul>
  * <p>
+ * The new (since OpenIG 3.1) {@literal keyManager} and {@literal trustManager} optional attributes are referencing a
+ * list of {@link KeyManager} (and {@link TrustManager} respectively). They support singleton value (use a single
+ * reference) as well as multi-valued references (a list):
+ * <pre>
+ *     "keyManager": "SingleKeyManagerReference",
+ *     "trustManager": [ "RefOne", "RefTwo" ]
+ * </pre>
+ * <p>
  * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection
  * will live before being considered a stalled and automatically destroyed). It defaults to {@literal 10 seconds}.
  * <p>
@@ -137,6 +152,8 @@ import org.forgerock.openig.log.Logger;
  * wait until the connection is established). It defaults to {@literal 10 seconds}.
  *
  * @see Duration
+ * @see org.forgerock.openig.security.KeyManagerHeaplet
+ * @see org.forgerock.openig.security.TrustManagerHeaplet
  */
 public class HttpClient {
 
@@ -256,22 +273,20 @@ public class HttpClient {
     /**
      * Returns a new SSL socket factory that does not perform hostname verification.
      *
-     * @param keyManagerFactory
+     * @param keyManagers
      *         Provides Keys/Certificates in case of SSL/TLS connections
-     * @param trustManagerFactory
+     * @param trustManagers
      *         Provides TrustManagers in case of SSL/TLS connections
      * @param hostnameVerifier hostname verification strategy
      * @throws GeneralSecurityException
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
-    private static SSLSocketFactory newSSLSocketFactory(final KeyManagerFactory keyManagerFactory,
-                                                        final TrustManagerFactory trustManagerFactory,
-                                                        final X509HostnameVerifier hostnameVerifier)
+    private static SSLSocketFactory newSSLSocketFactory(final KeyManager[] keyManagers,
+            final TrustManager[] trustManagers,
+            final X509HostnameVerifier hostnameVerifier)
             throws GeneralSecurityException {
         SSLContext context = SSLContext.getInstance("TLS");
-        context.init((keyManagerFactory == null) ? null : keyManagerFactory.getKeyManagers(),
-                     (trustManagerFactory == null) ? null : trustManagerFactory.getTrustManagers(),
-                     null);
+        context.init(keyManagers, trustManagers, null);
         SSLSocketFactory factory = new SSLSocketFactory(context);
         factory.setHostnameVerifier(hostnameVerifier);
         return factory;
@@ -295,12 +310,12 @@ public class HttpClient {
      */
     public HttpClient(final TemporaryStorage storage) throws GeneralSecurityException {
         this(storage,
-             DEFAULT_CONNECTIONS,
-             null,
-             null,
-             Verifier.ALLOW_ALL,
-             DEFAULT_SO_TIMEOUT,
-             DEFAULT_CONNECTION_TIMEOUT);
+                DEFAULT_CONNECTIONS,
+                null,
+                null,
+                Verifier.ALLOW_ALL,
+                DEFAULT_SO_TIMEOUT,
+                DEFAULT_CONNECTION_TIMEOUT);
     }
 
     /**
@@ -308,8 +323,8 @@ public class HttpClient {
      *
      * @param storage the {@link TemporaryStorage} to use
      * @param connections the maximum number of connections to open.
-     * @param keyManagerFactory Provides Keys/Certificates in case of SSL/TLS connections
-     * @param trustManagerFactory Provides TrustManagers in case of SSL/TLS connections
+     * @param keyManagers Provides Keys/Certificates in case of SSL/TLS connections
+     * @param trustManagers Provides TrustManagers in case of SSL/TLS connections
      * @param verifier hostname verification strategy
      * @param soTimeout socket timeout duration
      * @param connectionTimeout connection timeout duration
@@ -317,12 +332,12 @@ public class HttpClient {
      *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
      */
     public HttpClient(final TemporaryStorage storage,
-                      final int connections,
-                      final KeyManagerFactory keyManagerFactory,
-                      final TrustManagerFactory trustManagerFactory,
-                      final Verifier verifier,
-                      final Duration soTimeout,
-                      final Duration connectionTimeout) throws GeneralSecurityException {
+            final int connections,
+            final KeyManager[] keyManagers,
+            final TrustManager[] trustManagers,
+            final Verifier verifier,
+            final Duration soTimeout,
+            final Duration connectionTimeout) throws GeneralSecurityException {
         this.storage = storage;
 
         final BasicHttpParams parameters = new BasicHttpParams();
@@ -341,10 +356,10 @@ public class HttpClient {
         final SchemeRegistry registry = new SchemeRegistry();
         registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
         registry.register(new Scheme("https",
-                                     newSSLSocketFactory(keyManagerFactory,
-                                                         trustManagerFactory,
-                                                         verifier.getHostnameVerifier()),
-                                     443));
+                newSSLSocketFactory(keyManagers,
+                        trustManagers,
+                        verifier.getHostnameVerifier()),
+                443));
         final ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(parameters, registry);
 
         httpClient = new DefaultHttpClient(connectionManager, parameters);
@@ -445,7 +460,7 @@ public class HttpClient {
     /**
      * Creates and initializes a http client object in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {
@@ -457,32 +472,6 @@ public class HttpClient {
                                                    .asBoolean();
             // determines if requests should be retried on failure
             Boolean disableRetries = config.get("disableRetries").defaultTo(DISABLE_RETRIES).asBoolean();
-
-            // Build an optional KeyManagerFactory
-            KeyManagerFactory keyManagerFactory = null;
-            if (config.isDefined("keystore")) {
-                JsonValue store = config.get("keystore");
-                File keystoreFile = store.get("file").required().asFile();
-                String password = evaluate(store.get("password").required());
-                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
-                String algorithm = store.get("alg").defaultTo("SunX509").asString();
-
-                keyManagerFactory = buildKeyManagerFactory(keystoreFile, type, algorithm, password);
-            }
-
-            // Build an optional TrustManagerFactory
-            TrustManagerFactory trustManagerFactory = null;
-            if (config.isDefined("truststore")) {
-                JsonValue store = config.get("truststore");
-                File truststoreFile = store.get("file").required().asFile();
-
-                // Password is optional for trust store
-                String password = evaluate(store.get("password"));
-                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
-                String algorithm = store.get("alg").defaultTo("SunX509").asString();
-
-                trustManagerFactory = buildTrustManagerFactory(truststoreFile, type, algorithm, password);
-            }
 
             Verifier verifier = config.get("hostnameVerifier")
                                       .defaultTo(Verifier.ALLOW_ALL.name())
@@ -498,8 +487,8 @@ public class HttpClient {
             try {
                 HttpClient client = new HttpClient(storage,
                                                    connections,
-                                                   keyManagerFactory,
-                                                   trustManagerFactory,
+                                                   getKeyManagers(),
+                                                   getTrustManagers(),
                                                    verifier,
                                                    soTimeout,
                                                    connectionTimeout);
@@ -515,6 +504,76 @@ public class HttpClient {
             } catch (GeneralSecurityException e) {
                 throw new HeapException(format("Cannot build HttpClient named '%s'", name), e);
             }
+        }
+
+        private TrustManager[] getTrustManagers() throws HeapException {
+            // Build an optional TrustManagerFactory
+            TrustManager[] trustManagers = null;
+            if (config.isDefined("truststore")) {
+                // This attribute is deprecated: warn the user
+                warnForDeprecation(config, logger, "trustManager", "truststore");
+
+                JsonValue store = config.get("truststore");
+                File truststoreFile = store.get("file").required().asFile();
+
+                // Password is optional for trust store
+                String password = evaluate(store.get("password"));
+                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                String algorithm = store.get("alg").defaultTo("SunX509").asString();
+
+                trustManagers = buildTrustManagerFactory(truststoreFile, type, algorithm, password).getTrustManagers();
+            }
+
+            // Uses TrustManager references
+            if (config.isDefined("trustManager")) {
+                if (trustManagers != null) {
+                    logger.warning("Cannot use both 'truststore' and 'trustManager' attributes, "
+                            + "will use configuration from 'trustManager' attribute");
+                }
+                JsonValue trustManagerConfig = config.get("trustManager");
+                List<TrustManager> managers = new ArrayList<TrustManager>();
+                if (trustManagerConfig.isList()) {
+                    managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap, TrustManager.class)));
+                } else {
+                    managers.add(heap.resolve(trustManagerConfig, TrustManager.class));
+                }
+                trustManagers = managers.toArray(new TrustManager[managers.size()]);
+            }
+            return trustManagers;
+        }
+
+        private KeyManager[] getKeyManagers() throws HeapException {
+            // Build an optional KeyManagerFactory
+            KeyManager[] keyManagers = null;
+            if (config.isDefined("keystore")) {
+                // This attribute is deprecated: warn the user
+                warnForDeprecation(config, logger, "keyManager", "keystore");
+
+                JsonValue store = config.get("keystore");
+                File keystoreFile = store.get("file").required().asFile();
+                String password = evaluate(store.get("password").required());
+                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                String algorithm = store.get("alg").defaultTo("SunX509").asString();
+
+                keyManagers = buildKeyManagerFactory(keystoreFile, type, algorithm, password).getKeyManagers();
+            }
+
+            // Uses KeyManager references
+            if (config.isDefined("keyManager")) {
+                if (keyManagers != null) {
+                    logger.warning("Cannot use both 'keystore' and 'keyManager' attributes, "
+                            + "will use configuration from 'keyManager' attribute");
+                }
+                JsonValue keyManagerConfig = config.get("keyManager");
+                List<KeyManager> managers = new ArrayList<KeyManager>();
+                if (keyManagerConfig.isList()) {
+                    managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap, KeyManager.class)));
+                } else {
+                    managers.add(heap.resolve(keyManagerConfig, KeyManager.class));
+                }
+                keyManagers = managers.toArray(new KeyManager[managers.size()]);
+            }
+            return keyManagers;
         }
 
         private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile,

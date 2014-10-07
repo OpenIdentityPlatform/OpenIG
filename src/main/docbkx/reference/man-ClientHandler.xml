@@ -55,7 +55,7 @@
      "name": string,
      "type": "ClientHandler",
      "config": {
-         "httpClient": string
+         "httpClient": HttpClient reference
      }
 }</programlisting>
  </refsect1>
@@ -64,15 +64,19 @@
   <title>Properties</title>
   <variablelist>
    <varlistentry>
-    <term><code>"httpClient"</code>: <emphasis>string, optional</emphasis></term>
+    <term><code>"httpClient"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#HttpClient"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >HttpClient</link> reference, optional</emphasis></term>
     <listitem>
      <para>
-      The name of the
-      <link
-       xlink:show="new"
-       xlink:href="reference#HttpClient"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >HttpClient</link> configuration object to use when making HTTP requests.
+      HttpClient used when making HTTP requests to other servers.
+     </para>
+
+     <para>
+      Provide either the name of an HttpClient object defined in the heap,
+      or an inline HttpClient configuration object.
      </para>
 
      <para>

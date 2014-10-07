@@ -118,7 +118,7 @@
     "name": "LogToTemporaryFile",
     "type": "CaptureFilter",
     "config": {
-        "file": "/tmp/gateway.log",
+        "file": "/tmp/gateway.log"
     }
 }
   </programlisting>
@@ -130,8 +130,8 @@
     "name": "LogToTemporaryFile",
     "type": "CaptureFilter",
     "config": {
-        "file": "/tmp/gateway.log"
-        "captureEntity": false,
+        "file": "/tmp/gateway.log",
+        "captureEntity": false
     }
 }
   </programlisting>

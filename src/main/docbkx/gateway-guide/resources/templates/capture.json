@@ -1,0 +1,33 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.scheme == 'http'}",
+                            "handler": "ClientHandler",
+                            "baseURI": "http://TARGETIP"
+                        },
+                        {
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": "type": "ClientHandler",
+                            "baseURI": "https://TARGETIP"
+                        },
+                        {
+                            "handler": "type": "ClientHandler",
+                            "baseURI": "https://TARGETIP"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
+            }
+        ]
+    },
+    "handler": "DispatchHandler"
+}

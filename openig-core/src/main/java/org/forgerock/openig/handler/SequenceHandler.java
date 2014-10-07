@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,9 +26,8 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
@@ -94,13 +93,13 @@ public class SequenceHandler extends GenericHandler {
     }
 
     /** Creates and initializes a sequence handler in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             final SequenceHandler sequenceHandler = new SequenceHandler();
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Handler handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final Expression postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
                 sequenceHandler.addBinding(handler, postcondition);
             }

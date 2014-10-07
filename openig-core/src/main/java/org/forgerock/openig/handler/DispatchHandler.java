@@ -25,9 +25,8 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.JsonValueUtil;
@@ -130,14 +129,14 @@ public class DispatchHandler extends GenericHandler {
     /**
      * Creates and initializes a dispatch handler in a heap environment.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Expression expression = JsonValueUtil.asExpression(jv.get("condition"));
-                final Handler handler = HeapUtil.getRequiredObject(heap, jv.get("handler"), Handler.class);
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final URI uri = jv.get("baseURI").asURI();
                 dispatchHandler.addBinding(expression, handler, uri);
             }

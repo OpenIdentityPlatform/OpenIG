@@ -16,8 +16,12 @@
 
 package org.forgerock.openig.alias;
 
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
@@ -42,8 +46,11 @@ import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.jwt.JwtSessionFactory;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.util.HttpClient;
+import org.forgerock.openig.log.FileLogSink;
+import org.forgerock.openig.log.NullLogSink;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -63,9 +70,15 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("ExceptionFilter", ExceptionFilter.class);
         ALIASES.put("FileAttributesFilter", FileAttributesFilter.class);
+        ALIASES.put("FileLogSink", FileLogSink.class);
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("HttpClient", HttpClient.class);
+        ALIASES.put("JwtSessionFactory", JwtSessionFactory.class);
+        ALIASES.put("JwtSession", JwtSessionFactory.class);
+        ALIASES.put("KeyManager", KeyManager.class);
+        ALIASES.put("KeyStore", KeyStore.class);
+        ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("RedirectFilter", RedirectFilter.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);
@@ -77,6 +90,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
         ALIASES.put("TemporaryStorage", TemporaryStorage.class);
+        ALIASES.put("TrustManager", TrustManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
     }
 

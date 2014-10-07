@@ -21,11 +21,11 @@ package org.forgerock.openig.heap;
  * A generic base class for a heaplet nested within the class it creates. Using a nested
  * heaplet has the advantage of avoiding loading classes unless the requested class is
  * actually being created in a heap.
+ * <p>
+ * <strong>DEPRECATION NOTICE</strong>: This class has been deprecated as for OpenIG 3.1:
+ * Heaplets don't require to be {@code Indexed} anymore. Please extends directly {@link GenericHeaplet} instead.
+ *
+ * @see GenericHeaplet
  */
-public abstract class NestedHeaplet extends GenericHeaplet {
-
-    @Override
-    public Class<?> getKey() {
-        return getClass().getEnclosingClass();
-    }
-}
+@Deprecated
+public abstract class NestedHeaplet extends GenericHeaplet { }

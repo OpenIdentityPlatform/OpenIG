@@ -39,6 +39,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
@@ -61,8 +62,8 @@ public class RouterHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY)).thenReturn(new TemporaryStorage());
-        when(heap.get(LOGSINK_HEAP_KEY)).thenReturn(new NullLogSink());
+        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY, TemporaryStorage.class)).thenReturn(new TemporaryStorage());
+        when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
     }

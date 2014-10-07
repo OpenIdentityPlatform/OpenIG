@@ -18,7 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.util.JsonValueUtil.evaluate;
+import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +35,8 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapUtil;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.time.TimeService;
 
@@ -259,13 +258,13 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
     }
 
     /** Creates and initializes a routing handler in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {
 
             // By default, uses the config/routes from the environment
-            Environment env = (Environment) heap.get(ENVIRONMENT_HEAP_KEY);
+            Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
             File directory = new File(env.getConfigDirectory(), "routes");
 
             // Configuration can override that value
@@ -291,8 +290,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             }
 
             RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
-            handler.setDefaultHandler(HeapUtil.getObject(heap, config.get("defaultHandler"),
-                    Handler.class));
+            handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
+                                                     Handler.class, true));
             return handler;
         }
 

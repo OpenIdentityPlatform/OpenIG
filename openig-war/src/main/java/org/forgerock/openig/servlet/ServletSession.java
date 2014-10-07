@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.servlet;
 
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -198,4 +199,8 @@ public class ServletSession extends AbstractMap<String, Object> implements Sessi
         return size;
     }
 
+    @Override
+    public void close() throws IOException {
+        // Nothing to do when using HttpSession
+    }
 }

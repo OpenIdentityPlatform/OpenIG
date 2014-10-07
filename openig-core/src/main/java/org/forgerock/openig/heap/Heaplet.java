@@ -24,19 +24,10 @@ import org.forgerock.json.fluent.JsonValue;
  * Creates and initializes an object that is stored in a {@link Heap}. A heaplet can retrieve
  * object(s) it depends on from the heap.
  */
-@SuppressWarnings("rawtypes")
-public interface Heaplet extends Indexed<Class> {
+public interface Heaplet {
 
     /**
-     * Returns the class of object that the heaplet will create.
-     *
-     * @return the class of object that the heaplet will create.
-     */
-    @Override
-    Class<?> getKey();
-
-    /**
-     * Called to request the heaplet create an object.
+     * Called to request the heaplet to create an object.
      *
      * @param name
      *            the name of the object to be created.

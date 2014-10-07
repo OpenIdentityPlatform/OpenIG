@@ -81,11 +81,16 @@
 
  <reference xml:id="required-conf">
   <title>Required Configuration</title>
+
   <partintro>
-   <para>You must specify at least the entry point for incoming requests,
-   the ${projectName} Servlet, and the heap objects that configure and initialize
-   objects, with dependency injection.</para>
+   <para>
+    You must specify at least the entry point for incoming requests,
+    the ${projectName} Servlet,
+    and the heap objects that configure and initialize objects,
+    with dependency injection.
+   </para>
   </partintro>
+
   <xinclude:include href="man-gateway-servlet.xml" />
   <xinclude:include href="man-heap-objects.xml" />
  </reference>
@@ -93,14 +98,18 @@
  <reference xml:id="handlers-conf">
   <title>Handlers</title>
   <partintro>
-   <para>Handler objects process an HTTP exchange request by producing an
-   associated response.</para>
+   <para>
+    Handler objects process an HTTP exchange request
+    by producing an associated response.
+   </para>
   </partintro>
+
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
   <xinclude:include href="man-Route.xml" />
   <xinclude:include href="man-Router.xml" />
+  <xinclude:include href="man-SamlFederationHandler.xml" />
   <xinclude:include href="man-ScriptableHandler.xml" />
   <xinclude:include href="man-SequenceHandler.xml" />
   <xinclude:include href="man-StaticResponseHandler.xml" />
@@ -109,9 +118,12 @@
  <reference xml:id="filters-conf">
   <title>Filters</title>
   <partintro>
-   <para>Filter objects perform filtering of the request and response of an
-   HTTP exchange.</para>
+   <para>
+    Filter objects perform filtering
+    of the request and response of an HTTP exchange.
+   </para>
   </partintro>
+
   <xinclude:include href="man-AssignmentFilter.xml" />
   <xinclude:include href="man-CaptureFilter.xml" />
   <xinclude:include href="man-CookieFilter.xml" />
@@ -132,16 +144,27 @@
 
  <reference  xml:id="misc-conf">
   <title>Miscellaneous Heap Objects</title>
+
   <xinclude:include href="man-ConsoleLogSink.xml" />
+  <xinclude:include href="man-FileLogSink.xml" />
   <xinclude:include href="man-HttpClient.xml" />
+  <xinclude:include href="man-JwtSession.xml" />
+  <xinclude:include href="man-KeyManager.xml" />
+  <xinclude:include href="man-KeyStore.xml" />
+  <xinclude:include href="man-NullLogSink.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
+  <xinclude:include href="man-TrustManager.xml" />
  </reference>
 
  <reference xml:id="expressions-conf">
   <title>Expressions</title>
+
   <partintro>
-   <para>Many configuration parameters support dynamic expressions.</para>
+   <para>
+    Many configuration parameters support dynamic expressions.
+   </para>
   </partintro>
+
   <xinclude:include href="man-Expressions.xml" />
   <xinclude:include href="man-Functions.xml" />
   <xinclude:include href="man-Patterns.xml" />
@@ -149,9 +172,13 @@
 
  <reference xml:id="exchange-object-model-conf">
   <title>Exchange Object Model</title>
+
   <partintro>
-   <para>Expressions are evaluated within an exchange object model scope.</para>
+   <para>
+    Expressions are evaluated within an exchange object model scope.
+   </para>
   </partintro>
+
   <xinclude:include href="man-Exchange.xml" />
   <xinclude:include href="man-Request.xml" />
   <xinclude:include href="man-Principal.xml" />
@@ -162,8 +189,10 @@
  <appendix xml:id="appendix-interface-stability">
   <title>Release Levels &amp; Interface Stability</title>
 
-  <para>This appendix includes ForgeRock definitions for product release levels
-  and interface stability.</para>
+  <para>
+   This appendix includes ForgeRock definitions
+   for product release levels and interface stability.
+  </para>
 
   <xinclude:include href="../shared/sec-release-levels.xml" />
   <xinclude:include href="../shared/sec-interface-stability.xml" />

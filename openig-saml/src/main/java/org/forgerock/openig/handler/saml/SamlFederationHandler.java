@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.handler.saml;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +32,8 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 
@@ -70,7 +70,7 @@ public class SamlFederationHandler extends GenericHandler {
     /**
      * Reads the actual federation servlet from the JSON configuration file.
      */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             final Map<String, String> attributeMapping = new HashMap<String, String>();
@@ -103,7 +103,7 @@ public class SamlFederationHandler extends GenericHandler {
              * Get the gateway configuration directory and set it as a system property to override the default openFed
              * location. Federation config files will reside in the SAML directory.
              */
-            Environment environment = (Environment) heap.get("Environment");
+            Environment environment = heap.get(Environment.ENVIRONMENT_HEAP_KEY, Environment.class);
             String samlDirectory = new File(environment.getBaseDirectory(), "SAML").getPath();
             logger.info(format("FederationServlet init directory: %s", samlDirectory));
             Properties p = System.getProperties();

@@ -21,6 +21,7 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
@@ -57,7 +58,11 @@ public class OpenAmAccessTokenBuilderTest {
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L + 42L);
         assertThat(token.getScopes()).containsOnly("email", "address");
-        assertThat(token.getRawInfo()).isSameAs(info);
+        assertThat(token.getInfo().get("expires_in")).isEqualTo(10);
+        assertThat(new Expression("${info.scope[0]}").eval(token, String.class)).isEqualTo("email");
+        assertThat(new Expression("${info.scope[1]}").eval(token, String.class)).isEqualTo("address");
+        assertThat(new Expression("${info.access_token}").eval(token, String.class)).isEqualTo(TOKEN);
+        assertThat(token.asJsonValue()).isSameAs(info);
     }
 
     @DataProvider

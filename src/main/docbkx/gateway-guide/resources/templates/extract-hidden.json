@@ -1,0 +1,69 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": {
+                                "name": "LoginChain",
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "EntityExtractFilter",
+                                            "config": {
+                                                "messageType": "response",
+                                                "target": "${exchange.hiddenValue}",
+                                                "bindings": [
+                                                    {
+                                                        "key": "value",
+                                                        "pattern":
+                                                          "wpLoginToken\"\s.*value=\"(.*)\"",
+                                                        "template": "$1"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri": "https://TARGETIP/login",
+                                                "form": {
+                                                    "USER": [
+                                                        "MY_USERNAME"
+                                                    ],
+                                                    "PASSWORD": [
+                                                        "MY_PASSWORD"
+                                                    ],
+                                                    "hiddenValue": [
+                                                        "${exchange.hiddenValue.value}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
+                            "baseURI": "http://TARGETIP"
+                        },
+                        {
+                            "handler": "ClientHandler",
+                            "baseURI": "http://TARGETIP"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
+            }
+        ]
+    },
+    "handler": "DispatchHandler"
+}

@@ -40,119 +40,22 @@
   <title>Major Changes to Existing Functionality</title>
 
   <para>
-   This release brings important new functionality
-   and many changes to ${projectName}.
+   This release brings the following changes to ${projectName}.
+  </para>
+
+  <para>
+   TODO update for next release.
   </para>
 
   <itemizedlist>
    <para>
-    If you are running older versions of ${projectName}
-    you must at minimum modify both the location
-    and also the content of your <filename>config.json</filename> file.
-   </para>
-
-   <para>
-    You must migrate the configuration by hand.
+    This release includes the following changes
+    compared to ${projectName} 3.0.0.
    </para>
 
    <listitem>
     <para>
-     The configuration file location and configuration layout have changed.
-    </para>
-
-    <para>
-     By default, configuration files are now stored
-     under <filename>${warConfigDir}</filename>
-     and <filename>${warSamlDir}</filename> on UNIX, Linux, and Mac OS X,
-     and under <filename>${windowsWarConfigDir}</filename>
-     and <filename>${windowsWarSamlDir}</filename> on Windows systems.
-    </para>
-
-    <para>
-     For details the <citetitle>Guide to ${projectName}</citetitle> section,
-     <link
-     xlink:show="new"
-     xlink:href="gateway-guide#install"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     >Installing ${projectName}</link>.
-    </para>
-
-    <para>
-     As described in that section,
-     the base configuration directory can be changed
-     and can even be set at run time.
-     You must therefore take care to protect access to ${projectName},
-     both by protecting access to the environment at startup time,
-     and also by protecting access to configuration files at run time.
-    </para>
-
-    <para>
-     Notice that ${projectName} configuration can be split across multiple files.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     Usage for some configuration objects has changed.
-     In particular, the top-level configuration object
-     now references a Handler rather than a Servlet.
-    </para>
-
-    <para>
-     When migrating your configuration, review current usage in the
-     <link
-     xlink:show="new"
-     xlink:href="reference#reference"
-     xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>${projectName} Reference</citetitle></link>.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     ${projectName} supports runtime configuration changes,
-     as described in the <citetitle>Guide to ${projectName}</citetitle> chapter,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#chap-routing"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Routing Tutorial</citetitle></link>.
-    </para>
-
-    <para>
-     Notice that you can turn off runtime configuration changes.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     ${projectName} configuration Expressions can depend on runtime settings,
-     such as environment variables and system properties.
-    </para>
-
-    <para>
-     You must ensure that these settings are properly protected.
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     As SAML 2.0 federation support is now integrated into the
-     main ${projectName} .war file,
-     the way of configuring dispatch to the Federation component has changed.
-     For an example of how the configuration is handled now,
-     see the <citetitle>Guide to ${projectName}</citetitle> chapter,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#chap-federation-tutorial"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     >Tutorial For ${projectName} Federation</link>,
-     or read the example configuration file,
-     <link
-      xlink:show="new"
-      xlink:href="gateway-guide#config-federation"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     ><citetitle>Configuration for the Federation Tutorial</citetitle></link>.
+     See <xref linkend="deprecated" /> for a list of configuration changes.
     </para>
    </listitem>
   </itemizedlist>
@@ -160,18 +63,175 @@
 
  <section xml:id="deprecated">
   <title>Deprecated Functionality</title>
-  
+
+  <para>
+   This release deprecates the following configuration settings.
+   Deprecation is defined in the <citetitle>Reference</citetitle> appendix on
+   <link
+    xlink:show="new"
+    xlink:href="reference#interface-stability"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>ForgeRock Product Interface Stability</citetitle></link>.
+  </para>
+
+    <table>
+     <title>Configuration settings</title>
+
+     <tgroup cols="3">
+      <colspec colnum="1" colwidth="1*"/>
+      <colspec colnum="2" colwidth="1*"/>
+      <colspec colnum="3" colwidth="1*"/>
+
+      <thead>
+       <row>
+        <entry>
+         Configuration Object
+        </entry>
+
+        <entry>
+         <link
+          xlink:show="new"
+          xlink:href="reference#interface-stability"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >Deprecated</link> Settings
+        </entry>
+
+        <entry>
+         Newer
+         <link
+          xlink:show="new"
+          xlink:href="reference#interface-stability"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >Evolving</link> Settings
+        </entry>
+       </row>
+      </thead>
+
+      <tbody>
+       <row>
+        <entry>
+         <link
+          xlink:show="new"
+          xlink:href="reference#gateway-servlet"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >gateway servlet</link>
+        </entry>
+
+        <entry>
+         "handlerObject"
+        </entry>
+
+        <entry>
+         New name: "handler"
+        </entry>
+       </row>
+
+       <row>
+        <entry morerows="1">
+         <link
+          xlink:show="new"
+          xlink:href="reference#HttpClient"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >HttpClient</link>
+        </entry>
+
+        <entry>
+         "keystore"
+        </entry>
+
+        <entry>
+         Replaced by "keyManager", which takes one or more
+         <link
+          xlink:show="new"
+          xlink:href="reference#KeyManager"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >KeyManager</link> names
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "truststore"
+        </entry>
+
+        <entry>
+         Replaced by "trustManager", which takes one or more
+         <link
+          xlink:show="new"
+          xlink:href="reference#TrustManager"
+          xlink:role="http://docbook.org/xlink/role/olink"
+         >TrustManager</link> names
+        </entry>
+       </row>
+
+       <row>
+        <entry morerows="2">
+         <link
+          xlink:show="new"
+          xlink:href="reference#OAuth2ResourceServerFilter"
+          xlink:role="http://docbook.org/xlink/role/olink"
+          >OAuth2ResourceServerFilter</link>
+        </entry>
+
+        <entry>
+         "enforceHttps"
+        </entry>
+
+        <entry>
+         New name: "requireHttps"
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "httpHandler"
+        </entry>
+
+        <entry>
+         New name: "providerHandler"
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         "requiredScopes"
+        </entry>
+
+        <entry>
+         New name: "scopes"
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+
+  <para>
+   This release deprecates the
+   <link
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
+    xlink:show="new"
+   >NestedHeaplet</link> class.
+   The class is likely to be removed in a future release.
+  </para>
+
+  <!--
   <para>
    No functionality is deprecated in this release.
   </para>
+  -->
  </section>
 
  <section xml:id="removed">
   <title>Removed Functionality</title>
-  
+
   <para>
-   Custom Servlet and Servlet Filter integration now requires additional development.
-   For an example, see the <literal>org.forgerock.openig.handler.saml</literal> package.
+   TODO update for next release.
   </para>
+
+  <!--
+  <para>
+   No functionality has been removed in this release.
+  </para>
+  -->
  </section>
 </chapter>

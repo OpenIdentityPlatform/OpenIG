@@ -1,0 +1,43 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LogSink",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG"
+                }
+            },
+            {
+                "name": "JwtSession",
+                "type": "JwtSession"
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
+            },
+            {
+                "name": "CaptureFilter",
+                "type": "CaptureFilter",
+                "config": {
+                    "captureEntity": false,
+                    "file": "/tmp/gateway.log"
+                }
+            },
+            {
+                "name": "CaptureAndRoute",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "CaptureFilter"
+                    ],
+                    "handler": {
+                        "type": "Router"
+                    }
+                }
+            }
+        ]
+    },
+    "handler": "CaptureAndRoute",
+    "baseURI": "http://www.example.com:8081"
+}

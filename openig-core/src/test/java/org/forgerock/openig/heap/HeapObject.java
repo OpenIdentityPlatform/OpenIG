@@ -22,7 +22,7 @@ public class HeapObject {
     public boolean destroyed = false;
     public String message = null;
 
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {

@@ -17,6 +17,7 @@
 
 package org.forgerock.http;
 
+import java.io.Closeable;
 import java.util.Map;
 
 /**
@@ -27,5 +28,5 @@ import java.util.Map;
  * New keys added to a session object should be named in a manner that avoids possible
  * collision with keys added by other objects in the heap.
  */
-public interface Session extends Map<String, Object> {
+public interface Session extends Map<String, Object>, Closeable {
 }

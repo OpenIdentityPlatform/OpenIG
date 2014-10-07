@@ -68,7 +68,7 @@
    is responsible for reloading the route configuration.
    Use a Router to call route handlers,
    rather than calling a route directly
-   as the "handlerObject" of the gateway servlet.
+   as the "handler" of the gateway servlet.
    By default the Router rereads the configurations periodically,
    so that configuration changes to routes apply without restarting ${projectName}.
   </para>
@@ -82,13 +82,28 @@
   </para>
 
   <para>
-   For examples of route configurations, see the
+   For examples of route configurations see the chapter,
    <link
     xlink:show="new"
     xlink:href="gateway-guide#chap-routing"
     xlink:role="http://docbook.org/xlink/role/olink"
-   >Routing Tutorial</link>.
+   ><citetitle>Configuring Routes</citetitle></link>.
   </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "heap": { <replaceable>heap-configuration object</replaceable> },
+    "handler": Handler reference,
+    "baseURI": string,
+    "condition": expression,
+    "name": string,
+    "session": Session reference
+}
+  </programlisting>
  </refsect1>
 
  <refsect1>
@@ -96,10 +111,36 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
     <listitem>
      <para>
-      Name of the main handler for this route.
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+       >Heap object</link> configuration for objects local to this route.
+     </para>
+
+     <para>
+      Objects referenced but not defined here are inherited from the parent.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
+    <listitem>
+     <para>
+      For this route, dispatch the exchange to this handler.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
      </para>
     </listitem>
    </varlistentry>
@@ -151,6 +192,30 @@
 
      <para>
       Default: Route configuration file name
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"session"</code>: <emphasis>Session reference, optional</emphasis></term>
+    <listitem>
+     <para>
+      Session storage implementation used by this route, such as a
+      <link
+       xlink:show="new"
+       xlink:href="reference#JwtSesssion"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >JwtSession</link>.
+     </para>
+
+     <para>
+      Provide either the name of a session storage object defined in the heap,
+      or an inline session storage configuration object.
+     </para>
+
+     <para>
+      Default: do not change the session storage implementation
+      for <literal>exchange.session</literal>.
      </para>
     </listitem>
    </varlistentry>

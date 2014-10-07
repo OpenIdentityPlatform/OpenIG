@@ -52,6 +52,11 @@
     <personname>
      <firstname>Jamie </firstname><surname>Nelson</surname>
     </personname>
+   </author>
+   <author>
+    <personname>
+     <firstname>Guillaume </firstname><surname>Sauthier</surname>
+    </personname>
     <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
   </authorgroup>
@@ -65,23 +70,18 @@
  
  <xinclude:include href="preface.xml" />
 
- <xinclude:include href='chap-overview.xml' />
- <xinclude:include href='chap-howitworks.xml' />
+ <xinclude:include href='chap-start-here.xml' />
  <xinclude:include href='chap-quickstart.xml' />
  <xinclude:include href='chap-install.xml' />
- <xinclude:include href='chap-usecases.xml' />
  <xinclude:include href='chap-credentials-tutorial.xml' />
  <xinclude:include href='chap-password-capture-replay-tutorial.xml' />
  <xinclude:include href='chap-federation.xml' />
- <xinclude:include href='chap-federation-tutorial.xml' />
- <xinclude:include href='chap-oauth-rs.xml' />
+ <xinclude:include href='chap-oauth2-rs.xml' />
  <xinclude:include href='chap-oauth2-client.xml' />
  <xinclude:include href='chap-routing.xml' />
  <xinclude:include href="chap-gateway-templates.xml" />
- <xinclude:include href="chap-scripting.xml" />
- <xinclude:include href="chap-customizing.xml" />
+ <xinclude:include href="chap-extending.xml" />
  <xinclude:include href='chap-troubleshooting.xml' />
- <xinclude:include href='appendix-config.xml' />
 
  <index />
 </book>

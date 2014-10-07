@@ -1,0 +1,50 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${exchange.request.uri.path == '/login'}",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri": "https://TARGETIP/login",
+                                                "form": {
+                                                    "USER": [
+                                                      "${exchange.request.headers['username'][0]}"
+                                                    ],
+                                                    "PASSWORD": [
+                                                      "${exchange.request.headers['password'][0]}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
+                            "baseURI": "http://TARGETIP"
+                        },
+                        {
+                            "handler": "ClientHandler",
+                            "baseURI": "http://TARGETIP"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
+            }
+        ]
+    },
+    "handler": "DispatchHandler"
+}

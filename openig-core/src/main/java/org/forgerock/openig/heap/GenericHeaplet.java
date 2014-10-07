@@ -61,22 +61,17 @@ public abstract class GenericHeaplet implements Heaplet {
     protected Object object;
 
     @Override
-    public abstract Class<?> getKey();
-
-    @Override
     public Object create(String name, JsonValue config, Heap heap) throws HeapException {
         this.name = name;
         this.config = config.required().expect(Map.class);
         this.heap = heap;
         if (!SPECIAL_OBJECTS.contains(name)) {
             this.logger = new Logger(
-                    HeapUtil.getObject(
-                            heap,
+                    heap.resolve(
                             config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                            LogSink.class),
+                            LogSink.class, true),
                     name);
-            this.storage = HeapUtil.getRequiredObject(
-                    heap,
+            this.storage = heap.resolve(
                     config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
         }

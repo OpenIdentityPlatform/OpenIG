@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id="TrustManager"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refmeta>
+  <refentrytitle>KeyManager</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>TrustManager</refname>
+  <refpurpose>configure a Java Secure Socket Extension TrustManager</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>TrustManager</secondary>
+  </indexterm>
+
+  <para>
+   This represents the configuration for a Java Secure Socket Extension
+   <link
+    xlink:show="new"
+    xlink:href="http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/TrustManager.html"
+   >TrustManager</link>,
+   which manages the trust material (typically X.509 public key certificates)
+   used to decide whether to accept the credentials presented by a peer.
+   The configuration references the "keystore"
+   that actually holds the trust material.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "TrustManager",
+    "config": {
+        "keystore": KeyStore reference,
+        "alg": string
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"keystore"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#KeyStore"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >KeyStore</link> reference, optional</emphasis></term>
+
+    <listitem>
+     <para>
+      The KeyStore that references the store for public key certificates.
+     </para>
+
+     <para>
+      Provide either the name of the KeyStore object defined in the heap,
+      or the inline KeyStore configuration object inline.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"alg"</code> <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The certificate algorithm to use.
+     </para>
+
+     <para>
+      Default: the default for the platform, such as "SunX509"
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following example configures a trust manager
+   that depends on a "KeyStore" configuration.
+   This configuration uses the default certificate algorithm.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "MyTrustManager",
+    "type": "TrustManager",
+    "config": {
+        "keystore": {
+            "type": "KeyStore",
+            "config": {
+                "file": "file://${env['HOME']}/keystore.jks",
+                "password": "${system['keypass']}"
+            }
+        }
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/security/TrustManagerHeaplet.html"
+   >org.forgerock.openig.security.TrustManagerHeaplet</link>
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>See Also</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html"
+   ><citetitle>JSSE Reference Guide</citetitle></link>,
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyManager"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyManager</link>,
+   <link
+    xlink:show="new"
+    xlink:href="reference#KeyStore"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >KeyStore</link>
+  </para>
+ </refsect1>
+</refentry>

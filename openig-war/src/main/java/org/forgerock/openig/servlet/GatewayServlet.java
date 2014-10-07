@@ -17,13 +17,13 @@
 
 package org.forgerock.openig.servlet;
 
-import static java.lang.String.format;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.HeapUtil.getObject;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.util.Utils.closeSilently;
+import static java.lang.String.*;
+import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.http.SessionFactory.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.http.Request;
+import org.forgerock.http.Session;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.util.CaseInsensitiveSet;
@@ -54,6 +55,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.SessionFactory;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
@@ -72,13 +74,13 @@ import org.json.simple.parser.ParseException;
  *      "heap": {
  *          ...
  *      },
- *      "handlerObject": "DispatchHandler",
+ *      "handler": "DispatchHandler",
  *      "baseURI": "http://localhost:8080",
  *      "logSink":  "myCustomLogSink",
  *      "temporaryStorage": "myCustomStorage"
  *   }
  * </pre>
- * {@literal handlerObject} is the only mandatory configuration attribute.
+ * {@literal handler} is the only mandatory configuration attribute.
  */
 public class GatewayServlet extends HttpServlet {
 
@@ -135,6 +137,11 @@ public class GatewayServlet extends HttpServlet {
     private TemporaryStorage storage;
 
     /**
+     * Factory to create OpenIG sessions.
+     */
+    private SessionFactory sessionFactory;
+
+    /**
      * Default constructor invoked from web container. The servlet will be assumed to be running as a web application
      * and obtain its configuration from the default web {@linkplain Environment environment}.
      */
@@ -185,14 +192,18 @@ public class GatewayServlet extends HttpServlet {
             heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.init(config.get("heap").required().expect(Map.class));
 
-            handler = getRequiredObject(heap, config.get("handlerObject"), Handler.class);
-            baseURI = config.get("baseURI").asURI();
             // As all heaplets can specify their own storage and logger,
-            // those two lines provide custom logger or storage available.
-            logger = new Logger(getObject(heap, config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                    LogSink.class), "GatewayServlet");
-            storage = getRequiredObject(heap, config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
-                    TemporaryStorage.class);
+            // these two lines provide custom logger or storage available.
+            logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+                                               LogSink.class, true), "GatewayServlet");
+            storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
+                                             TemporaryStorage.class);
+            // Let the user change the type of session to use
+            sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
+            handler =
+                    heap.resolve(getWithDeprecation(config, logger, "handler",
+                                                              "handlerObject"), Handler.class);
+            baseURI = config.get("baseURI").asURI();
         } catch (final ServletException e) {
             throw e;
         } catch (final Exception e) {
@@ -246,7 +257,8 @@ public class GatewayServlet extends HttpServlet {
             exchange.request.setEntity(IO.newBranchingInputStream(request.getInputStream(), storage));
         }
         // remember request entity so that it (and its children) can be properly closed
-        exchange.session = new ServletSession(request);
+        // TODO consider moving this below (when the exchange will be fully configured)
+        exchange.session = newSession(request, exchange);
         exchange.principal = request.getUserPrincipal();
         // handy servlet-specific attributes, sure to be abused by downstream filters
         exchange.put(HttpServletRequest.class.getName(), request);
@@ -257,6 +269,9 @@ public class GatewayServlet extends HttpServlet {
                 handler.handle(exchange);
             } catch (final HandlerException he) {
                 throw new ServletException(he);
+            } finally {
+                // Close the session before writing back the actual response message to the User-Agent
+                closeSilently(exchange.session);
             }
             /*
              * Support for OPENIG-94/95 - The wrapped servlet may have already committed its response w/o creating a new
@@ -282,5 +297,12 @@ public class GatewayServlet extends HttpServlet {
             closeSilently(exchange.request, exchange.response);
         }
         timer.stop();
+    }
+
+    private Session newSession(final HttpServletRequest request, final Exchange exchange) {
+        if (sessionFactory != null) {
+            return sessionFactory.build(exchange);
+        }
+        return new ServletSession(request);
     }
 }

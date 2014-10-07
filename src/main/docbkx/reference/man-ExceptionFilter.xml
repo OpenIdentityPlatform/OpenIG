@@ -25,57 +25,81 @@
   !
 -->
 <refentry xml:id='ExceptionFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>ExceptionFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>ExceptionFilter</refname>
   <refpurpose>catch exceptions when handling request</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Filters</primary>
    <secondary>ExceptionFilter</secondary>
   </indexterm>
-  <para>Catches any exceptions thrown during handling of a request. This allows
-  friendlier error pages to be displayed than would otherwise be displayed by
-  the container. Caught exceptions are logged with a log level of
-  <literal>WARNING</literal> and the exchange is diverted to the specified
-  exception handler.</para>
+
+  <para>
+   Catches any exceptions thrown during handling of a request.
+   This allows friendlier error pages to be displayed
+   than would otherwise be displayed by the container.
+   Caught exceptions are logged with a log level of <literal>WARNING</literal>
+   and the exchange is diverted to the specified exception handler.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
+
+  <programlisting language="javascript">
+{
      "name": string,
      "type": "ExceptionFilter",
      "config": {
-         "handler": string,
+         "handler": Handler reference
      }
-}</programlisting>
+}
+  </programlisting>
+
  </refsect1>
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
-    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"handler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to in the event of
-     caught exceptions.</para>
+     <para>
+      Dispatch to this handler in the event of caught exceptions.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/ExceptionFilter.html"
-  >org.forgerock.openig.filter.ExceptionFilter</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/org/forgerock/openig/filter/ExceptionFilter.html"
+   >org.forgerock.openig.filter.ExceptionFilter</link>
+  </para>
  </refsect1>
 </refentry>

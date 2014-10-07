@@ -29,6 +29,11 @@
   <dependencies>
     <dependency>
       <groupId>org.forgerock.openig</groupId>
+      <artifactId>http-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -39,7 +44,6 @@
     <dependency>
       <groupId>org.forgerock.commons</groupId>
       <artifactId>json-web-token</artifactId>
-      <version>2.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>

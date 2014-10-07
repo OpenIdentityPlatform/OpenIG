@@ -25,115 +25,164 @@
   !
 -->
 <refentry xml:id='HttpBasicAuthFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+          http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>HttpBasicAuthFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>HttpBasicAuthFilter</refname>
   <refpurpose>perform HTTP Basic authentication</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Filters</primary>
    <secondary>HttpBasicAuthFilter</secondary>
   </indexterm>
-  <para>Performs authentication through the HTTP Basic authentication scheme.
-  For more information, see <link xlink:show="new"
-  xlink:href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</link>.</para>
 
-  <para>If challenged for authentication via a <literal>401
-  Unauthorized</literal> status code by the server, this filter retries the
-  request with credentials attached. Once an HTTP authentication challenge is
-  issued from the remote server, all subsequent requests to that remote server
-  that pass through the filter includes the user credentials.</para>
+  <para>
+   Performs authentication through the HTTP Basic authentication scheme.
+   For more information, see
+   <link
+    xlink:show="new"
+    xlink:href="http://www.ietf.org/rfc/rfc2617.txt"
+   >RFC 2617</link>.
+  </para>
 
-  <para>If authentication fails (including the case of no credentials yielded
-  from expressions), then the exchange is diverted to the specified
-  authentication failure handler.</para>
+  <para>
+   If challenged for authentication
+   via a <literal>401 Unauthorized</literal> status code by the server,
+   this filter retries the request with credentials attached.
+   Once an HTTP authentication challenge is issued from the remote server,
+   all subsequent requests to that remote server that pass through the filter
+   include the user credentials.
+  </para>
+
+  <para>
+   If authentication fails
+   (including the case of no credentials yielded from expressions),
+   then the exchange is diverted to the specified authentication failure handler.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "name": string,
-     "type": "HttpBasicAuthFilter",
-     "config": {
-         "username": expression,
-         "password": expression,
-         "failureHandler": string,
-         "cacheHeader": boolean
-     }
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "HttpBasicAuthFilter",
+    "config": {
+        "username": expression,
+        "password": expression,
+        "failureHandler": Handler reference,
+        "cacheHeader": boolean
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code>"username"</code>: <emphasis><link
-    xlink:href="reference#Expressions"
-    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-    required</emphasis></term>
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
-     <para>Expression that yields the username to supply during
-     authentication.</para>
+     <para>
+      Expression that yields the username to supply during authentication.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"password"</code>: <emphasis><link
-    xlink:href="reference#Expressions"
-    xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-    required</emphasis></term>
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
+     required</emphasis></term>
     <listitem>
-     <para>Expression that yields the password to supply during
-     authentication.</para>
+     <para>
+      Expression that yields the password to supply during authentication.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"failureHandler"</code>: <emphasis>string,
-    required</emphasis></term>
+    <term><code>"failureHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, required</emphasis></term>
     <listitem>
-     <para>The name of the handler heap object to dispatch to if authentication
-     fails.</para>
+     <para>
+      Dispatch to this Handler if authentication fails.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"cacheHeader"</code>: <emphasis>boolean,
-    optional</emphasis></term>
+    <term><code>"cacheHeader"</code>: <emphasis>boolean, optional</emphasis></term>
     <listitem>
-     <para>Whether to cache credentials in the session after the first
-     successful authentication, and then replay those credentials for
-     subsequent authentications in the same session.</para>
-     <para>With <literal>"cacheHeader": false</literal>, the filter generates
-     the header for each request. This is useful for example when users change
-     their passwords during a browser session.</para>
-     <para>Default: <literal>true</literal></para>
+     <para>
+      Whether to cache credentials in the session
+      after the first successful authentication,
+      and then replay those credentials for subsequent authentications
+      in the same session.
+     </para>
+
+     <para>
+      With <literal>"cacheHeader": false</literal>,
+      the filter generates the header for each request.
+      This is useful for example when users change their passwords
+      during a browser session.
+     </para>
+
+     <para>
+      Default: <literal>true</literal>
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
-     "name": "TomcatAuthenticator",
-     "type": "HttpBasicAuthFilter",
-     "config": {
-         "username": "tomcat",
-         "password": "tomcat",
-         "failureHandler": "TomcatAuthFailureHandler",
-         "cacheHeader": false
-      }
-}</programlisting>
+
+  <programlisting language="javascript">
+{
+    "name": "TomcatAuthenticator",
+    "type": "HttpBasicAuthFilter",
+    "config": {
+        "username": "tomcat",
+        "password": "tomcat",
+        "failureHandler": "TomcatAuthFailureHandler",
+        "cacheHeader": false
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/HttpBasicAuthFilter.html"
-  >org.forgerock.openig.filter.HttpBasicAuthFilter</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html"
+   >org.forgerock.openig.filter.HttpBasicAuthFilter</link>
+  </para>
  </refsect1>
 </refentry>

@@ -78,6 +78,7 @@
     "name": "Router",
     "type": "Router",
     "config": {
+        "defaultHandler": Handler reference,
         "directory": expression,
         "scanInterval": integer
     }
@@ -93,6 +94,37 @@
   <title>Properties</title>
 
   <variablelist>
+   <varlistentry>
+    <term><code>"defaultHandler"</code>: <emphasis><link
+      xlink:show="new"
+      xlink:href="reference#handlers-conf"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >Handler</link> reference, optional</emphasis></term>
+    <listitem>
+     <para>
+      Default handler for this Router.
+     </para>
+
+     <para>
+      Provide either the name of a Handler object defined in the heap,
+      or an inline Handler configuration object.
+     </para>
+
+     <para>
+      The router routes the exchange to the first route
+      whose "condition" expression is satisfied.
+      If no route "condition" matches,
+      then the exchange is routed to the default handler if one is configured.
+     </para>
+
+     <para>
+      Default: if no default route is set either here
+      or in the route configurations,
+      then ${projectName} aborts the exchange with an internal error.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry>
     <term><code>"directory"</code>: <emphasis><link
      xlink:href="reference#Expressions"

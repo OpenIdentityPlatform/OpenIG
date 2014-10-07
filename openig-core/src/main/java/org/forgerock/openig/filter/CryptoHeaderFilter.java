@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValueUtil.evaluate;
+import static org.forgerock.openig.util.JsonValueUtil.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -40,8 +40,8 @@ import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.MessageType;
@@ -246,7 +246,7 @@ public class CryptoHeaderFilter extends GenericFilter {
     }
 
     /** Creates and initializes a header filter in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();

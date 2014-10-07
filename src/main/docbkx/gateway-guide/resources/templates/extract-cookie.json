@@ -1,0 +1,104 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        "IsLoginPage",
+                                        {
+                                            "type": "EntityExtractFilter",
+                                            "config": {
+                                                "messageType": "response",
+                                                "target": "${exchange.isLoginPage}",
+                                                "bindings": [
+                                                    {
+                                                        "key": "found",
+                                                        "pattern": "OpenAM\s\(Login\)",
+                                                        "template": "true"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ],
+                                    "handler": "OutgoingChain"
+                                }
+                            },
+                            "baseURI": "http://TARGETIP:PORT"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "IsLoginPage",
+                "type": "SwitchFilter",
+                "config": {
+                    "onResponse": [
+                        {
+                            "condition": "${exchange.isLoginPage.found == 'true'}",
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri":
+                                                  "http://TARGETIP:PORT/openam/UI/Login",
+                                                "form": {
+                                                    "IDToken0": [
+                                                        ""
+                                                    ],
+                                                    "IDToken1": [
+                                                        "MY_USERNAME"
+                                                    ],
+                                                    "IDToken2": [
+                                                        "MY_PASSWORD"
+                                                    ],
+                                                    "IDButton": [
+                                                        "Log+In"
+                                                    ],
+                                                    "encoded": [
+                                                        "false"
+                                                    ]
+                                                },
+                                                "headers": {
+                                                    "host": [
+                                                        "TARGETFQDN:PORT"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "OutgoingChain"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "OutgoingChain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        {
+                            "type": "CookieFilter"
+                        }
+                    ],
+                    "handler": {
+                        "type": "ClientHandler"
+                    }
+                }
+            }
+        ]
+    },
+    "handler": "DispatchHandler"
+}

@@ -95,7 +95,7 @@
         <configuration>
           <projectName>${projectName}</projectName>
           <projectVersion>${docTargetVersion}</projectVersion>
-          <latestJson>http://mcraig.org/fr/latest.php</latestJson><!-- Temporary workaround pending #QOZ-985-23233 -->
+          <latestJson>http://docs.forgerock.org/latest.json</latestJson>
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
           <docbkxSourceDirectory>${filteredDocSources}</docbkxSourceDirectory><!-- Workaround pending fix for DOCS-178 -->
         </configuration>
@@ -113,6 +113,18 @@
             <goals>
               <goal>filter</goal>
             </goals>
+          </execution>
+          <execution>
+           <id>run-jcite</id>
+           <phase>pre-site</phase>
+           <configuration>
+            <sourcePaths>
+             <sourcePath>${basedir}/openig-doc-samples/src/main/java</sourcePath>
+            </sourcePaths>
+           </configuration>
+           <goals>
+            <goal>jcite</goal>
+           </goals>
           </execution>
           <execution>
             <id>prepare-sources</id>
@@ -192,6 +204,16 @@
         <artifactId>forgerock-util</artifactId>
         <version>1.3.4</version>
       </dependency>
+      <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>json-fluent</artifactId>
+        <version>2.3.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>json-web-token</artifactId>
+        <version>2.3.2-SNAPSHOT</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -239,7 +261,7 @@
     <windowsWarSamlDir>${windowsWarBase}\SAML</windowsWarSamlDir>
     <windowsWarTmpDir>${windowsWarBase}\tmp</windowsWarTmpDir>
 
-    <frDocPluginVersion>2.1.3</frDocPluginVersion>
+    <frDocPluginVersion>2.1.4</frDocPluginVersion>
     <gaId>UA-23412190-11</gaId>
     <!-- Release date and publication date are set at release build time.
       -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication

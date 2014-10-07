@@ -28,6 +28,7 @@ import static org.forgerock.openig.util.HttpClient.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Connection;
@@ -177,7 +178,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testBasicAuthFilterFromFile() throws Exception {
-        final Map<String, Object> config = newFileConfig("BasicAuthFilter.groovy");
+        final Map<String, Object> config = newFileConfigWithCredentials("BasicAuthFilter.groovy");
         final ScriptableFilter filter =
                 (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
                         config), getHeap());
@@ -413,6 +414,9 @@ public class GroovyScriptableFilterTest {
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public void close() throws IOException { }
     }
 
     @Test(enabled = true)
@@ -474,8 +478,8 @@ public class GroovyScriptableFilterTest {
             Set<String> cnValues = new HashSet<String>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
-            assertThat(exchange.session.get("cn")).isEqualTo(cnValues);
-            assertThat(exchange.session.get("description"))
+            assertThat(exchange.get("cn")).isEqualTo(cnValues);
+            assertThat(exchange.get("description"))
                     .isEqualTo("New description set by my script");
             assertThat(exchange.request.getHeaders().get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
@@ -784,7 +788,7 @@ public class GroovyScriptableFilterTest {
     public void testThrowHandlerException() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.HandlerException",
+                "import org.forgerock.openig.handler.HandlerException",
                 "throw new HandlerException(\"test\")");
         // @formatter:on
         final Exchange exchange = new Exchange();
@@ -872,6 +876,36 @@ public class GroovyScriptableFilterTest {
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
+        return config;
+    }
+
+    /**
+     * Equivalent to :
+     * <p>
+     * <pre>
+     * {
+     *     "name": "BasicAuth",
+     *     "type": "ScriptableFilter",
+     *     "config": {
+     *         "type": "application/x-groovy",
+     *         "file": "BasicAuthFilter.groovy",
+     *         "args": {
+     *             "username": "bjensen",
+     *             "password": "hifalutin"
+     *             }
+     *         }
+     * }
+     * </pre>
+     */
+    private static Map<String, Object> newFileConfigWithCredentials(final String groovyClass) {
+        final Map<String, Object> config = new HashMap<String, Object>();
+        config.put("type", Script.GROOVY_MIME_TYPE);
+        config.put("file", groovyClass);
+
+        final Map<String, Object> args = new LinkedHashMap<String, Object>();
+        args.put("username", "bjensen");
+        args.put("password", "hifalutin");
+        config.put("args", args);
         return config;
     }
 

@@ -16,13 +16,12 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.util.Collections.emptyList;
+import static java.lang.String.format;
+import static java.util.Collections.*;
 import static org.forgerock.http.URIUtil.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.heap.HeapUtil.getObject;
-import static org.forgerock.openig.heap.HeapUtil.getRequiredObject;
 import static org.forgerock.openig.util.JsonValueUtil.asExpression;
 import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
 import static org.forgerock.util.Utils.*;
@@ -45,8 +44,8 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.util.time.TimeService;
@@ -69,7 +68,7 @@ import org.forgerock.util.time.TimeService;
  * Configuration options:
  *
  * <pre>
- * "target"                       : expression,         [REQUIRED]
+ * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
  * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
@@ -169,6 +168,10 @@ import org.forgerock.util.time.TimeService;
  * </pre>
  */
 public final class OAuth2ClientFilter extends GenericFilter {
+
+    /** The expression which will be used for storing authorization information in the exchange. */
+    public static final String DEFAULT_TOKEN_KEY = "openid";
+
     private Expression clientEndpoint;
     private Expression defaultLoginGoto;
     private Expression defaultLogoutGoto;
@@ -484,7 +487,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
          * is to have something which is difficult to guess. However, if the
          * nonce is pushed to the user agent in a cookie, rather than stored
          * server side in a session, then it will be possible to construct a
-         * cookie and state which have the same valueand thereby create a fake
+         * cookie and state which have the same value and thereby create a fake
          * call-back from the authorization server. This will not be possible
          * using a CSRF, but a hacker might snoop the cookie and fake up a
          * call-back with a matching state. Is this threat possible? Even if it
@@ -838,19 +841,22 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     /** Creates and initializes the filter in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
+
             final OAuth2ClientFilter filter = new OAuth2ClientFilter();
-            filter.setTarget(asExpression(config.get("target")));
+
+            filter.setTarget(asExpression(config.get("target").defaultTo(
+                    format("${exchange.%s}", DEFAULT_TOKEN_KEY))));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
-            final Handler loginHandler = getObject(heap, config.get("loginHandler"), Handler.class);
+            final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
             filter.setLoginHandler(loginHandler);
-            filter.setFailureHandler(getRequiredObject(heap, config.get("failureHandler"),
+            filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
                     Handler.class));
             final Handler providerHandler =
-                    getRequiredObject(heap, config.get("providerHandler"), Handler.class);
+                    heap.resolve(config.get("providerHandler"), Handler.class);
             filter.setProviderHandler(providerHandler);
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto")));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto")));

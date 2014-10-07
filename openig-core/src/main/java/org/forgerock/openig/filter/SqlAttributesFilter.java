@@ -40,8 +40,8 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.NestedHeaplet;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogTimer;
@@ -158,7 +158,7 @@ public class SqlAttributesFilter extends GenericFilter {
     }
 
     /** Creates and initializes a static attribute provider in a heap environment. */
-    public static class Heaplet extends NestedHeaplet {
+    public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
             InitialContext ctx;

@@ -19,15 +19,23 @@ package org.forgerock.openig.util;
 
 import static java.util.Collections.unmodifiableList;
 import static org.forgerock.http.util.Loader.loadList;
+import static java.lang.String.*;
+import static java.util.Collections.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.forgerock.json.fluent.JsonException;
+import org.forgerock.json.fluent.JsonTransformer;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.util.promise.Function;
 
 /**
@@ -48,6 +56,25 @@ public final class JsonValueUtil {
                     return asExpression(value);
                 }
             };
+
+    /**
+     * Resolves a String-based {@link JsonValue} instance that may contains an {@link Expression}.
+     */
+    private static final JsonTransformer EXPRESSION_TRANSFORMER = new JsonTransformer() {
+        @Override
+        public void transform(final JsonValue value) {
+            if (value.isString()) {
+                try {
+                    Expression expression = new Expression(value.asString());
+                    value.setObject(expression.eval(null, String.class));
+                } catch (ExpressionException e) {
+                    throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
+                                                   value.asString(),
+                                                   value.getPointer()), e);
+                }
+            }
+        }
+    };
 
     /**
      * Private constructor for utility class.
@@ -161,11 +188,170 @@ public final class JsonValueUtil {
     }
 
     /**
+     * Evaluates the given JSON value using an Expression and wraps the returned value as a new JsonValue. This only
+     * change value of String types JsonValues, other types are ignored. This mechanism only perform change on the given
+     * JsonValue object (child nodes are left unchanged).
+     *
+     * @param value
+     *         the JSON value to be evaluated.
+     * @return a new JsonValue instance containing the resolved expression (or the original wrapped value if it was not
+     * changed)
+     * @throws JsonException
+     *         if the expression cannot be evaluated (syntax error or resolution error).
+     */
+    public static JsonValue evaluateJsonStaticExpression(final JsonValue value) {
+        // Returned a transformed, deep object copy
+        return new JsonValue(value, singleton(EXPRESSION_TRANSFORMER));
+    }
+
+    /**
      * Returns a function for transforming JsonValues to expressions.
      *
      * @return A function for transforming JsonValues to expressions.
      */
-    public static final Function<JsonValue, Expression, HeapException> ofExpression() {
+    public static Function<JsonValue, Expression, HeapException> ofExpression() {
         return OF_EXPRESSION;
+    }
+
+    /**
+     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
+     * objects.
+     *
+     * @param heap
+     *         the heap to query for references resolution
+     * @param type
+     *         expected object type
+     * @param <T>
+     *         expected object type
+     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
+     * objects.
+     */
+    public static <T> Function<JsonValue, T, HeapException> ofRequiredHeapObject(final Heap heap,
+                                                                                 final Class<T> type) {
+        return new Function<JsonValue, T, HeapException>() {
+            @Override
+            public T apply(final JsonValue value) throws HeapException {
+                return heap.resolve(value, type);
+            }
+        };
+    }
+
+    /**
+     * Verify that the given parameter object is of a JSON compatible type (recursively). If no exception is thrown that
+     * means the parameter can be used in the JWT session (that is a JSON value).
+     *
+     * @param trail
+     *         pointer to the verified object
+     * @param value
+     *         object to verify
+     */
+    public static void checkJsonCompatibility(final String trail, final Object value) {
+
+        // Null is OK
+        if (value == null) {
+            return;
+        }
+
+        Class<?> type = value.getClass();
+        Object object = value;
+
+        // JSON supports Boolean
+        if (object instanceof Boolean) {
+            return;
+        }
+
+        // JSON supports Chars (as String)
+        if (object instanceof Character) {
+            return;
+        }
+
+        // JSON supports Numbers (Long, Float, ...)
+        if (object instanceof Number) {
+            return;
+        }
+
+        // JSON supports String
+        if (object instanceof CharSequence) {
+            return;
+        }
+
+        // Consider array like a List
+        if (type.isArray()) {
+            object = Arrays.asList((Object[]) value);
+        }
+
+        if (object instanceof List) {
+            List<?> list = (List<?>) object;
+            for (int i = 0; i < list.size(); i++) {
+                checkJsonCompatibility(format("%s[%d]", trail, i), list.get(i));
+            }
+            return;
+        }
+
+        if (object instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) object;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                checkJsonCompatibility(format("%s/%s", trail, entry.getKey()), entry.getValue());
+            }
+            return;
+        }
+
+        throw new IllegalArgumentException(format(
+                "The object referenced through '%s' cannot be safely serialized as JSON",
+                trail));
+    }
+
+    /**
+     * Returns the named property from the provided JSON object, falling back to
+     * zero or more deprecated property names. This method will log a warning if
+     * only a deprecated property is found or if two equivalent property names
+     * are found.
+     *
+     * @param config
+     *            The configuration object.
+     * @param logger
+     *            The logger which should be used for deprecation warnings.
+     * @param name
+     *            The non-deprecated property name.
+     * @param deprecatedNames
+     *            The deprecated property names ordered from newest to oldest.
+     * @return The request property.
+     */
+    public static JsonValue getWithDeprecation(JsonValue config, Logger logger, String name,
+            String... deprecatedNames) {
+        String found = config.isDefined(name) ? name : null;
+        for (String deprecatedName : deprecatedNames) {
+            if (config.isDefined(deprecatedName)) {
+                if (found == null) {
+                    found = deprecatedName;
+                    warnForDeprecation(config, logger, name, found);
+                } else {
+                    logger.warning("Cannot use both '" + deprecatedName + "' and '" + found
+                            + "' attributes, " + "will use configuration from '" + found
+                            + "' attribute");
+                    break;
+                }
+            }
+        }
+        return found == null ? config.get(name) : config.get(found);
+    }
+
+    /**
+     * Issues a warning that the configuration property {@code oldName} is
+     * deprecated and that the property {@code newName} should be used instead.
+     *
+     * @param config
+     *            The configuration object.
+     * @param logger
+     *            The logger which should be used for deprecation warnings.
+     * @param name
+     *            The non-deprecated property name.
+     * @param deprecatedName
+     *            The deprecated property name.
+     */
+    public static void warnForDeprecation(final JsonValue config, final Logger logger,
+            final String name, final String deprecatedName) {
+        logger.warning(format("[%s] The '%s' attribute is deprecated, please use '%s' instead",
+                config.getPointer(), deprecatedName, name));
     }
 }
