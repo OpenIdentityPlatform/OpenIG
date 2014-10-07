@@ -39,6 +39,11 @@ public final class Context {
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
+    public Context(Session session, Principal principal) { //TODO is this constructor acceptable?
+        this.session = session;
+        this.principal = principal;
+    }
+
     public Principal getPrincipal() {
         return principal;
     }
