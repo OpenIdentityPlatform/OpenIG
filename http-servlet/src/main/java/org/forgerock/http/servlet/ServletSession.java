@@ -41,7 +41,7 @@ import org.forgerock.http.Session;
  *
  * @since 1.0.0
  */
-class ServletSession extends AbstractMap<String, Object> implements Session {
+final class ServletSession extends AbstractMap<String, Object> implements Session {
 
     /** The servlet request from which to get a servlet session object. */
     private final HttpServletRequest request;

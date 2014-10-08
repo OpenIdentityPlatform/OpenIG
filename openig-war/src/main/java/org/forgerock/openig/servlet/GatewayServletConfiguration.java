@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.servlet.ServletHandler.LOG;
 import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -77,10 +78,10 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
 
         try {
             // Load the configuration
-            final File configuration = new File(environment.getConfigDirectory(), "config.json");
-            final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
+            File configuration = new File(environment.getConfigDirectory(), "config.json");
+            URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
                     .getResource("default-config.json");
-            final JsonValue config = readJson(configurationURL);
+            JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
             HeapImpl heap = new HeapImpl();
@@ -89,7 +90,7 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             // can be overridden in config
-            final TemporaryStorage temporaryStorage = new TemporaryStorage();
+            TemporaryStorage temporaryStorage = new TemporaryStorage();
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
@@ -106,9 +107,11 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
             handler = heap.resolve(getWithDeprecation(config, logger, "handler", "handlerObject"),
                     org.forgerock.openig.handler.Handler.class);
             baseURI = config.get("baseURI").asURI();
-        } catch (final ServletException e) {
+        } catch (ServletException e) {
+            LOG.error("Failed to initialise servlet", e);
             throw e;
-        } catch (final Exception e) {
+        } catch (Exception e) {
+            LOG.error("Failed to initialise servlet", e);
             throw new ServletException(e);
         }
     }
@@ -137,18 +140,18 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
         return sessionFactory;
     }
 
-    private static JsonValue readJson(final URL resource) throws ServletException {
+    private static JsonValue readJson(URL resource) throws ServletException {
         InputStreamReader reader = null;
         try {
-            final InputStream in = resource.openStream();
-            final JSONParser parser = new JSONParser();
+            InputStream in = resource.openStream();
+            JSONParser parser = new JSONParser();
             reader = new InputStreamReader(in);
             return new JsonValue(parser.parse(reader));
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new ServletException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw new ServletException(format("File %s does not exists", resource), e);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new ServletException(format("Cannot read content of %s", resource), e);
         } finally {
             closeSilently(reader);
