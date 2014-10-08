@@ -22,6 +22,7 @@ import org.forgerock.http.io.Buffer;
 import org.forgerock.http.io.IO;
 import org.forgerock.util.Factory;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +39,22 @@ import static org.forgerock.http.servlet.HttpFrameworkServlet.LOG;
 public abstract class ServletConfiguration {
 
     /**
+     * Initialises the {@code ServletConfiguration} configuration properties.
+     *
+     * @param config The {@link ServletConfig}.
+     * @throws ServletException If there is an error initialising the configuration.
+     */
+    public void init(ServletConfig config) throws ServletException {
+        // Nothing to do by default
+    }
+
+    /**
      * Gets the root {@link Handler} that will handle all HTTP requests.
      *
      * @return The {@code Handler} to handle HTTP requests.
+     * @throws ServletException If there is an error creating the root {@code Handler}.
      */
-    abstract Handler getRootHandler();
+    public abstract Handler getRootHandler() throws ServletException;
 
     /**
      * Gets the {@link Factory} that will create temporary storage {@link Buffer}s to handle the processing of requests.
@@ -50,7 +62,7 @@ public abstract class ServletConfiguration {
      * @return A {@code Buffer} {@code Factory}.
      * @throws ServletException If there is an error creating the buffer factory.
      */
-    Factory<Buffer> getBufferFactory() throws ServletException {
+    public Factory<Buffer> getBufferFactory() throws ServletException {
         try {
             return IO.newTemporaryStorage(File.createTempFile("tmpStorage", null), IO.DEFAULT_TMP_INIT_LENGTH,
                     IO.DEFAULT_TMP_MEMORY_LIMIT, IO.DEFAULT_TMP_FILE_LIMIT);
@@ -68,8 +80,9 @@ public abstract class ServletConfiguration {
      * {@link org.forgerock.http.servlet.ServletSession}.</p>
      *
      * @return A {@code SessionFactory} instance or {@code null}.
+     * @throws ServletException If there is an error creating the {@code SessionFactory}.
      */
-    SessionFactory getSessionFactory() {
+    public SessionFactory getSessionFactory() throws ServletException {
         return null;
     }
 }

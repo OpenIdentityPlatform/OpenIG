@@ -90,6 +90,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
         syncFactory = ServletApiVersionAdapter.getInstance(getServletContext());
 
         ServletConfiguration configuration = loadConfiguration();
+        configuration.init(getServletConfig());
         storage = configuration.getBufferFactory();
         handler = configuration.getRootHandler();
         sessionFactory = configuration.getSessionFactory();

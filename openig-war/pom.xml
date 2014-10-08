@@ -34,6 +34,11 @@
     </dependency>
     <dependency>
       <groupId>org.forgerock.openig</groupId>
+      <artifactId>http-servlet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-saml</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>

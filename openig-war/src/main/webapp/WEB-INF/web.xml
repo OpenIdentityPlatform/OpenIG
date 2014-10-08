@@ -20,7 +20,7 @@
     <display-name>ForgeRock OpenIG</display-name>
     <servlet>
         <servlet-name>openig-servlet</servlet-name>
-        <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
+        <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>openig-servlet</servlet-name>
