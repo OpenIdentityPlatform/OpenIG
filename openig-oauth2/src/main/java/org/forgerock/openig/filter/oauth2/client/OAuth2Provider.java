@@ -15,7 +15,6 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
@@ -25,9 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.jose.common.JwtReconstruction;
-import org.forgerock.json.jose.exceptions.JwtReconstructionException;
-import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
@@ -39,7 +35,6 @@ import org.forgerock.util.encode.Base64;
  * An OAuth 2.0 authorization server or OpenID Connect Provider.
  */
 public class OAuth2Provider {
-    private final JwtReconstruction jwtConstructor = new JwtReconstruction();
     private final String name;
     private Expression authorizeEndpoint;
     private Expression clientId;
@@ -196,24 +191,6 @@ public class OAuth2Provider {
         request.setUri(buildUri(exchange, userInfoEndpoint));
         request.getHeaders().add("Authorization", "Bearer " + accessToken);
         return request;
-    }
-
-    /**
-     * ID Token extraction is the responsibility of the provider because each
-     * provider may have different crypto configuration.
-     */
-    SignedJwt extractIdToken(final JsonValue accessTokenResponse) throws OAuth2ErrorException {
-        if (accessTokenResponse.isDefined("id_token")) {
-            final String idToken = accessTokenResponse.get("id_token").asString();
-            try {
-                return jwtConstructor.reconstructJwt(idToken, SignedJwt.class);
-            } catch (final JwtReconstructionException e) {
-                throw new OAuth2ErrorException(E_SERVER_ERROR,
-                        "Authorization call-back failed because the OpenID Connect ID token"
-                                + "could not be decoded");
-            }
-        }
-        return null;
     }
 
     URI getAuthorizeEndpoint(final Exchange exchange) throws HandlerException {

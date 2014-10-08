@@ -77,7 +77,6 @@ import org.forgerock.util.time.TimeService;
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
- * "useJWTSession"                : boolean,            [OPTIONAL - default use Servlet session]
  * "providers"                    : array [
  *     "name"                         : String,         [REQUIRED]
  *     "wellKnownConfiguration"       : String,         [OPTIONAL - if authorize and token end-points are specified]
@@ -176,7 +175,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private Expression defaultLogoutGoto;
     private Handler failureHandler;
     private Handler loginHandler;
-    private OAuth2SessionPersistenceStrategy persistenceStrategy;
     private Handler providerHandler;
     private final Map<String, OAuth2Provider> providers =
             new LinkedHashMap<String, OAuth2Provider>();
@@ -351,20 +349,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
      */
     public OAuth2ClientFilter setLoginHandler(final Handler handler) {
         this.loginHandler = handler;
-        return this;
-    }
-
-    /**
-     * Specifies how OAuth2 session state information will be persisted between
-     * successive HTTP requests. This configuration parameter is required.
-     *
-     * @param strategy
-     *            The strategy to use for persisting OAuth2 session state
-     *            information between successive HTTP requests.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setPersistenceStrategy(final OAuth2SessionPersistenceStrategy strategy) {
-        this.persistenceStrategy = strategy;
         return this;
     }
 
@@ -574,10 +558,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
                         "Unable to exchange access token [status=%d]", response.getStatus()));
             }
         }
-
-        // FIXME: perform additional ID token validation using CAF.
         final JsonValue accessTokenResponse = getJsonContent(response);
-        final SignedJwt decodedJwtToken = provider.extractIdToken(accessTokenResponse);
 
         /*
          * Finally complete the authorization request by redirecting to the
@@ -585,10 +566,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
          * session after setting the response because it may need to access
          * response cookies.
          */
-        final OAuth2Session authorizedSession =
-                session.stateAuthorized(accessTokenResponse, decodedJwtToken);
+        final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
         httpRedirectGoto(exchange, gotoUri, defaultLoginGoto);
-        persistenceStrategy.save(sessionKey(exchange), exchange, authorizedSession);
+        saveSession(exchange, authorizedSession);
     }
 
     private void handleOAuth2ErrorException(final Exchange exchange, final OAuth2ErrorException e)
@@ -600,21 +580,30 @@ public final class OAuth2ClientFilter extends GenericFilter {
             // Assume all other errors are more serious operational errors.
             logger.warning(e.getMessage());
         }
-        final OAuth2Session session = loadOrCreateSession(exchange);
-        final Map<String, Object> info =
-                new LinkedHashMap<String, Object>(session.getAccessTokenResponse());
-        // Override these with effective values.
-        info.put("provider", session.getProviderName());
-        info.put("client_endpoint", session.getClientEndpoint());
-        info.put("expires_in", session.getExpiresIn());
-        info.put("scope", session.getScopes());
-        final SignedJwt idToken = session.getIdToken();
-        if (idToken != null) {
-            final Map<String, Object> idTokenClaims = new LinkedHashMap<String, Object>();
-            for (final String claim : idToken.getClaimsSet().keys()) {
-                idTokenClaims.put(claim, idToken.getClaimsSet().getClaim(claim));
+        final Map<String, Object> info = new LinkedHashMap<String, Object>();
+        try {
+            final OAuth2Session session = loadOrCreateSession(exchange);
+            info.putAll(session.getAccessTokenResponse());
+
+            // Override these with effective values.
+            info.put("provider", session.getProviderName());
+            info.put("client_endpoint", session.getClientEndpoint());
+            info.put("expires_in", session.getExpiresIn());
+            info.put("scope", session.getScopes());
+            final SignedJwt idToken = session.getIdToken();
+            if (idToken != null) {
+                final Map<String, Object> idTokenClaims = new LinkedHashMap<String, Object>();
+                for (final String claim : idToken.getClaimsSet().keys()) {
+                    idTokenClaims.put(claim, idToken.getClaimsSet().getClaim(claim));
+                }
+                info.put("id_token_claims", idTokenClaims);
             }
-            info.put("id_token_claims", idTokenClaims);
+        } catch (Exception ignored) {
+            /*
+             * The session could not be decoded. Presumably this is why we are
+             * here already, so simply ignore the error, and use the error that
+             * was passed in to this method.
+             */
         }
         info.put("error", error.toJsonContent());
         target.set(exchange, info);
@@ -631,12 +620,16 @@ public final class OAuth2ClientFilter extends GenericFilter {
         final OAuth2Session refreshedSession =
                 session.isAuthorized() ? prepareExchange(exchange, session) : session;
         next.handle(exchange);
-        if (exchange.response.getStatus() == 401 && !session.isAuthorized()) {
+        if (exchange.response.getStatus() == 401 && !refreshedSession.isAuthorized()) {
             closeSilently(exchange.response);
             exchange.response = null;
             sendRedirectForAuthorization(exchange);
-        } else {
-            persistenceStrategy.save(sessionKey(exchange), exchange, refreshedSession);
+        } else if (session != refreshedSession) {
+            /*
+             * Only update the session if it has changed in order to avoid send
+             * back JWT session cookies with every response.
+             */
+            saveSession(exchange, refreshedSession);
         }
     }
 
@@ -668,7 +661,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private void handleUserInitiatedLogout(final Exchange exchange) throws HandlerException {
         final String gotoUri = exchange.request.getForm().getFirst("goto");
         httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto);
-        persistenceStrategy.remove(sessionKey(exchange), exchange);
+        removeSession(exchange);
     }
 
     private void httpRedirectGoto(final Exchange exchange, final String gotoUri,
@@ -700,11 +693,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
     }
 
-    private OAuth2Session loadOrCreateSession(final Exchange exchange) throws HandlerException {
-        final OAuth2Session session = persistenceStrategy.load(sessionKey(exchange), exchange);
-        return session != null ? session : stateNew(time);
-    }
-
     private OAuth2Session prepareExchange(final Exchange exchange, final OAuth2Session session)
             throws HandlerException, OAuth2ErrorException {
         try {
@@ -723,9 +711,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 if (response.getStatus() == 200) {
                     // Update session with new access token.
                     final JsonValue accessTokenResponse = getJsonContent(response);
-                    final SignedJwt decodedJwtToken = provider.extractIdToken(accessTokenResponse);
                     final OAuth2Session refreshedSession =
-                            session.stateRefreshed(accessTokenResponse, decodedJwtToken);
+                            session.stateRefreshed(accessTokenResponse);
                     tryPrepareExchange(exchange, refreshedSession);
                     return refreshedSession;
                 }
@@ -785,7 +772,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
         final OAuth2Session session =
                 stateNew(time).stateAuthorizing(provider.getName(), clientUri, nonce,
                         requestedScopes);
-        persistenceStrategy.save(sessionKey(exchange), exchange, session);
+        saveSession(exchange, session);
     }
 
     private void sendRedirectForAuthorization(final Exchange exchange) throws HandlerException,
@@ -861,11 +848,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto")));
             filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
             filter.setRequireLogin(config.get("requireLogin").defaultTo(true).asBoolean());
-            final boolean useJWTSession = config.get("useJWTSession").defaultTo(false).asBoolean();
-            if (useJWTSession) {
-                throw new HeapException("OAuth2 JWT session persistence is not supported yet");
-            }
-            filter.setPersistenceStrategy(OAuth2SessionPersistenceStrategy.SESSION);
             int providerCount = 0;
             for (final JsonValue providerConfig : config.get("providers").required()) {
                 // Must set the authorization handler before using well-known config.
@@ -919,6 +901,23 @@ public final class OAuth2ClientFilter extends GenericFilter {
             }
             return filter;
         }
-
     }
+
+    private OAuth2Session loadOrCreateSession(final Exchange exchange) throws OAuth2ErrorException,
+            HandlerException {
+        final Object sessionJson = exchange.session.get(sessionKey(exchange));
+        if (sessionJson != null) {
+            return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
+        }
+        return stateNew(time);
+    }
+
+    private void removeSession(Exchange exchange) throws HandlerException {
+        exchange.session.remove(sessionKey(exchange));
+    }
+
+    private void saveSession(Exchange exchange, OAuth2Session session) throws HandlerException {
+        exchange.session.put(sessionKey(exchange), session.toJson().getObject());
+    }
+
 }
