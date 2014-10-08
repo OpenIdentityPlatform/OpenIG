@@ -29,6 +29,7 @@ package org.forgerock.http.servlet;
  *
  * @see ServletApiVersionAdapter#createServletSynchronizer(javax.servlet.http.HttpServletRequest,
  *      javax.servlet.http.HttpServletResponse)
+ * @since 1.0.0
  */
 interface ServletSynchronizer {
 
@@ -101,7 +102,7 @@ interface ServletSynchronizer {
      * called when an error is encountered which prevents the request from being
      * processed any further.
      *
-     * @param t TODO will the error be adapted to a ResourceException?
+     * @param t //FIXME will the error be adapted to a ResourceException?
      *            The error that occurred. The error will be adapted to a
      *            {@link org.forgerock.json.resource.ResourceException
      *            ResourceException} if it not already one before being

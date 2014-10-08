@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * An adapter for use in Servlet 2.x containers.
+ *
+ * @since 1.0.0
  */
 final class Servlet2Adapter extends ServletApiVersionAdapter {
 
@@ -33,7 +35,7 @@ final class Servlet2Adapter extends ServletApiVersionAdapter {
     final static class Servlet2Synchronizer implements ServletSynchronizer {
         private final HttpServletRequest httpRequest;
         private final HttpServletResponse httpResponse;
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch requestCompletionLatch = new CountDownLatch(1);
 
         Servlet2Synchronizer(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
             this.httpRequest = httpRequest;
@@ -47,7 +49,7 @@ final class Servlet2Adapter extends ServletApiVersionAdapter {
 
         @Override
         public void awaitIfNeeded() throws Exception {
-            latch.await();
+            requestCompletionLatch.await();
         }
 
         @Override
@@ -57,18 +59,18 @@ final class Servlet2Adapter extends ServletApiVersionAdapter {
 
         @Override
         public void signal() {
-            latch.countDown();
+            requestCompletionLatch.countDown();
         }
 
         @Override
         public void signalAndComplete() {
-            latch.countDown();
+            requestCompletionLatch.countDown();
         }
 
         @Override
         public void signalAndComplete(final Throwable t) {
-//            fail(httpRequest, httpResponse, t); //TODO is this still needed?
-            latch.countDown();
+//            fail(httpRequest, httpResponse, t); //FIXME is this still needed?
+            requestCompletionLatch.countDown();
         }
     }
 

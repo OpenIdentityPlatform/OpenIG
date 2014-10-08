@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
  * independently of the Servlet API version. At the moment the adapter only
  * provides an abstraction for performing asynchronous processing, but other API
  * features could be added in future (such as async IO).
+ *
+ * @since 1.0.0
  */
 abstract class ServletApiVersionAdapter {
 

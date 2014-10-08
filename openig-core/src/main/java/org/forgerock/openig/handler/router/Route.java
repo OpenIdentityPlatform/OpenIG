@@ -16,13 +16,10 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.openig.util.JsonValueUtil.*;
-import static org.forgerock.util.Utils.closeSilently;
-
-import java.io.IOException;
-import java.net.URI;
+import static org.forgerock.openig.util.JsonValueUtil.asExpression;
 
 import org.forgerock.http.Session;
+import org.forgerock.http.SessionFactory;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
@@ -31,7 +28,9 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.SessionFactory;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -187,11 +186,11 @@ class Route extends GenericHandler {
         } else {
             // Swap the session instance
             Session session = exchange.session;
-            exchange.session = sessionFactory.build(exchange);
+            exchange.session = sessionFactory.build(exchange.request);
             try {
                 doHandle(exchange);
             } finally {
-                closeSilently(exchange.session);
+                exchange.session.save(exchange.response);
                 exchange.session = session;
             }
         }

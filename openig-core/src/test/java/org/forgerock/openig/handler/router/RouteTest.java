@@ -29,7 +29,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.SessionFactory;
+import org.forgerock.http.SessionFactory;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -55,7 +55,7 @@ public class RouteTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(sessionFactory.build(any(Exchange.class))).thenReturn(scoped);
+        when(sessionFactory.build(any(Request.class))).thenReturn(scoped);
     }
 
     @Test

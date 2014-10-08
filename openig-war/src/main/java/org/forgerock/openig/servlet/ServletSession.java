@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 
 /**
@@ -200,7 +201,7 @@ public class ServletSession extends AbstractMap<String, Object> implements Sessi
     }
 
     @Override
-    public void close() throws IOException {
+    public void save(Response response) throws IOException {
         // Nothing to do when using HttpSession
     }
 }

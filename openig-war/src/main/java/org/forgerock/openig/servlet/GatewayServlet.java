@@ -19,7 +19,7 @@ package org.forgerock.openig.servlet;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.http.SessionFactory.*;
+import static org.forgerock.http.SessionFactory.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
@@ -55,7 +55,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.SessionFactory;
+import org.forgerock.http.SessionFactory;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
@@ -83,6 +83,11 @@ import org.json.simple.parser.ParseException;
  * {@literal handler} is the only mandatory configuration attribute.
  */
 public class GatewayServlet extends HttpServlet {
+
+    /**
+     * Key to retrieve the default {@link SessionFactory} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     /** Methods that should not include an entity body. */
     private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(Arrays.asList("GET", "HEAD",
@@ -271,7 +276,7 @@ public class GatewayServlet extends HttpServlet {
                 throw new ServletException(he);
             } finally {
                 // Close the session before writing back the actual response message to the User-Agent
-                closeSilently(exchange.session);
+                exchange.session.save(exchange.response);
             }
             /*
              * Support for OPENIG-94/95 - The wrapped servlet may have already committed its response w/o creating a new
@@ -301,7 +306,7 @@ public class GatewayServlet extends HttpServlet {
 
     private Session newSession(final HttpServletRequest request, final Exchange exchange) {
         if (sessionFactory != null) {
-            return sessionFactory.build(exchange);
+            return sessionFactory.build(exchange.request);
         }
         return new ServletSession(request);
     }

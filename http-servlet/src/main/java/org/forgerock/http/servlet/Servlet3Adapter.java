@@ -28,6 +28,8 @@ import org.forgerock.http.servlet.Servlet2Adapter.Servlet2Synchronizer;
 
 /**
  * An adapter for use in Servlet 3.x containers.
+ *
+ * @since 1.0.0
  */
 final class Servlet3Adapter extends ServletApiVersionAdapter {
 
@@ -101,7 +103,7 @@ final class Servlet3Adapter extends ServletApiVersionAdapter {
 
         @Override
         public void signalAndComplete(Throwable t) {
-//            fail(httpRequest, httpResponse, t); //TODO is this still needed?
+//            fail(httpRequest, httpResponse, t); //FIXME is this still needed?
             asyncContext.complete();
         }
     }

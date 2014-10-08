@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>HttpServlet</servlet-name>
-        <servlet-class>org.forgerock.http.servlet.HttpServlet</servlet-class>
+        <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.util.ExtensibleFieldMap;
+import org.forgerock.util.Reject;
 
 /**
  * Represents extrinsic state associated with the processing of a request in a
@@ -39,13 +40,17 @@ public final class Context {
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
-    public Context(Session session, Principal principal) { //TODO is this constructor acceptable?
+    public Context(Session session) {
+        Reject.ifNull(session, "Session cannot be null.");
         this.session = session;
-        this.principal = principal;
     }
 
     public Principal getPrincipal() {
         return principal;
+    }
+
+    public void setPrincipal(Principal principal) {
+        this.principal = principal;
     }
 
     public Session getSession() {

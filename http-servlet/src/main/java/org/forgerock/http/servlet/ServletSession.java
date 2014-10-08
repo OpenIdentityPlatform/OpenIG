@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 
 /**
@@ -37,6 +38,8 @@ import org.forgerock.http.Session;
  * This implementation will get a servlet session if already allocated,
  * otherwise will not create one until an attempt is made to put an attribute in
  * it.
+ *
+ * @since 1.0.0
  */
 class ServletSession extends AbstractMap<String, Object> implements Session {
 
@@ -67,7 +70,6 @@ class ServletSession extends AbstractMap<String, Object> implements Session {
         @Override
         public Iterator<Entry<String, Object>> iterator() {
             return new Iterator<Entry<String, Object>>() {
-                @SuppressWarnings("unchecked")
                 final Enumeration<String> names = httpSession != null ? httpSession
                         .getAttributeNames() : null;
 
@@ -130,7 +132,6 @@ class ServletSession extends AbstractMap<String, Object> implements Session {
     public void clear() {
         if (httpSession != null) {
             // Do in 2 steps to avoid CME.
-            @SuppressWarnings("unchecked")
             final Enumeration<String> attributes = httpSession.getAttributeNames();
             final List<String> names = new ArrayList<String>();
             while (attributes.hasMoreElements()) {
@@ -199,8 +200,11 @@ class ServletSession extends AbstractMap<String, Object> implements Session {
         return size;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void close() throws IOException {
+    public void save(Response response) throws IOException {
         // Nothing to do when using HttpSession
     }
 }

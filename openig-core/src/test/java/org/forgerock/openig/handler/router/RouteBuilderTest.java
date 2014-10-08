@@ -126,7 +126,7 @@ public class RouteBuilderTest {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void close() throws IOException { }
+        public void save(Response response) throws IOException { }
     }
 
     public static class SessionHandler extends GenericHandler {

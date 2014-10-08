@@ -16,17 +16,11 @@
 
 package org.forgerock.openig.jwt;
 
-import static java.lang.String.*;
-
-import java.io.IOException;
-import java.security.KeyPair;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import static java.lang.String.format;
 
 import org.forgerock.http.Cookie;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
@@ -36,13 +30,20 @@ import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweAlgorithm;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.jwt.dirty.DirtyCollection;
 import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.JsonValueUtil;
 import org.forgerock.util.MapDecorator;
+
+import java.io.IOException;
+import java.security.KeyPair;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents an OpenIG {@link Session} that will be stored as an encrypted JSON Web Token in a Cookie.
@@ -57,10 +58,10 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     public static final String OPENIG_JWT_SESSION = "openig-jwt-session";
 
     /**
-     * {@literal exchange.request} will be used to read existing cookie (if any), and {@literal exchange.response} will
+     * The {@literal request} will be used to read existing cookie (if any), and the {@link #save(Response)} method will
      * be used to write the new cookie value.
      */
-    private final Exchange exchange;
+    private final Request request;
 
     /**
      * Know how to rebuild a JWT from a String.
@@ -95,8 +96,8 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     /**
      * Builds a new JwtCookieSession that will manage the given Exchange's session.
      *
-     * @param exchange
-     *         Exchange used to access {@literal Cookie} and {@literal Set-Cookie} headers.
+     * @param request
+     *         Request used to access {@literal Cookie} and {@literal Set-Cookie} headers.
      * @param pair
      *         Secret key used to sign the JWT payload.
      * @param cookieName
@@ -104,12 +105,12 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      * @param logger
      *         Logger
      */
-    public JwtCookieSession(final Exchange exchange,
+    public JwtCookieSession(final Request request,
                             final KeyPair pair,
                             final String cookieName,
                             final Logger logger) {
         super(new LinkedHashMap<String, Object>());
-        this.exchange = exchange;
+        this.request = request;
         this.pair = pair;
         this.cookieName = cookieName;
         this.logger = logger;
@@ -196,7 +197,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     }
 
     @Override
-    public void close() throws IOException {
+    public void save(Response response) throws IOException {
         // Only build the JWT session if the session is dirty
         if (dirty) {
             // Update the Set-Cookie header
@@ -211,7 +212,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                                       + "consider using the traditional Http-based session (the default), or place"
                                       + "less objects in the session", value.length()));
             }
-            exchange.response.getHeaders().add("Set-Cookie", value);
+            response.getHeaders().add("Set-Cookie", value);
         }
 
     }
@@ -240,7 +241,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      * @return a {@link Cookie} if found, {@literal null} otherwise.
      */
     private Cookie findJwtSessionCookie() {
-        List<Cookie> cookies = exchange.request.getCookies().get(cookieName);
+        List<Cookie> cookies = request.getCookies().get(cookieName);
         if (cookies != null) {
             return cookies.get(0);
         }

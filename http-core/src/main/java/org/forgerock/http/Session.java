@@ -17,7 +17,7 @@
 
 package org.forgerock.http;
 
-import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -28,5 +28,13 @@ import java.util.Map;
  * New keys added to a session object should be named in a manner that avoids possible
  * collision with keys added by other objects in the heap.
  */
-public interface Session extends Map<String, Object>, Closeable {
+public interface Session extends Map<String, Object> {
+
+    /**
+     * Save the session state to the response.
+     *
+     * @param response The {@link Response} instance to write the session state to.
+     * @throws IOException If an I/O error occurs.
+     */
+    void save(Response response) throws IOException;
 }

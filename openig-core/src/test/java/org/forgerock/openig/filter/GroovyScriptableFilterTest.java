@@ -416,7 +416,7 @@ public class GroovyScriptableFilterTest {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void close() throws IOException { }
+        public void save(Response response) throws IOException { }
     }
 
     @Test(enabled = true)

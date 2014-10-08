@@ -31,13 +31,14 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
+import org.forgerock.http.Request;
 import org.forgerock.http.Session;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.SessionFactory;
+import org.forgerock.http.SessionFactory;
 
 /**
  * A JwtSessionFactory is responsible to configure and create a {@link JwtCookieSession}.
@@ -101,8 +102,8 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
     }
 
     @Override
-    public Session build(final Exchange exchange) {
-        return new JwtCookieSession(exchange, keyPair, cookieName, logger);
+    public Session build(final Request request) {
+        return new JwtCookieSession(request, keyPair, cookieName, logger);
     }
 
     /** Creates and initializes a jwt-session in a heap environment. */

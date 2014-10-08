@@ -9,15 +9,15 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions copyright [year] [name of copyright owner]".
+ * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
+/**
+ * Integrates with the Java Enterprise Edition Servlet API.
+ *
+ * @since 1.0.0
+ */
 package org.forgerock.http.servlet;
-
-import org.forgerock.http.Handler;
-
-// Purely to not have the issue of multiple classes trying to load the same interface and cause multiple impls to be found.
-public interface HttpHandler extends Handler {
-}

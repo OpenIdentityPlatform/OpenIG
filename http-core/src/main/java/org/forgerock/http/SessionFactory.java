@@ -14,28 +14,23 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.http;
-
-import org.forgerock.http.Session;
+package org.forgerock.http;
 
 /**
  * A SessionFactory is responsible to create a new type of {@link Session}.
  * This allows users to extends the default OpenIG behaviour quite easily.
+ *
+ * @since 1.0.0
  */
 public interface SessionFactory {
 
     /**
-     * Key to retrieve the default {@link SessionFactory} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String SESSION_FACTORY_HEAP_KEY = "Session";
-
-    /**
-     * Builds a new Session for the given Exchange. The implementations are free to keep a reference to the Exchange.
-     * The session object is scoped by the Exchange's own lifecycle.
+     * Builds a new Session for the given {@link Request}. The implementations are free to keep a reference to the
+     * {@code Request}.
+     * The session object is scoped by the {@code Request}'s own lifecycle.
      *
-     * @param exchange
-     *         Exchange to create a session for.
+     * @param request Request to create a session for.
      * @return a new Session instance.
      */
-    Session build(Exchange exchange);
+    Session build(Request request);
 }
