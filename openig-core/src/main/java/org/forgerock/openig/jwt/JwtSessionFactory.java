@@ -102,7 +102,7 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
     }
 
     @Override
-    public Session build(final Request request) {
+    public Session load(final Request request) {
         return new JwtCookieSession(request, keyPair, cookieName, logger);
     }
 

@@ -17,20 +17,22 @@
 package org.forgerock.http;
 
 /**
- * A SessionFactory is responsible to create a new type of {@link Session}.
- * This allows users to extends the default OpenIG behaviour quite easily.
+ * <p>A SessionFactory is responsible to create a new type of {@link Session}.</p>
+ *
+ * <p>This allows users to extends the default OpenIG behaviour quite easily.</p>
  *
  * @since 1.0.0
  */
 public interface SessionFactory {
 
     /**
-     * Builds a new Session for the given {@link Request}. The implementations are free to keep a reference to the
-     * {@code Request}.
-     * The session object is scoped by the {@code Request}'s own lifecycle.
+     * <p>Loads a new Session for the given {@link Request}. The implementations are free to keep a reference to the
+     * {@code Request}.</p>
+     *
+     * <p>The session object is scoped by the {@code Request}'s own lifecycle.</p>
      *
      * @param request Request to create a session for.
      * @return a new Session instance.
      */
-    Session build(Request request);
+    Session load(Request request);
 }

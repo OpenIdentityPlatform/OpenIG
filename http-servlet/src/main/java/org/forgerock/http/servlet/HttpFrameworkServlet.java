@@ -238,7 +238,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
 
     private Session newSession(HttpServletRequest req, Request request) {
         if (sessionFactory != null) {
-            return sessionFactory.build(request);
+            return sessionFactory.load(request);
         }
         return new ServletSession(req);
     }

@@ -55,7 +55,7 @@ public class RouteTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(sessionFactory.build(any(Request.class))).thenReturn(scoped);
+        when(sessionFactory.load(any(Request.class))).thenReturn(scoped);
     }
 
     @Test

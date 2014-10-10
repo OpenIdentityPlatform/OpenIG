@@ -186,7 +186,7 @@ class Route extends GenericHandler {
         } else {
             // Swap the session instance
             Session session = exchange.session;
-            exchange.session = sessionFactory.build(exchange.request);
+            exchange.session = sessionFactory.load(exchange.request);
             try {
                 doHandle(exchange);
             } finally {
