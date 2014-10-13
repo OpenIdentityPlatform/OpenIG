@@ -14,7 +14,7 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.servlet;
+package org.forgerock.openig.http;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Request;

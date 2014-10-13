@@ -15,20 +15,20 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.servlet;
+package org.forgerock.openig.http;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.servlet.ServletHandler.LOG;
 import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.Handlers;
+import org.forgerock.http.HttpApplication;
 import org.forgerock.http.SessionFactory;
 import org.forgerock.http.io.Buffer;
-import org.forgerock.http.servlet.ServletConfiguration;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.HeapImpl;
@@ -41,8 +41,6 @@ import org.forgerock.util.Factory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,7 +55,7 @@ import java.util.Map;
  *
  * @since 3.1.0
  */
-public final class GatewayServletConfiguration extends ServletConfiguration {
+public final class GatewayHttpApplication implements HttpApplication {
 
     /**
      * Key to retrieve the default {@link SessionFactory} instance from the {@link org.forgerock.openig.heap.Heap}.
@@ -65,16 +63,14 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
     private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     private TemporaryStorage storage;
-    private SessionFactory sessionFactory;
-    private org.forgerock.openig.handler.Handler handler;
-    private URI baseURI;
+    private Handler httpHandler;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void init(ServletConfig servletConfig) throws ServletException {
-        Environment environment = new WebEnvironment(servletConfig);
+    public GatewayHttpApplication() throws Exception {
+        init();
+    }
+
+    public void init() throws Exception {
+        Environment environment = new GatewayEnvironment();
 
         try {
             // Load the configuration
@@ -86,7 +82,6 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
             // Create and configure the heap
             HeapImpl heap = new HeapImpl();
             // "Live" objects
-            heap.put("ServletContext", servletConfig.getServletContext());
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             // can be overridden in config
@@ -103,44 +98,36 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
             // Let the user change the type of session to use
-            sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
-            handler = heap.resolve(getWithDeprecation(config, logger, "handler", "handlerObject"),
+            SessionFactory sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
+            SessionFilter sessionFilter = new SessionFilter(sessionFactory);
+            org.forgerock.openig.handler.Handler handler = heap.resolve(
+                    getWithDeprecation(config, logger, "handler", "handlerObject"),
                     org.forgerock.openig.handler.Handler.class);
-            baseURI = config.get("baseURI").asURI();
-        } catch (ServletException e) {
-            LOG.error("Failed to initialise servlet", e);
-            throw e;
+            URI baseURI = config.get("baseURI").asURI();
+
+            httpHandler = Handlers.chain(new HttpHandler(handler, baseURI), sessionFilter);
         } catch (Exception e) {
-            LOG.error("Failed to initialise servlet", e);
-            throw new ServletException(e);
+            HttpHandler.LOG.error("Failed to initialise Http Application", e);
+            throw e;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Handler getRootHandler() {
-        return new ServletHandler(handler, baseURI);
+    public Handler start() {
+        return httpHandler;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Factory<Buffer> getBufferFactory() throws ServletException {
+    public Factory<Buffer> getBufferFactory() {
         return storage;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+    public void stop() {
+        // Nothing to do here
     }
 
-    private static JsonValue readJson(URL resource) throws ServletException {
+    private static JsonValue readJson(URL resource) throws IOException {
         InputStreamReader reader = null;
         try {
             InputStream in = resource.openStream();
@@ -148,11 +135,9 @@ public final class GatewayServletConfiguration extends ServletConfiguration {
             reader = new InputStreamReader(in);
             return new JsonValue(parser.parse(reader));
         } catch (ParseException e) {
-            throw new ServletException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
+            throw new IOException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
         } catch (FileNotFoundException e) {
-            throw new ServletException(format("File %s does not exists", resource), e);
-        } catch (IOException e) {
-            throw new ServletException(format("Cannot read content of %s", resource), e);
+            throw new IOException(format("File %s does not exists", resource), e);
         } finally {
             closeSilently(reader);
         }

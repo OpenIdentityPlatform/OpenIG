@@ -17,6 +17,8 @@
 
 package org.forgerock.http;
 
+import org.forgerock.util.promise.Promise;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -31,11 +33,61 @@ public class Handlers {
 
     public static Handler chain(final Handler handler,
             final Collection<Filter> filters) {
-        // TODO: return a filter chain.
-        return null;
+        return new FilterChain(handler, filters);
     }
 
     private Handlers() {
         // Prevent instantiation.
+    }
+
+    private static final class FilterChain implements Handler {
+
+        private final class Cursor implements Handler {
+            private final int pos;
+            private final Filter[] snapshot;
+
+            private Cursor() {
+                this(filters.toArray(new Filter[0]), 0);
+            }
+
+            private Cursor(final Filter[] snapshot, final int pos) {
+                this.snapshot = snapshot;
+                this.pos = pos;
+            }
+
+            @Override
+            public Promise<Response, ResponseException> handle(Context context, Request request) throws ResponseException {
+                if (hasNext()) {
+                    return get().filter(context, request, next());
+                } else {
+                    return target.handle(context, request);
+                }
+            }
+
+            private Filter get() {
+                return snapshot[pos];
+            }
+
+            private boolean hasNext() {
+                return pos < snapshot.length;
+            }
+
+            private Cursor next() {
+                return new Cursor(snapshot, pos + 1);
+            }
+        }
+
+        private final Handler target;
+        private final Collection<Filter> filters;
+
+        private FilterChain(Handler target, Collection<Filter> filters) {
+            this.target = target;
+            this.filters = filters;
+        }
+
+        @Override
+        public Promise<Response, ResponseException> handle(Context context, Request request) throws ResponseException {
+            return new Cursor().handle(context, request);
+        }
     }
 }

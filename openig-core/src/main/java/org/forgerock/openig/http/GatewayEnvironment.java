@@ -14,16 +14,14 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.servlet;
-
-import java.io.File;
-
-import javax.servlet.ServletConfig;
+package org.forgerock.openig.http;
 
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.config.env.EnvironmentDelegate;
 import org.forgerock.openig.config.env.PlatformEnvironment;
+
+import java.io.File;
 
 /**
  * Represents an {@link Environment} built from a webapp.
@@ -32,7 +30,7 @@ import org.forgerock.openig.config.env.PlatformEnvironment;
  *
  * @since 2.2
  */
-public class WebEnvironment extends EnvironmentDelegate {
+public class GatewayEnvironment extends EnvironmentDelegate {
 
     /**
      * Servlet's {@literal init-param} name.
@@ -79,15 +77,9 @@ public class WebEnvironment extends EnvironmentDelegate {
 
     /**
      * Builds a new web environment.
-     * @param config webapp's configuration
      */
-    public WebEnvironment(final ServletConfig config) {
-        String base = config.getInitParameter(BASE_INIT_PARAM);
-        if (base != null) {
-            delegate = new DefaultEnvironment(new File(base));
-            return;
-        }
-        base = System.getProperty(BASE_SYSTEM_PROPERTY);
+    public GatewayEnvironment() {
+        String base = System.getProperty(BASE_SYSTEM_PROPERTY);
         if (base != null) {
             delegate = new DefaultEnvironment(new File(base));
             return;

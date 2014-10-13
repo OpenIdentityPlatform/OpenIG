@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 1.0.0
  */
-final class Servlet2Adapter extends ServletApiVersionAdapter {
+final class Servlet2Adapter extends ServletVersionAdapter {
 
     /**
      * Synchronization implementation. Package private because it is used as the
@@ -48,7 +48,7 @@ final class Servlet2Adapter extends ServletApiVersionAdapter {
         }
 
         @Override
-        public void awaitIfNeeded() throws Exception {
+        public void awaitIfNeeded() throws InterruptedException {
             requestCompletionLatch.await();
         }
 

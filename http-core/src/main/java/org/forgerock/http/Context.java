@@ -49,16 +49,21 @@ public final class Context {
         return principal;
     }
 
-    public void setPrincipal(Principal principal) {
+    public Context setPrincipal(Principal principal) {
         this.principal = principal;
+        return this;
     }
 
     public Session getSession() {
         return session;
     }
 
+    public Context setSession(Session session) {
+        this.session = session;
+        return this;
+    }
+
     public Map<String, Object> getAttributes() {
         return attributes;
     }
-
 }

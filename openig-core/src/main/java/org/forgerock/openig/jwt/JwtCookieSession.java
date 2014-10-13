@@ -58,12 +58,6 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     public static final String OPENIG_JWT_SESSION = "openig-jwt-session";
 
     /**
-     * The {@literal request} will be used to read existing cookie (if any), and the {@link #save(Response)} method will
-     * be used to write the new cookie value.
-     */
-    private final Request request;
-
-    /**
      * Know how to rebuild a JWT from a String.
      */
     private final JwtReconstruction reader = new JwtReconstruction();
@@ -110,20 +104,21 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                             final String cookieName,
                             final Logger logger) {
         super(new LinkedHashMap<String, Object>());
-        this.request = request;
         this.pair = pair;
         this.cookieName = cookieName;
         this.logger = logger;
 
         // TODO Make this lazy (intercept read methods)
-        loadJwtSession();
+        loadJwtSession(request);
     }
 
     /**
      * Load the session's content from the cookie (if any).
+     *
+     * @param request Request used to access {@literal Cookie} and {@literal Set-Cookie} headers.
      */
-    private void loadJwtSession() {
-        Cookie cookie = findJwtSessionCookie();
+    private void loadJwtSession(Request request) {
+        Cookie cookie = findJwtSessionCookie(request);
         if (cookie != null) {
             try {
                 EncryptedJwt jwt = reader.reconstructJwt(cookie.getValue(), EncryptedJwt.class);
@@ -238,9 +233,10 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     /**
      * Find if there is an existing cookie storing a JWT session.
      *
+     * @param request Request used to access {@literal Cookie} and {@literal Set-Cookie} headers.
      * @return a {@link Cookie} if found, {@literal null} otherwise.
      */
-    private Cookie findJwtSessionCookie() {
+    private Cookie findJwtSessionCookie(Request request) {
         List<Cookie> cookies = request.getCookies().get(cookieName);
         if (cookies != null) {
             return cookies.get(0);

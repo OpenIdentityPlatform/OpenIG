@@ -6,16 +6,11 @@
               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
               id="WebFragment_ID" version="3.0">
 
-    <name>HttpSerlvetFramework</name>
+    <!--<name>HttpSerlvetFramework</name>-->
 
-    <servlet>
-        <servlet-name>HttpFrameworkServlet</servlet-name>
-        <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>HttpFrameworkServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
+    <!--<servlet>-->
+        <!--<servlet-name>HttpFrameworkServlet</servlet-name>-->
+        <!--<servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>-->
+    <!--</servlet>-->
 
 </web-fragment>

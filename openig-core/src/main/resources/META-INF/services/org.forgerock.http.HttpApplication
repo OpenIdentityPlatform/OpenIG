@@ -13,4 +13,4 @@
 #
 # Copyright 2014 ForgeRock AS.
 #
-org.forgerock.openig.servlet.GatewayServletConfiguration
+org.forgerock.openig.http.GatewayHttpApplication

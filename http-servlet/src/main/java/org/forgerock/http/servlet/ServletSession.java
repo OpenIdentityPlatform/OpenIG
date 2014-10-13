@@ -200,9 +200,6 @@ final class ServletSession extends AbstractMap<String, Object> implements Sessio
         return size;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void save(Response response) throws IOException {
         // Nothing to do when using HttpSession

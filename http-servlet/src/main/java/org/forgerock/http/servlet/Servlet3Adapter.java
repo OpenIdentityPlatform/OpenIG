@@ -31,7 +31,7 @@ import org.forgerock.http.servlet.Servlet2Adapter.Servlet2Synchronizer;
  *
  * @since 1.0.0
  */
-final class Servlet3Adapter extends ServletApiVersionAdapter {
+final class Servlet3Adapter extends ServletVersionAdapter {
 
     /**
      * Synchronization implementation - only used when the container supports
@@ -82,7 +82,7 @@ final class Servlet3Adapter extends ServletApiVersionAdapter {
         }
 
         @Override
-        public void awaitIfNeeded() throws Exception {
+        public void awaitIfNeeded() throws InterruptedException {
             // Nothing to signal: this dispatcher is non-blocking.
         }
 

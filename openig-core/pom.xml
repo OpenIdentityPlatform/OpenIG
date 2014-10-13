@@ -29,6 +29,10 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.forgerock.openig</groupId>
       <artifactId>http-core</artifactId>
       <version>${project.version}</version>

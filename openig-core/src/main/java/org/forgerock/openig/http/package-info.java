@@ -16,6 +16,6 @@
  */
 
 /**
- * Integrates with the Java Enterprise Edition Servlet API.
+ * Integrates with the ForgeRock HTTP Framework.
  */
-package org.forgerock.openig.servlet;
+package org.forgerock.openig.http;

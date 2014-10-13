@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 1.0.0
  */
-abstract class ServletApiVersionAdapter {
+abstract class ServletVersionAdapter {
 
     /**
      * Returns an adapter configured for the current Servlet API version.
@@ -41,7 +41,7 @@ abstract class ServletApiVersionAdapter {
      * @throws ServletException
      *             If the Servlet container version is not supported.
      */
-    public static ServletApiVersionAdapter getInstance(ServletContext servletContext)
+    public static ServletVersionAdapter getInstance(ServletContext servletContext)
             throws ServletException {
         switch (servletContext.getMajorVersion()) {
         case 1:
@@ -58,7 +58,7 @@ abstract class ServletApiVersionAdapter {
     /**
      * Prevent sub-classing and instantiation outside this package.
      */
-    ServletApiVersionAdapter() {
+    ServletVersionAdapter() {
         // Nothing to do.
     }
 

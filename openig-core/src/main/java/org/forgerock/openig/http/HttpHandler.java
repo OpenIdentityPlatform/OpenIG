@@ -15,7 +15,7 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.servlet;
+package org.forgerock.openig.http;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
@@ -23,9 +23,9 @@ import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.ResponseException;
 import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -36,12 +36,12 @@ import java.net.URI;
  *
  * @since 3.1.0
  */
-final class ServletHandler implements Handler {
+final class HttpHandler implements Handler {
 
     /**
-     * {@link org.slf4j.Logger} instance for the openig-war module.
+     * {@link Logger} instance for the openig-war module.
      */
-    static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ServletHandler.class);
+    static final Logger LOG = LoggerFactory.getLogger(HttpHandler.class);
 
     private final org.forgerock.openig.handler.Handler handler;
     private final URI baseURI;
@@ -52,7 +52,7 @@ final class ServletHandler implements Handler {
      * @param handler The configured {@code Handler}.
      * @param baseURI The base URI for all HTTP request. Can be {@code null}.
      */
-    ServletHandler(org.forgerock.openig.handler.Handler handler, URI baseURI) {
+    HttpHandler(org.forgerock.openig.handler.Handler handler, URI baseURI) {
         this.handler = handler;
         this.baseURI = baseURI;
     }

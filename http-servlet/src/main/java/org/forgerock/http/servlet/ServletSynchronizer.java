@@ -27,7 +27,7 @@ package org.forgerock.http.servlet;
  * IO (NIO)
  * </ul>
  *
- * @see ServletApiVersionAdapter#createServletSynchronizer(javax.servlet.http.HttpServletRequest,
+ * @see ServletVersionAdapter#createServletSynchronizer(javax.servlet.http.HttpServletRequest,
  *      javax.servlet.http.HttpServletResponse)
  * @since 1.0.0
  */
@@ -55,11 +55,11 @@ interface ServletSynchronizer {
      * block if {@link #isAsync()} returns {@code false}, otherwise it will
      * return immediately without waiting to be signalled.
      *
-     * @throws Exception
+     * @throws InterruptedException
      *             If an unexpected error occurred while waiting to be
      *             signalled.
      */
-    void awaitIfNeeded() throws Exception;
+    void awaitIfNeeded() throws InterruptedException;
 
     /**
      * Returns {@code true} if this synchronizer is non-blocking. In other
