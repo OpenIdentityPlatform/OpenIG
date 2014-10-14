@@ -62,6 +62,7 @@ public final class GatewayHttpApplication implements HttpApplication {
      */
     private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
+    private HeapImpl heap;
     private TemporaryStorage storage;
     private Handler httpHandler;
 
@@ -80,7 +81,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
-            HeapImpl heap = new HeapImpl(); //TODO this heap is not used outside of this method? So why add things to it?
+            heap = new HeapImpl(); //TODO this heap is not used outside of this method? So why add things to it?
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
@@ -124,7 +125,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     @Override
     public void stop() {
-        // Nothing to do here
+        heap.destroy();
     }
 
     private static JsonValue readJson(URL resource) throws IOException {

@@ -20,7 +20,7 @@ import org.forgerock.http.io.Buffer;
 import org.forgerock.util.Factory;
 
 /**
- * <p>Configuration class to configure the {@link HttpFrameworkServlet}.</p>TODO
+ * <p>Configuration class to configure the {@code HttpApplication} instance.</p>
  *
  * <p>The implementation of this class will be loaded using the {@link java.util.ServiceLoader} framework.</p>
  *
@@ -29,7 +29,9 @@ import org.forgerock.util.Factory;
 public interface HttpApplication {
 
     /**
-     * Gets the root {@link Handler} that will handle all HTTP requests.
+     * <p>Gets the root {@link Handler} that will handle all HTTP requests.</p>
+     *
+     * <p>The {@code Handler} returned from this method MUST be a singleton.</p>
      *
      * @return The {@code Handler} to handle HTTP requests.
      */

@@ -16,6 +16,7 @@
 
 package org.forgerock.util.functional;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public final class Lists {
@@ -114,5 +115,9 @@ public final class Lists {
         }
 
         return newList;
+    }
+
+    public static <T> List<T> asList(T... item) {
+        return asList(Arrays.asList(item));
     }
 }
