@@ -80,7 +80,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
-            HeapImpl heap = new HeapImpl();
+            HeapImpl heap = new HeapImpl(); //TODO this heap is not used outside of this method? So why add things to it?
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 

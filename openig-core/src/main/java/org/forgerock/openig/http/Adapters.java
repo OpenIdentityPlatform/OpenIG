@@ -21,6 +21,8 @@ import org.forgerock.http.Request;
 
 /**
  * Adapters for converting between HTTP framework and legacy OpenIG APIs.
+ *
+ * FIXME: Temporary until the IG migrates to using the http framework {@link org.forgerock.http.Handler}.
  */
 public final class Adapters {
 
@@ -28,7 +30,7 @@ public final class Adapters {
         // Prevent instantiation.
     }
 
-    public Exchange asExchange(Context context, Request request) {
+    public static Exchange asExchange(Context context, Request request) {
         final Exchange exchange = new Exchange();
         exchange.exchange = exchange;
         exchange.principal = context.getPrincipal();

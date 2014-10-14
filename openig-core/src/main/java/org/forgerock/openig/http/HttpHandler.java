@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.http;
 
+import static org.forgerock.openig.http.Adapters.asExchange;
+
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
@@ -70,7 +72,7 @@ final class HttpHandler implements Handler {
         if (baseURI != null) {
             request.getUri().rebase(baseURI);
         }
-        Exchange exchange = new RequestAdapter(context, request);
+        Exchange exchange = asExchange(context, request);
         try {
             handler.handle(exchange);
             return Promises.newSuccessfulPromise(exchange.response);

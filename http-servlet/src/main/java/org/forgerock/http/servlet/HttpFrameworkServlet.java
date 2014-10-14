@@ -35,6 +35,7 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.promise.FailureHandler;
 import org.forgerock.util.promise.SuccessHandler;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,13 +73,13 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
             "TRACE", "DELETE"));
 
     private ServletVersionAdapter adapter;
+    private HttpApplication application;
     private Factory<Buffer> storage;
     private Handler handler;
-    private HttpApplication application;
 
     @Override
     public void init() throws ServletException {
-        adapter = ServletVersionAdapter.getInstance(getServletContext());
+        adapter = getInstance(getServletContext());
 
         application = loadConfiguration();
         storage = application.getBufferFactory();
@@ -86,6 +87,19 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
             storage = createDefaultStorage();
         }
         handler = application.start();
+    }
+
+    private ServletVersionAdapter getInstance(ServletContext servletContext)
+            throws ServletException {
+        switch (servletContext.getMajorVersion()) {
+            case 1:
+                // FIXME: i18n.
+                throw new ServletException("Unsupported Servlet version " + servletContext.getMajorVersion());
+            case 2:
+                return new Servlet2Adapter();
+            default:
+                return new Servlet3Adapter();
+        }
     }
 
     private HttpApplication loadConfiguration() throws ServletException {
@@ -98,7 +112,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
 
         HttpApplication configuration = iterator.next();
 
-        if (iterator.hasNext()) {
+        if (iterator.hasNext()) { //TODO AM will need to be able to have multiple separate instances of a HttpApplication...?
             // Multiple ServletConfigurations registered!
             List<Object> messageParams = new ArrayList<Object>();
             messageParams.add(iterator.next().getClass().getName());

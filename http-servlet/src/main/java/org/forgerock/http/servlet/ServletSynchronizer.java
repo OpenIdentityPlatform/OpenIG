@@ -47,7 +47,7 @@ interface ServletSynchronizer {
      *            The call-back to be invoked once the request has completed,
      *            failed, or timed out.
      */
-    void addAsyncListener(Runnable runnable);
+    void addAsyncListener(Runnable runnable); //FIXME: remove once DJ now longer needs?
 
     /**
      * Waits for this synchronizer to be signalled but only if this synchronizer
@@ -78,35 +78,10 @@ interface ServletSynchronizer {
     boolean isAsync();
 
     /**
-     * Releases any waiting threads blocked on {@link #awaitIfNeeded()}. This
-     * method WILL NOT complete the underlying
-     * {@link javax.servlet.AsyncContext} even if one is present. It is intended
-     * for use within Filters in order to signal that the thread processing the
-     * request should forward the request to the remainder of the filter chain.
-     */
-    void signal();
-
-    /**
      * Releases any waiting threads blocked on {@link #awaitIfNeeded()}, as well
      * as completing the underlying {@link javax.servlet.AsyncContext
      * AsyncContext} if this synchronizer is non-blocking. This method should be
-     * called after a writing out content and setting the response status. Use
-     * {@link #signalAndComplete(Throwable)} for returning errors.
+     * called after a writing out content and setting the response status.
      */
     void signalAndComplete();
-
-    /**
-     * Releases any waiting threads blocked on {@link #awaitIfNeeded()}, as well
-     * as completing the underlying {@link javax.servlet.AsyncContext
-     * AsyncContext} if this synchronizer is non-blocking. This method should be
-     * called when an error is encountered which prevents the request from being
-     * processed any further.
-     *
-     * @param t //FIXME will the error be adapted to a ResourceException?
-     *            The error that occurred. The error will be adapted to a
-     *            {@link org.forgerock.json.resource.ResourceException
-     *            ResourceException} if it not already one before being
-     *            serialized back to the client.
-     */
-    void signalAndComplete(Throwable t);
 }

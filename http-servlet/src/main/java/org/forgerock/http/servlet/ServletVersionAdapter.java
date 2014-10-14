@@ -16,8 +16,6 @@
 
 package org.forgerock.http.servlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,37 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 1.0.0
  */
-abstract class ServletVersionAdapter {
-
-    /**
-     * Returns an adapter configured for the current Servlet API version.
-     *
-     * @param servletContext
-     *            The context.
-     * @return An adapter appropriate for the Servlet container.
-     * @throws ServletException
-     *             If the Servlet container version is not supported.
-     */
-    public static ServletVersionAdapter getInstance(ServletContext servletContext)
-            throws ServletException {
-        switch (servletContext.getMajorVersion()) {
-        case 1:
-            // FIXME: i18n.
-            throw new ServletException("Unsupported Servlet version "
-                    + servletContext.getMajorVersion());
-        case 2:
-            return new Servlet2Adapter();
-        default:
-            return new Servlet3Adapter();
-        }
-    }
-
-    /**
-     * Prevent sub-classing and instantiation outside this package.
-     */
-    ServletVersionAdapter() {
-        // Nothing to do.
-    }
+interface ServletVersionAdapter {
 
     /**
      * Creates a new synchronizer appropriate for the provided HTTP request.
@@ -71,6 +39,5 @@ abstract class ServletVersionAdapter {
      *            The HTTP response.
      * @return Returns a new synchronizer appropriate for the HTTP request.
      */
-    public abstract ServletSynchronizer createServletSynchronizer(HttpServletRequest httpRequest,
-            HttpServletResponse httpResponse);
+    ServletSynchronizer createServletSynchronizer(HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 }

@@ -31,7 +31,7 @@ import org.forgerock.http.servlet.Servlet2Adapter.Servlet2Synchronizer;
  *
  * @since 1.0.0
  */
-final class Servlet3Adapter extends ServletVersionAdapter {
+final class Servlet3Adapter implements ServletVersionAdapter {
 
     /**
      * Synchronization implementation - only used when the container supports
@@ -39,12 +39,8 @@ final class Servlet3Adapter extends ServletVersionAdapter {
      */
     private final static class Servlet3Synchronizer implements ServletSynchronizer {
         private final AsyncContext asyncContext;
-        private final HttpServletRequest httpRequest;
-        private final HttpServletResponse httpResponse;
 
-        private Servlet3Synchronizer(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-            this.httpRequest = httpRequest;
-            this.httpResponse = httpResponse;
+        private Servlet3Synchronizer(HttpServletRequest httpRequest) {
             if (httpRequest.isAsyncStarted()) {
                 this.asyncContext = httpRequest.getAsyncContext();
             } else {
@@ -92,18 +88,7 @@ final class Servlet3Adapter extends ServletVersionAdapter {
         }
 
         @Override
-        public void signal() {
-            // Nothing to signal: this dispatcher is non-blocking.
-        }
-
-        @Override
         public void signalAndComplete() {
-            asyncContext.complete();
-        }
-
-        @Override
-        public void signalAndComplete(Throwable t) {
-//            fail(httpRequest, httpResponse, t); //FIXME is this still needed?
             asyncContext.complete();
         }
     }
@@ -116,10 +101,10 @@ final class Servlet3Adapter extends ServletVersionAdapter {
     public ServletSynchronizer createServletSynchronizer(HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
         if (httpRequest.isAsyncSupported()) {
-            return new Servlet3Synchronizer(httpRequest, httpResponse);
+            return new Servlet3Synchronizer(httpRequest);
         } else {
             // Fall-back to Servlet 2 blocking implementation.
-            return new Servlet2Synchronizer(httpRequest, httpResponse);
+            return new Servlet2Synchronizer();
         }
     }
 }

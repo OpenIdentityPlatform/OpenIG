@@ -16,6 +16,8 @@
 
 package org.forgerock.http.servlet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,30 +28,32 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 1.0.0
  */
-final class Servlet2Adapter extends ServletVersionAdapter {
+final class Servlet2Adapter implements ServletVersionAdapter {
 
     /**
      * Synchronization implementation. Package private because it is used as the
      * fall-back implementation in Servlet 3 when async is not supported.
      */
     final static class Servlet2Synchronizer implements ServletSynchronizer {
-        private final HttpServletRequest httpRequest;
-        private final HttpServletResponse httpResponse;
         private final CountDownLatch requestCompletionLatch = new CountDownLatch(1);
+        private final List<Runnable> listeners = new ArrayList<Runnable>();
 
-        Servlet2Synchronizer(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-            this.httpRequest = httpRequest;
-            this.httpResponse = httpResponse;
+        Servlet2Synchronizer() {
+            // Nothing to do.
         }
 
         @Override
         public void addAsyncListener(Runnable runnable) {
-            // Do nothing - this dispatcher is blocking.
+            // This dispatcher is blocking - store listeners to run after request processing has completed.
+            listeners.add(runnable);
         }
 
         @Override
         public void awaitIfNeeded() throws InterruptedException {
             requestCompletionLatch.await();
+            for (Runnable listener : listeners) {
+                listener.run();
+            }
         }
 
         @Override
@@ -58,18 +62,7 @@ final class Servlet2Adapter extends ServletVersionAdapter {
         }
 
         @Override
-        public void signal() {
-            requestCompletionLatch.countDown();
-        }
-
-        @Override
         public void signalAndComplete() {
-            requestCompletionLatch.countDown();
-        }
-
-        @Override
-        public void signalAndComplete(final Throwable t) {
-//            fail(httpRequest, httpResponse, t); //FIXME is this still needed?
             requestCompletionLatch.countDown();
         }
     }
@@ -81,6 +74,6 @@ final class Servlet2Adapter extends ServletVersionAdapter {
     @Override
     public ServletSynchronizer createServletSynchronizer(HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        return new Servlet2Synchronizer(httpRequest, httpResponse);
+        return new Servlet2Synchronizer();
     }
 }
