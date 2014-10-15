@@ -32,7 +32,7 @@ import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 import org.forgerock.openig.util.MultiValueMap;
 
 /**
@@ -148,12 +148,12 @@ public class StaticResponseHandler extends GenericHandler {
             final String reason = config.get("reason").asString();
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final Expression entity = JsonValueUtil.asExpression(config.get("entity"));
+            final Expression entity = Json.asExpression(config.get("entity"));
             final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.addHeader(key, JsonValueUtil.asExpression(value.required()));
+                        handler.addHeader(key, Json.asExpression(value.required()));
                     }
                 }
             }

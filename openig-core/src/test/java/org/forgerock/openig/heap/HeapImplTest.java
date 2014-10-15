@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.JsonValueUtil.readJson;
+import static org.forgerock.openig.util.Json.readJson;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

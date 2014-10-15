@@ -20,7 +20,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;

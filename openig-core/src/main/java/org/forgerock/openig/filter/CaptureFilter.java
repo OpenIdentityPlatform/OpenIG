@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
@@ -46,7 +46,7 @@ import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 
 /**
  * Captures request and response messages for further analysis.
@@ -262,7 +262,7 @@ public class CaptureFilter extends GenericFilter {
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.setWriterProvider(buildFileProvider(config));
-            filter.setCondition(JsonValueUtil.asExpression(config.get("condition")));
+            filter.setCondition(Json.asExpression(config.get("condition")));
             JsonValue capture = config.get("captureEntity");
             filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean());
             return filter;

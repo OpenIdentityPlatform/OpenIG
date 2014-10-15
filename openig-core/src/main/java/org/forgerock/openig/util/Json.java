@@ -54,7 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Provides additional functionality to JsonValue.
  */
-public final class JsonValueUtil {
+public final class Json {
 
     /** Non strict object mapper / data binder used to read json configuration files/data. */
     private static final ObjectMapper LENIENT_MAPPER;
@@ -101,7 +101,7 @@ public final class JsonValueUtil {
     /**
      * Private constructor for utility class.
      */
-    private JsonValueUtil() { }
+    private Json() { }
 
     private static Class<?> classForName(JsonValue value) {
         String name = value.asString();
@@ -384,7 +384,7 @@ public final class JsonValueUtil {
      *            The data as a string to read and parse.
      * @param <T>
      *            The parsing should be as specified in doc. e.g:
-     * @see JsonValueUtil#readJson(Reader)
+     * @see Json#readJson(Reader)
      * @return According to its type, a cast must be necessary to extract the
      *         value.
      * @throws IOException

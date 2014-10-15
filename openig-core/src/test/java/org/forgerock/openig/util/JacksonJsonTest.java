@@ -19,9 +19,8 @@ package org.forgerock.openig.util;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Long.parseLong;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.util.JsonValueUtil.readJsonLenient;
-import static org.forgerock.openig.util.JsonValueUtil.readJson;
+import static org.forgerock.openig.util.Json.readJsonLenient;
+import static org.forgerock.openig.util.Json.readJson;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,17 +29,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.json.fluent.JsonValue;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 
 /**
  * This class is unit testing jackson parser used in OpenIG. Its parser is
- * stricter, gives more explicit messages in error cases and easily
+ * stricter, gives nicer messages in error cases and easily
  * configurable.
  */
-public class JacksonJsonValueTest {
+public class JacksonJsonTest {
 
     private static final String INVALID_JSON = "invalid json";
     private static final String JSON_CONTENT =
@@ -125,7 +123,7 @@ public class JacksonJsonValueTest {
     }
 
     @Test
-    public void shouldCommentsToBeIgnoredByParsing() throws IOException {
+    public void shouldCommentsIgnoredByParsing() throws IOException {
         final String sample =
                 "{ 'name': 'outputHandler', 'type': 'ClientHandler' /* This is a comment */ } ";
 
@@ -167,26 +165,17 @@ public class JacksonJsonValueTest {
         final String rawJson = "{ 'number': 23, 'other': '27' } ";
         final Map<String, Object> jkson = readJson(from(rawJson));
 
-        final JsonValue jsonValue =
-                json(object(field("number", 23), field("other", "27")));
-        assertThat(jsonValue.get("number").asInteger())
-            .isEqualTo(jkson.get("number"))
-            .isEqualTo(23);
-        assertThat(jsonValue.get("other").asString())
-            .isEqualTo(jkson.get("other"))
-            .isEqualTo("27");
+        assertThat(jkson.get("number")).isEqualTo(23);
+        assertThat(jkson.get("other")).isEqualTo("27");
     }
 
     @Test
     public void testJacksonJsonValueSupportsLong() throws Exception {
 
         final String rawJson = "{ 'long': '" + MAX_VALUE + "'}";
-        final JsonValue jsonValue = json(object(field("long", MAX_VALUE)));
         final Map<String, Object> jkson = readJson(from(rawJson));
 
-        assertThat(jsonValue.get("long").asLong())
-            .isEqualTo(parseLong(jkson.get("long").toString()))
-            .isEqualTo(MAX_VALUE);
+        assertThat(parseLong(jkson.get("long").toString())).isEqualTo(MAX_VALUE);
     }
 
     @Test
@@ -214,7 +203,7 @@ public class JacksonJsonValueTest {
 
     @Test
     public void testJacksonParsesBoolean() throws IOException {
-        final Object jsonNode = readJson(String.valueOf(true));
+        final Object jsonNode = readJson("true");
         assertThat(jsonNode).isInstanceOf(Boolean.class).isEqualTo(true);
     }
 

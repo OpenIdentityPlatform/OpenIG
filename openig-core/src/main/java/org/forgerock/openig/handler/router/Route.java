@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
