@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.log;
 
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.File;
 import java.io.FileOutputStream;

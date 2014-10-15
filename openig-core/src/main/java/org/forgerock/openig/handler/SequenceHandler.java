@@ -30,7 +30,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 
 /**
  * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
@@ -100,7 +100,7 @@ public class SequenceHandler extends GenericHandler {
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
-                final Expression postcondition = JsonValueUtil.asExpression(jv.get("postcondition"));
+                final Expression postcondition = Json.asExpression(jv.get("postcondition"));
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;

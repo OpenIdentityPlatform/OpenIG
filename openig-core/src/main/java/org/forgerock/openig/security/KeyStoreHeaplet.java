@@ -17,7 +17,7 @@
 package org.forgerock.openig.security;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.InputStream;

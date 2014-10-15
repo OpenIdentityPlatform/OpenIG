@@ -41,7 +41,7 @@ import org.forgerock.openig.jwt.dirty.DirtyCollection;
 import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 import org.forgerock.util.MapDecorator;
 
 /**
@@ -152,7 +152,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         }
         // Verify that the given value is JSON compatible
         // This will throw an Exception if not
-        JsonValueUtil.checkJsonCompatibility(key, value);
+        Json.checkJsonCompatibility(key, value);
 
         // Mark the session as dirty
         dirty = true;

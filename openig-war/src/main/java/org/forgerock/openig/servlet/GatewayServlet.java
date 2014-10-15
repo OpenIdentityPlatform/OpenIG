@@ -22,7 +22,7 @@ import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.http.SessionFactory.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;

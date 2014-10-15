@@ -19,7 +19,7 @@ package org.forgerock.openig.util;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
@@ -45,7 +45,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class JsonValueUtilTest {
+public class JsonTest {
 
     @Mock
     private Heap heap;
@@ -128,33 +128,33 @@ public class JsonValueUtilTest {
 
     @Test
     public void testJsonCompatibilityBoxedPrimitiveType() throws Exception {
-        JsonValueUtil.checkJsonCompatibility("boolean", true);
-        JsonValueUtil.checkJsonCompatibility("integer", 1);
-        JsonValueUtil.checkJsonCompatibility("short", (short) 12);
-        JsonValueUtil.checkJsonCompatibility("long", -42L);
-        JsonValueUtil.checkJsonCompatibility("float", 42.3F);
-        JsonValueUtil.checkJsonCompatibility("double", 3.14159D);
-        JsonValueUtil.checkJsonCompatibility("char", 'a');
-        JsonValueUtil.checkJsonCompatibility("byte", (byte) 'c');
+        Json.checkJsonCompatibility("boolean", true);
+        Json.checkJsonCompatibility("integer", 1);
+        Json.checkJsonCompatibility("short", (short) 12);
+        Json.checkJsonCompatibility("long", -42L);
+        Json.checkJsonCompatibility("float", 42.3F);
+        Json.checkJsonCompatibility("double", 3.14159D);
+        Json.checkJsonCompatibility("char", 'a');
+        Json.checkJsonCompatibility("byte", (byte) 'c');
     }
 
     @Test
     public void testJsonCompatibilityWithCharSequences() throws Exception {
-        JsonValueUtil.checkJsonCompatibility("string", "a string");
-        JsonValueUtil.checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
-        JsonValueUtil.checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
+        Json.checkJsonCompatibility("string", "a string");
+        Json.checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
+        Json.checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
     }
 
     @Test
     public void testJsonCompatibilityWithArrayOfString() throws Exception {
         String[] strings = {"one", "two", "three"};
-        JsonValueUtil.checkJsonCompatibility("array", strings);
+        Json.checkJsonCompatibility("array", strings);
     }
 
     @Test
     public void testJsonCompatibilityWithListOfString() throws Exception {
         String[] strings = {"one", "two", "three"};
-        JsonValueUtil.checkJsonCompatibility("array", asList(strings));
+        Json.checkJsonCompatibility("array", asList(strings));
     }
 
     @Test
@@ -163,18 +163,18 @@ public class JsonValueUtilTest {
         map.put("one", "one");
         map.put("two", "two");
         map.put("three", "three");
-        JsonValueUtil.checkJsonCompatibility("map", map);
+        Json.checkJsonCompatibility("map", map);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldNotAcceptUnsupportedTypes() throws Exception {
-        JsonValueUtil.checkJsonCompatibility("object", new Object());
+        Json.checkJsonCompatibility("object", new Object());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class,
           expectedExceptionsMessageRegExp = ".*'list\\[1\\]'.*")
     public void shouldWriteErrorTrailForIncorrectList() throws Exception {
-        JsonValueUtil.checkJsonCompatibility("list", asList("one", new Object(), "three"));
+        Json.checkJsonCompatibility("list", asList("one", new Object(), "three"));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class,
@@ -183,7 +183,7 @@ public class JsonValueUtilTest {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("one", "one");
         map.put("object", new Object());
-        JsonValueUtil.checkJsonCompatibility("map", map);
+        Json.checkJsonCompatibility("map", map);
     }
 
     @Test
