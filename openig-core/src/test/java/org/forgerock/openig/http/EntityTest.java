@@ -17,6 +17,7 @@
 package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.object;
 import static org.forgerock.openig.http.Entity.APPLICATION_JSON_CHARSET_UTF_8;
@@ -28,22 +29,21 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.forgerock.openig.header.ContentLengthHeader;
 import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.ByteArrayBranchingStream;
-import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class EntityTest {
     private static final String INVALID_JSON = "invalid json";
-    private static final String JSON_CONTENT1 = "{\"a\":1,\"b\":2}";
-    private static final String JSON_CONTENT2 = "{\"c\":3,\"d\":4}";
-    private static final Object JSON_VALUE1 = object(field("a", 1L), field("b", 2L));
-    private static final Object JSON_VALUE2 = object(field("c", 3L), field("d", 4L));
+    private static final String JSON_CONTENT1 = singleQuotesToDouble("{'a':1,'b':2}");
+    private static final String JSON_CONTENT2 = singleQuotesToDouble("{'c':3,'d':4}");
 
     private Entity entity;
     private Request message;
@@ -85,12 +85,16 @@ public class EntityTest {
     @Test
     public void getJson() throws Exception {
         entity.setRawInputStream(mockJsonContent1);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.getJson()).isInstanceOf(Map.class);
+        final Map<?, ?> jsonEntity = ((Map<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("a", 1), entry("b", 2));
+
         verify(mockJsonContent1, never()).close();
     }
 
-    @Test(expectedExceptions = ParseException.class)
+    @Test(expectedExceptions = IOException.class)
     public void getJsonWhenEntityContainsInvalidJsonThrowsParseException() throws Exception {
         mockJsonContent1 = mockContent(INVALID_JSON);
         entity.setRawInputStream(mockJsonContent1);
@@ -104,9 +108,10 @@ public class EntityTest {
         }
     }
 
-    @Test(expectedExceptions = ParseException.class)
-    public void getJsonWhenEntityIsEmptyThrowsParseException() throws Exception {
-        entity.getJson();
+    @Test
+    public void getJsonWhenEntityIsEmpty() throws Exception {
+        assertThat(entity.getJson()).isNull();
+        assertThat(entity.isEmpty()).isTrue();
     }
 
     @Test
@@ -166,10 +171,36 @@ public class EntityTest {
     public void setJson() throws Exception {
         entity.setRawInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
-        entity.setJson(JSON_VALUE2);
+        entity.setJson(object(field("c", 3), field("d", 4)));
         assertThatContentIsJsonContent2();
         assertThatContentLengthHeaderIsPresentForJsonContent2();
         assertThatContentTypeHeaderIsPresent();
+    }
+
+    @Test(enabled = false)
+    public void setJsonAsBean() throws Exception {
+        class MyBean {
+            private String name;
+
+            MyBean(final String mName) {
+                name = mName;
+            }
+
+            @SuppressWarnings("unused")
+            public String getName() {
+                return name;
+            }
+
+            @SuppressWarnings("unused")
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+        final String json = singleQuotesToDouble("{'name':'Jackson'}");
+        final MyBean mybean = new MyBean("Jackson");
+        entity.setJson(mybean);
+        assertThat(entity.getJson()).isSameAs(mybean); // Shouldn't this to be the json representation ?
+        assertThat(entity.getString()).isEqualTo(json);
     }
 
     @Test
@@ -216,18 +247,35 @@ public class EntityTest {
         assertThat(entity.getRawInputStream().available()).isEqualTo(0);
     }
 
-    private void assertThatContentIsJsonContent1() throws IOException, ParseException {
+    @Test
+    public void shouldParseJsonObjectReturnsLinkedHashMap() throws IOException {
+        entity.setRawInputStream(mockJsonContent1);
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+    }
+
+    private void assertThatContentIsJsonContent1() throws IOException {
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
+        assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
+
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+        final LinkedHashMap<?, ?> jsonEntity = ((LinkedHashMap<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("a", 1), entry("b", 2));
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
     }
 
     private void assertThatContentIsJsonContent2() throws IOException,
-            UnsupportedEncodingException, ParseException {
+            UnsupportedEncodingException {
         assertThat(entity.getRawInputStream()).isNotSameAs(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT2));
-        assertThat(entity.getString()).isEqualTo(JSON_CONTENT2);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE2);
+
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+        final Map<?, ?> jsonEntity = ((LinkedHashMap<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("c", 3), entry("d", 4));
+
         assertThat(entity.getRawInputStream().available()).isEqualTo(JSON_CONTENT2.length());
         verify(mockJsonContent1).close();
     }
@@ -267,4 +315,8 @@ public class EntityTest {
         return mockContent(content.getBytes("UTF-8"));
     }
 
+    /** Remove single quotes from a given string. */
+    private static String singleQuotesToDouble(final String value) {
+        return value.replace('\'', '\"');
+    }
 }

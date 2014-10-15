@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 import org.forgerock.openig.io.BranchingInputStream;
 
@@ -91,8 +92,10 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      * @param o
      *            The object whose value should be stored in the entity.
      * @return This message.
+     * @throws IOException
+     *             If an IO error occurred while reading/mapping the content.
      */
-    public final T setEntity(Object o) {
+    public final T setEntity(Object o) throws IOException {
         if (o instanceof BranchingInputStream) {
             entity.setRawInputStream((BranchingInputStream) o);
         } else if (o instanceof byte[]) {
@@ -123,6 +126,7 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      *
      * @see Entity#close()
      */
+    @Override
     public void close() {
         entity.close();
     }
