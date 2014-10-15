@@ -142,8 +142,8 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         try {
             return new JsonValue(entity.getJson());
         } catch (IOException e) {
-            throw new OAuth2TokenException("io", format(
-                    "Cannot read response content as JSON: %s", e.getMessage()), e);
+            throw new OAuth2TokenException("io",
+                    format("Cannot read response content as JSON: %s", e.getMessage()), e);
         } finally {
             closeSilently(entity);
         }

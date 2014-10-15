@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.Json.*;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +35,6 @@ import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.Json;
 
 /**
  * Removes headers from and adds headers to a message.
@@ -87,7 +88,7 @@ public class HeaderFilter extends GenericFilter {
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, (String) Json.asExpression(jsonValue).eval(exchange));
+                message.getHeaders().add(key, (String) asExpression(jsonValue).eval(exchange));
             }
         }
     }
