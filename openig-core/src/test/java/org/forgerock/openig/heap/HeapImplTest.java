@@ -20,9 +20,11 @@ import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.util.JsonValueUtil.readJson;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.domain.ReferencedObject;
@@ -30,7 +32,6 @@ import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
-import org.json.simple.parser.JSONParser;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -199,9 +200,8 @@ public class HeapImplTest {
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {
-        Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
-        JSONParser parser = new JSONParser();
-        return new JsonValue(parser.parse(reader)).get("heap");
+        final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
+        return new JsonValue(readJson(reader)).get("heap");
     }
 
     private HeapImpl buildDefaultHeap() {

@@ -244,9 +244,9 @@ public class ExpressionTest {
         exchange.request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
         Object map = new Expression("${exchange.request.entity.json}").eval(exchange);
         assertThat(map).isInstanceOf(Map.class);
-        assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345L));
+        assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345));
         Object i = new Expression("${exchange.request.entity.json.int}").eval(exchange);
-        assertThat(i).isEqualTo(Long.valueOf(12345));
+        assertThat(i).isEqualTo(12345);
     }
 
     @Test

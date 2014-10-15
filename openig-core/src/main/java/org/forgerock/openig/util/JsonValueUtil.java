@@ -17,11 +17,19 @@
 
 package org.forgerock.openig.util;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.*;
 import static java.lang.String.*;
 import static java.util.Collections.*;
-import static org.forgerock.openig.util.Loader.*;
+import static org.forgerock.openig.util.Loader.loadList;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,14 +45,29 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.promise.Function;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 /**
  * Provides additional functionality to JsonValue.
  */
 public final class JsonValueUtil {
 
-    /**
-     * List of alias service providers found at initialization time.
-     */
+    /** Non strict object mapper / data binder used to read json configuration files/data. */
+    private static final ObjectMapper LENIENT_MAPPER;
+    static {
+        LENIENT_MAPPER = new ObjectMapper();
+        LENIENT_MAPPER.configure(ALLOW_COMMENTS, true);
+        LENIENT_MAPPER.configure(ALLOW_SINGLE_QUOTES, true);
+    }
+
+    /** Strict object mapper / data binder used to read json configuration files/data. */
+    private static final ObjectMapper STRICT_MAPPER = new ObjectMapper();
+
+    /** List of alias service providers found at initialization time. */
     private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
             unmodifiableList(loadList(ClassAliasResolver.class));
 
@@ -352,5 +375,128 @@ public final class JsonValueUtil {
             final String name, final String deprecatedName) {
         logger.warning(format("[%s] The '%s' attribute is deprecated, please use '%s' instead",
                 config.getPointer(), deprecatedName, name));
+    }
+
+    /**
+     * Parses to json the provided data.
+     *
+     * @param rawData
+     *            The data as a string to read and parse.
+     * @param <T>
+     *            The parsing should be as specified in doc. e.g:
+     * @see JsonValueUtil#readJson(Reader)
+     * @return According to its type, a cast must be necessary to extract the
+     *         value.
+     * @throws IOException
+     *             If an exception occurs during parsing the data.
+     */
+    public static <T> T readJson(final String rawData) throws IOException {
+        if (rawData == null) {
+            return null;
+        }
+        return readJson(new StringReader(rawData));
+    }
+
+    /**
+     * Parses to json the provided reader.
+     *
+     * @param reader
+     *            The data to parse.
+     * @param <T>
+     *            The parsing should be as specified in doc. e.g:
+     *
+     *            <pre>
+     * <b>JSON       | Type Java Type</b>
+     * ------------------------------------
+     * object     | LinkedHashMap<String,?>
+     * array      | LinkedList<?>
+     * string     | String
+     * number     | Integer
+     * float      | Float
+     * true|false | Boolean
+     * null       | null
+     * </pre>
+     * @return The parsed JSON into its corresponding java type.
+     * @throws IOException
+     *             If an exception occurs during parsing the data.
+     */
+    public static <T> T readJson(final Reader reader) throws IOException {
+        return parse(STRICT_MAPPER, reader);
+    }
+
+    /**
+     * This function it's only used to read our configuration files and allows
+     * JSON files to contain non strict JSON such as comments or single quotes.
+     *
+     * @param reader
+     *            The stream of data to parse.
+     * @return A map containing the parsed configuration.
+     * @throws IOException
+     *             If an error occurs during reading/parsing the data.
+     */
+    public static Map<String, Object> readJsonLenient(final Reader reader) throws IOException {
+        return parse(LENIENT_MAPPER, reader);
+    }
+
+    /**
+     * This function it's only used to read our configuration files and allows
+     * JSON files to contain non strict JSON such as comments or single quotes.
+     *
+     * @param in
+     *            The input stream containing the json configuration.
+     * @return A map containing the parsed configuration.
+     * @throws IOException
+     *             If an error occurs during reading/parsing the data.
+     */
+    public static Map<String, Object> readJsonLenient(final InputStream in) throws IOException {
+        return parse(LENIENT_MAPPER, new InputStreamReader(in));
+    }
+
+    private static  <T> T parse(ObjectMapper mapper, Reader reader) throws IOException {
+        if (reader == null) {
+            return null;
+        }
+
+        final JsonParser jp =  mapper.getFactory().createParser(reader);
+        final JsonToken jToken = jp.nextToken();
+        if (jToken != null) {
+            switch (jToken) {
+            case START_ARRAY:
+                return mapper.readValue(jp, new TypeReference<LinkedList<?>>() {
+                });
+            case START_OBJECT:
+                return mapper.readValue(jp, new TypeReference<LinkedHashMap<String, ?>>() {
+                });
+            case VALUE_FALSE:
+            case VALUE_TRUE:
+                return mapper.readValue(jp, new TypeReference<Boolean>() {
+                });
+            case VALUE_NUMBER_INT:
+                return mapper.readValue(jp, new TypeReference<Integer>() {
+                });
+            case VALUE_NUMBER_FLOAT:
+                return mapper.readValue(jp, new TypeReference<Float>() {
+                });
+            case VALUE_NULL:
+                return null;
+            default:
+                // This is very unlikely to happen.
+                throw new IOException("Invalid JSON content");
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Writes the JSON content of the object passed in parameter.
+     *
+     * @param objectToWrite
+     *            The object we want to serialize as JSON output. The
+     * @return the Json output as a string.
+     * @throws IOException
+     *             If an error occurs during writing/mapping content.
+     */
+    public static byte[] writeJson(final Object objectToWrite) throws IOException {
+        return STRICT_MAPPER.writeValueAsBytes(objectToWrite);
     }
 }

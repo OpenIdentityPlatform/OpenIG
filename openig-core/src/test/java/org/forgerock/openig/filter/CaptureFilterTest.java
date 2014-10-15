@@ -198,7 +198,7 @@ public class CaptureFilterTest {
     /**
      * Build a simplistic Exchange with minimal request/response objects.
      */
-    private Exchange buildRequestOnlyExchange(final String entity, final String mimeType) {
+    private Exchange buildRequestOnlyExchange(final String entity, final String mimeType) throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setEntity(entity);

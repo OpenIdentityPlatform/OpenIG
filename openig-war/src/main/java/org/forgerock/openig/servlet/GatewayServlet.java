@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -62,8 +61,6 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.URIUtil;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  * The main OpenIG HTTP Servlet which is responsible for bootstrapping the configuration and delegating all request
@@ -91,20 +88,16 @@ public class GatewayServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static JsonValue readJson(final URL resource) throws ServletException {
-        InputStreamReader reader = null;
+        InputStream in = null;
         try {
-            final InputStream in = resource.openStream();
-            final JSONParser parser = new JSONParser();
-            reader = new InputStreamReader(in);
-            return new JsonValue(parser.parse(reader));
-        } catch (final ParseException e) {
-            throw new ServletException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
+            in = resource.openStream();
+            return new JsonValue(readJsonLenient(in));
         } catch (final FileNotFoundException e) {
             throw new ServletException(format("File %s does not exists", resource), e);
         } catch (final IOException e) {
-            throw new ServletException(format("Cannot read content of %s", resource), e);
+            throw new ServletException(format("Cannot read/parse content of %s", resource), e);
         } finally {
-            closeSilently(reader);
+            closeSilently(in);
         }
     }
 

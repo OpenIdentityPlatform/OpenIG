@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
+import static java.lang.String.format;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.util.time.TimeService;
-import org.json.simple.parser.ParseException;
 
 /**
  * An {@link OpenAmAccessTokenResolver} knows how to resolve a given token identifier against an OpenAm instance.
@@ -142,9 +142,8 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         try {
             return new JsonValue(entity.getJson());
         } catch (IOException e) {
-            throw new OAuth2TokenException("io", "Cannot read response content", e);
-        } catch (ParseException e) {
-            throw new OAuth2TokenException("parse", "Cannot parse response content as JSON", e);
+            throw new OAuth2TokenException("io", format(
+                    "Cannot read response content as JSON: %s", e.getMessage()), e);
         } finally {
             closeSilently(entity);
         }

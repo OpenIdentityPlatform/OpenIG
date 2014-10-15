@@ -17,6 +17,8 @@
 package org.forgerock.openig.http;
 
 import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.util.JsonValueUtil.readJson;
+import static org.forgerock.openig.util.JsonValueUtil.writeJson;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -36,9 +38,6 @@ import org.forgerock.openig.header.ContentTypeHeader;
 import org.forgerock.openig.io.BranchingInputStream;
 import org.forgerock.openig.io.ByteArrayBranchingStream;
 import org.forgerock.openig.io.Streamer;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  * Message content. An entity wraps a BranchingInputStream and provides various
@@ -201,17 +200,15 @@ public final class Entity implements Closeable {
      * @return The content of this entity decoded as a JSON object, which will
      *         be {@code null} only if the content represents the JSON
      *         {@code null} value.
-     * @throws ParseException
-     *             If the content was malformed JSON (e.g. if the entity is
-     *             empty).
      * @throws IOException
-     *             If an IO error occurred while reading the content.
+     *             If an IO error occurred while reading the content or if the
+     *             JSON is malformed.
      */
-    public Object getJson() throws ParseException, IOException {
+    public Object getJson() throws IOException {
         if (json == null) {
             final BufferedReader reader = newDecodedContentReader(null);
             try {
-                json = new JSONParser().parse(reader);
+                json = readJson(reader);
             } finally {
                 reader.close();
             }
@@ -379,10 +376,14 @@ public final class Entity implements Closeable {
      * @param value
      *            The object whose JSON representation is to be store in this
      *            entity.
+     * @throws IOException
+     *             If an IO error occurred while writing JSON, such as trying to
+     *             output content in wrong context (non-matching end-array or
+     *             end-object, for example).
      */
-    public void setJson(final Object value) {
+    public void setJson(final Object value) throws IOException {
         message.getHeaders().putSingle(ContentTypeHeader.NAME, APPLICATION_JSON_CHARSET_UTF_8);
-        setString(JSONValue.toJSONString(value));
+        setBytes(writeJson(value));
         json = value;
     }
 
