@@ -128,33 +128,33 @@ public class JsonTest {
 
     @Test
     public void testJsonCompatibilityBoxedPrimitiveType() throws Exception {
-        Json.checkJsonCompatibility("boolean", true);
-        Json.checkJsonCompatibility("integer", 1);
-        Json.checkJsonCompatibility("short", (short) 12);
-        Json.checkJsonCompatibility("long", -42L);
-        Json.checkJsonCompatibility("float", 42.3F);
-        Json.checkJsonCompatibility("double", 3.14159D);
-        Json.checkJsonCompatibility("char", 'a');
-        Json.checkJsonCompatibility("byte", (byte) 'c');
+        checkJsonCompatibility("boolean", true);
+        checkJsonCompatibility("integer", 1);
+        checkJsonCompatibility("short", (short) 12);
+        checkJsonCompatibility("long", -42L);
+        checkJsonCompatibility("float", 42.3F);
+        checkJsonCompatibility("double", 3.14159D);
+        checkJsonCompatibility("char", 'a');
+        checkJsonCompatibility("byte", (byte) 'c');
     }
 
     @Test
     public void testJsonCompatibilityWithCharSequences() throws Exception {
-        Json.checkJsonCompatibility("string", "a string");
-        Json.checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
-        Json.checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
+        checkJsonCompatibility("string", "a string");
+        checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
+        checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
     }
 
     @Test
     public void testJsonCompatibilityWithArrayOfString() throws Exception {
         String[] strings = {"one", "two", "three"};
-        Json.checkJsonCompatibility("array", strings);
+        checkJsonCompatibility("array", strings);
     }
 
     @Test
     public void testJsonCompatibilityWithListOfString() throws Exception {
         String[] strings = {"one", "two", "three"};
-        Json.checkJsonCompatibility("array", asList(strings));
+        checkJsonCompatibility("array", asList(strings));
     }
 
     @Test
@@ -163,18 +163,18 @@ public class JsonTest {
         map.put("one", "one");
         map.put("two", "two");
         map.put("three", "three");
-        Json.checkJsonCompatibility("map", map);
+        checkJsonCompatibility("map", map);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldNotAcceptUnsupportedTypes() throws Exception {
-        Json.checkJsonCompatibility("object", new Object());
+        checkJsonCompatibility("object", new Object());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class,
           expectedExceptionsMessageRegExp = ".*'list\\[1\\]'.*")
     public void shouldWriteErrorTrailForIncorrectList() throws Exception {
-        Json.checkJsonCompatibility("list", asList("one", new Object(), "three"));
+        checkJsonCompatibility("list", asList("one", new Object(), "three"));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class,
@@ -183,7 +183,7 @@ public class JsonTest {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("one", "one");
         map.put("object", new Object());
-        Json.checkJsonCompatibility("map", map);
+        checkJsonCompatibility("map", map);
     }
 
     @Test

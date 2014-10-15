@@ -16,11 +16,9 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.Long.MAX_VALUE;
-import static java.lang.Long.parseLong;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.openig.util.Json.readJsonLenient;
-import static org.forgerock.openig.util.Json.readJson;
+import static java.lang.Long.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.IOException;
 import java.io.Reader;

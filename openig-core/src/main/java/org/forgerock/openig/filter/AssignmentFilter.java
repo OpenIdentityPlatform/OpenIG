@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.Json.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.Json;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
@@ -184,9 +185,9 @@ public class AssignmentFilter extends GenericFilter {
             // optional
             JsonValue bindings = config.get("onRequest").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression condition = Json.asExpression(binding.get("condition"));
-                Expression target = Json.asExpression(binding.get("target").required());
-                Expression value = Json.asExpression(binding.get("value"));
+                Expression condition = asExpression(binding.get("condition"));
+                Expression target = asExpression(binding.get("target").required());
+                Expression value = asExpression(binding.get("value"));
 
                 filter.addRequestBinding(condition, target, value);
             }
@@ -196,9 +197,9 @@ public class AssignmentFilter extends GenericFilter {
             // optional
             JsonValue bindings = config.get("onResponse").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression condition = Json.asExpression(binding.get("condition"));
-                Expression target = Json.asExpression(binding.get("target").required());
-                Expression value = Json.asExpression(binding.get("value"));
+                Expression condition = asExpression(binding.get("condition"));
+                Expression target = asExpression(binding.get("target").required());
+                Expression value = asExpression(binding.get("value"));
 
                 filter.addResponseBinding(condition, target, value);
             }

@@ -16,9 +16,8 @@
 
 package org.forgerock.openig.http;
 
-import static org.forgerock.util.Utils.closeSilently;
-import static org.forgerock.openig.util.Json.readJson;
-import static org.forgerock.openig.util.Json.writeJson;
+import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

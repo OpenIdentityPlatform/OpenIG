@@ -452,12 +452,12 @@ public final class Json {
         return parse(LENIENT_MAPPER, new InputStreamReader(in));
     }
 
-    private static  <T> T parse(ObjectMapper mapper, Reader reader) throws IOException {
+    private static <T> T parse(ObjectMapper mapper, Reader reader) throws IOException {
         if (reader == null) {
             return null;
         }
 
-        final JsonParser jp =  mapper.getFactory().createParser(reader);
+        final JsonParser jp = mapper.getFactory().createParser(reader);
         final JsonToken jToken = jp.nextToken();
         if (jToken != null) {
             switch (jToken) {
