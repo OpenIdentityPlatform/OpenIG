@@ -27,7 +27,8 @@ import static org.forgerock.util.Utils.closeSilently;
 import org.forgerock.http.Handler;
 import org.forgerock.http.Handlers;
 import org.forgerock.http.HttpApplication;
-import org.forgerock.http.SessionFactory;
+import org.forgerock.http.SessionFilter;
+import org.forgerock.http.SessionManager;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
@@ -58,7 +59,7 @@ import java.util.Map;
 public final class GatewayHttpApplication implements HttpApplication {
 
     /**
-     * Key to retrieve the default {@link SessionFactory} instance from the {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve the default {@link SessionManager} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
     private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
@@ -81,7 +82,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
-            heap = new HeapImpl(); //TODO this heap is not used outside of this method? So why add things to it?
+            heap = new HeapImpl();
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
@@ -99,8 +100,8 @@ public final class GatewayHttpApplication implements HttpApplication {
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
             // Let the user change the type of session to use
-            SessionFactory sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
-            SessionFilter sessionFilter = new SessionFilter(sessionFactory);
+            SessionManager sessionManager = heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
+            SessionFilter sessionFilter = new SessionFilter(sessionManager);
             org.forgerock.openig.handler.Handler handler = heap.resolve(
                     getWithDeprecation(config, logger, "handler", "handlerObject"),
                     org.forgerock.openig.handler.Handler.class);

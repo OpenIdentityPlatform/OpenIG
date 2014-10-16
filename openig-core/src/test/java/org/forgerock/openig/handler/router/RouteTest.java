@@ -29,7 +29,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.SessionFactory;
+import org.forgerock.http.SessionManager;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -50,12 +50,12 @@ public class RouteTest {
     private Session scoped;
 
     @Mock
-    private SessionFactory sessionFactory;
+    private SessionManager sessionManager;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(sessionFactory.load(any(Request.class))).thenReturn(scoped);
+        when(sessionManager.load(any(Request.class))).thenReturn(scoped);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class RouteTest {
     @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
-        Route route = createRoute(sessionFactory, null, null);
+        Route route = createRoute(sessionManager, null, null);
         Exchange exchange = new Exchange();
         exchange.session = original;
 
@@ -119,7 +119,7 @@ public class RouteTest {
     @Test
     public void shouldReplaceBackTheOriginalSessionForUpStreamHandlersWhenExceptionsAreThrown() throws Exception {
 
-        Route route = createRoute(sessionFactory, null, null);
+        Route route = createRoute(sessionManager, null, null);
         Exchange exchange = new Exchange();
         exchange.session = original;
 
@@ -141,12 +141,12 @@ public class RouteTest {
 
     }
 
-    private Route createRoute(final SessionFactory sessionFactory,
+    private Route createRoute(final SessionManager sessionManager,
                               final Expression condition,
                               final URI baseURI) {
         return new Route(new HeapImpl(),
                          handler,
-                         sessionFactory,
+                sessionManager,
                          "router",
                          condition,
                          baseURI);

@@ -17,26 +17,29 @@
 
 package org.forgerock.http.servlet;
 
+import static org.forgerock.http.io.IO.newBranchingInputStream;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
+import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.ResponseException;
 import org.forgerock.http.Session;
-import org.forgerock.http.SessionFactory;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.Buffer;
-import org.forgerock.http.io.IO;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.util.Factory;
 import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.SuccessHandler;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -54,23 +57,21 @@ import java.util.ServiceLoader;
  * <p>An HTTP servlet implementation which provides integration between the Servlet API and the common HTTP Framework.
  * </p>
  *
- * <p>A {@link org.forgerock.http.HttpApplication} implementation must be registered in the {@link ServiceLoader} framework, so as to
- * provide:
- * <ul>
- * <li>a {@link Handler} instance to handle each HTTP request</li>
- * <li>a {@link Factory} instance, providing {@link Buffer}s, to provide temporary storage buffers for each HTTP request
- * </li>
- * <li>a {@link SessionFactory} instance to provide {@link Session}s for each HTTP request</li>
- * </ul>
- * </p>
+ * <p>A {@link HttpApplication} implementation must be registered in the {@link ServiceLoader} framework</p>
  *
+ * @see HttpApplication
  * @since 1.0.0
  */
-public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
+public final class HttpFrameworkServlet extends HttpServlet {
 
     /** Methods that should not include an entity body. */
     private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(Arrays.asList("GET", "HEAD",
             "TRACE", "DELETE"));
+    /**
+     * Servlet 3.x defines ServletContext.TEMPDIR constant, but this does not exist in Servlet 2.5, hence the constant
+     * redefined here.
+     */
+    private static final String SERVLET_TEMP_DIR = "javax.servlet.context.tempdir";
 
     private ServletVersionAdapter adapter;
     private HttpApplication application;
@@ -79,17 +80,21 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        adapter = getInstance(getServletContext());
+        adapter = getAdapter(getServletContext());
 
-        application = loadConfiguration();
+        application = getApplication();
         storage = application.getBufferFactory();
         if (storage == null) {
             storage = createDefaultStorage();
         }
-        handler = application.start();
+        try {
+            handler = application.start();
+        } catch (HttpApplicationException e) {
+            throw new ServletException("Failed to start HTTP Application", e);
+        }
     }
 
-    private ServletVersionAdapter getInstance(ServletContext servletContext)
+    private ServletVersionAdapter getAdapter(ServletContext servletContext)
             throws ServletException {
         switch (servletContext.getMajorVersion()) {
             case 1:
@@ -102,7 +107,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
         }
     }
 
-    private HttpApplication loadConfiguration() throws ServletException {
+    private HttpApplication getApplication() throws ServletException {
         ServiceLoader<HttpApplication> configurations = ServiceLoader.load(HttpApplication.class);
         Iterator<HttpApplication> iterator = configurations.iterator();
 
@@ -131,16 +136,12 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
     }
 
     private Factory<Buffer> createDefaultStorage() throws ServletException {
-        try {
-            return IO.newTemporaryStorage(File.createTempFile("tmpStorage", null), IO.DEFAULT_TMP_INIT_LENGTH,
-                    IO.DEFAULT_TMP_MEMORY_LIMIT, IO.DEFAULT_TMP_FILE_LIMIT);
-        } catch (IOException e) {
-            throw new ServletException("Failed to create temporary storage", e);
-        }
+        File tmpDir = (File) getServletContext().getAttribute(SERVLET_TEMP_DIR);
+        return newTemporaryStorage(tmpDir);
     }
 
     @Override
-    protected void service(HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
+    protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
             IOException {
 
         final Request request = createRequest(req);
@@ -157,7 +158,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
         // handle request
         final ServletSynchronizer sync = adapter.createServletSynchronizer(req, resp);
 
-        handler.handle(context, request)
+        final Promise<Response, ResponseException> promise = handler.handle(context, request)
                 .onSuccess(new SuccessHandler<Response>() {
                     @Override
                     public void handleResult(Response response) {
@@ -185,6 +186,14 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
                     }
                 });
 
+        sync.setAsyncListener(new Runnable() {
+            @Override
+            public void run() {
+                promise.cancel(true);
+                sync.signalAndComplete(); //TODO is this needed? Not sure if the latch would have been freed by now...
+            }
+        });
+
         try {
             sync.awaitIfNeeded();
         } catch (InterruptedException e) {
@@ -211,7 +220,7 @@ public final class HttpFrameworkServlet extends javax.servlet.http.HttpServlet {
         // include request entity if appears to be provided with request
         if ((req.getContentLength() > 0 || req.getHeader("Transfer-Encoding") != null)
                 && !NON_ENTITY_METHODS.contains(request.getMethod())) {
-            request.setEntity(IO.newBranchingInputStream(req.getInputStream(), storage));
+            request.setEntity(newBranchingInputStream(req.getInputStream(), storage));
         }
 
         return request;

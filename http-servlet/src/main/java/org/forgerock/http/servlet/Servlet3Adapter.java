@@ -51,7 +51,7 @@ final class Servlet3Adapter implements ServletVersionAdapter {
         }
 
         @Override
-        public void addAsyncListener(final Runnable runnable) {
+        public void setAsyncListener(final Runnable runnable) {
             asyncContext.addListener(new AsyncListener() {
 
                 @Override
@@ -80,11 +80,6 @@ final class Servlet3Adapter implements ServletVersionAdapter {
         @Override
         public void awaitIfNeeded() throws InterruptedException {
             // Nothing to signal: this dispatcher is non-blocking.
-        }
-
-        @Override
-        public boolean isAsync() {
-            return true;
         }
 
         @Override

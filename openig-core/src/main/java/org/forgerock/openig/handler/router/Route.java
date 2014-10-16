@@ -19,7 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.forgerock.openig.util.JsonValueUtil.asExpression;
 
 import org.forgerock.http.Session;
-import org.forgerock.http.SessionFactory;
+import org.forgerock.http.SessionManager;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
@@ -80,7 +80,7 @@ import java.net.URI;
  *       handler execution (if not defined, it always evaluate to true).</li>
  *   <li>{@literal baseURI}: a string used to rebase the request URL.</li>
  *   <li>{@literal name}: a string used name this route (may be used in route ordering).</li>
- *   <li>{@literal session}: the name of a declared heap object of type {@link SessionFactory}.</li>
+ *   <li>{@literal session}: the name of a declared heap object of type {@link SessionManager}.</li>
  * </ul>
  *
  * @see RouterHandler
@@ -112,7 +112,7 @@ class Route extends GenericHandler {
     /**
      * If this value is not null, it will be used to create a new Session instance.
      */
-    private final SessionFactory sessionFactory;
+    private final SessionManager sessionManager;
 
     /**
      * Route's name (may be inferred from the file's name).
@@ -131,7 +131,7 @@ class Route extends GenericHandler {
     public Route(final HeapImpl heap, final JsonValue config, final String defaultName) throws HeapException {
         this(heap,
              heap.resolve(config.get("handler"), Handler.class),
-             heap.resolve(config.get("session"), SessionFactory.class, true),
+             heap.resolve(config.get("session"), SessionManager.class, true),
              config.get("name").defaultTo(defaultName).asString(),
              asExpression(config.get("condition")),
              config.get("baseURI").asURI());
@@ -142,21 +142,21 @@ class Route extends GenericHandler {
      *
      * @param heap heap containing the objects associated to this route.
      * @param handler main handler of the route.
-     * @param sessionFactory user-provided {@link SessionFactory} to be used within this route (may be {@code null})
+     * @param sessionManager user-provided {@link SessionManager} to be used within this route (may be {@code null})
      * @param name route's name
      * @param condition used to dispatch only a subset of Exchanges to this route.
      * @param baseURI URI to rebase the request URI onto (may be {@literal null})
      */
     public Route(final HeapImpl heap,
                  final Handler handler,
-                 final SessionFactory sessionFactory,
+                 final SessionManager sessionManager,
                  final String name,
                  final Expression condition,
                  final URI baseURI) {
 
         this.heap = heap;
         this.handler = handler;
-        this.sessionFactory = sessionFactory;
+        this.sessionManager = sessionManager;
         this.name = name;
         this.condition = condition;
         this.baseURI = baseURI;
@@ -181,12 +181,12 @@ class Route extends GenericHandler {
 
     @Override
     public void handle(final Exchange exchange) throws HandlerException, IOException {
-        if (sessionFactory == null) {
+        if (sessionManager == null) {
             doHandle(exchange);
         } else {
             // Swap the session instance
             Session session = exchange.session;
-            exchange.session = sessionFactory.load(exchange.request);
+            exchange.session = sessionManager.load(exchange.request);
             try {
                 doHandle(exchange);
             } finally {

@@ -34,7 +34,7 @@
       <artifactId>forgerock-util</artifactId> <!-- TODO to ensure that the HTTP Framework doesn't become to 'big' we probably should keep an eye on the size of fr-utils -->
     </dependency>
     <dependency>
-      <groupId>com.googlecode.json-simple</groupId> <!-- TODO is this library prefered over jackson? -->
+      <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
       <version>1.1.1</version>
       <exclusions>
@@ -43,6 +43,10 @@
           <artifactId>junit</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>

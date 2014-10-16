@@ -8,6 +8,7 @@
     <servlet>
         <servlet-name>HttpServlet</servlet-name>
         <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
+        <async-supported>true</async-supported>
     </servlet>
 
     <servlet-mapping>

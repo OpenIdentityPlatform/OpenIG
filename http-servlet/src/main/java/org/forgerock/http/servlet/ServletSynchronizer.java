@@ -47,35 +47,17 @@ interface ServletSynchronizer {
      *            The call-back to be invoked once the request has completed,
      *            failed, or timed out.
      */
-    void addAsyncListener(Runnable runnable); //FIXME: remove once DJ now longer needs?
+    void setAsyncListener(Runnable runnable);
 
     /**
      * Waits for this synchronizer to be signalled but only if this synchronizer
-     * is a blocking implementation. More specifically, this method will only
-     * block if {@link #isAsync()} returns {@code false}, otherwise it will
-     * return immediately without waiting to be signalled.
+     * is a blocking implementation.
      *
      * @throws InterruptedException
      *             If an unexpected error occurred while waiting to be
      *             signalled.
      */
     void awaitIfNeeded() throws InterruptedException;
-
-    /**
-     * Returns {@code true} if this synchronizer is non-blocking. In other
-     * words, if this method returns {@code false} then {@link #awaitIfNeeded()}
-     * may block and calls to {@link #addAsyncListener(Runnable)} will be
-     * ignored.
-     * <p>
-     * This method should be used in order to determine whether filters should
-     * invoke
-     * {@link javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
-     * javax.servlet.ServletResponse, javax.servlet.FilterChain)
-     * doFilter()} before returning.
-     *
-     * @return {@code true} if this synchronizer is non-blocking.
-     */
-    boolean isAsync();
 
     /**
      * Releases any waiting threads blocked on {@link #awaitIfNeeded()}, as well

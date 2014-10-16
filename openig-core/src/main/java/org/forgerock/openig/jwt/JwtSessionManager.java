@@ -20,6 +20,7 @@ import static java.lang.String.*;
 import static org.forgerock.openig.jwt.JwtCookieSession.*;
 import static org.forgerock.openig.util.JsonValueUtil.*;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -32,13 +33,13 @@ import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
 import org.forgerock.http.Request;
+import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.SessionFactory;
+import org.forgerock.http.SessionManager;
 
 /**
  * A JwtSessionFactory is responsible to configure and create a {@link JwtCookieSession}.
@@ -75,7 +76,7 @@ import org.forgerock.http.SessionFactory;
  *
  * @since 3.1
  */
-public class JwtSessionFactory extends GenericHeapObject implements SessionFactory {
+public class JwtSessionManager extends GenericHeapObject implements SessionManager {
 
     /**
      * The pair of keys for JWT payload encryption/decryption.
@@ -96,7 +97,7 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
      * @param cookieName
      *         name of the cookie
      */
-    public JwtSessionFactory(final KeyPair keyPair, final String cookieName) {
+    public JwtSessionManager(final KeyPair keyPair, final String cookieName) {
         this.keyPair = keyPair;
         this.cookieName = cookieName;
     }
@@ -104,6 +105,11 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
     @Override
     public Session load(final Request request) {
         return new JwtCookieSession(request, keyPair, cookieName, logger);
+    }
+
+    @Override
+    public void save(Session session, Response response) throws IOException {
+        session.save(response);
     }
 
     /** Creates and initializes a jwt-session in a heap environment. */
@@ -163,7 +169,7 @@ public class JwtSessionFactory extends GenericHeapObject implements SessionFacto
             }
 
             // Create the session factory with the given KeyPair and cookie name
-            return new JwtSessionFactory(keyPair,
+            return new JwtSessionManager(keyPair,
                                          config.get("cookieName").defaultTo(OPENIG_JWT_SESSION).asString());
         }
     }

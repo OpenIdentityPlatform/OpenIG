@@ -17,7 +17,6 @@
 
 package org.forgerock.http;
 
-import org.forgerock.util.functional.Lists;
 import org.forgerock.util.promise.Promise;
 
 import java.util.Arrays;
@@ -34,30 +33,37 @@ public class Handlers {
 
     public static Handler chain(final Handler handler,
             final List<Filter> filters) {
-        return new Cursor(handler, Lists.asList(filters));
+        return new Chain(handler, filters, 0);
     }
 
-    private static final class Cursor implements Handler {
-
+    private static final class Chain implements Handler {
         private final Handler handler;
-        private final Lists.List<Filter> filters;
+        private final List<Filter> filters;
+        private final int position;
 
-        private Cursor(Handler handler, Lists.List<Filter> filters) {
+        private Chain(Handler handler, List<Filter> filters, int position) {
             this.handler = handler;
             this.filters = filters;
+            this.position = position;
         }
 
         @Override
-        public Promise<Response, ResponseException> handle(Context context, Request request) throws ResponseException {
-            if (filters.tail().isEmpty()) {
-                return filters.head().filter(context, request, handler);
+        public Promise<Response, ResponseException> handle(Context context, Request request)
+                throws ResponseException {
+            if (position < filters.size()) {
+                return filters.get(position).filter(context, request, next());
             } else {
-                return filters.head().filter(context, request, next());
+                return handler.handle(context, request);
             }
         }
 
         private Handler next() {
-            return new Cursor(handler, filters.tail());
+            return new Chain(handler, filters, position + 1);
+        }
+
+        @Override
+        public String toString() {
+            return filters.toString() + " -> " + handler.toString();
         }
     }
 

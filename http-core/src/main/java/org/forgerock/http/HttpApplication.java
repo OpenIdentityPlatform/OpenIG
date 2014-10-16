@@ -18,6 +18,8 @@ package org.forgerock.http;
 
 import org.forgerock.http.io.Buffer;
 import org.forgerock.util.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Configuration class to configure the {@code HttpApplication} instance.</p>
@@ -29,13 +31,19 @@ import org.forgerock.util.Factory;
 public interface HttpApplication {
 
     /**
+     * Http Framework core Logger instance.
+     */
+    Logger LOGGER = LoggerFactory.getLogger(HttpApplication.class);
+
+    /**
      * <p>Gets the root {@link Handler} that will handle all HTTP requests.</p>
      *
      * <p>The {@code Handler} returned from this method MUST be a singleton.</p>
      *
      * @return The {@code Handler} to handle HTTP requests.
+     * @throws HttpApplicationException If there is a problem constructing the root application {@code Handler}.
      */
-    Handler start();
+    Handler start() throws HttpApplicationException;
 
     /**
      * <p>Gets the {@link Factory} that will create temporary storage {@link Buffer}s to handle the processing of requests.</p>

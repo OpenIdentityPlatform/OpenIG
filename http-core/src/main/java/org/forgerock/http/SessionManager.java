@@ -16,6 +16,8 @@
 
 package org.forgerock.http;
 
+import java.io.IOException;
+
 /**
  * <p>A SessionFactory is responsible to create a new type of {@link Session}.</p>
  *
@@ -23,7 +25,7 @@ package org.forgerock.http;
  *
  * @since 1.0.0
  */
-public interface SessionFactory {
+public interface SessionManager {
 
     /**
      * <p>Loads a new Session for the given {@link Request}. The implementations are free to keep a reference to the
@@ -35,4 +37,6 @@ public interface SessionFactory {
      * @return a new Session instance.
      */
     Session load(Request request);
+
+    void save(Session session, Response response) throws IOException;
 }

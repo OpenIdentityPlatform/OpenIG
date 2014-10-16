@@ -16,12 +16,9 @@
 
 package org.forgerock.http.servlet;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * An adapter for use in Servlet 2.x containers.
@@ -36,29 +33,21 @@ final class Servlet2Adapter implements ServletVersionAdapter {
      */
     final static class Servlet2Synchronizer implements ServletSynchronizer {
         private final CountDownLatch requestCompletionLatch = new CountDownLatch(1);
-        private final List<Runnable> listeners = new ArrayList<Runnable>();
+        private Runnable listener;
 
         Servlet2Synchronizer() {
             // Nothing to do.
         }
 
         @Override
-        public void addAsyncListener(Runnable runnable) {
-            // This dispatcher is blocking - store listeners to run after request processing has completed.
-            listeners.add(runnable);
+        public void setAsyncListener(Runnable runnable) {
+            listener = runnable;
         }
 
         @Override
         public void awaitIfNeeded() throws InterruptedException {
             requestCompletionLatch.await();
-            for (Runnable listener : listeners) {
-                listener.run();
-            }
-        }
-
-        @Override
-        public boolean isAsync() {
-            return false;
+            listener.run();
         }
 
         @Override
