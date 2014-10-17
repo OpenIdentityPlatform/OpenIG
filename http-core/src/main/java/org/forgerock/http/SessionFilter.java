@@ -25,11 +25,10 @@ import org.forgerock.util.promise.SuccessHandler;
 
 import java.io.IOException;
 
-public class SessionFilter implements Filter {
-
+class SessionFilter implements Filter {
     private SessionManager sessionManager;
 
-    public SessionFilter(SessionManager sessionManager) {
+    SessionFilter(SessionManager sessionManager) {
         Reject.ifNull(sessionManager, "sessionManager must not be null");
         this.sessionManager = sessionManager;
     }

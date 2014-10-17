@@ -19,8 +19,6 @@ package org.forgerock.http;
 import org.forgerock.util.promise.Promise;
 
 /**
- * TODO: rename to Filter?
- * <p>
  * Filters the request and/or response of an HTTP exchange.
  */
 public interface Filter {

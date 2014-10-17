@@ -63,6 +63,7 @@ import java.util.ServiceLoader;
  * @since 1.0.0
  */
 public final class HttpFrameworkServlet extends HttpServlet {
+    private static final long serialVersionUID = 3524182656424860912L;
 
     /** Methods that should not include an entity body. */
     private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(Arrays.asList("GET", "HEAD",
@@ -135,7 +136,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return configuration;
     }
 
-    private Factory<Buffer> createDefaultStorage() throws ServletException {
+    private Factory<Buffer> createDefaultStorage() {
         File tmpDir = (File) getServletContext().getAttribute(SERVLET_TEMP_DIR);
         return newTemporaryStorage(tmpDir);
     }
@@ -143,9 +144,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
     @Override
     protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
             IOException {
-
         final Request request = createRequest(req);
-
         final Session session = new ServletSession(req);
         final Context context = new Context(session)
                 .setPrincipal(req.getUserPrincipal());
@@ -157,7 +156,6 @@ public final class HttpFrameworkServlet extends HttpServlet {
 
         // handle request
         final ServletSynchronizer sync = adapter.createServletSynchronizer(req, resp);
-
         final Promise<Response, ResponseException> promise = handler.handle(context, request)
                 .onSuccess(new SuccessHandler<Response>() {
                     @Override
@@ -190,7 +188,8 @@ public final class HttpFrameworkServlet extends HttpServlet {
             @Override
             public void run() {
                 promise.cancel(true);
-                sync.signalAndComplete(); //TODO is this needed? Not sure if the latch would have been freed by now...
+                //TODO is this needed? Not sure if the latch would have been freed by now.
+                sync.signalAndComplete();
             }
         });
 
@@ -247,13 +246,11 @@ public final class HttpFrameworkServlet extends HttpServlet {
                 }
             }
             // response entity (if applicable)
-            response.getEntity().copyRawContentTo(resp.getOutputStream()); //TODO does this also set content length?
+            // TODO does this also set content length?
+            response.getEntity().copyRawContentTo(resp.getOutputStream());
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void destroy() {
         application.stop();

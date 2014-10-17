@@ -20,7 +20,6 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.http.util.ExtensibleFieldMap;
 import org.forgerock.util.Reject;
 
 /**

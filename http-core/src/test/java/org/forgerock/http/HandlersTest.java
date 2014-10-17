@@ -44,7 +44,7 @@ public final class HandlersTest {
         Filter filter1 = mock(Filter.class);
         doAnswer(invoke()).when(filter1).filter(any(Context.class), any(Request.class), any(Handler.class));
         Filter filter2 = filter();
-        Handler chain = Handlers.chain(target, filter1, filter2);
+        Handler chain = Http.chainOf(target, filter1, filter2);
         Context context = context();
         Request request = new Request();
 
@@ -72,7 +72,7 @@ public final class HandlersTest {
         Filter filter1 = mock(Filter.class);
         doAnswer(invoke(2)).when(filter1).filter(any(Context.class), any(Request.class), any(Handler.class));
         Filter filter2 = filter();
-        Handler chain = Handlers.chain(target, filter1, filter2);
+        Handler chain = Http.chainOf(target, filter1, filter2);
         Context context = context();
         Request request = new Request();
 
@@ -104,7 +104,7 @@ public final class HandlersTest {
             }
         }).when(filter1).filter(any(Context.class), any(Request.class), any(Handler.class));
         Filter filter2 = filter();
-        Handler chain = Handlers.chain(target, filter1, filter2);
+        Handler chain = Http.chainOf(target, filter1, filter2);
         Context context = context();
         Request request = new Request();
 
@@ -132,7 +132,7 @@ public final class HandlersTest {
             }
         }).when(filter1).filter(any(Context.class), any(Request.class), any(Handler.class));
         Filter filter2 = filter();
-        Handler chain = Handlers.chain(target, filter1, filter2);
+        Handler chain = Http.chainOf(target, filter1, filter2);
         Context context = context();
         Request request = new Request();
 

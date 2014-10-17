@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public interface HttpApplication {
-
     /**
      * Http Framework core Logger instance.
      */

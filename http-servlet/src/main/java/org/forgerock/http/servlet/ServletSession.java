@@ -115,14 +115,7 @@ final class ServletSession extends AbstractMap<String, Object> implements Sessio
         }
     };
 
-    /**
-     * Creates a new session object which manages sessions through the provided
-     * servlet request object.
-     *
-     * @param request the servlet request object through which servlet sessions are
-     * managed.
-     */
-    public ServletSession(final HttpServletRequest request) {
+    ServletSession(final HttpServletRequest request) {
         this.request = request;
         // get session if already allocated
         this.httpSession = request.getSession(false);

@@ -21,8 +21,6 @@ package org.forgerock.http;
 import org.forgerock.util.promise.Promise;
 
 /**
- * TODO: rename to Handler?
- * <p>
  * Handles an HTTP exchange request by producing an associated response.
  */
 public interface Handler {

@@ -18,6 +18,8 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.format;
+import static org.forgerock.http.Http.chainOf;
+import static org.forgerock.http.Http.newSessionFilter;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
@@ -25,9 +27,8 @@ import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.Handlers;
 import org.forgerock.http.HttpApplication;
-import org.forgerock.http.SessionFilter;
+import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.json.fluent.JsonValue;
@@ -57,29 +58,36 @@ import java.util.Map;
  * @since 3.1.0
  */
 public final class GatewayHttpApplication implements HttpApplication {
-
     /**
-     * Key to retrieve the default {@link SessionManager} instance from the {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve the default {@link SessionManager} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
      */
     private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     private HeapImpl heap;
     private TemporaryStorage storage;
-    private Handler httpHandler;
+    private volatile Handler httpHandler;
 
-    public GatewayHttpApplication() throws Exception {
-        init();
+    /**
+     * Default constructor called by the HTTP Framework.
+     */
+    public GatewayHttpApplication() {
+        // Nothing to do.
     }
 
-    public void init() throws Exception {
-        Environment environment = new GatewayEnvironment();
+    @Override
+    public Handler start() throws HttpApplicationException {
+        if (httpHandler != null) {
+            throw new HttpApplicationException("Gateway already started.");
+        }
 
         try {
             // Load the configuration
-            File configuration = new File(environment.getConfigDirectory(), "config.json");
-            URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
+            final Environment environment = new GatewayEnvironment();
+            final File configuration = new File(environment.getConfigDirectory(), "config.json");
+            final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
                     .getResource("default-config.json");
-            JsonValue config = readJson(configurationURL);
+            final JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
             heap = new HeapImpl();
@@ -87,7 +95,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             // can be overridden in config
-            TemporaryStorage temporaryStorage = new TemporaryStorage();
+            final TemporaryStorage temporaryStorage = new TemporaryStorage();
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
@@ -95,28 +103,31 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
-            Logger logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+            final Logger logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                     LogSink.class, true), "GatewayServlet");
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
-            // Let the user change the type of session to use
-            SessionManager sessionManager = heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
-            SessionFilter sessionFilter = new SessionFilter(sessionManager);
-            org.forgerock.openig.handler.Handler handler = heap.resolve(
+
+            // Create the root handler.
+            final org.forgerock.openig.handler.Handler handler = heap.resolve(
                     getWithDeprecation(config, logger, "handler", "handlerObject"),
                     org.forgerock.openig.handler.Handler.class);
-            URI baseURI = config.get("baseURI").asURI();
+            final URI baseURI = config.get("baseURI").asURI();
+            Handler rootHandler = new HttpHandler(handler, baseURI);
 
-            httpHandler = Handlers.chain(new HttpHandler(handler, baseURI), sessionFilter);
+            // Let the user override the container's session.
+            final SessionManager sessionManager =
+                    heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
+            if (sessionManager != null) {
+                rootHandler = chainOf(rootHandler, newSessionFilter(sessionManager));
+            }
+
+            httpHandler = rootHandler;
+            return httpHandler;
         } catch (Exception e) {
             HttpHandler.LOG.error("Failed to initialise Http Application", e);
-            throw e;
+            throw new HttpApplicationException("Unable to start OpenIG", e);
         }
-    }
-
-    @Override
-    public Handler start() {
-        return httpHandler;
     }
 
     @Override
@@ -126,7 +137,10 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     @Override
     public void stop() {
-        heap.destroy();
+        if (httpHandler != null) {
+            heap.destroy();
+            httpHandler = null;
+        }
     }
 
     private static JsonValue readJson(URL resource) throws IOException {

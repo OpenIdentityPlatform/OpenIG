@@ -17,23 +17,40 @@
 
 package org.forgerock.http;
 
-import org.forgerock.util.promise.Promise;
-
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-/**
- * Handler utility methods.
- */
-public class Handlers {
+import org.forgerock.util.promise.Promise;
 
-    public static Handler chain(final Handler handler, final Filter... filters) {
-        return chain(handler, Arrays.asList(filters));
+/**
+ * Utility methods for creating common types of handler and filters.
+ */
+public class Http {
+    /*
+     * FIXME: handlers and filters should always return responses regardless of
+     * the status code. Exceptions should be reserved for internal failures.
+     */
+
+    public static Filter newSessionFilter(SessionManager sessionManager) {
+        return new SessionFilter(sessionManager);
     }
 
-    public static Handler chain(final Handler handler,
-            final List<Filter> filters) {
+    public static Handler chainOf(final Handler handler, final Filter... filters) {
+        return chainOf(handler, Arrays.asList(filters));
+    }
+
+    public static Handler chainOf(final Handler handler, final List<Filter> filters) {
         return new Chain(handler, filters, 0);
+    }
+
+    public static Filter chainOf(final Filter... filters) {
+        return chainOf(Arrays.asList(filters));
+    }
+
+    public static Filter chainOf(final Collection<Filter> filters) {
+        // TODO: return a subsequence of filters.
+        return null;
     }
 
     private static final class Chain implements Handler {
@@ -67,7 +84,7 @@ public class Handlers {
         }
     }
 
-    private Handlers() {
+    private Http() {
         // Prevent instantiation.
     }
 }

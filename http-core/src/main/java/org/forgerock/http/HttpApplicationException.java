@@ -22,6 +22,16 @@ package org.forgerock.http;
  * @since 1.0.0
  */
 public class HttpApplicationException extends Exception {
+    private static final long serialVersionUID = 3010033632180707412L;
+
+    /**
+     * Constructs a new exception with the specified detail message.
+     *
+     * @param  message The detail message.
+     */
+    public HttpApplicationException(String message) {
+        super(message);
+    }
 
     /**
      * Constructs a new exception with the specified detail message and cause.
