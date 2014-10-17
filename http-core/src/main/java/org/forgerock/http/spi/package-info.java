@@ -14,14 +14,7 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.http;
-
 /**
- * Common options for HTTP {@link Client clients}.
+ * HTTP service provider API.
  */
-public final class ClientOptions {
-
-    public String getTransportProvider() {
-        return null;
-    }
-}
+package org.forgerock.http.spi;
