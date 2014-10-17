@@ -15,10 +15,11 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.util;
+package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.forgerock.openig.util.FieldMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

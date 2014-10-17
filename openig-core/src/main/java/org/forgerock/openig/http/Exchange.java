@@ -23,7 +23,7 @@ import java.security.Principal;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.Session;
-import org.forgerock.http.util.ExtensibleFieldMap;
+import org.forgerock.openig.util.ExtensibleFieldMap;
 
 /**
  * An HTTP exchange of request and response, and the root object for the exchange object model.

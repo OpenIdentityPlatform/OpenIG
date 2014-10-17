@@ -15,7 +15,7 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.util;
+package org.forgerock.openig.util;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;

@@ -15,7 +15,7 @@
  * Portions Copyright 2011-2014 ForgeRock AS.
  */
 
-package org.forgerock.http.util;
+package org.forgerock.openig.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
