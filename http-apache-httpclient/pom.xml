@@ -25,7 +25,7 @@
 
     <artifactId>http-apache-httpclient</artifactId>
     <packaging>jar</packaging>
-    <name>Apache HTTP HttpClient integration</name>
+    <name>HTTP Apache HttpClient integration</name>
 
     <dependencies>
         <dependency>
