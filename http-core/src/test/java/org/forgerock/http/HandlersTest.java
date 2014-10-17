@@ -38,6 +38,28 @@ public final class HandlersTest {
 
     private static final Response RESPONSE = new Response();
 
+    @Test
+    public void testFilterCanInvokeAllFiltersAndHandler() throws ResponseException {
+        Handler target = target();
+        Filter filter1 = mock(Filter.class);
+        doAnswer(invoke()).when(filter1).filter(any(Context.class), any(Request.class), any(Handler.class));
+        Filter filter2 = filter();
+        Handler chain = Handlers.chain(target, filter1, filter2);
+        Context context = context();
+        Request request = new Request();
+
+        // The handler will be invoked twice which is obviously unrealistic. In practice,
+        // filter1 will wrap the result handler and combine/reduce the result of the two
+        // sub-reads to produce a single read response. We won't do that here in order
+        // to keep the test simple.
+        chain.handle(context, request);
+
+        InOrder inOrder = inOrder(filter1, filter2, target);
+        inOrder.verify(filter1).filter(same(context), same(request), any(Handler.class));
+        inOrder.verify(filter2).filter(same(context), same(request), any(Handler.class));
+        inOrder.verify(target).handle(context, request);
+    }
+
     /**
      * Tests that a filter can call next filter multiple times. If the cursoring
      * mechanism increments the index for each call then the first invocation

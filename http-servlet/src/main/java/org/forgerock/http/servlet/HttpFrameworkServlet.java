@@ -117,7 +117,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
 
         HttpApplication configuration = iterator.next();
 
-        if (iterator.hasNext()) { //TODO AM will need to be able to have multiple separate instances of a HttpApplication...?
+        if (iterator.hasNext()) {
             // Multiple ServletConfigurations registered!
             List<Object> messageParams = new ArrayList<Object>();
             messageParams.add(iterator.next().getClass().getName());
@@ -247,7 +247,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
                 }
             }
             // response entity (if applicable)
-            response.getEntity().copyRawContentTo(resp.getOutputStream());
+            response.getEntity().copyRawContentTo(resp.getOutputStream()); //TODO does this also set content length?
         }
     }
 
