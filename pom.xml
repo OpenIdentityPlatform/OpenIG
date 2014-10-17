@@ -38,6 +38,7 @@
   <modules>
     <module>http-core</module>
     <module>http-servlet</module>
+    <module>http-apache-httpclient</module>
     <module>openig-core</module>
     <module>openig-war</module>
     <module>openig-saml</module>
