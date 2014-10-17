@@ -54,10 +54,14 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 /**
- * <p>An HTTP servlet implementation which provides integration between the Servlet API and the common HTTP Framework.
+ * <p>
+ * An HTTP servlet implementation which provides integration between the Servlet
+ * API and the common HTTP Framework.
  * </p>
- *
- * <p>A {@link HttpApplication} implementation must be registered in the {@link ServiceLoader} framework</p>
+ * <p>
+ * A {@link HttpApplication} implementation must be registered in the
+ * {@link ServiceLoader} framework
+ * </p>
  *
  * @see HttpApplication
  * @since 1.0.0
@@ -66,11 +70,12 @@ public final class HttpFrameworkServlet extends HttpServlet {
     private static final long serialVersionUID = 3524182656424860912L;
 
     /** Methods that should not include an entity body. */
-    private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(Arrays.asList("GET", "HEAD",
-            "TRACE", "DELETE"));
+    private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(
+            Arrays.asList("GET", "HEAD", "TRACE", "DELETE"));
+
     /**
-     * Servlet 3.x defines ServletContext.TEMPDIR constant, but this does not exist in Servlet 2.5, hence the constant
-     * redefined here.
+     * Servlet 3.x defines ServletContext.TEMPDIR constant, but this does not
+     * exist in Servlet 2.5, hence the constant redefined here.
      */
     private static final String SERVLET_TEMP_DIR = "javax.servlet.context.tempdir";
 
@@ -82,11 +87,11 @@ public final class HttpFrameworkServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         adapter = getAdapter(getServletContext());
-
         application = getApplication();
         storage = application.getBufferFactory();
         if (storage == null) {
-            storage = createDefaultStorage();
+            final File tmpDir = (File) getServletContext().getAttribute(SERVLET_TEMP_DIR);
+            storage = newTemporaryStorage(tmpDir);
         }
         try {
             handler = application.start();
@@ -95,16 +100,16 @@ public final class HttpFrameworkServlet extends HttpServlet {
         }
     }
 
-    private ServletVersionAdapter getAdapter(ServletContext servletContext)
-            throws ServletException {
+    private ServletVersionAdapter getAdapter(ServletContext servletContext) throws ServletException {
         switch (servletContext.getMajorVersion()) {
-            case 1:
-                // FIXME: i18n.
-                throw new ServletException("Unsupported Servlet version " + servletContext.getMajorVersion());
-            case 2:
-                return new Servlet2Adapter();
-            default:
-                return new Servlet3Adapter();
+        case 1:
+            // FIXME: i18n.
+            throw new ServletException("Unsupported Servlet version "
+                    + servletContext.getMajorVersion());
+        case 2:
+            return new Servlet2Adapter();
+        default:
+            return new Servlet3Adapter();
         }
     }
 
@@ -136,18 +141,12 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return configuration;
     }
 
-    private Factory<Buffer> createDefaultStorage() {
-        File tmpDir = (File) getServletContext().getAttribute(SERVLET_TEMP_DIR);
-        return newTemporaryStorage(tmpDir);
-    }
-
     @Override
-    protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
-            IOException {
+    protected void service(final HttpServletRequest req, final HttpServletResponse resp)
+            throws ServletException, IOException {
         final Request request = createRequest(req);
         final Session session = new ServletSession(req);
-        final Context context = new Context(session)
-                .setPrincipal(req.getUserPrincipal());
+        final Context context = new Context(session).setPrincipal(req.getUserPrincipal());
 
         //FIXME ideally we don't want to expose the HttpServlet Request and Response
         // handy servlet-specific attributes, sure to be abused by downstream filters
@@ -205,11 +204,12 @@ public final class HttpFrameworkServlet extends HttpServlet {
         Request request = new Request();
         request.setMethod(req.getMethod());
         try {
-            request.setUri(URIUtil.create(req.getScheme(), null, req.getServerName(), req.getServerPort(),
-                    req.getRequestURI(), req.getQueryString(), null));
+            request.setUri(URIUtil.create(req.getScheme(), null, req.getServerName(),
+                    req.getServerPort(), req.getRequestURI(), req.getQueryString(), null));
         } catch (URISyntaxException use) {
             throw new ServletException(use);
         }
+
         // request headers
         for (Enumeration<String> e = req.getHeaderNames(); e.hasMoreElements();) {
             String name = e.nextElement();
@@ -225,10 +225,12 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return request;
     }
 
-    private void writeResponse(Context context, HttpServletResponse resp, Response response) throws IOException {
+    private void writeResponse(Context context, HttpServletResponse resp, Response response)
+            throws IOException {
         /*
-         * Support for OPENIG-94/95 - The wrapped servlet may have already committed its response w/o creating a new
-         * OpenIG Response instance in the exchange.
+         * Support for OPENIG-94/95 - The wrapped servlet may have already
+         * committed its response w/o creating a new OpenIG Response instance in
+         * the exchange.
          */
         if (response != null) {
             // response status-code (reason-phrase deprecated in Servlet API)
