@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.util.Indexed;
 import org.forgerock.http.util.Loader;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -77,7 +78,7 @@ public class LoaderTest {
 
     @Test(expectedExceptions = java.lang.NullPointerException.class)
     public void testLoadMapDoesNotAllowNullServiceType() {
-        Loader.loadMap(String.class, null);
+        Loader.<String, Indexed<String>> loadMap(String.class, null);
     }
 
     @Test
