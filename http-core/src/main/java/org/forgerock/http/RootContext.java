@@ -9,28 +9,29 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyright [year] [name of copyright owner]".
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2012-2014 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
-public interface Context {
+import java.util.UUID;
 
-    String getContextName();
+public final class RootContext extends AbstractContext {
 
-    <T extends Context> T asContext(Class<T> clazz);
+    // a client-friendly name for this context */
+    private static final String CONTEXT_NAME = "root";
 
-    Context getContext(String contextName);
+    public RootContext() {
+        this(UUID.randomUUID().toString());
+    }
+    public RootContext(String id) {
+        super(id, null); // No parent
+    }
 
-    boolean containsContext(Class<? extends Context> clazz);
-
-    boolean containsContext(String contextName);
-
-    String getId();
-
-    Context getParent();
-
-    boolean isRootContext();
+    @Override
+    public String getContextName() {
+        return CONTEXT_NAME;
+    }
 }

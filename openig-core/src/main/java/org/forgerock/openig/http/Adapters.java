@@ -17,6 +17,7 @@
 package org.forgerock.openig.http;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.HttpRequestContext;
 import org.forgerock.http.Request;
 
 /**
@@ -31,13 +32,14 @@ public final class Adapters {
     }
 
     public static Exchange asExchange(Context context, Request request) {
+        HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
         final Exchange exchange = new Exchange();
         exchange.exchange = exchange;
-        exchange.principal = context.getPrincipal();
-        exchange.session = context.getSession();
+        exchange.principal = requestContext.getPrincipal();
+        exchange.session = requestContext.getSession();
         exchange.request = request;
         // FIXME: exchange field map should write through to context attributes.
-        exchange.putAll(context.getAttributes());
+        exchange.putAll(requestContext.getAttributes());
         return exchange;
     }
 }

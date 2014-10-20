@@ -146,7 +146,7 @@ public final class HandlersTest {
 
     private Context context() {
         Session session = mock(Session.class);
-        return new Context(session);
+        return new HttpRequestContext(new RootContext(), session);
     }
 
     private Filter filter() throws ResponseException {

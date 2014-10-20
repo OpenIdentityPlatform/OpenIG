@@ -21,22 +21,6 @@ import static org.forgerock.http.io.IO.newBranchingInputStream;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
-import org.forgerock.http.Context;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HttpApplication;
-import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
-import org.forgerock.http.ResponseException;
-import org.forgerock.http.Session;
-import org.forgerock.http.URIUtil;
-import org.forgerock.http.io.Buffer;
-import org.forgerock.http.util.CaseInsensitiveSet;
-import org.forgerock.util.Factory;
-import org.forgerock.util.promise.FailureHandler;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -52,6 +36,23 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpApplication;
+import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.HttpRequestContext;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
+import org.forgerock.http.ResponseException;
+import org.forgerock.http.RootContext;
+import org.forgerock.http.Session;
+import org.forgerock.http.URIUtil;
+import org.forgerock.http.io.Buffer;
+import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.util.Factory;
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * <p>
@@ -146,7 +147,8 @@ public final class HttpFrameworkServlet extends HttpServlet {
             throws ServletException, IOException {
         final Request request = createRequest(req);
         final Session session = new ServletSession(req);
-        final Context context = new Context(session).setPrincipal(req.getUserPrincipal());
+        final HttpRequestContext context = new HttpRequestContext(new RootContext(), session)
+                .setPrincipal(req.getUserPrincipal());
 
         //FIXME ideally we don't want to expose the HttpServlet Request and Response
         // handy servlet-specific attributes, sure to be abused by downstream filters
@@ -225,7 +227,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return request;
     }
 
-    private void writeResponse(Context context, HttpServletResponse resp, Response response)
+    private void writeResponse(HttpRequestContext context, HttpServletResponse resp, Response response)
             throws IOException {
         /*
          * Support for OPENIG-94/95 - The wrapped servlet may have already

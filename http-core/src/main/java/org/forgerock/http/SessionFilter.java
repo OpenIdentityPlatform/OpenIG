@@ -34,27 +34,28 @@ class SessionFilter implements Filter {
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context, Request request, Handler next) throws ResponseException {
+    public Promise<Response, ResponseException> filter(Context context, Request request, Handler next) throws ResponseException {
 
-        final Session oldSession = context.getSession();
-        context.setSession(sessionManager.load(request));
+        final HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
+        final Session oldSession = requestContext.getSession();
+        requestContext.setSession(sessionManager.load(request));
 
         return next.handle(context, request)
                 .then(new SuccessHandler<Response>() {
                     @Override
                     public void handleResult(Response response) {
-                        saveSession(context.getSession(), response);
+                        saveSession(requestContext.getSession(), response);
                     }
                 }, new FailureHandler<ResponseException>() {
                     @Override
                     public void handleError(ResponseException error) {
-                        saveSession(context.getSession(), error.getResponse());
+                        saveSession(requestContext.getSession(), error.getResponse());
                     }
                 })
                 .thenAlways(new Runnable() {
                     @Override
                     public void run() {
-                        context.setSession(oldSession);
+                        requestContext.setSession(oldSession);
                     }
                 });
     }
