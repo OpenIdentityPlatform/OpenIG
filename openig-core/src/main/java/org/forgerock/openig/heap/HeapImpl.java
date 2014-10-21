@@ -160,11 +160,19 @@ public class HeapImpl implements Heap {
         } else if (required.isMap()) {
             // handle inline declaration
             String generated = required.getPointer().toString();
-            required.put("name", generated);
-            addDeclaration(required);
+
+            // when resolve() is called multiple times with the same reference, this prevent "already registered" errors
             T value = get(generated, type);
             if (value == null) {
-                throw new JsonValueException(reference, "Reference is not a valid heap object");
+                // First resolution
+                required.put("name", generated);
+                addDeclaration(required);
+                // Get decorated object
+                value = get(generated, type);
+                if (value == null) {
+                    // Very unlikely to happen
+                    throw new JsonValueException(reference, "Reference is not a valid heap object");
+                }
             }
             return value;
         }
