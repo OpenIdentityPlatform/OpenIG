@@ -1,0 +1,13 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "book",
+                "type": "org.forgerock.openig.heap.domain.Book",
+                "config": {
+                    "title": "OpenIG"
+                }
+            }
+        ]
+    }
+}

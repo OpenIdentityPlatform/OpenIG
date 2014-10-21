@@ -14,29 +14,8 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap.domain;
-
-import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.HeapException;
-
-@SuppressWarnings("javadoc")
-public class Book {
-
-    private final String title;
-
-    public Book(final String title) {
-        this.title = title;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            return new Book(config.get("title").defaultTo("no name").asString());
-        }
-    }
-}
+/**
+ * Debug decoration classes that prints filters and handlers input and output messages..
+ * @see org.forgerock.openig.decoration.debug.DebugDecorator
+ */
+package org.forgerock.openig.decoration.debug;
