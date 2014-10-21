@@ -19,6 +19,7 @@ package org.forgerock.openig.servlet;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.http.HttpClient.*;
 import static org.forgerock.openig.http.SessionFactory.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
@@ -182,7 +183,7 @@ public class GatewayServlet extends HttpServlet {
             final TemporaryStorage temporaryStorage = new TemporaryStorage();
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-            heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
+            heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.init(config.get("heap").required().expect(Map.class));
 
             // As all heaplets can specify their own storage and logger,
