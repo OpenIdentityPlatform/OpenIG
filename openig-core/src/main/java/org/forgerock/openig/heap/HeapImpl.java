@@ -18,18 +18,25 @@
 package org.forgerock.openig.heap;
 
 // TODO: consider detecting cyclic dependencies
-import static org.forgerock.openig.util.Json.*;
 
-import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
+import static java.lang.String.*;
+import static java.util.Arrays.*;
+import static java.util.Collections.*;
+import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
+import static org.forgerock.openig.util.Json.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.util.MultiValueMap;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
@@ -37,6 +44,11 @@ import org.forgerock.json.fluent.JsonValueException;
  * the parent will be queried (and this, recursively until there is no parent anymore).
  */
 public class HeapImpl implements Heap {
+
+    /**
+     * List of attributes that should be ignored when looking for decorator's configuration.
+     */
+    private static final List<String> EXCLUDED_ATTRIBUTES = asList("type", "name", "config");
 
     /**
      * Parent heap to delegate queries to if nothing is found in the local heap.
@@ -52,6 +64,10 @@ public class HeapImpl implements Heap {
 
     /** Objects allocated in the heap mapped to heaplet names. */
     private Map<String, Object> objects = new HashMap<String, Object>();
+
+    /** Per-heaplet decoration(s) mapped to heaplet names. */
+    private MultiValueMap<String, JsonValue> decorations =
+            new MultiValueMap<String, JsonValue>(new LinkedHashMap<String, List<JsonValue>>());
 
     /**
      * Builds a root heap (will be referenced by children but has no parent itself).
@@ -81,6 +97,10 @@ public class HeapImpl implements Heap {
         // process configuration object model structure
         for (JsonValue object : config.get("objects").required().expect(List.class)) {
             addDeclaration(object);
+        }
+        if (config.isDefined("decorations")) {
+            GlobalDecorator globalDecorator = new GlobalDecorator(config.get("decorations").expect(Map.class));
+            put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
         }
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<String>(heaplets.keySet())) {
@@ -114,6 +134,13 @@ public class HeapImpl implements Heap {
         heaplets.put(name, heaplet);
         // objects[n].config (object)
         configs.put(name, object.get("config").defaultTo(emptyMap()).expect(Map.class));
+        // Store decorations
+        for (JsonValue candidate : object) {
+            // Exclude standard declaration elements
+            if (!EXCLUDED_ATTRIBUTES.contains(candidate.getPointer().leaf())) {
+                decorations.add(name, candidate);
+            }
+        }
     }
 
     @Override
@@ -126,7 +153,8 @@ public class HeapImpl implements Heap {
                 if (object == null) {
                     throw new HeapException(new NullPointerException());
                 }
-                objects.put(name, object);
+                object = decorate(name, object);
+                put(name, object);
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
                 return parent.get(name, type);
@@ -188,8 +216,56 @@ public class HeapImpl implements Heap {
      * @param name name of the object to be put into the heap.
      * @param object the object to be put into the heap.
      */
-    public synchronized void put(String name, Object object) {
+    public synchronized void put(final String name, final Object object) {
         objects.put(name, object);
+    }
+
+    /**
+     * Decorates the given heap object.
+     *
+     * @param name
+     *         heap object name
+     * @param object
+     *         heap object instance
+     * @return the decorated object or the original one if no decorator were applied.
+     * @throws HeapException
+     *         if a decorator failed to apply
+     */
+    @SuppressWarnings("unchecked")
+    private Object decorate(final String name, final Object object) throws HeapException {
+
+        // Avoid decorating decorators themselves
+        // Avoid StackOverFlow Exceptions because of infinite recursion
+        if (object instanceof Decorator) {
+            return object;
+        }
+
+        // Starts with the original object
+        Object decorated = object;
+        // Create a context object for holding shared values
+        Context context = new DecorationContext(this, name, configs.get(name).defaultTo(emptyMap()));
+
+        // Apply global decorations (may be inherited from parent heap)
+        Decorator globalDecorator = get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
+        if (globalDecorator != null) {
+            decorated = globalDecorator.decorate(decorated, null, context);
+        }
+
+        if (decorations.containsKey(name)) {
+            // We have decorators for this instance, try to apply them
+            for (JsonValue decoration : decorations.get(name)) {
+
+                // The element name is the decorator heap object name
+                String decoratorName = decoration.getPointer().leaf();
+                Decorator decorator = get(decoratorName, Decorator.class);
+                if (decorator != null) {
+                    // We just ignore when no named decorator is found
+                    // TODO Keep a list of intermediate objects for later use
+                    decorated = decorator.decorate(decorated, decoration, context);
+                }
+            }
+        }
+        return decorated;
     }
 
     /**
@@ -207,6 +283,38 @@ public class HeapImpl implements Heap {
         // iterate through saved heaplets, notifying about destruction
         for (String name : h.keySet()) {
             h.get(name).destroy();
+        }
+    }
+
+    /**
+     * A simple data holder object letting decorators known about the decorated heap object.
+     */
+    private class DecorationContext implements Context {
+        private final Heap heap;
+        private final String name;
+        private final JsonValue config;
+
+        public DecorationContext(final Heap heap,
+                                 final String name,
+                                 final JsonValue config) {
+            this.heap = heap;
+            this.name = name;
+            this.config = config;
+        }
+
+        @Override
+        public Heap getHeap() {
+            return heap;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public JsonValue getConfig() {
+            return config;
         }
     }
 }

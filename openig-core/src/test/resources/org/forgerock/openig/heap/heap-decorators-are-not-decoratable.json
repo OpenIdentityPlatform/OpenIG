@@ -1,0 +1,13 @@
+{
+    "heap": {
+        "objects": [
+            {
+              "name": "deco",
+              "type": "org.forgerock.openig.heap.domain.DecoratorDecorator"
+            }
+        ],
+        "decorations": {
+          "deco": "..."
+        }
+    }
+}
