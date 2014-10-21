@@ -45,6 +45,7 @@ import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
+import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.jwt.JwtSessionFactory;
@@ -66,6 +67,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
+        ALIASES.put("DebugDecorator", CaptureDecorator.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("ExceptionFilter", ExceptionFilter.class);

@@ -14,8 +14,35 @@
  * Copyright 2014 ForgeRock AS.
  */
 
+package org.forgerock.openig.decoration.capture;
+
 /**
- * Debug decoration classes that prints filters and handlers input and output messages..
- * @see org.forgerock.openig.decoration.debug.DebugDecorator
+ * Specify where does the message capture takes place.
  */
-package org.forgerock.openig.decoration.debug;
+public enum CapturePoint {
+    /**
+     * Prints all of the messages.
+     */
+    ALL,
+
+    /**
+     * Prints the filtered request (Filter only).
+     */
+    FILTERED_REQUEST,
+
+    /**
+     * Prints the filtered response (Filter only).
+     */
+    FILTERED_RESPONSE,
+
+    /**
+     * Prints input request.
+     */
+    REQUEST,
+
+    /**
+     * Prints the output response. In case of a filter, this represents the response produced by the next handler.
+     * In case of a handler, this represents the handler's produced response object.
+     */
+    RESPONSE
+}
