@@ -78,8 +78,16 @@ import org.forgerock.openig.log.Logger;
  *
  * Notice that the attribute name in the decorated object <b>has to be</b> the same than the decorator
  * heap object name ({@code capture} in our example).
+ *
+ * A default {@literal capture} decorator is automatically created when OpenIG starts. It can be overridden
+ * in the configuration files if default values are not satisfying.
  */
 public class CaptureDecorator implements Decorator {
+
+    /**
+     * Key to retrieve a {@link CaptureDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String CAPTURE_HEAP_KEY = "capture";
 
     private final LogSink sink;
     private final boolean captureEntity;
