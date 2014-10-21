@@ -20,7 +20,7 @@ package org.forgerock.openig.util;
 import static com.fasterxml.jackson.core.JsonParser.Feature.*;
 import static java.lang.String.*;
 import static java.util.Collections.*;
-import static org.forgerock.openig.util.Loader.loadList;
+import static org.forgerock.openig.util.Loader.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +43,7 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.Utils;
 import org.forgerock.util.promise.Function;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -254,6 +255,24 @@ public final class Json {
             @Override
             public T apply(final JsonValue value) throws HeapException {
                 return heap.resolve(value, type);
+            }
+        };
+    }
+
+    /**
+     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
+     * constant values of the given type.
+     *
+     * @param enumType expected type of the enum
+     * @param <T> Enumeration type
+     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
+     * constant values of the given type.
+     */
+    public static <T extends Enum<T>> Function<JsonValue, T, HeapException> ofEnum(final Class<T> enumType) {
+        return new Function<JsonValue, T, HeapException>() {
+            @Override
+            public T apply(final JsonValue value) throws HeapException {
+                return Utils.asEnum(value.asString(), enumType);
             }
         };
     }
