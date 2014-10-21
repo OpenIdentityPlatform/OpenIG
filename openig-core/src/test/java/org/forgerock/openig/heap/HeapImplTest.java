@@ -27,6 +27,7 @@ import java.io.Reader;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.heap.domain.Book;
 import org.forgerock.openig.heap.domain.ReferencedObject;
 import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
@@ -199,12 +200,22 @@ public class HeapImplTest {
         assertThat(ref2.name).isEqualTo("buried-down-object");
     }
 
+    @Test
+    public void testThatPerformingResolutionMultipleTimesReturnsTheSameObject() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        JsonValue bookDefinition = json(object(field("type", Book.class.getName())));
+        Book first = heap.resolve(bookDefinition, Book.class);
+        Book second = heap.resolve(bookDefinition, Book.class);
+        assertThat(first).isSameAs(second);
+    }
+
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
         return new JsonValue(readJson(reader)).get("heap");
     }
 
-    private HeapImpl buildDefaultHeap() {
+    private HeapImpl buildDefaultHeap() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
