@@ -49,7 +49,9 @@ import org.forgerock.openig.log.LogTimer;
 
 /**
  * Captures request and response messages for further analysis.
+ * @deprecated since OpenIG 3.1
  */
+@Deprecated
 public class CaptureFilter extends GenericFilter {
 
     /**
