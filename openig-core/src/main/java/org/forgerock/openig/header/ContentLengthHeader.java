@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.header;
 
+import static java.lang.Long.*;
+
 import org.forgerock.openig.http.Message;
 
 /**
@@ -55,14 +57,12 @@ public class ContentLengthHeader implements Header {
         fromString(string);
     }
 
-    private void clear() {
-        length = -1;
-    }
-
     /**
-     * Returns the content length.
+     * Returns a non-negative value when content length is known or {@code -1}
+     * when content length is not known.
      *
-     * @return The content length.
+     * @return a non-negative value when content length is known or {@code -1}
+     *         when content length is not known.
      */
     public long getLength() {
         return length;
@@ -83,12 +83,13 @@ public class ContentLengthHeader implements Header {
 
     @Override
     public void fromString(String string) {
-        clear();
+        length = -1;
         if (string != null) {
             try {
-                length = Long.parseLong(string);
+                final long value = parseLong(string);
+                length = value >= 0 ? value : -1;
             } catch (NumberFormatException nfe) {
-                // will remain default of -1 from clear() call above
+                // Ignored.
             }
         }
     }

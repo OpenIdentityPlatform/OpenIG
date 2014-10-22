@@ -17,6 +17,7 @@ package org.forgerock.openig.header;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.header.ContentLengthHeader.*;
+import static java.lang.String.*;
 
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -76,7 +77,7 @@ public class ContentLengthHeaderTest {
     public void testContentLengthHeaderFromMessageResponse() {
         final Response response = new Response();
         assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, String.valueOf(LENGTH_DEFAULT_VALUE));
+        response.getHeaders().putSingle(NAME, valueOf(LENGTH_DEFAULT_VALUE));
 
         final ContentLengthHeader clh = new ContentLengthHeader(response);
         assertThat(clh.getKey()).isEqualTo(NAME);
@@ -99,10 +100,10 @@ public class ContentLengthHeaderTest {
     public void testContentLengthHeaderToMessageRequest() {
         final Request request = new Request();
         assertThat(request.getHeaders().getFirst(NAME)).isNull();
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
+        final ContentLengthHeader clh = new ContentLengthHeader(valueOf(LENGTH_DEFAULT_VALUE));
         // Inserts the content length header to the request header.
         clh.toMessage(request);
-        assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(String.valueOf(LENGTH_DEFAULT_VALUE));
+        assertThat(request.getHeaders().getFirst(NAME)).isEqualTo(valueOf(LENGTH_DEFAULT_VALUE));
     }
 
     @Test
@@ -117,26 +118,24 @@ public class ContentLengthHeaderTest {
 
     @Test(dataProvider = "validDataProvider")
     public void testContentLengthHeaderToStringSucceed(final Object cth) {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(cth));
-        assertThat(clh.toString()).isEqualTo(String.valueOf(cth));
+        final ContentLengthHeader clh = new ContentLengthHeader(valueOf(cth));
+        assertThat(clh.toString()).isEqualTo(valueOf(cth));
     }
 
-    // VROM Test disabled as an invalid value should not be registered in the content length
-    // header. Eg. for -99, the length should be -1. Potential vulnerability.
-    @Test(enabled = false, dataProvider = "invalidDataProvider")
+    @Test(dataProvider = "invalidDataProvider")
     public void testContentLengthHeaderToStringIsNullWithInvalidValues(final Object cth) {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(cth));
+        final ContentLengthHeader clh = new ContentLengthHeader(valueOf(cth));
         assertThat(clh.getLength()).isEqualTo(-1);
         assertThat(clh.toString()).isNull();
     }
 
     @Test
     public void testEqualitySucceed() {
-        final ContentLengthHeader clh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
+        final ContentLengthHeader clh = new ContentLengthHeader(valueOf(LENGTH_DEFAULT_VALUE));
         final Response response = new Response();
 
         assertThat(response.getHeaders().get(NAME)).isNull();
-        response.getHeaders().putSingle(NAME, String.valueOf(LENGTH_DEFAULT_VALUE));
+        response.getHeaders().putSingle(NAME, valueOf(LENGTH_DEFAULT_VALUE));
 
         final ContentLengthHeader clh2 = new ContentLengthHeader();
         clh2.fromMessage(response);
@@ -147,7 +146,7 @@ public class ContentLengthHeaderTest {
 
     @Test
     public void testEqualityFails() {
-        final ContentLengthHeader lh = new ContentLengthHeader(String.valueOf(LENGTH_DEFAULT_VALUE));
+        final ContentLengthHeader lh = new ContentLengthHeader(valueOf(LENGTH_DEFAULT_VALUE));
         final Response response = new Response();
 
         assertThat(response.getHeaders().get(NAME)).isNull();
