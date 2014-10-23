@@ -85,7 +85,7 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"name"</code>: <emphasis>string, required</emphasis></term>
+    <term><code>"name"</code>: <emphasis>string, required except for inline objects</emphasis></term>
     <listitem>
      <para>
       The unique name to give the heap object in the heap.
