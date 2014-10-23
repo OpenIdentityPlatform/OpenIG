@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import static java.util.concurrent.TimeUnit.*;
+
 /**
  * Records elapsed time in a log in milliseconds.
  */
@@ -28,11 +30,16 @@ public class LogTimer {
     /** The sink to record log entries to. */
     private final LogSink sink;
 
-    /** The event the (within the source) that is being timed. */
+    /** The event (within the source) that is being timed. */
     private final String event;
 
     /** The log level to log timer events with. */
     private final LogLevel level;
+
+    private long paused = Long.MIN_VALUE; // indicates the timer has not been paused
+
+    /** Time spend between consecutive pause() and resume() calls. */
+    private long ignorable = 0;
 
     /**
      * Constructs a new timer with a logging level of {@link LogLevel#STAT STAT}.
@@ -82,14 +89,62 @@ public class LogTimer {
     }
 
     /**
-     * Stops the timer and records the elapsed time in a metric.
+     * Stops the timer and records the elapsed time(s) in a metric.
      */
     public void stop() {
         long stopped = System.nanoTime();
         if (sink != null && started != Long.MIN_VALUE) {
-            LogMetric metric = new LogMetric((stopped - started) / 1000000, "ms");
+            long elapsed = MILLISECONDS.convert(stopped - started, NANOSECONDS);
+            LogMetric metric = new LogMetric(elapsed, "ms");
             sink.log(new LogEntry(source("elapsed"), level, "Elapsed time: " + metric, metric));
+            if (ignorable > 0) {
+                // Log the elapsed time inside an object (without the summed pause times)
+                long ignoredMs = MILLISECONDS.convert(ignorable, NANOSECONDS);
+                LogMetric within = new LogMetric(elapsed - ignoredMs, "ms");
+                sink.log(new LogEntry(source("elapsed-within"),
+                                      level,
+                                      "Elapsed time (within the object): " + within,
+                                      within));
+            }
         }
+    }
+
+    /**
+     * Mark the beginning of a pause in the current timer.
+     * Will only do something when:
+     * <ul>
+     *     <li>the timer has been started</li>
+     *     <li>the timer is <b>not</b> currently paused</li>
+     * </ul>
+     *
+     * @return this timer
+     */
+    public LogTimer pause() {
+        // Ensure the timer has been started
+        if (started != Long.MIN_VALUE) {
+            // Ignore if pause is called multiple times without resume
+            if (paused == Long.MIN_VALUE) {
+                paused = System.nanoTime();
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Mark the end of a pause in the current timer (sum up all of the pauses lengths).
+     * Will only do something when the timer is currently paused. It will also reset the pause beginning marker
+     * to its default value in order to allow multiple pause/resume calls.
+     *
+     * @return this timer
+     */
+    public LogTimer resume() {
+        // Ensure the timer has been paused
+        if (paused != Long.MIN_VALUE) {
+            long resumed = System.nanoTime();
+            ignorable += (resumed - paused);
+            paused = Long.MIN_VALUE;
+        }
+        return this;
     }
 
     private String source(String event) {
