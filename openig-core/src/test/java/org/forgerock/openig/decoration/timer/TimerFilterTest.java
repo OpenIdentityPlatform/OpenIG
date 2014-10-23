@@ -19,7 +19,10 @@ package org.forgerock.openig.decoration.timer;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+
 import org.forgerock.openig.filter.Filter;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
@@ -35,8 +38,10 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class TimerFilterTest {
 
-    @Mock
     private Filter delegate;
+
+    @Mock
+    private Handler terminal;
 
     @Spy
     private Logger logger = new Logger(new NullLogSink(), "Test");
@@ -48,6 +53,7 @@ public class TimerFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         doReturn(timer).when(logger).getTimer();
+        delegate = new DelegateFilter();
     }
 
     @Test
@@ -55,11 +61,13 @@ public class TimerFilterTest {
         TimerFilter time = new TimerFilter(delegate, logger);
 
         Exchange exchange = new Exchange();
-        time.filter(exchange, null);
+        time.filter(exchange, terminal);
 
-        InOrder inOrder = inOrder(timer, delegate);
+        InOrder inOrder = inOrder(timer, terminal);
         inOrder.verify(timer).start();
-        inOrder.verify(delegate).filter(exchange, null);
+        inOrder.verify(timer).pause();
+        inOrder.verify(terminal).handle(exchange);
+        inOrder.verify(timer).resume();
         inOrder.verify(timer).stop();
     }
 
@@ -68,15 +76,24 @@ public class TimerFilterTest {
         TimerFilter time = new TimerFilter(delegate, logger);
         Exchange exchange = new Exchange();
 
-        doThrow(HandlerException.class).when(delegate).filter(exchange, null);
+        doThrow(HandlerException.class).when(terminal).handle(exchange);
 
         try {
-            time.filter(exchange, null);
+            time.filter(exchange, terminal);
             failBecauseExceptionWasNotThrown(HandlerException.class);
         } catch (Exception e) {
             InOrder inOrder = inOrder(timer);
             inOrder.verify(timer).start();
+            inOrder.verify(timer).pause();
+            inOrder.verify(timer).resume();
             inOrder.verify(timer).stop();
+        }
+    }
+
+    private static class DelegateFilter implements Filter {
+        @Override
+        public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
+            next.handle(exchange);
         }
     }
 }

@@ -26,8 +26,9 @@ import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 
 /**
- * Capture both original and filtered requests and responses, delegating to a given encapsulated
- * {@link Filter} instance.
+ * Log a {@literal started} message when an {@link Exchange} is flowing into this Filter and both a {@literal
+ * elapsed} and (potentially, if not equals to the globally elapsed time) {@literal elapsed-within}
+ * messages when the {@link Exchange} is flowing out, delegating to a given encapsulated {@link Filter} instance.
  */
 class TimerFilter implements Filter {
     private final Filter delegate;
@@ -40,9 +41,21 @@ class TimerFilter implements Filter {
 
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
+        final LogTimer timer = logger.getTimer().start();
         try {
-            delegate.filter(exchange, next);
+            // Wraps the next handler to mark when the flow exits/re-enter the delegated filter
+            // Used to pause/resume the timer
+            delegate.filter(exchange, new Handler() {
+                @Override
+                public void handle(final Exchange exchange) throws HandlerException, IOException {
+                    try {
+                        timer.pause();
+                        next.handle(exchange);
+                    } finally {
+                        timer.resume();
+                    }
+                }
+            });
         } finally {
             timer.stop();
         }
