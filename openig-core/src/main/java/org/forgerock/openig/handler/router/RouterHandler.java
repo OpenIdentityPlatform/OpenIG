@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.router;
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -198,9 +199,9 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             routes.put(file, route);
             logger.info(format("Added route '%s' defined in file '%s'", route.getName(), file));
         } catch (HeapException e) {
-            logger.warning(format(
-                    "The route defined in file '%s' cannot be added because it could not be parsed: %s",
-                    file, e.getMessage()));
+            logger.warning(format("The route defined in file '%s' cannot be added",
+                                  file));
+            logDetailedException(logger, e);
         }
     }
 
@@ -218,9 +219,9 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         try {
             newRoute = builder.build(file);
         } catch (HeapException e) {
-            logger.warning(format(
-                    "The route defined in file '%s' cannot be modified because it could not be parsed: %s",
-                    file, e.getMessage()));
+            logger.warning(format("The route defined in file '%s' cannot be modified",
+                                  file));
+            logDetailedException(logger, e);
             return;
         }
         Route oldRoute = routes.remove(file);

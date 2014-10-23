@@ -81,8 +81,7 @@ class RouteBuilder {
         } catch (FileNotFoundException e) {
             throw new HeapException(format("File %s does not exists", resource), e);
         } catch (IOException e) {
-            throw new HeapException(format("Cannot read/parse content of %s : %s", resource, e
-                    .getMessage()), e);
+            throw new HeapException(format("Cannot read/parse content of %s", resource), e);
         } finally {
             closeSilently(fis);
         }
