@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
+import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
 import org.forgerock.openig.filter.Chain;
@@ -92,6 +93,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
         ALIASES.put("TemporaryStorage", TemporaryStorage.class);
+        ALIASES.put("TimerDecorator", TimerDecorator.class);
         ALIASES.put("TrustManager", TrustManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
     }
