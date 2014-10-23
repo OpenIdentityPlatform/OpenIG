@@ -26,7 +26,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Catches any exceptions thrown during handing of a request. This allows friendlier error
@@ -53,7 +52,6 @@ public class ExceptionFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         try {
             next.handle(exchange);
         } catch (Throwable t) {
@@ -62,7 +60,6 @@ public class ExceptionFilter extends GenericFilter {
             closeSilently(exchange.response);
             handler.handle(exchange);
         }
-        timer.stop();
     }
 
     /**

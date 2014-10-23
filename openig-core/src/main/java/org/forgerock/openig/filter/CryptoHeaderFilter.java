@@ -43,7 +43,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.util.encode.Base64;
 
@@ -234,7 +233,6 @@ public class CryptoHeaderFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         if (messageType == MessageType.REQUEST) {
             process(exchange.request);
         }
@@ -242,7 +240,6 @@ public class CryptoHeaderFilter extends GenericFilter {
         if (messageType == MessageType.RESPONSE) {
             process(exchange.response);
         }
-        timer.stop();
     }
 
     /** Creates and initializes a header filter in a heap environment. */

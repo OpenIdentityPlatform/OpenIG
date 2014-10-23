@@ -63,7 +63,6 @@ import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
@@ -577,7 +576,6 @@ public class GroovyScriptableFilterTest {
         exchange.request = new Request();
         final Handler handler = mock(Handler.class);
         filter.logger = mock(Logger.class);
-        when(filter.logger.getTimer()).thenReturn(new LogTimer(filter.logger));
         filter.filter(exchange, handler);
         verify(filter.logger).error("test");
     }

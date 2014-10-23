@@ -31,7 +31,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
@@ -90,13 +89,11 @@ public class SwitchFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         if (!doSwitch(exchange, requestCases)) {
             // not intercepted
             next.handle(exchange);
             doSwitch(exchange, responseCases);
         }
-        timer.stop();
     }
 
     private boolean doSwitch(Exchange exchange, List<Case> cases) throws HandlerException, IOException {

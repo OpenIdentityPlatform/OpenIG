@@ -18,6 +18,7 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.util.Json.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
@@ -80,14 +80,12 @@ public class DispatchHandler extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
                 if (binding.baseURI != null) {
                     exchange.request.getUri().rebase(binding.baseURI);
                 }
                 binding.handler.handle(exchange);
-                timer.stop();
                 return;
             }
         }

@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
@@ -46,7 +46,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -201,7 +200,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException,
             IOException {
-        final LogTimer timer = logger.getTimer().start();
         try {
             // Login: {clientEndpoint}/login?provider={name}[&goto={url}]
             if (matchesUri(exchange, buildLoginUri(exchange))) {
@@ -227,8 +225,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
             handleProtectedResource(exchange, next);
         } catch (final OAuth2ErrorException e) {
             handleOAuth2ErrorException(exchange, e);
-        } finally {
-            timer.stop();
         }
     }
 
