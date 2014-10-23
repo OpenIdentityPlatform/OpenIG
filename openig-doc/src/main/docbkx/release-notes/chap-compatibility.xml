@@ -112,6 +112,29 @@
         <entry>
          <link
           xlink:show="new"
+          xlink:href="reference#CaptureFilter"
+          xlink:role="http://docbook.org/xlink/role/olink"
+          >CaptureFilter</link>
+        </entry>
+
+        <entry>
+         Entire object
+        </entry>
+
+        <entry>
+         Use a
+         <link
+          xlink:show="new"
+          xlink:href="reference#CaptureDecorator"
+          xlink:role="http://docbook.org/xlink/role/olink"
+          >CaptureDecorator</link> instead
+        </entry>
+       </row>
+
+       <row>
+        <entry>
+         <link
+          xlink:show="new"
           xlink:href="reference#gateway-servlet"
           xlink:role="http://docbook.org/xlink/role/olink"
          >gateway servlet</link>

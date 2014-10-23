@@ -314,6 +314,13 @@
   </programlisting>
 
   <para>
+   <firstterm>Decorators</firstterm> are additional heap objects
+   that let you extend what another object can do.
+   For example, a "CaptureDecorator" enables filters and handlers
+   to log requests and responses.
+  </para>
+
+  <para>
    Routes, described in <xref linkend="routing" />,
    inherit settings from their parent configurations.
    This means that you can
@@ -396,7 +403,6 @@
  <section xml:id="filters-handlers-chains">
   <title>Filters, Handlers, &amp; Chains</title>
 
-
   <para>
    Routing only delegates exchange handling.
    It does not actually deal with exchanges.
@@ -431,8 +437,7 @@
     </para>
 
     <para>
-     A filter can leave the exchange unchanged,
-     as is the case when capturing request and response data.
+     A filter can leave the exchange unchanged.
      Alternatively a filter can even replace the request or the response,
      for example generating a static request that replaces the client request.
      Other filters only add or change some of the data in the exchange.
@@ -471,7 +476,6 @@
    The following diagram shows the flow inside a chain that has
    a request filter transforming the request,
    a response filter transforming the response,
-   a capture filter logging request and response information,
    and a handler sending a request to a service to get a response.
    Notice how the flow traverses the filters in reverse order
    when the outgoing exchange comes back from the handler.
@@ -507,7 +511,7 @@
             {
                 "name": "Chain",
                 "type": "Chain",
-                "comment": "Base configuration defines CaptureFilter",
+                "comment": "Base configuration defines the capture decorator",
                 "config": {
                     "filters": [
                         {
@@ -525,18 +529,19 @@
                         {
                             "type": "HeaderFilter",
                             "comment": "Remove X-Powered-By from response",
+                            "capture": "response",
                             "config": {
                                 "messageType": "RESPONSE",
                                 "remove": [
                                     "X-Powered-By"
                                 ]
                             }
-                        },
-                        "CaptureFilter"
+                        }
                     ],
                     "handler": {
                         "type": "StaticResponseHandler",
                         "comment": "Same response to all requests",
+                        "capture": "request",
                         "config": {
                             "status": 200,
                             "reason": "OK",
@@ -570,13 +575,13 @@
    <listitem>
     <para>
      The second "HeaderFilter" deals with responses,
-     so it simply passes the exchange to the next filter.
+     so it simply passes the exchange to the handler.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     "CaptureFilter" logs the incoming request.
+     The "StaticResponseHandler" captures (logs) the request.
     </para>
    </listitem>
 
@@ -589,7 +594,7 @@
 
    <listitem>
     <para>
-     "CaptureFilter" logs the outgoing response.
+     The second "HeaderFilter" captures (logs) the response.
     </para>
    </listitem>
 
@@ -624,7 +629,7 @@ X-MyHeaderFilter: Added by HeaderFilter to request
 Accept: */*
 Host: www.example.com:8080
 
-### Captured outgoing request (inside ${projectName} exchange)
+### Captured outgoing response (inside ${projectName} exchange)
 HTTP/1.1 200 OK
 Content-Length: 33
 X-Powered-By: ${projectName}
@@ -666,17 +671,16 @@ Content-Length: 33
      </para>
 
      <para>
-      The following "CaptureFilter" configuration includes a text comment.
+      The following "CaptureDecorator" configuration includes a text comment.
      </para>
 
      <programlisting language="javascript">
 {
-    "name": "CaptureFilter",
-    "type": "CaptureFilter",
-    "comment": "Write request and response information to /tmp/gateway.log",
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "comment": "Write request and response information to the LogSink",
     "config": {
-        "captureEntity": false,
-        "file": "/tmp/gateway.log"
+        "captureEntity": true
     }
 }
      </programlisting>
@@ -691,19 +695,18 @@ Content-Length: 33
      </para>
 
      <para>
-      The following "CaptureFilter" configuration has
-      <literal>"captureEntity": false</literal> commented out.
+      The following "CaptureDecorator" configuration has
+      <literal>"captureEntity": true</literal> commented out.
       As a result, it uses the default setting
-      (<literal>"captureEntity": true</literal>).
+      (<literal>"captureEntity": false</literal>).
      </para>
 
      <programlisting language="javascript">
 {
-    "name": "CaptureFilter",
-    "type": "CaptureFilter",
+    "name": "capture",
+    "type": "CaptureDecorator",
     "config": {
-        "_captureEntity": false,
-        "file": "/tmp/gateway.log"
+        "_captureEntity": true
     }
 }
      </programlisting>
