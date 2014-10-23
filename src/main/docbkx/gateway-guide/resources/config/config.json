@@ -17,27 +17,19 @@
                 "type": "ClientHandler"
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
+                "name": "capture",
+                "type": "CaptureDecorator",
                 "config": {
-                    "captureEntity": false,
-                    "file": "/tmp/gateway.log"
+                    "captureEntity": true
                 }
             },
             {
-                "name": "CaptureAndRoute",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "CaptureFilter"
-                    ],
-                    "handler": {
-                        "type": "Router"
-                    }
-                }
+                "name": "Router",
+                "type": "Router",
+                "capture": "all"
             }
         ]
     },
-    "handler": "CaptureAndRoute",
+    "handler": "Router",
     "baseURI": "http://www.example.com:8081"
 }

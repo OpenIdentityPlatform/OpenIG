@@ -33,7 +33,6 @@ participant "Client" as Client
 box "${projectName} Chain"
     participant "Request Filter" as Filter1
     participant "Response Filter" as Filter2
-    participant "Capture Filter" as Filter3
     participant "Handler" as Handler
 end box
 participant "Service" as Service
@@ -44,21 +43,17 @@ Filter1->Filter1: Transform request
 
 Filter1->Filter2: Exchange
 
-Filter2->Filter3: Exchange
+Filter2->Handler: Exchange
 
-Filter3->Filter3: Log request
-
-Filter3->Handler: Exchange
+Handler->Handler: Log request
 
 Handler->Service: Transformed request
 
 Service->Handler: Response
 
-Handler->Filter3: Exchange
+Handler->Filter2: Exchange
 
-Filter3->Filter3: Log response
-
-Filter3->Filter2: Exchange
+Filter2->Filter2: Log response
 
 Filter2->Filter2: Transform response
 

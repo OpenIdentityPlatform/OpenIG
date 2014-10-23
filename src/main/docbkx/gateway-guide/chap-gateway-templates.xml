@@ -57,7 +57,7 @@
  <para>
   When you move to use ${projectName} in production,
   be sure to turn off DEBUG level logging,
-  and to remove "CaptureFilters" to avoid filling up disk space.
+  and to deactivate "CaptureDecorator" use to avoid filling up disk space.
   Also consider locking down the Router configuration.
  </para>
 

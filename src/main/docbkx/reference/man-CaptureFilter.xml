@@ -45,6 +45,21 @@
    <secondary>CaptureFilter</secondary>
   </indexterm>
   <para>Captures request and response messages for further analysis.</para>
+
+  <para>
+   Interface Stability:
+   <link
+    xlink:show="new"
+    xlink:href="reference#interface-stability"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Deprecated</link>.
+   Use a
+   <link
+    xlink:show="new"
+    xlink:href="reference#CaptureDecorator"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >CaptureDecorator</link> instead.
+  </para>
  </refsect1>
  <refsect1>
   <title>Usage</title>

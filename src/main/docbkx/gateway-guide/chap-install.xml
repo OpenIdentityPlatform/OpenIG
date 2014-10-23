@@ -811,7 +811,7 @@ etc/jetty-ssl.xml
        </para>
 
        <para>
-        This location can be used for capture files and temporary storage.
+        This location can be used for temporary storage.
        </para>
       </listitem>
      </varlistentry>
@@ -902,11 +902,6 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
      You must create the <filename>${windowsWarConfigDir}</filename> folder,
      and then add the configuration file.
     </para>
-
-    <para>
-     On Windows,
-     also edit the location of the capture log file.
-    </para>
    </step>
 
    <step>
@@ -965,12 +960,11 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
 
      <step>
       <para>
-       Check the capture log to see that traffic is going through ${projectName}.
+       Check the LogSink to see that traffic is going through ${projectName}.
       </para>
 
       <para>
-       The location for the capture log is set in <filename>config.json</filename>,
-       by default <filename>/tmp/gateway.log</filename>.
+       The default ConsoleLogSink is the deployment container log.
       </para>
      </step>
     </stepalternatives>

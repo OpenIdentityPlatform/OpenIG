@@ -29,7 +29,8 @@
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
  xsi:schemaLocation='http://docbook.org/ns/docbook
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'
+ xmlns:xlink='http://www.w3.org/1999/xlink'>
  <info>
   <xinclude:include href="../shared/mediaobject-fr-logo.xml" />
   <title>${projectName} Reference</title>
@@ -140,6 +141,100 @@
   <xinclude:include href="man-SqlAttributesFilter.xml" />
   <xinclude:include href="man-StaticRequestFilter.xml" />
   <xinclude:include href="man-SwitchFilter.xml" />
+ </reference>
+
+ <reference xml:id="decorators-conf">
+  <title>Decorators</title>
+
+  <partintro>
+   <para>
+    Decorators allow you to define heap objects that decorate other objects,
+    adding the new behavior that the decorator provides.
+    For example, you can configure a decorator object
+    for capturing requests and responses to a file
+    and then decorate other objects in the heap
+    to trigger the capture.
+   </para>
+
+   <para>
+    To decorate other objects individually,
+    add the decorator's "name" value as a top-level field of the object.
+    For example, suppose a capture decorator is named "capture".
+   </para>
+
+   <programlisting language="javascript">
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureEntity": false
+    }
+}
+   </programlisting>
+
+   <para>
+    The following "ClientHandler" configuration
+    captures requests before they are forwarded to the server.
+   </para>
+
+   <programlisting language="javascript">
+{
+    "name": "ClientHandler",
+    "type": "ClientHandler",
+    "capture": "request"
+}
+   </programlisting>
+
+   <para>
+    To decorate all the objects in the heap
+    and in heaps that inherit from the current heap,
+    use the "decorations" field of the heap object itself.
+    (If "decorations" are defined in the child,
+    then the child's definition overrides the parent's.
+    ${projectName} does not merge "decorations" from the parent and child.)
+    The following configuration captures requests and responses
+    as they pass through the handler.
+   </para>
+
+   <programlisting language="javascript">
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "capture",
+                "type": "CaptureDecorator",
+                "config": {
+                    "captureEntity": false
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler"
+            }
+        ],
+        "decorations": {
+            "capture": "all"
+        }
+    },
+    "handler": "ClientHandler"
+}
+   </programlisting>
+
+   <para>
+    To prevent loops, decorators themselves cannot be decorated.
+   </para>
+
+   <para>
+    Interface Stability:
+    <link
+     xlink:show="new"
+     xlink:href="reference#interface-stability"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >Evolving</link>
+   </para>
+  </partintro>
+
+  <xinclude:include href="man-CaptureDecorator.xml" />
  </reference>
 
  <reference  xml:id="misc-conf">
