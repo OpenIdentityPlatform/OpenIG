@@ -36,7 +36,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.MessageType;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 
@@ -110,7 +109,6 @@ public class EntityExtractFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         if (messageType == MessageType.REQUEST) {
             process(exchange, exchange.request);
         }
@@ -118,7 +116,6 @@ public class EntityExtractFilter extends GenericFilter {
         if (messageType == MessageType.RESPONSE) {
             process(exchange, exchange.response);
         }
-        timer.stop();
     }
 
     private void process(Exchange exchange, Message<?> message) {

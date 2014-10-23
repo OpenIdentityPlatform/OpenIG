@@ -31,7 +31,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpUtil;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.CaseInsensitiveMap;
 import org.forgerock.openig.util.MultiValueMap;
 
@@ -105,7 +104,6 @@ public class StaticResponseHandler extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         Response response = new Response();
         response.setStatus(this.status);
         response.setReason(this.reason);
@@ -135,7 +133,6 @@ public class StaticResponseHandler extends GenericHandler {
         // finally replace response in the exchange
         closeSilently(exchange.response);
         exchange.response = response;
-        timer.stop();
     }
 
     /**

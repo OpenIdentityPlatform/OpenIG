@@ -23,7 +23,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Creates a static response containing a simple HTML welcome page.
@@ -39,18 +38,13 @@ public class WelcomeHandler extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
-        try {
-            Response response = new Response();
-            response.setStatus(200);
-            response.setReason("OK");
-            response.getHeaders().add("Content-Type", "text/html");
-            response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream(
-                    "welcome.html"), storage));
-            exchange.response = response;
-        } finally {
-            timer.stop();
-        }
+        Response response = new Response();
+        response.setStatus(200);
+        response.setReason("OK");
+        response.getHeaders().add("Content-Type", "text/html");
+        response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream(
+                "welcome.html"), storage));
+        exchange.response = response;
     }
 
     /**

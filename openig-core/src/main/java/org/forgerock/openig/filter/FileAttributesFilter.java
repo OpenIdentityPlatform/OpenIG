@@ -29,7 +29,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.util.Factory;
@@ -87,7 +86,6 @@ public class FileAttributesFilter extends GenericFilter {
 
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {
@@ -101,7 +99,6 @@ public class FileAttributesFilter extends GenericFilter {
             }
         }));
         next.handle(exchange);
-        timer.stop();
     }
 
     /** Creates and initializes a separated values file attribute provider in a heap environment. */

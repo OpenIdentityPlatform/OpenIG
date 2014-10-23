@@ -30,7 +30,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Message;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.URIUtil;
 
 /**
@@ -57,9 +56,6 @@ public class RedirectFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-
-        LogTimer timer = logger.getTimer().start();
-
         // We only care about responses so just call the next handler in the chain.
         next.handle(exchange);
 
@@ -67,8 +63,6 @@ public class RedirectFilter extends GenericFilter {
         if (REDIRECT_STATUS_302.equals(exchange.response.getStatus())) {
             processResponse(exchange);
         }
-
-        timer.stop();
     }
 
     /**

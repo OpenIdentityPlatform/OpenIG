@@ -45,7 +45,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Message;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Captures request and response messages for further analysis.
@@ -161,7 +160,6 @@ public class CaptureFilter extends GenericFilter {
 
     @Override
     public synchronized void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
         boolean doCapture = (eval instanceof Boolean && (Boolean) eval);
         long id = 0;
@@ -173,7 +171,6 @@ public class CaptureFilter extends GenericFilter {
         if (doCapture) {
             captureResponse(exchange.response, id);
         }
-        timer.stop();
     }
 
     private void captureRequest(Request request, long id) throws IOException {
