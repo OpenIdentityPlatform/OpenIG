@@ -17,7 +17,7 @@
 package org.forgerock.openig.decoration.capture;
 
 import static java.lang.String.*;
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 import static org.forgerock.openig.util.Json.*;
 
 import java.util.Set;
@@ -25,7 +25,7 @@ import java.util.TreeSet;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
-import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -82,7 +82,7 @@ import org.forgerock.openig.log.Logger;
  * A default {@literal capture} decorator is automatically created when OpenIG starts. It can be overridden
  * in the configuration files if default values are not satisfying.
  */
-public class CaptureDecorator implements Decorator {
+public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
     /**
      * Key to retrieve a {@link CaptureDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
@@ -107,21 +107,23 @@ public class CaptureDecorator implements Decorator {
     }
 
     @Override
-    public boolean accepts(final Class<?> type) {
-        return Filter.class.isAssignableFrom(type) || Handler.class.isAssignableFrom(type);
-    }
-
-    @Override
-    public Object decorate(final Object delegate, final JsonValue decoratorConfig, final Context context)
+    protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         Set<CapturePoint> points = getCapturePoints(decoratorConfig);
         if (!points.isEmpty()) {
             // Only intercept if needed
-            if (delegate instanceof Handler) {
-                return new CaptureHandler((Handler) delegate, buildMessageCapture(context), points);
-            } else if (delegate instanceof Filter) {
-                return new CaptureFilter((Filter) delegate, buildMessageCapture(context), points);
-            }
+            return new CaptureFilter(delegate, buildMessageCapture(context), points);
+        }
+        return delegate;
+    }
+
+    @Override
+    protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
+            throws HeapException {
+        Set<CapturePoint> points = getCapturePoints(decoratorConfig);
+        if (!points.isEmpty()) {
+            // Only intercept if needed
+            return new CaptureHandler(delegate, buildMessageCapture(context), points);
         }
         return delegate;
     }
