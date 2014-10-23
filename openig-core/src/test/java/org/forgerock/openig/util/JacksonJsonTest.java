@@ -155,54 +155,54 @@ public class JacksonJsonTest {
      */
     @Test(dataProvider = "newLine")
     public void shouldSucceedWhenContainingEol(final String newLine) throws IOException {
-        final Map<String, Object> jkson =
+        final Map<String, Object> jackson =
                 readJsonLenient(from("{ 'comment': 'Two lines " + newLine + "of comment' }"));
-        assertThat((String) jkson.get("comment")).matches("Two lines [\r\n]{1,2}of comment$");
+        assertThat((String) jackson.get("comment")).matches("Two lines [\r\n]{1,2}of comment$");
     }
 
     @Test
     public void testAllowsSimpleQuote() throws Exception {
         final String sample = "{ 'condition': true } ";
-        final Map<String, Object> jkson = readJsonLenient(new StringReader(sample));
+        final Map<String, Object> jackson = readJsonLenient(new StringReader(sample));
 
-        assertThat((Boolean) jkson.get("condition")).isTrue();
+        assertThat((Boolean) jackson.get("condition")).isTrue();
     }
 
     @Test
     public void testFromString() throws Exception {
-        final Map<String, Object> jkson = readJson(from(JSON_CONTENT));
+        final Map<String, Object> jackson = readJson(from(JSON_CONTENT));
 
-        assertThat(jkson.get("name")).isEqualTo("outputHandler");
-        assertThat(jkson.get("type")).isEqualTo("ClientHandler");
+        assertThat(jackson.get("name")).isEqualTo("outputHandler");
+        assertThat(jackson.get("type")).isEqualTo("ClientHandler");
     }
 
     @Test
     public void testStringAllowNullAttributeValue() throws Exception {
 
         final String rawJson = "{ 'name': null, 'type': 'ClientHandler' } ";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(jkson.get("name")).isNull();
-        assertThat(jkson.get("type")).isEqualTo("ClientHandler");
+        assertThat(jackson.get("name")).isNull();
+        assertThat(jackson.get("type")).isEqualTo("ClientHandler");
     }
 
     @Test
     public void testJsonValueNumber() throws Exception {
 
         final String rawJson = "{ 'number': 23, 'other': '27' } ";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(jkson.get("number")).isEqualTo(23);
-        assertThat(jkson.get("other")).isEqualTo("27");
+        assertThat(jackson.get("number")).isEqualTo(23);
+        assertThat(jackson.get("other")).isEqualTo("27");
     }
 
     @Test
     public void testJsonValueSupportsLong() throws Exception {
 
         final String rawJson = "{ 'long': '" + MAX_VALUE + "'}";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(parseLong(jkson.get("long").toString())).isEqualTo(MAX_VALUE);
+        assertThat(parseLong(jackson.get("long").toString())).isEqualTo(MAX_VALUE);
     }
 
     @Test
