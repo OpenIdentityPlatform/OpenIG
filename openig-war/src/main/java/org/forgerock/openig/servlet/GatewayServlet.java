@@ -20,6 +20,7 @@ package org.forgerock.openig.servlet;
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
+import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
 import static org.forgerock.openig.http.HttpClient.*;
 import static org.forgerock.openig.http.SessionFactory.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
@@ -48,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
+import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -187,6 +189,7 @@ public class GatewayServlet extends HttpServlet {
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false));
+            heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.init(config.get("heap").required().expect(Map.class));
 
             // As all heaplets can specify their own storage and logger,
