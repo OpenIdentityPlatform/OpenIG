@@ -53,7 +53,7 @@ import org.forgerock.openig.log.Logger;
  *     {@code
  *     {
  *       "name": "capture",
- *       "type": "DebugDecorator",
+ *       "type": "CaptureDecorator",
  *       "config": {
  *           "captureEntity": false
  *       }
