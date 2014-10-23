@@ -16,7 +16,9 @@
 
 package org.forgerock.http;
 
-public interface Context {
+import java.util.Iterator;
+
+public interface Context extends Iterable<Context> {
 
     String getContextName();
 
@@ -33,4 +35,8 @@ public interface Context {
     Context getParent();
 
     boolean isRootContext();
+
+    Iterator<Context> iterator();
+
+    <T extends Context> Iterator<T> iterator(Class<T> clazz);
 }

@@ -16,21 +16,33 @@
 
 package org.forgerock.http;
 
+import org.forgerock.util.Reject;
+
+import java.util.Iterator;
+
 public abstract class AbstractContext implements Context {
 
     private final String id;
+    private final String name;
     private final Context parent;
 
-    protected AbstractContext(Context parent) {
-        this(null, parent);
+    protected AbstractContext(Context parent, String name) {
+        this(null, name, parent);
     }
 
-    protected AbstractContext(String id, Context parent) {
+    protected AbstractContext(String id, String name, Context parent) {
         this.id = id;
+        this.name = name;
         this.parent = parent;
     }
 
+    @Override
+    public String getContextName() {
+        return name;
+    }
+
     public final <T extends Context> T asContext(Class<T> clazz) {
+        Reject.ifNull(clazz, "clazz cannot be null");
         T context = asContext0(clazz);
         if (context != null) {
             return context;
@@ -69,16 +81,11 @@ public abstract class AbstractContext implements Context {
     }
 
     private <T extends Context> T asContext0(final Class<T> clazz) {
-        try {
-            for (Context context = this; context != null; context = context.getParent()) {
-                final Class<?> contextClass = context.getClass();
-                if (clazz.isAssignableFrom(contextClass)) {
-                    return contextClass.asSubclass(clazz).cast(context);
-                }
+        for (Context context = this; context != null; context = context.getParent()) {
+            final Class<?> contextClass = context.getClass();
+            if (clazz.isAssignableFrom(contextClass)) {
+                return contextClass.asSubclass(clazz).cast(context);
             }
-        } catch (final Exception e) {
-            throw new IllegalArgumentException(
-                    "Unable to instantiate Context implementation class '" + clazz.getName() + "'", e);
         }
         return null;
     }
@@ -90,5 +97,35 @@ public abstract class AbstractContext implements Context {
             }
         }
         return null;
+    }
+
+    @Override
+    public Iterator<Context> iterator() { //TODO to implement
+        return new Iterator<Context>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public Context next() {
+                return null;
+            }
+        };
+    }
+
+    @Override
+    public <T extends Context> Iterator<T> iterator(Class<T> clazz) { //TODO to implement
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public T next() {
+                return null;
+            }
+        };
     }
 }

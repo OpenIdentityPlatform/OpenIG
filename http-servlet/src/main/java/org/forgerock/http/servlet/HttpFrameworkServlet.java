@@ -40,7 +40,7 @@ import java.util.ServiceLoader;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.HttpRequestContext;
+import org.forgerock.http.HttpContext;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.ResponseException;
@@ -147,7 +147,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
             throws ServletException, IOException {
         final Request request = createRequest(req);
         final Session session = new ServletSession(req);
-        final HttpRequestContext context = new HttpRequestContext(new RootContext(), session)
+        final HttpContext context = new HttpContext(new RootContext(), session)
                 .setPrincipal(req.getUserPrincipal());
 
         //FIXME ideally we don't want to expose the HttpServlet Request and Response
@@ -227,7 +227,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return request;
     }
 
-    private void writeResponse(HttpRequestContext context, HttpServletResponse resp, Response response)
+    private void writeResponse(HttpContext context, HttpServletResponse resp, Response response)
             throws IOException {
         /*
          * Support for OPENIG-94/95 - The wrapped servlet may have already

@@ -26,10 +26,7 @@ import org.forgerock.util.Reject;
  * Represents extrinsic state associated with the processing of a request in a
  * server.
  */
-public final class HttpRequestContext extends AbstractContext { //TODO name?
-
-    // a client-friendly name for this context */
-    private static final String CONTEXT_NAME = "httpRequest";
+public final class HttpContext extends AbstractContext {
 
     /*
      * TODO: add connection information such as IP address, SSL parameters, etc.
@@ -38,28 +35,23 @@ public final class HttpRequestContext extends AbstractContext { //TODO name?
     /** The principal associated with the request, or {@code null} if unknown. */
     private Principal principal;
 
-    /** Session context associated with the remote client. */
+    /** Session information associated with the remote client. */
     private Session session;
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     //TODO this should be default visibility
-    public HttpRequestContext(Context parent, Session session) {
-        super(parent);
+    public HttpContext(Context parent, Session session) {
+        super(parent, "httpRequest");
         Reject.ifNull(session, "Session cannot be null.");
         this.session = session;
-    }
-
-    @Override
-    public String getContextName() {
-        return CONTEXT_NAME;
     }
 
     public Principal getPrincipal() {
         return principal;
     }
 
-    public HttpRequestContext setPrincipal(Principal principal) {
+    public HttpContext setPrincipal(Principal principal) {
         this.principal = principal;
         return this;
     }
@@ -68,7 +60,7 @@ public final class HttpRequestContext extends AbstractContext { //TODO name?
         return session;
     }
 
-    public HttpRequestContext setSession(Session session) {
+    public HttpContext setSession(Session session) {
         this.session = session;
         return this;
     }

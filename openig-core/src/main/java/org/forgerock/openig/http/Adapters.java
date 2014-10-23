@@ -17,7 +17,7 @@
 package org.forgerock.openig.http;
 
 import org.forgerock.http.Context;
-import org.forgerock.http.HttpRequestContext;
+import org.forgerock.http.HttpContext;
 import org.forgerock.http.Request;
 
 /**
@@ -32,7 +32,7 @@ public final class Adapters {
     }
 
     public static Exchange asExchange(Context context, Request request) {
-        HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
+        HttpContext requestContext = context.asContext(HttpContext.class);
         final Exchange exchange = new Exchange();
         exchange.exchange = exchange;
         exchange.principal = requestContext.getPrincipal();

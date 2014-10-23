@@ -25,6 +25,13 @@ import org.forgerock.util.promise.SuccessHandler;
 
 import java.io.IOException;
 
+/**
+ * Filter implementation that uses a {@link SessionManager} to set the {@link Session} in the {@link HttpContext}.
+ *
+ * The previous {@code Session} value will be saved and restored after the {@code Handler} has been executed.
+ *
+ * @since 1.0.0
+ */
 class SessionFilter implements Filter {
     private SessionManager sessionManager;
 
@@ -36,26 +43,26 @@ class SessionFilter implements Filter {
     @Override
     public Promise<Response, ResponseException> filter(Context context, Request request, Handler next) throws ResponseException {
 
-        final HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
-        final Session oldSession = requestContext.getSession();
-        requestContext.setSession(sessionManager.load(request));
+        final HttpContext httpContext = context.asContext(HttpContext.class);
+        final Session oldSession = httpContext.getSession();
+        httpContext.setSession(sessionManager.load(request));
 
         return next.handle(context, request)
                 .then(new SuccessHandler<Response>() {
                     @Override
                     public void handleResult(Response response) {
-                        saveSession(requestContext.getSession(), response);
+                        saveSession(httpContext.getSession(), response);
                     }
                 }, new FailureHandler<ResponseException>() {
                     @Override
                     public void handleError(ResponseException error) {
-                        saveSession(requestContext.getSession(), error.getResponse());
+                        saveSession(httpContext.getSession(), error.getResponse());
                     }
                 })
                 .thenAlways(new Runnable() {
                     @Override
                     public void run() {
-                        requestContext.setSession(oldSession);
+                        httpContext.setSession(oldSession);
                     }
                 });
     }

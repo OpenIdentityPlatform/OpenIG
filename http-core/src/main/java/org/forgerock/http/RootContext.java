@@ -20,18 +20,22 @@ import java.util.UUID;
 
 public final class RootContext extends AbstractContext {
 
-    // a client-friendly name for this context */
-    private static final String CONTEXT_NAME = "root";
+    private static final ThreadLocal<String> ID_CACHE = new ThreadLocal<String>() {
+
+        private final String baseId = UUID.randomUUID().toString();
+        private long count = 0;
+
+        @Override
+        protected String initialValue() {
+            return baseId + count;
+        }
+    };
 
     public RootContext() {
-        this(UUID.randomUUID().toString());
-    }
-    public RootContext(String id) {
-        super(id, null); // No parent
+        this(ID_CACHE.get());
     }
 
-    @Override
-    public String getContextName() {
-        return CONTEXT_NAME;
+    public RootContext(String id) {
+        super(id, "root", null); // No parent
     }
 }
