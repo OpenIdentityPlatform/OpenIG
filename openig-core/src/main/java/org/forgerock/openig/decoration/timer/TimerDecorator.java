@@ -32,7 +32,8 @@ import org.forgerock.openig.log.Logger;
 
 /**
  * The {@literal timer} decorator can decorate both {@link Filter} and {@link Handler} instances.
- * It will log {@literal started} and {@literal elapsed} event into the LogSink of the decorated heap object..
+ * It will log {@literal started}, {@literal elapsed} and {@literal elapsed-within} events into the {@link LogSink}
+ * of the decorated heap object.
  * <p>
  * It has to be declared inside of the heap objects section:
  * <pre>
