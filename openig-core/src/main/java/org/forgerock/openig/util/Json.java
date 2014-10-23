@@ -63,6 +63,7 @@ public final class Json {
         LENIENT_MAPPER = new ObjectMapper();
         LENIENT_MAPPER.configure(ALLOW_COMMENTS, true);
         LENIENT_MAPPER.configure(ALLOW_SINGLE_QUOTES, true);
+        LENIENT_MAPPER.configure(ALLOW_UNQUOTED_CONTROL_CHARS, true);
     }
 
     /** Strict object mapper / data binder used to read json configuration files/data. */
