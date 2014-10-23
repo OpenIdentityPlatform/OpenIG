@@ -21,7 +21,7 @@ import static org.forgerock.openig.log.LogSink.*;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
-import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -60,7 +60,7 @@ import org.forgerock.openig.log.Logger;
  *
  * A default {@literal timer} decorator is automatically created when OpenIG starts.
  */
-public class TimerDecorator implements Decorator {
+public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
 
     /**
      * Key to retrieve a {@link TimerDecorator} instance from the {@link Heap}.
@@ -68,20 +68,15 @@ public class TimerDecorator implements Decorator {
     public static final String TIMER_HEAP_KEY = "timer";
 
     @Override
-    public boolean accepts(final Class<?> type) {
-        return Filter.class.isAssignableFrom(type) || Handler.class.isAssignableFrom(type);
+    protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
+            throws HeapException {
+        return new TimerFilter(delegate, getLogger(context));
     }
 
     @Override
-    public Object decorate(final Object delegate, final JsonValue decoratorConfig, final Context context)
+    protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        // Only intercept if needed
-        if (delegate instanceof Handler) {
-            return new TimerHandler((Handler) delegate, getLogger(context));
-        } else if (delegate instanceof Filter) {
-            return new TimerFilter((Filter) delegate, getLogger(context));
-        }
-        return delegate;
+        return new TimerHandler(delegate, getLogger(context));
     }
 
     /**
@@ -93,7 +88,7 @@ public class TimerDecorator implements Decorator {
      * @throws HeapException
      *         when no logSink can be resolved (very unlikely to happen).
      */
-    private Logger getLogger(final Context context) throws HeapException {
+    private static Logger getLogger(final Context context) throws HeapException {
         // Use the sink of the decorated component
         Heap heap = context.getHeap();
         LogSink sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
