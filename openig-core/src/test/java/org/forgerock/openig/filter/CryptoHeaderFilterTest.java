@@ -17,11 +17,15 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.log.LogSink.*;
 
 import java.nio.charset.Charset;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
@@ -131,6 +135,17 @@ public class CryptoHeaderFilterTest {
 
         assertThat(exchange.response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
+    }
+
+    @Test(expectedExceptions = JsonValueException.class)
+    public void testHeapletWithWrongKeyConfigurationFailsProperly() throws Exception {
+        CryptoHeaderFilter.Heaplet heaplet = new CryptoHeaderFilter.Heaplet();
+        JsonValue config = json(object(field("messageType", "REQUEST"),
+                                       field("operation", "DECRYPT"),
+                                       field("key", "DESKEY"))); // Not a valid DES Key format
+
+        // Note: I've used the special name LogSink to avoid having to configure a real heap
+        heaplet.create(LOGSINK_HEAP_KEY, config, null);
     }
 
     /**

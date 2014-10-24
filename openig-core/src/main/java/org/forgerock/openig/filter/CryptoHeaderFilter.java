@@ -252,7 +252,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             filter.algorithm = config.get("algorithm").defaultTo(DEFAULT_ALGORITHM).asString();
             filter.charset = config.get("charset").defaultTo("UTF-8").asCharset();
             byte[] key = Base64.decode(evaluate(config.get("key").required()));
-            if (key.length == 0) {
+            if ((key == null) || (key.length == 0)) {
                 throw new JsonValueException(config.get("key"),
                                              "key evaluation gave an empty result that is not allowed");
             }
