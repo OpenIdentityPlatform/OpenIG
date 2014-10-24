@@ -70,8 +70,10 @@ public final class Logs {
 
         // Print the full stack trace (only visible when DEBUG is activated)
         // Had to render the exception myself otherwise the ConsoleLogSink/FileLogSink does not print the stack trace
-        StringWriter writer = new StringWriter();
-        throwable.printStackTrace(new PrintWriter(writer));
-        logger.debug(writer.getBuffer().toString());
+        if (logger.isLoggable(LogLevel.DEBUG)) {
+            StringWriter writer = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(writer));
+            logger.debug(writer.getBuffer().toString());
+        }
     }
 }
