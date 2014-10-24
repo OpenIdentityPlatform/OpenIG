@@ -175,16 +175,16 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         write.lock();
         try {
 
+            for (File file : changes.getRemovedFiles()) {
+                onRemovedFile(file);
+            }
+
             for (File file : changes.getAddedFiles()) {
                 onAddedFile(file);
             }
 
             for (File file : changes.getModifiedFiles()) {
                 onModifiedFile(file);
-            }
-
-            for (File file : changes.getRemovedFiles()) {
-                onRemovedFile(file);
             }
 
         } finally {
