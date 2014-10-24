@@ -195,9 +195,13 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
     private void onAddedFile(final File file) {
         try {
             Route route = builder.build(file);
+            String name = route.getName();
+            if (sorted.contains(route)) {
+                throw new HeapException(format("A route named '%s' is already registered", name));
+            }
             sorted.add(route);
             routes.put(file, route);
-            logger.info(format("Added route '%s' defined in file '%s'", route.getName(), file));
+            logger.info(format("Added route '%s' defined in file '%s'", name, file));
         } catch (HeapException e) {
             logger.warning(format("The route defined in file '%s' cannot be added",
                                   file));
