@@ -16,15 +16,13 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
-import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.util.Utils.closeSilently;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static java.util.Arrays.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.handler.router.Files.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.util.Utils.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,6 +31,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.HashSet;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -41,10 +40,12 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -59,6 +60,9 @@ public class RouterHandlerTest {
 
     @Mock
     private DirectoryScanner scanner;
+
+    @Spy
+    private Logger logger = new Logger(new NullLogSink(), "source");
 
     private File routes;
     private File supply;
@@ -189,6 +193,24 @@ public class RouterHandlerTest {
 
         router.handle(exchange);
 
+    }
+
+    @Test
+    public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+        router.logger = logger;
+
+        File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
+        File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
+
+        // Register both routes
+        router.onChanges(new FileChangeSet(null,
+                                           new HashSet<File>(asList(first, second)),
+                                           Collections.<File>emptySet(),
+                                           Collections.<File>emptySet()));
+
+        // Should have an error log statement
+        verify(logger).error(matches(".* A route named '.*' is already registered"));
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,
