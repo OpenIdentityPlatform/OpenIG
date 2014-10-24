@@ -32,6 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collections;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -55,6 +56,9 @@ public class RouterHandlerTest {
 
     @Mock
     private TimeService time;
+
+    @Mock
+    private DirectoryScanner scanner;
 
     private File routes;
     private File supply;
@@ -159,6 +163,32 @@ public class RouterHandlerTest {
             closeSilently(reader, writer);
         }
         return destination;
+    }
+
+    @Test
+    public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+
+        File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
+        File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
+        Exchange exchange = new Exchange();
+
+        // Register the initial route
+        router.onChanges(new FileChangeSet(null,
+                                           Collections.singleton(before),
+                                           Collections.<File>emptySet(),
+                                           Collections.<File>emptySet()));
+
+        router.handle(exchange);
+
+        // Simulate file renaming
+        router.onChanges(new FileChangeSet(null,
+                                           Collections.singleton(after),
+                                           Collections.<File>emptySet(),
+                                           Collections.singleton(before)));
+
+        router.handle(exchange);
+
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,
