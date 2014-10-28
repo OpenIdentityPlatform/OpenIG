@@ -51,7 +51,10 @@
                     "handler": "ClientHandler"
                 }
             }
-        ]
+        ],
+         "decorations": {
+             "timer": true
+         }
     },
     "handler": "ResourceServerChain",
     "condition": "${matches(exchange.request.uri.path, '^/rs')}"

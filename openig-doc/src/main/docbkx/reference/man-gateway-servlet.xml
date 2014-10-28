@@ -66,6 +66,17 @@
    The gateway servlet creates a default
    <link
     xlink:show="new"
+    xlink:href="reference#TimerDecorator"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >TimerDecorator</link> that you can use
+   to record time spent within Filters and Handlers.
+   The default TimerDecorator is named "timer".
+  </para>
+
+  <para>
+   The gateway servlet creates a default
+   <link
+    xlink:show="new"
     xlink:href="reference#HttpClient"
     xlink:role="http://docbook.org/xlink/role/olink"
    >HttpClient</link> object to handle requests to servers.
