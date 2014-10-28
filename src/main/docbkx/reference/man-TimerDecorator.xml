@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id="TimerDecorator"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:xinclude="http://www.w3.org/2001/XInclude">
+ <refmeta>
+  <refentrytitle>TimerDecorator</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>TimerDecorator</refname>
+  <refpurpose>record times to process Filters and Handlers</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Decorators</primary>
+   <secondary>TimerDecorator</secondary>
+  </indexterm>
+
+  <para>
+   Records time in milliseconds to process applicable Filters and Handlers.
+   ${projectName} writes the records to the LogSink configured for the heap.
+   Records include the time elapsed while processing the exchange,
+   and for Filters the elapsed time spent processing the exchanged
+   within the Filter itself.
+  </para>
+
+  <para>
+   ${projectName} records times at log level <literal>STAT</literal>.
+  </para>
+
+  <para>
+   The TimerDecorator is not applicable to the
+   <link
+    xlink:href="reference#gateway-servlet"
+    xlink:show="new"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Gateway Servlet</citetitle></link>,
+   as the Gateway Servlet is not declared in the heap.
+   Instead, ${projectName} always records Gateway Servlet times
+   at log level <literal>STAT</literal>.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Decorator Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "TimerDecorator"
+}
+  </programlisting>
+
+  <para>
+   A TimerDecorator does not have configurable properties.
+  </para>
+
+  <para>
+   The Gateway Servlet creates a default TimerDecorator named "timer"
+   at startup time in the top-level heap,
+   so you can use "timer" as the decorator name
+   without adding the decorator declaration explicitly.
+  </para>
+</refsect1>
+
+ <refsect1>
+  <title>Global Decorations Usage</title>
+
+  <para>
+   By using the global "decorations" field,
+   you can apply the decorator to all relevant objects in the heap
+   as described in
+   <link
+    xlink:href="reference#decorators-conf"
+    xlink:show="new"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Decorators</citetitle></link>.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "heap": {
+        "objects": array,
+        "decorations": {
+            decorator name: true
+        }
+    }
+}
+  </programlisting>
+
+  <para>
+   When setting the TimerDecorator in global decorations,
+   set its value to <literal>true</literal>.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Decorated Object Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    decorator name: true
+}
+  </programlisting>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"name"</code>: string, required except for inline objects</term>
+    <listitem>
+     <para>
+      The unique name of the object, just like an object that is not decorated
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"type"</code>: string, required</term>
+    <listitem>
+     <para>
+      The class name of the decorated object, which must be either a
+      <link
+       xlink:show="new"
+       xlink:href="reference#filter-conf"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Filter</link> or a
+      <link
+       xlink:show="new"
+       xlink:href="reference#handlers-conf"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Handler</link>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"config"</code>: object, required unless empty</term>
+    <listitem>
+     <para>
+      The configuration of the object, just like an object that is not decorated
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code><replaceable>decorator name</replaceable></code>: true, optional</term>
+    <listitem>
+     <para>
+      ${projectName} looks for the presence
+      of the <replaceable>decorator name</replaceable> field
+      for the TimerDecorator.
+     </para>
+
+     <para>
+      Set the value of the <replaceable>decorator name</replaceable> field
+      to <literal>true</literal>.
+     </para>
+
+     <para>
+      To deactivate the TimerDecorator temporarily, comment out the field name.
+      Setting the value to <literal>false</literal> has no effect.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Examples</title>
+
+  <para>
+   To record times spent within the client handler,
+   and elapsed time for operations traversing the client handler,
+   use a configuration such as the following.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "timer": true
+            }
+        ]
+    },
+    "handler": "ClientHandler"
+}
+  </programlisting>
+
+  <para>
+   This configuration could result in the following log messages.
+   The Gateway Servlet times are shown,
+   although they do not result from the TimerDecorator configuration.
+   The time stamps have been removed.
+  </para>
+
+  <programlisting language="none">
+GatewayServlet.started:STAT:Started
+Timer[ClientHandler].started:STAT:Started
+Timer[ClientHandler].elapsed:STAT:Elapsed time: 4 ms:4 ms
+GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
+  </programlisting>
+
+  <para>
+   When you decorate a Filter with a TimerDecorator,
+   ${projectName} can record two timer messages in the LogSink:
+   the elapsed time for operations traversing the Filter,
+   and the elapsed time spent within the Filter.
+  </para>
+
+  <para>
+   To record times spent within all Filters and Handlers,
+   declare global "declarations" as in the following example.
+  </para>
+
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="javascript">
+<xinclude:include href="../gateway-guide/resources/config/routes/06-rs.json" parse="text">
+ <xinclude:fallback>
+  Failed to include JSON
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </informalexample>
+
+  <para>
+   This configuration could result in the following log messages.
+   The Gateway Servlet times are shown,
+   although they do not result from the TimerDecorator configuration.
+   The time stamps have been removed and lines folded to fit the printed page.
+  </para>
+
+  <programlisting language="none">
+GatewayServlet.started:STAT:Started
+Timer[ResourceServerChain].started:STAT:Started
+Timer[/heap/objects/0/config/filters/0].started:STAT:Started
+Timer[/heap/objects/0/config/filters/1].started:STAT:Started
+Timer[/heap/objects/0/config/filters/2].started:STAT:Started
+Timer[/heap/objects/0/config/filters/2].elapsed:STAT:Elapsed time: 12 ms:12 ms
+Timer[/heap/objects/0/config/filters/2].elapsed-within:STAT:
+ Elapsed time (within the object): 1 ms:1 ms
+Timer[/heap/objects/0/config/filters/1].elapsed:STAT:Elapsed time: 84 ms:84 ms
+Timer[/heap/objects/0/config/filters/1].elapsed-within:STAT:
+ Elapsed time (within the object): 72 ms:72 ms
+Timer[/heap/objects/0/config/filters/0].elapsed:STAT:Elapsed time: 117 ms:117 ms
+Timer[/heap/objects/0/config/filters/0].elapsed-within:STAT:
+Elapsed time (within the object): 33 ms:33 ms
+Timer[ResourceServerChain].elapsed:STAT:Elapsed time: 118 ms:118 ms
+GatewayServlet.elapsed:STAT:Elapsed time: 140 ms:140 ms
+  </programlisting>
+
+  <para>
+   You can then deactivate the timer temporarily by commenting it out.
+   Setting the value to <literal>false</literal> has no effect.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "_timer": true
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/decoration/timer/TimerDecorator.html"
+   >org.forgerock.openig.decoration.timer.TimerDecorator</link>
+  </para>
+ </refsect1>
+</refentry>
