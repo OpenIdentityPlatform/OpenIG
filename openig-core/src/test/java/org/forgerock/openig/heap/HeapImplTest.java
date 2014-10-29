@@ -264,6 +264,27 @@ public class HeapImplTest {
         assertThat(book.getTitle()).isEqualTo("ABCD OpenIG 12345");
     }
 
+    @Test
+    public void testInlineObjectNamingWithNoNameProvided() throws Exception {
+        JsonValue declaration = json(object(field("type", "WelcomeHandler")));
+        assertThat(HeapImpl.name(declaration)).isEqualTo("{WelcomeHandler}/");
+    }
+
+    @Test
+    public void testInlineObjectNamingWithNoNameProvidedInDeepHierarchy() throws Exception {
+        JsonValue root = json(object(field("heap",
+                                           object(field("objects",
+                                                        array(object(field("type", "WelcomeHandler"))))))));
+        assertThat(HeapImpl.name(root.get("heap").get("objects").get(0)))
+                .isEqualTo("{WelcomeHandler}/heap/objects/0");
+    }
+
+    @Test
+    public void testInlineObjectNamingWithNameProvided() throws Exception {
+        JsonValue declaration = json(object(field("name", "Inline"), field("type", "WelcomeHandler")));
+        assertThat(HeapImpl.name(declaration)).isEqualTo("Inline");
+    }
+
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
         return new JsonValue(readJson(reader)).get("heap");

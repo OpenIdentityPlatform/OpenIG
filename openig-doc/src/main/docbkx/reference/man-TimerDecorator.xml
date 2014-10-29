@@ -268,18 +268,21 @@ GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
   <programlisting language="none">
 GatewayServlet.started:STAT:Started
 Timer[ResourceServerChain].started:STAT:Started
-Timer[/heap/objects/0/config/filters/0].started:STAT:Started
-Timer[/heap/objects/0/config/filters/1].started:STAT:Started
-Timer[/heap/objects/0/config/filters/2].started:STAT:Started
-Timer[/heap/objects/0/config/filters/2].elapsed:STAT:Elapsed time: 12 ms:12 ms
-Timer[/heap/objects/0/config/filters/2].elapsed-within:STAT:
+Timer[ResourceServerFilter].started:STAT:Started
+Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].started:STAT:Started
+Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].started:STAT:Started
+Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed:STAT:
+ Elapsed time: 12 ms:12 ms
+Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed-within:STAT:
  Elapsed time (within the object): 1 ms:1 ms
-Timer[/heap/objects/0/config/filters/1].elapsed:STAT:Elapsed time: 84 ms:84 ms
-Timer[/heap/objects/0/config/filters/1].elapsed-within:STAT:
+Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed:STAT:
+ Elapsed time: 84 ms:84 ms
+Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed-within:STAT:
  Elapsed time (within the object): 72 ms:72 ms
-Timer[/heap/objects/0/config/filters/0].elapsed:STAT:Elapsed time: 117 ms:117 ms
-Timer[/heap/objects/0/config/filters/0].elapsed-within:STAT:
-Elapsed time (within the object): 33 ms:33 ms
+Timer[{OAuth2ResourceServerFilter}/heap/objects/0/config/filters/0].elapsed:STAT:
+ Elapsed time: 117 ms:117 ms
+Timer[ResourceServerFilter].elapsed-within:STAT:
+ Elapsed time (within the object): 33 ms:33 ms
 Timer[ResourceServerChain].elapsed:STAT:Elapsed time: 118 ms:118 ms
 GatewayServlet.elapsed:STAT:Elapsed time: 140 ms:140 ms
   </programlisting>
