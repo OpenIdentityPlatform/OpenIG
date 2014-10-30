@@ -193,7 +193,7 @@ public class GatewayServlet extends HttpServlet {
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-            heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false));
+            heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.addDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config.get("heap").required().expect(Map.class));

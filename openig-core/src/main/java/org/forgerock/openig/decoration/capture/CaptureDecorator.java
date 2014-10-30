@@ -91,6 +91,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
     private final LogSink sink;
     private final boolean captureEntity;
+    private final boolean captureExchange;
 
     /**
      * Builds a new {@code capture} decorator with the given sink (possibly {@code null})
@@ -98,12 +99,17 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      * If the {@code sink} is specified (not {@code null}), every message intercepted by this decorator will be
      * send to the provided sink.
      *
-     * @param sink Log Sink for message capture (may be {@code null})
-     * @param captureEntity does the decorator needs to capture entity or not ?
+     * @param sink
+     *         Log Sink for message capture (may be {@code null})
+     * @param captureEntity
+     *         does the decorator needs to capture entity or not ?
+     * @param captureExchange
+     *         does the decorator needs to capture the exchange (excluding request and response) or not ?
      */
-    public CaptureDecorator(final LogSink sink, final boolean captureEntity) {
+    public CaptureDecorator(final LogSink sink, final boolean captureEntity, final boolean captureExchange) {
         this.sink = sink;
         this.captureEntity = captureEntity;
+        this.captureExchange = captureExchange;
     }
 
     @Override
@@ -167,7 +173,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
             sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LogSink.LOGSINK_HEAP_KEY), LogSink.class);
         }
         return new MessageCapture(new Logger(sink, format("Capture[%s]", context.getName())),
-                                  captureEntity);
+                                  captureEntity, captureExchange);
     }
 
     /**
@@ -178,7 +184,8 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         public Object create() throws HeapException {
             LogSink sink = heap.resolve(config.get("logSink"), LogSink.class, true);
             boolean captureEntity = config.get("captureEntity").defaultTo(false).asBoolean();
-            return new CaptureDecorator(sink, captureEntity);
+            boolean captureExchange = config.get("captureExchange").defaultTo(false).asBoolean();
+            return new CaptureDecorator(sink, captureEntity, captureExchange);
         }
     }
 }
