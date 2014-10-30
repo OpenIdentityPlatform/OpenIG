@@ -73,7 +73,7 @@ public class CaptureDecoratorTest {
 
     @Test(dataProvider = "modeEnumWithDifferentCases")
     public void shouldReadEnumFromDecorationConfig(String name) throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         decorator.decorate(filter, json(name), context);
     }
 
@@ -92,25 +92,25 @@ public class CaptureDecoratorTest {
     @Test(dataProvider = "invalidModeNames",
           expectedExceptions = IllegalArgumentException.class)
     public void shouldFailForInvalidModes(String name) throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         decorator.decorate(filter, json(name), context);
     }
 
     @Test
     public void shouldReadMultipleCapturePointsSpecified() throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         decorator.decorate(filter, json(array("request", "response")), context);
     }
 
     @Test
     public void shouldNotDecorateWhenNoCapturePointsAreSpecified() throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         assertThat(decorator.decorate(filter, json(array()), context)).isSameAs(filter);
     }
 
     @Test
     public void shouldDecorateFilter() throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
 
         Object decorated = decorator.decorate(filter, json("all"), context);
         assertThat(decorated).isInstanceOf(CaptureFilter.class);
@@ -118,7 +118,7 @@ public class CaptureDecoratorTest {
 
     @Test
     public void shouldDecorateHandler() throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
 
         Object decorated = decorator.decorate(handler, json("all"), context);
         assertThat(decorated).isInstanceOf(CaptureHandler.class);
@@ -137,7 +137,7 @@ public class CaptureDecoratorTest {
 
     @Test(dataProvider = "undecoratableObjects")
     public void shouldNotDecorateUnsupportedTypes(Object o) throws Exception {
-        CaptureDecorator decorator = new CaptureDecorator(null, false);
+        CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         assertThat(decorator.decorate(o, json("all"), context)).isSameAs(o);
     }
 }
