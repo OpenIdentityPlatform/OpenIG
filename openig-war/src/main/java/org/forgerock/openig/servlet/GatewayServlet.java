@@ -18,6 +18,7 @@
 package org.forgerock.openig.servlet;
 
 import static java.lang.String.*;
+import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
@@ -91,6 +92,12 @@ public class GatewayServlet extends HttpServlet {
             "TRACE", "DELETE"));
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Default HttpClient heap object declaration.
+     */
+    private static final JsonValue DEFAULT_HTTP_CLIENT = json(object(field("name", HTTP_CLIENT_HEAP_KEY),
+                                                                     field("type", HttpClient.class.getName())));
 
     private static JsonValue readJson(final URL resource) throws ServletException {
         InputStream in = null;
@@ -184,12 +191,11 @@ public class GatewayServlet extends HttpServlet {
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             // can be overridden in config
-            final TemporaryStorage temporaryStorage = new TemporaryStorage();
-            heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
+            heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-            heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
+            heap.addDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config.get("heap").required().expect(Map.class));
 
             // As all heaplets can specify their own storage and logger,

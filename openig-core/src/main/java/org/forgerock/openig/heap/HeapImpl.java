@@ -118,7 +118,7 @@ public class HeapImpl implements Heap {
      * @param object
      *         object declaration to add to the heap.
      */
-    private void addDeclaration(final JsonValue object) {
+    public void addDeclaration(final JsonValue object) {
         object.required().expect(Map.class);
         Heaplet heaplet = Heaplets.getHeaplet(asClass(object.get("type").required()));
         if (heaplet == null) {
