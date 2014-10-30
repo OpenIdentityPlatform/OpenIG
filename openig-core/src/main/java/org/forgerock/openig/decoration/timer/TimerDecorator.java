@@ -70,13 +70,19 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new TimerFilter(delegate, getLogger(context));
+        if (decoratorConfig.asBoolean()) {
+            return new TimerFilter(delegate, getLogger(context));
+        }
+        return delegate;
     }
 
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new TimerHandler(delegate, getLogger(context));
+        if (decoratorConfig.asBoolean()) {
+            return new TimerHandler(delegate, getLogger(context));
+        }
+        return delegate;
     }
 
     /**
