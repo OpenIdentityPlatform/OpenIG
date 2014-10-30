@@ -256,7 +256,7 @@ public class GatewayServlet extends HttpServlet {
                 && !NON_ENTITY_METHODS.contains(exchange.request.getMethod())) {
             exchange.request.setEntity(new BranchingStreamWrapper(request.getInputStream(), storage));
         }
-        // remember request entity so that it (and its children) can be properly closed
+        exchange.setClientInfo(new ServletClientInfo(request));
         // TODO consider moving this below (when the exchange will be fully configured)
         exchange.session = newSession(request, exchange);
         exchange.principal = request.getUserPrincipal();
