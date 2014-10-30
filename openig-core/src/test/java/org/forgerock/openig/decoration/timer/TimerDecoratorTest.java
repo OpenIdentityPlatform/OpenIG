@@ -59,7 +59,7 @@ public class TimerDecoratorTest {
     public void shouldDecorateFilter() throws Exception {
         TimerDecorator decorator = new TimerDecorator();
 
-        Object decorated = decorator.decorate(filter, null, context);
+        Object decorated = decorator.decorate(filter, json(true), context);
         assertThat(decorated).isInstanceOf(TimerFilter.class);
     }
 
@@ -67,8 +67,24 @@ public class TimerDecoratorTest {
     public void shouldDecorateHandler() throws Exception {
         TimerDecorator decorator = new TimerDecorator();
 
-        Object decorated = decorator.decorate(handler, null, context);
+        Object decorated = decorator.decorate(handler, json(true), context);
         assertThat(decorated).isInstanceOf(TimerHandler.class);
+    }
+
+    @Test
+    public void shouldNotDecorateFilter() throws Exception {
+        TimerDecorator decorator = new TimerDecorator();
+
+        Object decorated = decorator.decorate(filter, json(false), context);
+        assertThat(decorated).isSameAs(filter);
+    }
+
+    @Test
+    public void shouldNotDecorateHandler() throws Exception {
+        TimerDecorator decorator = new TimerDecorator();
+
+        Object decorated = decorator.decorate(handler, json(false), context);
+        assertThat(decorated).isSameAs(handler);
     }
 
     @DataProvider
