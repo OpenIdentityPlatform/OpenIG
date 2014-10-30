@@ -166,8 +166,7 @@
     "defaultLogoutGoto": expression,
     "requireHttps": boolean,
     "requireLogin": boolean,
-    "scopes": [ expression, ...],
-    "useJWTSession": boolean
+    "scopes": [ expression, ...]
   }
 }
   </programlisting>
@@ -568,24 +567,6 @@
 
      <para>
       Default: do not specify scopes.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term><code>"useJWTSession"</code>: <emphasis>boolean, optional</emphasis></term>
-    <listitem>
-     <para>
-      Whether to store authorization state in a JWT cookie on the user-agent.
-     </para>
-
-     <para>
-      At present this setting has no effect.
-      Authorization state is stored only in the session.
-     </para>
-
-     <para>
-      Default: false.
      </para>
     </listitem>
    </varlistentry>
