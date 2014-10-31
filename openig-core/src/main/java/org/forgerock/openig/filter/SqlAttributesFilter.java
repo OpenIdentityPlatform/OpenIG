@@ -17,7 +17,9 @@
 
 package org.forgerock.openig.filter;
 
+import static java.lang.String.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -26,8 +28,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -108,20 +110,10 @@ public class SqlAttributesFilter extends GenericFilter {
                 Connection c = null;
                 try {
                     c = dataSource.getConnection();
-                    // probably cached in connection pool
-                    PreparedStatement ps = c.prepareStatement(preparedStatement);
-                    // probably unnecessary but a safety precaution
-                    ps.clearParameters();
-                    Object[] p = new Object[parameters.size()];
-                    for (int n = 0; n < p.length; n++) {
-                        p[n] = parameters.get(n).eval(exchange);
-                    }
-                    for (int n = 0; n < p.length; n++) {
-                        ps.setObject(n + 1, p[n]);
-                    }
-                    if (logger.isLoggable(LogLevel.DEBUG)) {
-                        logger.debug("Query: " + preparedStatement + ": " + Arrays.toString(p));
-                    }
+
+
+                    PreparedStatement ps = createPreparedStatement(c);
+
                     ResultSet rs = ps.executeQuery();
                     if (rs.first()) {
                         ResultSetMetaData rsmd = rs.getMetaData();
@@ -137,18 +129,52 @@ public class SqlAttributesFilter extends GenericFilter {
                     ps.close();
                 } catch (SQLException sqle) {
                     // probably a config issue
-                    logger.warning(sqle);
+                    logDetailedException(logger, sqle);
                 } finally {
                     if (c != null) {
                         try {
                             c.close();
                         } catch (SQLException sqle) {
                             // probably a network issue
-                            logger.warning(sqle);
+                            logDetailedException(logger, sqle);
                         }
                     }
                 }
                 return result;
+            }
+
+            private PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
+                logger.debug(format("PreparedStatement %s", preparedStatement));
+
+                // probably cached in connection pool
+                PreparedStatement ps = connection.prepareStatement(preparedStatement);
+
+                // probably unnecessary but a safety precaution
+                ps.clearParameters();
+
+                // Inject evaluated expression values into statement's placeholders
+                Iterator<Expression> expressions = parameters.iterator();
+                int count = ps.getParameterMetaData().getParameterCount();
+                for (int i = 0; i < count; i++) {
+                    if (!expressions.hasNext()) {
+                        // Got a statement parameter, but no expression to evaluate
+                        logger.warning(format(" Placeholder %d has no provided value as parameter", i + 1));
+                        continue;
+                    }
+                    Object eval = expressions.next().eval(exchange);
+                    ps.setObject(i + 1, eval);
+                    logger.debug(format(" %d -> %s", i + 1, eval));
+                }
+
+                // Output a warning if there are too many expressions compared to the number
+                // of parameters/placeholders in the prepared statement
+                if (expressions.hasNext()) {
+                    logger.warning(format(" All parameters with index >= %d are ignored because there are "
+                                          + "no placeholders for them in the configured prepared statement (%s)",
+                                          count,
+                                          preparedStatement));
+                }
+                return ps;
             }
         }));
         next.handle(exchange);
