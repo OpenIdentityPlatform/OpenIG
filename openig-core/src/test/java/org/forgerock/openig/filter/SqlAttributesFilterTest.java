@@ -170,7 +170,7 @@ public class SqlAttributesFilterTest {
         when(statement.getParameterMetaData()).thenReturn(pmetadata);
         when(pmetadata.getParameterCount()).thenReturn(0);
         when(statement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.first()).thenReturn(true);
+        when(resultSet.next()).thenReturn(true);
         when(resultSet.getMetaData()).thenReturn(metadata);
         when(metadata.getColumnCount()).thenReturn(1);
         when(metadata.getColumnLabel(1)).thenReturn("password");

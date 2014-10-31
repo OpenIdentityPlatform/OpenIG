@@ -115,7 +115,7 @@ public class SqlAttributesFilter extends GenericFilter {
                     PreparedStatement ps = createPreparedStatement(c);
 
                     ResultSet rs = ps.executeQuery();
-                    if (rs.first()) {
+                    if (rs.next()) {
                         ResultSetMetaData rsmd = rs.getMetaData();
                         int columns = rsmd.getColumnCount();
                         for (int n = 1; n <= columns; n++) {
