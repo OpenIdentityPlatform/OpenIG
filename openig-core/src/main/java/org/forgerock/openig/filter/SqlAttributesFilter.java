@@ -163,7 +163,7 @@ public class SqlAttributesFilter extends GenericFilter {
                     }
                     Object eval = expressions.next().eval(exchange);
                     ps.setObject(i + 1, eval);
-                    logger.debug(format(" %d -> %s", i + 1, eval));
+                    logger.debug(format(" Placeholder #%d -> %s", i + 1, eval));
                 }
 
                 // Output a warning if there are too many expressions compared to the number
