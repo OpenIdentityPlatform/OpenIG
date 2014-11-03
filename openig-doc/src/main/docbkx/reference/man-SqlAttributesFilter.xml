@@ -92,7 +92,7 @@
     <term><code>"parameters"</code>: <emphasis>array of <link
     xlink:href="reference#Expressions"
     xlink:role="http://docbook.org/xlink/role/olink">expressions</link>,
-    required</emphasis></term>
+    optional</emphasis></term>
     <listitem>
      <para>The parameters to evaluate and include in the execution of the
      prepared statement.</para>

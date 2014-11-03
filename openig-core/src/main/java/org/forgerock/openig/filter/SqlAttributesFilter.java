@@ -202,10 +202,10 @@ public class SqlAttributesFilter extends GenericFilter {
 
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
                                                                  asExpression(config.get("target").required()),
-                                                                 config.get("preparedStatement").asString());
+                                                                 config.get("preparedStatement").required().asString());
 
-            for (JsonValue parameter : config.get("parameters").required().expect(List.class)) {
-                filter.parameters.add(asExpression(parameter));
+            if (config.isDefined("parameters")) {
+                filter.parameters.addAll(config.get("parameters").asList(ofExpression()));
             }
             return filter;
         }
