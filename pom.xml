@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.forgerock</groupId>
     <artifactId>forgerock-parent</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.6</version>
   </parent>
 
   <groupId>org.forgerock.openig</groupId>
@@ -193,9 +193,9 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.5</version>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-servlet_2.5_spec</artifactId>
+        <version>1.2</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
