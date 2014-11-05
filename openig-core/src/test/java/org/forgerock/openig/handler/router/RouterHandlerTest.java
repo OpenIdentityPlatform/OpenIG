@@ -20,6 +20,7 @@ import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogLevel.ERROR;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
@@ -39,6 +40,7 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
@@ -210,7 +212,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet()));
 
         // Should have an error log statement
-        verify(logger).error(matches(".* A route named '.*' is already registered"));
+        verify(logger).logMessage(eq(ERROR), matches(".* A route named '.*' is already registered"));
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,

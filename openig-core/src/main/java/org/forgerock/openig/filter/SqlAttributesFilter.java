@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.openig.util.Logs.*;
 
@@ -45,7 +46,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogLevel;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 
@@ -122,21 +122,21 @@ public class SqlAttributesFilter extends GenericFilter {
                             result.put(rsmd.getColumnLabel(n), rs.getObject(n));
                         }
                     }
-                    if (logger.isLoggable(LogLevel.DEBUG)) {
+                    if (logger.isLoggable(DEBUG)) {
                         logger.debug("Result: " + result);
                     }
                     rs.close();
                     ps.close();
                 } catch (SQLException sqle) {
                     // probably a config issue
-                    logDetailedException(logger, sqle);
+                    logDetailedException(ERROR, logger, sqle);
                 } finally {
                     if (c != null) {
                         try {
                             c.close();
                         } catch (SQLException sqle) {
                             // probably a network issue
-                            logDetailedException(logger, sqle);
+                            logDetailedException(ERROR, logger, sqle);
                         }
                     }
                 }

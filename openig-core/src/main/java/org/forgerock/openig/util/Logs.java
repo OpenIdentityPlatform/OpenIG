@@ -16,7 +16,8 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
+import static org.forgerock.openig.log.LogLevel.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,8 +38,8 @@ public final class Logs {
     private Logs() { }
 
     /**
-     * Log the given {@code throwable} exception in the provided {@code logger} instance. This method will log (as
-     * {@link LogLevel#ERROR} level) the localized messages of each chained exception (from the foremost throwable to
+     * Log the given {@code throwable} exception in the provided {@code logger} instance. This method will log (at
+     * given {@code level}) the localized messages of each chained exception (from the foremost throwable to
      * the deep-most caused by throwable). And then render the full exception's stack-trace (including caused by) at the
      * {@link LogLevel#DEBUG} level.
      * <p>
@@ -53,24 +54,29 @@ public final class Logs {
      *     2014-10-23T12:07:45Z:_Router._Router:ERROR:[         ConnectException] > Connection refused}
      * </pre>
      *
+     * @param level
+     *         the log level to use for exception's messages
      * @param logger
      *         where the messages will be logged
      * @param throwable
      *         the exception to be logged
      */
-    public static void logDetailedException(final Logger logger, final Throwable throwable) {
+    public static void logDetailedException(final LogLevel level,
+                                            final Logger logger,
+                                            final Throwable throwable) {
         // Print each of the chained exception's messages (in order)
         Throwable current = throwable;
         while (current != null) {
-            logger.error(format("[%25s] > %s",
-                                current.getClass().getSimpleName(),
-                                current.getLocalizedMessage()));
+            logger.logMessage(level,
+                              format("[%25s] > %s",
+                                     current.getClass().getSimpleName(),
+                                     current.getLocalizedMessage()));
             current = current.getCause();
         }
 
         // Print the full stack trace (only visible when DEBUG is activated)
         // Had to render the exception myself otherwise the ConsoleLogSink/FileLogSink does not print the stack trace
-        if (logger.isLoggable(LogLevel.DEBUG)) {
+        if (logger.isLoggable(DEBUG)) {
             StringWriter writer = new StringWriter();
             throwable.printStackTrace(new PrintWriter(writer));
             logger.debug(writer.getBuffer().toString());

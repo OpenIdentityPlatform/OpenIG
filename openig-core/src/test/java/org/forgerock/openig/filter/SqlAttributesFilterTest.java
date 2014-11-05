@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.log.LogLevel.ERROR;
 import static org.mockito.Mockito.*;
 
 import java.sql.Connection;
@@ -122,7 +123,7 @@ public class SqlAttributesFilterTest {
         @SuppressWarnings("unchecked")
         Map<String, String> result = (Map<String, String>) exchange.get("result");
         assertThat(result).isEmpty();
-        verify(filter.logger).error(matches("\\[             SQLException\\] > Unexpected"));
+        verify(filter.logger).logMessage(eq(ERROR), matches("\\[             SQLException\\] > Unexpected"));
     }
 
     @Test
