@@ -17,8 +17,10 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -193,6 +195,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                 token,
                                 e.getError(),
                                 e.getDescription()));
+            logDetailedException(DEBUG, logger, e);
             invalidRequest.handle(exchange);
             return;
         }
