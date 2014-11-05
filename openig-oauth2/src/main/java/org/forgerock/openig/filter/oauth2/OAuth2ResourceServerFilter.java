@@ -181,7 +181,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
         String token = getAccessToken(exchange.request);
         if (token == null) {
-            logger.debug("Missing OAuth 2.0 Bearer Token Authorization header");
+            logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
             noAuthentication.handle(exchange);
             return;
         }
@@ -191,10 +191,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         try {
             accessToken = resolver.resolve(token);
         } catch (OAuth2TokenException e) {
-            logger.debug(format("Cannot authorize request with token '%s' because [error:%s, description:%s]",
-                                token,
-                                e.getError(),
-                                e.getDescription()));
+            logger.debug(format("Access Token '%s' cannot be resolved", token));
             logDetailedException(DEBUG, logger, e);
             invalidRequest.handle(exchange);
             return;

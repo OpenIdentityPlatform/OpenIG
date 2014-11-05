@@ -142,7 +142,7 @@ public class OpenAmAccessToken implements AccessToken {
                                              scopes,
                                              getExpirationTime(expiresIn));
             } catch (JsonValueException e) {
-                throw new OAuth2TokenException(null, "Cannot build AccessToken from the given JSON: invalid format", e);
+                throw new OAuth2TokenException("Cannot build AccessToken from the given JSON: invalid format", e);
             }
         }
 
