@@ -26,62 +26,25 @@ public class OAuth2TokenException extends Exception {
      */
     public static final long serialVersionUID = -1L;
 
-    private final String error;
-    private final String description;
-
     /**
-     * Builds an {@link OAuth2TokenException} with a given error message.
+     * Builds an {@link OAuth2TokenException} with a given message.
      *
-     * @param error
-     *         error identifier
+     * @param message
+     *         Exception's message
      */
-    public OAuth2TokenException(final String error) {
-        this(error, null);
+    public OAuth2TokenException(final String message) {
+        this(message, null);
     }
 
     /**
-     * Builds an {@link OAuth2TokenException} with a given error message and description.
+     * Builds an {@link OAuth2TokenException} with a given message and cause.
      *
-     * @param error
-     *         error identifier
-     * @param description
-     *         error description
-     */
-    public OAuth2TokenException(final String error, final String description) {
-        this(error, description, null);
-    }
-
-    /**
-     * Builds an {@link OAuth2TokenException} with a given error message, description and cause.
-     *
-     * @param error
-     *         error identifier
-     * @param description
-     *         error description
+     * @param message
+     *         Exception's message
      * @param cause
-     *         error cause
+     *         Exception cause
      */
-    public OAuth2TokenException(final String error, final String description, final Exception cause) {
-        super(error, cause);
-        this.error = error;
-        this.description = description;
-    }
-
-    /**
-     * Returns the error code.
-     *
-     * @return the error code.
-     */
-    public String getError() {
-        return error;
-    }
-
-    /**
-     * Returns the error description (may be {@literal null}).
-     *
-     * @return the error description (may be {@literal null}).
-     */
-    public String getDescription() {
-        return description;
+    public OAuth2TokenException(final String message, final Exception cause) {
+        super(message, cause);
     }
 }
