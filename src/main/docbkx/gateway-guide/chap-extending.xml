@@ -154,6 +154,17 @@
     xlink:role="http://docbook.org/xlink/role/olink"
    ><citetitle>Getting Started</citetitle></link>.
   </para>
+
+  <para>
+   When developing and debugging your scripts, consider configuring a
+   <link
+    xlink:show="new"
+    xlink:href="reference#CaptureDecorator"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>CaptureDecorator</citetitle></link>
+   to log requests, responses, and the exchange data in JSON form.
+   You can then turn off capturing when you move to production.
+  </para>
  </section>
 
  <section xml:id="scripting-dispatch">

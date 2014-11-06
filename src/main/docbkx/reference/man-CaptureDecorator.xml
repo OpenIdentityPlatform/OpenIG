@@ -61,7 +61,8 @@
     "type": "CaptureDecorator",
     "config": {
         "logSink": LogSink reference,
-        "captureEntity": boolean
+        "captureEntity": boolean,
+        "captureExchange": boolean
     }
 }
   </programlisting>
@@ -100,6 +101,20 @@
      <para>
       The filter omits binary entities,
       instead writing a <literal>[binary entity]</literal> marker to the file.
+     </para>
+
+     <para>
+      Default: false
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"captureExchange"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether the exchange, excluding the request and response,
+      should be captured as JSON.
      </para>
 
      <para>
@@ -233,6 +248,21 @@
   </programlisting>
 
   <para>
+   Decorator configured to log the exchange in JSON format,
+   excluding the request and the response:
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureExchange": true
+    }
+}
+  </programlisting>
+
+  <para>
    To capture requests and responses with the entity
    before sending the request and before returning the response,
    do so as in the following example.
@@ -324,6 +354,35 @@
 }
   ]]>
   </programlisting>
+
+  <para>
+   To capture the exchange as JSON, excluding the request and response,
+   before sending the request and before returning the response,
+   do so as in the following example.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "capture",
+                "type": "CaptureDecorator",
+                "config": {
+                    "captureExchange": true
+                }
+            },
+            {
+                "name": "ClientHandler",
+                "type": "ClientHandler",
+                "capture": [ "request", "response" ]
+            }
+        ]
+    },
+    "handler": "ClientHandler"
+}
+  </programlisting>
+
  </refsect1>
 
  <refsect1>
