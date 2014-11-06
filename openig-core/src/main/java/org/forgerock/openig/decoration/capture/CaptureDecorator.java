@@ -55,13 +55,16 @@ import org.forgerock.openig.log.Logger;
  *       "name": "capture",
  *       "type": "CaptureDecorator",
  *       "config": {
- *           "captureEntity": false
+ *           "captureEntity": false,
+ *           "captureExchange": false
  *       }
  *     }
  *     }
  * </pre>
  * The capture decorator can be configured to globally enable entity capture using the {@literal captureEntity}
  * boolean attribute (default to {@code false}).
+ * To capture the exchange without the request and response at the capture point as well,
+ * use the {@literal captureExchange} boolean attribute (default to {@code false}).
  * The common {@literal logSink} attribute can be used to force message capture in a given sink. By default, messages
  * are sent to the heap object defined LogSink.
  * <p>

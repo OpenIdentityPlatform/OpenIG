@@ -60,11 +60,17 @@
    </para>
 
    <para>
-    You can now decorate Filters and Handlers with a CaptureDecorator (
+    You can now decorate Filters and Handlers with a CaptureDecorator
+    (that extends what the CaptureFilter could do,
     <link
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-299"
-    >OPENIG-299</link>).
+    >OPENIG-299</link>),
+    (and allows you to dump the exchange to JSON for debugging purposes,
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-301"
+     >OPENIG-301</link>).
    </para>
 
    <para>
