@@ -315,7 +315,7 @@
                 "keystore": {
                     "type": "KeyStore",
                     "config": {
-                        "file": "file://${env['HOME']}/keystore.jks",
+                        "url": "file://${env['HOME']}/keystore.jks",
                         "password": "${system['keypass']}"
                     }
                 },
@@ -328,7 +328,7 @@
                 "keystore": {
                     "type": "KeyStore",
                     "config": {
-                        "file": "file://${env['HOME']}/truststore.jks",
+                        "url": "file://${env['HOME']}/truststore.jks",
                         "password": "${system['trustpass']}"
                     }
                 }
