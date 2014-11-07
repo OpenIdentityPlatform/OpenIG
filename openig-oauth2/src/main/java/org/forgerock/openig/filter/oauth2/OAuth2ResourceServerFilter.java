@@ -76,12 +76,15 @@ import org.forgerock.util.time.TimeService;
  * configuration attributes.
  * <p>
  * If {@literal cacheExpiration} is not set, the default is to keep the {@link AccessToken}s for 1 minute.
- * {@literal cacheExpiration} is expressed using natural language:
+ * {@literal cacheExpiration} is expressed using natural language (use {@literal zero} or {@literal none}
+ * to deactivate caching, any 0 valued duration will also deactivate it):
  * <pre>
  *     "cacheExpiration": "2 minutes"
  *     "cacheExpiration": "3 days and 6 hours"
  *     "cacheExpiration": "5m" // 5 minutes
  *     "cacheExpiration": "10 min, 30 sec"
+ *     "cacheExpiration": "zero" // no cache
+ *     "cacheExpiration": "0 s" // no cache
  * </pre>
  * <p>
  * {@literal providerHandler} is a name reference to another handler available in the heap. It will be used to perform
@@ -259,10 +262,12 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
             // Build the cache
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
-            executorService = Executors.newSingleThreadScheduledExecutor();
-            cache = new ThreadSafeCache<String, AccessToken>(executorService);
-            cache.setTimeout(expiration);
-            resolver = new CachingAccessTokenResolver(resolver, cache);
+            if (!expiration.isZero()) {
+                executorService = Executors.newSingleThreadScheduledExecutor();
+                cache = new ThreadSafeCache<String, AccessToken>(executorService);
+                cache.setTimeout(expiration);
+                resolver = new CachingAccessTokenResolver(resolver, cache);
+            }
 
             HashSet<String> scopes =
                     new HashSet<String>(getWithDeprecation(config, logger, "scopes",
@@ -293,8 +298,12 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
         @Override
         public void destroy() {
-            executorService.shutdownNow();
-            cache.clear();
+            if (executorService != null) {
+                executorService.shutdownNow();
+            }
+            if (cache != null) {
+                cache.clear();
+            }
         }
     }
 
