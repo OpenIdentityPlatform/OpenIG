@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import org.forgerock.openig.heap.Name;
+
 /**
  * The log entry data structure.
  */
@@ -25,10 +27,11 @@ public class LogEntry {
     private final long time = System.currentTimeMillis();
 
     /**
-     * The subject and/or event being logged, in hierarchical dot-delimited
-     * notation.
+     * The subject and/or event being logged.
      */
-    private final String source;
+    private final Name source;
+
+    private final String type;
 
     /** The logging level of the entry. */
     private final LogLevel level;
@@ -39,12 +42,17 @@ public class LogEntry {
     /** The data being logged or {@code null} if no data. */
     private final Object data;
 
-    LogEntry(String source, LogLevel level, String message) {
+    LogEntry(Name source, LogLevel level, String message) {
         this(source, level, message, null);
     }
 
-    LogEntry(String source, LogLevel level, String message, Object data) {
+    LogEntry(Name source, LogLevel level, String message, Object data) {
+        this(source, "log", level, message, data);
+    }
+
+    LogEntry(Name source, String type, LogLevel level, String message, Object data) {
         this.source = source;
+        this.type = type;
         this.level = level;
         this.message = message;
         this.data = data;
@@ -62,14 +70,21 @@ public class LogEntry {
     }
 
     /**
-     * Returns the subject and/or event being logged, in hierarchical
-     * dot-delimited notation.
+     * Returns the subject and/or event being logged.
      *
-     * @return The subject and/or event being logged, in hierarchical
-     *         dot-delimited notation.
+     * @return The subject and/or event being logged.
      */
-    public String getSource() {
+    public Name getSource() {
         return source;
+    }
+
+    /**
+     * Returns the type of the event.
+     *
+     * @return the type of the event.
+     */
+    public String getType() {
+        return type;
     }
 
     /**

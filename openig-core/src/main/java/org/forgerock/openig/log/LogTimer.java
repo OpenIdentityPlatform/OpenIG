@@ -27,8 +27,8 @@ public class LogTimer {
     /** The time that the timer was started. */
     private long started = Long.MIN_VALUE; // indicates the timer has not been started
 
-    /** The sink to record log entries to. */
-    private final LogSink sink;
+    /** The logger to record log entries to. */
+    private final Logger logger;
 
     /** The event (within the source) that is being timed. */
     private final String event;
@@ -44,33 +44,33 @@ public class LogTimer {
     /**
      * Constructs a new timer with a logging level of {@link LogLevel#STAT STAT}.
      *
-     * @param sink the sink to record timer log entries to.
+     * @param logger the sink to record timer log entries to.
      */
-    public LogTimer(LogSink sink) {
-        this(sink, LogLevel.STAT);
+    public LogTimer(Logger logger) {
+        this(logger, LogLevel.STAT);
     }
 
     /**
      * Constructs a new timer to log events at a specified logging level.
      *
-     * @param sink the sink to record timer log entries to.
+     * @param logger the sink to record timer log entries to.
      * @param level the logging level to record timer log entries with.
      */
-    public LogTimer(LogSink sink, LogLevel level) {
-        this(sink, level, null);
+    public LogTimer(Logger logger, LogLevel level) {
+        this(logger, level, null);
     }
 
     /**
      * Constructs a new timer to log events of a specific type at a specific logging level.
      *
-     * @param sink the sink to record timer log entries to.
+     * @param logger the sink to record timer log entries to.
      * @param level the logging level to record timer log entries with.
      * @param event the event being timed.
      */
-    public LogTimer(LogSink sink, LogLevel level, String event) {
+    public LogTimer(Logger logger, LogLevel level, String event) {
         // avoid call to nanoTime improbably yielding Long.MIN_VALUE
         System.nanoTime();
-        this.sink = sink;
+        this.logger = logger;
         this.event = event;
         this.level = level;
     }
@@ -81,8 +81,8 @@ public class LogTimer {
      * @return this timer instance.
      */
     public LogTimer start() {
-        if (sink != null) {
-            sink.log(new LogEntry(source("started"), level, "Started"));
+        if (logger != null) {
+            logger.log(logger.createEntry("started", level, "Started"));
         }
         started = System.nanoTime();
         return this;
@@ -93,18 +93,18 @@ public class LogTimer {
      */
     public void stop() {
         long stopped = System.nanoTime();
-        if (sink != null && started != Long.MIN_VALUE) {
+        if (logger != null && started != Long.MIN_VALUE) {
             long elapsed = MILLISECONDS.convert(stopped - started, NANOSECONDS);
             LogMetric metric = new LogMetric(elapsed, "ms");
-            sink.log(new LogEntry(source("elapsed"), level, "Elapsed time: " + metric, metric));
+            logger.log(logger.createEntry("elapsed", level, "Elapsed time: " + metric, metric));
             if (ignorable > 0) {
                 // Log the elapsed time inside an object (without the summed pause times)
                 long ignoredMs = MILLISECONDS.convert(ignorable, NANOSECONDS);
                 LogMetric within = new LogMetric(elapsed - ignoredMs, "ms");
-                sink.log(new LogEntry(source("elapsed-within"),
-                                      level,
-                                      "Elapsed time (within the object): " + within,
-                                      within));
+                logger.log(logger.createEntry("elapsed-within",
+                                              level,
+                                              "Elapsed time (within the object): " + within,
+                                              within));
             }
         }
     }

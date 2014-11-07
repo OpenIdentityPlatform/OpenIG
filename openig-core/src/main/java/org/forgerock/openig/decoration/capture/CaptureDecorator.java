@@ -31,6 +31,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -175,8 +176,8 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
             Heap heap = context.getHeap();
             sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LogSink.LOGSINK_HEAP_KEY), LogSink.class);
         }
-        return new MessageCapture(new Logger(sink, format("Capture[%s]", context.getName())),
-                                  captureEntity, captureExchange);
+        Name name = context.getName();
+        return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureExchange);
     }
 
     /**

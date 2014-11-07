@@ -19,18 +19,19 @@ package org.forgerock.openig.log;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.openig.heap.Name;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class LogTimerTest {
 
-    @Mock
-    private LogSink sink;
+    @Spy
+    private Logger logger = new Logger(null, Name.of("Test"));
 
     @Captor
     private ArgumentCaptor<LogEntry> captor;
@@ -42,19 +43,19 @@ public class LogTimerTest {
 
     @Test
     public void shouldComputeElapsedTime() throws Exception {
-        LogTimer timer = new LogTimer(sink);
+        LogTimer timer = new LogTimer(logger);
         timer.start();
         timer.stop();
 
-        verify(sink, times(2)).log(captor.capture());
+        verify(logger, times(2)).log(captor.capture());
 
         LogEntry started = captor.getAllValues().get(0);
-        assertThat(started.getSource()).endsWith("started");
+        assertThat(started.getType()).isEqualTo("started");
         assertThat(started.getMessage()).isNotNull()
                                         .isNotEmpty();
 
         LogEntry elapsed = captor.getAllValues().get(1);
-        assertThat(elapsed.getSource()).endsWith("elapsed");
+        assertThat(elapsed.getType()).isEqualTo("elapsed");
         assertThat(elapsed.getMessage()).isNotNull()
                                         .isNotEmpty();
         assertThat(elapsed.getData()).isInstanceOf(LogMetric.class);
@@ -62,7 +63,7 @@ public class LogTimerTest {
 
     @Test
     public void shouldComputeElapsedTimeWithPauses() throws Exception {
-        LogTimer timer = new LogTimer(sink);
+        LogTimer timer = new LogTimer(logger);
         timer.start();
         Thread.sleep(5);
         timer.pause();
@@ -71,22 +72,22 @@ public class LogTimerTest {
         Thread.sleep(5);
         timer.stop();
 
-        verify(sink, times(3)).log(captor.capture());
+        verify(logger, times(3)).log(captor.capture());
 
         LogEntry started = captor.getAllValues().get(0);
-        assertThat(started.getSource()).endsWith("started");
+        assertThat(started.getType()).isEqualTo("started");
         assertThat(started.getMessage()).isNotNull()
                                         .isNotEmpty();
 
         LogEntry elapsed = captor.getAllValues().get(1);
-        assertThat(elapsed.getSource()).endsWith("elapsed");
+        assertThat(elapsed.getType()).isEqualTo("elapsed");
         assertThat(elapsed.getMessage()).isNotNull()
                                         .isNotEmpty();
         LogMetric elapsedData = (LogMetric) elapsed.getData();
         assertThat(elapsedData).isNotNull();
 
         LogEntry within = captor.getAllValues().get(2);
-        assertThat(within.getSource()).endsWith("elapsed-within");
+        assertThat(within.getType()).isEqualTo("elapsed-within");
         assertThat(within.getMessage()).isNotNull()
                                        .isNotEmpty();
         LogMetric withinData = (LogMetric) within.getData();

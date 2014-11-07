@@ -16,9 +16,10 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -34,7 +35,7 @@ import org.testng.annotations.Test;
 public class MessageCaptureTest {
 
     @Spy
-    private Logger logger = new Logger(null, "Test");
+    private Logger logger = new Logger(null, Name.of("Test"));
 
     @Captor
     private ArgumentCaptor<String> captor;
