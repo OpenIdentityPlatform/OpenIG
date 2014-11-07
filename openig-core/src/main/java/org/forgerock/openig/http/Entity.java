@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.http;
 
+import static java.nio.charset.Charset.*;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
@@ -72,7 +73,10 @@ public final class Entity implements Closeable {
             new byte[0]);
 
     /** Default character set to use if not specified, per RFC 2616. */
-    private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+    private static final Charset ISO_8859_1 = forName("ISO-8859-1");
+
+    /** UTF-8 charset. */
+    private static final Charset UTF_8 = forName("UTF-8");
 
     /** The encapsulating Message which may have content encoding headers. */
     private final Message<?> message;
@@ -205,7 +209,7 @@ public final class Entity implements Closeable {
      */
     public Object getJson() throws IOException {
         if (json == null) {
-            final BufferedReader reader = newDecodedContentReader(null);
+            final BufferedReader reader = newDecodedContentReader(UTF_8); // RFC 7159
             try {
                 json = readJson(reader);
             } finally {
