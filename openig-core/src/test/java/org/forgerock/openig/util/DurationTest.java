@@ -131,8 +131,13 @@ public class DurationTest {
     }
 
     @Test
-    public void shouldAcceptZero() throws Exception {
-        assertThat(duration("0 ns")).isEqualTo(0L, TimeUnit.NANOSECONDS);
+    public void shouldRecognizeZeroDuration() throws Exception {
+        assertThat(duration("0 ns")).isZero();
+        assertThat(duration("0 day and 0 ms")).isZero();
+        assertThat(duration("0 s, 0 ms")).isZero();
+
+        assertThat(duration("zero")).isZero();
+        assertThat(duration("disabled")).isZero();
     }
 
     @Test
@@ -151,7 +156,7 @@ public class DurationTest {
                   .isEqualTo(3600L);
     }
 
-    public DurationAssert assertThat(Duration duration) {
+    public DurationAssert assertThat(final Duration duration) {
         return new DurationAssert(duration);
     }
 
@@ -185,5 +190,13 @@ public class DurationTest {
             return this;
         }
 
+
+        public DurationAssert isZero() {
+            isNotNull();
+            if (!actual.isZero()) {
+                failWithMessage("Duration is not zero-length: %d %s", actual.getValue(), actual.getUnit());
+            }
+            return this;
+        }
     }
 }
