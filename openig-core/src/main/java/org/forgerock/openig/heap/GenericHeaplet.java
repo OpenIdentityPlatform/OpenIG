@@ -45,6 +45,9 @@ public abstract class GenericHeaplet implements Heaplet {
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;
 
+    /** The fully qualified name of the object to be created. */
+    protected Name qualified;
+
     /** The heaplet's object configuration object. */
     protected JsonValue config;
 
@@ -61,16 +64,17 @@ public abstract class GenericHeaplet implements Heaplet {
     protected Object object;
 
     @Override
-    public Object create(String name, JsonValue config, Heap heap) throws HeapException {
-        this.name = name;
+    public Object create(Name name, JsonValue config, Heap heap) throws HeapException {
+        this.name = name.getLeaf();
+        this.qualified = name;
         this.config = config.required().expect(Map.class);
         this.heap = heap;
-        if (!SPECIAL_OBJECTS.contains(name)) {
+        if (!SPECIAL_OBJECTS.contains(this.name)) {
             this.logger = new Logger(
                     heap.resolve(
                             config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                             LogSink.class, true),
-                    name);
+                    name.getLeaf());
             this.storage = heap.resolve(
                     config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
@@ -93,7 +97,7 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /**
      * Called to request the heaplet create an object. Called by
-     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after initializing
+     * {@link Heaplet#create(Name, JsonValue, Heap)} after initializing
      * the protected field members. Implementations should parse configuration
      * but not acquire resources, start threads, or log any initialization
      * messages. These tasks should be performed by the {@link #start()} method.
@@ -110,7 +114,7 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /**
      * Called to request the heaplet start an object. Called by
-     * {@link GenericHeaplet#create(String, JsonValue, Heap)} after creating and
+     * {@link Heaplet#create(Name, JsonValue, Heap)} after creating and
      * configuring the object and once the object's logger and storage have been
      * configured. Implementations should override this method if they need to
      * acquire resources, start threads, or log any initialization messages.

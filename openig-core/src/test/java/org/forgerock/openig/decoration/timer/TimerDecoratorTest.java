@@ -28,6 +28,7 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,10 +50,11 @@ public class TimerDecoratorTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        HeapImpl heap = new HeapImpl();
+        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         when(context.getHeap()).thenReturn(heap);
         when(context.getConfig()).thenReturn(json(emptyMap()));
+        when(context.getName()).thenReturn(Name.of("config.json", "Router"));
     }
 
     @Test

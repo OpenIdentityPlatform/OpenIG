@@ -18,6 +18,7 @@ package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.heap.Name.*;
 
 import org.forgerock.openig.heap.domain.Author;
 import org.forgerock.openig.heap.domain.AuthorHeaplet;
@@ -53,7 +54,7 @@ public class HeapletsTest {
         assertThat(heaplet)
                 .isNotNull()
                 .isInstanceOf(Book.Heaplet.class);
-        assertThat(heaplet.create("Book", json(object()), heap))
+        assertThat(heaplet.create(Name.of("Book"), json(object()), heap))
                 .isInstanceOf(Book.class);
     }
 
@@ -64,7 +65,7 @@ public class HeapletsTest {
         assertThat(heaplet)
                 .isNotNull()
                 .isInstanceOf(AuthorHeaplet.class);
-        assertThat(heaplet.create("Author", json(object()), heap))
+        assertThat(heaplet.create(Name.of("Author"), json(object()), heap))
                 .isInstanceOf(Author.class);
     }
 
@@ -75,7 +76,7 @@ public class HeapletsTest {
         assertThat(heaplet)
                 .isNotNull()
                 .isInstanceOf(EditorHeapletFactory.EditorHeaplet.class);
-        assertThat(heaplet.create("Editor", json(object()), heap))
+        assertThat(heaplet.create(Name.of("Editor"), json(object()), heap))
                 .isInstanceOf(Editor.class);
     }
 

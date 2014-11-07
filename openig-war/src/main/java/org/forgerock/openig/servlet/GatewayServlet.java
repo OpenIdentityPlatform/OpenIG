@@ -54,6 +54,7 @@ import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
@@ -185,7 +186,7 @@ public class GatewayServlet extends HttpServlet {
             final JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
-            heap = new HeapImpl();
+            heap = new HeapImpl(Name.of(configurationURL.toString()));
             // "Live" objects
             heap.put("ServletContext", servletConfig.getServletContext());
             heap.put(ENVIRONMENT_HEAP_KEY, environment);

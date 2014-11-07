@@ -26,6 +26,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Session;
@@ -144,7 +145,7 @@ public class RouteTest {
     private Route createRoute(final SessionFactory sessionFactory,
                               final Expression condition,
                               final URI baseURI) {
-        return new Route(new HeapImpl(),
+        return new Route(new HeapImpl(Name.of("anonymous")),
                          handler,
                          sessionFactory,
                          "router",

@@ -18,6 +18,7 @@ package org.forgerock.openig.decoration;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.Name;
 
 /**
  * A decoration {@code Context} is a way to provide the decorator(s) all of the available
@@ -29,7 +30,7 @@ public interface Context {
      *
      * @return the name of the heap object being decorated.
      */
-    String getName();
+    Name getName();
 
     /**
      * Returns the heap object being decorated configuration. Should be considered as a read-only view of the
