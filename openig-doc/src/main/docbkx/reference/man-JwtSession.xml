@@ -226,7 +226,7 @@
         "keystore": {
             "type": "KeyStore",
             "config": {
-                "file": "file://${env['HOME']}/keystore.jks",
+                "url": "file://${env['HOME']}/keystore.jks",
                 "password": "${system['keypass']}"
             }
         },

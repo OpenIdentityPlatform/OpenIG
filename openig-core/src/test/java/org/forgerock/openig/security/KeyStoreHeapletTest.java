@@ -38,7 +38,7 @@ public class KeyStoreHeapletTest {
     public void shouldLoadJksKeyStore() throws Exception {
 
         JsonValue config = json(object(
-                field("file", resource("/keypair-keystore.jks")),
+                field("url", resource("/keypair-keystore.jks")),
                 field("password", "changeit")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
@@ -51,7 +51,7 @@ public class KeyStoreHeapletTest {
     @Test
     public void shouldLoadPkcs12KeyStore() throws Exception {
         JsonValue config = json(object(
-                field("file", resource("/mykey-keystore.pkcs12")),
+                field("url", resource("/mykey-keystore.pkcs12")),
                 field("password", "changeit"),
                 field("type", "PKCS12")
         ));
