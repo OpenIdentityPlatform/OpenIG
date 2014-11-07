@@ -64,7 +64,7 @@ public class RouterHandlerTest {
     private DirectoryScanner scanner;
 
     @Spy
-    private Logger logger = new Logger(new NullLogSink(), "source");
+    private Logger logger = new Logger(new NullLogSink(), Name.of("source"));
 
     private File routes;
     private File supply;

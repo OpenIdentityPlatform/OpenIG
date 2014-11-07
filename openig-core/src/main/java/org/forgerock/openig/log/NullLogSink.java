@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import org.forgerock.openig.heap.Name;
+
 /**
  * A sink that discards all log entries. GNDN.
  */
@@ -28,7 +30,7 @@ public class NullLogSink implements LogSink {
     }
 
     @Override
-    public boolean isLoggable(String source, LogLevel level) {
+    public boolean isLoggable(Name source, LogLevel level) {
         return false;
     }
 }

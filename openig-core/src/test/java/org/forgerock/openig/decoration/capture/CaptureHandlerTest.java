@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.mockito.Mock;
@@ -40,7 +41,7 @@ public class CaptureHandlerTest {
     private Handler delegate;
 
     @Spy
-    private MessageCapture capture = new MessageCapture(new Logger(null, "Test"), false);
+    private MessageCapture capture = new MessageCapture(new Logger(null, Name.of("Test")), false);
 
     @BeforeMethod
     public void setUp() throws Exception {

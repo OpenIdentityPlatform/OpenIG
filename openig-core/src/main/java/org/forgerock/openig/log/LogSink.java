@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.log;
 
+import org.forgerock.openig.heap.Name;
+
 /**
  * Receives and handles log entries.
  */
@@ -42,5 +44,5 @@ public interface LogSink {
      * @param level the logging level of the log entry.
      * @return {@code true} if the entry may be logged.
      */
-    boolean isLoggable(String source, LogLevel level);
+    boolean isLoggable(Name source, LogLevel level);
 }

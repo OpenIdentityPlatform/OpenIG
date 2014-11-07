@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static java.lang.String.*;
 import static org.forgerock.openig.log.LogSink.*;
 
 import org.forgerock.json.fluent.JsonValue;
@@ -27,6 +26,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -98,7 +98,8 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
         // Use the sink of the decorated component
         Heap heap = context.getHeap();
         LogSink sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
-        return new Logger(sink, format("Timer[%s]", context.getName()));
+        Name name = context.getName();
+        return new Logger(sink, name.decorated("Timer"));
     }
 
     /**

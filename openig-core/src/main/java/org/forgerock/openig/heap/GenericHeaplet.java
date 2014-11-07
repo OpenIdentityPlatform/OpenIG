@@ -74,7 +74,7 @@ public abstract class GenericHeaplet implements Heaplet {
                     heap.resolve(
                             config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
                             LogSink.class, true),
-                    name.getLeaf());
+                    name);
             this.storage = heap.resolve(
                     config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);

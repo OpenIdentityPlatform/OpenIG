@@ -19,6 +19,7 @@ package org.forgerock.openig.log;
 
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.util.ISO8601;
 
 /**
@@ -42,7 +43,9 @@ public class ConsoleLogSink implements LogSink {
         if (isLoggable(entry.getSource(), entry.getLevel())) {
             synchronized (this) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(ISO8601.format(entry.getTime())).append(':').append(entry.getSource()).append(':');
+                sb.append(ISO8601.format(entry.getTime())).append(':')
+                  .append(entry.getSource().getLeaf()).append('.')
+                  .append(entry.getType()).append(':');
                 sb.append(entry.getLevel()).append(':').append(entry.getMessage());
                 if (entry.getData() != null) {
                     sb.append(':').append(entry.getData().toString());
@@ -54,7 +57,7 @@ public class ConsoleLogSink implements LogSink {
     }
 
     @Override
-    public boolean isLoggable(String source, LogLevel level) {
+    public boolean isLoggable(Name source, LogLevel level) {
         return (level.compareTo(this.level) >= 0);
     }
 

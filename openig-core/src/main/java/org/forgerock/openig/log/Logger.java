@@ -17,25 +17,26 @@
 
 package org.forgerock.openig.log;
 
+import org.forgerock.openig.heap.Name;
+
 /**
  * Wraps a log sink and exposes a set of convenience methods for various logging activities.
  */
-public class Logger implements LogSink {
+public class Logger {
 
     /** The sink to write log entries to. */
     private final LogSink sink;
 
     /** The base source to write all log entries with. */
-    private final String source;
+    private final Name source;
 
     /**
      * Constructs a new logger. If the supplied sink is {@code null}, then a
      * {@link NullLogSink} will be used.
-     *
-     * @param sink the sink to write log entries to.
+     *  @param sink the sink to write log entries to.
      * @param source the base source to write all log entries with.
      */
-    public Logger(LogSink sink, String source) {
+    public Logger(LogSink sink, Name source) {
         this.sink = (sink != null ? sink : new NullLogSink());
         this.source = source;
     }
@@ -47,7 +48,7 @@ public class Logger implements LogSink {
      * @param message the message to be logged.
      */
     public void logMessage(LogLevel level, String message) {
-        log(new LogEntry(source, level, message));
+        log(createEntry("log", level, message));
     }
 
     /**
@@ -59,7 +60,7 @@ public class Logger implements LogSink {
      * @return the exception being logged.
      */
     public <T extends Throwable> T logException(LogLevel level, T throwable) {
-        log(new LogEntry(source, level, throwable.toString(), throwable));
+        log(createEntry("throwable", level, throwable.toString(), throwable));
         return throwable;
     }
 
@@ -205,27 +206,58 @@ public class Logger implements LogSink {
     }
 
     /**
+     * Creates a {@link LogEntry} with the given parameters and no attached data.
+     * The created entry will inherit the source name of this logger.
+     *
+     * @param type
+     *         entry type (free form tag String like {@literal log}, {@literal started} or {@literal elapsed}).
+     * @param level
+     *         entry's level
+     * @param message
+     *         entry's message
+     * @return a new entry with no attached data
+     */
+    LogEntry createEntry(final String type, final LogLevel level, final String message) {
+        return createEntry(type, level, message, null);
+    }
+
+    /**
+     * Creates a {@link LogEntry} with the given parameters and attached data (possibly {@code null} data).
+     * The created entry will inherit the source name of this logger.
+     *
+     * @param type
+     *         entry type (free form tag String like {@literal log}, {@literal started} or {@literal elapsed}).
+     * @param level
+     *         entry's level
+     * @param message
+     *         entry's message
+     * @param data
+     *         entry's attached data
+     * @return a new entry with attached data (possibly {@code null} data)
+     */
+    LogEntry createEntry(final String type, final LogLevel level, final String message, final Object data) {
+        return new LogEntry(source, type, level, message, data);
+    }
+
+    /**
      * Logs an entry. This implementation will prepend the logger source to all log entries.
      *
      * @param entry the entry to be logged.
      */
-    @Override
     public void log(LogEntry entry) {
-        sink.log(new LogEntry(source(source, entry.getSource()), entry.getLevel(), entry
-                .getMessage(), entry.getData()));
+        sink.log(entry);
     }
 
     /**
-     * Returns {@code true} if the entry may be logged, given the specified event and log
+     * Returns {@code true} if the entry may be logged, given the specified source name and log
      * level.
      *
-     * @param event the event (sub-source) that is intended to be logged.
+     * @param source the source name that is intended to be logged.
      * @param level the log level of the entry to be logged.
      * @return {@code true} if the entry may be logged.
      */
-    @Override
-    public boolean isLoggable(String event, LogLevel level) {
-        return sink.isLoggable(source(this.source, event), level);
+    public boolean isLoggable(Name source, LogLevel level) {
+        return sink.isLoggable(source, level);
     }
 
     /**
@@ -237,19 +269,5 @@ public class Logger implements LogSink {
      */
     public boolean isLoggable(LogLevel level) {
         return sink.isLoggable(this.source, level);
-    }
-
-    private String source(String source, String event) {
-        StringBuilder sb = new StringBuilder();
-        if (source != null) {
-            sb.append(source);
-        }
-        if (event != null) {
-            if (sb.length() > 0) {
-                sb.append('.');
-            }
-            sb.append(event);
-        }
-        return sb.toString();
     }
 }

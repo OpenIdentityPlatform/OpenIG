@@ -202,7 +202,7 @@ public class GatewayServlet extends HttpServlet {
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
             logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                                               LogSink.class, true), "GatewayServlet");
+                                               LogSink.class, true), Name.of("GatewayServlet"));
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                                              TemporaryStorage.class);
             // Let the user change the type of session to use
