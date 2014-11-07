@@ -29,7 +29,8 @@
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
           xsi:schemaLocation='http://docbook.org/ns/docbook
                               http://docbook.org/xml/5.0/xsd/docbook.xsd'
-          xmlns:xlink='http://www.w3.org/1999/xlink'>
+          xmlns:xlink='http://www.w3.org/1999/xlink'
+          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
 
  <refmeta>
   <refentrytitle>OAuth2ClientFilter</refentrytitle><manvolnum>5</manvolnum>
@@ -159,6 +160,7 @@
     "clientEndpoint": expression,
     "failureHandler": Handler reference,
     "loginHandler": Handler reference,
+    "cacheExpiration": duration string,
     "providerHandler": Handler reference,
     "providers": [ provider configuration object, ... ],
     "target": expression,
@@ -298,7 +300,22 @@
     </listitem>
    </varlistentry>
 
-   <varlistentry>
+    <varlistentry>
+      <term><code>"cacheExpiration"</code>: <emphasis>duration string, optional</emphasis></term>
+      <listitem>
+        <para>
+          Duration for which to cache user-info resources.
+        </para>
+
+        <xinclude:include href="../shared/itemizedlist-duration.xml" />
+
+        <para>
+          Default: 20 seconds
+        </para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
     <term><code>"providerHandler"</code>: <emphasis><link
       xlink:show="new"
       xlink:href="reference#handlers-conf"
