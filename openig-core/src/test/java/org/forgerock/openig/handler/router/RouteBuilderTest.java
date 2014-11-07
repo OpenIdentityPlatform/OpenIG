@@ -32,6 +32,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
@@ -62,20 +63,20 @@ public class RouteBuilderTest {
 
     @Test
     public void testUnnamedRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("route.json"));
         assertThat(route.getName()).isEqualTo("route.json");
     }
 
     @Test(expectedExceptions = JsonValueException.class)
     public void testMissingHandlerRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         builder.build(getTestResourceFile("missing-handler-route.json"));
     }
 
     @Test
     public void testConditionalRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("conditional-route.json"));
 
         Exchange exchange = new Exchange();
@@ -87,14 +88,14 @@ public class RouteBuilderTest {
 
     @Test
     public void testNamedRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("named-route.json"));
         assertThat(route.getName()).isEqualTo("my-route");
     }
 
     @Test
     public void testRebaseUriRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
 
         Exchange exchange = new Exchange();
@@ -108,7 +109,7 @@ public class RouteBuilderTest {
 
     @Test
     public void testSessionRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap);
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
         Exchange exchange = new Exchange();

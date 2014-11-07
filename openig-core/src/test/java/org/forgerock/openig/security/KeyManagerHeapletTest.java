@@ -26,6 +26,7 @@ import javax.net.ssl.X509KeyManager;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.testng.annotations.Test;
 
@@ -40,7 +41,7 @@ public class KeyManagerHeapletTest {
 
     @Test
     public void shouldLoadKeyManagerFactoryWithDefaultAlgorithm() throws Exception {
-        HeapImpl heap = new HeapImpl();
+        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put("KeyStore", loadKeyStore("jks", "/x509cert-keystore.jks", "changeit"));
 
         JsonValue config = json(object(
@@ -48,7 +49,7 @@ public class KeyManagerHeapletTest {
                 field("password", "changeit")
         ));
         KeyManagerHeaplet heaplet = new KeyManagerHeaplet();
-        X509KeyManager manager = (X509KeyManager) heaplet.create(OBJECT_NAME, config, heap);
+        X509KeyManager manager = (X509KeyManager) heaplet.create(Name.of(OBJECT_NAME), config, heap);
 
         assertThat(manager.getPrivateKey("cert")).isNotNull();
         assertThat(manager.getPrivateKey("cert").getFormat()).isEqualTo("PKCS#8");

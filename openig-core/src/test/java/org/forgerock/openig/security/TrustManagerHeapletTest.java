@@ -26,6 +26,7 @@ import javax.net.ssl.TrustManager;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.testng.annotations.Test;
 
@@ -40,7 +41,7 @@ public class TrustManagerHeapletTest {
 
     @Test
     public void shouldLoadTrustManagerWithDefaultAlgorithm() throws Exception {
-        HeapImpl heap = new HeapImpl();
+        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put("KeyStore", loadKeyStore("jks", "/x509cert-keystore.jks"));
 
         JsonValue config = json(object(
@@ -48,7 +49,7 @@ public class TrustManagerHeapletTest {
         ));
 
         TrustManagerHeaplet heaplet = new TrustManagerHeaplet();
-        assertThat(heaplet.create(OBJECT_NAME, config, heap))
+        assertThat(heaplet.create(Name.of(OBJECT_NAME), config, heap))
                 .isNotNull()
                 .isInstanceOf(TrustManager.class);
     }

@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
@@ -27,6 +27,7 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
@@ -50,10 +51,11 @@ public class CaptureDecoratorTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        HeapImpl heap = new HeapImpl();
+        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put(LogSink.LOGSINK_HEAP_KEY, new NullLogSink());
         when(context.getHeap()).thenReturn(heap);
         when(context.getConfig()).thenReturn(json(emptyMap()));
+        when(context.getName()).thenReturn(Name.of("config.json", "Router"));
     }
 
     @DataProvider

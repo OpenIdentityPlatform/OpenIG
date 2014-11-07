@@ -27,6 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.http.Request;
@@ -145,7 +146,7 @@ public class CryptoHeaderFilterTest {
                                        field("key", "DESKEY"))); // Not a valid DES Key format
 
         // Note: I've used the special name LogSink to avoid having to configure a real heap
-        heaplet.create(LOGSINK_HEAP_KEY, config, null);
+        heaplet.create(Name.of(LOGSINK_HEAP_KEY), config, null);
     }
 
     /**

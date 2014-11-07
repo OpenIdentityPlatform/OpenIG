@@ -18,10 +18,12 @@ package org.forgerock.openig.security;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.heap.Name.*;
 
 import java.security.KeyStore;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.testng.annotations.Test;
 
@@ -42,7 +44,7 @@ public class KeyStoreHeapletTest {
                 field("password", "changeit")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(OBJECT_NAME, config, null);
+        KeyStore store = (KeyStore) heaplet.create(Name.of(OBJECT_NAME), config, null);
 
         assertThat(store.containsAlias("keypair")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("JKS");
@@ -56,7 +58,7 @@ public class KeyStoreHeapletTest {
                 field("type", "PKCS12")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(OBJECT_NAME, config, null);
+        KeyStore store = (KeyStore) heaplet.create(of(OBJECT_NAME), config, null);
 
         assertThat(store.containsAlias("mykey")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("PKCS12");

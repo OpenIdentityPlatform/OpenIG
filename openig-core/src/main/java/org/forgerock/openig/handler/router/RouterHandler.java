@@ -295,7 +295,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
                 scanner = new OnlyOnceDirectoryScanner(scanner);
             }
 
-            RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
+            RouterHandler handler = new RouterHandler(new RouteBuilder(heap, qualified), scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
                                                      Handler.class, true));
             return handler;

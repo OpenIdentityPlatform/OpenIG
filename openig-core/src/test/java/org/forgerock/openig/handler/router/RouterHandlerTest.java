@@ -37,6 +37,7 @@ import java.util.HashSet;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.io.TemporaryStorage;
@@ -80,7 +81,8 @@ public class RouterHandlerTest {
     @Test
     public void testReactionsToDirectoryContentChanges() throws Exception {
 
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+                                                  new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -116,7 +118,8 @@ public class RouterHandlerTest {
 
     @Test
     public void testStoppingTheHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+                                                  new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -129,7 +132,7 @@ public class RouterHandlerTest {
     @Test
     public void testDefaultHandler() throws Exception {
         RouterHandler handler =
-                new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+                new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -172,7 +175,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
@@ -198,7 +201,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
         router.logger = logger;
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");

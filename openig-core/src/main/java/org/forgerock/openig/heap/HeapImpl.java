@@ -24,6 +24,7 @@ import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.util.Reject.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +57,11 @@ public class HeapImpl implements Heap {
      */
     private final Heap parent;
 
+    /**
+     * Heap name.
+     */
+    private final Name name;
+
     /** Heaplets mapped to heaplet identifiers in the heap configuration. */
     private Map<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
 
@@ -70,18 +76,45 @@ public class HeapImpl implements Heap {
             new MultiValueMap<String, JsonValue>(new LinkedHashMap<String, List<JsonValue>>());
 
     /**
-     * Builds a root heap (will be referenced by children but has no parent itself).
+     * Builds an anonymous root heap (will be referenced by children but has no parent itself).
+     * Intended for tests only.
      */
-    public HeapImpl() {
-        this(null);
+    HeapImpl() {
+        this((Heap) null);
+    }
+
+    /**
+     * Builds a new anonymous heap that is a child of the given heap.
+     * Intended for tests only.
+     *
+     * @param parent
+     *         parent heap.
+     */
+    HeapImpl(final Heap parent) {
+        this(parent, Name.of("anonymous"));
+    }
+
+    /**
+     * Builds a root heap (will be referenced by children but has no parent itself).
+     *
+     * @param name
+     *         local name of this heap
+     */
+    public HeapImpl(final Name name) {
+        this(null, name);
     }
 
     /**
      * Builds a new heap that is a child of the given heap.
-     * @param parent parent heap.
+     *
+     * @param parent
+     *         parent heap.
+     * @param name
+     *         local name of this heap
      */
-    public HeapImpl(final Heap parent) {
+    public HeapImpl(final Heap parent, final Name name) {
         this.parent = parent;
+        this.name = checkNotNull(name);
     }
 
     /**
@@ -149,7 +182,7 @@ public class HeapImpl implements Heap {
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);
             if (heaplet != null) {
-                object = heaplet.create(name, configs.get(name), this);
+                object = heaplet.create(this.name.child(name), configs.get(name), this);
                 if (object == null) {
                     throw new HeapException(new NullPointerException());
                 }
@@ -280,7 +313,9 @@ public class HeapImpl implements Heap {
         // Starts with the original object
         Object decorated = object;
         // Create a context object for holding shared values
-        Context context = new DecorationContext(this, name, configs.get(name).defaultTo(emptyMap()));
+        Context context = new DecorationContext(this,
+                                                this.name.child(name),
+                                                configs.get(name).defaultTo(emptyMap()));
 
         // Apply global decorations (may be inherited from parent heap)
         Decorator globalDecorator = get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
@@ -328,11 +363,11 @@ public class HeapImpl implements Heap {
      */
     private class DecorationContext implements Context {
         private final Heap heap;
-        private final String name;
+        private final Name name;
         private final JsonValue config;
 
         public DecorationContext(final Heap heap,
-                                 final String name,
+                                 final Name name,
                                  final JsonValue config) {
             this.heap = heap;
             this.name = name;
@@ -345,7 +380,7 @@ public class HeapImpl implements Heap {
         }
 
         @Override
-        public String getName() {
+        public Name getName() {
             return name;
         }
 
