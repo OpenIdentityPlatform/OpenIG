@@ -21,7 +21,10 @@ import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
+import static org.forgerock.openig.log.LogLevel.*;
+import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 import static org.forgerock.openig.util.URIUtil.*;
 import static org.forgerock.util.Utils.*;
 
@@ -33,11 +36,16 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.GenericFilter;
+import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -46,6 +54,9 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
+import org.forgerock.openig.util.Duration;
+import org.forgerock.util.Factory;
+import org.forgerock.util.LazyMap;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -76,6 +87,7 @@ import org.forgerock.util.time.TimeService;
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
+ * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
  * "providers"                    : array [
  *     "name"                         : String,         [REQUIRED]
  *     "wellKnownConfiguration"       : String,         [OPTIONAL - if authorize and token end-points are specified]
@@ -182,6 +194,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private List<Expression> scopes;
     private Expression target;
     private TimeService time = TimeService.SYSTEM;
+    private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
 
     /**
      * Adds an authorization provider. At least one provider must be specified,
@@ -804,26 +817,34 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
 
         final OAuth2Provider provider = getProvider(session);
-        if (provider != null && provider.hasUserInfoEndpoint()
+        if (provider != null
+                && provider.hasUserInfoEndpoint()
                 && session.getScopes().contains("openid")) {
-            final Request request =
-                    provider.createRequestForUserInfo(exchange, session.getAccessToken());
-            final Response response = httpRequestToAuthorizationServer(exchange, request);
-            if (response.getStatus() != 200) {
-                /*
-                 * The access token may have expired. Trigger an exception,
-                 * catch it and react later.
-                 */
-                handleResourceAccessFailure(response);
-            }
-            final JsonValue userInfoResponse = getJsonContent(response);
-            info.put("user_info", userInfoResponse.asMap());
+            // Load the user_info resources lazily (when requested)
+            info.put("user_info", new LazyMap<String, Object>(new UserInfoFactory(session,
+                                                                                  provider,
+                                                                                  exchange)));
         }
         target.set(exchange, info);
     }
 
+    /**
+     * Set the cache of user info resources. The cache is keyed by the OAuth 2.0 Access Token. It should be configured
+     * with a small expiration duration (something between 5 and 30 seconds).
+     *
+     * @param userInfoCache
+     *         the cache of user info resources.
+     */
+    public void setUserInfoCache(final ThreadSafeCache<String, Map<String, Object>> userInfoCache) {
+        this.userInfoCache = userInfoCache;
+    }
+
     /** Creates and initializes the filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
+
+        private ScheduledExecutorService executor;
+        private ThreadSafeCache<String, Map<String, Object>> cache;
+
         @Override
         public Object create() throws HeapException {
 
@@ -895,7 +916,23 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 throw new HeapException(
                         "A login handler must be specified when there are multiple providers");
             }
+
+            // Build the cache of user-info
+            Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
+            if (!expiration.isZero()) {
+                executor = Executors.newSingleThreadScheduledExecutor();
+                cache = new ThreadSafeCache<String, Map<String, Object>>(executor);
+                cache.setTimeout(expiration);
+                filter.setUserInfoCache(cache);
+            }
+
             return filter;
+        }
+
+        @Override
+        public void destroy() {
+            executor.shutdownNow();
+            cache.clear();
         }
     }
 
@@ -916,4 +953,99 @@ public final class OAuth2ClientFilter extends GenericFilter {
         exchange.session.put(sessionKey(exchange), session.toJson().getObject());
     }
 
+    /**
+     * UserInfoFactory is responsible to load the profile of the authenticated user
+     * from the provider's user_info endpoint when the lazy map is accessed for the first time.
+     * If a cache has been configured
+     */
+    private class UserInfoFactory implements Factory<Map<String, Object>> {
+
+        private final LoadUserInfoCallable callable;
+
+        public UserInfoFactory(final OAuth2Session session,
+                               final OAuth2Provider provider,
+                               final Exchange exchange) {
+            this.callable = new LoadUserInfoCallable(session, provider, exchange);
+        }
+
+        @Override
+        public Map<String, Object> newInstance() {
+            /*
+             * When the 'user_info' attribute is accessed for the first time,
+             * try to load the value (from the cache or not depending on the configuration).
+             * The callable (factory for loading user info resource) will perform the appropriate HTTP request
+             * to retrieve the user info as JSON, and then will return that content as a Map
+             */
+
+            if (userInfoCache == null) {
+                // No cache is configured, go directly though the callable
+                try {
+                    return callable.call();
+                } catch (Exception e) {
+                    logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
+                                          callable.getProvider().getName()));
+                    logDetailedException(WARNING, logger, e);
+                }
+            } else {
+                // A cache is configured, extract the value from the cache
+                try {
+                    return userInfoCache.getValue(callable.getSession().getAccessToken(),
+                                                  callable);
+                } catch (InterruptedException e) {
+                    logger.warning(format("Interrupted when calling UserInfo Endpoint from provider '%s'",
+                                          callable.getProvider().getName()));
+                    logDetailedException(WARNING, logger, e);
+                } catch (ExecutionException e) {
+                    logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
+                                          callable.getProvider().getName()));
+                    logDetailedException(WARNING, logger, e);
+                }
+            }
+
+            // In case of errors, returns an empty Map
+            return emptyMap();
+        }
+    }
+
+    /**
+     * LoadUserInfoCallable simply encapsulate the logic required to load the user_info resources.
+     */
+    private class LoadUserInfoCallable implements Callable<Map<String, Object>> {
+        private final OAuth2Session session;
+        private final OAuth2Provider provider;
+        private final Exchange exchange;
+
+        public LoadUserInfoCallable(final OAuth2Session session,
+                                    final OAuth2Provider provider,
+                                    final Exchange exchange) {
+            this.session = session;
+            this.provider = provider;
+            this.exchange = exchange;
+        }
+
+        @Override
+        public Map<String, Object> call() throws Exception {
+
+            final Request request = provider.createRequestForUserInfo(exchange,
+                                                                      session.getAccessToken());
+            final Response response = httpRequestToAuthorizationServer(exchange, request);
+            if (response.getStatus() != 200) {
+                /*
+                 * The access token may have expired. Trigger an exception,
+                 * catch it and react later.
+                 */
+                handleResourceAccessFailure(response);
+            }
+            final JsonValue userInfoResponse = getJsonContent(response);
+            return userInfoResponse.asMap();
+        }
+
+        public OAuth2Session getSession() {
+            return session;
+        }
+
+        public OAuth2Provider getProvider() {
+            return provider;
+        }
+    }
 }
