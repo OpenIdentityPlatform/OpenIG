@@ -787,6 +787,24 @@
   >[jcp:org.forgerock.openig.doc.SampleClassAliasResolver:--- JCite ---]</programlisting>
 
   <para>
+   When you add your own resolver,
+   you must make it discoverable within your custom library.
+   You do this by adding a services file named after the class resolver interface,
+   where the file contains the fully qualified class name of your resolver, under
+   <filename>META-INF/services/org.forgerock.openig.alias.ClassAliasResolver</filename>
+   in the jar file for your customizations.
+   When you have more than one resolver,
+   add one fully qualified class name per line.
+   If you build your project using Maven, then you can add this
+   under the <filename>src/main/resources</filename> directory.
+   The content of the file in this example is one line:
+  </para>
+
+  <programlisting language="none">
+org.forgerock.openig.doc.SampleClassAliasResolver
+  </programlisting>
+
+  <para>
    The corresponding heap object configuration then looks as follows.
   </para>
 
@@ -800,5 +818,104 @@
     }
 }
   </programlisting>
+ </section>
+
+ <section xml:id="custom-build">
+  <title>Building Customizations</title>
+
+  <para>
+   You can use Apache Maven to manage dependencies on ${projectName}.
+   The dependencies are found in the ForgeRock Maven repository.
+  </para>
+
+  <para>
+   The following listing shows the Maven POM configuration
+   for the ForgeRock Maven repository
+   and the dependency to build the sample Filter.
+  </para>
+
+  <programlisting language="xml">
+<![CDATA[
+  <repositories>
+    <repository>
+      <id>forgerock-staging-repository</id>
+      <name>ForgeRock Release Repository</name>
+      <url>http://maven.forgerock.org/repo/releases</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>forgerock-snapshots-repository</id>
+      <name>ForgeRock Snapshot Repository</name>
+      <url>http://maven.forgerock.org/repo/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-core</artifactId>
+      <version>${docTargetVersion}</version>
+    </dependency>
+  </dependencies>
+]]>
+  </programlisting>
+
+  <para>
+   You can then build your customizations into a jar file
+   and install them in your local Maven repository
+   by using the <command>mvn install</command> command.
+  </para>
+
+  <screen>
+$ <userinput>mvn install</userinput>
+<computeroutput>...
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ sample-filter ---
+[INFO] Building jar: .../sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.478s
+[INFO] Finished at: Fri Nov 07 16:57:18 CET 2014
+[INFO] Final Memory: 18M/309M
+[INFO] ------------------------------------------------------------------------
+</computeroutput>
+  </screen>
+ </section>
+
+ <section xml:id="custom-embed">
+  <title>Embedding Customizations in ${projectName}</title>
+
+  <para>
+   After building your customizations into a jar file,
+   you can include them in the ${projectName} war file for deployment.
+   You do this by unpacking <filename>${openigWar}</filename>,
+   including your jar library in <filename>WEB-INF/lib</filename>,
+   and then creating a new war file.
+  </para>
+
+  <para>
+   For example, if your jar file is in a project named <literal>sample-filter</literal>,
+   and the development version is <literal>1.0.0-SNAPSHOT</literal>,
+   you might include the file as in the following example.
+  </para>
+
+  <screen>
+$ <userinput>mkdir root &amp;&amp; cd root</userinput>
+$ <userinput>jar -xf ~/Downloads/${openigWar}</userinput>
+$ <userinput>cp ~/Documents/sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar WEB-INF/lib</userinput>
+$ <userinput>jar -cf ../custom.war *</userinput>
+  </screen>
+
+  <para>
+   In this example, the resulting <filename>custom.war</filename>
+   contains the custom sample filter.
+   You can deploy the custom war file
+   as you would deploy <filename>${openigWar}</filename>.
+  </para>
  </section>
 </chapter>
