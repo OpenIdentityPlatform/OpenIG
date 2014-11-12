@@ -94,6 +94,25 @@
 
   <listitem>
    <para>
+    The ${projectName} Exchange now provides information about the client (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-333"
+    >OPENIG-333</link>).
+   </para>
+
+   <para>
+    For details see the <citetitle>Reference</citetitle> on
+    <link
+     xlink:show="new"
+     xlink:href="reference#ClientInfo"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>ClientInfo</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} now allows you to inline configuration objects (
     <link
      xlink:show="new"

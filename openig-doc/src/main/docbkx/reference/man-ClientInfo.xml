@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id="ClientInfo"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refmeta>
+  <refentrytitle>ClientInfo</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>ClientInfo</refname>
+  <refpurpose>HTTP Exchange client information</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Exchange Object Model</primary>
+   <secondary>ClientInfo</secondary>
+  </indexterm>
+
+  <para>
+   Information about the client sending the request
+   in the exchange object model
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Properties</title>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"certificates"</code>: array</term>
+    <listitem>
+     <para>
+      List of X.509 certificates presented by the client
+     </para>
+
+     <para>
+      If the client does not present any certificates,
+      ${projectName} returns an empty list.
+     </para>
+
+     <para>
+      This is never <literal>null</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"remoteAddress"</code>: string</term>
+    <listitem>
+     <para>
+      The IP address of the client (or the last proxy) that sent the request
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"remoteHost"</code>: string</term>
+    <listitem>
+     <para>
+      The fully qualified host name of the client (or the last proxy)
+      that sent the request
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"remotePort"</code>: number</term>
+    <listitem>
+     <para>
+      The source port of the client (or the last proxy) that sent the request
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"remoteUser"</code>: string</term>
+    <listitem>
+     <para>
+      The login of the user making the request,
+      or <literal>null</literal> if unknown
+     </para>
+
+     <para>
+      This is likely to be <literal>null</literal>
+      unless you have deployed ${projectName}
+      with a non-default deployment descriptor
+      that secures the ${projectName} web application.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"userAgent"</code>: string</term>
+    <listitem>
+     <para>
+      The value of the User-Agent HTTP header in the request if any,
+      otherwise <literal>null</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/ClientInfo.html"
+   >org.forgerock.openig.http.ClientInfo</link>
+  </para>
+ </refsect1>
+</refentry>

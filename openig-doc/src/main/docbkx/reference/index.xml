@@ -275,6 +275,7 @@
    </para>
   </partintro>
 
+  <xinclude:include href="man-ClientInfo.xml" />
   <xinclude:include href="man-Exchange.xml" />
   <xinclude:include href="man-Request.xml" />
   <xinclude:include href="man-Principal.xml" />
