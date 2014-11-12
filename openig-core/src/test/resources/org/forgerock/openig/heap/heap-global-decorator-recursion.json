@@ -1,0 +1,31 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "LogSink",
+                "type": "ConsoleLogSink",
+                "config": {
+                    "level": "DEBUG"
+                }
+            },
+            {
+                "name": "Filter",
+                "type": "StaticRequestFilter",
+                "config": {
+                    "method": "GET",
+                    "uri": "http://localhost"
+                }
+            },
+            {
+                "name": "capture",
+                "type": "CaptureDecorator",
+                "config": {
+                    "logSink": "LogSink"
+                }
+            }
+        ],
+        "decorations": {
+            "capture": "all"
+        }
+    }
+}

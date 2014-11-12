@@ -20,10 +20,11 @@ import static org.forgerock.openig.log.LogSink.*;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
@@ -105,9 +106,9 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     /**
      * Creates and initializes a TimerDecorator in a heap environment.
      */
-    public static class Heaplet extends GenericHeaplet {
+    public static class Heaplet extends DecoratorHeaplet {
         @Override
-        public Object create() throws HeapException {
+        public Decorator create() throws HeapException {
             return new TimerDecorator();
         }
     }

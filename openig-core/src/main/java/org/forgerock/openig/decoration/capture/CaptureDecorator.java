@@ -18,6 +18,7 @@ package org.forgerock.openig.decoration.capture;
 
 import static java.lang.String.*;
 import static java.util.Arrays.*;
+import static org.forgerock.openig.decoration.helper.LazyReference.*;
 import static org.forgerock.openig.util.Json.*;
 
 import java.util.Set;
@@ -25,10 +26,12 @@ import java.util.TreeSet;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
+import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
+import org.forgerock.openig.decoration.helper.LazyReference;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
@@ -93,7 +96,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      */
     public static final String CAPTURE_HEAP_KEY = "capture";
 
-    private final LogSink sink;
+    private final LazyReference<LogSink> reference;
     private final boolean captureEntity;
     private final boolean captureExchange;
 
@@ -103,15 +106,18 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      * If the {@code sink} is specified (not {@code null}), every message intercepted by this decorator will be
      * send to the provided sink.
      *
-     * @param sink
-     *         Log Sink for message capture (may be {@code null})
+     *  @param reference
+     *         Log Sink reference for message capture
      * @param captureEntity
-     *         does the decorator needs to capture entity or not ?
+     *         {@code true} if the decorator needs to capture the entity, {@code false} otherwise
      * @param captureExchange
-     *         does the decorator needs to capture the exchange (excluding request and response) or not ?
+     *         {@code true} if the decorator needs to capture the exchange excluding request and response,
+     *         {@code false} otherwise
      */
-    public CaptureDecorator(final LogSink sink, final boolean captureEntity, final boolean captureExchange) {
-        this.sink = sink;
+    public CaptureDecorator(final LazyReference<LogSink> reference,
+                            final boolean captureEntity,
+                            final boolean captureExchange) {
+        this.reference = reference;
         this.captureEntity = captureEntity;
         this.captureExchange = captureExchange;
     }
@@ -170,7 +176,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      *         when no logSink can be resolved (very unlikely to happen).
      */
     private MessageCapture buildMessageCapture(final Context context) throws HeapException {
-        LogSink sink = this.sink;
+        LogSink sink = this.reference.get();
         if (sink == null) {
             // Use the sink of the decorated component
             Heap heap = context.getHeap();
@@ -183,13 +189,16 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     /**
      * Creates and initializes a CaptureDecorator in a heap environment.
      */
-    public static class Heaplet extends GenericHeaplet {
+    public static class Heaplet extends DecoratorHeaplet {
         @Override
-        public Object create() throws HeapException {
-            LogSink sink = heap.resolve(config.get("logSink"), LogSink.class, true);
+        public Decorator create() throws HeapException {
+            LazyReference<LogSink> reference = newReference(heap,
+                                                            config.get("logSink"),
+                                                            LogSink.class,
+                                                            true);
             boolean captureEntity = config.get("captureEntity").defaultTo(false).asBoolean();
             boolean captureExchange = config.get("captureExchange").defaultTo(false).asBoolean();
-            return new CaptureDecorator(sink, captureEntity, captureExchange);
+            return new CaptureDecorator(reference, captureEntity, captureExchange);
         }
     }
 }
