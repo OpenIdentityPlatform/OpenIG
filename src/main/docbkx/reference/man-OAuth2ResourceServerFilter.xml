@@ -182,10 +182,22 @@ WWW-Authenticate: Bearer realm="${projectName}"
       Duration for which to cache OAuth 2.0 access tokens.
      </para>
 
+     <para>
+      Caching allows ${projectName} to avoid repeated requests for token info
+      when reusing the information over a short period.
+     </para>
+
      <xinclude:include href="../shared/itemizedlist-duration.xml" />
 
      <para>
       Default: 1 minute
+     </para>
+
+     <para>
+      Set this to "disabled" or "zero" to disable caching.
+      When caching is disabled,
+      each request triggers a new request to the authorization server
+      to verify the access token.
      </para>
     </listitem>
    </varlistentry>
