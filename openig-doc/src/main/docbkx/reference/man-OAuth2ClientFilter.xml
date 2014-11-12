@@ -307,10 +307,23 @@
           Duration for which to cache user-info resources.
         </para>
 
+        <para>
+         ${projectName} lazily fetches user info from the OpenID provider.
+         In other words, ${projectName} only fetches the information
+         when a downstream Filter or Handler uses the user info.
+         Caching allows ${projectName} to avoid repeated calls to OpenID providers
+         when reusing the information over a short period.
+        </para>
+
         <xinclude:include href="../shared/itemizedlist-duration.xml" />
 
         <para>
           Default: 20 seconds
+        </para>
+
+        <para>
+         Set this to "disabled" or "zero" to disable caching.
+         When caching is disabled, user info is still lazily fetched.
         </para>
       </listitem>
     </varlistentry>
