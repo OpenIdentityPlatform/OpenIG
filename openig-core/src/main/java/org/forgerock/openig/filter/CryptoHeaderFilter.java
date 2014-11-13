@@ -17,22 +17,20 @@
 
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.security.InvalidKeyException;
+import java.security.GeneralSecurityException;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.forgerock.json.fluent.JsonValueException;
@@ -48,13 +46,17 @@ import org.forgerock.util.encode.Base64;
 
 /**
  * Encrypts and decrypts header fields.
+ * All cipher algorithms provided by SunJCE Provider are supported
+ * for encryption but, for now CryptoHeaderFilter does
+ * not implement a way to set/retrieve the initialization vector(IV) (OPENIG-42)
+ * therefore, the CryptoHeader can not decrypt cipher algorithm using IV.
  */
 public class CryptoHeaderFilter extends GenericFilter {
 
     /**
-     * Default Cipher algorithm to be used when none is specified.
+     * Default cipher algorithm to be used when none is specified.
      */
-    public static final String DEFAULT_ALGORITHM = "DES/ECB/NoPadding";
+    public static final String DEFAULT_ALGORITHM = "AES/ECB/PKCS5Padding";
 
     /** Should the filter encrypt or decrypt the given headers ? */
     public enum Operation {
@@ -180,21 +182,8 @@ public class CryptoHeaderFilter extends GenericFilter {
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] plaintext = cipher.doFinal(ciphertext);
             result = new String(plaintext, charset).trim();
-        } catch (IllegalBlockSizeException ibse) {
-// TODO: proper logging
-            System.err.println(ibse);
-        } catch (NoSuchPaddingException nspe) {
-            System.err.println(nspe);
-// TODO: proper logging
-        } catch (NoSuchAlgorithmException nsae) {
-// TODO: proper logging
-            System.err.println(nsae);
-        } catch (InvalidKeyException ike) {
-// TODO: proper logging
-            System.err.println(ike);
-        } catch (BadPaddingException bpe) {
-// TODO: proper logging
-            System.err.println(bpe);
+        } catch (GeneralSecurityException gse) {
+            logDetailedException(ERROR, logger, gse);
         }
         return result;
     }
@@ -212,21 +201,8 @@ public class CryptoHeaderFilter extends GenericFilter {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] ciphertext = cipher.doFinal(in.getBytes(Charset.defaultCharset()));
             result = Base64.encode(ciphertext).trim();
-        } catch (IllegalBlockSizeException ibse) {
-// TODO: proper logging
-            System.err.println(ibse);
-        } catch (NoSuchPaddingException nspe) {
-            System.err.println(nspe);
-// TODO: proper logging
-        } catch (NoSuchAlgorithmException nsae) {
-// TODO: proper logging
-            System.err.println(nsae);
-        } catch (InvalidKeyException ike) {
-// TODO: proper logging
-            System.err.println(ike);
-        } catch (BadPaddingException bpe) {
-// TODO: proper logging
-            System.err.println(bpe);
+        } catch (GeneralSecurityException gse) {
+            logDetailedException(ERROR, logger, gse);
         }
         return result;
     }
@@ -257,11 +233,11 @@ public class CryptoHeaderFilter extends GenericFilter {
                                              "key evaluation gave an empty result that is not allowed");
             }
             try {
-                filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("DES").asString());
+                filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("AES").asString());
             } catch (IllegalArgumentException iae) {
                 throw new JsonValueException(config, iae);
             }
-            filter.headers.addAll(config.get("headers").defaultTo(Collections.emptyList()).asList(String.class));
+            filter.headers.addAll(config.get("headers").defaultTo(emptyList()).asList(String.class));
             return filter;
         }
     }
