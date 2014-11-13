@@ -101,13 +101,13 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     private final boolean captureExchange;
 
     /**
-     * Builds a new {@code capture} decorator with the given sink (possibly {@code null})
+     * Builds a new {@code capture} decorator with the given sink reference (possibly {@code null})
      * printing (or not) the entity content.
      * If the {@code sink} is specified (not {@code null}), every message intercepted by this decorator will be
      * send to the provided sink.
      *
      *  @param reference
-     *         Log Sink reference for message capture
+     *         Log Sink reference for message capture (may be {@code null})
      * @param captureEntity
      *         {@code true} if the decorator needs to capture the entity, {@code false} otherwise
      * @param captureExchange
@@ -176,7 +176,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      *         when no logSink can be resolved (very unlikely to happen).
      */
     private MessageCapture buildMessageCapture(final Context context) throws HeapException {
-        LogSink sink = this.reference.get();
+        LogSink sink = (reference == null) ? null : reference.get();
         if (sink == null) {
             // Use the sink of the decorated component
             Heap heap = context.getHeap();
