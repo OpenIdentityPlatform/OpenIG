@@ -57,16 +57,16 @@
   <title>Usage</title>
 
   <programlisting language="javascript">
-    {
-        "name": string,
-        "type": "CryptoHeaderFilter",
-        "config": {
-            "messageType": string,
-            "operation": string,
-            "algorithm": string,
-            "key": expression,
-            "keyType": string,
-            "headers": [ string, ... ]
+{
+    "name": string,
+    "type": "CryptoHeaderFilter",
+    "config": {
+        "messageType": string,
+        "operation": string,
+        "key": expression,
+        "algorithm": string,
+        "keyType": string,
+        "headers": [ string, ... ]
     }
 }
   </programlisting>
@@ -104,26 +104,39 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"algorithm"</code>: <emphasis>string</emphasis></term>
+    <term><code>"key"</code>: <emphasis><link
+     xlink:href="reference#Expressions"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    >expression</link>, required</emphasis></term>
+    <listitem>
+     <para>
+      Base64 encoded key value.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"algorithm"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
       Algorithm used for encryption and decryption.
      </para>
 
      <para>
-      Default: "DES/ECB/NoPadding"
+      Default: "AES/ECB/PKCS5Padding"
      </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term><code>"key"</code>: <emphasis><link
-      xlink:href="reference#Expressions"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     >expression</link>, required</emphasis></term>
+    <term><code>"keyType"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
-      Base64 encoded key value.
+      Algorithm name for the secret key.
+     </para>
+
+     <para>
+      Default: "AES"
      </para>
     </listitem>
    </varlistentry>
@@ -134,6 +147,10 @@
      <para>
       The names of header fields to encrypt or decrypt.
      </para>
+
+     <para>
+      Default: Do not encrypt or decrypt any headers
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -143,16 +160,19 @@
   <title>Example</title>
 
   <programlisting language="javascript">
-   {
-     "name": "DecryptReplayPasswordFilter",
-     "type": "CryptoHeaderFilter",
-     "config": {
-         "messageType": "REQUEST",
-         "operation": "DECRYPT",
-         "algorithm": "DES/ECB/NoPadding",
-         "keyType": "DES",
-         "key": "oqdP3DJdE1Q=",
-         "headers": [ "replaypassword" ]
+{
+    "name": "DecryptReplayPasswordFilter",
+    "type": "CryptoHeaderFilter",
+    "config": {
+        "messageType": "REQUEST",
+        "operation": "DECRYPT",
+        "algorithm": "DES/ECB/NoPadding",
+        "keyType": "DES",
+        "key": "oqdP3DJdE1Q=",
+        "headers": [
+            "replaypassword"
+        ]
+    }
 }
   </programlisting>
  </refsect1>
