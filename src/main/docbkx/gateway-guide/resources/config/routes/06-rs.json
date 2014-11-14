@@ -7,6 +7,7 @@
                 "config": {
                     "filters": [
                         {
+                            "name": "ResourceServerFilter",
                             "type": "OAuth2ResourceServerFilter",
                             "config": {
                                 "providerHandler": "ClientHandler",
@@ -51,7 +52,10 @@
                     "handler": "ClientHandler"
                 }
             }
-        ]
+        ],
+         "decorations": {
+             "timer": true
+         }
     },
     "handler": "ResourceServerChain",
     "condition": "${matches(exchange.request.uri.path, '^/rs')}"

@@ -50,6 +50,13 @@ public class JacksonJsonTest {
     }
 
     @DataProvider
+    private Object[][] newLine() {
+        return new Object[][] {
+            { "\r\n" },
+            { "\n" } };
+    }
+
+    @DataProvider
     private Object[][] invalidJson() {
         return new Object[][] {
             { "{ 'name':'outputHandler', 'type': 'ClientHandler }," }, // Missing quote within the sample.
@@ -59,22 +66,22 @@ public class JacksonJsonTest {
     }
 
     @Test(expectedExceptions = NullPointerException.class)
-    public void shouldJacksonFailSerializingInvalidNullString() throws Exception {
+    public void shouldFailSerializingInvalidNullString() throws Exception {
         readJson(new StringReader((String) null));
     }
 
     @Test(dataProvider = "emptyJson")
-    public void shouldJacksonReturnsNullWhenSerializingEmptyString(final String json) throws Exception {
+    public void shouldReturnsNullWhenSerializingEmptyString(final String json) throws Exception {
         assertThat(readJson(from(json))).isNull();
     }
 
     @Test(expectedExceptions = IOException.class)
-    public void shouldJacksonFailToReadInvalidJson() throws Exception {
+    public void shouldFailToReadInvalidJson() throws Exception {
         readJson(from(INVALID_JSON));
     }
 
     @Test(dataProvider = "invalidJson", expectedExceptions = IOException.class)
-    public void testJacksonFailParsingInvalidJson(final String invalid)
+    public void testFailParsingInvalidJson(final String invalid)
             throws Exception {
         readJson(from(invalid));
     }
@@ -131,53 +138,75 @@ public class JacksonJsonTest {
         assertThat(readJsonLenient(from(sample))).isEqualTo(readJson(from(sample2)));
     }
 
+    @Test(dataProvider = "newLine", expectedExceptions = IOException.class)
+    public void shouldThrowIoExceptionWhenContainingEol(final String newLine) throws IOException {
+        readJson(singleQuotesToDouble("{ 'comment': 'Two lines " + newLine + "of comment' }"));
+    }
+
+    /**
+     * The lenient parser should allow use of EOL (included in the string
+     * value). It also allows use of ASCII chars < 32.
+     * e.g.
+     *
+     * <pre>
+     * "source": "import org.forgerock.json.fluent.JsonValue;
+     *            logger.info(exchange.token.asJsonValue() as String);"
+     * </pre>
+     */
+    @Test(dataProvider = "newLine")
+    public void shouldSucceedWhenContainingEol(final String newLine) throws IOException {
+        final Map<String, Object> jackson =
+                readJsonLenient(from("{ 'comment': 'Two lines " + newLine + "of comment' }"));
+        assertThat((String) jackson.get("comment")).matches("Two lines [\r\n]{1,2}of comment$");
+    }
+
     @Test
-    public void testJacksonAllowsSimpleQuote() throws Exception {
+    public void testAllowsSimpleQuote() throws Exception {
         final String sample = "{ 'condition': true } ";
-        final Map<String, Object> jkson = readJsonLenient(new StringReader(sample));
+        final Map<String, Object> jackson = readJsonLenient(new StringReader(sample));
 
-        assertThat((Boolean) jkson.get("condition")).isTrue();
+        assertThat((Boolean) jackson.get("condition")).isTrue();
     }
 
     @Test
-    public void testJacksonFromString() throws Exception {
-        final Map<String, Object> jkson = readJson(from(JSON_CONTENT));
+    public void testFromString() throws Exception {
+        final Map<String, Object> jackson = readJson(from(JSON_CONTENT));
 
-        assertThat(jkson.get("name")).isEqualTo("outputHandler");
-        assertThat(jkson.get("type")).isEqualTo("ClientHandler");
+        assertThat(jackson.get("name")).isEqualTo("outputHandler");
+        assertThat(jackson.get("type")).isEqualTo("ClientHandler");
     }
 
     @Test
-    public void testJacksonStringAllowNullAttributeValue() throws Exception {
+    public void testStringAllowNullAttributeValue() throws Exception {
 
         final String rawJson = "{ 'name': null, 'type': 'ClientHandler' } ";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(jkson.get("name")).isNull();
-        assertThat(jkson.get("type")).isEqualTo("ClientHandler");
+        assertThat(jackson.get("name")).isNull();
+        assertThat(jackson.get("type")).isEqualTo("ClientHandler");
     }
 
     @Test
-    public void testJacksonJsonValueNumber() throws Exception {
+    public void testJsonValueNumber() throws Exception {
 
         final String rawJson = "{ 'number': 23, 'other': '27' } ";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(jkson.get("number")).isEqualTo(23);
-        assertThat(jkson.get("other")).isEqualTo("27");
+        assertThat(jackson.get("number")).isEqualTo(23);
+        assertThat(jackson.get("other")).isEqualTo("27");
     }
 
     @Test
-    public void testJacksonJsonValueSupportsLong() throws Exception {
+    public void testJsonValueSupportsLong() throws Exception {
 
         final String rawJson = "{ 'long': '" + MAX_VALUE + "'}";
-        final Map<String, Object> jkson = readJson(from(rawJson));
+        final Map<String, Object> jackson = readJson(from(rawJson));
 
-        assertThat(parseLong(jkson.get("long").toString())).isEqualTo(MAX_VALUE);
+        assertThat(parseLong(jackson.get("long").toString())).isEqualTo(MAX_VALUE);
     }
 
     @Test
-    public void shouldJacksonSucceedToParseArray() throws IOException {
+    public void shouldSucceedToParseArray() throws IOException {
         final String rawJson = singleQuotesToDouble("['The', 100 ]");
         final Object jsonNode = readJson(rawJson);
         assertThat(jsonNode).isInstanceOf(List.class);
@@ -187,7 +216,7 @@ public class JacksonJsonTest {
     }
 
     @Test
-    public void shouldJacksonSucceedToParseArray2() throws IOException {
+    public void shouldSucceedToParseArray2() throws IOException {
         final String rawJson = singleQuotesToDouble("['The', { 'data':'outputHandler'} ]");
         final Object jsonNode = readJson(rawJson);
         assertThat(jsonNode).isInstanceOf(List.class);
@@ -200,17 +229,16 @@ public class JacksonJsonTest {
     }
 
     @Test
-    public void testJacksonParsesBoolean() throws IOException {
+    public void testParsesBoolean() throws IOException {
         final Object jsonNode = readJson("true");
         assertThat(jsonNode).isInstanceOf(Boolean.class).isEqualTo(true);
     }
 
     /**
-     * Returns a string reader from the rawjson attribute which
-     * remastered/double quoted before.
+     * Returns a string reader from the rawjson attribute.
      *
      * @param rawjson
-     *            Json string to read. (can be single quoted).
+     *            Json string to read (can be single quoted).
      * @return a string reader.
      */
     private Reader from(final String rawJson) {

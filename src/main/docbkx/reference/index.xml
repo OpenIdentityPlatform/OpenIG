@@ -235,6 +235,7 @@
   </partintro>
 
   <xinclude:include href="man-CaptureDecorator.xml" />
+  <xinclude:include href="man-TimerDecorator.xml" />
  </reference>
 
  <reference  xml:id="misc-conf">

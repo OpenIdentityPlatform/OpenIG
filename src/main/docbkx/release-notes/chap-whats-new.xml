@@ -68,6 +68,14 @@
    </para>
 
    <para>
+    You can also decorate Filters and Handlers with a TimerDecorator (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-353"
+    >OPENIG-353</link>).
+   </para>
+
+   <para>
     For detailed information about decorators,
     see the <citetitle>Reference</citetitle> on
     <link
