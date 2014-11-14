@@ -57,7 +57,7 @@ public class OpenAmAccessTokenResolverTest {
 
         doAnswer(new ExchangeAnswer() {
             @Override
-            protected void answer(final Exchange exchange) {
+            protected void answer(final Exchange exchange) throws Exception {
                 exchange.response = response(200, doubleQuote("{'expires_in':10, "
                                                                       + "'access_token':'ACCESS_TOKEN', "
                                                                       + "'scope': [ 'email', 'name' ]}"));
@@ -65,7 +65,7 @@ public class OpenAmAccessTokenResolverTest {
         }).when(client).handle(any(Exchange.class));
     }
 
-    private Response response(final int status, final String content) {
+    private Response response(final int status, final String content) throws Exception {
         return new Response().setStatus(status).setEntity(content);
     }
 
@@ -83,7 +83,7 @@ public class OpenAmAccessTokenResolverTest {
         //Given
         doAnswer(new ExchangeAnswer() {
             @Override
-            protected void answer(final Exchange exchange) {
+            protected void answer(final Exchange exchange) throws Exception {
                 exchange.response = response(400, doubleQuote("{'error':'ERROR'}"));
             }
         }).when(client).handle(any(Exchange.class));
@@ -117,6 +117,6 @@ public class OpenAmAccessTokenResolverTest {
             return null;
         }
 
-        protected abstract void answer(final Exchange exchange);
+        protected abstract void answer(final Exchange exchange) throws Exception;
     }
 }

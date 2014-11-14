@@ -19,6 +19,7 @@
 package org.forgerock.http;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Elements common to requests and responses.
@@ -67,8 +68,10 @@ public interface Message extends Closeable {
      * @param o
      *            The object whose value should be stored in the entity.
      * @return This message.
+     * @throws IOException
+     *             If an IO error occurred while reading/mapping the content.
      */
-    Message setEntity(Object o);
+    Message setEntity(Object o) throws IOException;
 
     /**
      * Sets the protocol version. Default: {@code HTTP/1.1}.
@@ -85,5 +88,6 @@ public interface Message extends Closeable {
      *
      * @see Entity#close()
      */
+    @Override
     void close();
 }

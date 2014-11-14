@@ -17,22 +17,18 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.openig.util.JsonValueUtil.readJsonLenient;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  * Builder for new {@link Route}s.
@@ -70,26 +66,20 @@ class RouteBuilder {
     /**
      * Reads the raw Json content from the route's definition file.
      *
-     * @param resource route definition file
+     * @param resource
+     *            The route definition file.
      * @return Json structure
-     * @throws HeapException if there are IO or parsing errors
+     * @throws HeapException
+     *             if there are IO or parsing errors
      */
     private JsonValue readJson(final File resource) throws HeapException {
-        InputStreamReader reader = null;
         try {
-            InputStream in = new FileInputStream(resource);
-            JSONParser parser = new JSONParser();
-            reader = new InputStreamReader(in);
-            return new JsonValue(parser.parse(reader));
-        } catch (ParseException e) {
-            throw new HeapException(format("Cannot parse %s, probably because of some malformed Json", resource),
-                                       e);
+            return new JsonValue(readJsonLenient(new FileInputStream(resource)));
         } catch (FileNotFoundException e) {
             throw new HeapException(format("File %s does not exists", resource), e);
         } catch (IOException e) {
-            throw new HeapException(format("Cannot read content of %s", resource), e);
-        } finally {
-            closeSilently(reader);
+            throw new HeapException(format("Cannot read/parse content of %s : %s", resource, e
+                    .getMessage()), e);
         }
     }
 

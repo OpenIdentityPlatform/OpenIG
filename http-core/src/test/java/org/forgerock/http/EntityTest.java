@@ -17,11 +17,17 @@
 package org.forgerock.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.http.Entity.APPLICATION_JSON_CHARSET_UTF_8;
 import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+
+import org.forgerock.http.header.ContentLengthHeader;
+import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.io.BranchingInputStream;
+import org.forgerock.http.io.IO;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,27 +35,11 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.forgerock.http.header.ContentLengthHeader;
-import org.forgerock.http.header.ContentTypeHeader;
-import org.forgerock.http.io.BranchingInputStream;
-import org.forgerock.http.io.IO;
-import org.json.simple.parser.ParseException;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 @SuppressWarnings("javadoc")
 public class EntityTest {
     private static final String INVALID_JSON = "invalid json";
-    private static final String JSON_CONTENT1 = "{\"a\":1,\"b\":2}";
-    private static final String JSON_CONTENT2 = "{\"c\":3,\"d\":4}";
-    private static final Map<String, Object> JSON_VALUE1 = new LinkedHashMap<String, Object>();
-    private static final Map<String, Object> JSON_VALUE2 = new LinkedHashMap<String, Object>();
-    static {
-        JSON_VALUE1.put("a", 1L);
-        JSON_VALUE1.put("b", 2L);
-        JSON_VALUE2.put("c", 3L);
-        JSON_VALUE2.put("d", 4L);
-    }
+    private static final String JSON_CONTENT1 = singleQuotesToDouble("{'a':1,'b':2}");
+    private static final String JSON_CONTENT2 = singleQuotesToDouble("{'c':3,'d':4}");
 
     private Entity entity;
     private Request message;
@@ -91,13 +81,17 @@ public class EntityTest {
     @Test
     public void getJson() throws Exception {
         entity.setRawContentInputStream(mockJsonContent1);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.getJson()).isInstanceOf(Map.class);
+        final Map<?, ?> jsonEntity = ((Map<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("a", 1), entry("b", 2));
+
         verify(mockJsonContent1, never()).close();
     }
 
-    @Test(expectedExceptions = ParseException.class)
-    public void getJsonWhenEntityContainsInvalidJsonThrowsParseException() throws Exception {
+    @Test(expectedExceptions = IOException.class)
+    public void getJsonWhenEntityContainsInvalidJsonThrowsIOException() throws Exception {
         mockJsonContent1 = mockContent(INVALID_JSON);
         entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.isEmpty()).isFalse();
@@ -110,9 +104,10 @@ public class EntityTest {
         }
     }
 
-    @Test(expectedExceptions = ParseException.class)
-    public void getJsonWhenEntityIsEmptyThrowsParseException() throws Exception {
-        entity.getJson();
+    @Test
+    public void getJsonWhenEntityIsEmpty() throws Exception {
+        assertThat(entity.getJson()).isNull();
+        assertThat(entity.isEmpty()).isTrue();
     }
 
     @Test
@@ -172,10 +167,39 @@ public class EntityTest {
     public void setJson() throws Exception {
         entity.setRawContentInputStream(mockJsonContent1);
         assertThatContentIsJsonContent1();
-        entity.setJson(JSON_VALUE2);
+        Map<String, Object> jsonEntity = new LinkedHashMap<String, Object>();
+        jsonEntity.put("c", 3);
+        jsonEntity.put("d", 4);
+        entity.setJson(jsonEntity);
         assertThatContentIsJsonContent2();
         assertThatContentLengthHeaderIsPresentForJsonContent2();
         assertThatContentTypeHeaderIsPresent();
+    }
+
+    @Test(enabled = false)
+    public void setJsonAsBean() throws Exception {
+        class MyBean {
+            private String name;
+
+            MyBean(final String mName) {
+                name = mName;
+            }
+
+            @SuppressWarnings("unused")
+            public String getName() {
+                return name;
+            }
+
+            @SuppressWarnings("unused")
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+        final String json = singleQuotesToDouble("{'name':'Jackson'}");
+        final MyBean mybean = new MyBean("Jackson");
+        entity.setJson(mybean);
+        assertThat(entity.getJson()).isSameAs(mybean); // Shouldn't this to be the json representation ?
+        assertThat(entity.getString()).isEqualTo(json);
     }
 
     @Test
@@ -222,18 +246,34 @@ public class EntityTest {
         assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
     }
 
-    private void assertThatContentIsJsonContent1() throws IOException, ParseException {
+    @Test
+    public void shouldParseJsonObjectReturnsLinkedHashMap() throws IOException {
+        entity.setRawContentInputStream(mockJsonContent1);
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+    }
+
+    private void assertThatContentIsJsonContent1() throws IOException {
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE1);
+        assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
+
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+        final Map<?, ?> jsonEntity = ((LinkedHashMap<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("a", 1), entry("b", 2));
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
     }
 
-    private void assertThatContentIsJsonContent2() throws IOException,
-            UnsupportedEncodingException, ParseException {
+    private void assertThatContentIsJsonContent2() throws IOException {
         assertThat(entity.getRawContentInputStream()).isNotSameAs(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT2));
-        assertThat(entity.getString()).isEqualTo(JSON_CONTENT2);
-        assertThat(entity.getJson()).isEqualTo(JSON_VALUE2);
+
+        assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+        final Map<?, ?> jsonEntity = ((LinkedHashMap<?, ?>) entity.getJson());
+
+        assertThat(jsonEntity).hasSize(2);
+        assertThat(jsonEntity).contains(entry("c", 3), entry("d", 4));
+
         assertThat(entity.getRawContentInputStream().available()).isEqualTo(JSON_CONTENT2.length());
         verify(mockJsonContent1).close();
     }
@@ -273,4 +313,8 @@ public class EntityTest {
         return mockContent(content.getBytes("UTF-8"));
     }
 
+    /** Remove single quotes from a string. */
+    private static String singleQuotesToDouble(final String value) {
+        return value.replace('\'', '\"');
+    }
 }

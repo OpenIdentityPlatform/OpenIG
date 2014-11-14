@@ -24,6 +24,7 @@ import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValueUtil.readJsonLenient;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Handler;
@@ -40,14 +41,11 @@ import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.HttpClient;
 import org.forgerock.util.Factory;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
@@ -144,18 +142,14 @@ public final class GatewayHttpApplication implements HttpApplication {
     }
 
     private static JsonValue readJson(URL resource) throws IOException {
-        InputStreamReader reader = null;
+        InputStream in = null;
         try {
-            InputStream in = resource.openStream();
-            JSONParser parser = new JSONParser();
-            reader = new InputStreamReader(in);
-            return new JsonValue(parser.parse(reader));
-        } catch (ParseException e) {
-            throw new IOException(format("Cannot parse %s, probably because of some malformed Json", resource), e);
+            in = resource.openStream();
+            return new JsonValue(readJsonLenient(in));
         } catch (FileNotFoundException e) {
             throw new IOException(format("File %s does not exists", resource), e);
         } finally {
-            closeSilently(reader);
+            closeSilently(in);
         }
     }
 }
