@@ -53,7 +53,7 @@ import org.forgerock.openig.log.Logger;
  *     {@code
  *     {
  *       "name": "capture",
- *       "type": "DebugDecorator",
+ *       "type": "CaptureDecorator",
  *       "config": {
  *           "captureEntity": false
  *       }
@@ -76,7 +76,7 @@ import org.forgerock.openig.log.Logger;
  *     }
  * </pre>
  *
- * Notice that the attribute name in the decorated object <b>has to be</b> the same than the decorator
+ * Notice that the attribute name in the decorated object <b>has to be</b> the same as the decorator
  * heap object name ({@code capture} in our example).
  *
  * A default {@literal capture} decorator is automatically created when OpenIG starts. It can be overridden
@@ -164,12 +164,12 @@ public class CaptureDecorator implements Decorator {
             Heap heap = context.getHeap();
             sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LogSink.LOGSINK_HEAP_KEY), LogSink.class);
         }
-        return new MessageCapture(new Logger(sink, format("Debug[%s]", context.getName())),
+        return new MessageCapture(new Logger(sink, format("Capture[%s]", context.getName())),
                                   captureEntity);
     }
 
     /**
-     * Creates and initializes a DebugDecorator in a heap environment.
+     * Creates and initializes a CaptureDecorator in a heap environment.
      */
     public static class Heaplet extends GenericHeaplet {
         @Override

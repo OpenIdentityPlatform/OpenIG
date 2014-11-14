@@ -28,7 +28,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * A chain of exchange zero or more filters and one handler. The chain is responsible for
@@ -72,7 +71,6 @@ public class Chain extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         new Handler() {
             private int cursor = 0;
 
@@ -91,7 +89,6 @@ public class Chain extends GenericHandler {
                 }
             }
         } .handle(exchange);
-        timer.stop();
     }
 
     /** Creates and initializes a filter chain in a heap environment. */

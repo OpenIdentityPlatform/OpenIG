@@ -43,7 +43,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -178,49 +177,44 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
-        try {
-            String token = getAccessToken(exchange.request);
-            if (token == null) {
-                logger.debug("Missing OAuth 2.0 Bearer Token Authorization header");
-                noAuthentication.handle(exchange);
-                return;
-            }
-
-            // Resolve the token
-            AccessToken accessToken;
-            try {
-                accessToken = resolver.resolve(token);
-            } catch (OAuth2TokenException e) {
-                logger.debug(format("Cannot authorize request with token '%s' because [error:%s, description:%s]",
-                                    token,
-                                    e.getError(),
-                                    e.getDescription()));
-                invalidRequest.handle(exchange);
-                return;
-            }
-
-            // Validate the token (expiration + scopes)
-            if (isExpired(accessToken)) {
-                logger.debug(format("Access Token '%s' is expired", token));
-                invalidToken.handle(exchange);
-                return;
-            }
-
-            if (areRequiredScopesMissing(accessToken)) {
-                logger.debug(format("Access Token '%s' is missing required scopes", token));
-                insufficientScope.handle(exchange);
-                return;
-            }
-
-            // Store the AccessToken in the exchange for downstream handlers
-            target.set(exchange, accessToken);
-
-            // Call the rest of the chain
-            next.handle(exchange);
-        } finally {
-            timer.stop();
+        String token = getAccessToken(exchange.request);
+        if (token == null) {
+            logger.debug("Missing OAuth 2.0 Bearer Token Authorization header");
+            noAuthentication.handle(exchange);
+            return;
         }
+
+        // Resolve the token
+        AccessToken accessToken;
+        try {
+            accessToken = resolver.resolve(token);
+        } catch (OAuth2TokenException e) {
+            logger.debug(format("Cannot authorize request with token '%s' because [error:%s, description:%s]",
+                                token,
+                                e.getError(),
+                                e.getDescription()));
+            invalidRequest.handle(exchange);
+            return;
+        }
+
+        // Validate the token (expiration + scopes)
+        if (isExpired(accessToken)) {
+            logger.debug(format("Access Token '%s' is expired", token));
+            invalidToken.handle(exchange);
+            return;
+        }
+
+        if (areRequiredScopesMissing(accessToken)) {
+            logger.debug(format("Access Token '%s' is missing required scopes", token));
+            insufficientScope.handle(exchange);
+            return;
+        }
+
+        // Store the AccessToken in the exchange for downstream handlers
+        target.set(exchange, accessToken);
+
+        // Call the rest of the chain
+        next.handle(exchange);
     }
 
     private boolean isExpired(final AccessToken accessToken) {

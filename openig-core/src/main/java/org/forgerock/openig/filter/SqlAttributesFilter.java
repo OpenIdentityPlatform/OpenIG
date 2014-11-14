@@ -44,7 +44,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogLevel;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 
@@ -102,7 +101,6 @@ public class SqlAttributesFilter extends GenericFilter {
 
     @Override
     public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         target.set(exchange, new LazyMap<String, Object>(new Factory<Map<String, Object>>() {
             @Override
             public Map<String, Object> newInstance() {
@@ -154,7 +152,6 @@ public class SqlAttributesFilter extends GenericFilter {
             }
         }));
         next.handle(exchange);
-        timer.stop();
     }
 
     /** Creates and initializes a static attribute provider in a heap environment. */

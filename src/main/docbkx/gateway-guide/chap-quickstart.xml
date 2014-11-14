@@ -293,17 +293,9 @@ $ <userinput>vi ${warConfigDir}/config.json</userinput>
     </para>
 
     <para>
-     Also on Windows, change the capture log file name
-     in <filename>config.json</filename>
-     from <filename>/tmp/gateway.log</filename>
-     to a file system location that works for Windows systems,
-     such as <filename>C:\Temp\gateway.log</filename>.
-    </para>
-
-    <para>
      If you adapt this base configuration for production use,
      make sure to adjust the log level,
-     and to avoid using the "CaptureFilter"
+     and to deactivate the "CaptureDecorator"
      that generates several log message lines for each request and response.
      Also consider editing the router based on recommendations in the section,
      <link
@@ -461,7 +453,7 @@ $ <userinput>java -jar start.jar</userinput>
 
   <para>
    Consider the base configuration file first, <filename>config.json</filename>.
-   The base configuration file specifies a "handler" named "CaptureAndRoute".
+   The base configuration file specifies a router handler named "Router".
    ${projectName} calls this handler when it receives an incoming request.
    In addition, it uses the "LogSink" to log debug messages to the console.
    Alternatively, to send log messages to a file you can use a
@@ -475,17 +467,8 @@ $ <userinput>java -jar start.jar</userinput>
   <para>
    The "baseURI" setting in turn changes the request URI
    to point the request to the sample application to protect.
-   The "CaptureAndRoute" passes the request to the "DefaultChain" handler.
-  </para>
-
-  <para>
-   The "CaptureAndRoute" chain calls a filter and then a handler.
-   On the way in, after passing through the "CaptureFilter",
-   the request goes to the "Router" handler.
-   On the way out the response returned by the "Router"
-   also passes through the "CaptureFilter".
-   You can see the results in the file
-   specified by the "CaptureFilter" configuration.
+   The "Router" captures the request on the way in,
+   and captures the response on the way out.
   </para>
 
   <para>
@@ -548,9 +531,8 @@ $ <userinput>java -jar start.jar</userinput>
   </orderedlist>
 
   <para>
-   Also view the file capturing information about requests and responses.
-   In the default sample configuration,
-   this file is <filename>/tmp/gateway.log</filename>.
+   Also view the information logged about requests and responses,
+   which shows up in the Jetty log.
   </para>
 
   <para>

@@ -30,7 +30,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
@@ -154,7 +153,6 @@ public class AssignmentFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         for (Binding binding : onRequest) {
             eval(binding, exchange);
         }
@@ -162,7 +160,6 @@ public class AssignmentFilter extends GenericFilter {
         for (Binding binding : onResponse) {
             eval(binding, exchange);
         }
-        timer.stop();
     }
 
     private void eval(Binding binding, Exchange exchange) {

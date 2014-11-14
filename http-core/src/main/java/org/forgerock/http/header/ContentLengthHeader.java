@@ -51,6 +51,7 @@ public class ContentLengthHeader implements Header {
         if (string != null) {
             try {
                 length = Long.parseLong(string);
+                length = length >= 0 ? length : -1;
             } catch (NumberFormatException nfe) {
                 // will remain default of -1 from clear() call above
             }

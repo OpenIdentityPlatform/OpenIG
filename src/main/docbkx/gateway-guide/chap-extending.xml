@@ -229,27 +229,6 @@
   </para>
  </section>
 
- <!--
-  <section xml:id="scripting-capture">
-   <title>Scripting Proxy &amp; Capture</title>
-
-   <para>
-    The following script filters the HTTP exchange to log information
-    from the HTTP request and the HTTP response,
-    proxying the request as is to the server,
-    and returning the response as is to the client.
-   </para>
-
-   <programlisting language="java">
- // TODO: need a Capture similar to CaptureFilter but without the condition
- capture = globals.get("capture", { -> new Capture("/tmp/gateway.log") })
- capture(exchange.request)
- http.execute(exchange) // next.handle(exchange) if this were a filter
- capture(exchange.response)
-   </programlisting>
-  </section>
- -->
-
  <section xml:id="scripting-http-basic">
   <title>Scripting HTTP Basic Authentication</title>
 

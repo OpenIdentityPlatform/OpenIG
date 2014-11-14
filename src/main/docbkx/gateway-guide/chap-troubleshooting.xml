@@ -45,9 +45,9 @@
   <programlisting language="none">
 org.forgerock.json.fluent.JsonValueException: /handler:
    object Router2 not found in heap
-    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:69)
-    at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:188)
-    at org.eclipse.jetty.servlet.ServletHolder.initServlet(ServletHolder.java:595)
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:157)
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:140)
+    at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:196)
   </programlisting>
 
   <para>
@@ -59,66 +59,42 @@ org.forgerock.json.fluent.JsonValueException: /handler:
   </para>
  </section>
 
- <section xml:id="troubleshooting-config-field-ignored">
-  <title>${projectName} ignores a configuration field</title>
-
-  <para>
-   ${projectName} ignores the configuration,
-   and nothing appears in debug log output.
-  </para>
-
-  <para>
-   If you are more lucky, this can also manifest itself
-   by an error such as the following.
-  </para>
-
-  <programlisting language="none">
-Caused by:
-org.forgerock.json.fluent.JsonValueException:
- /heap/objects/2/config/handler: Expecting a value
-    at org.forgerock.json.fluent.JsonValue.required(JsonValue.java:1398)
-    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:67)
-    at org.forgerock.openig.filter.Chain$Heaplet.create(Chain.java:102)
-    at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:83)
-    at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:107)
-    at org.forgerock.openig.heap.HeapUtil.getRequiredObject(HeapUtil.java:67)
-...
-  </programlisting>
-
-  <para>
-   When ${projectName} does not recognize an argument name,
-   it ignores the argument.
-   This is both a feature and a limitation of the JSON format.
-  </para>
-
-  <para>
-   This is a feature because it allows you
-   to add comments by using the field name <literal>"comment"</literal>,
-   or to comment out a field using a single character,
-   as in <literal>"_captureEntity": true</literal>
-   rather than <literal>"captureEntity": true</literal>.
-  </para>
-
-  <para>
-   This is a limitation because spelling errors
-   in field names for optional settings
-   cause ${projectName} to silently ignore the field.
-  </para>
- </section>
-
- <section xml:id="troubleshooting-unexpected-character">
-  <title>Unexpected character (x) at position 1103</title>
+ <section xml:id="troubleshooting-invalid-json">
+  <title>Extra or missing character / invalid JSON</title>
 
   <programlisting language="none">
 HTTP ERROR 500
-Problem accessing /. Reason:
 
-Unexpected character (x) at position 1103
+Problem accessing /wp/wp-login.php. Reason:
+
+    Server Error
+
+Caused by:
+
+javax.servlet.ServletException: 
+   org.forgerock.openig.handler.HandlerException: no handler to dispatch to
+at org.forgerock.openig.servlet.GatewayServlet.service(GatewayServlet.java:264)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
   </programlisting>
-
+  
   <para>
-   This error usually means a missing double quote
-   or a missing bracket in the configuration file.
+   A better description of the error appears as a warning in the console:
+  </para>
+ 
+  <programlisting language="none">  
+2014-10-22T08:57:14Z:Router.Router:WARNING:The route defined in file 
+   '/home/.openig/config/routes/route1.json' cannot be added because 
+   it could not be parsed: Cannot read/parse content of 
+   /home/.openig/config/routes/route1.json: 
+   Unexpected character (',' (code 44)): expected a valid value 
+   (number, String, array, object, 'true', 'false' or 'null') 
+   at [Source: java.io.InputStreamReader@3491b08f; line: 3, column: 22]
+  </programlisting>
+  
+  <para>
+   This error usually means your configuration is incorrect 
+   (missing bracket, extra character, etc.).
+   In this case, extra comma is spotted at line 3, column 22.
    Use a JSON editor or JSON validation tool such as
    <link
     xlink:show="new"

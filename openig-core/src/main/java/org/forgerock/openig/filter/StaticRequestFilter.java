@@ -35,7 +35,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Creates a new request with in the exchange object. It will replace any request that may
@@ -143,7 +142,6 @@ public class StaticRequestFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         Request request = new Request();
         request.setMethod(this.method);
         String value = this.uri.eval(exchange, String.class);
@@ -190,7 +188,6 @@ public class StaticRequestFilter extends GenericFilter {
         if (restore) {
             exchange.request = saved;
         }
-        timer.stop();
     }
 
     /** Creates and initializes a request filter in a heap environment. */

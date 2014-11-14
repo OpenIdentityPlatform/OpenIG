@@ -1,0 +1,112 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2014 ForgeRock AS.
+ */
+
+package org.forgerock.openig.decoration.timer;
+
+import static java.lang.String.*;
+import static org.forgerock.openig.log.LogSink.*;
+
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.filter.Filter;
+import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
+
+/**
+ * The {@literal timer} decorator can decorate both {@link Filter} and {@link Handler} instances.
+ * It will log {@literal started}, {@literal elapsed} and {@literal elapsed-within} events into the {@link LogSink}
+ * of the decorated heap object.
+ * <p>
+ * It has to be declared inside of the heap objects section:
+ * <pre>
+ *     {@code
+ *     {
+ *       "name": "timer",
+ *       "type": "TimerDecorator"
+ *     }
+ *     }
+ * </pre>
+ * <p>
+ * To decorate a component, just add the decorator declaration next to the {@code config} element:
+ * <pre>
+ *     {@code
+ *     {
+ *       "type": "...",
+ *       "timer": true,
+ *       "config": { ... }
+ *     }
+ *     }
+ * </pre>
+ *
+ * There is no special configuration required for this decorator.
+ *
+ * A default {@literal timer} decorator is automatically created when OpenIG starts.
+ */
+public class TimerDecorator implements Decorator {
+
+    /**
+     * Key to retrieve a {@link TimerDecorator} instance from the {@link Heap}.
+     */
+    public static final String TIMER_HEAP_KEY = "timer";
+
+    @Override
+    public boolean accepts(final Class<?> type) {
+        return Filter.class.isAssignableFrom(type) || Handler.class.isAssignableFrom(type);
+    }
+
+    @Override
+    public Object decorate(final Object delegate, final JsonValue decoratorConfig, final Context context)
+            throws HeapException {
+        // Only intercept if needed
+        if (delegate instanceof Handler) {
+            return new TimerHandler((Handler) delegate, getLogger(context));
+        } else if (delegate instanceof Filter) {
+            return new TimerFilter((Filter) delegate, getLogger(context));
+        }
+        return delegate;
+    }
+
+    /**
+     * Builds a new Logger dedicated for the heap object context.
+     *
+     * @param context
+     *         Context of the heap object
+     * @return a new Logger dedicated for the heap object context.
+     * @throws HeapException
+     *         when no logSink can be resolved (very unlikely to happen).
+     */
+    private Logger getLogger(final Context context) throws HeapException {
+        // Use the sink of the decorated component
+        Heap heap = context.getHeap();
+        LogSink sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+        return new Logger(sink, format("Timer[%s]", context.getName()));
+    }
+
+    /**
+     * Creates and initializes a TimerDecorator in a heap environment.
+     */
+    public static class Heaplet extends GenericHeaplet {
+        @Override
+        public Object create() throws HeapException {
+            return new TimerDecorator();
+        }
+    }
+}

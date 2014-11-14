@@ -36,7 +36,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.util.encode.Base64;
 
 /**
@@ -112,7 +111,6 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
 
         // Remove existing headers from incoming message
         for (String header : SUPPRESS_REQUEST_HEADERS) {
@@ -143,7 +141,6 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 for (String header : SUPPRESS_RESPONSE_HEADERS) {
                     exchange.response.getHeaders().remove(header);
                 }
-                timer.stop();
                 return;
             }
             // credentials might be stale, so fetch them
@@ -171,7 +168,6 @@ public class HttpBasicAuthFilter extends GenericFilter {
         // credentials were missing or invalid; let failure handler deal with it
         exchange.response = new Response();
         failureHandler.handle(exchange);
-        timer.stop();
     }
 
     /** Creates and initializes an HTTP basic authentication filter in a heap environment. */

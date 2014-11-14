@@ -25,7 +25,6 @@ import java.io.IOException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.HttpClient;
 
 /**
@@ -59,12 +58,7 @@ public class ClientHandler extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
-        try {
-            client.execute(exchange);
-        } finally {
-            timer.stop();
-        }
+        client.execute(exchange);
     }
 
     /** Creates and initializes a client handler in a heap environment. */

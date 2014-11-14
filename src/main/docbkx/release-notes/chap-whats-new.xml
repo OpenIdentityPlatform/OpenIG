@@ -50,6 +50,36 @@
 
   <listitem>
    <para>
+    ${projectName} now supports object decorators (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-340"
+     >OPENIG-340</link>).
+    Decorators allow you to define heap objects that decorate other objects,
+    adding the new behavior that the decorator provides.
+   </para>
+
+   <para>
+    You can now decorate Filters and Handlers with a CaptureDecorator (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-299"
+    >OPENIG-299</link>).
+   </para>
+
+   <para>
+    For detailed information about decorators,
+    see the <citetitle>Reference</citetitle> on
+    <link
+     xlink:show="new"
+     xlink:href="reference#decorators-conf"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>Decorators</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} now allows you to inline configuration objects (
     <link
      xlink:show="new"
@@ -80,16 +110,24 @@
                 "type": "Chain",
                 "config": {
                     "filters": [
-                        "CaptureFilter"
+                        "ReplaceHostFilter"
                     ],
                     "handler": "Router"
                 }
             },
             {
-                "name": "CaptureFilter",
-                "type": "CaptureFilter",
+                "name": "ReplaceHostFilter",
+                "type": "HeaderFilter",
                 "config": {
-                    "file": "/tmp/gateway.log"
+                    "messageType": "REQUEST",
+                    "remove": [
+                        "host"
+                    ],
+                    "add": {
+                        "host": [
+                            "myhost.com"
+                        ]
+                    }
                 }
             },
             {
@@ -118,9 +156,17 @@
                 "config": {
                     "filters": [
                         {
-                            "type": "CaptureFilter",
+                            "type": "HeaderFilter",
                             "config": {
-                                "file": "/tmp/gateway.log"
+                                "messageType": "REQUEST",
+                                "remove": [
+                                    "host"
+                                ],
+                                "add": {
+                                    "host": [
+                                        "myhost.com"
+                                    ]
+                                }
                             }
                         }
                     ],

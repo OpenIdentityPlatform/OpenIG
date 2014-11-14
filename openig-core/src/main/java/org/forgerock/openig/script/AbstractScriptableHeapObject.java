@@ -35,7 +35,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.ldap.LdapClient;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.HttpClient;
 
 /**
@@ -183,7 +182,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      */
     protected final void runScript(final Exchange exchange, final Handler next)
             throws HandlerException, IOException {
-        final LogTimer timer = logger.getTimer().start();
+
         try {
             compiledScript.run(createBindings(exchange, next));
         } catch (final ScriptException e) {
@@ -202,8 +201,6 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
              * contain useful line number information.
              */
             throw new HandlerException("Script failed unexpectedly", e);
-        } finally {
-            timer.stop();
         }
     }
 

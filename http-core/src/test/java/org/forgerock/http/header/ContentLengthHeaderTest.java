@@ -122,9 +122,7 @@ public class ContentLengthHeaderTest {
         assertThat(clh.toString()).isEqualTo(String.valueOf(cth));
     }
 
-    // VROM Test disabled as an invalid value should not be registered in the content length
-    // header. Eg. for -99, the length should be -1. Potential vulnerability.
-    @Test(enabled = false, dataProvider = "invalidDataProvider")
+    @Test( dataProvider = "invalidDataProvider")
     public void testContentLengthHeaderToStringIsNullWithInvalidValues(final Object cth) {
         final ContentLengthHeader clh = ContentLengthHeader.valueOf(String.valueOf(cth));
         assertThat(clh.getLength()).isEqualTo(-1);

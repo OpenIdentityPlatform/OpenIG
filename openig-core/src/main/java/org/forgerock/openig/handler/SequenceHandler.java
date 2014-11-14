@@ -18,7 +18,6 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.util.Json.*;
-
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 
 /**
  * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
@@ -80,7 +78,6 @@ public class SequenceHandler extends GenericHandler {
 
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         for (Binding binding : bindings) {
             // avoid downstream filters/handlers inadvertently using response
             closeSilently(exchange.response);
@@ -90,7 +87,6 @@ public class SequenceHandler extends GenericHandler {
                 break;
             }
         }
-        timer.stop();
     }
 
     /** Creates and initializes a sequence handler in a heap environment. */

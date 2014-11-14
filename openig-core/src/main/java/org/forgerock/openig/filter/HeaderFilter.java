@@ -33,7 +33,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.MessageType;
 
 /**
@@ -95,7 +94,6 @@ public class HeaderFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         if (messageType == MessageType.REQUEST) {
             process(exchange.request, exchange);
         }
@@ -103,7 +101,6 @@ public class HeaderFilter extends GenericFilter {
         if (messageType == MessageType.RESPONSE) {
             process(exchange.response, exchange);
         }
-        timer.stop();
     }
 
     /** Creates and initializes a header filter in a heap environment. */

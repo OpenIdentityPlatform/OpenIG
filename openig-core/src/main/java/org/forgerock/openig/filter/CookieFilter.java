@@ -41,7 +41,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.util.StringUtil;
 
 /**
@@ -216,7 +215,6 @@ public class CookieFilter extends GenericFilter {
 
     @Override
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
         // resolve to client-supplied host header
         MutableUri resolved = resolveHostURI(exchange.request);
         // session cookie jar
@@ -231,7 +229,6 @@ public class CookieFilter extends GenericFilter {
         manager.put(resolved.asURI(), exchange.response.getHeaders());
         // remove cookies that are suppressed or managed
         suppress(exchange.response);
-        timer.stop();
     }
 
     /**
