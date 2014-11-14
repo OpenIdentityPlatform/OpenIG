@@ -20,6 +20,7 @@ package org.forgerock.openig.http;
 
 import java.security.Principal;
 
+import org.forgerock.http.ClientInfo;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.Session;
@@ -56,4 +57,26 @@ public class Exchange extends ExtensibleFieldMap {
 
     /** Session context associated with the remote client. */
     public Session session;
+
+    /** The info we can obtain from the client from this request. */
+    private ClientInfo clientInfo;
+
+    /**
+     * Returns the client information associated to this request.
+     *
+     * @return the client information associated to this request.
+     */
+    public ClientInfo getClientInfo() {
+        return clientInfo;
+    }
+
+    /**
+     * Set the client information for this request.
+     *
+     * @param clientInfo
+     *         information about the client making this request
+     */
+    public void setClientInfo(final ClientInfo clientInfo) {
+        this.clientInfo = clientInfo;
+    }
 }

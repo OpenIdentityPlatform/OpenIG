@@ -21,22 +21,8 @@ import static org.forgerock.http.io.IO.newBranchingInputStream;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceLoader;
-
+import org.forgerock.http.ClientInfoContext;
+import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
@@ -54,6 +40,23 @@ import org.forgerock.util.promise.FailureHandler;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.SuccessHandler;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
+
 /**
  * <p>
  * An HTTP servlet implementation which provides integration between the Servlet
@@ -69,6 +72,11 @@ import org.forgerock.util.promise.SuccessHandler;
  */
 public final class HttpFrameworkServlet extends HttpServlet {
     private static final long serialVersionUID = 3524182656424860912L;
+
+    /**
+     * Standard specified request attribute name for retrieving X509 Certificates.
+     */
+    private static final String SERVLET_REQUEST_X509_ATTRIBUTE = "javax.servlet.request.X509Certificate";
 
     /** Methods that should not include an entity body. */
     private static final CaseInsensitiveSet NON_ENTITY_METHODS = new CaseInsensitiveSet(
@@ -147,13 +155,15 @@ public final class HttpFrameworkServlet extends HttpServlet {
             throws ServletException, IOException {
         final Request request = createRequest(req);
         final Session session = new ServletSession(req);
-        final HttpContext context = new HttpContext(new RootContext(), session)
+        final HttpContext httpContext = new HttpContext(new RootContext(), session)
                 .setPrincipal(req.getUserPrincipal());
 
         //FIXME ideally we don't want to expose the HttpServlet Request and Response
         // handy servlet-specific attributes, sure to be abused by downstream filters
-        context.getAttributes().put(HttpServletRequest.class.getName(), req);
-        context.getAttributes().put(HttpServletResponse.class.getName(), resp);
+        httpContext.getAttributes().put(HttpServletRequest.class.getName(), req);
+        httpContext.getAttributes().put(HttpServletResponse.class.getName(), resp);
+
+        Context context = createClientInfoContext(httpContext, req);
 
         // handle request
         final ServletSynchronizer sync = adapter.createServletSynchronizer(req, resp);
@@ -163,7 +173,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
                         @Override
                         public void handleResult(Response response) {
                             try {
-                                writeResponse(context, resp, response);
+                                writeResponse(httpContext, resp, response);
                             } catch (IOException e) {
                                 log("Failed to write success response", e);
                             } finally {
@@ -176,7 +186,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
                         @Override
                         public void handleError(ResponseException error) {
                             try {
-                                writeResponse(context, resp, error.getResponse());
+                                writeResponse(httpContext, resp, error.getResponse());
                             } catch (IOException e) {
                                 log("Failed to write success response", e);
                             } finally {
@@ -197,7 +207,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
 
         } catch (ResponseException error) {
             try {
-                writeResponse(context, resp, error.getResponse());
+                writeResponse(httpContext, resp, error.getResponse());
             } catch (IOException e) {
                 log("Failed to write success response", e);
             } finally {
@@ -237,6 +247,17 @@ public final class HttpFrameworkServlet extends HttpServlet {
         }
 
         return request;
+    }
+
+    private ClientInfoContext createClientInfoContext(Context parent, HttpServletRequest req) {
+        return ClientInfoContext.ClientInfoContextBuilder.buildClientInfo(parent)
+                .remoteUser(req.getRemoteUser())
+                .remoteAddress(req.getRemoteAddr())
+                .remoteHost(req.getRemoteHost())
+                .remotePort(req.getRemotePort())
+                .certificates((X509Certificate[]) req.getAttribute(SERVLET_REQUEST_X509_ATTRIBUTE))
+                .userAgent(req.getHeader("User-Agent"))
+                .build();
     }
 
     private void writeResponse(HttpContext context, HttpServletResponse resp, Response response)
