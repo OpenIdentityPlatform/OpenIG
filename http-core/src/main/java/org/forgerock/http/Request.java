@@ -90,7 +90,7 @@ public final class Request extends MessageImpl<Request> {
     }
 
     @Override
-    public Request setEntity(Object o) {
+    public Request setEntity(Object o) throws IOException {
         setEntity0(o);
         return this;
     }

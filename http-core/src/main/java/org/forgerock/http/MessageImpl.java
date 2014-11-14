@@ -20,6 +20,8 @@ package org.forgerock.http;
 
 import org.forgerock.http.io.BranchingInputStream;
 
+import java.io.IOException;
+
 /**
  * Abstract message base class.
  *
@@ -61,7 +63,7 @@ abstract class MessageImpl<T extends MessageImpl<T>> implements Message {
         return version;
     }
 
-    final void setEntity0(final Object o) {
+    final void setEntity0(final Object o) throws IOException {
         if (o instanceof BranchingInputStream) {
             entity.setRawContentInputStream((BranchingInputStream) o);
         } else if (o instanceof byte[]) {

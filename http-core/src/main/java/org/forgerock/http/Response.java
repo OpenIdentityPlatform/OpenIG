@@ -18,6 +18,8 @@
 
 package org.forgerock.http;
 
+import java.io.IOException;
+
 /**
  * A response message.
  */
@@ -54,7 +56,7 @@ public final class Response extends MessageImpl<Response> {
     }
 
     @Override
-    public Response setEntity(Object o) {
+    public Response setEntity(Object o) throws IOException {
         setEntity0(o);
         return this;
     }
