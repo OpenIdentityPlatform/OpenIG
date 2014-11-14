@@ -235,6 +235,19 @@ public class HeapImplTest {
     }
 
     @Test
+    public void testGlobalDecorationGeneratingInfiniteRecursion() throws Exception {
+        // This case reproduce a situation where a decorator have a dependency on a heap object
+        // If this dependency is resolved at the time of decorator creation, that induce a StackOverFlowError:
+        // If the dependency is not yet created, the heap will instantiate it with its heaplet, and then will try
+        // decorate it, but as the decorator is not yet finished (because it needs the dependency to be resolved),
+        // the heap creates a new decorator instance, that will again try to resolve the heap object, ...
+
+        // This problem is solved by delaying the heap object resolution (using LazyReference<T> for example)
+        HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-global-decorator-recursion.json"));
+    }
+
+    @Test
     public void testGlobalDecoratorWithIncompatibleDecorators() throws Exception {
         HeapImpl heap = buildDefaultHeap();
         heap.init(asJson("heap-global-decorations.json"));

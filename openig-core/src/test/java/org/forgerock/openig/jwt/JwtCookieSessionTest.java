@@ -39,6 +39,7 @@ import org.forgerock.http.Response;
 import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
@@ -80,7 +81,7 @@ public class JwtCookieSessionTest {
     /**
      * Default logger.
      */
-    private Logger logger = new Logger(new NullLogSink(), "Test");
+    private Logger logger = new Logger(new NullLogSink(), Name.of("Test"));
 
     /**
      * Static key pair used for test encryption/decryption.

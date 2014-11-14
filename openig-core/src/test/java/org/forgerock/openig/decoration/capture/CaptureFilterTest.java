@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 import static org.forgerock.openig.decoration.capture.CapturePoint.*;
 import static org.mockito.Mockito.*;
 
@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.mockito.Mock;
@@ -50,7 +51,7 @@ public class CaptureFilterTest {
     private Handler terminal;
 
     @Spy
-    private MessageCapture capture = new MessageCapture(new Logger(null, "Test"), false);
+    private MessageCapture capture = new MessageCapture(new Logger(null, Name.of("Test")), false);
 
     @BeforeMethod
     public void setUp() throws Exception {

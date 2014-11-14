@@ -39,21 +39,31 @@
   such as "23 hours 59 minutes and 59 seconds".
  </para>
 
- <para>
-  Durations are not case sensitive.
- </para>
+  <para>
+    Durations are not case sensitive.
+  </para>
+
+  <para>
+    Negative durations are not supported.
+  </para>
 
  <para>
   The following units can be used in durations.
  </para>
 
- <listitem>
-  <para>
-   "indefinite", "infinity", "undefined", "unlimited": unlimited duration
-  </para>
- </listitem>
+  <listitem>
+    <para>
+      "indefinite", "infinity", "undefined", "unlimited": unlimited duration
+    </para>
+  </listitem>
 
- <listitem>
+  <listitem>
+    <para>
+      "zero", "disabled": zero-length duration
+    </para>
+  </listitem>
+
+  <listitem>
   <para>
    "days", "day", "d": days
   </para>

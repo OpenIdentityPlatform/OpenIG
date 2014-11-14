@@ -35,7 +35,7 @@ public final class Adapters {
     public static Exchange asExchange(Context context, Request request) {
         HttpContext requestContext = context.asContext(HttpContext.class);
         final Exchange exchange = new Exchange();
-        exchange.setClientInfo(context.asContext(ClientInfoContext.class));
+        exchange.clientInfo = context.asContext(ClientInfoContext.class);
         exchange.exchange = exchange;
         exchange.principal = requestContext.getPrincipal();
         exchange.session = requestContext.getSession();

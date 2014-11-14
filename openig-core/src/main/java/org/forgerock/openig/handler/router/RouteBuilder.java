@@ -30,6 +30,7 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 
 /**
  * Builder for new {@link Route}s.
@@ -42,13 +43,16 @@ class RouteBuilder {
      * Heap to be used as parent for routes built from this builder.
      */
     private final Heap heap;
+    private final Name name;
 
     /**
      * Builds a new builder.
      * @param heap parent heap for produced routes
+     * @param name router name (used as parent name)
      */
-    public RouteBuilder(final Heap heap) {
+    public RouteBuilder(final Heap heap, final Name name) {
         this.heap = heap;
+        this.name = name;
     }
 
     /**
@@ -60,7 +64,7 @@ class RouteBuilder {
      */
     public Route build(final File resource) throws HeapException {
         JsonValue config = readJson(resource);
-        HeapImpl newHeap = createHeap(config);
+        HeapImpl newHeap = createHeap(config, resource.getPath());
         return new Route(newHeap, config, resource.getName());
     }
 
@@ -91,11 +95,12 @@ class RouteBuilder {
      * Creates and initialize a new child {@link Heap} from the previously parsed Json content.
      *
      * @param config parsed route definition
+     * @param name name of the new heap
      * @return initialized child heap
      * @throws HeapException if there is some semantic errors in the route definition
      */
-    private HeapImpl createHeap(final JsonValue config) throws HeapException {
-        HeapImpl child = new HeapImpl(heap);
+    private HeapImpl createHeap(final JsonValue config, final String name) throws HeapException {
+        HeapImpl child = new HeapImpl(heap, this.name.child(name));
         child.init(config.get("heap").required().expect(Map.class));
         return child;
     }

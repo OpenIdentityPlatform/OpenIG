@@ -60,11 +60,17 @@
    </para>
 
    <para>
-    You can now decorate Filters and Handlers with a CaptureDecorator (
+    You can now decorate Filters and Handlers with a CaptureDecorator
+    (that extends what the CaptureFilter could do,
     <link
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-299"
-    >OPENIG-299</link>).
+    >OPENIG-299</link>),
+    (and allows you to dump the exchange to JSON for debugging purposes,
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-301"
+     >OPENIG-301</link>).
    </para>
 
    <para>
@@ -83,6 +89,25 @@
      xlink:href="reference#decorators-conf"
      xlink:role="http://docbook.org/xlink/role/olink"
     ><citetitle>Decorators</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    The ${projectName} Exchange now provides information about the client (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-333"
+    >OPENIG-333</link>).
+   </para>
+
+   <para>
+    For details see the <citetitle>Reference</citetitle> on
+    <link
+     xlink:show="new"
+     xlink:href="reference#ClientInfo"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>ClientInfo</citetitle></link>.
    </para>
   </listitem>
 

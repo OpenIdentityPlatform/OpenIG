@@ -16,17 +16,18 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static java.lang.String.*;
 import static org.forgerock.openig.log.LogSink.*;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -70,13 +71,19 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new TimerFilter(delegate, getLogger(context));
+        if (decoratorConfig.asBoolean()) {
+            return new TimerFilter(delegate, getLogger(context));
+        }
+        return delegate;
     }
 
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new TimerHandler(delegate, getLogger(context));
+        if (decoratorConfig.asBoolean()) {
+            return new TimerHandler(delegate, getLogger(context));
+        }
+        return delegate;
     }
 
     /**
@@ -92,15 +99,16 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
         // Use the sink of the decorated component
         Heap heap = context.getHeap();
         LogSink sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
-        return new Logger(sink, format("Timer[%s]", context.getName()));
+        Name name = context.getName();
+        return new Logger(sink, name.decorated("Timer"));
     }
 
     /**
      * Creates and initializes a TimerDecorator in a heap environment.
      */
-    public static class Heaplet extends GenericHeaplet {
+    public static class Heaplet extends DecoratorHeaplet {
         @Override
-        public Object create() throws HeapException {
+        public Decorator create() throws HeapException {
             return new TimerDecorator();
         }
     }

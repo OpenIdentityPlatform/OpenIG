@@ -28,6 +28,7 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,17 +50,18 @@ public class TimerDecoratorTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        HeapImpl heap = new HeapImpl();
+        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         when(context.getHeap()).thenReturn(heap);
         when(context.getConfig()).thenReturn(json(emptyMap()));
+        when(context.getName()).thenReturn(Name.of("config.json", "Router"));
     }
 
     @Test
     public void shouldDecorateFilter() throws Exception {
         TimerDecorator decorator = new TimerDecorator();
 
-        Object decorated = decorator.decorate(filter, null, context);
+        Object decorated = decorator.decorate(filter, json(true), context);
         assertThat(decorated).isInstanceOf(TimerFilter.class);
     }
 
@@ -67,8 +69,24 @@ public class TimerDecoratorTest {
     public void shouldDecorateHandler() throws Exception {
         TimerDecorator decorator = new TimerDecorator();
 
-        Object decorated = decorator.decorate(handler, null, context);
+        Object decorated = decorator.decorate(handler, json(true), context);
         assertThat(decorated).isInstanceOf(TimerHandler.class);
+    }
+
+    @Test
+    public void shouldNotDecorateFilter() throws Exception {
+        TimerDecorator decorator = new TimerDecorator();
+
+        Object decorated = decorator.decorate(filter, json(false), context);
+        assertThat(decorated).isSameAs(filter);
+    }
+
+    @Test
+    public void shouldNotDecorateHandler() throws Exception {
+        TimerDecorator decorator = new TimerDecorator();
+
+        Object decorated = decorator.decorate(handler, json(false), context);
+        assertThat(decorated).isSameAs(handler);
     }
 
     @DataProvider

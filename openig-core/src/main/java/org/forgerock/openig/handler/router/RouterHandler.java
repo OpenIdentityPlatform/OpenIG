@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.openig.util.Logs.*;
 
@@ -205,7 +206,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         } catch (HeapException e) {
             logger.error(format("The route defined in file '%s' cannot be added",
                                   file));
-            logDetailedException(logger, e);
+            logDetailedException(ERROR, logger, e);
         }
     }
 
@@ -225,7 +226,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         } catch (HeapException e) {
             logger.error(format("The route defined in file '%s' cannot be modified",
                                   file));
-            logDetailedException(logger, e);
+            logDetailedException(ERROR, logger, e);
             return;
         }
         Route oldRoute = routes.remove(file);
@@ -294,7 +295,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
                 scanner = new OnlyOnceDirectoryScanner(scanner);
             }
 
-            RouterHandler handler = new RouterHandler(new RouteBuilder(heap), scanner);
+            RouterHandler handler = new RouterHandler(new RouteBuilder(heap, qualified), scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
                                                      Handler.class, true));
             return handler;

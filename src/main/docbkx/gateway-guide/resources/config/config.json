@@ -20,7 +20,8 @@
                 "name": "capture",
                 "type": "CaptureDecorator",
                 "config": {
-                    "captureEntity": true
+                    "captureEntity": true,
+                    "_captureExchange": true
                 }
             },
             {

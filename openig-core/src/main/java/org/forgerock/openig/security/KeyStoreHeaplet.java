@@ -35,14 +35,14 @@ import org.forgerock.openig.heap.HeapException;
  *         "name": "LocalKeyStore",
  *         "type": "KeyStore",
  *         "config": {
- *             "file": "file://${env['HOME']}/keystore.jks",
+ *             "url": "file://${env['HOME']}/keystore.jks",
  *             "password": "secret",
  *             "type": "JKS"
  *         }
  *     }
  * </pre>
  * <ul>
- *     <li>{@literal file}: URL to the target key store file (expression, required).</li>
+ *     <li>{@literal url}: URL to the target key store file (expression, required).</li>
  *     <li>{@literal type}: key store type (defaults to platform's default type) (string, optional).</li>
  *     <li>{@literal password}: credential required to read private keys from the key store (expression, optional),
  *     not needed when the key store is used for a trust store.</li>
@@ -53,8 +53,8 @@ public class KeyStoreHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        JsonValue file = config.get("file").required();
-        URL url = evaluateJsonStaticExpression(file).asURL();
+        JsonValue urlString = config.get("url").required();
+        URL url = evaluateJsonStaticExpression(urlString).asURL();
         String password = evaluate(config.get("password"));
         String type = config.get("type").defaultTo(KeyStore.getDefaultType()).asString().toUpperCase();
 
@@ -66,7 +66,7 @@ public class KeyStoreHeaplet extends GenericHeaplet {
             char[] credentials = (password == null) ? null : password.toCharArray();
             keyStore.load(keyInput, credentials);
         } catch (Exception e) {
-            throw new HeapException(format("Cannot load %S KeyStore from %s", type, file.asString()), e);
+            throw new HeapException(format("Cannot load %S KeyStore from %s", type, urlString.asString()), e);
         } finally {
             closeSilently(keyInput);
         }

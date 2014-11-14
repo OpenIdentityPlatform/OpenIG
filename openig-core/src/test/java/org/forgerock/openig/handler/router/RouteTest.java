@@ -28,6 +28,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.SessionManager;
 import org.mockito.Mock;
@@ -144,7 +145,7 @@ public class RouteTest {
     private Route createRoute(final SessionManager sessionManager,
                               final Expression condition,
                               final URI baseURI) {
-        return new Route(new HeapImpl(),
+        return new Route(new HeapImpl(Name.of("anonymous")),
                          handler,
                 sessionManager,
                          "router",

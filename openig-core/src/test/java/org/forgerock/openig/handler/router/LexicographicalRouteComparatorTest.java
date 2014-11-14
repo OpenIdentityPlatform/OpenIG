@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -43,8 +44,8 @@ public class LexicographicalRouteComparatorTest {
     public void testName(final String min, final String max) throws Exception {
         LexicographicalRouteComparator comparator = new LexicographicalRouteComparator();
 
-        Route a = new Route(new HeapImpl(), null, null, min, null, null);
-        Route b = new Route(new HeapImpl(), null, null, max, null, null);
+        Route a = new Route(new HeapImpl(Name.of("anonymous")), null, null, min, null, null);
+        Route b = new Route(new HeapImpl(Name.of("anonymous")), null, null, max, null, null);
 
         assertThat(comparator.compare(a, b)).isLessThan(0);
         assertThat(comparator.compare(b, a)).isGreaterThan(0);

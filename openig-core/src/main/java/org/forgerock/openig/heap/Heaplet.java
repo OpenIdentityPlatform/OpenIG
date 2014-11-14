@@ -41,7 +41,7 @@ public interface Heaplet {
      * @throws org.forgerock.json.fluent.JsonValueException
      *             if the heaplet (or one of its dependencies) has a malformed configuration object.
      */
-    Object create(String name, JsonValue config, Heap heap) throws HeapException;
+    Object create(Name name, JsonValue config, Heap heap) throws HeapException;
 
     /**
      * Called to indicate that the object created by the heaplet is going to be dereferenced.

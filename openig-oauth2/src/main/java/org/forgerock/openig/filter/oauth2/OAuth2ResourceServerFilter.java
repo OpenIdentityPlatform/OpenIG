@@ -17,8 +17,10 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -74,12 +76,15 @@ import org.forgerock.util.time.TimeService;
  * configuration attributes.
  * <p>
  * If {@literal cacheExpiration} is not set, the default is to keep the {@link AccessToken}s for 1 minute.
- * {@literal cacheExpiration} is expressed using natural language:
+ * {@literal cacheExpiration} is expressed using natural language (use {@literal zero} or {@literal none}
+ * to deactivate caching, any 0 valued duration will also deactivate it):
  * <pre>
  *     "cacheExpiration": "2 minutes"
  *     "cacheExpiration": "3 days and 6 hours"
  *     "cacheExpiration": "5m" // 5 minutes
  *     "cacheExpiration": "10 min, 30 sec"
+ *     "cacheExpiration": "zero" // no cache
+ *     "cacheExpiration": "0 s" // no cache
  * </pre>
  * <p>
  * {@literal providerHandler} is a name reference to another handler available in the heap. It will be used to perform
@@ -179,7 +184,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
         String token = getAccessToken(exchange.request);
         if (token == null) {
-            logger.debug("Missing OAuth 2.0 Bearer Token Authorization header");
+            logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
             noAuthentication.handle(exchange);
             return;
         }
@@ -189,10 +194,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         try {
             accessToken = resolver.resolve(token);
         } catch (OAuth2TokenException e) {
-            logger.debug(format("Cannot authorize request with token '%s' because [error:%s, description:%s]",
-                                token,
-                                e.getError(),
-                                e.getDescription()));
+            logger.debug(format("Access Token '%s' cannot be resolved", token));
+            logDetailedException(DEBUG, logger, e);
             invalidRequest.handle(exchange);
             return;
         }
@@ -259,10 +262,12 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
             // Build the cache
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
-            executorService = Executors.newSingleThreadScheduledExecutor();
-            cache = new ThreadSafeCache<String, AccessToken>(executorService);
-            cache.setTimeout(expiration);
-            resolver = new CachingAccessTokenResolver(resolver, cache);
+            if (!expiration.isZero()) {
+                executorService = Executors.newSingleThreadScheduledExecutor();
+                cache = new ThreadSafeCache<String, AccessToken>(executorService);
+                cache.setTimeout(expiration);
+                resolver = new CachingAccessTokenResolver(resolver, cache);
+            }
 
             HashSet<String> scopes =
                     new HashSet<String>(getWithDeprecation(config, logger, "scopes",
@@ -293,8 +298,12 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
         @Override
         public void destroy() {
-            executorService.shutdownNow();
-            cache.clear();
+            if (executorService != null) {
+                executorService.shutdownNow();
+            }
+            if (cache != null) {
+                cache.clear();
+            }
         }
     }
 

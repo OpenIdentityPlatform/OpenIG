@@ -20,6 +20,7 @@ package org.forgerock.openig.http;
 import static java.lang.String.format;
 import static org.forgerock.http.Http.chainOf;
 import static org.forgerock.http.Http.newSessionFilter;
+import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.TIMER_HEAP_KEY;
@@ -40,6 +41,7 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
@@ -67,6 +69,12 @@ public final class GatewayHttpApplication implements HttpApplication {
      */
     private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
+    /**
+     * Default HttpClient heap object declaration.
+     */
+    private static final JsonValue DEFAULT_HTTP_CLIENT = json(object(field("name", HTTP_CLIENT_HEAP_KEY),
+                                                                     field("type", HttpClient.class.getName())));
+
     private HeapImpl heap;
     private TemporaryStorage storage;
     private volatile Handler httpHandler;
@@ -93,23 +101,22 @@ public final class GatewayHttpApplication implements HttpApplication {
             final JsonValue config = readJson(configurationURL);
 
             // Create and configure the heap
-            heap = new HeapImpl();
+            heap = new HeapImpl(Name.of(configurationURL.toString()));
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             // can be overridden in config
-            final TemporaryStorage temporaryStorage = new TemporaryStorage();
-            heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
+            heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-            heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
-            heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false));
+            heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
+            heap.addDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config.get("heap").required().expect(Map.class));
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
             final Logger logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                    LogSink.class, true), "GatewayServlet");
+                    LogSink.class, true), Name.of("GatewayServlet"));
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
 

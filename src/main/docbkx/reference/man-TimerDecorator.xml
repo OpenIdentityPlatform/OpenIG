@@ -133,7 +133,7 @@
     "name": string,
     "type": string,
     "config": object,
-    decorator name: true
+    decorator name: boolean
 }
   </programlisting>
 
@@ -176,7 +176,7 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code><replaceable>decorator name</replaceable></code>: true, optional</term>
+    <term><code><replaceable>decorator name</replaceable></code>: boolean, required</term>
     <listitem>
      <para>
       ${projectName} looks for the presence
@@ -185,13 +185,14 @@
      </para>
 
      <para>
-      Set the value of the <replaceable>decorator name</replaceable> field
+      To activate the timer,
+      set the value of the <replaceable>decorator name</replaceable> field
       to <literal>true</literal>.
      </para>
 
      <para>
-      To deactivate the TimerDecorator temporarily, comment out the field name.
-      Setting the value to <literal>false</literal> has no effect.
+      To deactivate the TimerDecorator temporarily,
+      set the value to <literal>false</literal>.
      </para>
     </listitem>
    </varlistentry>
@@ -231,8 +232,8 @@
 
   <programlisting language="none">
 GatewayServlet.started:STAT:Started
-Timer[ClientHandler].started:STAT:Started
-Timer[ClientHandler].elapsed:STAT:Elapsed time: 4 ms:4 ms
+@Timer[ClientHandler].started:STAT:Started
+@Timer[ClientHandler].elapsed:STAT:Elapsed time: 4 ms:4 ms
 GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
   </programlisting>
 
@@ -267,34 +268,34 @@ GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
 
   <programlisting language="none">
 GatewayServlet.started:STAT:Started
-Timer[ResourceServerChain].started:STAT:Started
-Timer[ResourceServerFilter].started:STAT:Started
-Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].started:STAT:Started
-Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].started:STAT:Started
-Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed:STAT:
+@Timer[ResourceServerChain].started:STAT:Started
+@Timer[ResourceServerFilter].started:STAT:Started
+@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].started:STAT:Started
+@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].started:STAT:Started
+@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed:STAT:
  Elapsed time: 12 ms:12 ms
-Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed-within:STAT:
+@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed-within:STAT:
  Elapsed time (within the object): 1 ms:1 ms
-Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed:STAT:
+@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed:STAT:
  Elapsed time: 84 ms:84 ms
-Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed-within:STAT:
+@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed-within:STAT:
  Elapsed time (within the object): 72 ms:72 ms
-Timer[{OAuth2ResourceServerFilter}/heap/objects/0/config/filters/0].elapsed:STAT:
+@Timer[{OAuth2ResourceServerFilter}/heap/objects/0/config/filters/0].elapsed:STAT:
  Elapsed time: 117 ms:117 ms
-Timer[ResourceServerFilter].elapsed-within:STAT:
+@Timer[ResourceServerFilter].elapsed-within:STAT:
  Elapsed time (within the object): 33 ms:33 ms
-Timer[ResourceServerChain].elapsed:STAT:Elapsed time: 118 ms:118 ms
+@Timer[ResourceServerChain].elapsed:STAT:Elapsed time: 118 ms:118 ms
 GatewayServlet.elapsed:STAT:Elapsed time: 140 ms:140 ms
   </programlisting>
 
   <para>
-   You can then deactivate the timer temporarily by commenting it out.
-   Setting the value to <literal>false</literal> has no effect.
+   You can then deactivate the timer
+   by setting the value to <literal>false</literal>.
   </para>
 
   <programlisting language="javascript">
 {
-    "_timer": true
+    "timer": false
 }
   </programlisting>
  </refsect1>

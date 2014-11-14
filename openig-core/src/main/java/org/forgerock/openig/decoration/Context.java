@@ -17,7 +17,9 @@
 package org.forgerock.openig.decoration;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.decoration.helper.LazyReference;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.Name;
 
 /**
  * A decoration {@code Context} is a way to provide the decorator(s) all of the available
@@ -29,7 +31,7 @@ public interface Context {
      *
      * @return the name of the heap object being decorated.
      */
-    String getName();
+    Name getName();
 
     /**
      * Returns the heap object being decorated configuration. Should be considered as a read-only view of the
@@ -41,9 +43,14 @@ public interface Context {
 
     /**
      * Returns the heap that spawned the decorated heap object. This permits decorators to borrow references just like
-     * any component.
+     * any component. Notice that this reference has to be used with caution because any attempt to resolve a reference
+     * in a decorator that is globally declared for a heap will produce an infinite recursion leading to a
+     * java.lang.StackOverflowError. In order to prevent that, decorator's implementer are encouraged to use a
+     * {@link LazyReference} that will load the reference lazily (ideally just before it is really needed, but not
+     * during the loading of the heap).
      *
      * @return the heap that spawned the decorated heap object.
+     * @see LazyReference
      */
     Heap getHeap();
 }

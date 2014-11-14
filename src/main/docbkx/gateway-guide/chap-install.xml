@@ -1332,7 +1332,7 @@ $ <userinput>keytool \
   <para>
    You could then configure the following "KeyStore" for ${projectName}
    that holds the trusted certificate.
-   Notice that the "file" field takes an expression that evaluates to a URL,
+   Notice that the "url" field takes an expression that evaluates to a URL,
    starting with a scheme such as <literal>file://</literal>.
   </para>
 
@@ -1341,7 +1341,7 @@ $ <userinput>keytool \
     "name": "MyKeyStore",
     "type": "KeyStore",
     "config": {
-        "file": "file:///path/to/keystore",
+        "url": "file:///path/to/keystore",
         "password": "changeit"
     }
 }
@@ -1504,7 +1504,7 @@ $ <userinput>keytool \
     "name": "MyKeyStore",
     "type": "KeyStore",
     "config": {
-        "file": "file:///path/to/keystore.jks",
+        "url": "file:///path/to/keystore.jks",
         "password": "changeit"
     }
 }

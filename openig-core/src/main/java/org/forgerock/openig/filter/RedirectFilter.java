@@ -33,7 +33,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 
 /**
- * Specialised header filter that deals with rewriting Location headers on responses
+ * Specialized header filter that deals with rewriting Location headers on responses
  * that generate a redirect that would take the user directly to the application
  * being proxied rather than via OpenIG.
  * <p><strong>Currently only HTTP 302 redirects are supported.</strong></p>
@@ -68,7 +68,7 @@ public class RedirectFilter extends GenericFilter {
     /**
      * Rewrite Location header if it would have the user go directly to the application.
      *
-     * @param exchange the exchnage containing the response message containing the Location header
+     * @param exchange the exchange containing the response message containing the Location header
      */
     private void processResponse(Exchange exchange) throws HandlerException {
         Message message = exchange.response;
@@ -96,7 +96,7 @@ public class RedirectFilter extends GenericFilter {
         return new URI(uri);
     }
 
-    /** Creates and initialises a RedirectFilter in a heap environment. */
+    /** Creates and initializes a RedirectFilter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {

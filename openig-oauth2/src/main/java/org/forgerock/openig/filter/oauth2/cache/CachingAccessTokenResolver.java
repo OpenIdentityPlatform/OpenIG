@@ -57,9 +57,9 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
                 }
             });
         } catch (InterruptedException e) {
-            throw new OAuth2TokenException("interruption", e.getMessage(), e);
+            throw new OAuth2TokenException("Timed out retrieving OAuth2 access token information", e);
         } catch (ExecutionException e) {
-            throw new OAuth2TokenException("execution_error", e.getMessage(), e);
+            throw new OAuth2TokenException("Initial token resolution has failed", e);
         }
     }
 }

@@ -18,10 +18,12 @@ package org.forgerock.openig.security;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.heap.Name.*;
 
 import java.security.KeyStore;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.testng.annotations.Test;
 
@@ -38,11 +40,11 @@ public class KeyStoreHeapletTest {
     public void shouldLoadJksKeyStore() throws Exception {
 
         JsonValue config = json(object(
-                field("file", resource("/keypair-keystore.jks")),
+                field("url", resource("/keypair-keystore.jks")),
                 field("password", "changeit")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(OBJECT_NAME, config, null);
+        KeyStore store = (KeyStore) heaplet.create(Name.of(OBJECT_NAME), config, null);
 
         assertThat(store.containsAlias("keypair")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("JKS");
@@ -51,12 +53,12 @@ public class KeyStoreHeapletTest {
     @Test
     public void shouldLoadPkcs12KeyStore() throws Exception {
         JsonValue config = json(object(
-                field("file", resource("/mykey-keystore.pkcs12")),
+                field("url", resource("/mykey-keystore.pkcs12")),
                 field("password", "changeit"),
                 field("type", "PKCS12")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(OBJECT_NAME, config, null);
+        KeyStore store = (KeyStore) heaplet.create(of(OBJECT_NAME), config, null);
 
         assertThat(store.containsAlias("mykey")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("PKCS12");

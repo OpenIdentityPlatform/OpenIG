@@ -20,6 +20,7 @@ import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
@@ -37,6 +38,7 @@ import org.forgerock.http.io.IO;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
@@ -62,7 +64,7 @@ public class RouterHandlerTest {
     private DirectoryScanner scanner;
 
     @Spy
-    private Logger logger = new Logger(new NullLogSink(), "source");
+    private Logger logger = new Logger(new NullLogSink(), Name.of("source"));
 
     private File routes;
     private File supply;
@@ -79,7 +81,8 @@ public class RouterHandlerTest {
     @Test
     public void testReactionsToDirectoryContentChanges() throws Exception {
 
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+                                                  new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -115,7 +118,8 @@ public class RouterHandlerTest {
 
     @Test
     public void testStoppingTheHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+                                                  new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -128,7 +132,7 @@ public class RouterHandlerTest {
     @Test
     public void testDefaultHandler() throws Exception {
         RouterHandler handler =
-                new RouterHandler(new RouteBuilder(heap), new DirectoryMonitor(routes));
+                new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -171,7 +175,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
@@ -197,7 +201,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap), scanner);
+        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
         router.logger = logger;
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
@@ -210,7 +214,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet()));
 
         // Should have an error log statement
-        verify(logger).error(matches(".* A route named '.*' is already registered"));
+        verify(logger).logMessage(eq(ERROR), matches(".* A route named '.*' is already registered"));
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,

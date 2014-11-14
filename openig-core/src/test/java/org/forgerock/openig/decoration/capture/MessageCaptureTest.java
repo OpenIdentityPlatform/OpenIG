@@ -16,12 +16,16 @@
 
 package org.forgerock.openig.decoration.capture;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.openig.log.Logger;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
@@ -31,7 +35,10 @@ import org.testng.annotations.Test;
 public class MessageCaptureTest {
 
     @Spy
-    private Logger logger = new Logger(null, "Test");
+    private Logger logger = new Logger(null, Name.of("Test"));
+
+    @Captor
+    private ArgumentCaptor<String> captor;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -47,6 +54,18 @@ public class MessageCaptureTest {
         capture.capture(exchange, CapturePoint.REQUEST);
 
         verify(logger).info(anyString());
+    }
+
+    @Test
+    public void shouldLogExchange() throws Exception {
+        MessageCapture capture = new MessageCapture(logger, false, true);
+
+        Exchange exchange = new Exchange();
+        exchange.put("a", "b");
+        capture.capture(exchange, CapturePoint.REQUEST);
+
+        verify(logger).info(captor.capture());
+        assertThat(captor.getValue()).contains("\"a\": \"b\"");
     }
 
     @Test

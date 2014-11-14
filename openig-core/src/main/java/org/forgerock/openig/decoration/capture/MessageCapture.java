@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.decoration.capture;
 
+import static groovy.json.JsonOutput.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -24,6 +26,8 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.http.header.ContentTypeHeader;
@@ -47,6 +51,7 @@ public class MessageCapture {
 
     private final Logger logger;
     private final boolean captureEntity;
+    private final boolean captureExchange;
 
     /**
      * Builds a MessageCapture that will prints messages in the provided {@code logger}.
@@ -54,11 +59,26 @@ public class MessageCapture {
      * @param logger
      *         where to write captured messages
      * @param captureEntity
-     *         Capture the entity content or not ?
+     *         capture the entity content (if not binary)
      */
     public MessageCapture(final Logger logger, final boolean captureEntity) {
+        this(logger, captureEntity, false);
+    }
+
+    /**
+     * Builds a MessageCapture that will prints messages in the provided {@code logger}.
+     *
+     * @param logger
+     *         where to write captured messages
+     * @param captureEntity
+     *         capture the entity content (if not binary)
+     * @param captureExchange
+     *         capture the exchange content (excluding request and response object) as json
+     */
+    public MessageCapture(final Logger logger, final boolean captureEntity, final boolean captureExchange) {
         this.logger = logger;
         this.captureEntity = captureEntity;
+        this.captureExchange = captureExchange;
     }
 
     /**
@@ -94,8 +114,24 @@ public class MessageCapture {
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
         }
 
+        // Prints the exchange if required
+        if (captureExchange) {
+            writer.println("Exchange's content as JSON (without request/response):");
+            captureExchangeAsJson(writer, exchange);
+        }
+
         // Print the message
         logger.info(out.toString());
+    }
+
+    private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
+        Map<String, Object> map = new LinkedHashMap<String, Object>(exchange);
+        map.remove("exchange");
+        map.remove("request");
+        map.remove("response");
+        map.remove("javax.servlet.http.HttpServletRequest");
+        map.remove("javax.servlet.http.HttpServletResponse");
+        writer.println(prettyPrint(toJson(map)));
     }
 
     private void captureRequest(PrintWriter writer, Request request, long id) throws IOException {

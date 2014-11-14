@@ -17,9 +17,11 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.log.LogLevel.ERROR;
 import static org.mockito.Mockito.*;
 
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -56,6 +58,9 @@ public class SqlAttributesFilterTest {
     private ResultSetMetaData metadata;
 
     @Mock
+    private ParameterMetaData pmetadata;
+
+    @Mock
     private Handler terminalHandler;
 
     @BeforeMethod
@@ -88,6 +93,7 @@ public class SqlAttributesFilterTest {
         filter.getParameters().add(new Expression("${false}"));
 
         mockDatabaseInteractions();
+        when(pmetadata.getParameterCount()).thenReturn(2);
 
         Exchange exchange = new Exchange();
         filter.filter(exchange, terminalHandler);
@@ -107,8 +113,7 @@ public class SqlAttributesFilterTest {
         filter.logger = spy(filter.logger);
 
         // Generate an SQLException when getConnection() is called
-        SQLException unexpected = new SQLException("Unexpected");
-        when(source.getConnection()).thenThrow(unexpected);
+        when(source.getConnection()).thenThrow(new SQLException("Unexpected"));
 
         Exchange exchange = new Exchange();
         filter.filter(exchange, terminalHandler);
@@ -118,15 +123,55 @@ public class SqlAttributesFilterTest {
         @SuppressWarnings("unchecked")
         Map<String, String> result = (Map<String, String>) exchange.get("result");
         assertThat(result).isEmpty();
-        verify(filter.logger).warning(unexpected);
+        verify(filter.logger).logMessage(eq(ERROR), matches("\\[             SQLException\\] > Unexpected"));
+    }
+
+    @Test
+    public void testTooMuchParametersProvided() throws Exception {
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        filter.logger = spy(filter.logger);
+
+        filter.getParameters().add(new Expression("${true}"));
+        filter.getParameters().add(new Expression("${false}"));
+
+        mockDatabaseInteractions();
+        when(pmetadata.getParameterCount()).thenReturn(0);
+
+        Exchange exchange = new Exchange();
+        filter.filter(exchange, terminalHandler);
+
+        // Trigger the lazy map instantiation
+        exchange.get("result").hashCode();
+        verify(filter.logger).warning(matches(" All parameters with index >= 0 are ignored.*"));
+    }
+
+    @Test
+    public void testNotEnoughParameters() throws Exception {
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        filter.logger = spy(filter.logger);
+
+        filter.getParameters().add(new Expression("${true}"));
+        filter.getParameters().add(new Expression("${false}"));
+
+        mockDatabaseInteractions();
+        when(pmetadata.getParameterCount()).thenReturn(3);
+
+        Exchange exchange = new Exchange();
+        filter.filter(exchange, terminalHandler);
+
+        // Trigger the lazy map instantiation
+        exchange.get("result").hashCode();
+        verify(filter.logger).warning(matches(" Placeholder 3 has no provided value as parameter"));
     }
 
     private void mockDatabaseInteractions() throws Exception {
         // Mock the database interactions
         when(source.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(null)).thenReturn(statement);
+        when(statement.getParameterMetaData()).thenReturn(pmetadata);
+        when(pmetadata.getParameterCount()).thenReturn(0);
         when(statement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.first()).thenReturn(true);
+        when(resultSet.next()).thenReturn(true);
         when(resultSet.getMetaData()).thenReturn(metadata);
         when(metadata.getColumnCount()).thenReturn(1);
         when(metadata.getColumnLabel(1)).thenReturn("password");

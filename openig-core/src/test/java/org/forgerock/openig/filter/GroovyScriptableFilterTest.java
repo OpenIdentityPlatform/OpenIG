@@ -56,10 +56,12 @@ import org.forgerock.opendj.ldap.MemoryBackend;
 import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
+import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
@@ -133,7 +135,7 @@ public class GroovyScriptableFilterTest {
     public void testConstructFromFile() throws Exception {
         final Map<String, Object> config = newFileConfig("TestFileBasedScript.groovy");
         final ScriptableFilter filter =
-                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
+                (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
         final Exchange exchange = new Exchange();
@@ -149,7 +151,7 @@ public class GroovyScriptableFilterTest {
         final Map<String, Object> config = newFileConfig("DispatchHandler.groovy");
         final ScriptableHandler handler =
                 (ScriptableHandler) new ScriptableHandler.Heaplet().create(
-                        "test", new JsonValue(config), getHeap());
+                        Name.of("test"), new JsonValue(config), getHeap());
 
         // Try with valid credentials
         final Exchange exchange = new Exchange();
@@ -179,7 +181,7 @@ public class GroovyScriptableFilterTest {
     public void testBasicAuthFilterFromFile() throws Exception {
         final Map<String, Object> config = newFileConfigWithCredentials("BasicAuthFilter.groovy");
         final ScriptableFilter filter =
-                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
+                (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
         final Exchange exchange = new Exchange();
@@ -196,8 +198,9 @@ public class GroovyScriptableFilterTest {
     @Test
     public void testScriptWithParams() throws Exception {
         final Map<String, Object> config = newFileConfigWithArgs("TestGroovyParameters.groovy");
-        final ScriptableFilter filter = (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
-                config), getHeap());
+        final ScriptableFilter filter = (ScriptableFilter) new Heaplet().create(Name.of("test"),
+                                                                                new JsonValue(config),
+                                                                                getHeap());
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -218,7 +221,7 @@ public class GroovyScriptableFilterTest {
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
         final ScriptableFilter filter =
-                (ScriptableFilter) new ScriptableFilter.Heaplet().create("test", new JsonValue(
+                (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
         final Exchange exchange = new Exchange();
@@ -461,8 +464,8 @@ public class GroovyScriptableFilterTest {
         try {
             final Map<String, Object> config = newFileConfig("LdapAuthFilter.groovy");
             final ScriptableFilter filter =
-                    (ScriptableFilter) new ScriptableFilter.Heaplet()
-                            .create("test", new JsonValue(config), getHeap());
+                    (ScriptableFilter) new Heaplet()
+                            .create(Name.of("test"), new JsonValue(config), getHeap());
 
             // Authenticate using correct password.
             final Exchange exchange = new Exchange();
@@ -539,8 +542,8 @@ public class GroovyScriptableFilterTest {
 
             final Map<String, Object> config = newFileConfig("SqlAccessFilter.groovy");
             final ScriptableFilter filter =
-                    (ScriptableFilter) new ScriptableFilter.Heaplet()
-                            .create("test", new JsonValue(config), getHeap());
+                    (ScriptableFilter) new Heaplet()
+                            .create(Name.of("test"), new JsonValue(config), getHeap());
 
             final Exchange exchange = new Exchange();
             exchange.request = new Request();
@@ -837,7 +840,7 @@ public class GroovyScriptableFilterTest {
     }
 
     private HeapImpl getHeap() throws Exception {
-        final HeapImpl heap = new HeapImpl();
+        final HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
@@ -39,10 +40,10 @@ public class TimerHandlerTest {
     private Handler delegate;
 
     @Spy
-    private Logger logger = new Logger(new NullLogSink(), "Test");
+    private Logger logger = new Logger(new NullLogSink(), Name.of("Test"));
 
     @Spy
-    private LogTimer timer = new LogTimer(new NullLogSink());
+    private LogTimer timer = new LogTimer(logger);
 
     @BeforeMethod
     public void setUp() throws Exception {

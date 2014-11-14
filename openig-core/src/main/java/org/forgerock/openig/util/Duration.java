@@ -25,11 +25,12 @@ import org.forgerock.http.util.CaseInsensitiveSet;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.*;
 import static org.forgerock.util.Reject.checkNotNull;
 
 /**
  * Represents a duration in english. Cases is not important, plurals units are accepted.
+ * Notice that negative durations are not supported.
  *
  * <code>
  *     6 days
@@ -37,6 +38,8 @@ import static org.forgerock.util.Reject.checkNotNull;
  *     1 minute and 10 seconds
  *     42 millis
  *     unlimited
+ *     none
+ *     zero
  * </code>
  */
 public class Duration {
@@ -47,12 +50,23 @@ public class Duration {
     private static final Duration UNLIMITED = new Duration(Long.MAX_VALUE, DAYS);
 
     /**
+     * Special duration that represents a zero-length duration.
+     */
+    private static final Duration ZERO = new Duration(0L, SECONDS);
+
+    /**
      * Tokens that represents the unlimited duration.
      */
     private static final Set<String> UNLIMITED_TOKENS = new CaseInsensitiveSet(asList("unlimited",
                                                                                       "indefinite",
                                                                                       "infinity",
                                                                                       "undefined"));
+
+    /**
+     * Tokens that represents the zero duration.
+     */
+    private static final Set<String> ZERO_TOKENS = new CaseInsensitiveSet(asList("zero",
+                                                                                 "disabled"));
 
     private Long number;
     private TimeUnit unit;
@@ -83,9 +97,15 @@ public class Duration {
         String[] fragments = value.split(",| and ");
 
         // If there is only 1 fragment and that it matches the recognized "unlimited" tokens
-        if ((fragments.length == 1) && UNLIMITED_TOKENS.contains(fragments[0].trim())) {
-            // Unlimited Duration
-            return UNLIMITED;
+        if (fragments.length == 1) {
+            String trimmed = fragments[0].trim();
+            if (UNLIMITED_TOKENS.contains(trimmed)) {
+                // Unlimited Duration
+                return UNLIMITED;
+            } else if (ZERO_TOKENS.contains(trimmed)) {
+                // Zero-length Duration
+                return ZERO;
+            }
         }
 
         // Build the normal duration
@@ -126,6 +146,11 @@ public class Duration {
         Duration duration = new Duration(0L, DAYS);
         for (Duration elements : composite) {
             duration.merge(elements);
+        }
+
+        // If someone used '0 ms' for example
+        if (duration.number == 0L) {
+            return ZERO;
         }
 
         return duration;
@@ -222,7 +247,7 @@ public class Duration {
 
     /**
      * Convert the current duration to a given {@link TimeUnit}.
-     * Conversions from finer to coarser granularities truncate, so lose precision.
+     * Conversions from finer to coarser granularities truncate, so loose precision.
      *
      * @param targetUnit
      *         target unit of the conversion.
@@ -235,7 +260,7 @@ public class Duration {
 
     /**
      * Convert the current duration to a number of given {@link TimeUnit}.
-     * Conversions from finer to coarser granularities truncate, so lose precision.
+     * Conversions from finer to coarser granularities truncate, so loose precision.
      *
      * @param targetUnit
      *         target unit of the conversion.
@@ -247,12 +272,21 @@ public class Duration {
     }
 
     /**
-     * Returns {@literal true} if this Duration represents at unlimited duration.
+     * Returns {@literal true} if this Duration represents an unlimited duration.
      *
-     * @return {@literal true} if this Duration represents at unlimited duration.
+     * @return {@literal true} if this Duration represents an unlimited duration.
      */
     public boolean isUnlimited() {
         return this == UNLIMITED;
+    }
+
+    /**
+     * Returns {@literal true} if this Duration represents a zero-length duration.
+     *
+     * @return {@literal true} if this Duration represents a zero-length duration.
+     */
+    public boolean isZero() {
+        return this == ZERO;
     }
 
 }

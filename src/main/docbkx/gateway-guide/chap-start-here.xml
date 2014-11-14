@@ -190,6 +190,16 @@
    so that you can use it throughout the duration of the exchange,
    even when the exchange calls for interaction with additional services.
   </para>
+
+  <para>
+   In addition, ${projectName} includes information in the exchange
+   about the client that made the incoming request,
+   such as the client host, port, and IP address,
+   and also the user-agent description,
+   the login of the user making the request,
+   and the X.509 certificates presented by the client
+   when these are available as part of the request.
+  </para>
  </section>
 
  <section xml:id="the-configuration">

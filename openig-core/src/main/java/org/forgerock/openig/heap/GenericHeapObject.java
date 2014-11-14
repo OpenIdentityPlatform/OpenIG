@@ -29,7 +29,7 @@ import org.forgerock.openig.log.NullLogSink;
 public class GenericHeapObject {
 
     /** Provides methods for various logging activities. */
-    public Logger logger = new Logger(new NullLogSink(), getClass().getSimpleName());
+    public Logger logger = new Logger(new NullLogSink(), Name.of(getClass()));
 
     /**
      * Allocates temporary buffers for caching streamed content during

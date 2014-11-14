@@ -59,24 +59,5 @@ public class Exchange extends ExtensibleFieldMap {
     public Session session;
 
     /** The info we can obtain from the client from this request. */
-    private ClientInfo clientInfo;
-
-    /**
-     * Returns the client information associated to this request.
-     *
-     * @return the client information associated to this request.
-     */
-    public ClientInfo getClientInfo() {
-        return clientInfo;
-    }
-
-    /**
-     * Set the client information for this request.
-     *
-     * @param clientInfo
-     *         information about the client making this request
-     */
-    public void setClientInfo(final ClientInfo clientInfo) {
-        this.clientInfo = clientInfo;
-    }
+    public ClientInfo clientInfo;
 }
