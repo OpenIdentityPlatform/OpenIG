@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
@@ -100,7 +100,7 @@ public class HeapImpl implements Heap {
      */
     private void addDeclaration(final JsonValue object) {
         object.required().expect(Map.class);
-        Heaplet heaplet = Heaplets.getHeaplet(JsonValueUtil.asClass(object.get("type").required()));
+        Heaplet heaplet = Heaplets.getHeaplet(Json.asClass(object.get("type").required()));
         if (heaplet == null) {
             throw new JsonValueException(object.get("type"), "no heaplet available to initialize object");
         }

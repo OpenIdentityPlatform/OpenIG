@@ -29,7 +29,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 
 /**
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
@@ -135,7 +135,7 @@ public class DispatchHandler extends GenericHandler {
             DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Expression expression = JsonValueUtil.asExpression(jv.get("condition"));
+                final Expression expression = Json.asExpression(jv.get("condition"));
                 final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final URI uri = jv.get("baseURI").asURI();
                 dispatchHandler.addBinding(expression, handler, uri);

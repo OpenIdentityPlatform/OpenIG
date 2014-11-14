@@ -22,8 +22,7 @@ import static org.forgerock.http.URIUtil.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.util.JsonValueUtil.asExpression;
-import static org.forgerock.openig.util.JsonValueUtil.ofExpression;
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;

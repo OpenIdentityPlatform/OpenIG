@@ -23,8 +23,8 @@ import static org.forgerock.http.Http.newSessionFilter;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValueUtil.getWithDeprecation;
-import static org.forgerock.openig.util.JsonValueUtil.readJsonLenient;
+import static org.forgerock.openig.util.Json.getWithDeprecation;
+import static org.forgerock.openig.util.Json.readJsonLenient;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Handler;

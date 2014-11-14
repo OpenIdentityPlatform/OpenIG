@@ -17,7 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValueUtil.readJsonLenient;
+import static org.forgerock.openig.util.Json.readJsonLenient;
 
 import java.io.File;
 import java.io.FileInputStream;

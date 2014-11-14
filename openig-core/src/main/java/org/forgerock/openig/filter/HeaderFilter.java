@@ -32,7 +32,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.JsonValueUtil;
+import org.forgerock.openig.util.Json;
 import org.forgerock.openig.util.MessageType;
 
 /**
@@ -87,7 +87,7 @@ public class HeaderFilter extends GenericFilter {
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, (String) JsonValueUtil.asExpression(jsonValue).eval(exchange));
+                message.getHeaders().add(key, (String) Json.asExpression(jsonValue).eval(exchange));
             }
         }
     }

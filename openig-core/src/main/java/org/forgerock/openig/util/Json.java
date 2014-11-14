@@ -55,7 +55,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Provides additional functionality to JsonValue.
  */
-public final class JsonValueUtil {
+public final class Json {
 
     /** Non strict object mapper / data binder used to read json configuration files/data. */
     private static final ObjectMapper LENIENT_MAPPER;
@@ -92,8 +92,8 @@ public final class JsonValueUtil {
                     value.setObject(expression.eval(null, String.class));
                 } catch (ExpressionException e) {
                     throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
-                                                   value.asString(),
-                                                   value.getPointer()), e);
+                            value.asString(),
+                            value.getPointer()), e);
                 }
             }
         }
@@ -102,7 +102,7 @@ public final class JsonValueUtil {
     /**
      * Private constructor for utility class.
      */
-    private JsonValueUtil() { }
+    private Json() { }
 
     private static Class<?> classForName(JsonValue value) {
         String name = value.asString();
@@ -250,7 +250,7 @@ public final class JsonValueUtil {
      * objects.
      */
     public static <T> Function<JsonValue, T, HeapException> ofRequiredHeapObject(final Heap heap,
-                                                                                 final Class<T> type) {
+            final Class<T> type) {
         return new Function<JsonValue, T, HeapException>() {
             @Override
             public T apply(final JsonValue value) throws HeapException {
@@ -462,27 +462,27 @@ public final class JsonValueUtil {
         final JsonToken jToken = jp.nextToken();
         if (jToken != null) {
             switch (jToken) {
-            case START_ARRAY:
-                return mapper.readValue(jp, new TypeReference<LinkedList<?>>() {
-                });
-            case START_OBJECT:
-                return mapper.readValue(jp, new TypeReference<LinkedHashMap<String, ?>>() {
-                });
-            case VALUE_FALSE:
-            case VALUE_TRUE:
-                return mapper.readValue(jp, new TypeReference<Boolean>() {
-                });
-            case VALUE_NUMBER_INT:
-                return mapper.readValue(jp, new TypeReference<Integer>() {
-                });
-            case VALUE_NUMBER_FLOAT:
-                return mapper.readValue(jp, new TypeReference<Float>() {
-                });
-            case VALUE_NULL:
-                return null;
-            default:
-                // This is very unlikely to happen.
-                throw new IOException("Invalid JSON content");
+                case START_ARRAY:
+                    return mapper.readValue(jp, new TypeReference<LinkedList<?>>() {
+                    });
+                case START_OBJECT:
+                    return mapper.readValue(jp, new TypeReference<LinkedHashMap<String, ?>>() {
+                    });
+                case VALUE_FALSE:
+                case VALUE_TRUE:
+                    return mapper.readValue(jp, new TypeReference<Boolean>() {
+                    });
+                case VALUE_NUMBER_INT:
+                    return mapper.readValue(jp, new TypeReference<Integer>() {
+                    });
+                case VALUE_NUMBER_FLOAT:
+                    return mapper.readValue(jp, new TypeReference<Float>() {
+                    });
+                case VALUE_NULL:
+                    return null;
+                default:
+                    // This is very unlikely to happen.
+                    throw new IOException("Invalid JSON content");
             }
         }
         return null;

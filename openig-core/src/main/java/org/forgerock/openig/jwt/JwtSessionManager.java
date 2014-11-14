@@ -18,7 +18,7 @@ package org.forgerock.openig.jwt;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.jwt.JwtCookieSession.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

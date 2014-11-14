@@ -18,7 +18,7 @@ package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.util.Duration.*;
-import static org.forgerock.openig.util.JsonValueUtil.*;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.IOException;
 import java.util.Collections;
