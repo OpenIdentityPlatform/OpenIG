@@ -21,8 +21,10 @@ import static java.lang.String.format;
 import static org.forgerock.http.Http.chainOf;
 import static org.forgerock.http.Http.newSessionFilter;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.decoration.capture.CaptureDecorator.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.util.Json.getWithDeprecation;
 import static org.forgerock.openig.util.Json.readJsonLenient;
 import static org.forgerock.util.Utils.closeSilently;
@@ -34,6 +36,7 @@ import org.forgerock.http.SessionManager;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
@@ -96,7 +99,8 @@ public final class GatewayHttpApplication implements HttpApplication {
             final TemporaryStorage temporaryStorage = new TemporaryStorage();
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, temporaryStorage);
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-            heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
+            heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(temporaryStorage));
+            heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false));
             heap.init(config.get("heap").required().expect(Map.class));
 
             // As all heaplets can specify their own storage and logger,

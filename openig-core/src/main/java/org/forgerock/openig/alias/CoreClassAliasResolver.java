@@ -67,7 +67,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
-        ALIASES.put("DebugDecorator", CaptureDecorator.class);
+        ALIASES.put("CaptureDecorator", CaptureDecorator.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("ExceptionFilter", ExceptionFilter.class);
