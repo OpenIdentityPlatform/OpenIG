@@ -25,92 +25,125 @@
   !
 -->
 <refentry xml:id='CryptoHeaderFilter'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>CryptoHeaderFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>CryptoHeaderFilter</refname>
   <refpurpose>encrypt, decrypt headers</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Filters</primary>
    <secondary>CryptoHeaderFilter</secondary>
   </indexterm>
-  <para>Encrypts or decrypts headers in a request or response.</para>
+
+  <para>
+   Encrypts or decrypts headers in a request or response.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Usage</title>
-  <programlisting language="javascript">{
-     "name": string,
-     "type": "CryptoHeaderFilter",
-     "config": {
-         "messageType": string,
-         "operation": string,
-         "algorithm": string,
-         "key": expression,
-         "keyType": string,
-         "headers": [ string, ... ]
-     }
-}</programlisting>
+
+  <programlisting language="javascript">
+    {
+        "name": string,
+        "type": "CryptoHeaderFilter",
+        "config": {
+            "messageType": string,
+            "operation": string,
+            "algorithm": string,
+            "key": expression,
+            "keyType": string,
+            "headers": [ string, ... ]
+    }
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
-    <term><code>"messageType"</code>: <emphasis>string,
-    required</emphasis></term>
+    <term><code>"messageType"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
      <para>
       Indicates the type of message in the exchange
       whose headers to encrypt or decrypt.
+     </para>
+
+     <para>
       Must be one of: <literal>"REQUEST"</literal>, <literal>"RESPONSE"</literal>.
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"operation"</code>: <emphasis>string,
-    required</emphasis></term>
+    <term><code>"operation"</code>: <emphasis>string, required</emphasis></term>
     <listitem>
-     <para>Indicates whether to encrypt or decrypt. Must be one of:
-     <literal>"ENCRYPT"</literal>, <literal>"DECRYPT"</literal>.</para>
+     <para>
+      Indicates whether to encrypt or decrypt.
+     </para>
+
+     <para>
+      Must be one of: <literal>"ENCRYPT"</literal>, <literal>"DECRYPT"</literal>.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"algorithm"</code>: <emphasis>string</emphasis></term>
     <listitem>
-     <para>Algorithm used for encryption and decryption. Defaults to
-     DES/ECB/NoPadding.</para>
+     <para>
+      Algorithm used for encryption and decryption.
+     </para>
+
+     <para>
+      Default: "DES/ECB/NoPadding"
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term><code>"key"</code>: <emphasis><link
-     xlink:href="reference#Expressions"
-     xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-     required</emphasis></term>
+      xlink:href="reference#Expressions"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >expression</link>, required</emphasis></term>
     <listitem>
-     <para>Base64 encoded key value.</para>
+     <para>
+      Base64 encoded key value.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"headers"</code>: <emphasis>array of strings,
-    optional</emphasis></term>
+    <term><code>"headers"</code>: <emphasis>array of strings, optional</emphasis></term>
     <listitem>
-     <para>The names of header fields to encrypt or decrypt.</para>
+     <para>
+      The names of header fields to encrypt or decrypt.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Example</title>
-  <programlisting language="javascript">{
+
+  <programlisting language="javascript">
+   {
      "name": "DecryptReplayPasswordFilter",
      "type": "CryptoHeaderFilter",
      "config": {
@@ -120,12 +153,18 @@
          "keyType": "DES",
          "key": "oqdP3DJdE1Q=",
          "headers": [ "replaypassword" ]
-}</programlisting>
+}
+  </programlisting>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/CryptoHeaderFilter.html"
-  >org.forgerock.openig.filter.CryptoHeaderFilter</link></para>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/CryptoHeaderFilter.html"
+   >org.forgerock.openig.filter.CryptoHeaderFilter</link>
+  </para>
  </refsect1>
 </refentry>
