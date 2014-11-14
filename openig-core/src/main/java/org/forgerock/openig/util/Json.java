@@ -44,6 +44,7 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.Utils;
 import org.forgerock.util.promise.Function;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -260,6 +261,24 @@ public final class Json {
     }
 
     /**
+     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
+     * constant values of the given type.
+     *
+     * @param enumType expected type of the enum
+     * @param <T> Enumeration type
+     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
+     * constant values of the given type.
+     */
+    public static <T extends Enum<T>> Function<JsonValue, T, HeapException> ofEnum(final Class<T> enumType) {
+        return new Function<JsonValue, T, HeapException>() {
+            @Override
+            public T apply(final JsonValue value) throws HeapException {
+                return Utils.asEnum(value.asString(), enumType);
+            }
+        };
+    }
+
+    /**
      * Verify that the given parameter object is of a JSON compatible type (recursively). If no exception is thrown that
      * means the parameter can be used in the JWT session (that is a JSON value).
      *
@@ -385,7 +404,7 @@ public final class Json {
      *            The data as a string to read and parse.
      * @param <T>
      *            The parsing should be as specified in doc. e.g:
-     * @see JsonValueUtil#readJson(Reader)
+     * @see Json#readJson(Reader)
      * @return According to its type, a cast must be necessary to extract the
      *         value.
      * @throws IOException
@@ -453,12 +472,12 @@ public final class Json {
         return parse(LENIENT_MAPPER, new InputStreamReader(in));
     }
 
-    private static  <T> T parse(ObjectMapper mapper, Reader reader) throws IOException {
+    private static <T> T parse(ObjectMapper mapper, Reader reader) throws IOException {
         if (reader == null) {
             return null;
         }
 
-        final JsonParser jp =  mapper.getFactory().createParser(reader);
+        final JsonParser jp = mapper.getFactory().createParser(reader);
         final JsonToken jToken = jp.nextToken();
         if (jToken != null) {
             switch (jToken) {

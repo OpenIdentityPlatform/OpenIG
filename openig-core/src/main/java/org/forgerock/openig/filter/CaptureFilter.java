@@ -46,7 +46,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.Json;
 
 /**
  * Captures request and response messages for further analysis.
@@ -262,7 +261,7 @@ public class CaptureFilter extends GenericFilter {
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.setWriterProvider(buildFileProvider(config));
-            filter.setCondition(Json.asExpression(config.get("condition")));
+            filter.setCondition(asExpression(config.get("condition")));
             JsonValue capture = config.get("captureEntity");
             filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean());
             return filter;

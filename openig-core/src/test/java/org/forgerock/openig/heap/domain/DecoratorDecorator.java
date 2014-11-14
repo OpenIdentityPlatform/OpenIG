@@ -16,27 +16,44 @@
 
 package org.forgerock.openig.heap.domain;
 
+import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 
 @SuppressWarnings("javadoc")
-public class Book {
+public class DecoratorDecorator implements Decorator {
 
-    private final String title;
-
-    public Book(final String title) {
-        this.title = title;
+    @Override
+    public boolean accepts(final Class<?> type) {
+        return Decorator.class.isAssignableFrom(type);
     }
 
-    public String getTitle() {
-        return title;
+    @Override
+    public Object decorate(final Object delegate, final JsonValue decoratorConfig, final Context context)
+            throws HeapException {
+        final Decorator decorator = (Decorator) delegate;
+        return new Decorator() {
+
+            @Override
+            public boolean accepts(final Class<?> type) {
+                return decorator.accepts(type);
+            }
+
+            @Override
+            public Object decorate(final Object delegate, final JsonValue decoration, final Context context)
+                    throws HeapException {
+                return decorator.decorate(delegate, decoration, context);
+            }
+        };
     }
 
     public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {
-            return new Book(config.get("title").defaultTo("no name").asString());
+            return new DecoratorDecorator();
         }
     }
 }

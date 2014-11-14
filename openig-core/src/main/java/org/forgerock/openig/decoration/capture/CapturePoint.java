@@ -14,29 +14,35 @@
  * Copyright 2014 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap.domain;
+package org.forgerock.openig.decoration.capture;
 
-import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.HeapException;
+/**
+ * Specify where does the message capture takes place.
+ */
+public enum CapturePoint {
+    /**
+     * Prints all of the messages.
+     */
+    ALL,
 
-@SuppressWarnings("javadoc")
-public class Book {
+    /**
+     * Prints the filtered request (Filter only).
+     */
+    FILTERED_REQUEST,
 
-    private final String title;
+    /**
+     * Prints the filtered response (Filter only).
+     */
+    FILTERED_RESPONSE,
 
-    public Book(final String title) {
-        this.title = title;
-    }
+    /**
+     * Prints input request.
+     */
+    REQUEST,
 
-    public String getTitle() {
-        return title;
-    }
-
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            return new Book(config.get("title").defaultTo("no name").asString());
-        }
-    }
+    /**
+     * Prints the output response. In case of a filter, this represents the response produced by the next handler.
+     * In case of a handler, this represents the handler's produced response object.
+     */
+    RESPONSE
 }

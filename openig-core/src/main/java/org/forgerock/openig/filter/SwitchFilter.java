@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.util.Json.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.Json;
 
 /**
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
@@ -133,7 +134,7 @@ public class SwitchFilter extends GenericFilter {
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            return new Case(Json.asExpression(value.get("condition")),
+            return new Case(asExpression(value.get("condition")),
                             heap.resolve(value.get("handler"), Handler.class));
         }
     }

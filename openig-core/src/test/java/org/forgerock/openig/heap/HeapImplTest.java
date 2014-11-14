@@ -20,13 +20,17 @@ import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.Json.readJson;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.heap.domain.Book;
+import org.forgerock.openig.heap.domain.DecoratorDecorator;
 import org.forgerock.openig.heap.domain.ReferencedObject;
 import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
@@ -199,15 +203,108 @@ public class HeapImplTest {
         assertThat(ref2.name).isEqualTo("buried-down-object");
     }
 
+    @Test
+    public void testThatPerformingResolutionMultipleTimesReturnsTheSameObject() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        JsonValue bookDefinition = json(object(field("type", Book.class.getName())));
+        Book first = heap.resolve(bookDefinition, Book.class);
+        Book second = heap.resolve(bookDefinition, Book.class);
+        assertThat(first).isSameAs(second);
+    }
+
+    @Test
+    public void testDecoration() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        heap.put("decorator", new BookDecorator());
+
+        JsonValue withDecoration = json(object(field("type", Book.class.getName()),
+                                               field("decorator", "Hey")));
+        Book book = heap.resolve(withDecoration, Book.class);
+
+        assertThat(book).isInstanceOf(DecoratedBook.class);
+        DecoratedBook decorated = (DecoratedBook) book;
+        assertThat(decorated.delegate).isInstanceOf(Book.class);
+        assertThat(decorated.decoration.asString()).isEqualTo("Hey");
+
+        // Verify context
+        assertThat(decorated.context.getName()).isNotNull();
+        assertThat(decorated.context.getHeap()).isSameAs(heap);
+        assertThat(decorated.context.getConfig()).isEmpty();
+    }
+
+    @Test
+    public void testGlobalDecoratorWithIncompatibleDecorators() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-global-decorations.json"));
+
+        Book book = heap.get("book", Book.class);
+        assertThat(book.getTitle()).isEqualTo("ABCD OpenIG 12345");
+    }
+
+    @Test
+    public void testDecoratorsAreNotDecoratedThemselves() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-decorators-are-not-decoratable.json"));
+
+        Decorator decorator = heap.get("deco", Decorator.class);
+        assertThat(decorator).isInstanceOf(DecoratorDecorator.class);
+    }
+
+    @Test
+    public void testGlobalDecoratorAreInherited() throws Exception {
+        HeapImpl parent = buildDefaultHeap();
+        parent.init(asJson("heap-global-decorations-parent.json"));
+
+        HeapImpl child = new HeapImpl(parent);
+        child.init(asJson("heap-global-decorations-child.json"));
+
+        Book book = child.get("book", Book.class);
+        assertThat(book.getTitle()).isEqualTo("ABCD OpenIG 12345");
+    }
+
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
         return new JsonValue(readJson(reader)).get("heap");
     }
 
-    private HeapImpl buildDefaultHeap() {
+    private HeapImpl buildDefaultHeap() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         return heap;
     }
+
+    private static class BookDecorator implements Decorator {
+
+        @Override
+        public boolean accepts(final Class<?> type) {
+            return Book.class.isAssignableFrom(type);
+        }
+
+        @Override
+        public Object decorate(final Object delegate, final JsonValue decoratorConfig, final Context context)
+                throws HeapException {
+            return new DecoratedBook((Book) delegate, decoratorConfig, context);
+        }
+
+    }
+
+    private static class DecoratedBook extends Book {
+        public final Book delegate;
+        public final JsonValue decoration;
+        public final Context context;
+
+        public DecoratedBook(final Book delegate,
+                             final JsonValue decoration,
+                             final Context context) {
+
+            super("no name");
+            this.delegate = delegate;
+            this.decoration = decoration;
+            this.context = context;
+        }
+    }
+
 }

@@ -16,8 +16,9 @@
 
 package org.forgerock.openig.handler.router;
 
+import static com.forgerock.opendj.util.StaticUtils.*;
 import static java.lang.String.*;
-import static org.forgerock.openig.util.Json.readJsonLenient;
+import static org.forgerock.openig.util.Json.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,13 +74,17 @@ class RouteBuilder {
      *             if there are IO or parsing errors
      */
     private JsonValue readJson(final File resource) throws HeapException {
+        FileInputStream fis = null;
         try {
+            fis = new FileInputStream(resource);
             return new JsonValue(readJsonLenient(new FileInputStream(resource)));
         } catch (FileNotFoundException e) {
             throw new HeapException(format("File %s does not exists", resource), e);
         } catch (IOException e) {
             throw new HeapException(format("Cannot read/parse content of %s : %s", resource, e
                     .getMessage()), e);
+        } finally {
+            closeSilently(fis);
         }
     }
 

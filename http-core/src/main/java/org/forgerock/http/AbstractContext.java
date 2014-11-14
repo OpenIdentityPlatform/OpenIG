@@ -101,31 +101,33 @@ public abstract class AbstractContext implements Context {
 
     @Override
     public Iterator<Context> iterator() { //TODO to implement
-        return new Iterator<Context>() {
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Override
-            public Context next() {
-                return null;
-            }
-        };
+        return null;
+//        return new Iterator<Context>() {
+//            @Override
+//            public boolean hasNext() {
+//                return false;
+//            }
+//
+//            @Override
+//            public Context next() {
+//                return null;
+//            }
+//        };
     }
 
     @Override
     public <T extends Context> Iterator<T> iterator(Class<T> clazz) { //TODO to implement
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Override
-            public T next() {
-                return null;
-            }
-        };
+        return null;
+//        return new Iterator<T>() {
+//            @Override
+//            public boolean hasNext() {
+//                return false;
+//            }
+//
+//            @Override
+//            public T next() {
+//                return null;
+//            }
+//        };
     }
 }

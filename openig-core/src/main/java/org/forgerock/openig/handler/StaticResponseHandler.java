@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.handler;
 
+import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -32,7 +33,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.util.Json;
 
 /**
  * Creates a static response in an HTTP exchange.
@@ -143,12 +143,12 @@ public class StaticResponseHandler extends GenericHandler {
             final String reason = config.get("reason").asString();
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final Expression entity = Json.asExpression(config.get("entity"));
+            final Expression entity = asExpression(config.get("entity"));
             final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.addHeader(key, Json.asExpression(value.required()));
+                        handler.addHeader(key, asExpression(value.required()));
                     }
                 }
             }
