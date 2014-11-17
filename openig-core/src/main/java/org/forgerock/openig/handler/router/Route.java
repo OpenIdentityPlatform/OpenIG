@@ -27,8 +27,10 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.http.SessionFactory;
@@ -123,19 +125,23 @@ class Route extends GenericHandler {
     /**
      * Builds a new Route from the given configuration.
      *
-     * @param heap Heap that holds the objects defined in the route file
+     * @param parentHeap The parent heap, which may be {@code null}
+     * @param routeHeapName The name to use for this route's heap
      * @param config Json representation of the file's content
      * @param defaultName default name of the route if none is found in the configuration
      * @throws HeapException if the heap does not contains the required handler object
      *         (or one of it's transitive dependencies)
      */
-    public Route(final HeapImpl heap, final JsonValue config, final String defaultName) throws HeapException {
-        this(heap,
-             heap.resolve(config.get("handler"), Handler.class),
-             heap.resolve(config.get("session"), SessionFactory.class, true),
-             config.get("name").defaultTo(defaultName).asString(),
-             asExpression(config.get("condition")),
-             config.get("baseURI").asURI());
+    public Route(final Heap parentHeap, final Name routeHeapName, final JsonValue config,
+            final String defaultName) throws HeapException {
+        this.heap = new HeapImpl(parentHeap, routeHeapName);
+        heap.init(config, "handler", "session", "name", "condition", "baseURI");
+
+        this.handler = heap.resolve(config.get("handler"), Handler.class);
+        this.sessionFactory = heap.resolve(config.get("session"), SessionFactory.class, true);
+        this.name = config.get("name").defaultTo(defaultName).asString();
+        this.condition = asExpression(config.get("condition"));
+        this.baseURI = config.get("baseURI").asURI();
     }
 
     /**

@@ -300,7 +300,7 @@ public class HeapImplTest {
 
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
-        return new JsonValue(readJson(reader)).get("heap");
+        return new JsonValue(readJson(reader));
     }
 
     private HeapImpl buildDefaultHeap() throws Exception {

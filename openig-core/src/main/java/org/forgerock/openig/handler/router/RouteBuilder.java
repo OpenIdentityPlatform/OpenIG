@@ -24,12 +24,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 
 /**
@@ -50,7 +48,7 @@ class RouteBuilder {
      * @param heap parent heap for produced routes
      * @param name router name (used as parent name)
      */
-    public RouteBuilder(final Heap heap, final Name name) {
+    RouteBuilder(final Heap heap, final Name name) {
         this.heap = heap;
         this.name = name;
     }
@@ -62,10 +60,11 @@ class RouteBuilder {
      * @return a new configured Route
      * @throws HeapException if the new Route cannot be build
      */
-    public Route build(final File resource) throws HeapException {
-        JsonValue config = readJson(resource);
-        HeapImpl newHeap = createHeap(config, resource.getPath());
-        return new Route(newHeap, config, resource.getName());
+    Route build(final File resource) throws HeapException {
+        final JsonValue config = readJson(resource);
+        final Name routeHeapName = this.name.child(resource.getPath());
+        final String defaultRouteName = resource.getName();
+        return new Route(heap, routeHeapName, config, defaultRouteName);
     }
 
     /**
@@ -89,20 +88,6 @@ class RouteBuilder {
         } finally {
             closeSilently(fis);
         }
-    }
-
-    /**
-     * Creates and initialize a new child {@link Heap} from the previously parsed Json content.
-     *
-     * @param config parsed route definition
-     * @param name name of the new heap
-     * @return initialized child heap
-     * @throws HeapException if there is some semantic errors in the route definition
-     */
-    private HeapImpl createHeap(final JsonValue config, final String name) throws HeapException {
-        HeapImpl child = new HeapImpl(heap, this.name.child(name));
-        child.init(config.get("heap").required().expect(Map.class));
-        return child;
     }
 
 }

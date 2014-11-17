@@ -13,11 +13,9 @@
               "name": "incompatible",
               "type": "org.forgerock.openig.heap.domain.IncompatibleBookDecorator"
             }
-        ],
-        "decorations": {
-          "prefix": "ABCD ",
-          "suffix": " 12345",
-          "incompatible": "not used"
-        }
-    }
+        ]
+    },
+    "prefix": "ABCD ",
+    "suffix": " 12345",
+    "incompatible": "not used"
 }

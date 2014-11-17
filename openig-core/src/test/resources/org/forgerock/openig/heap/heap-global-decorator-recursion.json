@@ -23,9 +23,7 @@
                     "logSink": "LogSink"
                 }
             }
-        ],
-        "decorations": {
-            "capture": "all"
-        }
-    }
+        ]
+    },
+    "capture": "all"
 }
