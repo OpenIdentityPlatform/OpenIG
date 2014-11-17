@@ -1,46 +1,44 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "_Router",
-                "type": "Router",
-                "config": {
-                    "defaultHandler": {
-                        "type": "DispatchHandler",
-                        "config": {
-                            "bindings": [
-                                {
-                                    "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
-                                    "handler": {
-                                        "type": "WelcomeHandler",
-                                        "config": {}
-                                    }
-                                },
-                                {
-                                    "condition": "${exchange.request.uri.path == '/'}",
-                                    "handler": {
-                                        "type": "StaticResponseHandler",
-                                        "config": {
-                                            "status": 405,
-                                            "reason": "Method Not Allowed"
-                                        }
-                                    }
-                                },
-                                {
-                                    "handler": {
-                                        "type": "StaticResponseHandler",
-                                        "config": {
-                                            "status": 404,
-                                            "reason": "Not Found"
-                                        }
+    "heap": [
+        {
+            "name": "_Router",
+            "type": "Router",
+            "config": {
+                "defaultHandler": {
+                    "type": "DispatchHandler",
+                    "config": {
+                        "bindings": [
+                            {
+                                "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
+                                "handler": {
+                                    "type": "WelcomeHandler",
+                                    "config": {}
+                                }
+                            },
+                            {
+                                "condition": "${exchange.request.uri.path == '/'}",
+                                "handler": {
+                                    "type": "StaticResponseHandler",
+                                    "config": {
+                                        "status": 405,
+                                        "reason": "Method Not Allowed"
                                     }
                                 }
-                            ]
-                        }
+                            },
+                            {
+                                "handler": {
+                                    "type": "StaticResponseHandler",
+                                    "config": {
+                                        "status": 404,
+                                        "reason": "Not Found"
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
-        ]
-    },
+        }
+    ],
     "handler": "_Router"
 }

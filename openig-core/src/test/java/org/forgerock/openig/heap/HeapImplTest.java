@@ -41,6 +41,15 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
 
+    @Test(description = "OPENIG-380")
+    public void shouldAllowLegacyObjectsArray() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-legacy-objects-array.json"));
+        final HeapObject heapObject = heap.get("CustomHeapObject", HeapObject.class);
+        assertThat(heapObject.message).isEqualTo("Custom Message");
+        heap.destroy();
+    }
+
     @Test
     public void shouldAllowNoConfigAttribute() throws Exception {
         final HeapImpl heap = buildDefaultHeap();

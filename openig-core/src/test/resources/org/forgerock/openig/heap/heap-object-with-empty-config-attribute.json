@@ -1,11 +1,9 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "heap-object",
-                "type": "org.forgerock.openig.heap.HeapObject",
-                "config": {}
-            }
-        ]
-    }
+    "heap": [
+        {
+            "name": "heap-object",
+            "type": "org.forgerock.openig.heap.HeapObject",
+            "config": {}
+        }
+    ]
 }
