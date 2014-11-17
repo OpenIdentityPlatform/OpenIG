@@ -23,6 +23,7 @@ import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Reject.*;
 
@@ -38,6 +39,8 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.MultiValueMap;
 
 /**
@@ -132,8 +135,21 @@ public class HeapImpl implements Heap {
     public synchronized void init(JsonValue config, String... reservedFieldNames)
             throws HeapException {
         // process configuration object model structure
-        JsonValue heap = config.get("heap").required().expect(Map.class);
-        for (JsonValue object : heap.get("objects").required().expect(List.class)) {
+        JsonValue heap = config.get("heap").required();
+        boolean logDeprecationWarning = false;
+        if (heap.isMap()) {
+            /*
+             * In OpenIG < 3.1 the heap objects were listed in a child "objects"
+             * array. The extra nesting was found to be redundant and removed in
+             * 3.1. We continue to allow it in order to maintain backwards
+             * compatibility.
+             */
+            heap = heap.get("objects").required();
+
+            // We cannot log anything just yet because the heap is not initialized.
+            logDeprecationWarning = true;
+        }
+        for (JsonValue object : heap.expect(List.class)) {
             addDeclaration(object);
         }
 
@@ -149,6 +165,16 @@ public class HeapImpl implements Heap {
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<String>(heaplets.keySet())) {
             get(name, Object.class);
+        }
+
+        // We can log a warning now that the heap is initialized.
+        if (logDeprecationWarning) {
+            Logger logger =
+                    new Logger(resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+                            LogSink.class, true), name);
+            logger.warning("The configuration field heap/objects has been deprecated. Heap objects "
+                    + "should now be listed directly in the top level \"heap\" field, "
+                    + "e.g. { \"heap\" : [ objects... ] }.");
         }
     }
 

@@ -1,15 +1,13 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "StatusHandler",
-                "type": "org.forgerock.openig.handler.router.StatusHandler",
-                "config": {
-                    "status": 200
-                }
+    "heap": [
+        {
+            "name": "StatusHandler",
+            "type": "org.forgerock.openig.handler.router.StatusHandler",
+            "config": {
+                "status": 200
             }
-        ]
-    },
+        }
+    ],
     "handler": "StatusHandler",
     "name": "abcd"
 }
