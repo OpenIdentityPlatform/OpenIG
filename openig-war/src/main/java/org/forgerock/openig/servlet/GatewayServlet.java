@@ -39,7 +39,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -197,7 +196,7 @@ public class GatewayServlet extends HttpServlet {
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.addDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config.get("heap").required().expect(Map.class));
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.

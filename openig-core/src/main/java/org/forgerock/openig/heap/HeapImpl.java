@@ -27,6 +27,7 @@ import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Reject.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -122,19 +123,29 @@ public class HeapImpl implements Heap {
      * be loaded and all associated objects are allocated using each heaplet instance's
      * configuration.
      *
-     * @param config a heap configuration object tree containing the heap configuration.
+     * @param config the configuration root.
+     * @param reservedFieldNames the names of reserved top level fields in the config which
+     *                           should not be parsed as global decorators.
      * @throws HeapException if an exception occurs allocating heaplets.
      * @throws JsonValueException if the configuration object is malformed.
      */
-    public synchronized void init(JsonValue config) throws HeapException {
+    public synchronized void init(JsonValue config, String... reservedFieldNames)
+            throws HeapException {
         // process configuration object model structure
-        for (JsonValue object : config.get("objects").required().expect(List.class)) {
+        JsonValue heap = config.get("heap").required().expect(Map.class);
+        for (JsonValue object : heap.get("objects").required().expect(List.class)) {
             addDeclaration(object);
         }
-        if (config.isDefined("decorations")) {
-            GlobalDecorator globalDecorator = new GlobalDecorator(config.get("decorations").expect(Map.class));
-            put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
-        }
+
+        // register global decorators, ensuring that reserved field names are filtered out
+        int sz = reservedFieldNames.length;
+        String[] allReservedFieldNames = Arrays.copyOf(reservedFieldNames, sz + 1);
+        allReservedFieldNames[sz] = "heap";
+        Decorator parentGlobalDecorator =
+                parent != null ? parent.get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class) : null;
+        GlobalDecorator globalDecorator = new GlobalDecorator(parentGlobalDecorator, config, allReservedFieldNames);
+        put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
+
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<String>(heaplets.keySet())) {
             get(name, Object.class);
@@ -301,7 +312,6 @@ public class HeapImpl implements Heap {
      * @throws HeapException
      *         if a decorator failed to apply
      */
-    @SuppressWarnings("unchecked")
     private Object decorate(final String name, final Object object) throws HeapException {
 
         // Avoid decorating decorators themselves
