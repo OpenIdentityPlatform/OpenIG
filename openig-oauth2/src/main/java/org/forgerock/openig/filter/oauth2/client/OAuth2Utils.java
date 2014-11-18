@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.RedirectFilter;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.header.LocationHeader;
 import org.forgerock.openig.http.Exchange;
@@ -91,7 +90,7 @@ final class OAuth2Utils {
 
     static void httpRedirect(final Exchange exchange, final String uri) {
         // FIXME: this constant should in HTTP package?
-        httpResponse(exchange, RedirectFilter.REDIRECT_STATUS_302);
+        httpResponse(exchange, 302);
         exchange.response.getHeaders().add(LocationHeader.NAME, uri);
     }
 

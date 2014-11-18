@@ -229,6 +229,16 @@
     </table>
 
   <para>
+   This release deprecates the RedirectFilter type, replacing it with a
+   <link
+    xlink:href="reference#LocationHeaderFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    xlink:show="new"
+   >LocationHeaderFilter</link>.
+   The RedirectFilter type might be removed in a future release.
+  </para>
+      
+  <para>
    This release deprecates the
    <link
     xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
