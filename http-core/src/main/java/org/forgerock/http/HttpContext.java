@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.util.Reject;
+import org.forgerock.resource.core.AbstractContext;
+import org.forgerock.resource.core.Context;
 
 /**
  * Represents extrinsic state associated with the processing of a request in a

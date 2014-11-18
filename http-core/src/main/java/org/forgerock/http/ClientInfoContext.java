@@ -18,6 +18,9 @@ package org.forgerock.http;
 
 import static java.util.Arrays.asList;
 
+import org.forgerock.resource.core.AbstractContext;
+import org.forgerock.resource.core.Context;
+
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;

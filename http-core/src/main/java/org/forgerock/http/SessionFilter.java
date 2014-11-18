@@ -19,6 +19,7 @@ package org.forgerock.http;
 import static org.forgerock.http.HttpApplication.LOGGER;
 
 import org.forgerock.util.Reject;
+import org.forgerock.resource.core.Context;
 import org.forgerock.util.promise.FailureHandler;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.SuccessHandler;

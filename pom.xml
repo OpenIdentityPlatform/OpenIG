@@ -36,6 +36,7 @@
   <url>http://openig.forgerock.org</url>
 
   <modules>
+    <module>resource-core</module>
     <module>http-core</module>
     <module>http-servlet</module>
     <module>http-apache-httpclient</module>

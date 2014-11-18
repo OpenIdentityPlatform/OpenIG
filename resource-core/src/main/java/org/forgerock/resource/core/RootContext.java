@@ -14,7 +14,7 @@
  * Copyright 2012-2014 ForgeRock AS.
  */
 
-package org.forgerock.http;
+package org.forgerock.resource.core;
 
 import java.util.UUID;
 

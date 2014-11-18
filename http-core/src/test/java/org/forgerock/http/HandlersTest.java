@@ -23,6 +23,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
+import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.RootContext;
 import org.forgerock.util.promise.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;

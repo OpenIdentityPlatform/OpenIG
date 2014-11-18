@@ -17,7 +17,7 @@
 package org.forgerock.openig.http;
 
 import org.forgerock.http.ClientInfoContext;
-import org.forgerock.http.Context;
+import org.forgerock.resource.core.Context;
 import org.forgerock.http.HttpContext;
 import org.forgerock.http.Request;
 

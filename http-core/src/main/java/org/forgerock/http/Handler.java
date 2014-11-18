@@ -18,6 +18,7 @@
 
 package org.forgerock.http;
 
+import org.forgerock.resource.core.Context;
 import org.forgerock.util.promise.Promise;
 
 /**

@@ -22,7 +22,7 @@ import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.ClientInfoContext;
-import org.forgerock.http.Context;
+import org.forgerock.resource.core.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
@@ -30,7 +30,7 @@ import org.forgerock.http.HttpContext;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
 import org.forgerock.http.ResponseException;
-import org.forgerock.http.RootContext;
+import org.forgerock.resource.core.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.Buffer;
