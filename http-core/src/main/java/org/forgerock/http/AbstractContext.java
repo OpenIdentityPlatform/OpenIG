@@ -56,7 +56,7 @@ public abstract class AbstractContext implements Context {
         if (context != null) {
             return context;
         } else {
-            throw new IllegalArgumentException("No context of type " + contextName + " found.");
+            throw new IllegalArgumentException("No context of named " + contextName + " found.");
         }
     }
 
@@ -69,7 +69,11 @@ public abstract class AbstractContext implements Context {
     }
 
     public final String getId() {
-        return id;
+        if (id == null && !isRootContext()) {
+            return getParent().getId();
+        } else {
+            return id;
+        }
     }
 
     public final Context getParent() {
