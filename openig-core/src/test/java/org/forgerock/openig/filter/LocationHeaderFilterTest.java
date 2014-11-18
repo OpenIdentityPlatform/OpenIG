@@ -32,10 +32,10 @@ import org.forgerock.openig.http.Response;
 import org.testng.annotations.Test;
 
 /**
- * Test case for the RedirectFilter
+ * Test case for the LocationHeaderFilter
  */
 @SuppressWarnings("javadoc")
-public class RedirectFilterTest {
+public class LocationHeaderFilterTest {
 
     @Test
     public void caseChangeSchemeHostAndPort() throws Exception {
@@ -45,7 +45,7 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("https://proxy.example.com:443/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
@@ -59,7 +59,7 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
@@ -73,7 +73,7 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("http://app.example.com:9090/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
@@ -87,7 +87,7 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com/path/to/redirected?a=1&b=2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("https://app.example.com/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
@@ -100,7 +100,7 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("http://app.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
@@ -108,7 +108,7 @@ public class RedirectFilterTest {
 
     @Test
     public void caseBaseUriAsExpression() throws Exception {
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("http://${exchange.host}:8080"));
         Handler next = mock(Handler.class);
 
@@ -118,7 +118,7 @@ public class RedirectFilterTest {
         // Prepare a response
         exchange.response = new Response();
         exchange.response.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
-        exchange.response.setStatus(RedirectFilter.REDIRECT_STATUS_302);
+        exchange.response.setStatus(302);
 
         filter.filter(exchange, next);
 
@@ -133,19 +133,19 @@ public class RedirectFilterTest {
 
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/a%20b/redirected?a=1&b=%3D2");
 
-        RedirectFilter filter = new RedirectFilter();
+        LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
 
-    private void callFilter(RedirectFilter filter, URI testRedirectionURI, String expectedResult)
+    private void callFilter(LocationHeaderFilter filter, URI testRedirectionURI, String expectedResult)
             throws IOException, HandlerException {
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
         exchange.response.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
-        exchange.response.setStatus(RedirectFilter.REDIRECT_STATUS_302);
+        exchange.response.setStatus(302);
 
         DummyHander handler = new DummyHander();
 
