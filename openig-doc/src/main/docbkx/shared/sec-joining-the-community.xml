@@ -32,7 +32,7 @@
  <title>Joining the ${projectName} Community</title>
 
  <para>After you <link xlink:show="new"
- xlink:href='https://idp.forgerock.org/openam/UI/Login?service=register'
+ xlink:href='https://sso.forgerock.com/openam/UI/Login'
  >sign up</link> at ForgeRock, you can also login to the Wiki and the issue
  database to follow what is happening with the project.</para>
 
