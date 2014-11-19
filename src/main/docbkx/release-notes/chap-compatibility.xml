@@ -37,7 +37,7 @@
  </para>
 
  <section xml:id="changes">
-  <title>Major Changes to Existing Functionality</title>
+  <title>Important Changes to Existing Functionality</title>
 
   <para>
    This release brings the following changes to ${projectName}.
@@ -55,7 +55,14 @@
 
    <listitem>
     <para>
-     See <xref linkend="deprecated" /> for a list of configuration changes.
+     TODO
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     See <xref linkend="deprecated" /> for a list of configuration changes
+     resulting in deprecation of earlier features.
     </para>
    </listitem>
   </itemizedlist>
