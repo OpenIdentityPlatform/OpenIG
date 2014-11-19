@@ -1,0 +1,8 @@
+{
+    "handler": {
+        "type": "org.forgerock.openig.handler.router.StatusHandler",
+        "config": {
+            "status": 42
+        }
+    }
+}

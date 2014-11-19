@@ -135,8 +135,8 @@ public class HeapImpl implements Heap {
     public synchronized void init(JsonValue config, String... reservedFieldNames)
             throws HeapException {
         // process configuration object model structure
-        JsonValue heap = config.get("heap").required();
         boolean logDeprecationWarning = false;
+        JsonValue heap = config.get("heap").defaultTo(emptyList());
         if (heap.isMap()) {
             /*
              * In OpenIG < 3.1 the heap objects were listed in a child "objects"

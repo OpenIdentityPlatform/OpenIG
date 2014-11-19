@@ -41,6 +41,13 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
 
+    @Test(description = "OPENIG-329")
+    public void shouldAllowEmptyHeap() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-with-no-objects.json"));
+        heap.destroy();
+    }
+
     @Test(description = "OPENIG-380")
     public void shouldAllowLegacyObjectsArray() throws Exception {
         final HeapImpl heap = buildDefaultHeap();
