@@ -99,6 +99,14 @@ final class BranchingStreamWrapper extends BranchingInputStream {
                 // write result to buffer if necessary
                 writeBuffer(b, off, n);
             }
+        } else if (n < len) {
+            int q;
+            // byte array large that buffered data; read from input stream to fill up buffer
+            if ((q = trunk.in.read(b, off + n, len - n)) >= 0) {
+                // write result to buffer if necessary
+                writeBuffer(b, off + n, q);
+                n += q;
+            }
         }
         return n;
     }
