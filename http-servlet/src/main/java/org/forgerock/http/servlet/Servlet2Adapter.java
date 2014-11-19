@@ -47,7 +47,9 @@ final class Servlet2Adapter implements ServletVersionAdapter {
         @Override
         public void awaitIfNeeded() throws InterruptedException {
             requestCompletionLatch.await();
-            listener.run();
+            if (listener != null) {
+                listener.run();
+            }
         }
 
         @Override
