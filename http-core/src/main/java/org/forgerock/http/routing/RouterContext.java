@@ -25,7 +25,7 @@ import org.forgerock.resource.core.AbstractContext;
 import org.forgerock.resource.core.Context;
 
 /**
- * A {@link ServerContext} which is created when a request has been routed. The
+ * A {@link Context} which is created when a request has been routed. The
  * context includes:
  * <ul>
  * <li>the portion of the request URI which matched the URI template
@@ -35,52 +35,6 @@ import org.forgerock.resource.core.Context;
  * <li>a map which contains the parsed URI template variables, keyed on the URI
  * template variable name.
  * </ul>
- * <p>
- * When a request is routed the request is duplicated and the
- * {@link Request#getResourceName() resource name} trimmed so that it is
- * relative to the current resource being accessed. More specifically, the
- * "relativized" resource name represents the portion of the resource URI which
- * follows the portion matched during routing by the URI template or "" (empty
- * string) if the URI template matched exactly. The matched portion of the
- * resource URI and the base URI may be accessed via this router context.
- * Example:
- *
- * <pre>
- * Router top = new Router();
- * Router users = new Router();
- * Router devices = new Router();
- * top.addRoute(RoutingMode.STARTS_WITH, &quot;users/{userId}&quot;, users);
- * users.addRouter(RoutingMode.STARTS_WITH, &quot;devices/{deviceId}&quot;, devices);
- * </pre>
- *
- * A request against "users/1" will be routed to the users router with a base
- * URI of "users/1", a matched URI of "users/1", and a resource name of ""
- * (empty string).
- * <p>
- * A request against "users/1/devices/0" will be routed to the users router with
- * a base URI of "users/1", a matched URI of "users/1", and a resource name of
- * "devices/0". It will then be routed to the devices router with a base URI of
- * "users/1/devices/0", a matched URI of "devices/0", and a resource name of ""
- * (empty string).
- * <p>
- * Here is an example of the JSON representation of a routing context:
- *
- * <pre>
- * {
- *   "id"     : "56f0fb7e-3837-464d-b9ec-9d3b6af665c3",
- *   "class"  : "org.forgerock.json.resource.provider.RouterContext",
- *   "parent" : {
- *       ...
- *   },
- *   "matchedUri" : "users/bjensen",
- *   "uriTemplateVariables" : {
- *       "userId" : "bjensen",
- *       "deviceId" : "0"
- *   }
- * }
- * </pre>
- *
- * @see UriRouter
  */
 public final class RouterContext extends AbstractContext {
 
