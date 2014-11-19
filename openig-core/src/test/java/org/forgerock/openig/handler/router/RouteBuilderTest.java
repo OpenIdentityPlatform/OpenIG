@@ -61,6 +61,18 @@ public class RouteBuilderTest {
         when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
     }
 
+    @Test(description = "OPENIG-329")
+    public void testHandlerCanBeInlinedWithNoHeap() throws Exception {
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        Route route = builder.build(getTestResourceFile("inlined-handler-route.json"));
+
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        route.handle(exchange);
+
+        assertThat(exchange.response.getStatus()).isEqualTo(42);
+    }
+
     @Test
     public void testUnnamedRouteLoading() throws Exception {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
