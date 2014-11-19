@@ -21,25 +21,6 @@ import static org.forgerock.http.io.IO.newBranchingInputStream;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
-import org.forgerock.http.ClientInfoContext;
-import org.forgerock.resource.core.Context;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HttpApplication;
-import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.HttpContext;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
-import org.forgerock.http.ResponseException;
-import org.forgerock.resource.core.RootContext;
-import org.forgerock.http.Session;
-import org.forgerock.http.URIUtil;
-import org.forgerock.http.io.Buffer;
-import org.forgerock.http.util.CaseInsensitiveSet;
-import org.forgerock.util.Factory;
-import org.forgerock.util.promise.FailureHandler;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -56,6 +37,26 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+
+import org.forgerock.http.ClientInfoContext;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpApplication;
+import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
+import org.forgerock.http.ResponseException;
+import org.forgerock.http.Session;
+import org.forgerock.http.URIUtil;
+import org.forgerock.http.io.Buffer;
+import org.forgerock.http.routing.RouterContext;
+import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.RootContext;
+import org.forgerock.util.Factory;
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * <p>
@@ -163,7 +164,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         httpContext.getAttributes().put(HttpServletRequest.class.getName(), req);
         httpContext.getAttributes().put(HttpServletResponse.class.getName(), resp);
 
-        Context context = createClientInfoContext(httpContext, req);
+        Context context = createRouterContext(createClientInfoContext(httpContext, req), req);
 
         // handle request
         final ServletSynchronizer sync = adapter.createServletSynchronizer(req, resp);
@@ -258,6 +259,18 @@ public final class HttpFrameworkServlet extends HttpServlet {
                 .certificates((X509Certificate[]) req.getAttribute(SERVLET_REQUEST_X509_ATTRIBUTE))
                 .userAgent(req.getHeader("User-Agent"))
                 .build();
+    }
+
+    private RouterContext createRouterContext(Context parent, HttpServletRequest req) {
+        StringBuilder builder = new StringBuilder()
+                .append(forceEmptyIfNull(req.getContextPath()))
+                .append(forceEmptyIfNull(req.getServletPath()));
+
+        return new RouterContext(parent, builder.toString(), Collections.<String, String>emptyMap());
+    }
+
+    private String forceEmptyIfNull(final String s) {
+        return s != null ? s : "";
     }
 
     private void writeResponse(HttpContext context, HttpServletResponse resp, Response response)
