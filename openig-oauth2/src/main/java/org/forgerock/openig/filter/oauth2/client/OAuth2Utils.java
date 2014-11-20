@@ -81,7 +81,7 @@ final class OAuth2Utils {
         for (final Expression scope : scopeExpressions) {
             final String result = scope.eval(exchange, String.class);
             if (result == null) {
-                throw new HandlerException("Unable to determine the scope");
+                throw new HandlerException("The OAuth 2.0 client filter scope expression could not be resolved");
             }
             scopeValues.add(result);
         }
