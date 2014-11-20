@@ -31,6 +31,7 @@ import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
 import org.forgerock.json.jose.common.JwtReconstruction;
+import org.forgerock.json.jose.exceptions.JweDecryptionException;
 import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweAlgorithm;
@@ -132,9 +133,17 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                     // directly use super to avoid session be marked as dirty
                     super.put(key, claimsSet.getClaim(key));
                 }
+            } catch (JweDecryptionException e) {
+                dirty = true; // Force cookie expiration / overwrite.
+                logger.warning(format("The JWT Session Cookie '%s' could not be decrypted. This "
+                        + "may be because temporary encryption keys have been used or if the "
+                        + "configured encryption keys have changed since the JWT Session Cookie "
+                        + "was created", cookieName));
+                logger.debug(e);
             } catch (Exception e) {
+                dirty = true; // Force cookie expiration / overwrite.
                 logger.warning(format("Cannot rebuild JWT Session from Cookie '%s'", cookieName));
-                logger.warning(e);
+                logger.debug(e);
             }
         }
     }
@@ -200,20 +209,31 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         // Only build the JWT session if the session is dirty
         if (dirty) {
             // Update the Set-Cookie header
-            String value = buildJwtCookie();
-            if (value.length() > 4096) {
-                throw new IOException(format("JWT session is too large (%d chars), failing the request because "
-                                             + "session does not support serialized content that is larger than 4KB "
-                                             + "(Http Cookie limitation)", value.length()));
-            }
-            if (value.length() > 3072) {
-                logger.warning(format("Current JWT session's size (%d chars) is quite close to the 4KB limit. Maybe "
-                                      + "consider using the traditional Http-based session (the default), or place"
-                                      + "less objects in the session", value.length()));
+            final String value;
+            if (isEmpty()) {
+                value = buildExpiredJwtCookie();
+            } else {
+                value = buildJwtCookie();
+                if (value.length() > 4096) {
+                    throw new IOException(
+                            format("JWT session is too large (%d chars), failing the request because "
+                                    + "session does not support serialized content that is larger than 4KB "
+                                    + "(Http Cookie limitation)", value.length()));
+                }
+                if (value.length() > 3072) {
+                    logger.warning(format(
+                            "Current JWT session's size (%d chars) is quite close to the 4KB limit. Maybe "
+                                    + "consider using the traditional Http-based session (the default), or place"
+                                    + "less objects in the session", value.length()));
+                }
             }
             exchange.response.getHeaders().add("Set-Cookie", value);
         }
 
+    }
+
+    private String buildExpiredJwtCookie() {
+        return format("%s=; Path=/; Max-Age=-1", cookieName);
     }
 
     private String buildJwtCookie() {
