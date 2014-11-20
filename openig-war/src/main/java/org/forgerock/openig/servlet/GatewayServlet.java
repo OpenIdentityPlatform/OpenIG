@@ -19,6 +19,8 @@ package org.forgerock.openig.servlet;
 
 import static java.lang.String.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.audit.AuditSystem.*;
+import static org.forgerock.openig.audit.decoration.AuditDecorator.*;
 import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
@@ -47,6 +49,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.audit.AuditSystem;
+import org.forgerock.openig.audit.decoration.AuditDecorator;
+import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
@@ -190,11 +195,15 @@ public class GatewayServlet extends HttpServlet {
             heap.put("ServletContext", servletConfig.getServletContext());
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
+            AuditSystem auditSystem = new ForwardingAuditSystem();
+
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
+            heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
+            heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.addDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI");
 
