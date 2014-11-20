@@ -1,0 +1,58 @@
+{
+    "heap": {
+        "objects": [
+            {
+                "name": "DispatchHandler",
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "condition": "${empty exchange.session.username}",
+                            "handler": {
+                                "type": "StaticResponseHandler",
+                                "config": {
+                                    "status": 302,
+                                    "reason": "Found",
+                                    "headers": {
+                                        "Location": [
+                                            "http://sp.one.example:8080/saml/SPInitiatedSSO?metaAlias=/sp1"
+                                        ]
+                                    }
+                                }
+                            },
+                            "baseURI": "http://sp.one.example:8081"
+                        },
+                        {
+                            "handler": {
+                                "type": "Chain",
+                                "config": {
+                                    "filters": [
+                                        {
+                                            "type": "StaticRequestFilter",
+                                            "config": {
+                                                "method": "POST",
+                                                "uri": "http://sp.one.example:8081",
+                                                "form": {
+                                                    "username": [
+                                                        "${exchange.session.username}"
+                                                    ],
+                                                    "password": [
+                                                        "${exchange.session.password}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "handler": "ClientHandler"
+                                }
+                            },
+                            "baseURI": "http://sp.one.example:8081"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "handler": "DispatchHandler",
+    "condition": "${matches(exchange.request.uri.host, 'sp.one.example')}"
+}

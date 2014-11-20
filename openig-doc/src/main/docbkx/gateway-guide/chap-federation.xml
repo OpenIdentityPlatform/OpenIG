@@ -199,6 +199,17 @@
     </para>
    </listitem>
   </itemizedlist>
+
+  <para>
+   If you intend to protect multiple service provider applications
+   first read this chapter and work through the samples.
+   Then consider the explanation in the appendix,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#appendix-multiple-sps"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>SAML 2.0 &amp; Multiple Applications</citetitle></link>.
+  </para>
  </section>
 
  <section xml:id="federation-configuration-files">
