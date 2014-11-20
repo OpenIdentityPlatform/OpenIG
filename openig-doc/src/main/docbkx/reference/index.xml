@@ -148,7 +148,7 @@
 
   <partintro>
    <para>
-    Decorators allow you to define heap objects that decorate other objects,
+    Decorators are objects that decorate other heap objects,
     adding the new behavior that the decorator provides.
     For example, you can configure a decorator object
     for capturing requests and responses to a file
@@ -159,7 +159,9 @@
    <para>
     To decorate other objects individually,
     add the decorator's "name" value as a top-level field of the object.
-    For example, suppose a capture decorator is named "capture".
+    For example, suppose a capture decorator named "capture" is defined
+    in the global configuration, <filename>config.json</filename>,
+    to capture the entity but not the exchange as follows.
    </para>
 
    <programlisting language="javascript">
@@ -167,7 +169,8 @@
     "name": "capture",
     "type": "CaptureDecorator",
     "config": {
-        "captureEntity": false
+        "captureEntity": true,
+        "_captureExchange": true
     }
 }
    </programlisting>
@@ -186,12 +189,9 @@
    </programlisting>
 
    <para>
-    To decorate all the objects in the heap
-    and in heaps that inherit from the current heap,
-    use the "decorations" field of the heap object itself.
-    (If "decorations" are defined in the child,
-    then the child's definition overrides the parent's.
-    ${projectName} does not merge "decorations" from the parent and child.)
+    To decorate all applicable objects defined within a Route's heap,
+    add the decoration as a top-level field of the Route.
+    If the Route defines a Router, then child Routes inherit the decoration.
     The following configuration captures requests and responses
     as they pass through the handler.
    </para>
@@ -201,28 +201,78 @@
     "heap": {
         "objects": [
             {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "captureEntity": false
-                }
-            },
-            {
                 "name": "ClientHandler",
                 "type": "ClientHandler"
             }
-        ],
-        "decorations": {
-            "capture": "all"
-        }
+        ]
     },
-    "handler": "ClientHandler"
+    "handler": "ClientHandler",
+    "capture": "all"
 }
    </programlisting>
 
    <para>
-    To prevent loops, decorators themselves cannot be decorated.
+    Notice that the Route's heap defines the decorated "ClientHandler".
+    Decorations on Routes only decorate applicable objects
+    that are defined in the Route's heap, or in child Routes' heaps.
+    If a parent's heap defined the "ClientHandler" instead,
+    the decoration on the route would not decorate that "ClientHandler".
    </para>
+
+   <para>
+    To prevent loops, decorators themselves cannot be decorated.
+    Instead, decorators apply only to specific types of objects
+    such as Filters and Handlers.
+   </para>
+
+   <para>
+    ${projectName} defines some decorators, such as "capture" and "timer",
+    that take the default configuration.
+    You can use these without configuring them explicitly.
+    For details see the reference section,
+    <link
+     xlink:show="new"
+     xlink:href="reference#gateway-servlet"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>Gateway Servlet</citetitle></link>.
+   </para>
+
+   <para>
+    Take care when defining decorator names not to use names
+    that unintentionally clash with field names for the decorated objects.
+    For all heap objects, avoid decorators named
+    "config", "name", and "type".
+    For Routes, avoid decorators named
+    "baseURI", "condition", "heap", "handler", "name", and "session".
+    In <filename>config.json</filename>, avoid "logSink" and "temporaryStorage".
+    Also avoid decorators named "comment" or "comments".
+    The best way to avoid a clash with other field names
+    is to avoid ${projectName} reserved field names,
+    which include all purely alphanumeric field names.
+    Instead use dots or dashes in your decorator names, such as "my-decorator".
+   </para>
+
+   <para>
+    Decorations can apply more than once.
+    For example, if you set a decoration
+    both on a Route and also on an object defined within the route,
+    then ${projectName} can apply the decoration twice.
+    The following Route results in the request being captured twice.
+   </para>
+
+   <programlisting language="javascript">
+{
+    "heap": [
+          {
+          "name": "ClientHandler",
+          "type": "ClientHandler",
+          "capture": "request"
+        }
+    ],
+    "handler": "ClientHandler",
+    "capture": "all"
+}
+   </programlisting>
 
    <para>
     Interface Stability:

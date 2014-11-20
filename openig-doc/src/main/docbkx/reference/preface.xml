@@ -47,6 +47,21 @@
   </para>
  </section>
 
+ <section xml:id="reserved-field-names">
+  <title>Reserved Field Names</title>
+
+  <para>
+   ${projectName} reserves all configuration field names
+   that contain only alphanumeric characters.
+  </para>
+
+  <para>
+   If you must define your own field names, for example in custom decorators,
+   use names with dots, <literal>.</literal>, or dashes, <literal>-</literal>.
+   Examples include "my-decorator" or "com.example.myDecorator".
+  </para>
+ </section>
+
  <section xml:id="field-value-conventions">
   <title>Field Value Conventions</title>
 
