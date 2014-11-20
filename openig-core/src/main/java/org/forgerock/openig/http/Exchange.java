@@ -18,6 +18,7 @@
 
 package org.forgerock.openig.http;
 
+import java.net.URI;
 import java.security.Principal;
 
 import org.forgerock.openig.util.ExtensibleFieldMap;
@@ -56,4 +57,27 @@ public class Exchange extends ExtensibleFieldMap {
 
     /** The info we can obtain from the client from this request. */
     public ClientInfo clientInfo;
+
+    /**
+     * The original message's URI, as received by the web container. This value is set by the receiving servlet and
+     * is immutable.
+     */
+    public final URI originalUri;
+
+    /**
+     * Builds a new Exchange without any originalUri value (will be {@code null}).
+     */
+    public Exchange() {
+        this(null);
+    }
+
+    /**
+     * Builds a new Exchange with the given originalUri value (can be {@code null}).
+     *
+     * @param originalUri
+     *         original message's URI, as received by the web container
+     */
+    public Exchange(final URI originalUri) {
+        this.originalUri = originalUri;
+    }
 }

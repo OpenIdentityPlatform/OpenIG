@@ -57,8 +57,8 @@ final class OAuth2Utils {
                     uriString += "/" + additionalPath;
                 }
             }
-            // Make sure we don't change the request's URI but return a new URI
-            return exchange.request.getUri().asURI().resolve(new URI(uriString));
+            // Resolve the computed Uri against the original Exchange URI
+            return exchange.originalUri.resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
             throw new HandlerException(e);
         }
@@ -102,7 +102,7 @@ final class OAuth2Utils {
 
     static boolean matchesUri(final Exchange exchange, final URI uri) {
         final URI pathOnly = withoutQueryAndFragment(uri);
-        final URI requestPathOnly = withoutQueryAndFragment(exchange.request.getUri().asURI());
+        final URI requestPathOnly = withoutQueryAndFragment(exchange.originalUri);
         return pathOnly.equals(requestPathOnly);
     }
 
