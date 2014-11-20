@@ -88,7 +88,7 @@
   <para>
    Modify DNS or host file settings so that
    the hosts name of the protected applications resolve
-   to the IP address of OpenIG on the system where the browser runs.
+   to the IP address of ${projectName} on the system where the browser runs.
    Restart the browser as necessary to take the changes into account.
   </para>
 
