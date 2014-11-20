@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
+import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
@@ -46,7 +47,6 @@ import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
-import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.jwt.JwtSessionFactory;
