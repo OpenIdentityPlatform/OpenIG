@@ -23,9 +23,8 @@ import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.*;
 import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
@@ -191,8 +190,8 @@ public class OAuth2ResourceServerFilterTest {
                                               new Expression(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
     }
 
-    private static List<Expression> getScopes(final String... scopes) throws ExpressionException {
-        final List<Expression> expScopes = new ArrayList<Expression>();
+    private static Set<Expression> getScopes(final String... scopes) throws ExpressionException {
+        final Set<Expression> expScopes = new HashSet<Expression>(scopes.length);
         for (final String scope : scopes) {
             expScopes.add(new Expression(scope));
         }

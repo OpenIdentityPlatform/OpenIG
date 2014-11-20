@@ -25,7 +25,6 @@ import static org.forgerock.openig.util.Logs.*;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -119,7 +118,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final AccessTokenResolver resolver;
     private final BearerTokenExtractor extractor;
     private final TimeService time;
-    private List<Expression> scopes;
+    private Set<Expression> scopes;
     private String realm;
 
     private final Handler noAuthentication;
@@ -144,7 +143,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
                                       final Expression target) {
-        this(resolver, extractor, time, Collections.<Expression> emptyList(), DEFAULT_REALM_NAME, target);
+        this(resolver, extractor, time, Collections.<Expression> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -157,7 +156,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * @param time
      *         A {@link TimeService} instance used to check if token is expired or not.
      * @param scopes
-     *         A list of scope expressions to be checked in the resolved access tokens.
+     *         A set of scope expressions to be checked in the resolved access tokens.
      * @param realm
      *         Name of the realm (used in authentication challenge returned in case of error).
      * @param target
@@ -167,7 +166,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final List<Expression> scopes,
+                                      final Set<Expression> scopes,
                                       final String realm,
                                       final Expression target) {
         this.resolver = resolver;
@@ -287,8 +286,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 
-            List<Expression> scopes =
-                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asList(ofExpression());
+            Set<Expression> scopes =
+                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
