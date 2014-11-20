@@ -68,7 +68,6 @@ import org.forgerock.openig.io.BranchingStreamWrapper;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
 import org.forgerock.openig.util.URIUtil;
@@ -245,7 +244,6 @@ public class GatewayServlet extends HttpServlet {
     @Override
     public void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException,
             ServletException {
-        final LogTimer timer = logger.getTimer().start();
 
         // Build Exchange
         URI uri = createRequestUri(request);
@@ -310,7 +308,6 @@ public class GatewayServlet extends HttpServlet {
             // final cleanup
             closeSilently(exchange.request, exchange.response);
         }
-        timer.stop();
     }
 
     private static URI createRequestUri(final HttpServletRequest request) throws ServletException {
