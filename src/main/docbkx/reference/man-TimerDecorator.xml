@@ -95,37 +95,6 @@
 </refsect1>
 
  <refsect1>
-  <title>Global Decorations Usage</title>
-
-  <para>
-   By using the global "decorations" field,
-   you can apply the decorator to all relevant objects in the heap
-   as described in
-   <link
-    xlink:href="reference#decorators-conf"
-    xlink:show="new"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Decorators</citetitle></link>.
-  </para>
-
-  <programlisting language="javascript">
-{
-    "heap": {
-        "objects": array,
-        "decorations": {
-            decorator name: true
-        }
-    }
-}
-  </programlisting>
-
-  <para>
-   When setting the TimerDecorator in global decorations,
-   set its value to <literal>true</literal>.
-  </para>
- </refsect1>
-
- <refsect1>
   <title>Decorated Object Usage</title>
 
   <programlisting language="javascript">
@@ -246,7 +215,7 @@ GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
 
   <para>
    To record times spent within all Filters and Handlers,
-   declare global "declarations" as in the following example.
+   decorate the Route as in the following example.
   </para>
 
   <informalexample><?dbfo pgwide="1"?>

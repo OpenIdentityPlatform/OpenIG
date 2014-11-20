@@ -126,46 +126,6 @@
  </refsect1>
 
  <refsect1>
-  <title>Global Decorations Usage</title>
-
-  <para>
-   By using the global "decorations" field,
-   you can apply the decorator to all relevant objects in the heap
-   as described in
-   <link
-    xlink:href="reference#decorators-conf"
-    xlink:show="new"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Decorators</citetitle></link>.
-  </para>
-
-  <programlisting language="javascript">
-{
-    "heap": {
-        "objects": array,
-        "decorations": {
-            "decorator name": "capture point(s)"
-        }
-    }
-}
-  </programlisting>
-
-  <variablelist>
-   <varlistentry>
-    <term><code>"objects"</code>: array of heap objects, required</term>
-    <listitem>
-     <para>
-      Array of heap object definitions,
-      including or inheriting the CaptureDecorator
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <xinclude:include href="../shared/varlistentry-capture-points.xml" />
-  </variablelist>
- </refsect1>
-
- <refsect1>
   <title>Decorated Object Usage</title>
 
   <programlisting language="javascript">
@@ -292,7 +252,7 @@
 
   <para>
    To capture all transformed requests and responses as they leave filters,
-   declare global "declarations" as in the following example.
+   decorate the Route as in the following example.
   </para>
 
   <programlisting language="javascript"><![CDATA[
@@ -342,15 +302,13 @@
                     }
                 }
             }
-        ],
-        "decorations": {
-            "capture": [
-                "filtered_request",
-                "filtered_response"
-            ]
-        }
+        ]
     },
-    "handler": "Chain"
+    "handler": "Chain",
+    "capture": [
+        "filtered_request",
+        "filtered_response"
+    ]
 }
   ]]>
   </programlisting>

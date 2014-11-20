@@ -574,34 +574,76 @@
  <section xml:id="extension-points">
   <title>Key Extension Points</title>
 
- <indexterm>
-  <primary>Customizations</primary>
-  <secondary>Extension points</secondary>
- </indexterm>
+  <indexterm>
+   <primary>Customizations</primary>
+   <secondary>Extension points</secondary>
+  </indexterm>
 
-  <para>The two primary extension points are the interfaces:
-   <link
-    xlink:href="${javadocBase}/org/forgerock/openig/filter/Filter.html"
-    xlink:show="new"
-   >Filter</link> (for processing a request and/or response en route) and
-   <link
-    xlink:href="${javadocBase}/org/forgerock/openig/handler/Handler.html"
-    xlink:show="new"
-   >Handler</link> (for generating responses from requests).
-   These interfaces are similar to the Java Enterprise Edition
-   <literal>Filter</literal> and <literal>Servlet</literal> interfaces, with
-   some differences in the semantics of messages. While you can simply implement
-   these interfaces, there are also included convenience classes:
+  <variablelist>
+   <para>
+    Primary extension points include these interfaces.
+   </para>
+
+   <varlistentry>
+    <term><link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/decoration/Decorator.html"
+      xlink:show="new"
+     >Decorator</link></term>
+    <listitem>
+     <para>
+      A Decorator adds new behavior to another object,
+      without changing the base type of the object.
+     </para>
+
+     <para>
+      When suggesting custom Decorator names,
+      know that ${projectName} reserves all field names
+      that use only alphanumeric characters.
+      To avoid clashes, use dots or dashes in your field names,
+      such as "my-decorator".
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html"
+      xlink:show="new"
+     >Filter</link></term>
+    <listitem>
+     <para>
+      A Filter serves to process the request and/or the response.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html"
+     xlink:show="new"
+    >Handler</link></term>
+    <listitem>
+     <para>
+      A Handler generates a response given a request.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   These Filter and Handler interfaces are similar to Java Enterprise Edition
+   <literal>Filter</literal> and <literal>Servlet</literal> interfaces,
+   with some differences in the semantics of messages.
+   While you can simply implement these interfaces,
+   ${projectName} also provides convenience classes:
    <link
     xlink:href="${javadocBase}/org/forgerock/openig/filter/GenericFilter.html"
     xlink:show="new"
-   >GenericFilter</link> and
+    >GenericFilter</link> and
    <link
     xlink:href="${javadocBase}/org/forgerock/openig/handler/GenericHandler.html"
     xlink:show="new"
-   >GenericHandler</link> that you can use if you intend to make
-   your extensions configurable through the ${projectName} configuration
-   resource.
+    >GenericHandler</link>.
   </para>
  </section>
 

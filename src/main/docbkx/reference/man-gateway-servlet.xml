@@ -66,6 +66,18 @@
    The gateway servlet creates a default
    <link
     xlink:show="new"
+    xlink:href="reference#CaptureDecorator"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >CaptureDecorator</link> that you can use
+   to capture requests and response messages,
+   though not the entity body or the exchange.
+   The default CaptureDecorator is named "capture".
+  </para>
+
+  <para>
+   The gateway servlet creates a default
+   <link
+    xlink:show="new"
     xlink:href="reference#TimerDecorator"
     xlink:role="http://docbook.org/xlink/role/olink"
    >TimerDecorator</link> that you can use
