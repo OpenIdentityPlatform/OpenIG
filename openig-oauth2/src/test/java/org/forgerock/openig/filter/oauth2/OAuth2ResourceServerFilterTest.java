@@ -23,12 +23,14 @@ import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.*;
 import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.util.time.TimeService;
@@ -61,7 +63,7 @@ public class OAuth2ResourceServerFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(resolver.resolve(TOKEN_ID)).thenReturn(token);
-        when(token.getScopes()).thenReturn(asSet("a", "b", "c"));
+        when(token.getScopes()).thenReturn(new HashSet<String>(asList("a", "b", "c")));
 
         // By default consider all token as valid since their expiration time is greater than now
         when(token.getExpiresAt()).thenReturn(100L);
@@ -157,17 +159,44 @@ public class OAuth2ResourceServerFilterTest {
         verify(nextHandler).handle(exchange);
     }
 
+    @Test
+    public void shouldEvaluateScopeExpressions() throws Exception {
+        final OAuth2ResourceServerFilter filter =
+                buildResourceServerFilter("${exchange.attribute}",
+                                          "${split('to,b,or,not,to', ',')[1]}",
+                                          "c");
+
+        final Exchange exchange = buildAuthorizedExchange();
+        exchange.put("attribute", "a");
+        filter.filter(exchange, nextHandler);
+
+        verify(nextHandler).handle(exchange);
+    }
+
+    @Test(expectedExceptions = HandlerException.class,
+          expectedExceptionsMessageRegExp = ".*scope expression could not be resolved.*")
+    public void shouldFailDueToInvalidScopeExpressions() throws Exception {
+        final OAuth2ResourceServerFilter filter = buildResourceServerFilter("${bad.attribute}");
+
+        final Exchange exchange = buildAuthorizedExchange();
+        filter.filter(exchange, nextHandler);
+    }
+
     private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) throws ExpressionException {
         return new OAuth2ResourceServerFilter(resolver,
                                               new BearerTokenExtractor(),
                                               time,
-                                              asSet(scopes),
+                                              getScopes(scopes),
                                               DEFAULT_REALM_NAME,
                                               new Expression(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
     }
 
-    private static Set<String> asSet(final String... scopes) {
-        return new HashSet<String>(asList(scopes));
+    private static List<Expression> getScopes(final String... scopes) throws ExpressionException {
+        final List<Expression> expScopes = new ArrayList<Expression>();
+        for (final String scope : scopes) {
+            expScopes.add(new Expression(scope));
+        }
+        return expScopes;
     }
 
     private static Exchange buildUnAuthorizedExchange() {
