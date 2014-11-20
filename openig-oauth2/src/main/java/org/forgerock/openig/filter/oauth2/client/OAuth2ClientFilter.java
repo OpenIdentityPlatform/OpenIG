@@ -463,7 +463,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private void checkRequestIsSufficientlySecure(final Exchange exchange)
             throws OAuth2ErrorException {
         // FIXME: use enforce filter?
-        if (requireHttps && !exchange.request.getUri().getScheme().equalsIgnoreCase("https")) {
+        if (requireHttps && !exchange.originalUri.getScheme().equalsIgnoreCase("https")) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "SSL is required in order to perform this operation");
         }
@@ -790,7 +790,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
             loginHandler.handle(exchange);
         } else {
             final OAuth2Provider provider = providers.values().iterator().next();
-            sendAuthorizationRedirect(exchange, provider, exchange.request.getUri().toString());
+            sendAuthorizationRedirect(exchange, provider, exchange.originalUri.toString());
         }
     }
 

@@ -237,22 +237,21 @@ public class GatewayServlet extends HttpServlet {
     public void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException,
             ServletException {
         final LogTimer timer = logger.getTimer().start();
-        final Exchange exchange = new Exchange();
+
+        // Build Exchange
+        URI uri = createRequestUri(request);
+        final Exchange exchange = new Exchange(uri);
+
         // populate request
         exchange.request = new Request();
         exchange.request.setMethod(request.getMethod());
-        try {
-            exchange.request.setUri(URIUtil.create(request.getScheme(), null, request
-                    .getServerName(), request.getServerPort(), request.getRequestURI(), request
-                    .getQueryString(), null));
-            if (baseURI != null) {
-                exchange.request.getUri().rebase(baseURI);
-            }
-        } catch (final URISyntaxException use) {
-            throw new ServletException(use);
+        exchange.request.setUri(uri);
+        if (baseURI != null) {
+            exchange.request.getUri().rebase(baseURI);
         }
+
         // request headers
-        for (final Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements();) {
+        for (final Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
             exchange.request.getHeaders().addAll(name, Collections.list(request.getHeaders(name)));
         }
@@ -303,6 +302,20 @@ public class GatewayServlet extends HttpServlet {
             closeSilently(exchange.request, exchange.response);
         }
         timer.stop();
+    }
+
+    private static URI createRequestUri(final HttpServletRequest request) throws ServletException {
+        try {
+            return URIUtil.create(request.getScheme(),
+                                  null,
+                                  request.getServerName(),
+                                  request.getServerPort(),
+                                  request.getRequestURI(),
+                                  request.getQueryString(),
+                                  null);
+        } catch (final URISyntaxException use) {
+            throw new ServletException(use);
+        }
     }
 
     private Session newSession(final HttpServletRequest request, final Exchange exchange) {
