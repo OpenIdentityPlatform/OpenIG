@@ -111,7 +111,7 @@ WWW-Authenticate: Bearer realm="${projectName}"
   "type": "OAuth2ResourceServerFilter",
   "config": {
     "providerHandler": Handler reference,
-    "scopes": [ string, ... ],
+    "scopes": [ expression, ... ],
     "tokenInfoEndpoint": URL string,
     "cacheExpiration": duration string,
     "requireHttps": boolean,
@@ -158,7 +158,11 @@ WWW-Authenticate: Bearer realm="${projectName}"
    </varlistentry>
 
    <varlistentry>
-    <term><code>"scopes"</code>: <emphasis>array of strings, required</emphasis></term>
+    <term><code>"scopes"</code>: <emphasis>array of <link
+      xlink:show="new"
+      xlink:href="reference#Expressions"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >expressions</link>, required</emphasis></term>
     <listitem>
      <para>
       The list of required OAuth 2.0 scopes for this protected resource.
