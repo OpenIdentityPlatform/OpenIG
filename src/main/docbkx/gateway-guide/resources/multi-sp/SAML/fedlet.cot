@@ -1,5 +1,5 @@
 cot-name=Circle of Trust
 sun-fm-cot-status=Active
-sun-fm-trusted-providers=http://openam.example.com:8088/openam,OpenIG,One,Two
+sun-fm-trusted-providers=http://openam.example.com:8088/openam,${projectName},One,Two
 sun-fm-saml2-readerservice-url=
 sun-fm-saml2-writerservice-url=
