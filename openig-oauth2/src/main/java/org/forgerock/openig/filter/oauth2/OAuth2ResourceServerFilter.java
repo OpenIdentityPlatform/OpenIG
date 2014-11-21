@@ -220,9 +220,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         final Set<String> setOfScopes = getScopes(exchange);
         if (areRequiredScopesMissing(accessToken, setOfScopes)) {
             logger.debug(format("Access Token '%s' is missing required scopes", token));
-            final InsufficientScopeChallengeHandler insufficientScope =
-                    new InsufficientScopeChallengeHandler(realm, setOfScopes);
-            insufficientScope.handle(exchange);
+            new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(exchange);
             return;
         }
 
