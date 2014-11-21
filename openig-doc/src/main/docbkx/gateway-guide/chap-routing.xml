@@ -196,14 +196,12 @@
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler"
-            }
-        ]
-    },
+    "heap": [
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler"
+        }
+    ],
     "name": "default",
     "condition": null,
     "baseURI": null,

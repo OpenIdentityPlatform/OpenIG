@@ -67,16 +67,16 @@
   <title>Usage</title>
 
   <programlisting language="javascript">
-{
-    "objects": [
-        {
-            "name": string,
-            "type": string,
-            "config": { <replaceable>object-specific configuration</replaceable> }
-        },
-        ...
-    ]
-}
+[
+    {
+        "name": string,
+        "type": string,
+        "config": {
+            <replaceable>object-specific configuration</replaceable>
+        }
+    },
+    ...
+]
   </programlisting>
  </refsect1>
 

@@ -96,7 +96,7 @@
 
   <programlisting language="javascript">
 {
-    "heap": { <replaceable>heap-configuration object</replaceable> },
+    "heap": [ configuration object, ... ],
     "handler": Handler reference,
     "baseURI": string,
     "condition": expression,
@@ -111,7 +111,7 @@
 
   <variablelist>
    <varlistentry>
-    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
+    <term><code>"heap"</code>: <emphasis>array of configuration objects, required</emphasis></term>
     <listitem>
      <para>
       <link

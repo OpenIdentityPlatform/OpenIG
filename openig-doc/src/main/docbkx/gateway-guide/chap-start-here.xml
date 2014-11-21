@@ -230,14 +230,12 @@
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "My Router",
-                "type": "Router"
-            }
-        ]
-    },
+    "heap": [
+        {
+            "name": "My Router",
+            "type": "Router"
+        }
+    ],
     "handler": "My Router"
 }
   </programlisting>
@@ -516,57 +514,55 @@
 
   <programlisting language="javascript"><![CDATA[
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "Chain",
-                "type": "Chain",
-                "comment": "Base configuration defines the capture decorator",
-                "config": {
-                    "filters": [
-                        {
-                            "type": "HeaderFilter",
-                            "comment": "Same header on all requests",
-                            "config": {
-                                "messageType": "REQUEST",
-                                "add": {
-                                    "X-MyHeaderFilter": [
-                                        "Added by HeaderFilter to request"
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "type": "HeaderFilter",
-                            "comment": "Remove X-Powered-By from response",
-                            "capture": "response",
-                            "config": {
-                                "messageType": "RESPONSE",
-                                "remove": [
-                                    "X-Powered-By"
-                                ]
-                            }
-                        }
-                    ],
-                    "handler": {
-                        "type": "StaticResponseHandler",
-                        "comment": "Same response to all requests",
-                        "capture": "request",
+    "heap": [
+        {
+            "name": "Chain",
+            "type": "Chain",
+            "comment": "Base configuration defines the capture decorator",
+            "config": {
+                "filters": [
+                    {
+                        "type": "HeaderFilter",
+                        "comment": "Same header on all requests",
                         "config": {
-                            "status": 200,
-                            "reason": "OK",
-                            "headers": {
-                                "X-Powered-By": [
-                                    "${projectName}"
+                            "messageType": "REQUEST",
+                            "add": {
+                                "X-MyHeaderFilter": [
+                                    "Added by HeaderFilter to request"
                                 ]
-                            },
-                            "entity": "<html><p>Hello, World!</p></html>"
+                            }
                         }
+                    },
+                    {
+                        "type": "HeaderFilter",
+                        "comment": "Remove X-Powered-By from response",
+                        "capture": "response",
+                        "config": {
+                            "messageType": "RESPONSE",
+                            "remove": [
+                                "X-Powered-By"
+                            ]
+                        }
+                    }
+                ],
+                "handler": {
+                    "type": "StaticResponseHandler",
+                    "comment": "Same response to all requests",
+                    "capture": "request",
+                    "config": {
+                        "status": 200,
+                        "reason": "OK",
+                        "headers": {
+                            "X-Powered-By": [
+                                "${projectName}"
+                            ]
+                        },
+                        "entity": "<html><p>Hello, World!</p></html>"
                     }
                 }
             }
-        ]
-    },
+        }
+    ],
     "handler": "Chain"
 }
   ]]></programlisting>

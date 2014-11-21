@@ -1,69 +1,67 @@
 {
-  "heap": {
-    "objects": [
-      {
-        "name": "OpenIDConnectRelyingParty",
-        "type": "Chain",
-        "config": {
-          "filters": [
-            {
-              "type": "OAuth2ClientFilter",
-              "config": {
-                "clientEndpoint": "/openid",
-                "requireHttps": false,
-                "requireLogin": true,
-                "target": "${exchange.openid}",
-                "scopes": [
-                  "openid",
-                  "profile"
-                ],
-                "failureHandler": {
-                  "type": "ScriptableHandler",
-                  "config": {
-                    "type": "application/x-groovy",
-                    "file": "DumpExchange.groovy"
-                  }
-                },
-                "providerHandler": "ClientHandler",
-                "providers": [
-                  {
-                    "name": "openam",
-                    "wellKnownConfiguration":
-                      "http://openam.example.com:8088/openam/.well-known/openid-configuration",
-                    "clientId": "${projectName}",
-                    "clientSecret": "password"
-                  }
-                ]
-              }
-            }
-          ],
-          "handler": {
-            "type": "Chain",
+  "heap": [
+    {
+      "name": "OpenIDConnectRelyingParty",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          {
+            "type": "OAuth2ClientFilter",
             "config": {
-              "filters": [
+              "clientEndpoint": "/openid",
+              "requireHttps": false,
+              "requireLogin": true,
+              "target": "${exchange.openid}",
+              "scopes": [
+                "openid",
+                "profile"
+              ],
+              "failureHandler": {
+                "type": "ScriptableHandler",
+                "config": {
+                  "type": "application/x-groovy",
+                  "file": "DumpExchange.groovy"
+                }
+              },
+              "providerHandler": "ClientHandler",
+              "providers": [
                 {
-                  "type": "StaticRequestFilter",
-                  "config": {
-                    "method": "POST",
-                    "uri": "http://www.example.com:8081",
-                    "form": {
-                      "username": [
-                        "${exchange.openid.user_info.family_name}"
-                      ],
-                      "password": [
-                        "${exchange.openid.user_info.name}"
-                      ]
-                    }
+                  "name": "openam",
+                  "wellKnownConfiguration":
+                    "http://openam.example.com:8088/openam/.well-known/openid-configuration",
+                  "clientId": "${projectName}",
+                  "clientSecret": "password"
+                }
+              ]
+            }
+          }
+        ],
+        "handler": {
+          "type": "Chain",
+          "config": {
+            "filters": [
+              {
+                "type": "StaticRequestFilter",
+                "config": {
+                  "method": "POST",
+                  "uri": "http://www.example.com:8081",
+                  "form": {
+                    "username": [
+                      "${exchange.openid.user_info.family_name}"
+                    ],
+                    "password": [
+                      "${exchange.openid.user_info.name}"
+                    ]
                   }
                 }
-              ],
-              "handler": "ClientHandler"
-            }
+              }
+            ],
+            "handler": "ClientHandler"
           }
         }
       }
-    ]
-  },
+    }
+  ],
   "handler": "OpenIDConnectRelyingParty",
   "condition": "${matches(exchange.request.uri.path, '^/openid')}",
   "baseURI": "http://www.example.com:8080"

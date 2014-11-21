@@ -230,22 +230,23 @@
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "captureEntity": true
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "capture": [ "request", "response" ]
+    "heap": [
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureEntity": true
             }
-        ]
-    },
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler",
+            "capture": [
+                "request",
+                "response"
+            ]
+        }
+    ],
     "handler": "ClientHandler"
 }
   </programlisting>
@@ -257,53 +258,51 @@
 
   <programlisting language="javascript"><![CDATA[
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "capture",
-                "type": "CaptureDecorator"
-            },
-            {
-                "name": "Chain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        {
-                            "type": "HeaderFilter",
-                            "config": {
-                                "messageType": "REQUEST",
-                                "add": {
-                                    "X-RequestHeader": [
-                                        "Capture at filtered_request point",
-                                        "And at filtered_response point"
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "type": "HeaderFilter",
-                            "config": {
-                                "messageType": "RESPONSE",
-                                "add": {
-                                    "X-ResponseHeader": [
-                                        "Capture at filtered_response point"
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    "handler": {
-                        "type": "StaticResponseHandler",
+    "heap": [
+        {
+            "name": "capture",
+            "type": "CaptureDecorator"
+        },
+        {
+            "name": "Chain",
+            "type": "Chain",
+            "config": {
+                "filters": [
+                    {
+                        "type": "HeaderFilter",
                         "config": {
-                            "status": 200,
-                            "reason": "OK",
-                            "entity": "<html><p>Hello, World!</p></html>"
+                            "messageType": "REQUEST",
+                            "add": {
+                                "X-RequestHeader": [
+                                    "Capture at filtered_request point",
+                                    "And at filtered_response point"
+                                ]
+                            }
                         }
+                    },
+                    {
+                        "type": "HeaderFilter",
+                        "config": {
+                            "messageType": "RESPONSE",
+                            "add": {
+                                "X-ResponseHeader": [
+                                    "Capture at filtered_response point"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "handler": {
+                    "type": "StaticResponseHandler",
+                    "config": {
+                        "status": 200,
+                        "reason": "OK",
+                        "entity": "<html><p>Hello, World!</p></html>"
                     }
                 }
             }
-        ]
-    },
+        }
+    ],
     "handler": "Chain",
     "capture": [
         "filtered_request",
@@ -321,22 +320,23 @@
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "captureExchange": true
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "capture": [ "request", "response" ]
+    "heap": [
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureExchange": true
             }
-        ]
-    },
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler",
+            "capture": [
+                "request",
+                "response"
+            ]
+        }
+    ],
     "handler": "ClientHandler"
 }
   </programlisting>
