@@ -136,40 +136,38 @@
 
    <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "Chain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        "ReplaceHostFilter"
-                    ],
-                    "handler": "Router"
-                }
-            },
-            {
-                "name": "ReplaceHostFilter",
-                "type": "HeaderFilter",
-                "config": {
-                    "messageType": "REQUEST",
-                    "remove": [
-                        "host"
-                    ],
-                    "add": {
-                        "host": [
-                            "myhost.com"
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "Router",
-                "type": "Router",
-                "config": {}
+    "heap": [
+        {
+            "name": "Chain",
+            "type": "Chain",
+            "config": {
+                "filters": [
+                    "ReplaceHostFilter"
+                ],
+                "handler": "Router"
             }
-        ]
-    },
+        },
+        {
+            "name": "ReplaceHostFilter",
+            "type": "HeaderFilter",
+            "config": {
+                "messageType": "REQUEST",
+                "remove": [
+                    "host"
+                ],
+                "add": {
+                    "host": [
+                        "myhost.com"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Router",
+            "type": "Router",
+            "config": {}
+        }
+    ],
     "handler": "Chain"
 }
    </programlisting>
@@ -181,35 +179,33 @@
 
    <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "Chain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        {
-                            "type": "HeaderFilter",
-                            "config": {
-                                "messageType": "REQUEST",
-                                "remove": [
-                                    "host"
-                                ],
-                                "add": {
-                                    "host": [
-                                        "myhost.com"
-                                    ]
-                                }
+    "heap": [
+        {
+            "name": "Chain",
+            "type": "Chain",
+            "config": {
+                "filters": [
+                    {
+                        "type": "HeaderFilter",
+                        "config": {
+                            "messageType": "REQUEST",
+                            "remove": [
+                                "host"
+                            ],
+                            "add": {
+                                "host": [
+                                    "myhost.com"
+                                ]
                             }
                         }
-                    ],
-                    "handler": {
-                        "type": "Router"
                     }
+                ],
+                "handler": {
+                    "type": "Router"
                 }
             }
-        ]
-    },
+        }
+    ],
     "handler": "Chain"
 }
    </programlisting>

@@ -179,15 +179,13 @@
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler",
-                "timer": true
-            }
-        ]
-    },
+    "heap": [
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler",
+            "timer": true
+        }
+    ],
     "handler": "ClientHandler"
 }
   </programlisting>

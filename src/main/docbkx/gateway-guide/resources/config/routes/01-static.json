@@ -1,32 +1,30 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        {
-                            "type": "StaticRequestFilter",
-                            "config": {
-                                "method": "POST",
-                                "uri": "http://www.example.com:8081",
-                                "form": {
-                                    "username": [
-                                        "demo"
-                                    ],
-                                    "password": [
-                                        "changeit"
-                                    ]
-                                }
+    "heap": [
+        {
+            "name": "LoginChain",
+            "type": "Chain",
+            "config": {
+                "filters": [
+                    {
+                        "type": "StaticRequestFilter",
+                        "config": {
+                            "method": "POST",
+                            "uri": "http://www.example.com:8081",
+                            "form": {
+                                "username": [
+                                    "demo"
+                                ],
+                                "password": [
+                                    "changeit"
+                                ]
                             }
                         }
-                    ],
-                    "handler":"ClientHandler"
-                }
+                    }
+                ],
+                "handler": "ClientHandler"
             }
-        ]
-    },
+        }
+    ],
     "handler": "LoginChain",
     "condition": "${matches(exchange.request.uri.path, '^/static')}"
 }

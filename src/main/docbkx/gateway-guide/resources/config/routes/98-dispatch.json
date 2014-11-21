@@ -1,52 +1,50 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "DispatchHandler",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "condition":
-                              "${matches(exchange.request.uri.path, '^/login')}",
-                            "handler": {
-                                "type": "Chain",
-                                "config": {
-                                    "filters": [
-                                        {
-                                            "type": "HeaderFilter",
-                                            "config": {
-                                                "messageType": "REQUEST",
-                                                "add": {
-                                                    "Username": [
-                                                        "bjensen"
-                                                    ],
-                                                    "Password": [
-                                                        "hifalutin"
-                                                    ]
-                                                }
+    "heap": [
+        {
+            "name": "DispatchHandler",
+            "type": "DispatchHandler",
+            "config": {
+                "bindings": [
+                    {
+                        "condition":
+                            "${matches(exchange.request.uri.path, '^/login')}",
+                        "handler": {
+                            "type": "Chain",
+                            "config": {
+                                "filters": [
+                                    {
+                                        "type": "HeaderFilter",
+                                        "config": {
+                                            "messageType": "REQUEST",
+                                            "add": {
+                                                "Username": [
+                                                    "bjensen"
+                                                ],
+                                                "Password": [
+                                                    "hifalutin"
+                                                ]
                                             }
                                         }
-                                    ],
-                                    "handler": "Dispatcher"
-                                }
+                                    }
+                                ],
+                                "handler": "Dispatcher"
                             }
-                        },
-                        {
-                            "handler": "Dispatcher"
                         }
-                    ]
-                }
-            },
-            {
-                "name": "Dispatcher",
-                "type": "ScriptableHandler",
-                "config": {
-                    "type": "application/x-groovy",
-                    "file": "DispatchHandler.groovy"
-                }
+                    },
+                    {
+                        "handler": "Dispatcher"
+                    }
+                ]
             }
-        ]
-    },
+        },
+        {
+            "name": "Dispatcher",
+            "type": "ScriptableHandler",
+            "config": {
+                "type": "application/x-groovy",
+                "file": "DispatchHandler.groovy"
+            }
+        }
+    ],
     "handler": "DispatchHandler"
 }
