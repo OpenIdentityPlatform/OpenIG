@@ -25,6 +25,7 @@ import static org.forgerock.openig.util.Logs.*;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,6 +45,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Headers;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.util.Duration;
 import org.forgerock.util.time.TimeService;
@@ -182,10 +184,18 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        String token = getAccessToken(exchange.request);
-        if (token == null) {
-            logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
-            noAuthentication.handle(exchange);
+        String token = null;
+        try {
+            token = getAccessToken(exchange.request);
+            if (token == null) {
+                logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
+                noAuthentication.handle(exchange);
+                return;
+            }
+        } catch (OAuth2TokenException e) {
+            logger.debug("Multiple 'Authorization' headers in the request");
+            logDetailedException(DEBUG, logger, e);
+            invalidRequest.handle(exchange);
             return;
         }
 
@@ -196,7 +206,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         } catch (OAuth2TokenException e) {
             logger.debug(format("Access Token '%s' cannot be resolved", token));
             logDetailedException(DEBUG, logger, e);
-            invalidRequest.handle(exchange);
+            invalidToken.handle(exchange);
             return;
         }
 
@@ -254,8 +264,14 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * @return The access token, or {@literal null} if the access token was not present or was not using {@literal
      * Bearer} authorization.
      */
-    private String getAccessToken(final Request request) {
-        String header = request.getHeaders().getFirst("Authorization");
+    private String getAccessToken(final Request request) throws OAuth2TokenException {
+        Headers headers = request.getHeaders();
+        List<String> authorizations = headers.get("Authorization");
+        if ((authorizations != null) && (authorizations.size() >= 2)) {
+            throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
+                                                   + " the OAuth2 AccessToken");
+        }
+        String header = headers.getFirst("Authorization");
         return extractor.getAccessToken(header);
     }
 
