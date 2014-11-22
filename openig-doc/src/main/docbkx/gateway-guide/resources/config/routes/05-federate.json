@@ -1,57 +1,53 @@
 {
-    "heap": [
-        {
-            "name": "DispatchHandler",
-            "type": "DispatchHandler",
-            "config": {
-                "bindings": [
-                    {
-                        "condition": "${empty exchange.session.username}",
-                        "handler": {
-                            "type": "StaticResponseHandler",
-                            "config": {
-                                "status": 302,
-                                "reason": "Found",
-                                "headers": {
-                                    "Location": [
-                                        "http://www.example.com:8080/saml/SPInitiatedSSO"
-                                    ]
-                                }
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${empty exchange.session.username}",
+                    "handler": {
+                        "type": "StaticResponseHandler",
+                        "config": {
+                            "status": 302,
+                            "reason": "Found",
+                            "headers": {
+                                "Location": [
+                                    "http://www.example.com:8080/saml/SPInitiatedSSO"
+                                ]
                             }
-                        },
-                        "baseURI": "http://www.example.com:8081"
+                        }
                     },
-                    {
-                        "handler": {
-                            "type": "Chain",
-                            "config": {
-                                "filters": [
-                                    {
-                                        "type": "StaticRequestFilter",
-                                        "config": {
-                                            "method": "POST",
-                                            "uri": "http://www.example.com:8081",
-                                            "form": {
-                                                "username": [
-                                                    "${exchange.session.username}"
-                                                ],
-                                                "password": [
-                                                    "${exchange.session.password}"
-                                                ]
-                                            }
+                    "baseURI": "http://www.example.com:8081"
+                },
+                {
+                    "handler": {
+                        "type": "Chain",
+                        "config": {
+                            "filters": [
+                                {
+                                    "type": "StaticRequestFilter",
+                                    "config": {
+                                        "method": "POST",
+                                        "uri": "http://www.example.com:8081",
+                                        "form": {
+                                            "username": [
+                                                "${exchange.session.username}"
+                                            ],
+                                            "password": [
+                                                "${exchange.session.password}"
+                                            ]
                                         }
                                     }
-                                ],
-                                "handler": "ClientHandler"
-                            }
-                        },
-                        "baseURI": "http://www.example.com:8081"
-                    }
-                ]
-            }
+                                }
+                            ],
+                            "handler": "ClientHandler"
+                        }
+                    },
+                    "baseURI": "http://www.example.com:8081"
+                }
+            ]
         }
-    ],
-    "handler": "DispatchHandler",
+    },
     "condition": "${matches(exchange.request.uri.path, '^/federate')}",
     "session": "JwtSession"
 }

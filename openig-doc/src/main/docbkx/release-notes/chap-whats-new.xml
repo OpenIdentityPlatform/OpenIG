@@ -118,11 +118,17 @@
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-311"
     >OPENIG-311</link>),
-    and to omit "config" fields when all values are optional (
+    to omit "config" fields when all values are optional (
     <link
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-300"
-    >OPENIG-300</link>).
+    >OPENIG-300</link>),
+    and even to omit the "heap" when it is empty
+    or would only contain a single handler (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-329"
+    >OPENIG-329</link>).
    </para>
 
    <para>
@@ -157,7 +163,7 @@
                 ],
                 "add": {
                     "host": [
-                        "myhost.com"
+                        "example.com"
                     ]
                 }
             }
@@ -179,39 +185,36 @@
 
    <programlisting language="javascript">
 {
-    "heap": [
-        {
-            "name": "Chain",
-            "type": "Chain",
-            "config": {
-                "filters": [
-                    {
-                        "type": "HeaderFilter",
-                        "config": {
-                            "messageType": "REQUEST",
-                            "remove": [
-                                "host"
-                            ],
-                            "add": {
-                                "host": [
-                                    "myhost.com"
-                                ]
-                            }
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "REQUEST",
+                        "remove": [
+                            "host"
+                        ],
+                        "add": {
+                            "host": [
+                                "example.com"
+                            ]
                         }
                     }
-                ],
-                "handler": {
-                    "type": "Router"
                 }
+            ],
+            "handler": {
+                "type": "Router"
             }
         }
-    ],
-    "handler": "Chain"
+    }
 }
    </programlisting>
 
    <para>
-    Many examples in the documentation now use inline configurations.
+    Examples in the documentation now use streamlined configurations
+    where it makes sense.
    </para>
   </listitem>
 

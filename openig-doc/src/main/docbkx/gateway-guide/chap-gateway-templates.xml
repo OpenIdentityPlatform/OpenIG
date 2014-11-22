@@ -87,6 +87,8 @@
    with a "DispatchHandler" to change the scheme to HTTPS on login.
    Simply change the "baseURI" to that of the target application,
    and login to the application.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
 
   <informalexample><?dbfo pgwide="1"?>
@@ -131,6 +133,8 @@
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
    and adapt the "StaticRequestFilter" for your application.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -166,6 +170,8 @@
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
    and adapt the "StaticRequestFilter" for your application.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -219,6 +225,8 @@
    and <literal>PORT</literal> with the port on which OpenAM listens.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>
    to match those of your OpenAM user.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -251,6 +259,8 @@
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
    and adapt the "StaticRequestFilter" for your application.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -287,6 +297,8 @@
    Also add the necessary filter configurations
    that are required for login with your application,
    and then change <literal>MY_FILTERS</literal> to identify the added filters.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -318,6 +330,8 @@
    <filename>${warRoutesDir}/99-default.json</filename>,
    Substitute <literal>TARGETIP</literal> with the IP address of your application.
    Also adapt the "StaticRequestFilter" for your application.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 
@@ -360,6 +374,8 @@
     xlink:href="gateway-guide#password-capture-configuration"
     xlink:role="http://docbook.org/xlink/role/olink"
    >Configuring Password Capture</link>.
+   This template references a "ClientHandler"
+   defined in <filename>config.json</filename>.
   </para>
  </section>
 </chapter>

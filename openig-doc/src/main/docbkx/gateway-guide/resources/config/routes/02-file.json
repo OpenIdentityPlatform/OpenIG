@@ -1,39 +1,35 @@
 {
-    "heap": [
-        {
-            "name": "LoginChain",
-            "type": "Chain",
-            "config": {
-                "filters": [
-                    {
-                        "type": "FileAttributesFilter",
-                        "config": {
-                            "target": "${exchange.credentials}",
-                            "file": "/tmp/userfile",
-                            "key": "email",
-                            "value": "george@example.com"
-                        }
-                    },
-                    {
-                        "type": "StaticRequestFilter",
-                        "config": {
-                            "method": "POST",
-                            "uri": "http://www.example.com:8081",
-                            "form": {
-                                "username": [
-                                    "${exchange.credentials.username}"
-                                ],
-                                "password": [
-                                    "${exchange.credentials.password}"
-                                ]
-                            }
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "FileAttributesFilter",
+                    "config": {
+                        "target": "${exchange.credentials}",
+                        "file": "/tmp/userfile",
+                        "key": "email",
+                        "value": "george@example.com"
+                    }
+                },
+                {
+                    "type": "StaticRequestFilter",
+                    "config": {
+                        "method": "POST",
+                        "uri": "http://www.example.com:8081",
+                        "form": {
+                            "username": [
+                                "${exchange.credentials.username}"
+                            ],
+                            "password": [
+                                "${exchange.credentials.password}"
+                            ]
                         }
                     }
-                ],
-                "handler": "ClientHandler"
-            }
+                }
+            ],
+            "handler": "ClientHandler"
         }
-    ],
-    "handler": "LoginChain",
+    },
     "condition": "${matches(exchange.request.uri.path, '^/file')}"
 }

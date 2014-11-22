@@ -1,19 +1,15 @@
 {
-    "heap": [
-        {
-            "name": "SamlFederationHandler",
-            "type": "SamlFederationHandler",
-            "config": {
-                "assertionMapping": {
-                    "username": "mail",
-                    "password": "employeenumber"
-                },
-                "subjectMapping": "subjectName",
-                "redirectURI": "/sp1"
-            }
+    "handler": {
+        "type": "SamlFederationHandler",
+        "config": {
+            "assertionMapping": {
+                "username": "mail",
+                "password": "employeenumber"
+            },
+            "subjectMapping": "subjectName",
+            "redirectURI": "/sp1"
         }
-    ],
-    "handler": "SamlFederationHandler",
+    },
     "condition": "${matches(exchange.request.uri.host, 'sp.one.example')
                     and matches(exchange.request.uri.path, '^/saml')}"
 }

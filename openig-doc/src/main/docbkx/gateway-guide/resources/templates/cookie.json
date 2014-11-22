@@ -62,10 +62,6 @@
                 ],
                 "handler": "ClientHandler"
             }
-        },
-        {
-            "name": "ClientHandler",
-            "type": "ClientHandler"
         }
     ],
     "handler": "DispatchHandler"

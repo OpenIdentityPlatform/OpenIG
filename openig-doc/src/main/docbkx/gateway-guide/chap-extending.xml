@@ -304,7 +304,7 @@
 
   <para>
    When the request path matches <literal>/basic</literal>
-   the route calls the "LoginChain",
+   the route calls the "Chain",
    which runs the "ScriptableFilter",
    and then responds with a JSON representation of the exchange
    including the request data.
