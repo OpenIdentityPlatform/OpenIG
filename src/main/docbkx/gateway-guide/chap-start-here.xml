@@ -219,8 +219,7 @@
   <para>
    After installation, you add at least one configuration file.
    Each configuration file holds a JSON object.
-   At minimum, the JSON object contains an array of configuration objects,
-   and also specifies a "handler" to deal with the exchange.
+   At minimum, the JSON object specifies a "handler" to deal with the exchange.
   </para>
 
   <para>
@@ -230,34 +229,63 @@
 
   <programlisting language="javascript">
 {
+    "handler": {
+        "type": "Router"
+    }
+}
+  </programlisting>
+
+  <para>
+   The "handler" indicates which object ${projectName} invokes first.
+   A handler is an object responsible for producing a response to a request,
+   therefore every route must call a handler.
+  </para>
+
+  <para>
+   Notice in this case that the "handler" field takes an object as its value.
+   This is an inline declaration.
+   If you only use the object once where it is declared,
+   then it makes sense to use an inline declaration.
+  </para>
+
+  <para>
+   To change the definition of an object defined by default
+   or when you need to declare an object once and use it multiple times,
+   you declare object definitions in the "heap",
+   and then reference the objects by "name".
+   You can also use this technique instead of inline declarations.
+  </para>
+
+  <para>
+   The following example declares an identical "Router" object as above
+   and references it by its name.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "handler": "My Router",
     "heap": [
         {
             "name": "My Router",
             "type": "Router"
         }
-    ],
-    "handler": "My Router"
+    ]
 }
   </programlisting>
 
   <para>
-   Notice that you define configuration objects in the "heap".
-   As ${projectName} holds configuration objects in an array,
-   you can impose any hierarchy or order that you like.
-   Yet, neither hierarchy nor ordering are obvious
+   Notice that the "heap" takes an array.
+   As the "heap" holds configuration objects all at the same level,
+   you can impose any hierarchy or order that you like when referencing objects.
+   Yet, when you declare all objects in the "heap" and reference them by name,
+   neither hierarchy nor ordering are obvious
    from the structure of the configuration file alone.
   </para>
 
   <itemizedlist>
    <para>
-    Each configuration object has a "name", a "type", and a "config".
+    Each configuration object has a "type", a "name", and an optional "config".
    </para>
-
-   <listitem>
-    <para>
-     The "name" takes a string that is unique in the list of objects.
-    </para>
-   </listitem>
 
    <listitem>
     <para>
@@ -280,6 +308,16 @@
 
    <listitem>
     <para>
+     The "name" takes a string that is unique in the list of objects.
+    </para>
+
+    <para>
+     You can omit this field when declaring objects inline.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
      The contents of the "config" object depend on the "type".
     </para>
 
@@ -296,14 +334,7 @@
   </itemizedlist>
 
   <para>
-   Finally, notice that the "handler" refers to an object by "name".
-   The "handler" indicates which object ${projectName} invokes first.
-  </para>
-
-  <para>
-   The configuration can specify additional objects as well,
-   for example objects that perform logging, that cache content,
-   or that specify settings to use when connecting to services.
+   The configuration can specify additional objects as well.
    For example, you can configure an "HttpClient"
    that ${projectName} uses to connect to servers.
    The following "HttpClient" configuration uses defaults for all settings,
@@ -326,23 +357,41 @@
    that let you extend what another object can do.
    For example, a "CaptureDecorator" enables filters and handlers
    to log requests and responses.
+   A "TimerDecorator" logs processing times.
+   You decorate the configuration of other objects
+   with the names of decorators as field names.
+   ${projectName} defines both a "CaptureDecorator" named "capture"
+   and also a "TimerDecorator" named "timer" by default.
+   You can therefore log requests, responses, and processing times
+   by adding decorations as shown in the following example.
   </para>
 
-  <para>
-   Routes, described in <xref linkend="routing" />,
-   inherit settings from their parent configurations.
-   This means that you can
-   configure global objects in the base configuration for example,
-   and then reference the objects by name
-   in any other ${projectName} configuration.
-  </para>
+  <programlisting language="javascript">
+{
+    "handler": {
+        "type": "Router",
+        "capture": [ "request", "response" ],
+        "timer": true
+    }
+}
+  </programlisting>
 
   <para>
-   In addition, ${projectName} creates
-   some utility objects with default settings,
+   In addition to decorators, ${projectName} also creates
+   other utility objects with default settings,
    including "HttpClient", "LogSink", and "TemporaryStorage".
    You can reference these objects by name without configuring them
-   even if you do not override the default configurations.
+   unless you need to override the default configurations.
+  </para>
+
+  <para>
+   Routes, mentioned here
+   and described in more detail in <xref linkend="routing" />,
+   inherit settings from their parent configurations.
+   This means that you can
+   configure global objects in the "heap" of the base configuration for example,
+   and then reference the objects by name
+   in any other ${projectName} configuration.
   </para>
  </section>
 
@@ -514,62 +563,58 @@
 
   <programlisting language="javascript"><![CDATA[
 {
-    "heap": [
-        {
-            "name": "Chain",
-            "type": "Chain",
-            "comment": "Base configuration defines the capture decorator",
-            "config": {
-                "filters": [
-                    {
-                        "type": "HeaderFilter",
-                        "comment": "Same header on all requests",
-                        "config": {
-                            "messageType": "REQUEST",
-                            "add": {
-                                "X-MyHeaderFilter": [
-                                    "Added by HeaderFilter to request"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "HeaderFilter",
-                        "comment": "Remove X-Powered-By from response",
-                        "capture": "response",
-                        "config": {
-                            "messageType": "RESPONSE",
-                            "remove": [
-                                "X-Powered-By"
-                            ]
-                        }
-                    }
-                ],
-                "handler": {
-                    "type": "StaticResponseHandler",
-                    "comment": "Same response to all requests",
-                    "capture": "request",
+    "handler": {
+        "type": "Chain",
+        "comment": "Base configuration defines the capture decorator",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "comment": "Same header on all requests",
                     "config": {
-                        "status": 200,
-                        "reason": "OK",
-                        "headers": {
-                            "X-Powered-By": [
-                                "${projectName}"
+                        "messageType": "REQUEST",
+                        "add": {
+                            "X-MyHeaderFilter": [
+                                "Added by HeaderFilter to request"
                             ]
-                        },
-                        "entity": "<html><p>Hello, World!</p></html>"
+                        }
                     }
+                },
+                {
+                    "type": "HeaderFilter",
+                    "comment": "Remove X-Powered-By from response",
+                    "capture": "response",
+                    "config": {
+                        "messageType": "RESPONSE",
+                        "remove": [
+                            "X-Powered-By"
+                        ]
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "comment": "Same response to all requests",
+                "capture": "request",
+                "config": {
+                    "status": 200,
+                    "reason": "OK",
+                    "headers": {
+                        "X-Powered-By": [
+                            "${projectName}"
+                        ]
+                    },
+                    "entity": "<html><p>Hello, World!</p></html>"
                 }
             }
         }
-    ],
-    "handler": "Chain"
+    }
 }
   ]]></programlisting>
 
   <orderedlist>
    <para>
-    When "Chain" gets the request, it processes the exchange as follows.
+    When the "Chain" gets the request, it processes the exchange as follows.
    </para>
 
    <listitem>

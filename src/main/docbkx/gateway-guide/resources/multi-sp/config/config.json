@@ -1,4 +1,7 @@
 {
+    "handler": {
+        "type": "Router"
+    },
     "heap": [
         {
             "name": "LogSink",
@@ -18,11 +21,6 @@
                 "captureEntity": true,
                 "captureExchange": true
             }
-        },
-        {
-            "name": "Router",
-            "type": "Router"
         }
-    ],
-    "handler": "Router"
+    ]
 }

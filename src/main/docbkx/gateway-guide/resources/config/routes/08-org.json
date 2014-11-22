@@ -1,15 +1,11 @@
 {
-    "heap": [
-        {
-            "name": "CommunityChain",
-            "type": "Chain",
-            "config": {
-                "filters": [],
-                "handler": "ClientHandler"
-            }
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [],
+            "handler": "ClientHandler"
         }
-    ],
-    "handler": "CommunityChain",
+    },
     "condition": "${matches(exchange.request.uri.query, 'site=org')}",
     "baseURI": "http://forgerock.org:80/"
 }

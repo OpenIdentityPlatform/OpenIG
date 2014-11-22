@@ -198,14 +198,10 @@
 
    <programlisting language="javascript">
 {
-    "heap": [
-        {
-            "name": "ClientHandler",
-            "type": "ClientHandler"
-        }
-    ],
-    "handler": "ClientHandler",
-    "capture": "all"
+  "handler": {
+    "type": "ClientHandler"
+  },
+  "capture": "all"
 }
    </programlisting>
 
@@ -260,15 +256,11 @@
 
    <programlisting language="javascript">
 {
-    "heap": [
-          {
-          "name": "ClientHandler",
-          "type": "ClientHandler",
-          "capture": "request"
-        }
-    ],
-    "handler": "ClientHandler",
-    "capture": "all"
+  "handler": {
+    "type": "ClientHandler",
+    "capture": "request"
+  },
+  "capture": "all"
 }
    </programlisting>
 

@@ -1,4 +1,8 @@
 {
+    "handler": {
+        "type": "Router",
+        "capture": "all"
+    },
     "heap": [
         {
             "name": "LogSink",
@@ -22,13 +26,7 @@
                 "captureEntity": true,
                 "_captureExchange": true
             }
-        },
-        {
-            "name": "Router",
-            "type": "Router",
-            "capture": "all"
         }
     ],
-    "handler": "Router",
     "baseURI": "http://www.example.com:8081"
 }

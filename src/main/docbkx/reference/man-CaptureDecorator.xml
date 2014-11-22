@@ -254,56 +254,49 @@
   <para>
    To capture all transformed requests and responses as they leave filters,
    decorate the Route as in the following example.
+   This Route uses the default CaptureDecorator.
   </para>
 
   <programlisting language="javascript"><![CDATA[
 {
-    "heap": [
-        {
-            "name": "capture",
-            "type": "CaptureDecorator"
-        },
-        {
-            "name": "Chain",
-            "type": "Chain",
-            "config": {
-                "filters": [
-                    {
-                        "type": "HeaderFilter",
-                        "config": {
-                            "messageType": "REQUEST",
-                            "add": {
-                                "X-RequestHeader": [
-                                    "Capture at filtered_request point",
-                                    "And at filtered_response point"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "type": "HeaderFilter",
-                        "config": {
-                            "messageType": "RESPONSE",
-                            "add": {
-                                "X-ResponseHeader": [
-                                    "Capture at filtered_response point"
-                                ]
-                            }
-                        }
-                    }
-                ],
-                "handler": {
-                    "type": "StaticResponseHandler",
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
                     "config": {
-                        "status": 200,
-                        "reason": "OK",
-                        "entity": "<html><p>Hello, World!</p></html>"
+                        "messageType": "REQUEST",
+                        "add": {
+                            "X-RequestHeader": [
+                                "Capture at filtered_request point",
+                                "And at filtered_response point"
+                            ]
+                        }
                     }
+                },
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "RESPONSE",
+                        "add": {
+                            "X-ResponseHeader": [
+                                "Capture at filtered_response point"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "reason": "OK",
+                    "entity": "<html><p>Hello, World!</p></html>"
                 }
             }
         }
-    ],
-    "handler": "Chain",
+    },
     "capture": [
         "filtered_request",
         "filtered_response"

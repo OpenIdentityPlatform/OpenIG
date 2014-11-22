@@ -405,7 +405,7 @@
 
    <listitem>
     <para>
-     The first filter in the "OpenIDConnectRelyingParty" chain has the
+     The first filter in the outermost chain has the
      <link
       xlink:show="new"
       xlink:href="reference#OAuth2ClientFilter"
@@ -540,12 +540,11 @@
    The filter then uses that access token to get the user information.
    The filter injects the authorization state information into
    <literal>exchange.openid</literal>.
-   The "OpenIDConnectRelyingParty" chain then calls its handler,
-   which as another "Chain".
+   The outermost chain then calls its handler, which as another "Chain".
   </para>
 
   <para>
-   This "Chain" uses the credentials to log the user in
+   This inner chain uses the credentials to log the user in
    to the minimal HTTP server, which responds with its User Information page.
   </para>
  </section>

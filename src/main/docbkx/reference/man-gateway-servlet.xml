@@ -122,8 +122,8 @@
 
   <programlisting language="javascript">
 {
+  "handler": Handler reference or inline Handler declaration,
   "heap": [ configuration object, ... ],
-  "handler": Handler reference,
   "baseURI": string,
   "logSink":  LogSink reference,
   "temporaryStorage": TemporaryStorage reference
@@ -135,21 +135,6 @@
   <title>Properties</title>
 
   <variablelist>
-   <varlistentry>
-    <term><code>"heap"</code>: <emphasis>array of configuration objects, required</emphasis></term>
-    <listitem>
-     <para>
-      The
-      <link
-       xlink:show="new"
-       xlink:href="reference#heap-objects"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >heap object</link>
-      configuration.
-     </para>
-    </listitem>
-   </varlistentry>
-
    <varlistentry>
     <term><code>"handler"</code>: <emphasis><link
       xlink:show="new"
@@ -164,6 +149,27 @@
      <para>
       Provide either the name of a Handler object defined in the heap,
       or an inline Handler configuration object.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"heap"</code>: <emphasis>array of configuration objects, optional</emphasis></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+       >heap object</link>
+      configuration.
+     </para>
+
+     <para>
+      You can omit an empty array.
+      If you only have one object in the heap,
+      you can inline it as the handler value.
      </para>
     </listitem>
    </varlistentry>

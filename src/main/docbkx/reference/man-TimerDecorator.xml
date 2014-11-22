@@ -179,14 +179,10 @@
 
   <programlisting language="javascript">
 {
-    "heap": [
-        {
-            "name": "ClientHandler",
-            "type": "ClientHandler",
-            "timer": true
-        }
-    ],
-    "handler": "ClientHandler"
+    "handler": {
+        "type": "ClientHandler"
+    },
+    "timer": true
 }
   </programlisting>
 
