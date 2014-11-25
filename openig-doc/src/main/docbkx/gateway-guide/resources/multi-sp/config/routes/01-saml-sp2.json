@@ -2,11 +2,14 @@
     "handler": {
         "type": "SamlFederationHandler",
         "config": {
+            "comment": "Use unique session properties for this SP.",
             "assertionMapping": {
-                "username": "mail",
-                "password": "employeenumber"
+                "sp2Username": "mail",
+                "sp2Password": "employeenumber"
             },
-            "subjectMapping": "subjectName",
+            "authnContext": "sp2AuthnContext",
+            "sessionIndexMapping": "sp2SessionIndex",
+            "subjectMapping": "sp2SubjectName",
             "redirectURI": "/sp2"
         }
     },

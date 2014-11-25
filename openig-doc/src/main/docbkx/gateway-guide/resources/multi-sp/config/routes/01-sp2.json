@@ -4,7 +4,7 @@
         "config": {
             "bindings": [
                 {
-                    "condition": "${empty exchange.session.username}",
+                    "condition": "${empty exchange.session.sp2Username}",
                     "handler": {
                         "type": "StaticResponseHandler",
                         "config": {
@@ -31,10 +31,10 @@
                                         "uri": "http://sp.two.example:8081",
                                         "form": {
                                             "username": [
-                                                "${exchange.session.username}"
+                                                "${exchange.session.sp2Username}"
                                             ],
                                             "password": [
-                                                "${exchange.session.password}"
+                                                "${exchange.session.sp2Password}"
                                             ]
                                         }
                                     }
