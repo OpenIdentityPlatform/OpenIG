@@ -49,7 +49,10 @@
 
   <para>
    Records time in milliseconds to process applicable Filters and Handlers.
-   ${projectName} writes the records to the LogSink configured for the heap.
+   ${projectName} writes the records to the LogSink
+   configured for the decorated heap object.
+   If no LogSink is defined for the decorated heap object,
+   then ${projectName} writes to the LogSink configured for the heap.
    Records include the time elapsed while processing the exchange,
    and for Filters the elapsed time spent processing the exchanged
    within the Filter itself.
