@@ -12,14 +12,16 @@
                             "username": "bjensen",
                             "password": "hifalutin"
                         }
-                    }
+                    },
+                    "capture": "filtered_request"
                 }
             ],
             "handler": {
-                "type": "ScriptableHandler",
+                "type": "StaticResponseHandler",
                 "config": {
-                    "type": "application/x-groovy",
-                    "file": "DumpExchange.groovy"
+                    "status": 200,
+                    "reason": "OK",
+                    "entity": "Hello, Babs!"
                 }
             }
         }

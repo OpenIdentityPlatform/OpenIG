@@ -15,10 +15,12 @@
               "profile"
             ],
             "failureHandler": {
-              "type": "ScriptableHandler",
+              "type": "StaticResponseHandler",
               "config": {
-                "type": "application/x-groovy",
-                "file": "DumpExchange.groovy"
+                "comment": "Trivial failure handler for debugging only",
+                "status": 500,
+                "reason": "Error",
+                "entity": "${exchange.openid}"
               }
             },
             "providerHandler": "ClientHandler",
