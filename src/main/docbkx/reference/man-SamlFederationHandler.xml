@@ -87,6 +87,9 @@
      <para>
       The "assertionMapping" defines how to transform attributes
       from the incoming assertion to attribute value pairs in ${projectName}.
+     </para>
+
+     <para>
       Each entry in the <literal>assertionMapping</literal> object has the form
       <literal><replaceable>localName</replaceable>:
        <replaceable>incomingName</replaceable></literal>,
@@ -94,6 +97,9 @@
       is used to fetch the value from the incoming assertion,
       and <replaceable>localName</replaceable>
       is the name of the attribute set in the session.
+      Avoid using dot characters (<literal>.</literal>) in the
+      <replaceable>localName</replaceable>,
+      as the <literal>.</literal> character is also used as a separator in JSON.
      </para>
 
      <para>
@@ -128,6 +134,12 @@
       <filename>${warSamlDir}/sp-extended.xml</filename>,
       so that it matches the assertion mapping
       configured in the SAML 2.0 Identity Provider (IDP) metadata.
+     </para>
+
+     <para>
+      When protecting multiple service providers,
+      use unique <replaceable>localName</replaceable> settings.
+      Otherwise different handlers can overwrite each others' data.
      </para>
     </listitem>
    </varlistentry>
@@ -172,8 +184,29 @@
     <term><code>"authnContext"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
-      An authentication context to use when sending the request to the IDP,
-      such as <literal>PasswordProtectedTransport</literal>.
+      Name of the session field to hold the value of the authentication context.
+      Avoid using dot characters (<literal>.</literal>) in the field name,
+      as the <literal>.</literal> character is also used as a separator in JSON.
+     </para>
+
+     <para>
+      Use this setting when protecting multiple service providers,
+      as the different configurations must not map their data
+      into the same fields of <literal>exchange.session</literal>.
+      Otherwise different handlers can overwrite each others' data.
+     </para>
+
+     <para>
+      As an example, if you set <literal>"authnContext": "myAuthnContext"</literal>,
+      then ${projectName} sets <literal>exchange.session.myAuthnContext</literal>
+      to the authentication context specified in the assertion.
+      When the authentication context is password over protected transport,
+      then this results in the session containing
+      <literal>"myAuthnContext": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"</literal>.
+     </para>
+
+     <para>
+      Default: map to <literal>session.authnContext</literal>
      </para>
     </listitem>
    </varlistentry>
@@ -210,10 +243,28 @@
     <term><code>"sessionIndexMapping"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
-      The IDP sends the <literal>sessionIndex</literal> for the user
-      in the assertion.
-      The value contained in the assertion is set as
-      the value of the attribute <literal>sessionIndex</literal> in the session.
+      Name of the session field to hold the value of the session index.
+      Avoid using dot characters (<literal>.</literal>) in the field name,
+      as the <literal>.</literal> character is also used as a separator in JSON.
+     </para>
+
+     <para>
+      Use this setting when protecting multiple service providers,
+      as the different configurations must not map their data
+      into the same fields of <literal>exchange.session</literal>.
+      Otherwise different handlers can overwrite each others' data.
+     </para>
+
+     <para>
+      As an example, if you set <literal>"sessionIndexMapping": "mySessionIndex"</literal>,
+      then ${projectName} sets <literal>exchange.session.mySessionIndex</literal>
+      to the session index specified in the assertion.
+      This results in the session containing something like
+      <literal>"mySessionIndex": "s24ccbbffe2bfd761c32d42e1b7a9f60ea618f9801"</literal>.
+     </para>
+
+     <para>
+      Default: map to <literal>session.sessionIndex</literal>
      </para>
     </listitem>
    </varlistentry>
@@ -274,8 +325,29 @@
     <term><code>"subjectMapping"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
-      The value contained in the assertion subject is set as
-      the value of the attribute <literal>subjectName</literal> in the session.
+      Name of the session field to hold the value of the subject name.
+      Avoid using dot characters (<literal>.</literal>) in the field name,
+      as the <literal>.</literal> character is also used as a separator in JSON.
+     </para>
+
+     <para>
+      Use this setting when protecting multiple service providers,
+      as the different configurations must not map their data
+      into the same fields of <literal>exchange.session</literal>.
+      Otherwise different handlers can overwrite each others' data.
+     </para>
+
+     <para>
+      As an example, if you set <literal>"subjectMapping": "mySubjectName"</literal>,
+      then ${projectName} sets <literal>exchange.session.mySubjectName</literal>
+      to the subject name specified in the assertion.
+      If the subject name is an opaque identifier,
+      then this results in the session containing something like
+      <literal>"mySubjectName": "vtOk+APj1s9Rr4yCka6V9pGUuzuL"</literal>.
+     </para>
+
+     <para>
+      Default: map to <literal>session.subjectName</literal>
      </para>
     </listitem>
    </varlistentry>
