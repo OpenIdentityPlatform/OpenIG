@@ -86,6 +86,23 @@
    </varlistentry>
 
    <varlistentry>
+    <term><code>"originalUri"</code>: URI</term>
+    <listitem>
+     <para>
+      The original target
+      <link
+       xlink:href="https://docs.oracle.com/javase/6/docs/api/index.html?java/net/URI.html"
+       xlink:show="new"
+      >URI</link> for the request, as received by the web container.
+     </para>
+
+     <para>
+      The value of this field is read-only.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term><code><link
       xlink:href="reference#Request"
       xlink:show="new"
