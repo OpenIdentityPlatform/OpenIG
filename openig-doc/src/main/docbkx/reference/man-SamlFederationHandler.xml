@@ -99,7 +99,7 @@
       is the name of the attribute set in the session.
       Avoid using dot characters (<literal>.</literal>) in the
       <replaceable>localName</replaceable>,
-      as the <literal>.</literal> character is also used as a separator in JSON.
+      as the <literal>.</literal> character also serves as a query separator in expressions.
      </para>
 
      <para>
@@ -186,7 +186,7 @@
      <para>
       Name of the session field to hold the value of the authentication context.
       Avoid using dot characters (<literal>.</literal>) in the field name,
-      as the <literal>.</literal> character is also used as a separator in JSON.
+      as the <literal>.</literal> character also serves as a query separator in expressions.
      </para>
 
      <para>
@@ -245,7 +245,7 @@
      <para>
       Name of the session field to hold the value of the session index.
       Avoid using dot characters (<literal>.</literal>) in the field name,
-      as the <literal>.</literal> character is also used as a separator in JSON.
+      as the <literal>.</literal> character also serves as a query separator in expressions.
      </para>
 
      <para>
@@ -327,7 +327,7 @@
      <para>
       Name of the session field to hold the value of the subject name.
       Avoid using dot characters (<literal>.</literal>) in the field name,
-      as the <literal>.</literal> character is also used as a separator in JSON.
+      as the <literal>.</literal> character also serves as a query separator in expressions.
      </para>
 
      <para>
