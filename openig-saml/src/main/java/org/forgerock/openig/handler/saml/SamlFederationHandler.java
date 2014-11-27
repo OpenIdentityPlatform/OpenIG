@@ -30,15 +30,19 @@ import java.util.Properties;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.header.LocationHeader;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Form;
+import org.forgerock.openig.http.Request;
+import org.forgerock.openig.http.Response;
+import org.forgerock.openig.http.Session;
 
 import com.sun.identity.common.ShutdownManager;
 import com.sun.identity.plugin.session.SessionException;
@@ -160,34 +164,25 @@ public class SamlFederationHandler extends GenericHandler {
         try {
             String path = exchange.request.getUri().getPath();
             if (path.indexOf(assertionConsumerEndpoint) > 0) {
-                serviceAssertionConsumer(request, response);
+                serviceAssertionConsumer(exchange, request, response);
             } else if (path.indexOf(sPinitiatedSSOEndpoint) > 0) {
-                serviceSPInitiatedSSO(request, response);
+                serviceSPInitiatedSSO(exchange, request, response);
             } else if (path.indexOf(sPinitiatedSLOEndpoint) > 0) {
-                serviceSPInitiatedSLO(request, response);
+                serviceSPInitiatedSLO(exchange, request, response);
             } else if (path.indexOf(singleLogoutEndpointSoap) > 0) {
                 serviceIDPInitiatedSLOSOAP(request, response);
             } else if (path.indexOf(singleLogoutEndpoint) > 0) {
-                serviceIDPInitiatedSLO(request, response);
+                serviceIDPInitiatedSLO(exchange, request, response);
             } else {
                 logger.warning(format("FederationServlet warning: URI not in service %s", exchange.request.getUri()));
             }
         } catch (ServletException se) {
-            errorResponse(response, se.getMessage());
+            errorResponse(exchange, response, se.getMessage());
         } catch (SAML2Exception sme) {
-            errorResponse(response, sme.getMessage());
+            errorResponse(exchange, response, sme.getMessage());
         } catch (SessionException se) {
-            errorResponse(response, se.getMessage());
+            errorResponse(exchange, response, se.getMessage());
         }
-    }
-
-
-    private void errorResponse(HttpServletResponse response, String message) throws IOException {
-        final String msg = format("SSO Failed: %s", message);
-        if (!response.isCommitted()) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
-        }
-        logger.error(msg);
     }
 
     /**
@@ -196,13 +191,14 @@ public class SamlFederationHandler extends GenericHandler {
      * The assertion is validated, attributes are retrieved from and set in the HttpSession where downstream filters
      * can access them and pass them on to the target application.
      */
-    private void serviceAssertionConsumer(HttpServletRequest request,
+    private void serviceAssertionConsumer(Exchange exchange,
+                                          HttpServletRequest request,
                                           HttpServletResponse response) throws IOException,
                                                                                ServletException,
                                                                                SAML2Exception,
                                                                                SessionException {
         Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
-        addAttributesToSession(request, map);
+        addAttributesToSession(exchange.session, map);
         /*
          * Redirect back to the original target application's login page and let the filters take over. If the relayURI
          * is set in the assertion we must use that, otherwise we will use the configured value, which should be the
@@ -210,7 +206,7 @@ public class SamlFederationHandler extends GenericHandler {
          */
         String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
         String uri = isRelayURIProvided(relayURI) ? relayURI : redirectURI;
-        response.sendRedirect(uri);
+        sendRedirect(exchange, uri);
     }
 
     private boolean isRelayURIProvided(String relayURI) {
@@ -218,26 +214,24 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     /**
-     * Store attribute value pairs in the session based on the assertionMapping found in config.json. The intent is to
-     * have a filter use one of these attributes as the subject and possibly the password. The presence of these
-     * attributes in the Session implies the assertion has been processed and validated. Format of the attributeMapping:
-     * sessionAttributename: assertionAttribute. sessionAttributeName: attribute name added to the session.
-     * assertionAttribute: Name of the attribute to fetch from the assertion, the value becomes the value in the
-     * session.
+     * Store attribute value pairs in the session based on the assertionMapping found in config file.
+     * <p>
+     * The intent is to have a filter use one of these attributes as the subject and possibly the password. The
+     * presence of these attributes in the Session implies the assertion has been processed and validated.
      *
-     * @param request
-     *            The servlet request.
+     * @param session
+     *            exchange's {@link Session}
      * @param assertion
+     *            SAML assertion content
      */
-    private void addAttributesToSession(HttpServletRequest request, Map<?, ?> assertion) {
-        HttpSession httpSession = request.getSession();
+    private void addAttributesToSession(final Session session, Map<?, ?> assertion) {
         Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
             for (String key : attributeMapping.keySet()) {
                 HashSet<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
-                    httpSession.setAttribute(key, sessionValue);
+                    session.put(key, sessionValue);
                 } else {
                     logger.warning(format("FederationServlet: Warning no assertion attribute found for : %s",
                                           attributeMapping.get(key)));
@@ -248,14 +242,14 @@ public class SamlFederationHandler extends GenericHandler {
         }
         if (subjectMapping != null) {
             String subjectValue = ((Subject) assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
-            httpSession.setAttribute(subjectMapping, subjectValue);
+            session.put(subjectMapping, subjectValue);
             logger.debug(format("FederationServlet adding subject to session: %s = %s", subjectMapping,
                                 subjectValue));
         }
 
         if (sessionIndexMapping != null) {
             String sessionIndexValue = (String) assertion.get(SAML2Constants.SESSION_INDEX);
-            httpSession.setAttribute(sessionIndexMapping, sessionIndexValue);
+            session.put(sessionIndexMapping, sessionIndexValue);
             logger.debug(format("FederationServlet adding session index: %s = %s", sessionIndexMapping,
                                 sessionIndexValue));
         }
@@ -275,7 +269,7 @@ public class SamlFederationHandler extends GenericHandler {
             if (authnContextValues.length() > 0) {
                 // remove the last delimiter as it is redundant
                 authnContextValues.deleteCharAt(authnContextValues.length() - 1);
-                httpSession.setAttribute(authnContext, authnContextValues.toString());
+                session.put(authnContext, authnContextValues.toString());
                 logger.debug(format("FederationServlet adding authentication contexts to session: %s = %s",
                                     authnContext, authnContextValues));
             }
@@ -283,9 +277,11 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private static void serviceSPInitiatedSSO(HttpServletRequest request,
+    private static void serviceSPInitiatedSSO(Exchange exchange,
+                                              HttpServletRequest request,
                                               HttpServletResponse response) throws SAML2Exception {
-        String metaAlias = request.getParameter(SAML2Constants.METAALIAS);
+        Form form = exchange.request.getForm();
+        String metaAlias = form.getFirst(SAML2Constants.METAALIAS);
         if (metaAlias == null || metaAlias.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
             List<String> spMetaAliases =
@@ -294,7 +290,7 @@ public class SamlFederationHandler extends GenericHandler {
                 metaAlias = spMetaAliases.get(0);
             }
         }
-        String idpEntityID = request.getParameter(SAML2Constants.IDPENTITYID);
+        String idpEntityID = form.getFirst(SAML2Constants.IDPENTITYID);
         Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(request);
         List<String> list = new ArrayList<String>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
@@ -323,31 +319,39 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     /**
-     * This implementation is based on the spSingleLogoutInit.jsp from OpenAM Expects to find the NameID and
-     * SessionIndex in the session, these are stored during the IDP login process. Optional request parameters are :
-     * "RelayState" - the target URL on successful Single Logout "spEntityID" - SP entity ID. When it is missing, first
-     * SP from metadata is used. "idpEntityID" - IDP entity ID. When it is missing, first IDP from metadata is used.
-     * "binding" - binding used for this request and when not set it will use the default binding of the IDP
+     * This implementation is based on the {@literal spSingleLogoutInit.jsp} from OpenAM.
+     * Expects to find the {@literal NameID} and {@literal SessionIndex} in the session, these are stored during the
+     * IDP login process.
+     * <p>
+     * Optional request parameters are:
+     * <ul>
+     *     <li>{@literal RelayState} - the target URL on successful Single Logout.</li>
+     *     <li>{@literal spEntityID} - SP entity ID. When it is missing, first SP from metadata is used.</li>
+     *     <li>{@literal idpEntityID} - IDP entity ID. When it is missing, first IDP from metadata is used.</li>
+     *     <li>{@literal binding} - binding used for this request and when not set it will use the default binding of
+     *     the IDP.</li>
+     * </ul>
      */
     @SuppressWarnings("unchecked")
-    private void serviceSPInitiatedSLO(HttpServletRequest request, HttpServletResponse response)
+    private void serviceSPInitiatedSLO(Exchange exchange, HttpServletRequest request, HttpServletResponse response)
             throws IOException, SAML2Exception {
         logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
 
-        HttpSession httpSession = request.getSession();
+        Session session = exchange.session;
         // Retrieve these values from the session, if they do not exist then the session has expired
         // or this is being called before we have authenticated to the IDP
-        String nameID = (String) httpSession.getAttribute(subjectMapping);
-        String sessionIndex = (String) httpSession.getAttribute(sessionIndexMapping);
+        String nameID = (String) session.get(subjectMapping);
+        String sessionIndex = (String) session.get(sessionIndexMapping);
         if (nameID == null || nameID.isEmpty() || sessionIndex == null || sessionIndex.isEmpty()) {
             throw new SAML2Exception(SAML2Utils.bundle.getString("nullNameID"));
         }
 
+        Form form = exchange.request.getForm();
         SAML2MetaManager manager = new SAML2MetaManager();
-        String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
-        String spEntityID = request.getParameter(SAML2Constants.SPENTITYID);
-        String binding = request.getParameter(SAML2Constants.BINDING);
-        String idpEntityID = request.getParameter(SAML2Constants.IDPENTITYID);
+        String relayState = form.getFirst(SAML2Constants.RELAY_STATE);
+        String spEntityID = form.getFirst(SAML2Constants.SPENTITYID);
+        String binding = form.getFirst(SAML2Constants.BINDING);
+        String idpEntityID = form.getFirst(SAML2Constants.IDPENTITYID);
 
         // If the idpEntityID has not been specified then read it from the IDP metadata.
         if (idpEntityID == null || idpEntityID.isEmpty()) {
@@ -420,35 +424,38 @@ public class SamlFederationHandler extends GenericHandler {
         SPSingleLogout.initiateLogoutRequest(request, response, binding, paramsMap);
 
         if (SAML2Constants.SOAP.equalsIgnoreCase(binding)) {
-            response.sendRedirect(relayState);
+            sendRedirect(exchange, relayState);
         }
     }
 
-    private void serviceIDPInitiatedSLO(HttpServletRequest request, HttpServletResponse response)
+    private void serviceIDPInitiatedSLO(final Exchange exchange,
+                                        HttpServletRequest request,
+                                        HttpServletResponse response)
             throws SAML2Exception, SessionException, IOException {
         logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
-        String relayState = getLogoutRelayState(request);
+        String relayState = getLogoutRelayState(exchange.request);
         logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState : %s", relayState));
 
+        Form form = exchange.request.getForm();
         // Check if this is a request as part of an IDP initiated SLO
-        String samlRequest = request.getParameter(SAML2Constants.SAML_REQUEST);
+        String samlRequest = form.getFirst(SAML2Constants.SAML_REQUEST);
         if (samlRequest != null) {
             logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP request");
             SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
-            String samlResponse = request.getParameter(SAML2Constants.SAML_RESPONSE);
+            String samlResponse = form.getFirst(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
                 logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP response");
                 SPSingleLogout.processLogoutResponse(request, response, samlResponse, relayState);
                 if (relayState != null) {
-                    response.sendRedirect(relayState);
+                    sendRedirect(exchange, relayState);
                 }
             }
         }
 
-        cleanSession(request);
+        cleanSession(exchange.session);
     }
 
     private void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
@@ -460,9 +467,10 @@ public class SamlFederationHandler extends GenericHandler {
         spSingleLogoutServiceSOAP.doPost(request, response);
     }
 
-    private String getLogoutRelayState(HttpServletRequest request) {
+    private String getLogoutRelayState(Request request) {
 
-        String relayState = request.getParameter(SAML2Constants.RELAY_STATE);
+        Form form = request.getForm();
+        String relayState = form.getFirst(SAML2Constants.RELAY_STATE);
         if (relayState != null) {
             // Check the SP cache for the actual relayState value as the relayState is
             // often passed as an ID to the IDP as part of the SP initiated SLO. Based on
@@ -481,18 +489,41 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     /** Clean the session at the end of the SLO process. */
-    private void cleanSession(final HttpServletRequest request) {
+    private void cleanSession(final Session session) {
         logger.debug("End of SLO - Processing to session cleanup");
-        final HttpSession session = request.getSession();
-        session.removeAttribute(subjectMapping);
-        session.removeAttribute(sessionIndexMapping);
-        session.removeAttribute(authnContext);
+        session.remove(subjectMapping);
+        session.remove(sessionIndexMapping);
+        session.remove(authnContext);
 
         if (attributeMapping != null) {
             for (final String key : attributeMapping.keySet()) {
-                session.removeAttribute(key);
+                session.remove(key);
             }
         }
+    }
+
+    private void errorResponse(Exchange exchange, HttpServletResponse response, String message) throws IOException {
+        final String msg = format("SSO Failed: %s", message);
+        if (!response.isCommitted()) {
+            sendError(exchange, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+        }
+        logger.error(msg);
+    }
+
+    private static void sendError(Exchange exchange, int status, String message) {
+        exchange.response = new Response();
+        exchange.response.setStatus(status);
+        exchange.response.getEntity().setString(message);
+    }
+
+    private static void sendRedirect(Exchange exchange, String redirectUri) {
+        exchange.response = new Response();
+        // 307 is temporary redirect
+        exchange.response.setStatus(307);
+        // Web container was rebasing location header against server URL
+        // Not useful if relayState is already (and always) an absolute URL
+        LocationHeader header = new LocationHeader(redirectUri);
+        header.toMessage(exchange.response);
     }
 
     private static HttpServletResponse adaptResponse(Exchange exchange) {
