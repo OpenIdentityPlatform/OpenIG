@@ -49,7 +49,7 @@ import org.forgerock.http.ResponseException;
 import org.forgerock.http.Session;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.Buffer;
-import org.forgerock.http.routing.RouterContext;
+import org.forgerock.resource.core.RouterContext;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.resource.core.Context;
 import org.forgerock.resource.core.RootContext;
@@ -262,11 +262,10 @@ public final class HttpFrameworkServlet extends HttpServlet {
     }
 
     private RouterContext createRouterContext(Context parent, HttpServletRequest req) {
-        StringBuilder builder = new StringBuilder()
-                .append(forceEmptyIfNull(req.getContextPath()))
-                .append(forceEmptyIfNull(req.getServletPath()));
-
-        return new RouterContext(parent, builder.toString(), Collections.<String, String>emptyMap());
+        String contextPath = forceEmptyIfNull(req.getContextPath());
+        contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
+        String matchedUri = contextPath + forceEmptyIfNull(req.getServletPath());
+        return new RouterContext(parent, matchedUri, Collections.<String, String>emptyMap());
     }
 
     private String forceEmptyIfNull(final String s) {
