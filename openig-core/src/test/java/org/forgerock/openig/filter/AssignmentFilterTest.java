@@ -51,6 +51,23 @@ public class AssignmentFilterTest {
     }
 
     @Test
+    public void shouldChangeUriOnRequest() throws Exception {
+        AssignmentFilter filter = new AssignmentFilter();
+        filter.addRequestBinding(new Expression("${exchange.request.uri}"),
+                                 new Expression("www.forgerock.com"));
+
+        Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.setUri("www.example.com");
+
+        Chain chain = new Chain(new StaticResponseHandler(200, "OK"));
+        chain.getFilters().add(filter);
+
+        chain.handle(exchange);
+        assertThat(exchange.request.getUri().toString()).isEqualTo("www.forgerock.com");
+    }
+
+    @Test
     public void onResponse() throws ExpressionException, HandlerException, IOException {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression target = new Expression("${exchange.newAttr}");
