@@ -26,6 +26,10 @@ import org.forgerock.openig.util.MutableUri;
 
 /**
  * A request message.
+ * <p>
+ * A RequestResolver is linked to this class.
+ *
+ * @see RequestResolver
  */
 public final class Request extends Message<Request> {
 
