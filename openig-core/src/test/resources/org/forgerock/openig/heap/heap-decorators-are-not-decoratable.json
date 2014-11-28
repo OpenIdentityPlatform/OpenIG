@@ -5,5 +5,7 @@
           "type": "org.forgerock.openig.heap.domain.DecoratorDecorator"
         }
     ],
-    "deco": "..."
+    "globalDecorators": {
+      "deco": "..."
+    }
 }

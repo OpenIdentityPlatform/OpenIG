@@ -22,8 +22,9 @@ package org.forgerock.openig.heap;
 import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static java.util.Collections.*;
+import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Reject.*;
 
@@ -39,6 +40,7 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.MultiValueMap;
@@ -59,7 +61,7 @@ public class HeapImpl implements Heap {
      * Parent heap to delegate queries to if nothing is found in the local heap.
      * It may be null if this is the root heap (built by the system).
      */
-    private final Heap parent;
+    private final HeapImpl parent;
 
     /**
      * Heap name.
@@ -75,16 +77,34 @@ public class HeapImpl implements Heap {
     /** Objects allocated in the heap mapped to heaplet names. */
     private Map<String, Object> objects = new HashMap<String, Object>();
 
+    /** Per-heaplet decoration contexts mapped to heaplet names. */
+    private Map<String, Context> contexts = new HashMap<String, Context>();
+
     /** Per-heaplet decoration(s) mapped to heaplet names. */
     private MultiValueMap<String, JsonValue> decorations =
             new MultiValueMap<String, JsonValue>(new LinkedHashMap<String, List<JsonValue>>());
+
+    /**
+     * Decorator for the 'main handler' reference.
+     */
+    private Decorator topLevelHandlerDecorator;
+
+    /**
+     * Top-level 'handler' reference decorations (effectively the root node of configuration).
+     */
+    private JsonValue config;
+
+    /**
+     * Heap logger.
+     */
+    private Logger logger;
 
     /**
      * Builds an anonymous root heap (will be referenced by children but has no parent itself).
      * Intended for tests only.
      */
     HeapImpl() {
-        this((Heap) null);
+        this((HeapImpl) null);
     }
 
     /**
@@ -94,7 +114,7 @@ public class HeapImpl implements Heap {
      * @param parent
      *         parent heap.
      */
-    HeapImpl(final Heap parent) {
+    HeapImpl(final HeapImpl parent) {
         this(parent, Name.of("anonymous"));
     }
 
@@ -116,7 +136,7 @@ public class HeapImpl implements Heap {
      * @param name
      *         local name of this heap
      */
-    public HeapImpl(final Heap parent, final Name name) {
+    public HeapImpl(final HeapImpl parent, final Name name) {
         this.parent = parent;
         this.name = checkNotNull(name);
     }
@@ -135,6 +155,7 @@ public class HeapImpl implements Heap {
     public synchronized void init(JsonValue config, String... reservedFieldNames)
             throws HeapException {
         // process configuration object model structure
+        this.config = config;
         boolean logDeprecationWarning = false;
         JsonValue heap = config.get("heap").defaultTo(emptyList());
         if (heap.isMap()) {
@@ -157,10 +178,14 @@ public class HeapImpl implements Heap {
         int sz = reservedFieldNames.length;
         String[] allReservedFieldNames = Arrays.copyOf(reservedFieldNames, sz + 1);
         allReservedFieldNames[sz] = "heap";
-        Decorator parentGlobalDecorator =
-                parent != null ? parent.get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class) : null;
-        GlobalDecorator globalDecorator = new GlobalDecorator(parentGlobalDecorator, config, allReservedFieldNames);
-        put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
+        topLevelHandlerDecorator = new GlobalDecorator(null, config, allReservedFieldNames);
+
+        if (config.isDefined("globalDecorators")) {
+            Decorator parentGlobalDecorator =
+                    parent != null ? parent.get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class) : null;
+            put(GLOBAL_DECORATOR_HEAP_KEY,
+                new GlobalDecorator(parentGlobalDecorator, config.get("globalDecorators").expect(Map.class)));
+        }
 
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<String>(heaplets.keySet())) {
@@ -168,13 +193,13 @@ public class HeapImpl implements Heap {
         }
 
         // We can log a warning now that the heap is initialized.
+        logger = new Logger(resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+                                           LogSink.class,
+                                           true), name);
         if (logDeprecationWarning) {
-            Logger logger =
-                    new Logger(resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                            LogSink.class, true), name);
             logger.warning("The configuration field heap/objects has been deprecated. Heap objects "
-                    + "should now be listed directly in the top level \"heap\" field, "
-                    + "e.g. { \"heap\" : [ objects... ] }.");
+                                   + "should now be listed directly in the top level \"heap\" field, "
+                                   + "e.g. { \"heap\" : [ objects... ] }.");
         }
     }
 
@@ -214,23 +239,45 @@ public class HeapImpl implements Heap {
     }
 
     @Override
-    public synchronized <T> T get(final String name, final Class<T> type) throws HeapException {
+    public <T> T get(final String name, final Class<T> type) throws HeapException {
+        ExtractedObject extracted = extract(name);
+        if (extracted.object == null) {
+            return null;
+        }
+        return type.cast(applyGlobalDecorations(extracted));
+    }
+
+    /**
+     * Extract the given named heap object from this heap or its parent (if any).
+     * The returned pointer is never {@code null} but can contains {@code null} {@literal object} and {@literal
+     * context}.
+     * The {@literal object} reference has only be decorated with it's locally (per-heaplet) defined decorations.
+     * This is the responsibility of the initial 'requester' heap (the one that have its {@link #get(String, Class)}
+     * method called in the first place) to complete the decoration with global decorators.
+     *
+     * @param name heap object name
+     * @return an {@link ExtractedObject} pair-like structure that may contains both the heap object and its
+     * associated context (never returns {@code null})
+     * @throws HeapException if extraction failed
+     */
+    ExtractedObject extract(final String name) throws HeapException {
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);
             if (heaplet != null) {
-                object = heaplet.create(this.name.child(name), configs.get(name), this);
+                JsonValue configuration = configs.get(name);
+                object = heaplet.create(this.name.child(name), configuration, this);
                 if (object == null) {
                     throw new HeapException(new NullPointerException());
                 }
-                object = decorate(name, object);
+                object = applyObjectLevelDecorations(name, object, configuration);
                 put(name, object);
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.get(name, type);
+                return parent.extract(name);
             }
         }
-        return type.cast(object);
+        return new ExtractedObject(object, contexts.get(name));
     }
 
     @Override
@@ -325,39 +372,73 @@ public class HeapImpl implements Heap {
      */
     public synchronized void put(final String name, final Object object) {
         objects.put(name, object);
+        contexts.put(name, new DecorationContext(this, this.name.child(name), json(emptyMap())));
     }
 
     /**
-     * Decorates the given heap object.
+     * Decorates the given extracted heap object with global decorators.
      *
-     * @param name
-     *         heap object name
-     * @param object
-     *         heap object instance
-     * @return the decorated object or the original one if no decorator were applied.
+     * @return the extracted object (only decorated with its local decorations).
      * @throws HeapException
      *         if a decorator failed to apply
      */
-    private Object decorate(final String name, final Object object) throws HeapException {
+    private Object applyGlobalDecorations(final ExtractedObject extracted) throws HeapException {
 
-        // Avoid decorating decorators themselves
-        // Avoid StackOverFlow Exceptions because of infinite recursion
-        if (object instanceof Decorator) {
-            return object;
+        // Fast exit if there is nothing to decorate
+        if (extracted.object == null) {
+            return null;
         }
 
         // Starts with the original object
+        Object decorated = extracted.object;
+
+        // Avoid decorating decorators themselves
+        // Avoid StackOverFlow Exceptions because of infinite recursion
+        if (decorated instanceof Decorator) {
+            return decorated;
+        }
+
+        // Apply global decorations (may be inherited from parent heap)
+        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY);
+        if (deco.object != null) {
+            Decorator globalDecorator = (Decorator) deco.object;
+            decorated = globalDecorator.decorate(decorated, null, extracted.context);
+        }
+
+        return decorated;
+    }
+
+    /**
+     * Decorates the given (local) heap object instance with its own decorations (decorations within the heap object
+     * declaration).
+     *
+     * @param name
+     *         name of the heap object
+     * @param object
+     *         delegate (to be decorated) instance
+     * @param configuration
+     *         heap object configuration
+     * @return the decorated instance (may be null if delegate object is null)
+     * @throws HeapException
+     *         when we cannot get a declared decorator from the heap
+     */
+    private Object applyObjectLevelDecorations(final String name,
+                                               final Object object,
+                                               final JsonValue configuration) throws HeapException {
         Object decorated = object;
+
+        // Avoid decorating decorators themselves
+        // Avoid StackOverFlow Exceptions because of infinite recursion
+        if (decorated instanceof Decorator) {
+            return decorated;
+        }
+
         // Create a context object for holding shared values
         Context context = new DecorationContext(this,
                                                 this.name.child(name),
-                                                configs.get(name).defaultTo(emptyMap()));
-
-        // Apply global decorations (may be inherited from parent heap)
-        Decorator globalDecorator = get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
-        if (globalDecorator != null) {
-            decorated = globalDecorator.decorate(decorated, null, context);
-        }
+                                                configuration);
+        // .. and save it for later use in extract()
+        contexts.put(name, context);
 
         if (decorations.containsKey(name)) {
             // We have decorators for this instance, try to apply them
@@ -392,6 +473,25 @@ public class HeapImpl implements Heap {
         for (String name : h.keySet()) {
             h.get(name).destroy();
         }
+        contexts.clear();
+
+    }
+
+    /**
+     * Returns the {@link Handler} object referenced by the {@literal handler} top-level attribute.
+     * The returned object is fully decorated (including top-level reference decorations).
+     *
+     * @return the {@link Handler} object referenced by the {@literal handler} top-level attribute
+     * @throws HeapException if object resolution failed
+     */
+    public Handler getHandler() throws HeapException {
+        JsonValue reference = getWithDeprecation(config, logger, "handler", "handlerObject");
+        Handler handler = resolve(reference, Handler.class);
+        // FIXME: how to grab the decoration context of this object (it may not origin from this heap) ?
+        DecorationContext context = new DecorationContext(this,
+                                                          name.child("top-level-handler"),
+                                                          json(emptyMap()));
+        return (Handler) topLevelHandlerDecorator.decorate(handler, null, context);
     }
 
     /**
@@ -423,6 +523,25 @@ public class HeapImpl implements Heap {
         @Override
         public JsonValue getConfig() {
             return config;
+        }
+    }
+
+    /**
+     * Pair object containing both the retrieved heap object instance with its origin decoration context.
+     */
+    private static class ExtractedObject {
+        Object object;
+        Context context;
+
+        /**
+         * Builds a new pair object.
+         *
+         * @param object object instance (may be null)
+         * @param context decoration context (may be null)
+         */
+        public ExtractedObject(final Object object, final Context context) {
+            this.object = object;
+            this.context = context;
         }
     }
 }

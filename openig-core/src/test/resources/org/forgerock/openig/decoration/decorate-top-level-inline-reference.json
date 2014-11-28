@@ -1,0 +1,21 @@
+{
+    "heap": [
+        {
+            "name": "HelloWorld",
+            "type": "StaticResponseHandler",
+            "config": {
+                "status": 200,
+                "entity": "Hello World"
+            }
+        }
+    ],
+    "handler": {
+        "name": "Chain",
+        "type": "Chain",
+        "config": {
+            "filters": [  ],
+            "handler": "HelloWorld"
+        }
+    },
+    "make-title": "h1"
+}

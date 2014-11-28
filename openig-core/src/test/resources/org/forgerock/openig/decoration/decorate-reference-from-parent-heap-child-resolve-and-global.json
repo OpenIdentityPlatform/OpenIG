@@ -1,0 +1,12 @@
+{
+    "globalDecorators": {
+        "make-title": "h1"
+    },
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [  ],
+            "handler": "HelloWorld"
+        }
+    }
+}
