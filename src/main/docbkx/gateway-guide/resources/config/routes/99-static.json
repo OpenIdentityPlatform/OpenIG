@@ -1,0 +1,11 @@
+{
+  "handler": {
+    "type": "StaticResponseHandler",
+    "config": {
+      "status": 200,
+      "reason": "OK",
+      "entity": "Hello from a static default route"
+    }
+  },
+  "audit": "Static default route"
+}
