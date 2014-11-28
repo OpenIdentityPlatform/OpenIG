@@ -51,7 +51,7 @@ abstract class AuditBaseObject {
     }
 
     protected void fireAuditEvent(final Exchange exchange, final Set<String> tags) throws HandlerException {
-        AuditEvent event = new AuditEvent(source, System.nanoTime(), exchange, tags);
+        AuditEvent event = new AuditEvent(source, System.currentTimeMillis(), exchange, tags);
         auditSystem.onAuditEvent(event);
     }
 
