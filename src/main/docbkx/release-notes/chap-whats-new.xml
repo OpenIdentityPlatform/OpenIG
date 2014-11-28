@@ -50,6 +50,27 @@
 
   <listitem>
    <para>
+    ${projectName} now provides a publish-and-subscribe audit framework
+    and a sample monitoring handler that returns basic statistics (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-359"
+    >OPENIG-359</link>,
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-386"
+    >OPENIG-386</link>).
+    To learn more, start by reading the chapter about the
+    <link
+     xlink:show="new"
+     xlink:href="gateway-guide#chap-auditing"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>${projectName} Audit Framework</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} now supports object decorators (
     <link
      xlink:show="new"
