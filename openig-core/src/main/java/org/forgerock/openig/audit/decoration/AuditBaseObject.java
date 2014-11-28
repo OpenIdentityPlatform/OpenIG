@@ -17,6 +17,7 @@
 package org.forgerock.openig.audit.decoration;
 
 import static java.util.Arrays.*;
+import static org.forgerock.openig.audit.Tag.*;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -45,9 +46,9 @@ abstract class AuditBaseObject {
                            final Set<String> additionalTags) {
         this.source = source;
         this.auditSystem = auditSystem;
-        this.requestTags = tags(additionalTags, "request");
-        this.completedResponseTags = tags(additionalTags, "response", "completed");
-        this.failedResponseTags = tags(additionalTags, "response", "exception");
+        this.requestTags = tags(additionalTags, request.name());
+        this.completedResponseTags = tags(additionalTags, response.name(), completed.name());
+        this.failedResponseTags = tags(additionalTags, response.name(), exception.name());
     }
 
     protected void fireAuditEvent(final Exchange exchange, final Set<String> tags) throws HandlerException {
