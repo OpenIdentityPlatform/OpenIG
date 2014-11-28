@@ -3,6 +3,7 @@
         {
             "name": "_Router",
             "type": "Router",
+            "audit": "main",
             "config": {
                 "defaultHandler": {
                     "type": "DispatchHandler",
