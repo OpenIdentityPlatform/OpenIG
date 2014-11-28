@@ -19,9 +19,8 @@ package org.forgerock.openig.handler.router;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.heap.HeapImplTest.*;
 import static org.forgerock.openig.log.LogLevel.*;
-import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
 
@@ -36,12 +35,10 @@ import java.util.HashSet;
 
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.Streamer;
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
@@ -54,8 +51,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class RouterHandlerTest {
 
-    @Mock
-    private Heap heap;
+    private HeapImpl heap;
 
     @Mock
     private TimeService time;
@@ -72,10 +68,9 @@ public class RouterHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY, TemporaryStorage.class)).thenReturn(new TemporaryStorage());
-        when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
+        heap = buildDefaultHeap();
     }
 
     @Test

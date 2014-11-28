@@ -204,7 +204,7 @@ public class GatewayServlet extends HttpServlet {
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.addDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI");
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
@@ -214,10 +214,8 @@ public class GatewayServlet extends HttpServlet {
                                              TemporaryStorage.class);
             // Let the user change the type of session to use
             sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
-            handler =
-                    heap.resolve(getWithDeprecation(config, logger, "handler",
-                                                              "handlerObject"), Handler.class);
             baseURI = config.get("baseURI").asURI();
+            handler = heap.getHandler();
         } catch (final ServletException e) {
             throw e;
         } catch (final Exception e) {

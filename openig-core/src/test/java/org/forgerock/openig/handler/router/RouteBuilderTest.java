@@ -18,10 +18,8 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.HeapImplTest.*;
 import static org.forgerock.openig.util.MutableUri.*;
-import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,16 +28,13 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.http.Session;
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -48,8 +43,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class RouteBuilderTest {
 
-    @Mock
-    private Heap heap;
+    private HeapImpl heap;
 
     @Mock
     private Session session;
@@ -57,8 +51,7 @@ public class RouteBuilderTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY, TemporaryStorage.class)).thenReturn(new TemporaryStorage());
-        when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
+        heap = buildDefaultHeap();
     }
 
     @Test(description = "OPENIG-329")

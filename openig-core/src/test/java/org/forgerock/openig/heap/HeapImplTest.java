@@ -319,7 +319,7 @@ public class HeapImplTest {
         return new JsonValue(readJson(reader));
     }
 
-    private HeapImpl buildDefaultHeap() throws Exception {
+    public static HeapImpl buildDefaultHeap() throws Exception {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());

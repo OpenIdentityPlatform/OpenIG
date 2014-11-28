@@ -23,5 +23,7 @@
             }
         }
     ],
-    "capture": "all"
+    "globalDecorators": {
+        "capture": "all"
+    }
 }

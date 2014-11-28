@@ -1,0 +1,25 @@
+{
+    "heap": [
+        {
+            "name": "HelloWorld",
+            "type": "StaticResponseHandler",
+            "config": {
+                "status": 200,
+                "entity": "Hello World"
+            }
+        },
+        {
+            "name": "Chain",
+            "type": "Chain",
+            "config": {
+                "filters": [  ],
+                "handler": "HelloWorld"
+            }
+        }
+    ],
+    "handler": "Chain",
+    "make-title": "h1",
+    "comments": [
+        "The 'make-title' decoration has to be applied only on the 'Chain' object"
+    ]
+}

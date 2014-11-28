@@ -1,0 +1,18 @@
+{
+    "globalDecorators": {
+        "make-title": "h1"
+    },
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [  ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "entity": "Hello World"
+                }
+            }
+        }
+    }
+}

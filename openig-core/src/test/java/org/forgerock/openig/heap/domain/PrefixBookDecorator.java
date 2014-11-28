@@ -19,7 +19,7 @@ package org.forgerock.openig.heap.domain;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
-import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.HeapException;
 
 @SuppressWarnings("javadoc")
@@ -42,10 +42,10 @@ public class PrefixBookDecorator implements Decorator {
         }
     }
 
-    public static class Heaplet extends GenericHeaplet {
+    public static class Heaplet extends DecoratorHeaplet {
 
         @Override
-        public Object create() throws HeapException {
+        public Decorator create() throws HeapException {
             return new PrefixBookDecorator();
         }
     }

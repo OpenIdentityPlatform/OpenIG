@@ -1,0 +1,10 @@
+{
+    "handler": {
+        "type": "StaticResponseHandler",
+        "make-title": "h1",
+        "config": {
+            "status": 200,
+            "entity": "Hello World"
+        }
+    }
+}
