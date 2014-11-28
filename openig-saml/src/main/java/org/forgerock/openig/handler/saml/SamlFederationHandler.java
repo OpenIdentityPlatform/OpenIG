@@ -518,8 +518,8 @@ public class SamlFederationHandler extends GenericHandler {
 
     private static void sendRedirect(Exchange exchange, String redirectUri) {
         exchange.response = new Response();
-        // 307 is temporary redirect
-        exchange.response.setStatus(307);
+        // Redirect with a 302 (Found) status code
+        exchange.response.setStatus(HttpServletResponse.SC_FOUND);
         // Web container was rebasing location header against server URL
         // Not useful if relayState is already (and always) an absolute URL
         LocationHeader header = new LocationHeader(redirectUri);
