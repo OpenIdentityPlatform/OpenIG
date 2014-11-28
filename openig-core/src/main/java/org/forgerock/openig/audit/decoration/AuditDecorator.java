@@ -25,6 +25,7 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
+import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.filter.Filter;
@@ -41,12 +42,12 @@ import org.forgerock.openig.heap.HeapException;
  * Each notification includes a set of <i>tags</i> that helps the notification receiver to filter the
  * events with simple matching rules. Here is the list of built-in tags:
  * <ul>
- *     <li>{@literal request}: The event happens before the delegate {@link Filter}/{@link Handler} is called</li>
- *     <li>{@literal response}: The event happens after the delegate {@link Filter}/{@link Handler} was called</li>
- *     <li>{@literal completed}: The event happens when the exchange has been completely handled <b>successfully</b>
- *     by the processing unit (always complements a {@literal response} tag)</li>
- *     <li>{@literal exception}: The event happen when the exchange has been handled with <b>errors</b>
- *     by the processing unit (always complements a {@literal response} tag). Notice that this does not indicate that
+ *     <li>{@link Tag#request}: The event happens before the delegate {@link Filter}/{@link Handler} is called</li>
+ *     <li>{@link Tag#response}: The event happens after the delegate {@link Filter}/{@link Handler} was called</li>
+ *     <li>{@link Tag#completed}: The event happens when the exchange has been completely handled <b>successfully</b>
+ *     by the processing unit (always complements a {@link Tag#response} tag)</li>
+ *     <li>{@link Tag#exception}: The event happens when the exchange has been handled with <b>errors</b>
+ *     by the processing unit (always complements a {@link Tag#response} tag). Notice that this does not indicate that
  *     the source heap object is the origin of the failure (it may or may not have thrown the exception itself).</li>
  * </ul>
  * <p>
@@ -64,6 +65,8 @@ import org.forgerock.openig.heap.HeapException;
  * heap object name ({@code audit} in our example).
  * <p>
  * A default {@literal audit} decorator is automatically created when OpenIG starts.
+ *
+ * @see Tag
  */
 public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
 
