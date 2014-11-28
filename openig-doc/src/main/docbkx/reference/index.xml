@@ -128,11 +128,11 @@
   <xinclude:include href="man-AssignmentFilter.xml" />
   <xinclude:include href="man-CaptureFilter.xml" />
   <xinclude:include href="man-CookieFilter.xml" />
+  <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-EntityExtractFilter.xml" />
   <xinclude:include href="man-ExceptionFilter.xml" />
   <xinclude:include href="man-FileAttributesFilter.xml" />
   <xinclude:include href="man-HeaderFilter.xml" />
-  <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
   <xinclude:include href="man-LocationHeaderFilter.xml" />
   <xinclude:include href="man-OAuth2ClientFilter.xml" />
