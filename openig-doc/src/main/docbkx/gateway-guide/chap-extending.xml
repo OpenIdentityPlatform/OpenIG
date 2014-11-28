@@ -554,6 +554,33 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
 
    <varlistentry>
     <term><link
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/AuditEventListener.html"
+     xlink:show="new"
+    >AuditEventListener</link></term>
+    <listitem>
+     <para>
+      An AuditEventListener observes audit events.
+      For an example, see
+      <link
+       xlink:show="new"
+       xlink:href="reference#MonitorEndpointHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >MonitorEndpointHandler</link>.
+     </para>
+
+     <para>
+      You must implement the interface for your audit agent
+      and its heaplet must extend
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/ConditionalAuditEventListener.ConditionalListenerHeaplet.html"
+       xlink:show="new"
+      >ConditionalAuditEventListener.ConditionalListenerHeaplet</link>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
       xlink:href="${javadocBase}/index.html?org/forgerock/openig/decoration/Decorator.html"
       xlink:show="new"
      >Decorator</link></term>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<refentry xml:id="MonitorEndpointHandler"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+
+ <refmeta>
+  <refentrytitle>MonitorEndpointHandler</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>MonitorEndpointHandler</refname>
+  <refpurpose>return basic audit statistics in JSON format</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Handlers</primary>
+   <secondary>MonitorEndpointHandler</secondary>
+  </indexterm>
+
+  <para>
+   This handler collates basic audit statistics, returning them in JSON format.
+  </para>
+
+  <para>
+   You decorate the objects to audit by adding your own "audit" tags.
+   The handler updates the count of messages "active", "completed", and "failed"
+   for each audit event, initializing the counts at ${projectName} startup time.
+   When accessed, it returns the sums organized by object under audit
+   using the tags that you defined.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "MonitorEndpointHandler"
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Example</title>
+
+  <para>
+   The following sample route adds a monitor endpoint
+   at <literal>/monitor</literal>.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "handler": {
+        "type": "MonitorEndpointHandler"
+    },
+    "condition": "${exchange.request.method == 'GET'
+                    and exchange.request.uri.path == '/monitor'}"
+    "audit": "Monitor route"
+}
+  </programlisting>
+
+  <para>
+   After adding "audit" tags to a number of other routes,
+   the JSON returned from the monitor endpoint shows statistics
+   since ${projectName} started.
+   The following example is formatted for legibility.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "ForgeRock.com route": {
+        "active": 0,
+        "completed": 6,
+        "failed": 0
+    },
+    "ForgeRock.org route": {
+        "active": 0,
+        "completed": 15,
+        "failed": 0
+    },
+    "Monitor route": {
+        "active": 1,
+        "completed": 1,
+        "failed": 0
+    },
+    "Static login route": {
+        "active": 0,
+        "completed": 12,
+        "failed": 0
+    },
+    "HTTP Basic route": {
+        "active": 0,
+        "completed": 21,
+        "failed": 3
+    }
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/monitor/MonitorEndpointHandler.html"
+   >org.forgerock.openig.audit.monitor.MonitorEndpointHandler</link>
+  </para>
+ </refsect1>
+</refentry>

@@ -1,0 +1,7 @@
+{
+  "handler": {
+    "type": "MonitorEndpointHandler"
+  },
+  "condition": "${exchange.request.method == 'GET'
+                  and exchange.request.uri.path == '/monitor'}"
+}
