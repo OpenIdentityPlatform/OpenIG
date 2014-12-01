@@ -178,6 +178,24 @@ public class DispatchHandlerTest {
 
     }
 
+    @Test
+    public void shouldUpdateHostHeader() throws Exception {
+
+        final DispatchHandler dispatchHandler = new DispatchHandler();
+        dispatchHandler.addBinding(new Expression(CONDITION),
+                                   nextHandler,
+                                   new URI("http://www.hostA.domain.com"));
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.setUri("http://www.example.com/key_path");
+        exchange.request.getHeaders().putSingle("Host", "www.example.com");
+
+        dispatchHandler.handle(exchange);
+
+        assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.hostA.domain.com/key_path"));
+        assertThat(exchange.request.getHeaders().getFirst("host")).isEqualTo(exchange.request.getUri().getHost());
+    }
 
     @Test(expectedExceptions = HandlerException.class)
     public void testDispatchNoHandlerToDispatch() throws Exception {

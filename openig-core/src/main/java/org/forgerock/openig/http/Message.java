@@ -59,7 +59,15 @@ public abstract class Message<T extends Message<T>> implements Closeable {
      * @return The headers.
      */
     public final Headers getHeaders() {
+        prepareHeaders(headers);
         return headers;
+    }
+
+    /**
+     * Update the headers if needed.
+     */
+    void prepareHeaders(final Headers headers) {
+        // Nothing to do.
     }
 
     /**
