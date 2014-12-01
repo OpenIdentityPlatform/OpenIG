@@ -53,7 +53,7 @@
 
   <para>
    You decorate the objects to audit by adding your own "audit" tags.
-   The handler updates the count of messages "active", "completed", and "failed"
+   The handler updates the count of messages "in progress", "completed", and "internal errors"
    for each audit event, initializing the counts at ${projectName} startup time.
    When accessed, it returns the sums organized by object under audit
    using the tags that you defined.
@@ -100,29 +100,29 @@
   <programlisting language="javascript">
 {
     "ForgeRock.com route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 6,
-        "failed": 0
+        "internal errors": 0
     },
     "ForgeRock.org route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 15,
-        "failed": 0
+        "internal errors": 0
     },
     "Monitor route": {
-        "active": 1,
+        "in progress": 1,
         "completed": 1,
-        "failed": 0
+        "internal errors": 0
     },
     "Static login route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 12,
-        "failed": 0
+        "internal errors": 0
     },
     "HTTP Basic route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 21,
-        "failed": 3
+        "internal errors": 3
     }
 }
   </programlisting>
