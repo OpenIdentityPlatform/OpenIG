@@ -170,7 +170,7 @@
 
  <para>
   After triggering a few audit events, access the monitor endpoint,
-  <link xlink:show="new" xlink:href="http://www.example.com:8080/monitor" />.
+  <link xlink:show="new" xlink:href="http://www.example.com:8080/openig/monitor" />.
   You should see counts of the audit events in JSON format.
  </para>
 

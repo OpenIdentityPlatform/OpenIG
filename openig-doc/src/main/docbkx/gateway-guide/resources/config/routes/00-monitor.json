@@ -3,5 +3,5 @@
     "type": "MonitorEndpointHandler"
   },
   "condition": "${exchange.request.method == 'GET'
-                  and exchange.request.uri.path == '/monitor'}"
+                  and exchange.request.uri.path == '/openig/monitor'}"
 }
