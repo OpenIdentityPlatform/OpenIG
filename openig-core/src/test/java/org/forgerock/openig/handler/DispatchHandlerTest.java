@@ -197,6 +197,26 @@ public class DispatchHandlerTest {
         assertThat(exchange.request.getHeaders().getFirst("host")).isEqualTo(exchange.request.getUri().getHost());
     }
 
+    @Test
+    public void shouldUpdateHostHeaderWithPort() throws Exception {
+
+        final DispatchHandler dispatchHandler = new DispatchHandler();
+        dispatchHandler.addBinding(new Expression(CONDITION),
+                                   nextHandler,
+                                   new URI("http://www.hostA.domain.com:443"));
+
+        final Exchange exchange = new Exchange();
+        exchange.request = new Request();
+        exchange.request.setUri("http://www.example.com/key_path");
+
+        dispatchHandler.handle(exchange);
+
+        assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.hostA.domain.com:443/key_path"));
+        // According to RFC 7230#5.4 Host = uri-host [ ":" port ] ;
+        assertThat(exchange.request.getHeaders().getFirst("host"))
+                    .isEqualTo(exchange.request.getUri().getHost() + ":" + exchange.request.getUri().getPort());
+    }
+
     @Test(expectedExceptions = HandlerException.class)
     public void testDispatchNoHandlerToDispatch() throws Exception {
         new DispatchHandler().handle(new Exchange());
