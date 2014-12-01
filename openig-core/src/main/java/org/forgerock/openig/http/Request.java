@@ -146,4 +146,15 @@ public final class Request extends Message<Request> {
     Request thisMessage() {
         return this;
     }
+
+    @Override
+    void prepareHeaders(final Headers headers) {
+        if (uri != null) {
+            final String uriHost = uri.getHost() + (uri.getPort() != -1 ? ":" + uri.getPort() : "");
+            // Checks if http header host has been updated since last invocation.
+            if (!uriHost.equals(headers.getFirst("host"))) {
+                headers.putSingle("host", uriHost);
+            }
+        }
+    }
 }
