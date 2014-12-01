@@ -41,5 +41,5 @@
         }
     ],
     "handler": "_Router",
-    "audit": "main"
+    "audit": "global"
 }

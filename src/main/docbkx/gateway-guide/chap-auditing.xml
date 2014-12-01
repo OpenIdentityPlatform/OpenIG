@@ -91,7 +91,7 @@
   <para>
    The "MonitorEndpointHandler" is a simple audit agent
    that collates basic statistics
-   about the number of messages "active", "completed", and "failed"
+   about the number of messages "in progress", "completed", and "internal errors"
    for each Filter or Handler that you have tagged,
    and returns the data in JSON format.
    To try auditing with the "MonitorEndpointHandler" agent,
@@ -177,24 +177,24 @@
  <programlisting language="javascript">
 {
     "Static default route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 14,
-        "failed": 0
+        "internal errors": 0
     },
     "ForgeRock.com route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 16,
-        "failed": 0
+        "internal errors": 0
     },
     "ForgeRock.org route": {
-        "active": 0,
+        "in progress": 0,
         "completed": 15,
-        "failed": 0
+        "internal errors": 0
     },
-    "main": {
-        "active": 0,
+    "global": {
+        "in progress": 0,
         "completed": 45,
-        "failed": 0
+        "internal errors": 0
     }
 }
  </programlisting>
@@ -203,7 +203,7 @@
   According to the example output shown above,
   ${projectName} successfully handled 16 requests on the "ForgeRock.com route",
   15 requests on the "ForgeRock.org route", 14 default route requests
-  for a total of 45 request completed on the top-level "main" route.
+  for a total of 45 request completed on the top-level "global" route.
  </para>
 
  <para>

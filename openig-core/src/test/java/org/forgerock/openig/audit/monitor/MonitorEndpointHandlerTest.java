@@ -68,7 +68,7 @@ public class MonitorEndpointHandlerTest {
 
         Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
         assertThat(tag.get("completed").get()).isEqualTo(1L);
-        assertThat(tag.get("failed").get()).isEqualTo(0L);
+        assertThat(tag.get("internal errors").get()).isEqualTo(0L);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class MonitorEndpointHandlerTest {
 
         Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
         assertThat(tag.get("completed").get()).isEqualTo(0L);
-        assertThat(tag.get("failed").get()).isEqualTo(1L);
+        assertThat(tag.get("internal errors").get()).isEqualTo(1L);
     }
 
     @Test
@@ -93,9 +93,9 @@ public class MonitorEndpointHandlerTest {
         monitor.handle(exchange);
 
         Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
-        assertThat(tag.get("active").get()).isEqualTo(1L);
+        assertThat(tag.get("in progress").get()).isEqualTo(1L);
         assertThat(tag.get("completed").get()).isEqualTo(0L);
-        assertThat(tag.get("failed").get()).isEqualTo(0L);
+        assertThat(tag.get("internal errors").get()).isEqualTo(0L);
 
         monitor.onAuditEvent(buildAuditEvent("my-tag", "response"));
 
@@ -103,9 +103,9 @@ public class MonitorEndpointHandlerTest {
         monitor.handle(exchange2);
 
         Map<String, AtomicLong> tag2 = getJsonObject(exchange2).get("my-tag");
-        assertThat(tag2.get("active").get()).isEqualTo(0L);
+        assertThat(tag2.get("in progress").get()).isEqualTo(0L);
         assertThat(tag2.get("completed").get()).isEqualTo(0L);
-        assertThat(tag2.get("failed").get()).isEqualTo(0L);
+        assertThat(tag2.get("internal errors").get()).isEqualTo(0L);
     }
 
     @SuppressWarnings("unchecked")

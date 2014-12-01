@@ -73,7 +73,7 @@ public class MonitorEndpointHandler extends GenericHandler implements AuditEvent
                     metric.completed.incrementAndGet();
                 }
                 if (tags.contains(exception.name())) {
-                    metric.failed.incrementAndGet();
+                    metric.errors.incrementAndGet();
                 }
             }
         }
@@ -91,7 +91,7 @@ public class MonitorEndpointHandler extends GenericHandler implements AuditEvent
 
     /**
      * TagMetric extends a Map implementation to benefit of the natural mapping into a JSON object.
-     * Still have active, completed and failed fields for easy programmatic access.
+     * Still have 'in progress', 'completed' and 'internal errors' fields for easy programmatic access.
      * TagMetric is thread-safe because no additional fields are put in the structure after creation.
      */
     private static class TagMetric extends LinkedHashMap<String, AtomicLong> {
@@ -100,12 +100,12 @@ public class MonitorEndpointHandler extends GenericHandler implements AuditEvent
 
         final AtomicLong active = new AtomicLong();
         final AtomicLong completed = new AtomicLong();
-        final AtomicLong failed = new AtomicLong();
+        final AtomicLong errors = new AtomicLong();
 
         public TagMetric() {
-            put("active", active);
+            put("in progress", active);
             put("completed", completed);
-            put("failed", failed);
+            put("internal errors", errors);
         }
     }
 
