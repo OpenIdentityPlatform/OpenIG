@@ -213,6 +213,22 @@ public class RouterHandlerTest {
         verify(logger).error(any(Exception.class));
     }
 
+    @Test
+    public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
+        RouteBuilder builder = spy(new RouteBuilder(heap, Name.of("anonymous")));
+        RouterHandler router = new RouterHandler(builder, scanner);
+        router.logger = logger;
+
+        doThrow(new NullPointerException()).when(builder).build(any(File.class));
+
+        router.onChanges(new FileChangeSet(null,
+                                           Collections.singleton(new File("/")),
+                                           Collections.<File>emptySet(),
+                                           Collections.<File>emptySet()));
+
+        verify(logger).error(matches("The route defined in file '.*' cannot be added"));
+    }
+
     private void assertStatusAfterHandle(final RouterHandler handler,
                                          final String value,
                                          final int expected) throws HandlerException, IOException {

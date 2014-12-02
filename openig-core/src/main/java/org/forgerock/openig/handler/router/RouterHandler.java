@@ -202,7 +202,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             sorted.add(route);
             routes.put(file, route);
             logger.info(format("Added route '%s' defined in file '%s'", name, file));
-        } catch (HeapException e) {
+        } catch (Throwable e) {
             logger.error(format("The route defined in file '%s' cannot be added",
                                 file));
             logger.error(e);
@@ -222,7 +222,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         Route newRoute;
         try {
             newRoute = builder.build(file);
-        } catch (HeapException e) {
+        } catch (Throwable e) {
             logger.error(format("The route defined in file '%s' cannot be modified",
                                   file));
             logger.error(e);
