@@ -18,19 +18,18 @@
 package org.forgerock.openig.log;
 
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.util.ISO8601;
 
 /**
  * A sink that writes log entries to a file.
@@ -52,7 +51,10 @@ public class FileLogSink implements LogSink {
     private LogLevel level = LogLevel.INFO;
 
     /** Wraps the file output for writing entries. */
-    private PrintWriter writer;
+    private PrintStream stream;
+
+    /** Wraps the previous stream, prefixing all lines with a hash ('#') to have them appear as comments. */
+    private PrintStream comment;
 
     /**
      * Builds a new FileLogSink writing entries in the given log file.
@@ -90,25 +92,26 @@ public class FileLogSink implements LogSink {
         if (isLoggable(entry.getSource(), entry.getLevel())) {
             synchronized (this) {
                 try {
-                    if (!file.exists() || writer == null) {
-                        if (writer != null) {
-                            writer.close();
-                        }
-                        writer = new PrintWriter(new OutputStreamWriter(
-                                new FileOutputStream(file, true), charset), true);
+                    if (!file.exists() || stream == null) {
+                        closeSilently(stream, comment);
+                        stream = new PrintStream(new FileOutputStream(file, true), true, charset.name());
+                        comment = new HashPrefixPrintStream(stream);
                     }
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ISO8601.format(entry.getTime())).append(':')
-                      .append(entry.getSource().getLeaf()).append('.')
-                      .append(entry.getType()).append(':');
-                    sb.append(entry.getLevel()).append(':').append(entry.getMessage());
-                    if (entry.getData() != null) {
-                        sb.append(':').append(entry.getData().toString());
+
+                    // Example: "Sun Jul 20 16:17:00 EDT 1969 (INFO) Source - Message"
+                    stream.printf("%Tc %s %s --- %s%n",
+                                  entry.getTime(),
+                                  entry.getLevel().name(),
+                                  entry.getSource().getLeaf(),
+                                  entry.getMessage());
+
+                    // Print the exception data (if any) on the commenting stream
+                    if ("throwable".equals(entry.getType()) && (entry.getData() instanceof Throwable)) {
+                        ((Throwable) entry.getData()).printStackTrace(comment);
                     }
-                    writer.println(sb.toString());
                 } catch (IOException ioe) {
                     // not much else we can do
-                    System.err.println(ioe);
+                    System.err.println(ioe.getMessage());
                 }
             }
         }
@@ -134,6 +137,75 @@ public class FileLogSink implements LogSink {
             FileLogSink sink = new FileLogSink(file);
             sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
             return sink;
+        }
+    }
+
+    private static class HashPrefixPrintStream extends PrintStream {
+
+        private static final String HASH = "# ";
+
+        public HashPrefixPrintStream(final PrintStream delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void println() {
+            super.print(HASH);
+            super.println();
+        }
+
+        @Override
+        public void println(final String x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final boolean x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final char x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final int x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final long x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final float x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final double x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final char[] x) {
+            super.print(HASH);
+            super.println(x);
+        }
+
+        @Override
+        public void println(final Object x) {
+            super.print(HASH);
+            super.println(x);
         }
     }
 }

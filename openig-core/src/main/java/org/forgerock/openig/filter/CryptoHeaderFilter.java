@@ -18,9 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static java.util.Collections.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -183,7 +181,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             byte[] plaintext = cipher.doFinal(ciphertext);
             result = new String(plaintext, charset).trim();
         } catch (GeneralSecurityException gse) {
-            logDetailedException(ERROR, logger, gse);
+            logger.error(gse);
         }
         return result;
     }
@@ -202,7 +200,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             byte[] ciphertext = cipher.doFinal(in.getBytes(Charset.defaultCharset()));
             result = Base64.encode(ciphertext).trim();
         } catch (GeneralSecurityException gse) {
-            logDetailedException(ERROR, logger, gse);
+            logger.error(gse);
         }
         return result;
     }

@@ -25,9 +25,10 @@ import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.*;
 import static org.forgerock.openig.http.MessageType.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.util.encode.Base64.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +44,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
-import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
@@ -107,7 +107,7 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        verify(logger).logMessage(any(LogLevel.class), anyString());
+        verify(logger).error(any(GeneralSecurityException.class));
 
         assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }
@@ -125,7 +125,7 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        verify(logger).logMessage(any(LogLevel.class), anyString());
+        verify(logger).error(any(GeneralSecurityException.class));
 
         assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }

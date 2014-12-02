@@ -209,7 +209,8 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet()));
 
         // Should have an error log statement
-        verify(logger).logMessage(eq(ERROR), matches(".* A route named '.*' is already registered"));
+        verify(logger).error(anyString());
+        verify(logger).error(any(Exception.class));
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,
