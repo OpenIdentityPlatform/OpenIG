@@ -28,8 +28,10 @@ import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Reject.*;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,6 +100,11 @@ public class HeapImpl implements Heap {
      * Heap logger.
      */
     private Logger logger;
+
+    /**
+     * Keep track of objects being resolved, used to avoid recursive issues.
+     */
+    private Deque<String> resolving = new ArrayDeque<String>();
 
     /**
      * List of default object declarations to be inserted in this heap if no user-provided objects were found.
@@ -292,17 +299,28 @@ public class HeapImpl implements Heap {
      * @throws HeapException if extraction failed
      */
     ExtractedObject extract(final String name) throws HeapException {
+        if (resolving.contains(name)) {
+            // Fail for recursive object resolution
+            throw new HeapException(
+                    format("Object '%s' is already being constructed (probably a duplicate name in configuration)",
+                           name));
+        }
         Object object = objects.get(name);
         if (object == null) {
             Heaplet heaplet = heaplets.get(name);
             if (heaplet != null) {
-                JsonValue configuration = configs.get(name);
-                object = heaplet.create(this.name.child(name), configuration, this);
-                if (object == null) {
-                    throw new HeapException(new NullPointerException());
+                try {
+                    resolving.push(name);
+                    JsonValue configuration = configs.get(name);
+                    object = heaplet.create(this.name.child(name), configuration, this);
+                    if (object == null) {
+                        throw new HeapException(new NullPointerException());
+                    }
+                    object = applyObjectLevelDecorations(name, object, configuration);
+                    put(name, object);
+                } finally {
+                    resolving.pop();
                 }
-                object = applyObjectLevelDecorations(name, object, configuration);
-                put(name, object);
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
                 return parent.extract(name);
