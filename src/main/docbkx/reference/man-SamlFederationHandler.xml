@@ -229,7 +229,8 @@
     <term><code>"logoutURI"</code>: <emphasis>string, optional</emphasis></term>
     <listitem>
      <para>
-      Set this to the URI that logs the user out of the protected application.
+      Set this to the URI to visit after the user is logged out
+      of the protected application.
      </para>
 
      <para>
