@@ -60,7 +60,7 @@ public class Logger {
      * @return the exception being logged.
      */
     public <T extends Throwable> T logException(LogLevel level, T throwable) {
-        log(createEntry("throwable", level, throwable.toString(), throwable));
+        log(createEntry("throwable", level, throwable.getMessage(), throwable));
         return throwable;
     }
 

@@ -21,10 +21,8 @@ import static java.util.Collections.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 import static org.forgerock.openig.util.URIUtil.*;
 import static org.forgerock.util.Utils.*;
 
@@ -984,7 +982,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 } catch (Exception e) {
                     logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 }
             } else {
                 // A cache is configured, extract the value from the cache
@@ -994,11 +992,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 } catch (InterruptedException e) {
                     logger.warning(format("Interrupted when calling UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 } catch (ExecutionException e) {
                     logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 }
             }
 

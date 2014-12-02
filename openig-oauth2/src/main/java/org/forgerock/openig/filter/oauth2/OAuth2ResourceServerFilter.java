@@ -17,10 +17,8 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -194,7 +192,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             }
         } catch (OAuth2TokenException e) {
             logger.debug("Multiple 'Authorization' headers in the request");
-            logDetailedException(DEBUG, logger, e);
+            logger.debug(e);
             invalidRequest.handle(exchange);
             return;
         }
@@ -205,7 +203,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             accessToken = resolver.resolve(token);
         } catch (OAuth2TokenException e) {
             logger.debug(format("Access Token '%s' cannot be resolved", token));
-            logDetailedException(DEBUG, logger, e);
+            logger.debug(e);
             invalidToken.handle(exchange);
             return;
         }
