@@ -314,6 +314,62 @@ public class HeapImplTest {
         assertThat(HeapImpl.name(declaration)).isEqualTo("Inline");
     }
 
+    @Test
+    public void shouldSupportObjectOverridingUntilInitialized2() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        // Add 2 'org.forgerock.openig.heap.HeapObject' object declarations
+        heap.addDefaultDeclaration(json(object(field("name", "Welcome"),
+                                               field("type", "org.forgerock.openig.heap.HeapObject"))));
+
+        heap.init(json(object(field("heap", array(json(object(field("name", "Welcome"),
+                                                              field("type", "org.forgerock.openig.heap.HeapObject"),
+                                                              field("config", object(field("message", "Hello"))))))))));
+        // Verify this is the 2nd object in the heap
+        assertThat(heap.get("Welcome", HeapObject.class).message).isEqualTo("Hello");
+    }
+
+    @Test(expectedExceptions = JsonValueException.class)
+    public void shouldFailForDuplicatedObjects() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        Object declaration = object(field("name", "Welcome"), field("type", "WelcomeHandler"));
+        heap.init(json(object(field("heap", array(declaration,
+                                                  declaration)))));
+    }
+
+    @Test(expectedExceptions = HeapException.class)
+    public void shouldFailForInlineDeclarationWithSameName() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        // This is an inline declaration with a name
+        Object architect = object(field("name", "Duplicated"),
+                                  field("type", "org.forgerock.openig.heap.domain.Architect"),
+                                  field("config", object(field("name", "Hello"))));
+        Object matrix = object(field("name", "Duplicated"),
+                               field("type", "org.forgerock.openig.heap.domain.Matrix"),
+                               field("config", object(field("architect-ref", architect))));
+
+        heap.init(json(object(field("heap", array(matrix)))));
+    }
+
+    @Test(expectedExceptions = JsonValueException.class)
+    public void shouldFailForDuplicatedObjectsWithInlineDeclaration() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+
+        // This is an inline declaration with a name
+        Object matrix = object(field("name", "Duplicated"),
+                               field("type", "org.forgerock.openig.heap.domain.Matrix"));
+        Object architect = object(field("name", "Duplicated"),
+                                  field("type", "org.forgerock.openig.heap.domain.Architect"),
+                                  field("config", object(field("name", "Hello"))));
+        Object matrix2 = object(field("name", "Matrix"),
+                               field("type", "org.forgerock.openig.heap.domain.Matrix"),
+                               field("config", object(field("architect-ref", architect))));
+
+        heap.init(json(object(field("heap", array(matrix, matrix2)))));
+    }
+
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
         return new JsonValue(readJson(reader));

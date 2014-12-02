@@ -203,7 +203,7 @@ public class GatewayServlet extends HttpServlet {
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
-            heap.addDeclaration(DEFAULT_HTTP_CLIENT);
+            heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,

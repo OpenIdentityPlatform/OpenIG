@@ -100,6 +100,11 @@ public class HeapImpl implements Heap {
     private Logger logger;
 
     /**
+     * List of default object declarations to be inserted in this heap if no user-provided objects were found.
+     */
+    private List<JsonValue> defaults = new ArrayList<JsonValue>();
+
+    /**
      * Builds an anonymous root heap (will be referenced by children but has no parent itself).
      * Intended for tests only.
      */
@@ -174,6 +179,16 @@ public class HeapImpl implements Heap {
             addDeclaration(object);
         }
 
+        // Register the default objects if the user has not overridden them
+        // Notice this will only verify objects declared in the heap, not the inline declarations
+        for (JsonValue value : defaults) {
+            String name = value.get("name").required().asString();
+            if (heaplets.get(name) == null) {
+                addDeclaration(value);
+            }
+            // otherwise the object configuration has been overridden
+        }
+
         // register global decorators, ensuring that reserved field names are filtered out
         int sz = reservedFieldNames.length;
         String[] allReservedFieldNames = Arrays.copyOf(reservedFieldNames, sz + 1);
@@ -204,6 +219,22 @@ public class HeapImpl implements Heap {
     }
 
     /**
+     * Add a default JsonValue object declaration in this heap.
+     *
+     * This method should only be called prior to {@link #init(JsonValue, String...)}: values provided after init() has
+     * been called will be ignored.
+     *
+     * Notice that if the caller add 2 declarations with the same name, that will ends up with an exception thrown
+     * when heap will be initialized.
+     *
+     * @param object
+     *         Object declaration (has to contains a {@literal name} attribute)
+     */
+    public void addDefaultDeclaration(final JsonValue object) {
+        defaults.add(object);
+    }
+
+    /**
      * Add the given JsonValue as a new object declaration in this heap. The given object must be a valid object
      * declaration ({@literal name}, {@literal type} and {@literal config} attributes). If not, a JsonValueException
      * will be thrown. After this method is called, a new object is available in the heap.
@@ -213,7 +244,7 @@ public class HeapImpl implements Heap {
      * @param object
      *         object declaration to add to the heap.
      */
-    public void addDeclaration(final JsonValue object) {
+    private void addDeclaration(final JsonValue object) {
         object.required().expect(Map.class);
         Heaplet heaplet = Heaplets.getHeaplet(asClass(object.get("type").required()));
         if (heaplet == null) {
