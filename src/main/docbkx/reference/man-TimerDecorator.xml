@@ -191,16 +191,14 @@
 
   <para>
    This configuration could result in the following log messages.
-   The Gateway Servlet times are shown,
-   although they do not result from the TimerDecorator configuration.
-   The time stamps have been removed.
   </para>
 
   <programlisting language="none">
-GatewayServlet.started:STAT:Started
-@Timer[ClientHandler].started:STAT:Started
-@Timer[ClientHandler].elapsed:STAT:Elapsed time: 4 ms:4 ms
-GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
+TUE DEC 02 17:20:08 CET 2014 (STAT) @Timer[top-level-handler]
+Started
+------------------------------
+TUE DEC 02 17:20:08 CET 2014 (STAT) @Timer[top-level-handler]
+Elapsed time: 40 ms
   </programlisting>
 
   <para>
@@ -211,7 +209,7 @@ GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
   </para>
 
   <para>
-   To record times spent within all Filters and Handlers,
+   To record times spent within all Filters and the "handler",
    decorate the Route as in the following example.
   </para>
 
@@ -227,36 +225,50 @@ GatewayServlet.elapsed:STAT:Elapsed time: 10 ms:10 ms
 
   <para>
    This configuration could result in the following log messages.
-   The Gateway Servlet times are shown,
-   although they do not result from the TimerDecorator configuration.
-   The time stamps have been removed and lines folded to fit the printed page.
   </para>
 
-  <programlisting language="none">
-GatewayServlet.started:STAT:Started
-@Timer[ResourceServerChain].started:STAT:Started
-@Timer[ResourceServerFilter].started:STAT:Started
-@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].started:STAT:Started
-@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].started:STAT:Started
-@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed:STAT:
- Elapsed time: 12 ms:12 ms
-@Timer[{StaticRequestFilter}/heap/objects/0/config/filters/2].elapsed-within:STAT:
- Elapsed time (within the object): 1 ms:1 ms
-@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed:STAT:
- Elapsed time: 84 ms:84 ms
-@Timer[{ScriptableFilter}/heap/objects/0/config/filters/1].elapsed-within:STAT:
- Elapsed time (within the object): 72 ms:72 ms
-@Timer[{OAuth2ResourceServerFilter}/heap/objects/0/config/filters/0].elapsed:STAT:
- Elapsed time: 117 ms:117 ms
-@Timer[ResourceServerFilter].elapsed-within:STAT:
- Elapsed time (within the object): 33 ms:33 ms
-@Timer[ResourceServerChain].elapsed:STAT:Elapsed time: 118 ms:118 ms
-GatewayServlet.elapsed:STAT:Elapsed time: 140 ms:140 ms
-  </programlisting>
+  <informalexample><?dbfo pgwide="1"?>
+   <programlisting language="none">
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[top-level-handler]
+Started
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Started
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
+Started
+------------------------------
+...
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Started
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time: 5 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time (within the object): 0 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
+Elapsed time: 24 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
+Elapsed time (within the object): 18 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time: 37 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time (within the object): 13 ms
+------------------------------
+TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[top-level-handler]
+Elapsed time: 37 ms
+   </programlisting>
+  </informalexample>
 
   <para>
    You can then deactivate the timer
-   by setting the value to <literal>false</literal>.
+   by setting the values to <literal>false</literal>.
   </para>
 
   <programlisting language="javascript">

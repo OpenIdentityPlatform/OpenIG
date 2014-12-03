@@ -15,7 +15,8 @@
                             "http://openam.example.com:8088/openam/oauth2/tokeninfo",
                         "requireHttps": false,
                         "target": "${exchange.token}"
-                    }
+                    },
+                    "timer": true
                 },
                 {
                     "type": "ScriptableFilter",
@@ -27,7 +28,8 @@
                              exchange.username = exchange.token.info.mail;
                              exchange.password = exchange.token.info.employeenumber;
                              next.handle(exchange)"
-                    }
+                    },
+                    "timer": true
                 },
                 {
                     "type": "StaticRequestFilter",
@@ -42,7 +44,8 @@
                                 "${exchange.password}"
                             ]
                         }
-                    }
+                    },
+                    "timer": true
                 }
             ],
             "handler": "ClientHandler"

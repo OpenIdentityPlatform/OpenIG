@@ -45,9 +45,9 @@
   <programlisting language="none">
 org.forgerock.json.fluent.JsonValueException: /handler:
    object Router2 not found in heap
-    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:157)
-    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:140)
-    at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:196)
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:351)
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:334)
+    at org.forgerock.openig.heap.HeapImpl.getHandler(HeapImpl.java:538)
   </programlisting>
 
   <para>
@@ -71,30 +71,32 @@ Problem accessing /wp/wp-login.php. Reason:
 
 Caused by:
 
-javax.servlet.ServletException: 
-   org.forgerock.openig.handler.HandlerException: no handler to dispatch to
-at org.forgerock.openig.servlet.GatewayServlet.service(GatewayServlet.java:264)
-at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+    org.forgerock.openig.handler.HandlerException: no handler to dispatch to
   </programlisting>
   
   <para>
-   A better description of the error appears as a warning in the console:
+   A better description of the error appears as an error in the console log:
   </para>
  
   <programlisting language="none">  
-2014-10-22T08:57:14Z:Router.Router:WARNING:The route defined in file 
-   '/home/.openig/config/routes/route1.json' cannot be added because 
-   it could not be parsed: Cannot read/parse content of 
-   /home/.openig/config/routes/route1.json: 
-   Unexpected character (',' (code 44)): expected a valid value 
-   (number, String, array, object, 'true', 'false' or 'null') 
-   at [Source: java.io.InputStreamReader@3491b08f; line: 3, column: 22]
+TUE DEC 02 17:35:57 CET 2014 (ERROR) {Router}/handler
+The route defined in file '/Users/me/.openig/config/routes/route1.json'
+ cannot be added
+------------------------------
+TUE DEC 02 17:35:57 CET 2014 (ERROR) {Router}/handler
+Cannot read/parse content of /Users/me/.openig/config/routes/route1.json
+[            HeapException] > Cannot read/parse content of
+                              /Users/me/.openig/config/routes/route1.json
+[       JsonParseException] > Unexpected character (',' (code 44)):
+                              was expecting double-quote to start field name
+ at [Source: java.io.InputStreamReader@4c8d1091; line: 4, column: 28]
   </programlisting>
   
   <para>
-   This error usually means your configuration is incorrect 
-   (missing bracket, extra character, etc.).
-   In this case, extra comma is spotted at line 3, column 22.
+   In this case, extra comma is spotted at line 4, column 28.
+  </para>
+
+  <para>
    Use a JSON editor or JSON validation tool such as
    <link
     xlink:show="new"
@@ -125,10 +127,6 @@ Problem accessing /myURL . Reason:
 java.lang.String cannot be cast to java.util.List
 Caused by:
 java.lang.ClassCastException: java.lang.String cannot be cast to java.util.List
-at org.forgerock.openig.filter.LoggingFilter.writeHeaders(LoggingFilter.java:132
-at org.forgerock.openig.filter.LoggingFilter.logResponse(LoggingFilter.java:119)
-at org.forgerock.openig.filter.LoggingFilter.filter(LoggingFilter.java:86)
-at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
   </programlisting>
 
   <para>
@@ -264,19 +262,16 @@ at org.forgerock.openig.filter.Chain.handle(Chain.java:54)
    This can result in an error such as the following.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <informalexample>
    <programlisting language="none">
-org.forgerock.json.fluent.JsonValueException: /heap/objects/1/config/dataSource:
-   javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
- at org.forgerock.openig.filter.SqlAttributesFilter$Heaplet.create(SqlAttributesFilter.java:175)
- at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:80)
- at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:107)
- at org.forgerock.openig.heap.HeapImpl.init(HeapImpl.java:97)
- at org.forgerock.openig.handler.router.RouteBuilder.createHeap(RouteBuilder.java:105)
- at org.forgerock.openig.handler.router.RouteBuilder.build(RouteBuilder.java:66)
- at org.forgerock.openig.handler.router.RouterHandler.onAddedFile(RouterHandler.java:197)
- at org.forgerock.openig.handler.router.RouterHandler.onChanges(RouterHandler.java:179)
- at org.forgerock.openig.handler.router.DirectoryMonitor.scan(DirectoryMonitor.java:138)
+org.forgerock.json.fluent.JsonValueException:
+ /handler/config/filters/0/config/dataSource:
+ javax.naming.NameNotFoundException;
+ remaining name 'jdbc/forgerock'
+  at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:222)
+  at org.eclipse.jetty.servlet.ServletHolder.initServlet(ServletHolder.java:595)
+  at org.eclipse.jetty.servlet.ServletHolder.getServlet(ServletHolder.java:458)
+  at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:724)
    </programlisting>
   </informalexample>
 
