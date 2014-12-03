@@ -500,19 +500,19 @@ $ <userinput>curl \
   </para>
 
   <programlisting language="none">
-2014-09-03T06:59:27Z:CaptureTokenInfo.CaptureTokenInfo:INFO:
+TUE DEC 02 17:14:28 CET 2014 (INFO) {ScriptableFilter}/handler/config/filters/1
 {
-    "access_token": "ddf31dac-e23a-446c-bd21-db60cf19b9f3",
     "mail": "george",
     "employeenumber": "costanza",
-    "grant_type": "password",
     "scope": [
         "mail",
         "employeenumber"
     ],
+    "grant_type": "password",
     "realm": "/",
     "token_type": "Bearer",
-    "expires_in": 42
+    "expires_in": 41,
+    "access_token": "e362515f-ecf2-47b7-b1a7-c6480e705129"
 }
   </programlisting>
 
