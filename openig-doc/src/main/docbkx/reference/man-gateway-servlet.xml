@@ -220,7 +220,8 @@
      <para>
       Default: use the heap object named "LogSink".
       Otherwise use an internally-created ConsoleLogSink object
-      that is named "LogSink" and that uses default settings.
+      that is named "LogSink" and that uses default settings
+      for a ConsoleLogSink object.
      </para>
     </listitem>
    </varlistentry>
@@ -245,7 +246,8 @@
      <para>
       Default: use the heap object named "TemporaryStorage".
       Otherwise use an internally-created TemporaryStorage object
-      that is named "TemporaryStorage" and that uses default settings.
+      that is named "TemporaryStorage" and that uses default settings
+      for a TemporaryStorage object.
      </para>
     </listitem>
    </varlistentry>
