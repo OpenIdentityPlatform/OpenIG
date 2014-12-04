@@ -317,9 +317,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
-    <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
-    <url>http://sources.forgerock.org/browse/openig/trunk</url>
+    <connection>scm:svn:https://svn.forgerock.org/openig/branches/3.1</connection>
+    <developerConnection>scm:svn:https://svn.forgerock.org/openig/branches/3.1</developerConnection>
+    <url>http://sources.forgerock.org/browse/openig/branches/3.1</url>
   </scm>
 
   <mailingLists>
