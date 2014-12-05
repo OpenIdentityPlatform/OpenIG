@@ -30,7 +30,7 @@
                               http://docbook.org/xml/5.0/xsd/docbook.xsd"
           xmlns:xlink="http://www.w3.org/1999/xlink">
  <refmeta>
-  <refentrytitle>KeyManager</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>TrustManager</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
 
  <refnamediv>
