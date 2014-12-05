@@ -210,6 +210,8 @@
   </variablelist>
  </section>
 
+ <?hard-pagebreak?>
+
  <xinclude:include href="../shared/sec-formatting-conventions.xml" />
  <xinclude:include href="../shared/sec-accessing-doc-online.xml" />
  <xinclude:include href="../shared/sec-joining-the-community.xml" />

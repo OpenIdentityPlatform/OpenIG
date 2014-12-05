@@ -143,6 +143,8 @@
    and the AssertionConsumerService Location attributes include the metaAlias.
   </para>
 
+  <?hard-pagebreak?>
+
   <example xml:id="multisp-sp1">
    <title>Service Provider Configuration for Application One</title>
 
@@ -154,6 +156,8 @@
 </xinclude:include>
    </programlisting>
   </example>
+
+  <?hard-pagebreak?>
 
   <example xml:id="multisp-sp2">
    <title>Service Provider Configuration for Application Two</title>
@@ -173,6 +177,8 @@
    and the metaAlias and appLogoutUrl are correctly set.
   </para>
 
+  <?hard-pagebreak?>
+
   <example xml:id="multisp-sp1-extended">
    <title>Service Provider Extended Configuration for Application One</title>
 
@@ -184,6 +190,8 @@
 </xinclude:include>
    </programlisting>
   </example>
+
+  <?hard-pagebreak?>
 
   <example xml:id="multisp-sp2-extended">
    <title>Service Provider Extended Configuration for Application Two</title>
@@ -268,6 +276,8 @@
    This differs from the example used in earlier tutorials.
   </para>
 
+  <?hard-pagebreak?>
+
   <programlisting language="javascript">
 <xinclude:include href="resources/multi-sp/config/config.json" parse="text">
  <xinclude:fallback>
@@ -292,6 +302,8 @@
    The following examples show the routes for application One.
   </para>
 
+  <?hard-pagebreak?>
+
   <example xml:id="multisp-sp1-route"><?dbfo pgwide="1"?>
    <title>Route for SAML Authentication &amp; Login: Application One</title>
 
@@ -303,6 +315,8 @@
 </xinclude:include>
    </programlisting>
   </example>
+
+  <?hard-pagebreak?>
 
   <example xml:id="multisp-sp1-saml-route"><?dbfo pgwide="1"?>
    <title>SAML Assertion Consumer: Application One</title>
@@ -320,6 +334,8 @@
    The following examples show the routes for application Two.
   </para>
 
+  <?hard-pagebreak?>
+
   <example xml:id="multisp-sp2-route"><?dbfo pgwide="1"?>
    <title>Route for SAML Authentication &amp; Login: Application Two</title>
 
@@ -331,6 +347,8 @@
 </xinclude:include>
    </programlisting>
   </example>
+
+  <?hard-pagebreak?>
 
   <example xml:id="multisp-sp2-saml-route"><?dbfo pgwide="1"?>
    <title>SAML Assertion Consumer: Application Two</title>
