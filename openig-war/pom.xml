@@ -72,6 +72,10 @@
             <resource>
               <targetPath>WEB-INF/legal-notices</targetPath>
               <directory>../legal</directory>
+              <excludes>
+                <!-- The web-app does not include the documentation -->
+                <exclude>CC-BY-NC-ND.txt</exclude>
+              </excludes>
             </resource>
           </webResources>
         </configuration>
