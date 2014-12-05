@@ -45,8 +45,27 @@
    The following issues were fixed in release ${docTargetVersion}.
   </para>
 
-  <para>TODO: Update for the release</para>
   <!-- Only update this on a branch, not trunk. -->
+  <!-- List generated at 19:10:06 20141203 using http://bugster.forgerock.org/jira/rest/api/2/search?jql=project+%3D+OPENIG+AND+type+%3D+Bug+AND+labels+in+%28release-notes%29+AND+fixVersion+%3D+%223.1.0%22+AND+status+%3D+Resolved&startAt=0&maxResults=500&fields=summary-->
+  <itemizedlist>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-370" xlink:show="new">OPENIG-370</link>: Log output often includes irrelevant or duplicated information</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-368" xlink:show="new">OPENIG-368</link>: OAuth2ClientFilter rebases client endpoint against possibly rebased request.uri</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-331" xlink:show="new">OPENIG-331</link>: Moving a file in Routes may result in no route configured</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-325" xlink:show="new">OPENIG-325</link>: Allow scripts and AssignmentFilters to update exchange.request.uri</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-312" xlink:show="new">OPENIG-312</link>: Use Jackson for better messages about configuration errors in JSON</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-119" xlink:show="new">OPENIG-119</link>: RedirectFilter should handle HTTP 301</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-85" xlink:show="new">OPENIG-85</link>: SqlAttributesFilter throws SQLException: Invalid operation for forward only resultset</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-78" xlink:show="new">OPENIG-78</link>: SqlAttributesFilter throws SQLException: Invalid column index</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-56" xlink:show="new">OPENIG-56</link>: Temporary files leak</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-30" xlink:show="new">OPENIG-30</link>: OpenIG to protect multiple apps at one location</para></listitem>
+  </itemizedlist>
+
+  <para>
+   The ForgeRock issue tracker gives you access to the
+   <link
+    xlink:href="https://bugster.forgerock.org/jira/issues/?filter=11945"
+    xlink:show="new">complete list of resolved issues</link>.
+  </para>
  </section>
 
  <section xml:id="limitations">
@@ -80,7 +99,13 @@
    at the time release ${docTargetVersion} became available.
   </para>
 
-  <para>TODO: Update for the release</para>
   <!-- Only update this on a branch, not trunk. -->
+  <!-- List generated at 17:01:20 20141203 using http://bugster.forgerock.org/jira/rest/api/2/search?jql=project+%3D+OPENIG+AND+type+%3D+Bug+AND+labels+in+%28release-notes%29+AND+resolution+%3D+Unresolved&startAt=0&maxResults=500&fields=summary-->
+  <itemizedlist>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-322" xlink:show="new">OPENIG-322</link>: Cannot access both an OpenAM (self-signed) and a Google HTTPS endpoint</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-290" xlink:show="new">OPENIG-290</link>: Null pointer exception when capturing SAML federation response</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: OpenIG doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-234" xlink:show="new">OPENIG-234</link>: Federation doesn't work if we used incomplete user in IDP</para></listitem>
+  </itemizedlist>
  </section>
 </chapter>

@@ -45,90 +45,36 @@
   </para>
 
   <listitem>
-   <para>TODO: Update for the release</para>
-  </listitem>
-
-  <listitem>
    <para>
-    ${projectName} now provides a publish-and-subscribe audit framework
-    and a sample monitoring handler that returns basic statistics (
+    ${projectName} can now store session information
+    in encrypted JSON Web Token (JWT) cookies on the user-agent (
     <link
      xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-359"
-    >OPENIG-359</link>,
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-224"
+     >OPENIG-224</link>,
     <link
      xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-386"
-    >OPENIG-386</link>).
-    To learn more, start by reading the chapter about the
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-278"
+     >OPENIG-278</link>).
+    By default, ${projectName} continues to back session information
+    with HttpSession from the container where ${projectName} runs.
+   </para>
+
+   <para>
+    With this change, you can specify the session storage
+    at the global level, or in a particular route configuration.
+    For details, see
     <link
      xlink:show="new"
-     xlink:href="gateway-guide#chap-auditing"
+     xlink:href="reference#JwtSession"
      xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>${projectName} Audit Framework</citetitle></link>.
-   </para>
-  </listitem>
-
-  <listitem>
-   <para>
-    ${projectName} now supports object decorators (
+     >JwtSession</link>
+    and
     <link
      xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-340"
-     >OPENIG-340</link>).
-    Decorators allow you to define heap objects that decorate other objects,
-    adding the new behavior that the decorator provides.
-   </para>
-
-   <para>
-    You can now decorate Filters and Handlers with a CaptureDecorator
-    (that extends what the CaptureFilter could do,
-    <link
-     xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-299"
-    >OPENIG-299</link>),
-    (and allows you to dump the exchange to JSON for debugging purposes,
-    <link
-     xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-301"
-     >OPENIG-301</link>).
-   </para>
-
-   <para>
-    You can also decorate Filters and Handlers with a TimerDecorator (
-    <link
-     xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-353"
-    >OPENIG-353</link>).
-   </para>
-
-   <para>
-    For detailed information about decorators,
-    see the <citetitle>Reference</citetitle> on
-    <link
-     xlink:show="new"
-     xlink:href="reference#decorators-conf"
+     xlink:href="gateway-guide#keystore-for-jwt-encryption"
      xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>Decorators</citetitle></link>.
-   </para>
-  </listitem>
-
-  <listitem>
-   <para>
-    The ${projectName} Exchange now provides information about the client (
-    <link
-     xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-333"
-    >OPENIG-333</link>).
-   </para>
-
-   <para>
-    For details see the <citetitle>Reference</citetitle> on
-    <link
-     xlink:show="new"
-     xlink:href="reference#ClientInfo"
-     xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>ClientInfo</citetitle></link>.
+     ><citetitle>Setting Up Keys For JWT Encryption</citetitle></link>.
    </para>
   </listitem>
 
@@ -144,6 +90,11 @@
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-300"
     >OPENIG-300</link>),
+    to omit the "objects" field from the "heap"
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-380"
+    >OPENIG-380</link>),
     and even to omit the "heap" when it is empty
     or would only contain a single handler (
     <link
@@ -163,38 +114,40 @@
 
    <programlisting language="javascript">
 {
-    "heap": [
-        {
-            "name": "Chain",
-            "type": "Chain",
-            "config": {
-                "filters": [
-                    "ReplaceHostFilter"
-                ],
-                "handler": "Router"
-            }
-        },
-        {
-            "name": "ReplaceHostFilter",
-            "type": "HeaderFilter",
-            "config": {
-                "messageType": "REQUEST",
-                "remove": [
-                    "host"
-                ],
-                "add": {
-                    "host": [
-                        "example.com"
-                    ]
+    "heap": {
+        "objects": [
+            {
+                "name": "Chain",
+                "type": "Chain",
+                "config": {
+                    "filters": [
+                        "ReplaceHostFilter"
+                    ],
+                    "handler": "Router"
                 }
+            },
+            {
+                "name": "ReplaceHostFilter",
+                "type": "HeaderFilter",
+                "config": {
+                    "messageType": "REQUEST",
+                    "remove": [
+                        "host"
+                    ],
+                    "add": {
+                        "host": [
+                            "example.com"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Router",
+                "type": "Router",
+                "config": {}
             }
-        },
-        {
-            "name": "Router",
-            "type": "Router",
-            "config": {}
-        }
-    ],
+        ]
+    },
     "handler": "Chain"
 }
    </programlisting>
@@ -240,32 +193,89 @@
   </listitem>
 
   <listitem>
+   <!-- Related issues: OPENIG-369, OPENIG-360 -->
    <para>
-    ${projectName} can now store session information
-    in encrypted JSON Web Token (JWT) cookies on the user-agent (
+    ${projectName} now supports object decorators (
     <link
      xlink:show="new"
-     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-278"
-    >OPENIG-278</link>).
-    By default, ${projectName} continues to back session information
-    with HttpSession from the container where ${projectName} runs.
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-340"
+     >OPENIG-340</link>).
+    Decorators allow you to define heap objects that decorate other objects,
+    adding the new behavior that the decorator provides.
    </para>
 
+   <itemizedlist>
+    <para>
+     ${projectName} provides the following decorators out of the box.
+    </para>
+
+    <listitem>
+     <para>
+      A CaptureDecorator that extends what the CaptureFilter could do
+      to capture requests, responses, and exchange data on any decorated object
+      (<link
+       xlink:show="new"
+       xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-299"
+      >OPENIG-299</link>,
+      <link
+       xlink:show="new"
+       xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-301"
+      >OPENIG-301</link>)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      A TimerDecorator that records times to process the exchange
+      through any decorated object (
+      <link
+       xlink:show="new"
+       xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-352"
+      >OPENIG-352</link>,
+      <link
+       xlink:show="new"
+       xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-353"
+      >OPENIG-353</link>)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      An AuditDecorator that allows you to audit operation
+      for any decorated object.
+     </para>
+    </listitem>
+   </itemizedlist>
+
    <para>
-    With this change, you can specify the session storage
-    at the global level, or in a particular route configuration.
-    For details, see
+    For detailed information about decorators,
+    see the <citetitle>Reference</citetitle> on
     <link
      xlink:show="new"
-     xlink:href="reference#JwtSession"
+     xlink:href="reference#decorators-conf"
      xlink:role="http://docbook.org/xlink/role/olink"
-    >JwtSession</link>
-    and
+     ><citetitle>Decorators</citetitle></link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    ${projectName} now provides a publish-and-subscribe audit framework
+    and a sample monitoring handler that returns basic statistics (
     <link
      xlink:show="new"
-     xlink:href="gateway-guide#keystore-for-jwt-encryption"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-359"
+     >OPENIG-359</link>,
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-386"
+     >OPENIG-386</link>).
+    To learn more, start by reading the chapter about the
+    <link
+     xlink:show="new"
+     xlink:href="gateway-guide#chap-auditing"
      xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>Setting Up Keys For JWT Encryption</citetitle></link>.
+    ><citetitle>${projectName} Audit Framework</citetitle></link>.
    </para>
   </listitem>
 
@@ -276,6 +286,51 @@
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-240"
     >OPENIG-240</link>).
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    The OAuth2ClientFilter and OAuth2ResourceServerFilter now cache data
+    to avoid unnecessarily calls to the provider (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-350"
+    >OPENIG-350</link>).
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    ${projectName} uses improved object names in log messages
+    that make it easier to identify the source of the message (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-358"
+    >OPENIG-358</link>,
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-371"
+    >OPENIG-371</link>).
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    The ${projectName} Exchange now provides information about the client (
+    <link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-333"
+     >OPENIG-333</link>).
+   </para>
+
+   <para>
+    For details see the <citetitle>Reference</citetitle> on
+    <link
+     xlink:show="new"
+     xlink:href="reference#ClientInfo"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     ><citetitle>ClientInfo</citetitle></link>.
    </para>
   </listitem>
  </itemizedlist>
