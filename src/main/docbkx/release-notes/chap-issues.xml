@@ -45,7 +45,7 @@
    The following issues were fixed in release ${docTargetVersion}.
   </para>
 
-  <para>TODO: Update for the release</para>
+  <para>TODO: Update for the next release</para>
   <!-- Only update this on a branch, not trunk. -->
  </section>
 
@@ -80,7 +80,7 @@
    at the time release ${docTargetVersion} became available.
   </para>
 
-  <para>TODO: Update for the release</para>
+  <para>TODO: Update for the next release</para>
   <!-- Only update this on a branch, not trunk. -->
  </section>
 </chapter>
