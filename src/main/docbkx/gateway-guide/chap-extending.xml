@@ -402,16 +402,6 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
  </section>
 
- <!--
-  <section xml:id="scripting-entity-access">
-   <title>Scripting &amp; Entity Access</title>
-
-   <para>
-    TODO - pending https://bugster.forgerock.org/jira/browse/OPENIG-84
-   </para>
-  </section>
- -->
-
  <section xml:id="scripting-sql">
   <title>Scripting SQL Queries</title>
 
