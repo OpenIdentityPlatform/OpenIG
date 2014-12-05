@@ -25,6 +25,13 @@
   <artifactId>openig-war</artifactId>
   <name>OpenIG web application</name>
   <packaging>war</packaging>
+
+  <properties>
+    <!-- When released, with the 'binary.license.url' property set,
+         this artifact will contains an additional binary license -->
+    <include.binary.license>${project.build.directory}/${project.build.finalName}/WEB-INF/legal-notices</include.binary.license>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.forgerock.openig</groupId>
