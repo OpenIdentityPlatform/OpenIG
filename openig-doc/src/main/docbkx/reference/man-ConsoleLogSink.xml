@@ -74,7 +74,6 @@
 
   <variablelist>
    <xinclude:include href="../shared/varlistentry-log-level.xml" />
-  </variablelist>
 
    <varlistentry>
 
@@ -99,6 +98,7 @@
        </para>
      </listitem>
    </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1>
