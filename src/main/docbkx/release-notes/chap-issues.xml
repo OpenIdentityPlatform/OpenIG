@@ -57,7 +57,7 @@
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-85" xlink:show="new">OPENIG-85</link>: SqlAttributesFilter throws SQLException: Invalid operation for forward only resultset</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-78" xlink:show="new">OPENIG-78</link>: SqlAttributesFilter throws SQLException: Invalid column index</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-56" xlink:show="new">OPENIG-56</link>: Temporary files leak</para></listitem>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-30" xlink:show="new">OPENIG-30</link>: OpenIG to protect multiple apps at one location</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-30" xlink:show="new">OPENIG-30</link>: ${projectName} to protect multiple apps at one location</para></listitem>
   </itemizedlist>
 
   <para>
@@ -104,7 +104,7 @@
   <itemizedlist>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-322" xlink:show="new">OPENIG-322</link>: Cannot access both an OpenAM (self-signed) and a Google HTTPS endpoint</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-290" xlink:show="new">OPENIG-290</link>: Null pointer exception when capturing SAML federation response</para></listitem>
-   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: OpenIG doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
+   <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-258" xlink:show="new">OPENIG-258</link>: ${projectName} doesn't shutdown properly when protected by a Tomcat J2EE agent</para></listitem>
    <listitem><para><link xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-234" xlink:show="new">OPENIG-234</link>: Federation doesn't work if we used incomplete user in IDP</para></listitem>
   </itemizedlist>
  </section>
