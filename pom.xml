@@ -26,7 +26,7 @@
   <groupId>org.forgerock.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -317,9 +317,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:svn:https://svn.forgerock.org/openig/tags/3.1.0</connection>
-    <developerConnection>scm:svn:https://svn.forgerock.org/openig/tags/3.1.0</developerConnection>
-    <url>http://sources.forgerock.org/browse/openig/tags/3.1.0</url>
+    <connection>scm:svn:https://svn.forgerock.org/openig/branches/3.1</connection>
+    <developerConnection>scm:svn:https://svn.forgerock.org/openig/branches/3.1</developerConnection>
+    <url>http://sources.forgerock.org/browse/openig/branches/3.1</url>
   </scm>
 
   <mailingLists>
