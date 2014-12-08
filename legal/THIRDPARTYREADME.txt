@@ -155,6 +155,10 @@ Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
            Portions Copyrighted 2011-20134 ForgeRock AS, 
            Portions Copyrighted 2013-2014 Nomura Research Institute, Ltd 
 
+Version: opendj-ldap-sdk-2.6.9.jar
+Copyright: Copyright 2010 Sun Microsystems, Inc.,
+           Portions copyright 2010-2014 ForgeRock AS
+
 ==================
 Full license text:
 ==================
