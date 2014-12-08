@@ -195,8 +195,17 @@ final class OAuth2Session {
         }
 
         // Compute expiration time from expires_in field.
-        final Long expiresIn = newAccessTokenResponse.get("expires_in").asLong();
-        final Long expiresAt = expiresIn != null ? expiresIn + now() : null;
+        long expiresIn;
+        JsonValue expires = newAccessTokenResponse.get("expires_in");
+        if (expires.isString()) {
+            expiresIn = Long.valueOf(expires.asString());
+        } else if (expires.isNumber()) {
+            expiresIn = expires.asNumber().longValue();
+        } else {
+            throw new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
+                                           "'expire_in' field value is neither a Number nor a String");
+        }
+        final Long expiresAt = expiresIn + now();
 
         // Decode the ID token for OpenID Connect interactions.
         final SignedJwt idToken = extractIdToken(accessTokenResponse);
