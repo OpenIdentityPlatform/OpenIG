@@ -19,7 +19,7 @@
                                             {
                                                 "key": "value",
                                                 "pattern":
-                                                    "wpLoginToken\"\s.*value=\"(.*)\"",
+                                                    "wpLoginToken\"\\s.*value=\"(.*)\"",
                                                 "template": "$1"
                                             }
                                         ]

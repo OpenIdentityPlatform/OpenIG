@@ -518,12 +518,12 @@ $ <userinput>ssoadm \
   <para>
    The initial ${projectName} configuration file should look like the one used
    to proxy requests through to the HTTP server
-   and to capture request and response data, see
+   and to capture request and response data, as you used in the chapter on
    <link
-    xlink:show="new"
-    xlink:href="gateway-guide#config-proxy-and-capture"
+    xlink:href="gateway-guide#quickstart-config"
     xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
+    xlink:show="new"
+   ><citetitle>Getting Started</citetitle></link>.
   </para>
 
   <para>
