@@ -58,7 +58,13 @@
   </para>
 
   <para>
-   Deprecation is defined in the <citetitle>Reference</citetitle> appendix on
+   Deprecation is defined in the
+   <link
+    xlink:show="new"
+    xlink:href="reference#reference"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Reference</citetitle></link>
+   appendix on
    <link
     xlink:show="new"
     xlink:href="reference#interface-stability"
@@ -172,7 +178,7 @@
         xlink:show="new"
         xlink:href="reference#KeyManager"
         xlink:role="http://docbook.org/xlink/role/olink"
-       >KeyManager</link> names
+       >KeyManager</link> references
       </entry>
      </row>
 
@@ -187,7 +193,7 @@
         xlink:show="new"
         xlink:href="reference#TrustManager"
         xlink:role="http://docbook.org/xlink/role/olink"
-       >TrustManager</link> names
+       >TrustManager</link> references
       </entry>
      </row>
 
