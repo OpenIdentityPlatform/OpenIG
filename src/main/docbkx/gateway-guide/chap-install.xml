@@ -877,12 +877,13 @@ $ <userinput>java -Dopenig.base=/path/to/openig -jar start.jar</userinput>
     </itemizedlist>
 
     <para>
-     If you have not yet prepared configuration files, then start with the
+     If you have not yet prepared configuration files,
+     then start with the configuration from the chapter on
      <link
-      xlink:href="gateway-guide#config-proxy-and-capture"
+      xlink:href="gateway-guide#quickstart-config"
       xlink:role="http://docbook.org/xlink/role/olink"
       xlink:show="new"
-     ><citetitle>Configuration for Proxy &amp; Capture</citetitle></link>.
+     ><citetitle>Getting Started</citetitle></link>.
     </para>
 
     <para>
