@@ -16,18 +16,22 @@
                         "requireHttps": false,
                         "target": "${exchange.token}"
                     },
+                    "capture": "filtered_request",
                     "timer": true
                 },
                 {
-                    "type": "ScriptableFilter",
+                    "type": "AssignmentFilter",
                     "config": {
-                        "type": "application/x-groovy",
-                        "source":
-                            "import org.forgerock.json.fluent.JsonValue;
-                             logger.info(exchange.token.asJsonValue() as String);
-                             exchange.username = exchange.token.info.mail;
-                             exchange.password = exchange.token.info.employeenumber;
-                             next.handle(exchange)"
+                        "onRequest": [
+                            {
+                                "target": "${exchange.session.username}",
+                                "value": "${exchange.token.info.mail}"
+                            },
+                            {
+                                "target": "${exchange.session.password}",
+                                "value": "${exchange.token.info.employeenumber}"
+                            }
+                        ]
                     },
                     "timer": true
                 },
@@ -38,10 +42,10 @@
                         "uri": "http://www.example.com:8081",
                         "form": {
                             "username": [
-                                "${exchange.username}"
+                                "${exchange.session.username}"
                             ],
                             "password": [
-                                "${exchange.password}"
+                                "${exchange.session.password}"
                             ]
                         }
                     },
