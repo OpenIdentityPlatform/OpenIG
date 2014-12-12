@@ -229,6 +229,28 @@
    ${projectName} should be running in Jetty,
    configured to access the minimal HTTP server as described in that chapter.
   </para>
+
+  <para>
+   Edit <filename>config.json</filename> to make sure
+   that the "CaptureDecorator" also captures the exchange.
+   After you make the changes, the object declaration appears as follows.
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureEntity": true,
+        "captureExchange": true
+    }
+}
+  </programlisting>
+
+  <para>
+   Restart Jetty for the changes to take effect.
+   This allows you to view the token information that OpenAM returns.
+  </para>
  </section>
 
  <section xml:id="oauth2-rs-tutorial-openam-config">
@@ -421,16 +443,15 @@ Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
     <para>
      After the "OAuth2ResourceServerFilter"
      has injected information for a valid access token into the exchange,
-     the "ScriptableFilter" dumps the token information to the log.
-     The "ScriptableFilter" also injects the credentials
-     from the user profile in OpenAM into the exchange.
+     the "AssignmentFilter" injects the credentials
+     from the user profile in OpenAM into <literal>exchange.session</literal>.
     </para>
    </listitem>
 
    <listitem>
     <para>
      The "StaticRequestFilter" retrieves
-     the username and password from the exchange
+     the username and password from <literal>exchange.session</literal>,
      and replaces the original HTTP GET request
      with an HTTP POST login request
      that contains the credentials to authenticate.
@@ -495,24 +516,35 @@ $ <userinput>curl \
   </screen>
 
   <para>
-   Also look in the Jetty server output to see the access token information.
-   The access token information looks something like the following.
+   Also look in the Jetty server output to see the token information
+   injected into <literal>exchange.token</literal>.
+   The token information looks something like the following.
   </para>
 
-  <programlisting language="none">
-TUE DEC 02 17:14:28 CET 2014 (INFO) {ScriptableFilter}/handler/config/filters/1
+  <programlisting language="javascript">
 {
-    "mail": "george",
-    "employeenumber": "costanza",
-    "scope": [
-        "mail",
-        "employeenumber"
-    ],
-    "grant_type": "password",
-    "realm": "/",
-    "token_type": "Bearer",
-    "expires_in": 41,
-    "access_token": "e362515f-ecf2-47b7-b1a7-c6480e705129"
+    ...
+    "token": {
+        "token": "ddf31dac-e23a-446c-bd21-db60cf19b9f3",
+        "info": {
+            "mail": "george",
+            "employeenumber": "costanza",
+            "scope": [
+                "mail",
+                "employeenumber"
+            ],
+            "grant_type": "password",
+            "realm": "/",
+            "token_type": "Bearer",
+            "expires_in": 41,
+            "access_token": "ddf31dac-e23a-446c-bd21-db60cf19b9f3"
+        },
+        "scopes": [
+            "mail",
+            "employeenumber"
+        ],
+        "expiresAt": 1418310424801
+    }
 }
   </programlisting>
 
@@ -531,8 +563,8 @@ TUE DEC 02 17:14:28 CET 2014 (INFO) {ScriptableFilter}/handler/config/filters/1
   </para>
 
   <para>
-   The "ScriptableFilter" logs the token information,
-   and also extracts the credentials to inject them into the exchange.
+   ${projectName} captures the token information into the log,
+   and the "AssignmentFilter" injects the credentials into session.
    Finally the "StaticRequestFilter" uses the credentials
    to log the user in to the minimal HTTP server,
    which responds with the User Information page.

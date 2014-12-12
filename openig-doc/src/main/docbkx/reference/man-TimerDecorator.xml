@@ -229,40 +229,38 @@ Elapsed time: 40 ms
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="none">
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[top-level-handler]
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[top-level-handler]
 Started
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
 Started
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
 Started
 ------------------------------
-...
-------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
 Started
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
-Elapsed time: 5 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time: 119 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
-Elapsed time (within the object): 0 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time (within the object): 1 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
-Elapsed time: 24 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
+Elapsed time: 128 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{ScriptableFilter}/handler/config/filters/1]
-Elapsed time (within the object): 18 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
+Elapsed time (within the object): 7 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
-Elapsed time: 37 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time: 211 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
-Elapsed time (within the object): 13 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time (within the object): 81 ms
 ------------------------------
-TUE DEC 02 17:26:43 CET 2014 (STAT) @Timer[top-level-handler]
-Elapsed time: 37 ms
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[top-level-handler]
+Elapsed time: 212 ms
    </programlisting>
   </informalexample>
 
