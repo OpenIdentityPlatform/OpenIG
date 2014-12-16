@@ -21,10 +21,32 @@ import static org.forgerock.http.io.IO.newBranchingInputStream;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.util.Utils.closeSilently;
 
+import org.forgerock.http.ClientInfoContext;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpApplication;
+import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.Request;
+import org.forgerock.http.Response;
+import org.forgerock.http.ResponseException;
+import org.forgerock.http.Session;
+import org.forgerock.http.URIUtil;
+import org.forgerock.http.io.Buffer;
+import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.RootContext;
+import org.forgerock.resource.core.routing.RouterContext;
+import org.forgerock.util.Factory;
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -37,26 +59,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
-
-import org.forgerock.http.ClientInfoContext;
-import org.forgerock.http.Handler;
-import org.forgerock.http.HttpApplication;
-import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.HttpContext;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
-import org.forgerock.http.ResponseException;
-import org.forgerock.http.Session;
-import org.forgerock.http.URIUtil;
-import org.forgerock.http.io.Buffer;
-import org.forgerock.resource.core.routing.RouterContext;
-import org.forgerock.http.util.CaseInsensitiveSet;
-import org.forgerock.resource.core.Context;
-import org.forgerock.resource.core.RootContext;
-import org.forgerock.util.Factory;
-import org.forgerock.util.promise.FailureHandler;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * <p>
@@ -97,7 +99,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         adapter = getAdapter(getServletContext());
-        application = getApplication();
+        application = new ServletHttpApplicationWrapper(getApplication(), getServletContext());
         storage = application.getBufferFactory();
         if (storage == null) {
             final File tmpDir = (File) getServletContext().getAttribute(SERVLET_TEMP_DIR);
@@ -152,8 +154,9 @@ public final class HttpFrameworkServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(final HttpServletRequest req, final HttpServletResponse resp)
+    protected void service(final HttpServletRequest httpReq, final HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpServletRequest req = wrapHttpRequest(httpReq);
         final Request request = createRequest(req);
         final Session session = new ServletSession(req);
         final HttpContext httpContext = new HttpContext(new RootContext(), session)
@@ -187,7 +190,9 @@ public final class HttpFrameworkServlet extends HttpServlet {
                         @Override
                         public void handleError(ResponseException error) {
                             try {
-                                writeResponse(httpContext, resp, error.getResponse());
+                                if (!(error instanceof ContainerHandledResponse)) {
+                                    writeResponse(httpContext, resp, error.getResponse());
+                                }
                             } catch (IOException e) {
                                 log("Failed to write success response", e);
                             } finally {
@@ -208,7 +213,9 @@ public final class HttpFrameworkServlet extends HttpServlet {
 
         } catch (ResponseException error) {
             try {
-                writeResponse(httpContext, resp, error.getResponse());
+                if (!(error instanceof ContainerHandledResponse)) {
+                    writeResponse(httpContext, resp, error.getResponse());
+                }
             } catch (IOException e) {
                 log("Failed to write success response", e);
             } finally {
@@ -222,6 +229,29 @@ public final class HttpFrameworkServlet extends HttpServlet {
         } catch (InterruptedException e) {
             throw new ServletException("Awaiting asynchronous request was interrupted.", e);
         }
+    }
+
+    /**
+     * Wraps the {@code HttpServletRequest} so that the call to {@code #getInputStream} when creating the
+     * {@code Request}, does cause problems when delegating to the Servlet container to handle static resources, when
+     * the container calls {@code HttpServletRequest#getParameterMap()} to get the requests url and post parameters.
+     *
+     * @param req The {@code HttpServletRequest}.
+     * @return A wrapped {@code HttpServletRequest}.
+     */
+    private HttpServletRequest wrapHttpRequest(HttpServletRequest req) {
+        return new HttpServletRequestWrapper(req) {
+            @Override
+            public ServletInputStream getInputStream() throws IOException {
+                final HttpServletRequestWrapper req = this;
+                return new ServletInputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        return req.getInputStream().read();
+                    }
+                };
+            }
+        };
     }
 
     private Request createRequest(HttpServletRequest req) throws ServletException, IOException {
@@ -265,7 +295,11 @@ public final class HttpFrameworkServlet extends HttpServlet {
         String contextPath = forceEmptyIfNull(req.getContextPath());
         contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
         String matchedUri = contextPath + forceEmptyIfNull(req.getServletPath());
-        return new RouterContext(parent, matchedUri, Collections.<String, String>emptyMap());
+        if (req.getRequestURI().contains(matchedUri)) {
+            return new RouterContext(parent, matchedUri, Collections.<String, String>emptyMap());
+        } else {
+            return new RouterContext(parent, req.getRequestURI(), Collections.<String, String>emptyMap());
+        }
     }
 
     private String forceEmptyIfNull(final String s) {
