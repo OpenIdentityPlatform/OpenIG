@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.forgerock.resource.core.AbstractContext;
 import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.ServerContext;
 
 /**
  * A {@link Context} which is created when a request has been routed. The
@@ -36,7 +37,7 @@ import org.forgerock.resource.core.Context;
  * template variable name.
  * </ul>
  */
-public final class RouterContext extends AbstractContext {
+public final class RouterContext extends ServerContext {
 
     private final String matchedUri;
     private final Map<String, String> uriTemplateVariables;
