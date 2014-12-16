@@ -49,7 +49,7 @@ import org.forgerock.http.ResponseException;
 import org.forgerock.http.Session;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.Buffer;
-import org.forgerock.resource.core.RouterContext;
+import org.forgerock.resource.core.routing.RouterContext;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.resource.core.Context;
 import org.forgerock.resource.core.RootContext;
