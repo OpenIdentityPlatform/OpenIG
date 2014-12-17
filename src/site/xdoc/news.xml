@@ -34,6 +34,14 @@
   <body>
     <section name="New Releases">
       <p>
+       December 12, 2014. ForgeRock has released OpenIG 3.1.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 3.1.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/3.1.0/">docs.forgerock.org</a>.
+      </p>
+
+      <p>
        August 11, 2014. ForgeRock has released OpenIG 3.0.0.
        You can get the release from the ForgeRock
        <a href="http://forgerock.com/download-stack/">download page</a>.
