@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2013 ForgeRock AS
+  !      Copyright 2013-2014 ForgeRock AS
   !
 -->
 <faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -42,11 +42,11 @@
       <question>What's the OpenIG roadmap? Is OpenIG actively developed?</question>
       <answer>
         <p>
-          OpenIG is actively developed as part of OpenAM, see<a
+          OpenIG is actively developed as part of OpenAM, see <a
             href="https://bugster.forgerock.org/jira/browse/OPENIG">the OpenIG bug
-          database activity</a>. Also see the<a
-            href="https://wikis.forgerock.org/confluence/display/openam/OpenAM+Roadmap"
-            >OpenAM Roadmap</a>.
+          database activity</a>. Also see the <a
+            href="https://wikis.forgerock.org/confluence/display/OPENIG/OpenIG+Roadmap"
+            >OpenIG Roadmap</a>.
         </p>
       </answer>
     </faq>
@@ -56,10 +56,10 @@
       </question>
       <answer>
         <p>
-          Come discuss your work on the<a
+          Come discuss your work on the <a
             href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
-          list</a>.<a
-            href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
+          list</a>. <a
+            href="https://backstage.forgerock.com/#/account/register">Join
           the project</a>, too.
         </p>
       </answer>
@@ -68,7 +68,7 @@
       <question>I want to help test OpenIG. How do I get started?</question>
       <answer>
         <p>
-          <a href="https://idp.forgerock.org/openam/UI/Login?service=register">Join
+          <a href="https://backstage.forgerock.com/#/account/register">Join
             the project</a>. Come discuss your work on the<a
             href="https://lists.forgerock.org/mailman/listinfo/openig">mailing
           list</a>.

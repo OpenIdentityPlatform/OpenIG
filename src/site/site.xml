@@ -59,6 +59,7 @@
     </menu>
 
     <menu name="Released Documentation">
+      <item name="OpenIG 3.1.0" href="http://docs.forgerock.org/en/openig/3.0.0/" />
       <item name="OpenIG 3.0.0" href="http://docs.forgerock.org/en/openig/3.0.0/" />
       <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
     </menu>
@@ -72,7 +73,7 @@
     </menu>
 
     <menu name="OpenIG Development">
-      <item name="Join" href="https://sso.forgerock.com/openam/UI/Login" />
+      <item name="Join" href="https://backstage.forgerock.com/#/account/register" />
       <item name="Issue Tracking" href="issue-tracking.html" />
       <item name="License" href="license.html" />
       <item name="Source Repository" href="source-repository.html" />
