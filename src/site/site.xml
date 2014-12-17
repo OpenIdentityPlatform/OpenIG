@@ -59,7 +59,7 @@
     </menu>
 
     <menu name="Released Documentation">
-      <item name="OpenIG 3.1.0" href="http://docs.forgerock.org/en/openig/3.0.0/" />
+      <item name="OpenIG 3.1.0" href="http://docs.forgerock.org/en/openig/3.1.0/" />
       <item name="OpenIG 3.0.0" href="http://docs.forgerock.org/en/openig/3.0.0/" />
       <item name="OpenIG 2.1.0" href="http://docs.forgerock.org/en/openig/2.1.0/" />
     </menu>
