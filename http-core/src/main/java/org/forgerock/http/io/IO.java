@@ -239,17 +239,6 @@ public final class IO {
     }
 
     /**
-     * Returns a {@link PipedOutputStream} containing an output stream which fills a buffer and an input stream which
-     * reads from the same buffer. For use when needing to pipe data from an {@code OutputStream} directly to a
-     * {@code BranchingInputStream}.
-     *
-     * @return A {@code PipedOutputStream}.
-     */
-    public static PipedOutputStream newPipedOutputStream() {
-        return new PipedOutputStream();
-    }
-
-    /**
      * Streams all data from an input stream to an output stream.
      *
      * @param in
