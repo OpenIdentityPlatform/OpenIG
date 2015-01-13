@@ -19,12 +19,13 @@ package org.forgerock.openig.el;
 import org.forgerock.openig.util.Indexed;
 
 /**
- * A plugin that contributes a node to the {@code Expression} context tree.
+ * A plugin that contributes a node to the {@link Expression} context tree.
  */
 public interface ExpressionPlugin extends Indexed<String> {
 
     /**
      * Returns, and if necessary, creates, the context object.
+     *
      * @return The context node object.
      */
     Object getObject();

@@ -16,25 +16,19 @@
 
 package org.forgerock.openig.el.plugins;
 
-import org.forgerock.openig.el.ExpressionPlugin;
-
 import java.util.Collections;
+
+import org.forgerock.openig.el.ExpressionPlugin;
 
 /**
  * An ELContext node plugin that provides read-only access to environment variables.
  */
 public class EnvironmentVariablesPlugin implements ExpressionPlugin {
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object getObject() {
         return Collections.unmodifiableMap(System.getenv());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getKey() {
         return "env";
