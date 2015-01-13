@@ -12,17 +12,15 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
 
-import java.beans.FeatureDescriptor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import de.odysseus.el.ExpressionFactoryImpl;
+import org.forgerock.openig.resolver.Resolver;
+import org.forgerock.openig.resolver.Resolvers;
+import org.forgerock.openig.util.Loader;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -30,11 +28,12 @@ import javax.el.ELResolver;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
-
-import org.forgerock.openig.resolver.Resolver;
-import org.forgerock.openig.resolver.Resolvers;
-
-import de.odysseus.el.ExpressionFactoryImpl;
+import java.beans.FeatureDescriptor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An Unified Expression Language expression. Creating an expression is the equivalent to
@@ -45,6 +44,10 @@ public class Expression {
 
     /** The underlying EL expression(s) that this object represents. */
     private final List<ValueExpression> valueExpression;
+
+    /** The expression plugins configured in META-INF/services. */
+    private static final Map<String, ExpressionPlugin> plugins =
+            Collections.unmodifiableMap(Loader.loadMap(String.class, ExpressionPlugin.class));
 
     /**
      * Constructs an expression for later evaluation.
@@ -173,11 +176,9 @@ public class Expression {
 
             // deal with readonly implicit objects
             if (base == null) {
-                String name = property.toString();
-                if ("system".equals(name)) {
-                    return readOnlySystemProperties();
-                } else if ("env".equals(name)) {
-                    return readOnlyEnvironmentVariables();
+                ExpressionPlugin node = Expression.plugins.get(property.toString());
+                if (node != null) {
+                    return node.getObject();
                 }
             }
 
@@ -212,14 +213,6 @@ public class Expression {
         @Override
         public Class<?> getCommonPropertyType(ELContext context, Object base) {
             return (base == null ? String.class : Object.class);
-        }
-
-        private Map<String, String> readOnlyEnvironmentVariables() {
-            return Collections.unmodifiableMap(System.getenv());
-        }
-
-        private Map<Object, Object> readOnlySystemProperties() {
-            return Collections.unmodifiableMap(System.getProperties());
         }
 
     }
