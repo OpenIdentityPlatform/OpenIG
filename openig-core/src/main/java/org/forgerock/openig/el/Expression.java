@@ -17,10 +17,12 @@
 
 package org.forgerock.openig.el;
 
-import de.odysseus.el.ExpressionFactoryImpl;
-import org.forgerock.openig.resolver.Resolver;
-import org.forgerock.openig.resolver.Resolvers;
-import org.forgerock.openig.util.Loader;
+import java.beans.FeatureDescriptor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -28,12 +30,12 @@ import javax.el.ELResolver;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
-import java.beans.FeatureDescriptor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+
+import org.forgerock.openig.resolver.Resolver;
+import org.forgerock.openig.resolver.Resolvers;
+import org.forgerock.openig.util.Loader;
+
+import de.odysseus.el.ExpressionFactoryImpl;
 
 /**
  * An Unified Expression Language expression. Creating an expression is the equivalent to
@@ -46,7 +48,7 @@ public class Expression {
     private final List<ValueExpression> valueExpression;
 
     /** The expression plugins configured in META-INF/services. */
-    private static final Map<String, ExpressionPlugin> plugins =
+    private static final Map<String, ExpressionPlugin> PLUGINS =
             Collections.unmodifiableMap(Loader.loadMap(String.class, ExpressionPlugin.class));
 
     /**
@@ -176,7 +178,7 @@ public class Expression {
 
             // deal with readonly implicit objects
             if (base == null) {
-                ExpressionPlugin node = Expression.plugins.get(property.toString());
+                ExpressionPlugin node = Expression.PLUGINS.get(property.toString());
                 if (node != null) {
                     return node.getObject();
                 }

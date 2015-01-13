@@ -16,25 +16,19 @@
 
 package org.forgerock.openig.el.plugins;
 
-import org.forgerock.openig.el.ExpressionPlugin;
-
 import java.util.Collections;
+
+import org.forgerock.openig.el.ExpressionPlugin;
 
 /**
  * An ELContext node plugin that provides read-only access to system properties.
  */
 public class SystemPropertiesPlugin implements ExpressionPlugin {
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object getObject() {
         return Collections.unmodifiableMap(System.getProperties());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getKey() {
         return "system";
