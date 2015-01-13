@@ -177,7 +177,7 @@ public class DispatchHandlerTest {
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
 
     }
-    
+
     @Test(expectedExceptions = HandlerException.class)
     public void testDispatchNoHandlerToDispatch() throws Exception {
         new DispatchHandler().handle(new Exchange());
