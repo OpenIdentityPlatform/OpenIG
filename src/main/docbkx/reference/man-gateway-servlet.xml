@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS
   !
 -->
 <refentry xml:id='gateway-servlet'
@@ -116,7 +116,7 @@
    in an HTTP cookie on the user-agent,
    you can define a "JwtSession" named "Session"
    in <filename>config.json</filename>.
-   In you do that, however, stored session information must
+   If you do that, however, stored session information must
    fit the constraints for storage in a JWT and in a cookie,
    as described in the
    <link
