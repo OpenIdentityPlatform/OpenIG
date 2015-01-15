@@ -77,6 +77,7 @@
       <item name="Issue Tracking" href="issue-tracking.html" />
       <item name="License" href="license.html" />
       <item name="Source Repository" href="source-repository.html" />
+      <item name="Continuous Integration" href="https://builds.forgerock.org/view/OpenIG/" />
     </menu>
 
   </body>
