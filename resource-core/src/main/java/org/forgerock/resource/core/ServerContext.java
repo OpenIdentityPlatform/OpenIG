@@ -23,8 +23,7 @@ import org.forgerock.resource.core.Context;
 
 /**
  * The context associated with a request currently being processed by a {@code Handler}
- * within a server. A {@code ServerContext} provides an internal
- * {@code Connection} which can be used for performing internal operations.
+ * within a server.
  *
  * @since 1.0.0
  */

@@ -37,12 +37,12 @@ public final class RouteMatcher<H> {
     private final RouterContext context;
     private final String match;
     private final String remaining;
-    private final UriTemplate template;
+    private final UriRoute<H> route;
     private final H handler;
 
     // Constructor for default route.
     RouteMatcher(Context context, String remaining, H handler) {
-        this.template = null;
+        this.route = null;
         this.match = null;
         this.remaining = remaining;
         this.context = new RouterContext(context, "", Collections.<String, String> emptyMap());
@@ -50,8 +50,8 @@ public final class RouteMatcher<H> {
     }
 
     // Constructor for matching template.
-    RouteMatcher(UriTemplate template, String match, String remaining, RouterContext context, H handler) {
-        this.template = template;
+    RouteMatcher(UriRoute<H> route, String match, String remaining, RouterContext context, H handler) {
+        this.route = route;
         this.match = match;
         this.remaining = remaining;
         this.context = context;
@@ -70,16 +70,16 @@ public final class RouteMatcher<H> {
         return handler;
     }
 
-    public boolean isBetterMatchThan(RouteMatcher matcher) {
+    boolean isBetterMatchThan(RouteMatcher matcher) {
         if (matcher == null) {
             return true;
         } else if (!match.equals(matcher.match)) {
             // One template matched a greater proportion of the resource
             // name than the other. Use the template which matched the most.
             return match.length() > matcher.match.length();
-        } else if (template.getMode() != matcher.template.getMode()) {
+        } else if (route.getMode() != matcher.route.getMode()) {
             // Prefer equality match over startsWith match.
-            return template.getMode() == RoutingMode.EQUALS;
+            return route.getMode() == RoutingMode.EQUALS;
         } else {
             // Prefer a match with less variables.
             return context.getUriTemplateVariables().size() < matcher.context

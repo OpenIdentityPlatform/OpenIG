@@ -22,9 +22,6 @@ import static org.forgerock.resource.core.routing.RoutingMode.STARTS_WITH;
 import static org.mockito.Mockito.mock;
 
 import org.forgerock.resource.core.Context;
-import org.forgerock.resource.core.routing.RouteMatcher;
-import org.forgerock.resource.core.routing.RoutingMode;
-import org.forgerock.resource.core.routing.UriTemplate;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -67,8 +64,8 @@ public final class UriRouteTest {
     @Test(dataProvider = "testData")
     public void testGetRouteMatcher(final RoutingMode mode, final String template,
             final String resourceName, final String expectedRemaining) {
-        UriTemplate<Void> uriTemplate = new UriTemplate<Void>(mode, template, null);
-        RouteMatcher matcher = uriTemplate.getRouteMatcher(mock(Context.class), resourceName);
+        UriRoute<Void> uriRoute = new UriRoute<Void>(mode, template, null);
+        RouteMatcher matcher = uriRoute.getRouteMatcher(mock(Context.class), resourceName);
         if (expectedRemaining != null) {
             assertThat(matcher).isNotNull();
             assertThat(matcher.getRemaining()).isEqualTo(expectedRemaining);

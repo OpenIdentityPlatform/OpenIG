@@ -140,7 +140,7 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
      *         route later.
      */
     public final UriRoute<H> addRoute(RoutingMode mode, String uriTemplate, H handler) {
-        return addRoute(new UriRoute<H>(new UriTemplate<H>(mode, uriTemplate, handler)));
+        return addRoute(new UriRoute<H>(mode, uriTemplate, handler));
     }
 
     /**
@@ -210,7 +210,7 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
     protected final RouteMatcher<H> getBestRoute(Context context, String uri) throws RouteNotFoundException {
         RouteMatcher<H> bestMatcher = null;
         for (UriRoute<H> route : routes) {
-            RouteMatcher<H> matcher = route.getTemplate().getRouteMatcher(context, uri);
+            RouteMatcher<H> matcher = route.getRouteMatcher(context, uri);
             if (matcher != null && matcher.isBetterMatchThan(bestMatcher)) {
                 bestMatcher = matcher;
             }
