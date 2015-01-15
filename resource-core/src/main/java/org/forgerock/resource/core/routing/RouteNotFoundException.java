@@ -18,6 +18,11 @@ package org.forgerock.resource.core.routing;
 
 import java.io.IOException;
 
+/**
+ * An exception that is thrown when a route to a specified URI cannot be found.
+ *
+ * @since 1.0.0
+ */
 public class RouteNotFoundException extends IOException {
 
     /**

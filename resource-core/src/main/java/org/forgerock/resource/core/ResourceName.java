@@ -72,6 +72,8 @@ import java.util.regex.Pattern;
  * ResourceName user = base.child(&quot;users&quot;).child(123);
  * user.toString(); // commons/rest/users/123
  * </pre>
+ *
+ * @since 1.0.0
  */
 public final class ResourceName implements Comparable<ResourceName>, Iterable<String> {
     private static final ResourceName EMPTY = new ResourceName();

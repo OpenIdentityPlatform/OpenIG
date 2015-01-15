@@ -21,6 +21,54 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.forgerock.resource.core.Context;
 
+/**
+ * A request handler which routes requests using URI template matching against
+ * the request's resource name. Examples of valid URI templates include:
+ *
+ * <pre>
+ * users
+ * users/{userId}
+ * users/{userId}/devices
+ * users/{userId}/devices/{deviceId}
+ * </pre>
+ *
+ * Routes may be added and removed from a router as follows:
+ *
+ * <pre>
+ * RequestHandler users = ...;
+ * Router router = new Router();
+ * Route r1 = router.addRoute(EQUALS, &quot;users&quot;, users);
+ * Route r2 = router.addRoute(EQUALS, &quot;users/{userId}&quot;, users);
+ *
+ * // Deregister a route.
+ * router.removeRoute(r1, r2);
+ * </pre>
+ *
+ * A request handler receiving a routed request may access the associated
+ * route's URI template variables via
+ * {@link org.forgerock.resource.core.routing.RouterContext#getUriTemplateVariables()}. For example, a request
+ * handler processing requests for the route users/{userId} may obtain the value
+ * of {@code userId} as follows:
+ *
+ * <pre>
+ * String userId = context.asContext(RouterContext.class).getUriTemplateVariables().get(&quot;userId&quot;);
+ * </pre>
+ *
+ * During routing resource names are "relativized" by removing the leading path
+ * components which matched the template. See the documentation for
+ * {@link org.forgerock.resource.core.routing.RouterContext} for more information.
+ * <p>
+ * <b>NOTE:</b> for simplicity this implementation only supports a small sub-set
+ * of the functionality described in RFC 6570.
+ *
+ * @see RouterContext
+ * @see <a href="http://tools.ietf.org/html/rfc6570">RFC 6570 - URI Template</a>
+ *
+ * @param <T> The type of the router.
+ * @param <H> The type of the handler that will be used to handle routing requests.
+ *
+ * @since 1.0.0
+ */
 public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
 
     private volatile H defaultRoute = null;
@@ -46,12 +94,30 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
         this.routes.addAll(router.routes);
     }
 
+    /**
+     * Returns this {@code AbstractUriRouter} instance, typed correctly.
+     *
+     * @return This {@code AbstractUriRouter} instance.
+     */
     protected abstract T getThis();
 
+    /**
+     * Gets all registered routes on this router.
+     *
+     * @return All registered routes.
+     */
     final Set<UriRoute<H>> getRoutes() {
         return routes;
     }
 
+    /**
+     * Adds all of the routes defined in the provided router to this router. New
+     * routes may be added while this router is processing requests.
+     *
+     * @param router
+     *            The router whose routes are to be copied into this router.
+     * @return This router.
+     */
     public final T addAllRoutes(T router) {
         if (this != router) {
             routes.addAll(router.getRoutes());
@@ -59,10 +125,30 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
         return getThis();
     }
 
+    /**
+     * Adds a new route to this router for the provided request handler. New
+     * routes may be added while this router is processing requests.
+     *
+     * @param mode
+     *            Indicates how the URI template should be matched against
+     *            resource names.
+     * @param uriTemplate
+     *            The URI template which request resource names must match.
+     * @param handler
+     *            The handler to which matching requests will be routed.
+     * @return An opaque handle for the route which may be used for removing the
+     *         route later.
+     */
     public final UriRoute<H> addRoute(RoutingMode mode, String uriTemplate, H handler) {
         return addRoute(new UriRoute<H>(new UriTemplate<H>(mode, uriTemplate, handler)));
     }
 
+    /**
+     * Returns the handler to be used as the default route for requests
+     * which do not match any of the other defined routes.
+     *
+     * @return The handler to be used as the default route.
+     */
     public final H getDefaultRoute() {
         return defaultRoute;
     }
@@ -95,11 +181,11 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
     }
 
     /**
-     * Sets the request handler to be used as the default route for requests
+     * Sets the handler to be used as the default route for requests
      * which do not match any of the other defined routes.
      *
      * @param handler
-     *            The request handler to be used as the default route.
+     *            The handler to be used as the default route.
      * @return This router.
      */
     public final T setDefaultRoute(H handler) {
@@ -112,6 +198,15 @@ public abstract class AbstractUriRouter<T extends AbstractUriRouter<T, H>, H> {
         return route;
     }
 
+    /**
+     * Finds the best route that matches the given {@code uri} based on the uri templates of the registered routes.
+     * If no registered route matches at all then the default route is chosen, if present.
+     *
+     * @param context The request context.
+     * @param uri The request uri to be matched against the registered routes.
+     * @return A {@code RouteMatcher} containing the {@code UriRoute} which is the best match for the given {@code uri}.
+     * @throws RouteNotFoundException If no route matched the given {@code uri}.
+     */
     protected final RouteMatcher<H> getBestRoute(Context context, String uri) throws RouteNotFoundException {
         RouteMatcher<H> bestMatcher = null;
         for (UriRoute<H> route : routes) {

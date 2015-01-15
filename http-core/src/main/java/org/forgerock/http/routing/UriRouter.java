@@ -34,49 +34,10 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * A request handler which routes requests using URI template matching against
- * the request's resource name. Examples of valid URI templates include:
+ * {@code Handler} implementation of the {@link AbstractUriRouter} that will route
+ * requests using URI template matching against the request's URI.
  *
- * <pre>
- * users
- * users/{userId}
- * users/{userId}/devices
- * users/{userId}/devices/{deviceId}
- * </pre>
- *
- * Routes may be added and removed from a router as follows:
- *
- * <pre>
- * RequestHandler users = ...;
- * Router router = new Router();
- * Route r1 = router.addRoute(EQUALS, &quot;users&quot;, users);
- * Route r2 = router.addRoute(EQUALS, &quot;users/{userId}&quot;, users);
- *
- * // Deregister a route.
- * router.removeRoute(r1, r2);
- * </pre>
- *
- * A request handler receiving a routed request may access the associated
- * route's URI template variables via
- * {@link org.forgerock.resource.core.routing.RouterContext#getUriTemplateVariables()}. For example, a request
- * handler processing requests for the route users/{userId} may obtain the value
- * of {@code userId} as follows:
- *
- * <pre>
- * String userId = context.asContext(RouterContext.class).getUriTemplateVariables().get(&quot;userId&quot;);
- * </pre>
- *
- * During routing resource names are "relativized" by removing the leading path
- * components which matched the template. See the documentation for
- * {@link org.forgerock.resource.core.routing.RouterContext} for more information.
- * <p>
- * <b>NOTE:</b> for simplicity this implementation only supports a small sub-set
- * of the functionality described in RFC 6570.
- *
- * @see org.forgerock.resource.core.routing.RouterContext
- * @see UriRouter
- * @see <a href="http://tools.ietf.org/html/rfc6570">RFC 6570 - URI Template
- *      </a>
+ * @see AbstractUriRouter
  */
 public final class UriRouter extends AbstractUriRouter<UriRouter, Handler> implements Handler {
 

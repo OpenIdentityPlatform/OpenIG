@@ -16,6 +16,17 @@
 
 package org.forgerock.resource.core.routing;
 
+/**
+ * An opaque handle for a route which has been registered in a {@link AbstractUriRouter
+ * router}. A reference to a route should be maintained if there is a chance
+ * that the route will need to be removed from the router at a later time.
+ *
+ * @see AbstractUriRouter
+ *
+ * @param <H> The type of the handler that will be used to handle routing requests.
+ *
+ * @since 1.0.0
+ */
 public final class UriRoute<H> {
 
     private final UriTemplate<H> template;

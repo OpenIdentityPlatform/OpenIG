@@ -18,6 +18,12 @@ package org.forgerock.resource.core;
 
 import java.util.UUID;
 
+/**
+ * A {@link Context} which has an an ID but no parent. All request context
+ * chains are terminated by a root context as the top-most context.
+ *
+ * @since 1.0.0
+ */
 public final class RootContext extends AbstractContext {
 
     private static final ThreadLocal<String> ID_CACHE = new ThreadLocal<String>() {

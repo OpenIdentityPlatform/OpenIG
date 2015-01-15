@@ -19,6 +19,8 @@ package org.forgerock.resource.core.routing;
 /**
  * The algorithm which should be used when matching URI templates against
  * request resource names.
+ *
+ * @since 1.0.0
  */
 public enum RoutingMode {
 
@@ -32,6 +34,5 @@ public enum RoutingMode {
      * The URI template must match the beginning of a request's resource name in
      * order for the route to be selected.
      */
-    STARTS_WITH;
-
+    STARTS_WITH
 }

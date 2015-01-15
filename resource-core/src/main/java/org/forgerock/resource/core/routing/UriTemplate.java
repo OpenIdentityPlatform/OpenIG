@@ -30,6 +30,14 @@ import java.util.regex.Pattern;
 
 import org.forgerock.resource.core.Context;
 
+/**
+ * A URI template implementation that creates a template for a given URI and can
+ * determine whether it matches the whole or a portion of another URI.
+ *
+ * @param <H> The type of the handler that will be used to handle routing requests.
+ *
+ * @since 1.0.0
+ */
 final class UriTemplate<H> {
 
     private final H handler;

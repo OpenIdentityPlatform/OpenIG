@@ -20,16 +20,39 @@ import org.forgerock.util.Reject;
 
 import java.util.Iterator;
 
+/**
+ * A base implementation of the context associated with a request currently
+ * being processed by a {@code Handler}. A request context can be used to
+ * query state information about the request. Implementations may provide
+ * additional information, time-stamp information, HTTP headers, etc. Contexts
+ * are linked together to form a parent-child chain of context, whose root is a
+ * {@link RootContext}.
+ *
+ * @since 1.0.0
+ */
 public abstract class AbstractContext implements Context {
 
     private final String id;
     private final String name;
     private final Context parent;
 
+    /**
+     * Constructs a new {@code AbstractContext} with a {@code null} {@code id}.
+     *
+     * @param parent The parent context.
+     * @param name The name of the context.
+     */
     protected AbstractContext(Context parent, String name) {
         this(null, name, parent);
     }
 
+    /**
+     * Constructs a new {@code AbstractContext}.
+     *
+     * @param id The id of the context.
+     * @param parent The parent context.
+     * @param name The name of the context.
+     */
     protected AbstractContext(String id, String name, Context parent) {
         this.id = id;
         this.name = name;
@@ -41,6 +64,7 @@ public abstract class AbstractContext implements Context {
         return name;
     }
 
+    @Override
     public final <T extends Context> T asContext(Class<T> clazz) {
         Reject.ifNull(clazz, "clazz cannot be null");
         T context = asContext0(clazz);
@@ -51,6 +75,7 @@ public abstract class AbstractContext implements Context {
         }
     }
 
+    @Override
     public final Context getContext(String contextName) {
         Context context = getContext0(contextName);
         if (context != null) {
@@ -60,14 +85,17 @@ public abstract class AbstractContext implements Context {
         }
     }
 
+    @Override
     public final boolean containsContext(Class<? extends Context> clazz) {
         return asContext0(clazz) != null;
     }
 
+    @Override
     public final boolean containsContext(String contextName) {
         return getContext0(contextName) != null;
     }
 
+    @Override
     public final String getId() {
         if (id == null && !isRootContext()) {
             return getParent().getId();
@@ -76,10 +104,12 @@ public abstract class AbstractContext implements Context {
         }
     }
 
+    @Override
     public final Context getParent() {
         return parent;
     }
 
+    @Override
     public final boolean isRootContext() {
         return getParent() == null;
     }

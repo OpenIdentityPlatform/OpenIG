@@ -22,11 +22,14 @@ import org.forgerock.resource.core.AbstractContext;
 import org.forgerock.resource.core.Context;
 
 /**
- * The context associated with a request currently being processed by a JSON
- * request handler within a server. A {@code ServerContext} provides an internal
+ * The context associated with a request currently being processed by a {@code Handler}
+ * within a server. A {@code ServerContext} provides an internal
  * {@code Connection} which can be used for performing internal operations.
+ *
+ * @since 1.0.0
  */
-public class ServerContext extends AbstractContext { //TODO not sure if this is needed?
+//TODO not sure if this is needed?
+public class ServerContext extends AbstractContext {
 
     /**
      * Creates a new server context having the provided parent, an ID
