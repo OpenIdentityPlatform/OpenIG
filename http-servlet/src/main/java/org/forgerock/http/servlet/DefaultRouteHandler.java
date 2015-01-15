@@ -61,12 +61,12 @@ final class DefaultRouteHandler implements Handler {
 
     private final ServletContext servletContext;
     private final String defaultServletName;
-    private final Map<Pattern, String> staticRouteHandlers;
+    private final Map<Pattern, String> staticRouteServlets;
 
     DefaultRouteHandler(ServletContext servletContext, String defaultServletName,
-            Map<Pattern, String> staticRouteHandlers) {
+            Map<Pattern, String> staticRouteServlets) {
         this.servletContext = servletContext;
-        this.staticRouteHandlers = staticRouteHandlers;
+        this.staticRouteServlets = staticRouteServlets;
         if (defaultServletName == null || defaultServletName.isEmpty()) {
             if (this.servletContext.getNamedDispatcher(COMMON_DEFAULT_SERVLET_NAME) != null) {
                 this.defaultServletName = COMMON_DEFAULT_SERVLET_NAME;
@@ -127,9 +127,9 @@ final class DefaultRouteHandler implements Handler {
 
     private String getServletName(Request request) {
         String servletName = defaultServletName;
-        for (Map.Entry<Pattern, String> staticRouteHandler : staticRouteHandlers.entrySet()) {
-            if (staticRouteHandler.getKey().matcher(request.getUri().getPath()).matches()) {
-                servletName = staticRouteHandler.getValue();
+        for (Map.Entry<Pattern, String> staticRouteServlet : staticRouteServlets.entrySet()) {
+            if (staticRouteServlet.getKey().matcher(request.getUri().getPath()).matches()) {
+                servletName = staticRouteServlet.getValue();
             }
         }
         return servletName;

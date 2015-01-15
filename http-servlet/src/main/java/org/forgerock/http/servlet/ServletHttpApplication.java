@@ -43,13 +43,13 @@ public interface ServletHttpApplication extends HttpApplication {
     String getDefaultServletName();
 
     /**
-     * <p>Gets the static route handlers for specific paths.</p>
+     * <p>Gets the static route Servlets for specific paths.</p>
      *
      * <p>Maps routes to specific static resource and the name of the Servlet that will handle requests for them. By
      * default the container's default Servlet will handle all requests to static resources, use this method to
      * override this behaviour.</p>
      *
-     * @return A {@code Map} of static route handlers.
+     * @return A {@code Map} of static route Servlet.
      */
-    Map<Pattern, String> getStaticRouteHandlers();
+    Map<Pattern, String> getStaticRouteServlets();
 }

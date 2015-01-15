@@ -58,18 +58,18 @@ final class ServletHttpApplicationWrapper implements HttpApplication {
     @Override
     public Handler start() throws HttpApplicationException {
         String defaultServletName = null;
-        Map<Pattern, String> staticRouteHandlers = Collections.emptyMap();
+        Map<Pattern, String> staticRouteServlets = Collections.emptyMap();
         if (application instanceof ServletHttpApplication) {
             ServletHttpApplication servletApplication = (ServletHttpApplication) application;
             defaultServletName = servletApplication.getDefaultServletName();
-            staticRouteHandlers = servletApplication.getStaticRouteHandlers();
+            staticRouteServlets = servletApplication.getStaticRouteServlets();
         }
         Handler handler = application.start();
         if (handler instanceof UriRouter) {
             UriRouter router = (UriRouter) handler;
             if (router.getDefaultRoute() == null) {
                 router.setDefaultRoute(new DefaultRouteHandler(servletContext, defaultServletName,
-                        staticRouteHandlers));
+                        staticRouteServlets));
             }
         }
 
