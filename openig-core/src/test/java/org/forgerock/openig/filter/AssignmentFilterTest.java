@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -35,9 +35,9 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws ExpressionException, HandlerException, IOException {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression target = new Expression("${exchange.newAttr}");
+        final Expression target = Expression.valueOf("${exchange.newAttr}");
         filter.addRequestBinding(target,
-                                 new Expression("${exchange.request.method}"));
+                                 Expression.valueOf("${exchange.request.method}"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -53,8 +53,8 @@ public class AssignmentFilterTest {
     @Test
     public void shouldChangeUriOnRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        filter.addRequestBinding(new Expression("${exchange.request.uri}"),
-                                 new Expression("www.forgerock.com"));
+        filter.addRequestBinding(Expression.valueOf("${exchange.request.uri}"),
+                                 Expression.valueOf("www.forgerock.com"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -70,9 +70,9 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws ExpressionException, HandlerException, IOException {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression target = new Expression("${exchange.newAttr}");
+        final Expression target = Expression.valueOf("${exchange.newAttr}");
         filter.addResponseBinding(target,
-                                  new Expression("${exchange.response.status}"));
+                                  Expression.valueOf("${exchange.response.status}"));
 
         Exchange exchange = new Exchange();
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");

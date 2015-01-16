@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2014 ForgeRock AS.
+ * Copyright 2012-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -60,7 +60,7 @@ public class HeaderFilterTest {
 
         // Prepare a static response handler that provision a response header
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        handler.addHeader("Location", new Expression("http://openig.forgerock.com"));
+        handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com"));
 
         // Execute the filter
         filter.filter(exchange, handler);

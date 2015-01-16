@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -47,7 +47,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testUriMethodAndVersionPropagation() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(new Expression(URI));
+        filter.setUri(Expression.valueOf(URI));
         filter.setVersion("1.1");
 
         Exchange exchange = new Exchange();
@@ -62,10 +62,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testHeadersPropagation() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(new Expression(URI));
-        filter.addHeaderValue("Mono-Valued", new Expression("First Value"));
-        filter.addHeaderValue("Multi-Valued", new Expression("One (1)"));
-        filter.addHeaderValue("Multi-Valued", new Expression("Two (${exchange.request.version})"));
+        filter.setUri(Expression.valueOf(URI));
+        filter.addHeaderValue("Mono-Valued", Expression.valueOf("First Value"));
+        filter.addHeaderValue("Multi-Valued", Expression.valueOf("One (1)"));
+        filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${exchange.request.version})"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -89,10 +89,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testFormAttributesPropagationWithGetMethod() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(new Expression(URI));
-        filter.addFormParameter("mono", new Expression("one"));
-        filter.addFormParameter("multi", new Expression("one1"));
-        filter.addFormParameter("multi", new Expression("two${exchange.request.version}"));
+        filter.setUri(Expression.valueOf(URI));
+        filter.addFormParameter("mono", Expression.valueOf("one"));
+        filter.addFormParameter("multi", Expression.valueOf("one1"));
+        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -113,10 +113,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testFormAttributesPropagationWithPostMethod() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(new Expression(URI));
-        filter.addFormParameter("mono", new Expression("one"));
-        filter.addFormParameter("multi", new Expression("one1"));
-        filter.addFormParameter("multi", new Expression("two${exchange.request.version}"));
+        filter.setUri(Expression.valueOf(URI));
+        filter.addFormParameter("mono", Expression.valueOf("one"));
+        filter.addFormParameter("multi", Expression.valueOf("one1"));
+        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}"));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -139,7 +139,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testRequestSaveAndRestore() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(new Expression(URI));
+        filter.setUri(Expression.valueOf(URI));
         filter.setRestore(true);
 
         Exchange exchange = new Exchange();
@@ -155,7 +155,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testRequestDisabledSaveAndRestore() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(new Expression(URI));
+        filter.setUri(Expression.valueOf(URI));
         filter.setRestore(false);
 
         Exchange exchange = new Exchange();

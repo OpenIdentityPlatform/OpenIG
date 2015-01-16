@@ -42,7 +42,7 @@ import de.odysseus.el.ExpressionFactoryImpl;
  * compiling it. Once created, an expression can be evaluated within a supplied scope. An
  * expression can safely be evaluated concurrently in multiple threads.
  */
-public class Expression {
+public final class Expression {
 
     /** The underlying EL expression(s) that this object represents. */
     private final List<ValueExpression> valueExpression;
@@ -52,12 +52,29 @@ public class Expression {
             Collections.unmodifiableMap(Loader.loadMap(String.class, ExpressionPlugin.class));
 
     /**
+     * Factory method to create an Expression.
+     *
+     * @param expression
+     *            The expression to parse.
+     * @return An expression based on the given string.
+     * @throws ExpressionException
+     *             if the expression was not syntactically correct.
+     */
+    public static final Expression valueOf(String expression) throws ExpressionException {
+        return new Expression(expression);
+    }
+
+    /** The original string used to create this expression. */
+    private final String original;
+
+    /**
      * Constructs an expression for later evaluation.
      *
      * @param expression the expression to parse.
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    public Expression(String expression) throws ExpressionException {
+    private Expression(String expression) throws ExpressionException {
+        original = expression;
         try {
             // An expression with no pattern will just return the original String so we will always have at least one
             // item in the array.
@@ -217,5 +234,20 @@ public class Expression {
             return (base == null ? String.class : Object.class);
         }
 
+    }
+
+    /**
+     * Returns the original string used to create this expression, unmodified.
+     * <p>
+     * Note to implementors: That returned value must be usable in
+     * Expression.valueOf() to create an equivalent Expression(somehow cloning
+     * this instance)
+     * </p>
+     *
+     * @return The original string used to create this expression.
+     */
+    @Override
+    public String toString() {
+        return original;
     }
 }

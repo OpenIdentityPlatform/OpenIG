@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -316,7 +316,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {
                 try {
-                    return new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"), filter);
+                    return new EnforcerFilter(Expression.valueOf("${exchange.request.uri.scheme == 'https'}"), filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
                 }

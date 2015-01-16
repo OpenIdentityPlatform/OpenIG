@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -28,14 +28,27 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Response;
 import org.forgerock.openig.util.ExtensibleFieldMap;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class ExpressionTest {
 
+    @DataProvider
+    private Object[][] expressions() {
+        return new Object[][] {
+            { "${1==1}" },
+            { "#{myExpression}" },
+            { "string-literal" },
+            { "" },
+            { "foo\\${a} ${a}${b} foo\\${b}" },
+            { "${a} \n${b}" } };
+    }
+
+
     @Test
     public void bool() throws ExpressionException {
-        Expression expr = new Expression("${1==1}");
+        Expression expr = Expression.valueOf("${1==1}");
         Object o = expr.eval(null); // no scope required for non-resolving expression
         assertThat(o).isInstanceOf(Boolean.class);
         assertThat(o).isEqualTo(true);
@@ -43,7 +56,7 @@ public class ExpressionTest {
 
     @Test
     public void empty() throws ExpressionException {
-        Expression expr = new Expression("string-literal");
+        Expression expr = Expression.valueOf("string-literal");
         Object o = expr.eval(null); // no scope required for non-resolving expression
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("string-literal");
@@ -51,7 +64,7 @@ public class ExpressionTest {
 
     @Test
     public void emptyString() throws ExpressionException {
-        Expression expr = new Expression("");
+        Expression expr = Expression.valueOf("");
         Object o = expr.eval(null); // no scope required for non-resolving expression
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("");
@@ -62,18 +75,24 @@ public class ExpressionTest {
         HashMap<String, String> scope = new HashMap<String, String>();
         scope.put("a", "bar");
         scope.put("b", "bas");
-        Expression expr = new Expression("foo\\${a} ${a}${b} foo\\${b}");
+        Expression expr = Expression.valueOf("foo\\${a} ${a}${b} foo\\${b}");
         Object o = expr.eval(scope);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("foo\\bar barbas foo\\bas");
     }
 
+    @Test(dataProvider = "expressions")
+    public void toStringTest(final String value) throws ExpressionException {
+        final Expression expA = Expression.valueOf(value);
+        final Expression expB = Expression.valueOf(expA.toString());
+        assertThat(expA.toString()).isEqualTo(expB.toString());
+    }
 
     @Test
     public void scope() throws ExpressionException {
         HashMap<String, String> scope = new HashMap<String, String>();
         scope.put("a", "foo");
-        Expression expr = new Expression("${a}bar");
+        Expression expr = Expression.valueOf("${a}bar");
         Object o = expr.eval(scope);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("foobar");
@@ -84,7 +103,7 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.getHeaders().putSingle("Host", "www.example.com");
-        Expression expr = new Expression("${exchange.request.headers['Host'][0]}");
+        Expression expr = Expression.valueOf("${exchange.request.headers['Host'][0]}");
         String host = expr.eval(exchange, String.class);
         assertThat(host).isEqualTo("www.example.com");
     }
@@ -94,7 +113,7 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setUri("http://test.com:123/path/to/resource.html");
-        Object o = new Expression("${exchange.request.uri.path}").eval(exchange);
+        Object o = Expression.valueOf("${exchange.request.uri.path}").eval(exchange);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("/path/to/resource.html");
     }
@@ -104,9 +123,9 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("foo", "bar");
-        Expression expr = new Expression("${exchange.testmap}");
+        Expression expr = Expression.valueOf("${exchange.testmap}");
         expr.set(exchange, map);
-        expr = new Expression("${exchange.testmap.foo}");
+        expr = Expression.valueOf("${exchange.testmap.foo}");
         assertThat(expr.eval(exchange, String.class)).isEqualTo("bar");
     }
 
@@ -127,40 +146,40 @@ public class ExpressionTest {
         exchange.request = request;
         exchange.response = response;
 
-        Expression expr = new Expression("${exchange.request.uri.path == '/wordpress/wp-login.php' "
+        Expression expr = Expression.valueOf("${exchange.request.uri.path == '/wordpress/wp-login.php' "
                         + "and exchange.request.form['action'][0] != 'logout'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${toString(exchange.request.uri)}");
+        expr = Expression.valueOf("${toString(exchange.request.uri)}");
         assertThat(expr.eval(exchange, String.class))
                 .isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
 
-        expr = new Expression("${exchange.request.uri.host == 'wiki.example.com'}");
+        expr = Expression.valueOf("${exchange.request.uri.host == 'wiki.example.com'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${exchange.request.method == 'POST' "
+        expr = Expression.valueOf("${exchange.request.method == 'POST' "
                 + "and exchange.request.uri.path == '/wordpress/wp-login.php'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${exchange.request.method != 'GET'}");
+        expr = Expression.valueOf("${exchange.request.method != 'GET'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${exchange.request.uri.scheme == 'http'}");
+        expr = Expression.valueOf("${exchange.request.uri.scheme == 'http'}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${not (exchange.response.status == 302 and not empty exchange.session.gotoURL)}");
+        expr = Expression.valueOf("${not (exchange.response.status == 302 and not empty exchange.session.gotoURL)}");
         assertThat(expr.eval(exchange, Boolean.class)).isTrue();
 
-        expr = new Expression("${exchange.request.headers['host'][0]}");
+        expr = Expression.valueOf("${exchange.request.headers['host'][0]}");
         assertThat(expr.eval(exchange, String.class)).isEqualTo("wiki.example.com");
 
-        expr = new Expression("${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0].value}");
+        expr = Expression.valueOf("${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')][0].value}");
         assertThat(expr.eval(exchange, String.class)).isNotNull();
 
-        expr = new Expression("${exchange.request.headers['cookie'][0]}");
+        expr = Expression.valueOf("${exchange.request.headers['cookie'][0]}");
         assertThat(expr.eval(exchange, String.class)).isNotNull();
 
-        expr = new Expression("${exchange.response.headers['Set-Cookie'][0]}");
+        expr = Expression.valueOf("${exchange.response.headers['Set-Cookie'][0]}");
         assertThat(expr.eval(exchange, String.class)).isEqualTo("MyCookie=example; path=/");
     }
 
@@ -171,11 +190,11 @@ public class ExpressionTest {
         bfm.setNumber(42);
         bfm.put("attribute", "hello");
 
-        assertThat(new Expression("${legacy}").eval(bfm, String.class)).isEqualTo("OpenIG");
-        assertThat(new Expression("${number}").eval(bfm, Integer.class)).isEqualTo(42);
-        assertThat(new Expression("${readOnly}").eval(bfm, String.class)).isEqualTo("hello");
-        assertThat(new Expression("${attribute}").eval(bfm, String.class)).isEqualTo("hello");
-        assertThat(new Expression("${missing}").eval(bfm, String.class)).isNull();
+        assertThat(Expression.valueOf("${legacy}").eval(bfm, String.class)).isEqualTo("OpenIG");
+        assertThat(Expression.valueOf("${number}").eval(bfm, Integer.class)).isEqualTo(42);
+        assertThat(Expression.valueOf("${readOnly}").eval(bfm, String.class)).isEqualTo("hello");
+        assertThat(Expression.valueOf("${attribute}").eval(bfm, String.class)).isEqualTo("hello");
+        assertThat(Expression.valueOf("${missing}").eval(bfm, String.class)).isNull();
     }
 
     @Test
@@ -184,16 +203,16 @@ public class ExpressionTest {
         bfm.legacy = "OpenIG";
         bfm.setNumber(42);
 
-        new Expression("${legacy}").set(bfm, "ForgeRock");
+        Expression.valueOf("${legacy}").set(bfm, "ForgeRock");
         assertThat(bfm.legacy).isEqualTo("ForgeRock");
 
-        new Expression("${number}").set(bfm, 404);
+        Expression.valueOf("${number}").set(bfm, 404);
         assertThat(bfm.getNumber()).isEqualTo(404);
 
-        new Expression("${readOnly}").set(bfm, "will-be-ignored");
+        Expression.valueOf("${readOnly}").set(bfm, "will-be-ignored");
         assertThat(bfm.getReadOnly()).isEqualTo("hello");
 
-        new Expression("${attribute}").set(bfm, "a-value");
+        Expression.valueOf("${attribute}").set(bfm, "a-value");
         assertThat(bfm.get("attribute")).isEqualTo("a-value");
     }
 
@@ -201,22 +220,22 @@ public class ExpressionTest {
     public void testUsingIntermediateBean() throws Exception {
         ExternalBean bean = new ExternalBean(new InternalBean("Hello World"));
 
-        assertThat(new Expression("${internal.value}").eval(bean, String.class)).isEqualTo("Hello World");
-        new Expression("${internal.value}").set(bean, "ForgeRock OpenIG");
+        assertThat(Expression.valueOf("${internal.value}").eval(bean, String.class)).isEqualTo("Hello World");
+        Expression.valueOf("${internal.value}").set(bean, "ForgeRock OpenIG");
         assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
     }
 
     @Test
     public void testImplicitObjectsReferences() throws Exception {
-        assertThat(new Expression("${system['user.home']}").eval(null)).isNotNull();
-        assertThat(new Expression("${env['PATH']}").eval(null)).isNotNull();
+        assertThat(Expression.valueOf("${system['user.home']}").eval(null)).isNotNull();
+        assertThat(Expression.valueOf("${env['PATH']}").eval(null)).isNotNull();
     }
 
     @Test
     public void getNullExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
+        Object o = Expression.valueOf("${exchange.request.entity.string}").eval(exchange);
         assertThat(o).isEqualTo("");
     }
 
@@ -224,7 +243,7 @@ public class ExpressionTest {
     public void getNullExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        Object o = new Expression("${exchange.request.entity.json}").eval(exchange);
+        Object o = Expression.valueOf("${exchange.request.entity.json}").eval(exchange);
         assertThat(o).isNull();
     }
 
@@ -233,7 +252,7 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setEntity("old mcdonald had a farm");
-        Object o = new Expression("${exchange.request.entity.string}").eval(exchange);
+        Object o = Expression.valueOf("${exchange.request.entity.string}").eval(exchange);
         assertThat(o).isEqualTo("old mcdonald had a farm");
     }
 
@@ -242,10 +261,10 @@ public class ExpressionTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
-        Object map = new Expression("${exchange.request.entity.json}").eval(exchange);
+        Object map = Expression.valueOf("${exchange.request.entity.json}").eval(exchange);
         assertThat(map).isInstanceOf(Map.class);
         assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345));
-        Object i = new Expression("${exchange.request.entity.json.int}").eval(exchange);
+        Object i = Expression.valueOf("${exchange.request.entity.json.int}").eval(exchange);
         assertThat(i).isEqualTo(12345);
     }
 
@@ -253,7 +272,7 @@ public class ExpressionTest {
     public void setExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        new Expression("${exchange.request.entity.json}").set(exchange, object(field("k1", "v1"),
+        Expression.valueOf("${exchange.request.entity.json}").set(exchange, object(field("k1", "v1"),
                                                                                field("k2", 123)));
         assertThat(exchange.request.getEntity()).isNotNull();
         assertThat(exchange.request.getEntity().getString())
@@ -264,7 +283,7 @@ public class ExpressionTest {
     public void setExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        new Expression("${exchange.request.entity.string}").set(exchange,
+        Expression.valueOf("${exchange.request.entity.string}").set(exchange,
                 "mary mary quite contrary");
         assertThat(exchange.request.getEntity()).isNotNull();
         assertThat(exchange.request.getEntity().getString()).isEqualTo("mary mary quite contrary");

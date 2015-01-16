@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit;
@@ -49,9 +49,9 @@ public class ConditionalAuditEventListenerTest {
     public static Object[][] delegatingConditions() throws ExpressionException {
         // @Checkstyle:off
         return new Object[][] {
-                {new Expression("${true}")},
-                {new Expression("${contains(tags, 'tag#1')}")},
-                {new Expression("${source.name.leaf == 'source'}")}
+                {Expression.valueOf("${true}")},
+                {Expression.valueOf("${contains(tags, 'tag#1')}")},
+                {Expression.valueOf("${source.name.leaf == 'source'}")}
         };
         // @Checkstyle:on
     }
@@ -67,10 +67,10 @@ public class ConditionalAuditEventListenerTest {
     public static Object[][] filteringConditions() throws ExpressionException {
         // @Checkstyle:off
         return new Object[][] {
-                {new Expression("${false}")},
-                {new Expression("a non boolean value")},
-                {new Expression("${source.name.leaf == 'not the right name'}")},
-                {new Expression("${source.wrongProperty == 'java.lang.Object'}")}
+                {Expression.valueOf("${false}")},
+                {Expression.valueOf("a non boolean value")},
+                {Expression.valueOf("${source.name.leaf == 'not the right name'}")},
+                {Expression.valueOf("${source.wrongProperty == 'java.lang.Object'}")}
         };
         // @Checkstyle:on
     }

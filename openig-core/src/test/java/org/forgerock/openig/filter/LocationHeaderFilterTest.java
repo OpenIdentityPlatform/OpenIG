@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2014 ForgeRock AS.
+ * Copyright 2012-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -46,7 +46,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("https://proxy.example.com:443/"));
+        filter.setBaseURI(Expression.valueOf("https://proxy.example.com:443/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -60,7 +60,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
+        filter.setBaseURI(Expression.valueOf("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -74,7 +74,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("http://app.example.com:9090/"));
+        filter.setBaseURI(Expression.valueOf("http://app.example.com:9090/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -88,7 +88,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com/path/to/redirected?a=1&b=2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("https://app.example.com/"));
+        filter.setBaseURI(Expression.valueOf("https://app.example.com/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -101,7 +101,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("http://app.example.com:8080/"));
+        filter.setBaseURI(Expression.valueOf("http://app.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }
@@ -109,7 +109,7 @@ public class LocationHeaderFilterTest {
     @Test
     public void caseBaseUriAsExpression() throws Exception {
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("http://${exchange.host}:8080"));
+        filter.setBaseURI(Expression.valueOf("http://${exchange.host}:8080"));
         Handler next = mock(Handler.class);
 
         Exchange exchange = new Exchange();
@@ -134,7 +134,7 @@ public class LocationHeaderFilterTest {
         URI testRedirectionURI = new URI("http://app.example.com:8080/path/a%20b/redirected?a=1&b=%3D2");
 
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(new Expression("http://proxy.example.com:8080/"));
+        filter.setBaseURI(Expression.valueOf("http://proxy.example.com:8080/"));
 
         callFilter(filter, testRedirectionURI, expectedResult);
     }

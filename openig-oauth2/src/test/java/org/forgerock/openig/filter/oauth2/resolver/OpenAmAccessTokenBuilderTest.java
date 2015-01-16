@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
@@ -59,9 +59,9 @@ public class OpenAmAccessTokenBuilderTest {
         assertThat(token.getExpiresAt()).isEqualTo(10000L + 42L);
         assertThat(token.getScopes()).containsOnly("email", "address");
         assertThat(token.getInfo().get("expires_in")).isEqualTo(10);
-        assertThat(new Expression("${info.scope[0]}").eval(token, String.class)).isEqualTo("email");
-        assertThat(new Expression("${info.scope[1]}").eval(token, String.class)).isEqualTo("address");
-        assertThat(new Expression("${info.access_token}").eval(token, String.class)).isEqualTo(TOKEN);
+        assertThat(Expression.valueOf("${info.scope[0]}").eval(token, String.class)).isEqualTo("email");
+        assertThat(Expression.valueOf("${info.scope[1]}").eval(token, String.class)).isEqualTo("address");
+        assertThat(Expression.valueOf("${info.access_token}").eval(token, String.class)).isEqualTo(TOKEN);
         assertThat(token.asJsonValue()).isSameAs(info);
     }
 

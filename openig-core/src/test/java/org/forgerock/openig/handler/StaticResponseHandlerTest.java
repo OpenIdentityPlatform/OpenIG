@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -29,7 +29,7 @@ public class StaticResponseHandlerTest {
     @Test
     public void shouldSetStatusReasonAndHeaders() throws Exception {
         final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
-        handler.addHeader("Location", new Expression("http://www.example.com/"));
+        handler.addHeader("Location", Expression.valueOf("http://www.example.com/"));
         final Exchange exchange = new Exchange();
         handler.handle(exchange);
         assertThat(exchange.response.getStatus()).isEqualTo(302);
@@ -44,7 +44,7 @@ public class StaticResponseHandlerTest {
                         200,
                         null,
                         null,
-                        new Expression(
+                        Expression.valueOf(
                         "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>"));
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
