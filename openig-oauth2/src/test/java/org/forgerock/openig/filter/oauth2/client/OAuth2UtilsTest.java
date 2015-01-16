@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
@@ -32,20 +32,20 @@ public class OAuth2UtilsTest {
 
     @Test
     public void shouldBuildUriUsingOriginalExchangeUri() throws Exception {
-        URI uri = OAuth2Utils.buildUri(buildExchange(), new Expression("/openid"));
+        URI uri = OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("/openid"));
         assertThat(uri).isEqualTo(new URI("http://www.example.com/openid"));
     }
 
     @Test
     public void shouldNotChangeUriWhenExpressionIsAbsoluteUri() throws Exception {
-        URI uri = OAuth2Utils.buildUri(buildExchange(), new Expression("http://accounts.google.com/openid/authorize"));
+        URI uri = OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("http://accounts.google.com/openid/authorize"));
         assertThat(uri).isEqualTo(new URI("http://accounts.google.com/openid/authorize"));
     }
 
     @Test(expectedExceptions = HandlerException.class)
     public void shouldFailIfComputedUriIsNotValid() throws Exception {
         // {} are invalid URI characters
-        OAuth2Utils.buildUri(buildExchange(), new Expression("http://www.example.com/{boom}"));
+        OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("http://www.example.com/{boom}"));
     }
 
     @Test

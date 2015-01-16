@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -44,7 +44,7 @@ public class EnforcerFilterTest {
 
     @Test
     public void shouldDelegateToTheRealFilter() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(new Expression("${true}"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}"), delegate);
         Exchange exchange = new Exchange();
         enforcer.filter(exchange, handler);
         verify(delegate).filter(exchange, handler);
@@ -52,13 +52,13 @@ public class EnforcerFilterTest {
 
     @Test(expectedExceptions = HandlerException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsNotVerified() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(new Expression("${false}"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${false}"), delegate);
         enforcer.filter(new Exchange(), handler);
     }
 
     @Test(expectedExceptions = HandlerException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsInvalid() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(new Expression("not a condition"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("not a condition"), delegate);
         enforcer.filter(new Exchange(), handler);
     }
 }

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -55,7 +55,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnRequestOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.addRequestCase(new Expression("${true}"), handler1);
+        filter.addRequestCase(Expression.valueOf("${true}"), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -67,7 +67,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnResponseOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.addResponseCase(new Expression("${true}"), handler1);
+        filter.addResponseCase(Expression.valueOf("${true}"), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -83,8 +83,8 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Expect the request's case to divert the flow and ignore the response's case
-        filter.addRequestCase(new Expression("${true}"), handler1);
-        filter.addResponseCase(new Expression("${true}"), handler2);
+        filter.addRequestCase(Expression.valueOf("${true}"), handler1);
+        filter.addResponseCase(Expression.valueOf("${true}"), handler2);
 
         filter.filter(exchange, terminalHandler);
 
@@ -100,10 +100,10 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Build a chain where only the first matching case should be executed
-        filter.addRequestCase(new Expression("${false}"), handler1);
-        filter.addRequestCase(new Expression("${true}"), handler2); // <- This one matches and is executed
-        filter.addRequestCase(new Expression("${false}"), handler3);
-        filter.addRequestCase(new Expression("${true}"), handler4);
+        filter.addRequestCase(Expression.valueOf("${false}"), handler1);
+        filter.addRequestCase(Expression.valueOf("${true}"), handler2); // <- This one matches and is executed
+        filter.addRequestCase(Expression.valueOf("${false}"), handler3);
+        filter.addRequestCase(Expression.valueOf("${true}"), handler4);
 
         filter.filter(exchange, terminalHandler);
 

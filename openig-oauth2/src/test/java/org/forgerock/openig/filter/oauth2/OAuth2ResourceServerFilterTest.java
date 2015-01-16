@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -180,7 +180,7 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                new Expression("${exchange.myToken}"));
+                Expression.valueOf("${exchange.myToken}"));
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -219,13 +219,13 @@ public class OAuth2ResourceServerFilterTest {
                                               time,
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
-                                              new Expression(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+                                              Expression.valueOf(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
     }
 
     private static Set<Expression> getScopes(final String... scopes) throws ExpressionException {
         final Set<Expression> expScopes = new HashSet<Expression>(scopes.length);
         for (final String scope : scopes) {
-            expScopes.add(new Expression(scope));
+            expScopes.add(Expression.valueOf(scope));
         }
         return expScopes;
     }

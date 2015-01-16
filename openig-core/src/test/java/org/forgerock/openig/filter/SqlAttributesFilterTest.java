@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -69,7 +69,7 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testSqlResultRowIsStoredInAMapAndInAnExchangeProperty() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, Expression.valueOf("${exchange.result}"), null);
 
         mockDatabaseInteractions();
 
@@ -86,10 +86,10 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testParametersAreAssignedToTheRightPlaceholders() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, Expression.valueOf("${exchange.result}"), null);
 
-        filter.getParameters().add(new Expression("${true}"));
-        filter.getParameters().add(new Expression("${false}"));
+        filter.getParameters().add(Expression.valueOf("${true}"));
+        filter.getParameters().add(Expression.valueOf("${false}"));
 
         mockDatabaseInteractions();
         when(pmetadata.getParameterCount()).thenReturn(2);
@@ -108,7 +108,7 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, Expression.valueOf("${exchange.result}"), null);
         filter.logger = spy(filter.logger);
 
         // Generate an SQLException when getConnection() is called
@@ -127,11 +127,11 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testTooMuchParametersProvided() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, Expression.valueOf("${exchange.result}"), null);
         filter.logger = spy(filter.logger);
 
-        filter.getParameters().add(new Expression("${true}"));
-        filter.getParameters().add(new Expression("${false}"));
+        filter.getParameters().add(Expression.valueOf("${true}"));
+        filter.getParameters().add(Expression.valueOf("${false}"));
 
         mockDatabaseInteractions();
         when(pmetadata.getParameterCount()).thenReturn(0);
@@ -146,11 +146,11 @@ public class SqlAttributesFilterTest {
 
     @Test
     public void testNotEnoughParameters() throws Exception {
-        SqlAttributesFilter filter = new SqlAttributesFilter(source, new Expression("${exchange.result}"), null);
+        SqlAttributesFilter filter = new SqlAttributesFilter(source, Expression.valueOf("${exchange.result}"), null);
         filter.logger = spy(filter.logger);
 
-        filter.getParameters().add(new Expression("${true}"));
-        filter.getParameters().add(new Expression("${false}"));
+        filter.getParameters().add(Expression.valueOf("${true}"));
+        filter.getParameters().add(Expression.valueOf("${false}"));
 
         mockDatabaseInteractions();
         when(pmetadata.getParameterCount()).thenReturn(3);
