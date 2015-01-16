@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -414,7 +414,7 @@ public class HttpClient {
      */
     public Response execute(final Request request) throws IOException {
         final HttpRequestBase clientRequest =
-                request.getEntity().isEmpty() ? new NonEntityRequest(request) : new EntityRequest(request);
+                request.getEntity().mayContainData() ? new EntityRequest(request) : new NonEntityRequest(request);
         clientRequest.setURI(request.getUri().asURI());
         // connection headers to suppress
         final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();

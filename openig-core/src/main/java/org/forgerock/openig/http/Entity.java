@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -95,20 +95,23 @@ public final class Entity implements Closeable {
 
     Entity(final Message<?> message) {
         this.message = message;
-        setRawInputStream(EMPTY_STREAM);
+        setEmpty();
     }
 
     /**
-     * Returns {@literal true} if the entity is empty.
-     * This method does not read any actual content from the InputStream.
-     * @return {@literal true} if the entity is empty.
+     * Returns {@code true} if this entity may contain data.
+     * @return {@code true} if this entity may contain data.
      */
-    public boolean isEmpty() {
-        try {
-            return trunk.available() == 0;
-        } catch (IOException e) {
-            return true;
-        }
+    public boolean mayContainData() {
+        // Used reference equality intentionally (not equalsTo())
+        return getRawInputStream() != EMPTY_STREAM;
+    }
+
+    /**
+     * Mark this entity as being empty.
+     */
+    public void setEmpty() {
+        setRawInputStream(EMPTY_STREAM);
     }
 
     /**
@@ -117,7 +120,7 @@ public final class Entity implements Closeable {
      */
     @Override
     public void close() {
-        setRawInputStream(EMPTY_STREAM);
+        setEmpty();
     }
 
     /**
