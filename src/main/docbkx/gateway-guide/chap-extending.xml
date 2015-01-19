@@ -10,7 +10,7 @@
   ! Suite 900, Mountain View, California, 94041, USA.
   !
   ! You can also obtain a copy of the license at
-  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! trunk/legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2014 ForgeRock AS
+  !      Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <chapter xml:id="chap-extending"
@@ -586,6 +586,60 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
       that use only alphanumeric characters.
       To avoid clashes, use dots or dashes in your field names,
       such as "my-decorator".
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/el/ExpressionPlugin.html"
+      xlink:show="new"
+     >ExpressionPlugin</link></term>
+    <listitem>
+     <para>
+      An ExpressionPlugin adds a node to the the Expression context tree,
+      alongside <literal>env</literal> (for environment variables),
+      and <literal>system</literal> (for system properties).
+      For example, the expression <literal>${system['user.home']}</literal>
+      yields the home directory of the user
+      running the application server for ${projectName}.
+     </para>
+
+     <para>
+      In your ExpressionPlugin,
+      the <literal>getKey()</literal> method returns the name of the node,
+      and the <literal>getObject()</literal> method
+      returns the unified expression language context object
+      that contains the values needed to resolve the expression.
+      The plugins for <literal>env</literal> and <literal>system</literal>
+      return Map objects, for example.
+     </para>
+
+     <para>
+      When you add your own ExpressionPlugin,
+      you must make it discoverable within your custom library.
+      You do this by adding a services file named after the plugin interface,
+      where the file contains the fully qualified class name of your plugin, under
+      <filename>META-INF/services/org.forgerock.openig.el.ExpressionPlugin</filename>
+      in the jar file for your customizations.
+      When you have more than one plugin,
+      add one fully qualified class name per line.
+      For details, see the reference documentation for the Java class
+      <link
+       xlink:href="https://docs.oracle.com/javase/6/docs/api/index.html?java/util/ServiceLoader.html"
+       xlink:show="new"
+      >ServiceLoader</link>.
+      If you build your project using Maven, then you can add this
+      under the <filename>src/main/resources</filename> directory.
+      As described in <xref linkend="custom-embed" />,
+      you must add your custom libraries
+      to the <filename>WEB-INF/lib/</filename> directory
+      of the ${projectName} war file that you deploy.
+     </para>
+
+     <para>
+      Be sure to provide some documentation for ${projectName} administrators
+      on how your plugin extends expressions.
      </para>
     </listitem>
    </varlistentry>
