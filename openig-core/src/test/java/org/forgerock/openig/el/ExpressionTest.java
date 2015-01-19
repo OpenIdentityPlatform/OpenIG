@@ -37,16 +37,14 @@ public class ExpressionTest {
     @DataProvider
     private Object[][] expressions() {
         return new Object[][] {
-            // @Checkstyle:off
             { "${1==1}" },
             { "#{myExpression}" },
             { "string-literal" },
-                        { "ᓱᓴᓐ ᐊᒡᓗᒃᑲᖅ" }, /** Susan Aglukark (singer) */
+            { "ᓱᓴᓐ ᐊᒡᓗᒃᑲᖅ" }, /** Susan Aglukark (singer) */
             { "F" + "\u004F" + "\u0052" + "G" + "\u0045" },
             { "" },
             { "foo\\${a} ${a}${b} foo\\${b}" },
             { "${a} \n${b}" } };
-            // @Checkstyle:on
     }
 
 
