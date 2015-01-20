@@ -34,16 +34,29 @@ public class GlobalDecorator implements Decorator {
      */
     public static final String GLOBAL_DECORATOR_HEAP_KEY = "global-decorator";
 
+    private final Decorator parent;
     private final JsonValue decorators;
 
     /**
      * Builds a new GlobalDecorator using given decorators JSON object element.
      *
-     * @param decorators
-     *         a JSON object structure
+     * @param parent
+     *            the parent global decorator from which additional global
+     *            decorators may be inherited. May be {@code null}
+     * @param config
+     *            a JSON configuration
+     * @param reservedFieldNames
+     *            the names of reserved top level fields in the config which
+     *            should not be parsed as global decorators
      */
-    public GlobalDecorator(final JsonValue decorators) {
-        this.decorators = decorators.expect(Map.class);
+    public GlobalDecorator(final Decorator parent, final JsonValue config,
+            final String... reservedFieldNames) {
+        this.parent = parent;
+        // create a copy of the config with the reserved names filtered out
+        this.decorators = config.expect(Map.class).clone();
+        for (String reservedFieldName : reservedFieldNames) {
+            decorators.remove(reservedFieldName);
+        }
     }
 
     @Override
@@ -68,7 +81,7 @@ public class GlobalDecorator implements Decorator {
     @Override
     public Object decorate(final Object delegate, final JsonValue ignored, final Context context)
             throws HeapException {
-        Object decorated = delegate;
+        Object decorated = parent != null ? parent.decorate(delegate, ignored, context) : delegate;
         for (JsonValue decoration : decorators) {
             String decoratorName = decoration.getPointer().leaf();
             // Process the decoration

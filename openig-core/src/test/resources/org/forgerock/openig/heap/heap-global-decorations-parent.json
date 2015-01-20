@@ -1,23 +1,19 @@
 {
-    "heap": {
-        "objects": [
-            {
-              "name": "prefix",
-              "type": "org.forgerock.openig.heap.domain.PrefixBookDecorator"
-            },
-            {
-              "name": "suffix",
-              "type": "org.forgerock.openig.heap.domain.SuffixBookDecorator"
-            },
-            {
-              "name": "incompatible",
-              "type": "org.forgerock.openig.heap.domain.IncompatibleBookDecorator"
-            }
-        ],
-        "decorations": {
-          "prefix": "ABCD ",
-          "suffix": " 12345",
-          "incompatible": "not used"
+    "heap": [
+        {
+          "name": "prefix",
+          "type": "org.forgerock.openig.heap.domain.PrefixBookDecorator"
+        },
+        {
+          "name": "suffix",
+          "type": "org.forgerock.openig.heap.domain.SuffixBookDecorator"
+        },
+        {
+          "name": "incompatible",
+          "type": "org.forgerock.openig.heap.domain.IncompatibleBookDecorator"
         }
-    }
+    ],
+    "prefix": "ABCD ",
+    "suffix": " 12345",
+    "incompatible": "not used"
 }

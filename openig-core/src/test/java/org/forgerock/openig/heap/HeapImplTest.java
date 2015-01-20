@@ -41,6 +41,22 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
 
+    @Test(description = "OPENIG-329")
+    public void shouldAllowEmptyHeap() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-with-no-objects.json"));
+        heap.destroy();
+    }
+
+    @Test(description = "OPENIG-380")
+    public void shouldAllowLegacyObjectsArray() throws Exception {
+        final HeapImpl heap = buildDefaultHeap();
+        heap.init(asJson("heap-object-with-legacy-objects-array.json"));
+        final HeapObject heapObject = heap.get("CustomHeapObject", HeapObject.class);
+        assertThat(heapObject.message).isEqualTo("Custom Message");
+        heap.destroy();
+    }
+
     @Test
     public void shouldAllowNoConfigAttribute() throws Exception {
         final HeapImpl heap = buildDefaultHeap();
@@ -300,7 +316,7 @@ public class HeapImplTest {
 
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
-        return new JsonValue(readJson(reader)).get("heap");
+        return new JsonValue(readJson(reader));
     }
 
     private HeapImpl buildDefaultHeap() throws Exception {

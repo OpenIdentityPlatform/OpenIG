@@ -23,10 +23,12 @@ import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.Json.*;
 import static org.forgerock.util.Reject.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,6 +40,8 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
@@ -122,22 +126,55 @@ public class HeapImpl implements Heap {
      * be loaded and all associated objects are allocated using each heaplet instance's
      * configuration.
      *
-     * @param config a heap configuration object tree containing the heap configuration.
+     * @param config the configuration root.
+     * @param reservedFieldNames the names of reserved top level fields in the config which
+     *                           should not be parsed as global decorators.
      * @throws HeapException if an exception occurs allocating heaplets.
      * @throws JsonValueException if the configuration object is malformed.
      */
-    public synchronized void init(JsonValue config) throws HeapException {
+    public synchronized void init(JsonValue config, String... reservedFieldNames)
+            throws HeapException {
         // process configuration object model structure
-        for (JsonValue object : config.get("objects").required().expect(List.class)) {
+        boolean logDeprecationWarning = false;
+        JsonValue heap = config.get("heap").defaultTo(emptyList());
+        if (heap.isMap()) {
+            /*
+             * In OpenIG < 3.1 the heap objects were listed in a child "objects"
+             * array. The extra nesting was found to be redundant and removed in
+             * 3.1. We continue to allow it in order to maintain backwards
+             * compatibility.
+             */
+            heap = heap.get("objects").required();
+
+            // We cannot log anything just yet because the heap is not initialized.
+            logDeprecationWarning = true;
+        }
+        for (JsonValue object : heap.expect(List.class)) {
             addDeclaration(object);
         }
-        if (config.isDefined("decorations")) {
-            GlobalDecorator globalDecorator = new GlobalDecorator(config.get("decorations").expect(Map.class));
-            put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
-        }
+
+        // register global decorators, ensuring that reserved field names are filtered out
+        int sz = reservedFieldNames.length;
+        String[] allReservedFieldNames = Arrays.copyOf(reservedFieldNames, sz + 1);
+        allReservedFieldNames[sz] = "heap";
+        Decorator parentGlobalDecorator =
+                parent != null ? parent.get(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class) : null;
+        GlobalDecorator globalDecorator = new GlobalDecorator(parentGlobalDecorator, config, allReservedFieldNames);
+        put(GLOBAL_DECORATOR_HEAP_KEY, globalDecorator);
+
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<String>(heaplets.keySet())) {
             get(name, Object.class);
+        }
+
+        // We can log a warning now that the heap is initialized.
+        if (logDeprecationWarning) {
+            Logger logger =
+                    new Logger(resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
+                            LogSink.class, true), name);
+            logger.warning("The configuration field heap/objects has been deprecated. Heap objects "
+                    + "should now be listed directly in the top level \"heap\" field, "
+                    + "e.g. { \"heap\" : [ objects... ] }.");
         }
     }
 
@@ -301,7 +338,6 @@ public class HeapImpl implements Heap {
      * @throws HeapException
      *         if a decorator failed to apply
      */
-    @SuppressWarnings("unchecked")
     private Object decorate(final String name, final Object object) throws HeapException {
 
         // Avoid decorating decorators themselves

@@ -23,7 +23,7 @@
   !      Copyright 2012-2014 ForgeRock AS
   !    
 -->
-<refentry xml:id='RedirectFilter'
+<refentry xml:id='LocationHeaderFilter'
  xmlns='http://docbook.org/ns/docbook'
  version='5.0' xml:lang='en'
  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -31,17 +31,17 @@
                      http://docbook.org/xml/5.0/xsd/docbook.xsd'
  xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
-  <refentrytitle>RedirectFilter</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>LocationHeaderFilter</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
  <refnamediv>
-  <refname>RedirectFilter</refname>
+  <refname>LocationHeaderFilter</refname>
   <refpurpose>rewrites Location headers</refpurpose>
  </refnamediv>
  <refsect1>
   <title>Description</title>
   <indexterm>
    <primary>Filters</primary>
-   <secondary>RedirectFilter</secondary>
+   <secondary>LocationHeaderFilter</secondary>
   </indexterm>
   <para>Rewrites Location headers on responses that generate a redirect that
   would take the user directly to the application being proxied rather than
@@ -55,20 +55,21 @@
   instead to locations under
   <literal>https://proxy.example.com:443/</literal>.</para>
 
-  <para>The current implementation supports only HTTP 302 redirects.</para>
-
  </refsect1>
  <refsect1>
   <title>Usage</title>
   <programlisting language="javascript">
 {
     "name": string,
-    "type": "RedirectFilter",
+    "type": "LocationHeaderFilter",
     "config": {
         "baseURI": expression
     }
 }
   </programlisting>
+  <para>
+   An alternative value for "type" is "RedirectFilter".
+  </para>
  </refsect1>
  <refsect1>
   <title>Properties</title>
@@ -81,7 +82,7 @@
     <listitem>
      <para>
       The base URI of the ${projectName} instance.
-      This is used to rewrite the Location header on the redirect response.
+      This is used to rewrite the Location header on the response.
      </para>
     </listitem>
    </varlistentry>
@@ -91,7 +92,7 @@
   <title>Example</title>
   <programlisting language="javascript">{
      "name": "LocationRewriter",
-     "type": "RedirectFilter",
+     "type": "LocationHeaderFilter",
      "config": {
          "baseURI": "https://proxy.example.com:443/"
       }
@@ -100,7 +101,7 @@
  <refsect1>
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/filter/RedirectFilter.html"
-  >org.forgerock.openig.filter.RedirectFilter</link></para>
+  xlink:href="${javadocBase}/org/forgerock/openig/filter/LocationHeaderFilter.html"
+  >org.forgerock.openig.filter.LocationHeaderFilter</link></para>
  </refsect1>
 </refentry>

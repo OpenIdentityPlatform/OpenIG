@@ -13,11 +13,11 @@
                         },
                         {
                             "condition": "${exchange.request.uri.path == '/login'}",
-                            "handler": "type": "ClientHandler",
+                            "handler": "ClientHandler",
                             "baseURI": "https://TARGETIP"
                         },
                         {
-                            "handler": "type": "ClientHandler",
+                            "handler": "ClientHandler",
                             "baseURI": "https://TARGETIP"
                         }
                     ]

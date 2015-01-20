@@ -25,6 +25,7 @@ import static org.forgerock.openig.util.Logs.*;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -118,12 +119,12 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final AccessTokenResolver resolver;
     private final BearerTokenExtractor extractor;
     private final TimeService time;
-    private final Set<String> scopes;
+    private List<Expression> scopes;
+    private String realm;
 
     private final Handler noAuthentication;
     private final Handler invalidToken;
     private final Handler invalidRequest;
-    private final Handler insufficientScope;
     private final Expression target;
 
     /**
@@ -143,7 +144,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
                                       final Expression target) {
-        this(resolver, extractor, time, Collections.<String>emptySet(), DEFAULT_REALM_NAME, target);
+        this(resolver, extractor, time, Collections.<Expression> emptyList(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -156,7 +157,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * @param time
      *         A {@link TimeService} instance used to check if token is expired or not.
      * @param scopes
-     *         A set of scopes to be checked in the resolved access tokens.
+     *         A list of scope expressions to be checked in the resolved access tokens.
      * @param realm
      *         Name of the realm (used in authentication challenge returned in case of error).
      * @param target
@@ -166,17 +167,17 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Set<String> scopes,
+                                      final List<Expression> scopes,
                                       final String realm,
                                       final Expression target) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
         this.scopes = scopes;
+        this.realm = realm;
         this.noAuthentication = new NoAuthenticationChallengeHandler(realm);
         this.invalidToken = new InvalidTokenChallengeHandler(realm);
         this.invalidRequest = new InvalidRequestChallengeHandler(realm);
-        this.insufficientScope = new InsufficientScopeChallengeHandler(realm, scopes);
         this.target = target;
     }
 
@@ -207,8 +208,11 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             return;
         }
 
-        if (areRequiredScopesMissing(accessToken)) {
+        final Set<String> setOfScopes = getScopes(exchange);
+        if (areRequiredScopesMissing(accessToken, setOfScopes)) {
             logger.debug(format("Access Token '%s' is missing required scopes", token));
+            final InsufficientScopeChallengeHandler insufficientScope =
+                    new InsufficientScopeChallengeHandler(realm, setOfScopes);
             insufficientScope.handle(exchange);
             return;
         }
@@ -224,8 +228,22 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         return time.now() > accessToken.getExpiresAt();
     }
 
-    private boolean areRequiredScopesMissing(final AccessToken accessToken) {
-        return !accessToken.getScopes().containsAll(this.scopes);
+    private boolean areRequiredScopesMissing(final AccessToken accessToken, final Set<String> scopes)
+            throws HandlerException {
+        return !accessToken.getScopes().containsAll(scopes);
+    }
+
+    private Set<String> getScopes(final Exchange exchange) throws HandlerException {
+        final Set<String> scopeValues = new HashSet<String>(this.scopes.size());
+        for (final Expression scope : this.scopes) {
+            final String result = scope.eval(exchange, String.class);
+            if (result == null) {
+                throw new HandlerException(
+                        "The OAuth 2.0 resource server filter scope expression could not be resolved");
+            }
+            scopeValues.add(result);
+        }
+        return scopeValues;
     }
 
     /**
@@ -269,9 +287,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 
-            HashSet<String> scopes =
-                    new HashSet<String>(getWithDeprecation(config, logger, "scopes",
-                            "requiredScopes").required().asList(String.class));
+            List<Expression> scopes =
+                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asList(ofExpression());
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 

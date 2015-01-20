@@ -30,7 +30,6 @@ import org.forgerock.http.Response;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.RedirectFilter;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 
@@ -82,7 +81,7 @@ final class OAuth2Utils {
         for (final Expression scope : scopeExpressions) {
             final String result = scope.eval(exchange, String.class);
             if (result == null) {
-                throw new HandlerException("Unable to determine the scope");
+                throw new HandlerException("The OAuth 2.0 client filter scope expression could not be resolved");
             }
             scopeValues.add(result);
         }
@@ -91,7 +90,7 @@ final class OAuth2Utils {
 
     static void httpRedirect(final Exchange exchange, final String uri) {
         // FIXME: this constant should in HTTP package?
-        httpResponse(exchange, RedirectFilter.REDIRECT_STATUS_302);
+        httpResponse(exchange, 302);
         exchange.response.getHeaders().add(LocationHeader.NAME, uri);
     }
 

@@ -19,7 +19,6 @@ package org.forgerock.openig.decoration.global;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.eq;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
@@ -32,6 +31,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class GlobalDecoratorTest {
 
     @Mock
@@ -57,7 +57,21 @@ public class GlobalDecoratorTest {
     public void shouldLookupDecoratorsBasedOnAttributesNames() throws Exception {
         JsonValue decorations = json(object(field("deco-1", true),
                                             field("deco-2", "value")));
-        GlobalDecorator globalDecorator = new GlobalDecorator(decorations);
+        GlobalDecorator globalDecorator = new GlobalDecorator(null, decorations);
+        globalDecorator.decorate(new Object(), null, context);
+
+        verify(heap).get("deco-1", Decorator.class);
+        verify(heap).get("deco-2", Decorator.class);
+    }
+
+    @Test
+    public void shouldLookupInheritedDecoratorsBasedOnAttributesNames() throws Exception {
+        JsonValue decorations1 = json(object(field("deco-1", true)));
+        GlobalDecorator parentGlobalDecorator = new GlobalDecorator(null, decorations1);
+
+        JsonValue decorations2 = json(object(field("deco-2", "value")));
+        GlobalDecorator globalDecorator = new GlobalDecorator(parentGlobalDecorator, decorations2);
+
         globalDecorator.decorate(new Object(), null, context);
 
         verify(heap).get("deco-1", Decorator.class);
@@ -71,7 +85,7 @@ public class GlobalDecoratorTest {
 
         JsonValue decorations = json(object(field("deco-1", "value-1"),
                                             field("deco-2", "value-2")));
-        GlobalDecorator globalDecorator = new GlobalDecorator(decorations);
+        GlobalDecorator globalDecorator = new GlobalDecorator(null, decorations);
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
@@ -87,7 +101,7 @@ public class GlobalDecoratorTest {
 
         JsonValue decorations = json(object(field("deco-1", "value-1"),
                                             field("deco-2", "value-2")));
-        GlobalDecorator globalDecorator = new GlobalDecorator(decorations);
+        GlobalDecorator globalDecorator = new GlobalDecorator(null, decorations);
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
@@ -105,12 +119,23 @@ public class GlobalDecoratorTest {
 
         JsonValue decorations = json(object(field("deco-1", "value-1"),
                                             field("deco-2", "value-2")));
-        GlobalDecorator globalDecorator = new GlobalDecorator(decorations);
+        GlobalDecorator globalDecorator = new GlobalDecorator(null, decorations);
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
         verify(decorator).decorate(anyObject(), captor.capture(), eq(context));
         // Verify that the JSonValues are the one we're expecting
         assertThat(captor.getAllValues().get(0).asString()).isEqualTo("value-2");
+    }
+
+    @Test
+    public void shouldIgnoreReservedFieldNames() throws Exception {
+        JsonValue decorations = json(object(field("reserved", true), field("deco", "value")));
+        GlobalDecorator globalDecorator = new GlobalDecorator(null, decorations, "reserved");
+
+        globalDecorator.decorate(new Object(), null, context);
+
+        verify(heap).get("deco", Decorator.class);
+        verifyNoMoreInteractions(heap);
     }
 }

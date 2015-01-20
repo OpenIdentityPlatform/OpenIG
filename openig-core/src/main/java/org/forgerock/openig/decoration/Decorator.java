@@ -22,10 +22,20 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * A Decorator is responsible for decorating existing object's instances.
  * <p>
- * A Decorator cannot change the base type of the provided delegate: for example if the given instance is
- * a {@code Filter}, the decorated (and returned) instance must also be a {@code Filter}, sub-classing is ok though.
+ * A Decorator cannot change the base type of the provided delegate: for example
+ * if the given instance is a {@code Filter}, the decorated (and returned)
+ * instance must also be a {@code Filter}, sub-classing is ok though.
  * <p>
- * <b>Notice:</b> This API is still considered experimental and is subject to change in subsequent releases.
+ * Decorators may be "global" to a heap or "local" to a component. Global
+ * decorators are applied to all components within the heap and any child heaps.
+ * Local decorators are only applied to their associated component. Decorators
+ * are applied such that inherited global decorators are applied first, then
+ * global decorators from the current heap, and finally local decorators. This
+ * means that requests will pass through decorators in the order local
+ * decorators, then global decorators, then inherited global decorators.
+ * <p>
+ * <b>Notice:</b> This API is still considered experimental and is subject to
+ * change in subsequent releases.
  */
 public interface Decorator {
 

@@ -1,23 +1,21 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "neo",
-                "type": "org.forgerock.openig.heap.domain.TheOne",
-                "config": {
-                    "matrix-ref": {
-                        "type": "org.forgerock.openig.heap.domain.Matrix",
-                        "config": {
-                            "architect-ref": {
-                                "type": "org.forgerock.openig.heap.domain.Architect",
-                                "config": {
-                                    "pretty-name": "The Great Architect"
-                                }
+    "heap": [
+        {
+            "name": "neo",
+            "type": "org.forgerock.openig.heap.domain.TheOne",
+            "config": {
+                "matrix-ref": {
+                    "type": "org.forgerock.openig.heap.domain.Matrix",
+                    "config": {
+                        "architect-ref": {
+                            "type": "org.forgerock.openig.heap.domain.Architect",
+                            "config": {
+                                "pretty-name": "The Great Architect"
                             }
                         }
                     }
                 }
             }
-        ]
-    }
+        }
+    ]
 }

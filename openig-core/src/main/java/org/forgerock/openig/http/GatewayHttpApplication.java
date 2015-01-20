@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * Configuration class for configuring the OpenIG Gateway.
@@ -111,7 +110,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.addDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config.get("heap").required().expect(Map.class));
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.

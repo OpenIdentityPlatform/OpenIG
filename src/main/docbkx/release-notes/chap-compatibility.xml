@@ -37,7 +37,7 @@
  </para>
 
  <section xml:id="changes">
-  <title>Major Changes to Existing Functionality</title>
+  <title>Important Changes to Existing Functionality</title>
 
   <para>
    This release brings the following changes to ${projectName}.
@@ -55,7 +55,14 @@
 
    <listitem>
     <para>
-     See <xref linkend="deprecated" /> for a list of configuration changes.
+     TODO
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     See <xref linkend="deprecated" /> for a list of configuration changes
+     resulting in deprecation of earlier features.
     </para>
    </listitem>
   </itemizedlist>
@@ -228,6 +235,16 @@
      </tgroup>
     </table>
 
+  <para>
+   This release deprecates the RedirectFilter type, replacing it with a
+   <link
+    xlink:href="reference#LocationHeaderFilter"
+    xlink:role="http://docbook.org/xlink/role/olink"
+    xlink:show="new"
+   >LocationHeaderFilter</link>.
+   The RedirectFilter type might be removed in a future release.
+  </para>
+      
   <para>
    This release deprecates the
    <link

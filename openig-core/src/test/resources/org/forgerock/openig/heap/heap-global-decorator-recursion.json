@@ -1,31 +1,27 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "LogSink",
-                "type": "ConsoleLogSink",
-                "config": {
-                    "level": "DEBUG"
-                }
-            },
-            {
-                "name": "Filter",
-                "type": "StaticRequestFilter",
-                "config": {
-                    "method": "GET",
-                    "uri": "http://localhost"
-                }
-            },
-            {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "logSink": "LogSink"
-                }
+    "heap": [
+        {
+            "name": "LogSink",
+            "type": "ConsoleLogSink",
+            "config": {
+                "level": "DEBUG"
             }
-        ],
-        "decorations": {
-            "capture": "all"
+        },
+        {
+            "name": "Filter",
+            "type": "StaticRequestFilter",
+            "config": {
+                "method": "GET",
+                "uri": "http://localhost"
+            }
+        },
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "logSink": "LogSink"
+            }
         }
-    }
+    ],
+    "capture": "all"
 }
