@@ -263,6 +263,17 @@ public class EntityTest {
         assertThat(entity.mayContainData()).isFalse();
     }
 
+    @Test
+    public void shouldBeEmptyEvenInPushMode() throws Exception {
+        assertThat(entity.mayContainData()).isFalse();
+        entity.push();
+        try {
+            assertThat(entity.mayContainData()).isFalse();
+        } finally {
+            entity.pop();
+        }
+    }
+
     private void assertThatContentIsJsonContent1() throws IOException {
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
