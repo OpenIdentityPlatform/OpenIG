@@ -1,0 +1,26 @@
+{
+    "handler": {
+        "type": "Router"
+    },
+    "heap": [
+        {
+            "name": "LogSink",
+            "type": "ConsoleLogSink",
+            "config": {
+                "level": "DEBUG"
+            }
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler"
+        },
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureEntity": true,
+                "captureExchange": true
+            }
+        }
+    ]
+}

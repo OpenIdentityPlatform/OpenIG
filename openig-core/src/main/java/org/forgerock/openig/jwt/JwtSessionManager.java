@@ -63,7 +63,7 @@ import org.forgerock.http.SessionManager;
  * <p>
  * The {@literal keystore} attribute is an optional attribute that references a {@link KeyStore} heap object. It will
  * be used to obtain the required encryption keys. If omitted, the {@literal alias} and {@literal password}
- * attributes will also be ignored, and a unique key pair will be generated.
+ * attributes will also be ignored, and a temporary key pair will be generated.
  * <p>
  * The {@literal alias} string attribute specifies the name of the private key to obtain from the KeyStore. It is
  * only required when a {@literal keystore} is specified.
@@ -157,8 +157,12 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                                             e);
                 }
             } else {
-                // No KeyStore provided: generate a new KeyPair by our-self
-                // In that case, 'alias' and 'password' attributes are ignored
+                /*
+                 * No KeyStore provided: generate a new KeyPair by ourself. In
+                 * this case, 'alias' and 'password' attributes are ignored. JWT
+                 * session cookies will not be portable between OpenIG instances
+                 * config changes, and restarts.
+                 */
                 try {
                     KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
                     generator.initialize(KEY_SIZE, new SecureRandom());
@@ -166,6 +170,12 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                 } catch (NoSuchAlgorithmException e) {
                     throw new HeapException("Cannot build a random KeyPair", e);
                 }
+
+                logger.warning("JWT session support has been enabled but no encryption keys have "
+                        + "been configured. A temporary key pair will be used but this means that "
+                        + "OpenIG will not be able to decrypt any JWT session cookies after a "
+                        + "configuration change, a server restart, nor will it be able to decrypt "
+                        + "JWT session cookies encrypted by another OpenIG server.");
             }
 
             // Create the session factory with the given KeyPair and cookie name

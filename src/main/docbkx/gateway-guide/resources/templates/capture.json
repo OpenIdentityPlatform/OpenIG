@@ -1,33 +1,24 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "DispatchHandler",
-                "type": "DispatchHandler",
-                "config": {
-                    "bindings": [
-                        {
-                            "condition": "${exchange.request.uri.scheme == 'http'}",
-                            "handler": "ClientHandler",
-                            "baseURI": "http://TARGETIP"
-                        },
-                        {
-                            "condition": "${exchange.request.uri.path == '/login'}",
-                            "handler": "ClientHandler",
-                            "baseURI": "https://TARGETIP"
-                        },
-                        {
-                            "handler": "ClientHandler",
-                            "baseURI": "https://TARGETIP"
-                        }
-                    ]
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${exchange.request.uri.scheme == 'http'}",
+                    "handler": "ClientHandler",
+                    "baseURI": "http://TARGETIP"
+                },
+                {
+                    "condition": "${exchange.request.uri.path == '/login'}",
+                    "handler": "ClientHandler",
+                    "baseURI": "https://TARGETIP"
+                },
+                {
+                    "handler": "ClientHandler",
+                    "baseURI": "https://TARGETIP"
                 }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler"
-            }
-        ]
+            ]
+        }
     },
-    "handler": "DispatchHandler"
+    "capture": "all"
 }

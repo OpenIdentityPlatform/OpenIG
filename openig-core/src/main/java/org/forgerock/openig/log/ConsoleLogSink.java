@@ -17,18 +17,57 @@
 
 package org.forgerock.openig.log;
 
+import static java.lang.String.*;
+
+import java.io.PrintStream;
+
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.util.ISO8601;
 
 /**
- * A sink that writes log entries to the standard error stream.
+ * A sink that writes log entries to the standard output or error stream (depending on the object configuration).
  */
 public class ConsoleLogSink implements LogSink {
 
+    /**
+     * Where do the user want its log written to ?
+     */
+    enum Stream {
+        OUT {
+            @Override
+            PrintStream getStream(final LogEntry entry) {
+                return System.out;
+            }
+        },
+        ERR {
+            @Override
+            PrintStream getStream(final LogEntry entry) {
+                return System.err;
+            }
+        },
+        AUTO {
+            @Override
+            PrintStream getStream(final LogEntry entry) {
+                PrintStream stream = System.out;
+                if (entry.getLevel().compareTo(LogLevel.INFO) > 0) {
+                    stream = System.err;
+                }
+                return stream;
+            }
+        };
+
+        /**
+         * Returns the appropriate stream to write the entry to.
+         */
+        abstract PrintStream getStream(LogEntry entry);
+    }
+
     /** The level of log entries to display in the console (default: {@link LogLevel#INFO INFO}). */
     private LogLevel level = LogLevel.INFO;
+
+    /** Specify which PrintStream to use when printing a log statement. */
+    private Stream stream = Stream.ERR;
 
     /**
      * Sets the level of log entries to display in the console.
@@ -38,22 +77,71 @@ public class ConsoleLogSink implements LogSink {
         this.level = level;
     }
 
+    /**
+     * Sets the stream to write entries to.
+     * @param stream the stream to write entries to.
+     */
+    public void setStream(final Stream stream) {
+        this.stream = stream;
+    }
+
     @Override
     public void log(LogEntry entry) {
         if (isLoggable(entry.getSource(), entry.getLevel())) {
             synchronized (this) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(ISO8601.format(entry.getTime())).append(':')
-                  .append(entry.getSource().getLeaf()).append('.')
-                  .append(entry.getType()).append(':');
-                sb.append(entry.getLevel()).append(':').append(entry.getMessage());
-                if (entry.getData() != null) {
-                    sb.append(':').append(entry.getData().toString());
+                PrintStream stream = this.stream.getStream(entry);
+                writeEntry(stream, entry);
+                if ("throwable".equals(entry.getType()) && (entry.getData() instanceof Throwable)) {
+                    Throwable throwable = (Throwable) entry.getData();
+                    writeShortThrowable(stream, throwable);
+                    if (level.compareTo(LogLevel.DEBUG) <= 0) {
+                        writeStackTrace(stream, throwable);
+                    }
                 }
-                System.err.println(sb.toString());
-                System.err.flush();
+                writeSeparator(stream);
+                stream.flush();
             }
         }
+    }
+
+    private void writeSeparator(final PrintStream stream) {
+        for (int i = 0; i < 30; i++) {
+            stream.print('-');
+        }
+        stream.println();
+    }
+
+    private void writeEntry(final PrintStream stream, final LogEntry entry) {
+        writeHeader(stream, entry.getTime(), entry.getLevel(), entry.getSource());
+        writeMessage(stream, entry.getMessage());
+    }
+
+    private void writeShortThrowable(final PrintStream stream, final Throwable throwable) {
+        // Print each of the chained exception's messages (in order)
+        Throwable current = throwable;
+        while (current != null) {
+            writeMessage(stream, format("[%25s] > %s",
+                                        current.getClass().getSimpleName(),
+                                        current.getLocalizedMessage()));
+            current = current.getCause();
+        }
+    }
+
+    private void writeStackTrace(final PrintStream stream, final Throwable throwable) {
+        stream.println();
+        throwable.printStackTrace(stream);
+    }
+
+    private void writeHeader(final PrintStream stream, final long time, final LogLevel level, final Name name) {
+        // Example: "Sun Jul 20 16:17:00 EDT 1969 (INFO) "
+        stream.printf("%Tc (%s) %s%n",
+                      time,
+                      level.name(),
+                      name.getLeaf());
+    }
+
+    private void writeMessage(final PrintStream stream, final String message) {
+        stream.println(message);
     }
 
     @Override
@@ -69,6 +157,7 @@ public class ConsoleLogSink implements LogSink {
         public Object create() throws HeapException {
             ConsoleLogSink sink = new ConsoleLogSink();
             sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
+            sink.setStream(config.get("stream").defaultTo(sink.stream.toString()).asEnum(Stream.class));
             return sink;
         }
     }

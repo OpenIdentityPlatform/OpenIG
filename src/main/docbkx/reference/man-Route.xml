@@ -96,8 +96,8 @@
 
   <programlisting language="javascript">
 {
-    "heap": { <replaceable>heap-configuration object</replaceable> },
-    "handler": Handler reference,
+    "handler": Handler reference or inline Handler declaration,
+    "heap": [ configuration object, ... ],
     "baseURI": string,
     "condition": expression,
     "name": string,
@@ -110,23 +110,6 @@
   <title>Properties</title>
 
   <variablelist>
-   <varlistentry>
-    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
-    <listitem>
-     <para>
-      <link
-       xlink:show="new"
-       xlink:href="reference#heap-objects"
-       xlink:role="http://docbook.org/xlink/role/olink"
-       >Heap object</link> configuration for objects local to this route.
-     </para>
-
-     <para>
-      Objects referenced but not defined here are inherited from the parent.
-     </para>
-    </listitem>
-   </varlistentry>
-
    <varlistentry>
     <term><code>"handler"</code>: <emphasis><link
       xlink:show="new"
@@ -141,6 +124,29 @@
      <para>
       Provide either the name of a Handler object defined in the heap,
       or an inline Handler configuration object.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"heap"</code>: <emphasis>array of configuration objects, optional</emphasis></term>
+    <listitem>
+     <para>
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+       >Heap object</link> configuration for objects local to this route.
+     </para>
+
+     <para>
+      Objects referenced but not defined here are inherited from the parent.
+     </para>
+
+     <para>
+      You can omit an empty array.
+      If you only have one object in the heap,
+      you can inline it as the handler value.
      </para>
     </listitem>
    </varlistentry>

@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS
   !
 -->
 <refentry xml:id='gateway-servlet'
@@ -62,26 +62,51 @@
    expected by default at <filename>${warConfigDir}/config.json</filename>.
   </para>
 
-  <para>
-   The gateway servlet creates a default
-   <link
-    xlink:show="new"
-    xlink:href="reference#TimerDecorator"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   >TimerDecorator</link> that you can use
-   to record time spent within Filters and Handlers.
-   The default TimerDecorator is named "timer".
-  </para>
+  <itemizedlist>
+   <para>
+    The gateway servlet creates the following objects by default.
+   </para>
 
-  <para>
-   The gateway servlet creates a default
-   <link
-    xlink:show="new"
-    xlink:href="reference#HttpClient"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   >HttpClient</link> object to handle requests to servers.
-   You can override the default settings by configuring your own HttpClient.
-  </para>
+   <listitem>
+    <para>
+     An
+     <link
+      xlink:show="new"
+      xlink:href="reference#AuditDecorator"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >AuditDecorator</link> that you can use
+     to trigger notification for audit events.
+     The default AuditDecorator is named "audit".
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     A
+     <link
+      xlink:show="new"
+      xlink:href="reference#CaptureDecorator"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >CaptureDecorator</link> that you can use
+     to capture requests and response messages,
+     though not the entity body or the exchange.
+     The default CaptureDecorator is named "capture".
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     A
+     <link
+      xlink:show="new"
+      xlink:href="reference#TimerDecorator"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >TimerDecorator</link> that you can use
+     to record time spent within Filters and Handlers.
+     The default TimerDecorator is named "timer".
+    </para>
+   </listitem>
+  </itemizedlist>
 
   <para>
    The gateway servlet also looks for an object named "Session" in the heap.
@@ -91,7 +116,7 @@
    in an HTTP cookie on the user-agent,
    you can define a "JwtSession" named "Session"
    in <filename>config.json</filename>.
-   In you do that, however, stored session information must
+   If you do that, however, stored session information must
    fit the constraints for storage in a JWT and in a cookie,
    as described in the
    <link
@@ -110,8 +135,8 @@
 
   <programlisting language="javascript">
 {
-  "heap": { <replaceable>heap-configuration object</replaceable> },
-  "handler": Handler reference,
+  "handler": Handler reference or inline Handler declaration,
+  "heap": [ configuration object, ... ],
   "baseURI": string,
   "logSink":  LogSink reference,
   "temporaryStorage": TemporaryStorage reference
@@ -123,21 +148,6 @@
   <title>Properties</title>
 
   <variablelist>
-   <varlistentry>
-    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
-    <listitem>
-     <para>
-      The
-      <link
-       xlink:show="new"
-       xlink:href="reference#heap-objects"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >heap object</link>
-      configuration.
-     </para>
-    </listitem>
-   </varlistentry>
-
    <varlistentry>
     <term><code>"handler"</code>: <emphasis><link
       xlink:show="new"
@@ -152,6 +162,27 @@
      <para>
       Provide either the name of a Handler object defined in the heap,
       or an inline Handler configuration object.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"heap"</code>: <emphasis>array of configuration objects, optional</emphasis></term>
+    <listitem>
+     <para>
+      The
+      <link
+       xlink:show="new"
+       xlink:href="reference#heap-objects"
+       xlink:role="http://docbook.org/xlink/role/olink"
+       >heap object</link>
+      configuration.
+     </para>
+
+     <para>
+      You can omit an empty array.
+      If you only have one object in the heap,
+      you can inline it as the handler value.
      </para>
     </listitem>
    </varlistentry>
@@ -189,7 +220,8 @@
      <para>
       Default: use the heap object named "LogSink".
       Otherwise use an internally-created ConsoleLogSink object
-      that is named "LogSink" and that uses default settings.
+      that is named "LogSink" and that uses default settings
+      for a ConsoleLogSink object.
      </para>
     </listitem>
    </varlistentry>
@@ -214,7 +246,8 @@
      <para>
       Default: use the heap object named "TemporaryStorage".
       Otherwise use an internally-created TemporaryStorage object
-      that is named "TemporaryStorage" and that uses default settings.
+      that is named "TemporaryStorage" and that uses default settings
+      for a TemporaryStorage object.
      </para>
     </listitem>
    </varlistentry>

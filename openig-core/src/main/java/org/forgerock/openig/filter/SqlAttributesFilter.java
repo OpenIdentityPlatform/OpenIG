@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static java.lang.String.*;
 import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -129,14 +128,14 @@ public class SqlAttributesFilter extends GenericFilter {
                     ps.close();
                 } catch (SQLException sqle) {
                     // probably a config issue
-                    logDetailedException(ERROR, logger, sqle);
+                    logger.error(sqle);
                 } finally {
                     if (c != null) {
                         try {
                             c.close();
                         } catch (SQLException sqle) {
                             // probably a network issue
-                            logDetailedException(ERROR, logger, sqle);
+                            logger.error(sqle);
                         }
                     }
                 }

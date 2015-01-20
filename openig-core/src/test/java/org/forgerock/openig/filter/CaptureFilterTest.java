@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -80,7 +80,7 @@ public class CaptureFilterTest {
     public void testCaptureIsDisabledUnderCondition() throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.setCondition(new Expression("${false}"));
+        filter.setCondition(Expression.valueOf("${false}"));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();

@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.handler.router;
 
-import static com.forgerock.opendj.util.StaticUtils.*;
 import static java.lang.String.*;
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +26,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 
 /**
@@ -40,7 +40,7 @@ class RouteBuilder {
     /**
      * Heap to be used as parent for routes built from this builder.
      */
-    private final Heap heap;
+    private final HeapImpl heap;
     private final Name name;
 
     /**
@@ -48,7 +48,7 @@ class RouteBuilder {
      * @param heap parent heap for produced routes
      * @param name router name (used as parent name)
      */
-    RouteBuilder(final Heap heap, final Name name) {
+    RouteBuilder(final HeapImpl heap, final Name name) {
         this.heap = heap;
         this.name = name;
     }

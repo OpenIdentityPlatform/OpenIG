@@ -39,41 +39,32 @@
  <section xml:id="changes">
   <title>Important Changes to Existing Functionality</title>
 
+<!--
   <para>
    This release brings the following changes to ${projectName}.
   </para>
+-->
 
   <para>
-   TODO update for next release.
+   TODO: Update for the next release
   </para>
-
-  <itemizedlist>
-   <para>
-    This release includes the following changes
-    compared to ${projectName} 3.0.0.
-   </para>
-
-   <listitem>
-    <para>
-     TODO
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     See <xref linkend="deprecated" /> for a list of configuration changes
-     resulting in deprecation of earlier features.
-    </para>
-   </listitem>
-  </itemizedlist>
  </section>
 
  <section xml:id="deprecated">
   <title>Deprecated Functionality</title>
 
   <para>
-   This release deprecates the following configuration settings.
-   Deprecation is defined in the <citetitle>Reference</citetitle> appendix on
+   TODO: Update for the next release
+  </para>
+
+  <para>
+   Deprecation is defined in the
+   <link
+    xlink:show="new"
+    xlink:href="reference#reference"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>Reference</citetitle></link>
+   appendix on
    <link
     xlink:show="new"
     xlink:href="reference#interface-stability"
@@ -81,178 +72,233 @@
    ><citetitle>ForgeRock Product Interface Stability</citetitle></link>.
   </para>
 
-    <table>
-     <title>Configuration settings</title>
+  <table>
+   <title>Configuration settings</title>
 
-     <tgroup cols="3">
-      <colspec colnum="1" colwidth="1*"/>
-      <colspec colnum="2" colwidth="1*"/>
-      <colspec colnum="3" colwidth="1*"/>
+   <tgroup cols="3">
+    <colspec colnum="1" colwidth="1*"/>
+    <colspec colnum="2" colwidth="1*"/>
+    <colspec colnum="3" colwidth="1*"/>
 
-      <thead>
-       <row>
-        <entry>
-         Configuration Object
-        </entry>
+    <thead>
+     <row>
+      <entry>
+       Configuration Object
+      </entry>
 
-        <entry>
-         <link
-          xlink:show="new"
-          xlink:href="reference#interface-stability"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >Deprecated</link> Settings
-        </entry>
+      <entry>
+       <link
+        xlink:show="new"
+        xlink:href="reference#interface-stability"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >Deprecated</link> Settings
+      </entry>
 
-        <entry>
-         Newer
-         <link
-          xlink:show="new"
-          xlink:href="reference#interface-stability"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >Evolving</link> Settings
-        </entry>
-       </row>
-      </thead>
+      <entry>
+       Newer
+       <link
+        xlink:show="new"
+        xlink:href="reference#interface-stability"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >Evolving</link> Settings
+      </entry>
+     </row>
+    </thead>
 
-      <tbody>
-       <row>
-        <entry>
-         <link
-          xlink:show="new"
-          xlink:href="reference#CaptureFilter"
-          xlink:role="http://docbook.org/xlink/role/olink"
-          >CaptureFilter</link>
-        </entry>
+    <tbody>
+     <row>
+      <entry>
+       <link
+        xlink:show="new"
+        xlink:href="reference#CaptureFilter"
+        xlink:role="http://docbook.org/xlink/role/olink"
+        >CaptureFilter</link>
+      </entry>
 
-        <entry>
-         Entire object
-        </entry>
+      <entry>
+       Entire object
+      </entry>
 
-        <entry>
-         Use a
-         <link
-          xlink:show="new"
-          xlink:href="reference#CaptureDecorator"
-          xlink:role="http://docbook.org/xlink/role/olink"
-          >CaptureDecorator</link> instead
-        </entry>
-       </row>
+      <entry>
+       Use a
+       <link
+        xlink:show="new"
+        xlink:href="reference#CaptureDecorator"
+        xlink:role="http://docbook.org/xlink/role/olink"
+        >CaptureDecorator</link> instead
+      </entry>
+     </row>
 
-       <row>
-        <entry>
-         <link
-          xlink:show="new"
-          xlink:href="reference#gateway-servlet"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >gateway servlet</link>
-        </entry>
+     <row>
+      <entry morerows="1">
+       <link
+        xlink:show="new"
+        xlink:href="reference#gateway-servlet"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >gateway servlet</link>
+      </entry>
 
-        <entry>
-         "handlerObject"
-        </entry>
+      <entry>
+       "handlerObject"
+      </entry>
 
-        <entry>
-         New name: "handler"
-        </entry>
-       </row>
+      <entry>
+       New name: "handler"
+      </entry>
+     </row>
 
-       <row>
-        <entry morerows="1">
-         <link
-          xlink:show="new"
-          xlink:href="reference#HttpClient"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >HttpClient</link>
-        </entry>
+     <row>
+      <entry>
+       Deprecated format:
+       <literal>"heap": { "objects": [ configuration object, ... ] }</literal>
+      </entry>
 
-        <entry>
-         "keystore"
-        </entry>
+      <entry>
+       New format:
+       <literal>"heap": [ configuration object, ... ]</literal>
+      </entry>
+     </row>
 
-        <entry>
-         Replaced by "keyManager", which takes one or more
-         <link
-          xlink:show="new"
-          xlink:href="reference#KeyManager"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >KeyManager</link> names
-        </entry>
-       </row>
+     <row>
+      <entry morerows="1">
+       <link
+        xlink:show="new"
+        xlink:href="reference#HttpClient"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >HttpClient</link>
+      </entry>
 
-       <row>
-        <entry>
-         "truststore"
-        </entry>
+      <entry>
+       "keystore"
+      </entry>
 
-        <entry>
-         Replaced by "trustManager", which takes one or more
-         <link
-          xlink:show="new"
-          xlink:href="reference#TrustManager"
-          xlink:role="http://docbook.org/xlink/role/olink"
-         >TrustManager</link> names
-        </entry>
-       </row>
+      <entry>
+       Replaced by "keyManager", which takes one or more
+       <link
+        xlink:show="new"
+        xlink:href="reference#KeyManager"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >KeyManager</link> references
+      </entry>
+     </row>
 
-       <row>
-        <entry morerows="2">
-         <link
-          xlink:show="new"
-          xlink:href="reference#OAuth2ResourceServerFilter"
-          xlink:role="http://docbook.org/xlink/role/olink"
-          >OAuth2ResourceServerFilter</link>
-        </entry>
+     <row>
+      <entry>
+       "truststore"
+      </entry>
 
-        <entry>
-         "enforceHttps"
-        </entry>
+      <entry>
+       Replaced by "trustManager", which takes one or more
+       <link
+        xlink:show="new"
+        xlink:href="reference#TrustManager"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >TrustManager</link> references
+      </entry>
+     </row>
 
-        <entry>
-         New name: "requireHttps"
-        </entry>
-       </row>
+     <row>
+      <entry morerows="2">
+       <link
+        xlink:show="new"
+        xlink:href="reference#OAuth2ResourceServerFilter"
+        xlink:role="http://docbook.org/xlink/role/olink"
+        >OAuth2ResourceServerFilter</link>
+      </entry>
 
-       <row>
-        <entry>
-         "httpHandler"
-        </entry>
+      <entry>
+       "enforceHttps"
+      </entry>
 
-        <entry>
-         New name: "providerHandler"
-        </entry>
-       </row>
+      <entry>
+       New name: "requireHttps"
+      </entry>
+     </row>
 
-       <row>
-        <entry>
-         "requiredScopes"
-        </entry>
+     <row>
+      <entry>
+       "httpHandler"
+      </entry>
 
-        <entry>
-         New name: "scopes"
-        </entry>
-       </row>
-      </tbody>
-     </tgroup>
-    </table>
+      <entry>
+       New name: "providerHandler"
+      </entry>
+     </row>
 
-  <para>
-   This release deprecates the RedirectFilter type, replacing it with a
-   <link
-    xlink:href="reference#LocationHeaderFilter"
-    xlink:role="http://docbook.org/xlink/role/olink"
-    xlink:show="new"
-   >LocationHeaderFilter</link>.
-   The RedirectFilter type might be removed in a future release.
-  </para>
-      
-  <para>
-   This release deprecates the
-   <link
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
-    xlink:show="new"
-   >NestedHeaplet</link> class.
-   The class is likely to be removed in a future release.
-  </para>
+     <row>
+      <entry>
+       "requiredScopes"
+      </entry>
+
+      <entry>
+       New name: "scopes"
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       RedirectFilter
+      </entry>
+
+      <entry>
+       Entire object
+      </entry>
+
+      <entry>
+       Use <link
+        xlink:href="reference#LocationHeaderFilter"
+        xlink:role="http://docbook.org/xlink/role/olink"
+        xlink:show="new"
+       >LocationHeaderFilter</link> instead
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <link
+        xlink:show="new"
+        xlink:href="reference#Route"
+        xlink:role="http://docbook.org/xlink/role/olink"
+       >Route</link>
+      </entry>
+
+      <entry>
+       Deprecated format:
+       <literal>"heap": { "objects": [ configuration object, ... ] }</literal>
+      </entry>
+
+      <entry>
+       New format:
+       <literal>"heap": [ configuration object, ... ]</literal>
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
+
+  <itemizedlist>
+   <para>
+    The following API classes are likely to be removed in a future release.
+   </para>
+
+   <listitem>
+    <para>
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/CaptureFilter.html"
+      xlink:show="new"
+     >org.forgerock.openig.filter.CaptureFilter</link>
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
+      xlink:show="new"
+     >org.forgerock.openig.heap.NestedHeaplet</link>
+    </para>
+   </listitem>
+  </itemizedlist>
 
   <!--
   <para>
@@ -265,13 +311,11 @@
   <title>Removed Functionality</title>
 
   <para>
-   TODO update for next release.
+   TODO: Update for the next release
   </para>
 
-  <!--
   <para>
    No functionality has been removed in this release.
   </para>
-  -->
  </section>
 </chapter>

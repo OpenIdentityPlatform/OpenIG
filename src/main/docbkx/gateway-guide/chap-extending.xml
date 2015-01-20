@@ -274,21 +274,6 @@
   </para>
 
   <para>
-   Also save the following handler script
-   as <filename>${warGroovyDir}/DumpExchange.groovy</filename>
-   (<filename>${windowsWarGroovyDir}\DumpExchange.groovy</filename> on Windows).
-   This script dumps request data so you can examine the results of the filter.
-  </para>
-
-  <programlisting language="java">
-<xinclude:include href="resources/scripts/groovy/DumpExchange.groovy" parse="text">
- <xinclude:fallback>
-   Failed to include script
- </xinclude:fallback>
-</xinclude:include>
-  </programlisting>
-
-  <para>
    Next, add the following route to your configuration
    as <filename>${warRoutesDir}/09-basic.json</filename>
    (<filename>${windowsWarRoutesDir}\09-basic.json</filename> on Windows).
@@ -304,10 +289,11 @@
 
   <para>
    When the request path matches <literal>/basic</literal>
-   the route calls the "LoginChain",
-   which runs the "ScriptableFilter",
-   and then responds with a JSON representation of the exchange
-   including the request data.
+   the route calls the "Chain",
+   which runs the "ScriptableFilter".
+   The "capture" setting captures the request
+   as updated by the "ScriptableFilter".
+   Finally, ${projectName} returns a static page.
   </para>
 
   <para>
@@ -316,32 +302,14 @@
   </para>
 
   <para>
-   The response from the script shows
-   the "Authorization" header in the request data,
-   and also indicates that the "scheme" is now HTTPS.
+   The captured request in the console log
+   shows that the "scheme" is now HTTPS,
+   and that the "Authorization" header is set for HTTP Basic.
   </para>
 
-  <programlisting language="javascript">
-{
-    "principal": null,
-    "request": {
-        "headers": {
-            "Authorization": [
-                "Basic YmplbnNlbjpoaWZhbHV0aW4="
-            ],
-            ...
-        },
-        ...
-        "uri": {
-            ...,
-            "scheme": "https",
-            ...,
-            "path": "/basic"
-        },
-        "method": "GET"
-    },
-    ...
-}
+  <programlisting language="http">
+GET https://www.example.com:8080/basic HTTP/1.1
+Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </programlisting>
  </section>
 
@@ -433,16 +401,6 @@
    <literal>Ldap-User-Dn: uid=user.0,ou=People,dc=example,dc=com</literal>.
   </para>
  </section>
-
- <!--
-  <section xml:id="scripting-entity-access">
-   <title>Scripting &amp; Entity Access</title>
-
-   <para>
-    TODO - pending https://bugster.forgerock.org/jira/browse/OPENIG-84
-   </para>
-  </section>
- -->
 
  <section xml:id="scripting-sql">
   <title>Scripting SQL Queries</title>
@@ -574,34 +532,103 @@
  <section xml:id="extension-points">
   <title>Key Extension Points</title>
 
- <indexterm>
-  <primary>Customizations</primary>
-  <secondary>Extension points</secondary>
- </indexterm>
+  <indexterm>
+   <primary>Customizations</primary>
+   <secondary>Extension points</secondary>
+  </indexterm>
 
-  <para>The two primary extension points are the interfaces:
-   <link
-    xlink:href="${javadocBase}/org/forgerock/openig/filter/Filter.html"
-    xlink:show="new"
-   >Filter</link> (for processing a request and/or response en route) and
-   <link
-    xlink:href="${javadocBase}/org/forgerock/openig/handler/Handler.html"
-    xlink:show="new"
-   >Handler</link> (for generating responses from requests).
-   These interfaces are similar to the Java Enterprise Edition
-   <literal>Filter</literal> and <literal>Servlet</literal> interfaces, with
-   some differences in the semantics of messages. While you can simply implement
-   these interfaces, there are also included convenience classes:
+  <variablelist>
+   <para>
+    Primary extension points include these interfaces.
+   </para>
+
+   <varlistentry>
+    <term><link
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/AuditEventListener.html"
+     xlink:show="new"
+    >AuditEventListener</link></term>
+    <listitem>
+     <para>
+      An AuditEventListener observes audit events.
+      For an example, see
+      <link
+       xlink:show="new"
+       xlink:href="reference#MonitorEndpointHandler"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >MonitorEndpointHandler</link>.
+     </para>
+
+     <para>
+      You must implement the interface for your audit agent
+      and its heaplet must extend
+      <link
+       xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/ConditionalAuditEventListener.ConditionalListenerHeaplet.html"
+       xlink:show="new"
+      >ConditionalAuditEventListener.ConditionalListenerHeaplet</link>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/decoration/Decorator.html"
+      xlink:show="new"
+     >Decorator</link></term>
+    <listitem>
+     <para>
+      A Decorator adds new behavior to another object,
+      without changing the base type of the object.
+     </para>
+
+     <para>
+      When suggesting custom Decorator names,
+      know that ${projectName} reserves all field names
+      that use only alphanumeric characters.
+      To avoid clashes, use dots or dashes in your field names,
+      such as "my-decorator".
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html"
+      xlink:show="new"
+     >Filter</link></term>
+    <listitem>
+     <para>
+      A Filter serves to process the request and/or the response.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><link
+     xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html"
+     xlink:show="new"
+    >Handler</link></term>
+    <listitem>
+     <para>
+      A Handler generates a response given a request.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <para>
+   These Filter and Handler interfaces are similar to Java Enterprise Edition
+   <literal>Filter</literal> and <literal>Servlet</literal> interfaces,
+   with some differences in the semantics of messages.
+   While you can simply implement these interfaces,
+   ${projectName} also provides convenience classes:
    <link
     xlink:href="${javadocBase}/org/forgerock/openig/filter/GenericFilter.html"
     xlink:show="new"
-   >GenericFilter</link> and
+    >GenericFilter</link> and
    <link
     xlink:href="${javadocBase}/org/forgerock/openig/handler/GenericHandler.html"
     xlink:show="new"
-   >GenericHandler</link> that you can use if you intend to make
-   your extensions configurable through the ${projectName} configuration
-   resource.
+    >GenericHandler</link>.
   </para>
  </section>
 

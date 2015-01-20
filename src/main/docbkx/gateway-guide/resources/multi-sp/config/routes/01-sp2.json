@@ -1,0 +1,52 @@
+{
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${empty exchange.session.sp2Username}",
+                    "handler": {
+                        "type": "StaticResponseHandler",
+                        "config": {
+                            "status": 302,
+                            "reason": "Found",
+                            "headers": {
+                                "Location": [
+                                    "http://sp.two.example:8080/saml/SPInitiatedSSO?metaAlias=/sp2"
+                                ]
+                            }
+                        }
+                    },
+                    "baseURI": "http://sp.two.example:8081"
+                },
+                {
+                    "handler": {
+                        "type": "Chain",
+                        "config": {
+                            "filters": [
+                                {
+                                    "type": "StaticRequestFilter",
+                                    "config": {
+                                        "method": "POST",
+                                        "uri": "http://sp.two.example:8081",
+                                        "form": {
+                                            "username": [
+                                                "${exchange.session.sp2Username}"
+                                            ],
+                                            "password": [
+                                                "${exchange.session.sp2Password}"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "handler": "ClientHandler"
+                        }
+                    },
+                    "baseURI": "http://sp.two.example:8081"
+                }
+            ]
+        }
+    },
+    "condition": "${matches(exchange.request.uri.host, 'sp.two.example')}"
+}

@@ -18,9 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +37,7 @@ import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.time.TimeService;
 
@@ -203,10 +202,10 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
             sorted.add(route);
             routes.put(file, route);
             logger.info(format("Added route '%s' defined in file '%s'", name, file));
-        } catch (HeapException e) {
+        } catch (Throwable e) {
             logger.error(format("The route defined in file '%s' cannot be added",
-                                  file));
-            logDetailedException(ERROR, logger, e);
+                                file));
+            logger.error(e);
         }
     }
 
@@ -223,10 +222,10 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
         Route newRoute;
         try {
             newRoute = builder.build(file);
-        } catch (HeapException e) {
+        } catch (Throwable e) {
             logger.error(format("The route defined in file '%s' cannot be modified",
                                   file));
-            logDetailedException(ERROR, logger, e);
+            logger.error(e);
             return;
         }
         Route oldRoute = routes.remove(file);
@@ -295,7 +294,7 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
                 scanner = new OnlyOnceDirectoryScanner(scanner);
             }
 
-            RouterHandler handler = new RouterHandler(new RouteBuilder(heap, qualified), scanner);
+            RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap, qualified), scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
                                                      Handler.class, true));
             return handler;

@@ -25,39 +25,49 @@
   !
 -->
 <refentry xml:id='Exchange'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Exchange</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
+
  <refnamediv>
   <refname>Exchange</refname>
   <refpurpose>HTTP exchange of request and response</refpurpose>
  </refnamediv>
+
  <refsect1>
   <title>Description</title>
+
   <indexterm>
    <primary>Exchange Object Model</primary>
    <secondary>Exchange</secondary>
   </indexterm>
-  <para>The root object for the exchange object model: an HTTP exchange of
-  request and response. The exchange object model parallels the document object
-  model, exposing elements of the exchange. It supports this by exposing a set
-  of fixed properties and allowing arbitrary properties to be added.</para>
+
+  <para>
+   The root object for the exchange object model:
+   an HTTP exchange of request and response.
+   The exchange object model parallels the document object model,
+   exposing elements of the exchange.
+   It supports this by exposing a set of fixed properties
+   and allowing arbitrary properties to be added.
+  </para>
  </refsect1>
+
  <refsect1>
   <title>Properties</title>
+
   <variablelist>
    <varlistentry>
     <term><code><link
       xlink:href="reference#ClientInfo"
       xlink:show="new"
       xlink:role="http://docbook.org/xlink/role/olink"
-     ><code>"clientInfo"</code></link></code>: <emphasis>object</emphasis></term>
+     >"clientInfo"</link></code>: object</term>
     <listitem>
      <para>
       Information about the client making the request in this HTTP exchange.
@@ -66,51 +76,92 @@
    </varlistentry>
 
    <varlistentry>
-    <term><code>"exchange"</code>: <emphasis>object</emphasis></term>
+    <term><code>"exchange"</code>: object</term>
     <listitem>
-     <para>Self-referential property to make this the root object in the
-     exchange object model.</para>
+     <para>
+      Self-referential property to make this the root object
+      in the exchange object model.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><link xlink:href="reference#Request"
-    xlink:role="http://docbook.org/xlink/role/olink"
-    ><code>"request"</code></link>: <emphasis>object</emphasis></term>
+    <term><code>"originalUri"</code>: URI</term>
     <listitem>
-     <para>The request portion of the HTTP exchange.</para>
+     <para>
+      The original target
+      <link
+       xlink:href="https://docs.oracle.com/javase/6/docs/api/index.html?java/net/URI.html"
+       xlink:show="new"
+      >URI</link> for the request, as received by the web container.
+     </para>
+
+     <para>
+      The value of this field is read-only.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><link xlink:href="reference#Response"
-    xlink:role="http://docbook.org/xlink/role/olink"
-    ><code>"response"</code></link>: <emphasis>object</emphasis></term>
+    <term><code><link
+      xlink:href="reference#Request"
+      xlink:show="new"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >"request"</link></code>: object</term>
     <listitem>
-     <para>The response portion of the HTTP exchange.</para>
+     <para>
+      The request portion of the HTTP exchange.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><link xlink:href="reference#Principal"
-    xlink:role="http://docbook.org/xlink/role/olink"
-    ><code>"principal"</code></link>: <emphasis>object</emphasis></term>
+    <term><code><link
+      xlink:href="reference#Response"
+      xlink:show="new"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >"response"</link></code>: object</term>
     <listitem>
-     <para>The principal associated with the request, or <literal>null</literal>
-     if unknown.</para>
+     <para>
+      The response portion of the HTTP exchange.
+     </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
-    <term><code>"session"</code>: <emphasis>object</emphasis></term>
+    <term><code><link
+      xlink:href="reference#Principal"
+      xlink:show="new"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >"principal"</link></code>: object</term>
     <listitem>
-     <para>Session context associated with the remote client. Exposes session
-     attributes as name-value pairs, where both name and value are
-     strings.</para>
+     <para>
+      The principal associated with the request,
+      or <literal>null</literal> if unknown.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"session"</code>: object</term>
+    <listitem>
+     <para>
+      Session context associated with the remote client.
+      Exposes session attributes as name-value pairs,
+      where both name and value are strings.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
  </refsect1>
+
  <refsect1>
   <title>Javadoc</title>
-  <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/http/Exchange.html"
-  >org.forgerock.openig.http.Exchange</link></para>
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html"
+   >org.forgerock.openig.http.Exchange</link>
+  </para>
  </refsect1>
 </refentry>

@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -90,7 +90,7 @@ public final class Json {
         public void transform(final JsonValue value) {
             if (value.isString()) {
                 try {
-                    Expression expression = new Expression(value.asString());
+                    Expression expression = Expression.valueOf(value.asString());
                     value.setObject(expression.eval(null, String.class));
                 } catch (ExpressionException e) {
                     throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
@@ -189,7 +189,7 @@ public final class Json {
      */
     public static Expression asExpression(JsonValue value) {
         try {
-            return (value == null || value.isNull() ? null : new Expression(value.asString()));
+            return (value == null || value.isNull() ? null : Expression.valueOf(value.asString()));
         } catch (ExpressionException ee) {
             throw new JsonValueException(value, ee);
         }

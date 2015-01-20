@@ -1,0 +1,15 @@
+{
+    "heap": [
+        {
+            "name": "HelloWorld",
+            "type": "StaticResponseHandler",
+            "config": {
+                "status": 200,
+                "entity": "Hello World"
+            }
+        }
+    ],
+    "globalDecorators": {
+        "make-title": "h2"
+    }
+}

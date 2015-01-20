@@ -1,0 +1,6 @@
+{
+    "globalDecorators": {
+        "make-title": "h1"
+    },
+    "handler": "HelloWorld"
+}

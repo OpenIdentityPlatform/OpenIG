@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -19,15 +19,18 @@ package org.forgerock.openig.filter.oauth2;
 import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.util.Sets.*;
 import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.*;
 import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forgerock.http.Request;
+import org.assertj.core.api.Condition;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.Handler;
@@ -37,10 +40,16 @@ import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class OAuth2ResourceServerFilterTest {
+
+    /**
+     * Extract scopes value.
+     */
+    private static final Pattern SCOPES_VALUE = Pattern.compile(".*scope=\"(.*)\".*");
 
     /**
      * Re-used token-id.
@@ -70,11 +79,25 @@ public class OAuth2ResourceServerFilterTest {
         when(time.now()).thenReturn(0L);
     }
 
-    @Test
-    public void shouldFailBecauseOfMissingHeader() throws Exception {
+    @DataProvider
+    public static Object[][] unauthorizedHeaderValues() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { null }, // no header
+                { "" }, // empty header
+                { "NoABearerToken value" } // no 'Bearer' token
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "unauthorizedHeaderValues")
+    public void shouldFailWithUnauthorizedGenericError(final String authorizationValue) throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildUnAuthorizedExchange();
+        if (authorizationValue != null) {
+            exchange.request.getHeaders().putSingle("Authorization", authorizationValue);
+        }
         filter.filter(exchange, nextHandler);
 
         assertThat(exchange.response.getStatus()).isEqualTo(401);
@@ -85,27 +108,36 @@ public class OAuth2ResourceServerFilterTest {
     }
 
     @Test
-    public void shouldFailBecauseOfUnresolvableToken() throws Exception {
-        when(resolver.resolve(TOKEN_ID))
-                .thenThrow(new OAuth2TokenException("error"));
-
+    public void shouldFailBecauseOfMultipleAuthorizationHeaders() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
-        final Exchange exchange = buildAuthorizedExchange();
+        final Exchange exchange = buildUnAuthorizedExchange();
+        exchange.request.getHeaders().add("Authorization", "Bearer 1234");
+        exchange.request.getHeaders().add("Authorization", "Bearer 5678");
         filter.filter(exchange, nextHandler);
 
         assertThat(exchange.response.getStatus()).isEqualTo(400);
         assertThat(exchange.response.getReason()).isEqualTo("Bad Request");
         assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
-                .contains(doubleQuote("error='invalid_request'"));
+                .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_request'"));
         verifyZeroInteractions(nextHandler);
+    }
+
+    @Test
+    public void shouldFailBecauseOfUnresolvableToken() throws Exception {
+        when(resolver.resolve(TOKEN_ID))
+                .thenThrow(new OAuth2TokenException("error"));
+        runAndExpectUnauthorizedInvalidTokenResponse();
     }
 
     @Test
     public void shouldFailBecauseOfExpiredToken() throws Exception {
         // Compared to the expiration date (100L), now is greater, so the token is expired
         when(time.now()).thenReturn(2000L);
+        runAndExpectUnauthorizedInvalidTokenResponse();
+    }
 
+    private void runAndExpectUnauthorizedInvalidTokenResponse() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
         final Exchange exchange = buildAuthorizedExchange();
@@ -114,7 +146,7 @@ public class OAuth2ResourceServerFilterTest {
         assertThat(exchange.response.getStatus()).isEqualTo(401);
         assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
         assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
-                .contains(doubleQuote("error='invalid_token'"));
+                .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_token'"));
         verifyZeroInteractions(nextHandler);
     }
 
@@ -128,8 +160,7 @@ public class OAuth2ResourceServerFilterTest {
         assertThat(exchange.response.getStatus()).isEqualTo(403);
         assertThat(exchange.response.getReason()).isEqualTo("Forbidden");
         String header = exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE);
-        assertThat(header).contains(doubleQuote("error='insufficient_scope'"));
-        assertThat(header).contains(doubleQuote("scope='a-missing-scope another-one'"));
+        assertThat(header).has(scopes("another-one", "a-missing-scope"));
         verifyZeroInteractions(nextHandler);
     }
 
@@ -149,7 +180,7 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                new Expression("${exchange.myToken}"));
+                Expression.valueOf("${exchange.myToken}"));
 
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
@@ -188,13 +219,13 @@ public class OAuth2ResourceServerFilterTest {
                                               time,
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
-                                              new Expression(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+                                              Expression.valueOf(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
     }
 
-    private static List<Expression> getScopes(final String... scopes) throws ExpressionException {
-        final List<Expression> expScopes = new ArrayList<Expression>();
+    private static Set<Expression> getScopes(final String... scopes) throws ExpressionException {
+        final Set<Expression> expScopes = new HashSet<Expression>(scopes.length);
         for (final String scope : scopes) {
-            expScopes.add(new Expression(scope));
+            expScopes.add(Expression.valueOf(scope));
         }
         return expScopes;
     }
@@ -216,4 +247,37 @@ public class OAuth2ResourceServerFilterTest {
         return value.replaceAll("'", "\"");
     }
 
+    /**
+     * Protect against Java 7/8 collection changes about ordering.
+     * Check that the value contains {@code scope="[a list of single-space-separated scopes]"}
+     */
+    private static Condition<? super String> scopes(final String... values) {
+        return new Condition<String>(format("scope='%s' (in any order)", asList(values))) {
+
+            private final Set<String> scopes = newLinkedHashSet(values);
+
+            @Override
+            public boolean matches(String value) {
+                Matcher matcher = SCOPES_VALUE.matcher(value);
+                if (!matcher.matches()) {
+                    return false;
+                }
+                String matched = matcher.group(1);
+
+                // Can't rely on ordering so I just fail if the matched value doesn't contains the required scope
+                int size = 0;
+                for (String scope : scopes) {
+                    if (!matched.contains(scope)) {
+                        return false;
+                    }
+                    size += scope.length();
+                }
+
+                // A simple check if there are additional scopes:
+                // Verify string length (each scope size + number of scopes minus 1 for the space separators)
+                size += scopes.size() - 1;
+                return matched.length() == size;
+            }
+        };
+    }
 }

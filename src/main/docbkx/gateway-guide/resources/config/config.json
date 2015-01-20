@@ -1,36 +1,33 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "LogSink",
-                "type": "ConsoleLogSink",
-                "config": {
-                    "level": "DEBUG"
-                }
-            },
-            {
-                "name": "JwtSession",
-                "type": "JwtSession"
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler"
-            },
-            {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "captureEntity": true,
-                    "_captureExchange": true
-                }
-            },
-            {
-                "name": "Router",
-                "type": "Router",
-                "capture": "all"
-            }
-        ]
+    "handler": {
+        "type": "Router",
+        "audit": "global",
+        "capture": "all"
     },
-    "handler": "Router",
+    "heap": [
+        {
+            "name": "LogSink",
+            "type": "ConsoleLogSink",
+            "config": {
+                "level": "DEBUG"
+            }
+        },
+        {
+            "name": "JwtSession",
+            "type": "JwtSession"
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler"
+        },
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureEntity": true,
+                "_captureExchange": true
+            }
+        }
+    ],
     "baseURI": "http://www.example.com:8081"
 }

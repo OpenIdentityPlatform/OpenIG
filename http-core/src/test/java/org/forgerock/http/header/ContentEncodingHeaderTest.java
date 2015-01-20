@@ -15,9 +15,9 @@
  */
 package org.forgerock.http.header;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.header.ContentEncodingHeader.NAME;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.header.ContentEncodingHeader.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

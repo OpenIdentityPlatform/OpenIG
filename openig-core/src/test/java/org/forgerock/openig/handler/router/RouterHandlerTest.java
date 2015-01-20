@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -19,9 +19,7 @@ package org.forgerock.openig.handler.router;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogLevel.*;
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.HeapImplTest.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
 
@@ -37,11 +35,9 @@ import java.util.HashSet;
 import org.forgerock.http.io.IO;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.TimeService;
@@ -54,8 +50,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class RouterHandlerTest {
 
-    @Mock
-    private Heap heap;
+    private HeapImpl heap;
 
     @Mock
     private TimeService time;
@@ -72,10 +67,9 @@ public class RouterHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(TEMPORARY_STORAGE_HEAP_KEY, TemporaryStorage.class)).thenReturn(new TemporaryStorage());
-        when(heap.get(LOGSINK_HEAP_KEY, LogSink.class)).thenReturn(new NullLogSink());
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
+        heap = buildDefaultHeap();
     }
 
     @Test
@@ -214,7 +208,24 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet()));
 
         // Should have an error log statement
-        verify(logger).logMessage(eq(ERROR), matches(".* A route named '.*' is already registered"));
+        verify(logger).error(anyString());
+        verify(logger).error(any(Exception.class));
+    }
+
+    @Test
+    public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
+        RouteBuilder builder = spy(new RouteBuilder(heap, Name.of("anonymous")));
+        RouterHandler router = new RouterHandler(builder, scanner);
+        router.logger = logger;
+
+        doThrow(new NullPointerException()).when(builder).build(any(File.class));
+
+        router.onChanges(new FileChangeSet(null,
+                                           Collections.singleton(new File("/")),
+                                           Collections.<File>emptySet(),
+                                           Collections.<File>emptySet()));
+
+        verify(logger).error(matches("The route defined in file '.*' cannot be added"));
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,

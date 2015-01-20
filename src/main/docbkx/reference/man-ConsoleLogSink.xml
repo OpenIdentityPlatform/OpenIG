@@ -62,8 +62,9 @@
      "name": string,
      "type": "ConsoleLogSink",
      "config": {
-         "level": string
-     }
+         "level": string,
+         "stream": string
+    }
 }
   </programlisting>
  </refsect1>
@@ -73,6 +74,30 @@
 
   <variablelist>
    <xinclude:include href="../shared/varlistentry-log-level.xml" />
+
+   <varlistentry>
+
+     <term><code>"stream"</code>: <emphasis>string, optional</emphasis></term>
+
+     <listitem>
+       <para>
+         The standard output to use to display logs in the console.
+       </para>
+
+       <para>
+         Must be one of the following settings.
+         <literal>ERR</literal> (use standard error: System.err),
+         <literal>OUT</literal> (use standard output: System.out),
+         <literal>AUTO</literal> (select standard error or output depending on
+         the message log level: TRACE, DEBUG, STAT, CONFIG, INFO print to
+         System.out, WARNING and ERROR print to System.err).
+       </para>
+
+       <para>
+         Default: <literal>ERR</literal>.
+       </para>
+     </listitem>
+   </varlistentry>
   </variablelist>
  </refsect1>
 
@@ -85,7 +110,8 @@
      "comment": "Default sink for logging information.",
      "type": "ConsoleLogSink",
      "config": {
-         "level": "DEBUG"
+         "level": "DEBUG",
+         "stream": "AUTO"
      }
 }
   </programlisting>

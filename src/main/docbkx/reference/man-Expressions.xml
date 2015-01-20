@@ -256,13 +256,10 @@
  <refsect1>
   <title>Examples</title>
 
-  <para>
-   In your JSON, keep the values on one line.
-  </para>
-
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-"${exchange.request.uri.path == '/wordpress/wp-login.php' and exchange.request.form['action'][0] != 'logout'}"
+"${exchange.request.uri.path == '/wordpress/wp-login.php'
+   and exchange.request.form['action'][0] != 'logout'}"
 
 "${exchange.request.uri.host == 'wiki.example.com'}"
 

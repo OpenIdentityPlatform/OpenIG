@@ -189,25 +189,14 @@
    If no condition is specified for the Route, the Route accepts any Exchange.
    The following is a basic default route that accepts any Exchange
    and forwards it on without changes.
-   This object explicitly shows you
-   the "condition" and "baseURI" fields of the Route object.
-   (You could omit "condition" and "baseURI" here as they have no effect.)
   </para>
 
   <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler"
-            }
-        ]
-    },
     "name": "default",
-    "condition": null,
-    "baseURI": null,
-    "handler": "ClientHandler"
+    "handler": {
+        "type": "ClientHandler"
+    }
 }
   </programlisting>
 
@@ -240,7 +229,6 @@
      and sends it to ForgeRock.com.
     </para>
    </listitem>
-
 
    <listitem>
     <para>

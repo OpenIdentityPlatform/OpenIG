@@ -108,6 +108,7 @@
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
+  <xinclude:include href="man-MonitorEndpointHandler.xml" />
   <xinclude:include href="man-Route.xml" />
   <xinclude:include href="man-Router.xml" />
   <xinclude:include href="man-SamlFederationHandler.xml" />
@@ -128,11 +129,11 @@
   <xinclude:include href="man-AssignmentFilter.xml" />
   <xinclude:include href="man-CaptureFilter.xml" />
   <xinclude:include href="man-CookieFilter.xml" />
+  <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-EntityExtractFilter.xml" />
   <xinclude:include href="man-ExceptionFilter.xml" />
   <xinclude:include href="man-FileAttributesFilter.xml" />
   <xinclude:include href="man-HeaderFilter.xml" />
-  <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
   <xinclude:include href="man-LocationHeaderFilter.xml" />
   <xinclude:include href="man-OAuth2ClientFilter.xml" />
@@ -148,7 +149,7 @@
 
   <partintro>
    <para>
-    Decorators allow you to define heap objects that decorate other objects,
+    Decorators are objects that decorate other heap objects,
     adding the new behavior that the decorator provides.
     For example, you can configure a decorator object
     for capturing requests and responses to a file
@@ -157,9 +158,11 @@
    </para>
 
    <para>
-    To decorate other objects individually,
-    add the decorator's "name" value as a top-level field of the object.
-    For example, suppose a capture decorator is named "capture".
+    To decorate other objects individually, use a local decoration
+    by adding the decorator's "name" value as a top-level field of the object.
+    For example, suppose a capture decorator named "capture" is defined
+    in the global configuration, <filename>config.json</filename>.
+    The decorator is configured to capture the entity but not the exchange.
    </para>
 
    <programlisting language="javascript">
@@ -167,14 +170,15 @@
     "name": "capture",
     "type": "CaptureDecorator",
     "config": {
-        "captureEntity": false
+        "captureEntity": true,
+        "_captureExchange": true
     }
 }
    </programlisting>
 
    <para>
-    The following "ClientHandler" configuration
-    captures requests before they are forwarded to the server.
+    The following "ClientHandler" configuration would then capture requests
+    including the entity before they are forwarded to the server.
    </para>
 
    <programlisting language="javascript">
@@ -186,43 +190,163 @@
    </programlisting>
 
    <para>
-    To decorate all the objects in the heap
-    and in heaps that inherit from the current heap,
-    use the "decorations" field of the heap object itself.
-    (If "decorations" are defined in the child,
-    then the child's definition overrides the parent's.
-    ${projectName} does not merge "decorations" from the parent and child.)
-    The following configuration captures requests and responses
-    as they pass through the handler.
+    To decorate the "handler" for a route,
+    add the decorator as a top-level field of the route.
+    The following route includes an audit decoration on the "handler".
+    This configuration decorates the "ClientHandler" only for the current route.
+    It does not decorate other uses of "ClientHandler" in other routes.
    </para>
 
    <programlisting language="javascript">
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "capture",
-                "type": "CaptureDecorator",
-                "config": {
-                    "captureEntity": false
-                }
-            },
-            {
-                "name": "ClientHandler",
-                "type": "ClientHandler"
-            }
-        ],
-        "decorations": {
-            "capture": "all"
-        }
-    },
-    "handler": "ClientHandler"
+    "handler": "ClientHandler",
+    "audit": "Default route"
 }
    </programlisting>
 
    <para>
-    To prevent loops, decorators themselves cannot be decorated.
+    The decoration as a top-level field also does not decorate "heap" objects.
+    To decorate all applicable objects defined within a Route's heap,
+    configure "globalDecorators" as a top-level field of the Route.
+    The "globalDecorators" field takes a map of the decorations to apply.
+    For example, the following route has "audit" and "capture" decorations
+    that apply to the "Chain", "HeaderFilter", and "StaticResponseHandler".
+    In other words, the decorations apply to all objects in this route's heap.
    </para>
+
+   <programlisting language="javascript">
+{
+    "globalDecorators": {
+        "audit": "My static route",
+        "capture": "all"
+    },
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "RESPONSE",
+                        "add": [
+                            {
+                                "X-Powered-By": [
+                                    "${projectName}"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "entity": "Hello World"
+                }
+            }
+        }
+    },
+    "condition": "${matches(exchange.request.uri.path, '^/static')}"
+}
+   </programlisting>
+
+   <itemizedlist>
+    <para>
+     Decorations are inherited as follows.
+    </para>
+
+    <listitem>
+     <para>
+      Local decorations that are part of an object's declaration
+      are inherited wherever the object is used.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      The "globalDecorations" on a route are inherited on child routes.
+     </para>
+    </listitem>
+   </itemizedlist>
+
+   <para>
+    To prevent loops, decorators themselves cannot be decorated.
+    Instead, decorators apply only to specific types of objects
+    such as Filters and Handlers.
+   </para>
+
+   <para>
+    ${projectName} defines some decorators,
+    such as "audit", "capture", and "timer".
+    You can use these without configuring them explicitly.
+    For details see the reference section,
+    <link
+     xlink:show="new"
+     xlink:href="reference#gateway-servlet"
+     xlink:role="http://docbook.org/xlink/role/olink"
+    ><citetitle>Gateway Servlet</citetitle></link>.
+   </para>
+
+   <para>
+    Take care when defining decorator names not to use names
+    that unintentionally clash with field names for the decorated objects.
+    For all heap objects, avoid decorators named
+    "config", "name", and "type".
+    For Routes, avoid decorators named
+    "baseURI", "condition", "globalDecorators",
+    "heap", "handler", "name", and "session".
+    In <filename>config.json</filename>,
+    also avoid "logSink" and "temporaryStorage".
+    In addition, avoid decorators named "comment" or "comments".
+    The best way to avoid a clash with other field names
+    is to avoid ${projectName} reserved field names,
+    which include all purely alphanumeric field names.
+    Instead use dots or dashes in your decorator names, such as "my-decorator".
+   </para>
+
+   <para>
+    Decorations can apply more than once.
+    For example, if you set a decoration
+    both on a Route and also on an object defined within the route,
+    then ${projectName} can apply the decoration twice.
+    The following Route results in the request being captured twice.
+   </para>
+
+   <programlisting language="javascript">
+{
+  "handler": {
+    "type": "ClientHandler",
+    "capture": "request"
+  },
+  "capture": "all"
+}
+   </programlisting>
+
+   <orderedlist>
+    <para>
+     ${projectName} applies decorations in this order.
+    </para>
+
+    <listitem>
+     <para>
+      Local decorations
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      "globalDecorations" (first those of the parent,
+      then those declared in the current route)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Route decorations (those decorating a route's handler)
+     </para>
+    </listitem>
+   </orderedlist>
 
    <para>
     Interface Stability:
@@ -234,6 +358,7 @@
    </para>
   </partintro>
 
+  <xinclude:include href="man-AuditDecorator.xml" />
   <xinclude:include href="man-CaptureDecorator.xml" />
   <xinclude:include href="man-TimerDecorator.xml" />
  </reference>

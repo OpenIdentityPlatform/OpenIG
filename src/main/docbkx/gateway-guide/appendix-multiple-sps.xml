@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2014 ForgeRock AS
+  !
+-->
+<appendix xml:id="appendix-multiple-sps"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>SAML 2.0 &amp; Multiple Applications</title>
+
+ <para>
+  You can use a single ${projectName} server as SAML 2.0 Service Provider
+  for multiple protected applications.
+ </para>
+
+ <indexterm>
+  <primary>SAML 2.0</primary>
+ </indexterm>
+ <indexterm>
+  <primary>Configuration</primary>
+  <secondary>SAML 2.0</secondary>
+ </indexterm>
+
+ <section xml:id="multisp-before-you-start">
+  <title>Before You Start</title>
+
+  <para>
+   Before you try the samples described here,
+   familiarize yourself with ${projectName} SAML 2.0 support
+   by reading the chapter,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-federation"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>${projectName} as a SAML 2.0 Service Provider</citetitle></link>,
+   and working through the tutorial in that chapter.
+  </para>
+
+  <para>
+   Also make sure you understand the principles
+   for configuring SAML 2.0 entities in OpenAM.
+   The preparation for handling multiple applications
+   involves editing the SAML 2.0 Service Provider configurations
+   based on the original Fedlet configuration,
+   and then importing the new configurations as SAML 2.0 entities in OpenAM.
+  </para>
+
+  <para>
+   At this point, you should have ${projectName}
+   protecting the sample application as SAML 2.0 Service Provider,
+   with OpenAM working as Identity Provider
+   configured as described in the tutorial.
+  </para>
+ </section>
+
+ <section xml:id="multisp-prepare-network">
+  <title>Preparing the Network</title>
+
+  <para>
+   You must configure the network so that
+   browser traffic to the application hosts is proxied through ${projectName}.
+  </para>
+
+  <para>
+   Modify DNS or host file settings so that
+   the hosts name of the protected applications resolve
+   to the IP address of ${projectName} on the system where the browser runs.
+   Restart the browser as necessary to take the changes into account.
+  </para>
+
+  <para>
+   The examples that follow use host names
+   <literal>sp.one.example</literal> and <literal>sp.two.example</literal>.
+   To try the examples on your computer,
+   you can edit the host file settings to add these to the loopback address.
+  </para>
+
+  <programlisting language="none">
+127.0.0.1    localhost www.example.com sp.one.example sp.two.example
+  </programlisting>
+ </section>
+
+ <section xml:id="multisp-prepare-saml-conf">
+  <title>Preparing the SAML 2.0 Service Provider Configurations</title>
+
+  <para>
+   Based on the original Fedlet configuration,
+   you add configuration for each new protected application.
+  </para>
+
+  <para>
+   In the following examples,
+   the first application runs on host <literal>sp.one.example</literal>.
+   The examples assign the entity ID <literal>One</literal> to this application,
+   and use the metaAlias <literal>/sp1</literal> in the SAML configuration.
+   The second application runs on <literal>sp.two.example</literal>
+   with entity ID <literal>Two</literal> and metaAlias <literal>/sp2</literal>.
+  </para>
+
+  <para>
+   Edit the <filename>SAML/fedlet.cot</filename> file
+   to include the entity IDs as in the following example.
+  </para>
+
+  <programlisting language="ini">
+<xinclude:include href="resources/multi-sp/SAML/fedlet.cot" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   For each application, make copies of the SAML configuration files
+   <filename>sp.xml</filename> and <filename>sp-extended.xml</filename>.
+   Edit the copy of <filename>sp.xml</filename> for the application so that
+   the entity ID matches the application,
+   the Location and ResponseLocation attributes reflect those of the application,
+   and the AssertionConsumerService Location attributes include the metaAlias.
+  </para>
+
+  <example xml:id="multisp-sp1">
+   <title>Service Provider Configuration for Application One</title>
+
+   <programlisting language="xml">
+<xinclude:include href="resources/multi-sp/SAML/sp1-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <example xml:id="multisp-sp2">
+   <title>Service Provider Configuration for Application Two</title>
+
+   <programlisting language="xml">
+<xinclude:include href="resources/multi-sp/SAML/sp2-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <para>
+   Edit the copy of <filename>sp-extended.xml</filename> for the application
+   so that the entity ID matches the application,
+   and the metaAlias and appLogoutUrl are correctly set.
+  </para>
+
+  <example xml:id="multisp-sp1-extended">
+   <title>Service Provider Extended Configuration for Application One</title>
+
+   <programlisting language="xml">
+<xinclude:include href="resources/multi-sp/SAML/sp1-extended-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <example xml:id="multisp-sp2-extended">
+   <title>Service Provider Extended Configuration for Application Two</title>
+
+   <programlisting language="xml">
+<xinclude:include href="resources/multi-sp/SAML/sp2-extended-xml.txt" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <para>
+   For each of the service provider extended configuration files,
+   prepare a copy for use when importing the configuration into OpenAM.
+   The only change to make in each copy is to set <literal>hosted="0"</literal>,
+   so that when you import the configuration into OpenAM,
+   OpenAM considers it that of a <emphasis>remote</emphasis> service provider.
+  </para>
+ </section>
+
+ <section xml:id="multisp-create-saml-entities">
+  <title>Importing Service Provider Configurations Into OpenAM</title>
+
+  <para>
+   For each new protected application, import a SAML 2.0 entity into OpenAM.
+  </para>
+
+  <orderedlist>
+   <listitem>
+    <para>
+     Login to OpenAM console as global administrator (<literal>amadmin</literal>).
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     On the Federation tab > Entity Providers table, click Import Entity.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Import the entity using the metadata from the edited copies of
+     <filename>sp.xml</filename> and <filename>sp-extended.xml</filename>,
+     where the copy of <filename>sp-extended.xml</filename>
+     has <literal>hosted="0"</literal>.
+    </para>
+
+    <para>
+     The service provider configurations should have
+     Location <literal>Remote</literal> in the Entity Providers table.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Log out of OpenAM Console.
+    </para>
+   </listitem>
+  </orderedlist>
+ </section>
+
+ <section xml:id="multisp-create-gateway-conf">
+  <title>Preparing Configurations in ${projectName}</title>
+
+  <para>
+   For each new protected application, prepare a ${projectName} configuration.
+   The configurations in this section follow the example in the chapter,
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#chap-federation"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   ><citetitle>${projectName} as a SAML 2.0 Service Provider</citetitle></link>.
+  </para>
+
+  <para>
+   Before editing route configurations for the protected applications,
+   configure a top-level router that does not rebase the incoming URLs,
+   such as the following <filename>config.json</filename>.
+   This differs from the example used in earlier tutorials.
+  </para>
+
+  <programlisting language="javascript">
+<xinclude:include href="resources/multi-sp/config/config.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+  </programlisting>
+
+  <para>
+   Also restart ${projectName} to put all configuration changes into effect.
+  </para>
+
+  <para>
+   For each application set up a pair of routes,
+   one to handle redirection for SAML authentication and login to the application,
+   the other to act as the SAML 2.0 assertion consumer
+   that maps attributes from the SAML assertion into the exchange
+   and redirects back to the first route.
+  </para>
+
+  <para>
+   The following examples show the routes for application One.
+  </para>
+
+  <example xml:id="multisp-sp1-route"><?dbfo pgwide="1"?>
+   <title>Route for SAML Authentication &amp; Login: Application One</title>
+
+   <programlisting language="javascript">
+<xinclude:include href="resources/multi-sp/config/routes/01-sp1.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <example xml:id="multisp-sp1-saml-route"><?dbfo pgwide="1"?>
+   <title>SAML Assertion Consumer: Application One</title>
+
+   <programlisting language="javascript">
+<xinclude:include href="resources/multi-sp/config/routes/01-saml-sp1.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <para>
+   The following examples show the routes for application Two.
+  </para>
+
+  <example xml:id="multisp-sp2-route"><?dbfo pgwide="1"?>
+   <title>Route for SAML Authentication &amp; Login: Application Two</title>
+
+   <programlisting language="javascript">
+<xinclude:include href="resources/multi-sp/config/routes/01-sp2.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+
+  <example xml:id="multisp-sp2-saml-route"><?dbfo pgwide="1"?>
+   <title>SAML Assertion Consumer: Application Two</title>
+
+   <programlisting language="javascript">
+<xinclude:include href="resources/multi-sp/config/routes/01-saml-sp2.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+   </programlisting>
+  </example>
+ </section>
+
+ <section xml:id="multisp-try-it-out">
+  <title>Trying It Out</title>
+
+  <para>
+   Try the configuration for multiple protected applications,
+   logging in to OpenAM as for the single SP federation example
+   with username <literal>george</literal>, password <literal>costanza</literal>.
+  </para>
+
+  <itemizedlist>
+   <para>
+    If you use the example configurations described here
+    with all services running on your computer protecting the sample application,
+    then you can try the SAML 2.0 web single sign-on profile
+    with application One by using either of the following links.
+   </para>
+
+   <listitem>
+    <para>
+     The link for
+     <link
+      xlink:href="http://sp.one.example:8080/saml/SPInitiatedSSO?metaAlias=/sp1&amp;idpEntityID=http://openam.example.com:8088/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      xlink:show="new"
+     >SP initiated SSO</link>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The link for
+     <link
+      xlink:href="http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=One&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      xlink:show="new"
+     >IDP initiated SSO</link>.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    Similarly you can try the SAML 2.0 web single sign-on profile
+    with application Two by using either of the following links.
+   </para>
+
+   <listitem>
+    <para>
+     The link for
+     <link
+      xlink:href="http://sp.two.example:8080/saml/SPInitiatedSSO?metaAlias=/sp2&amp;idpEntityID=http://openam.example.com:8088/openam&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      xlink:show="new"
+     >SP initiated SSO</link>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The link for
+     <link
+      xlink:href="http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&amp;metaAlias=/idp&amp;spEntityID=Two&amp;binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      xlink:show="new"
+     >IDP initiated SSO</link>.
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   If you have not configured the examples exactly as shown in this guide,
+   then adapt the SSO links accordingly.
+  </para>
+ </section>
+</appendix>

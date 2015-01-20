@@ -21,6 +21,8 @@ import static java.lang.String.format;
 import static org.forgerock.http.Http.chainOf;
 import static org.forgerock.http.Http.newSessionFilter;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.audit.AuditSystem.AUDIT_SYSTEM_HEAP_KEY;
+import static org.forgerock.openig.audit.decoration.AuditDecorator.AUDIT_HEAP_KEY;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.TIMER_HEAP_KEY;
@@ -37,6 +39,9 @@ import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.audit.AuditSystem;
+import org.forgerock.openig.audit.decoration.AuditDecorator;
+import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
@@ -104,13 +109,17 @@ public final class GatewayHttpApplication implements HttpApplication {
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
+            AuditSystem auditSystem = new ForwardingAuditSystem();
+
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
-            heap.addDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI");
+            heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
+            heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
+            heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
@@ -120,9 +129,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                     TemporaryStorage.class);
 
             // Create the root handler.
-            final org.forgerock.openig.handler.Handler handler = heap.resolve(
-                    getWithDeprecation(config, logger, "handler", "handlerObject"),
-                    org.forgerock.openig.handler.Handler.class);
+            final org.forgerock.openig.handler.Handler handler = heap.getHandler();
             final URI baseURI = config.get("baseURI").asURI();
             Handler rootHandler = new HttpHandler(handler, baseURI);
 

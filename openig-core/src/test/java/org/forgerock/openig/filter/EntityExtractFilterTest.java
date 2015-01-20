@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -48,7 +48,8 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter(MessageType.REQUEST, new Expression("${exchange.result}"));
+        EntityExtractFilter filter =
+                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}"));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
@@ -69,7 +70,8 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter(MessageType.REQUEST, new Expression("${exchange.result}"));
+        EntityExtractFilter filter =
+                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}"));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
@@ -91,7 +93,7 @@ public class EntityExtractFilterTest {
     @Test
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
         EntityExtractFilter filter = new EntityExtractFilter(MessageType.RESPONSE,
-                                                             new Expression("${exchange.result}"));
+                                                             Expression.valueOf("${exchange.result}"));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();

@@ -11,11 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
+import static java.nio.charset.Charset.*;
 import static org.forgerock.util.Utils.closeSilently;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -80,10 +81,10 @@ public final class Entity implements Closeable {
             .newBranchingInputStream(new byte[0]);
 
     /** Default character set to use if not specified, per RFC 2616. */
-    private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+    private static final Charset ISO_8859_1 = forName("ISO-8859-1");
 
     /** UTF-8 charset. */
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
+    private static final Charset UTF_8 = forName("UTF-8");
 
     /** The encapsulating Message which may have content encoding headers. */
     private final Message message;
@@ -102,21 +103,23 @@ public final class Entity implements Closeable {
 
     Entity(final Message message) {
         this.message = message;
-        setRawContentInputStream(EMPTY_STREAM);
+        setEmpty();
     }
 
     /**
-     * Returns {@literal true} if the entity is empty. This method does not read
-     * any actual content from the InputStream.
-     *
-     * @return {@literal true} if the entity is empty.
+     * Returns {@code true} if this entity may contain data.
+     * @return {@code true} if this entity may contain data.
      */
-    public boolean isEmpty() {
-        try {
-            return trunk.available() == 0;
-        } catch (IOException e) {
-            return true;
-        }
+    public boolean mayContainData() {
+        // Used reference equality intentionally (not equalsTo())
+        return getRawContentInputStream() != EMPTY_STREAM;
+    }
+
+    /**
+     * Mark this entity as being empty.
+     */
+    public void setEmpty() {
+        setRawContentInputStream(EMPTY_STREAM);
     }
 
     /**
@@ -125,7 +128,7 @@ public final class Entity implements Closeable {
      */
     @Override
     public void close() {
-        setRawContentInputStream(EMPTY_STREAM);
+        setEmpty();
     }
 
     /**
@@ -212,7 +215,8 @@ public final class Entity implements Closeable {
      *         be {@code null} only if the content represents the JSON
      *         {@code null} value.
      * @throws IOException
-     *             If an IO error occurred while reading the content.
+     *             If an IO error occurred while reading the content or if the
+     *             JSON is malformed.
      */
     public Object getJson() throws IOException {
         if (json == null) {
@@ -401,7 +405,7 @@ public final class Entity implements Closeable {
     public void setBytes(final byte[] value) {
         if (value == null || value.length == 0) {
             message.getHeaders().putSingle(ContentLengthHeader.NAME, "0");
-            setRawContentInputStream(EMPTY_STREAM);
+            setEmpty();
         } else {
             message.getHeaders()
                     .putSingle(ContentLengthHeader.NAME, Integer.toString(value.length));

@@ -1,0 +1,18 @@
+{
+    "handler": {
+        "type": "SamlFederationHandler",
+        "config": {
+            "comment": "Use unique session properties for this SP.",
+            "assertionMapping": {
+                "sp1Username": "mail",
+                "sp1Password": "employeenumber"
+            },
+            "authnContext": "sp1AuthnContext",
+            "sessionIndexMapping": "sp1SessionIndex",
+            "subjectMapping": "sp1SubjectName",
+            "redirectURI": "/sp1"
+        }
+    },
+    "condition": "${matches(exchange.request.uri.host, 'sp.one.example')
+                    and matches(exchange.request.uri.path, '^/saml')}"
+}

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2014 ForgeRock AS
+  !
+-->
+<chapter xml:id="chap-auditing"
+         xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation="http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xinclude="http://www.w3.org/2001/XInclude">
+ <title>${projectName} Audit Framework</title>
+ <!--
+  If we develop enough of a monitoring framework,
+  then this could be come a chapter on monitoring the gateway.
+ -->
+
+ <indexterm>
+  <primary>Auditing</primary>
+ </indexterm>
+ <indexterm>
+  <primary>Tutorials</primary>
+  <secondary>Auditing</secondary>
+ </indexterm>
+
+ <para>
+  ${projectName} provides a publish-and-subscribe audit framework.
+  Filters and Handlers publish audit events.
+  Agents in ${projectName} that are registered with the audit system can
+  subscribe to audit events.
+ </para>
+
+ <para>
+  Agents take responsibility for disseminating audit data
+  to clients and to other systems.
+  The
+  <link
+   xlink:show="new"
+   xlink:href="reference#MonitorEndpointHandler"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >MonitorEndpointHandler</link> is an example of an audit agent.
+ </para>
+
+ <para>
+  To audit a Filter, Handler, or a route, you add an audit decoration.
+  Audit decoration values are tags, which are strings useful to audit agents.
+  Agents can filter audit events of interest based on tags and other conditions.
+  The following example route has an audit decoration.
+ </para>
+
+ <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/08-com.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+ </programlisting>
+
+ <para>
+  ${projectName} creates an "audit" decorator, so you do not need to do so.
+  For details on audit decorations, see the <citetitle>Reference</citetitle> for
+  <link
+   xlink:show="new"
+   xlink:href="reference#AuditDecorator"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  >AuditDecorator</link>.
+ </para>
+
+ <itemizedlist>
+  <para>
+   The "MonitorEndpointHandler" is a simple audit agent
+   that collates basic statistics
+   about the number of messages "in progress", "completed", and "internal errors"
+   for each Filter or Handler that you have tagged,
+   and returns the data in JSON format.
+   To try auditing with the "MonitorEndpointHandler" agent,
+   first set up the following routes.
+  </para>
+
+  <listitem>
+   <para>
+    A route for the "MonitorEndpointHandler",
+    <filename>00-monitor.json</filename>:
+   </para>
+
+ <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/00-monitor.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+ </programlisting>
+  </listitem>
+
+  <listitem>
+   <para>
+    A route to ForgeRock.com, <filename>08-com.json</filename>:
+   </para>
+
+ <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/08-com.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+ </programlisting>
+  </listitem>
+
+  <listitem>
+   <para>
+    A route to ForgeRock.org, <filename>08-org.json</filename>:
+   </para>
+
+ <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/08-org.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+ </programlisting>
+  </listitem>
+
+  <listitem>
+   <para>
+    A default route with a static handler, <filename>99-default.json</filename>:
+   </para>
+
+ <programlisting language="javascript">
+<xinclude:include href="resources/config/routes/99-static.json" parse="text">
+ <xinclude:fallback>
+  Failed to include file
+ </xinclude:fallback>
+</xinclude:include>
+ </programlisting>
+  </listitem>
+ </itemizedlist>
+
+ <para>
+  With the routes in place and ${projectName} running,
+  access the following route endpoints a few times to trigger audit events
+  by using the following URLs.
+ </para>
+
+ <simplelist>
+  <member><link xlink:show="new" xlink:href="http://www.example.com:8080/" /></member>
+  <member><link xlink:show="new" xlink:href="http://www.example.com:8080/?site=com" /></member>
+  <member><link xlink:show="new" xlink:href="http://www.example.com:8080/?site=org" /></member>
+ </simplelist>
+
+ <para>
+  After triggering a few audit events, access the monitor endpoint,
+  <link xlink:show="new" xlink:href="http://www.example.com:8080/openig/monitor" />.
+  You should see counts of the audit events in JSON format.
+ </para>
+
+ <programlisting language="javascript">
+{
+    "Static default route": {
+        "in progress": 0,
+        "completed": 14,
+        "internal errors": 0
+    },
+    "ForgeRock.com route": {
+        "in progress": 0,
+        "completed": 16,
+        "internal errors": 0
+    },
+    "ForgeRock.org route": {
+        "in progress": 0,
+        "completed": 15,
+        "internal errors": 0
+    },
+    "global": {
+        "in progress": 0,
+        "completed": 45,
+        "internal errors": 0
+    }
+}
+ </programlisting>
+
+ <para>
+  According to the example output shown above,
+  ${projectName} successfully handled 16 requests on the "ForgeRock.com route",
+  15 requests on the "ForgeRock.org route", 14 default route requests
+  for a total of 45 request completed on the top-level "global" route.
+ </para>
+
+ <para>
+  You can build your own audit agents that implement
+  <link
+   xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/AuditEventListener.html"
+   xlink:show="new"
+  >AuditEventListener</link> for the audit agent logic
+  and extend
+  <link
+   xlink:href="${javadocBase}/index.html?org/forgerock/openig/audit/ConditionalAuditEventListener.ConditionalListenerHeaplet.html"
+   xlink:show="new"
+  >ConditionalAuditEventListener.ConditionalListenerHeaplet</link> for the heaplet
+  as described in the section on
+  <link
+   xlink:show="new"
+   xlink:href="geteway-guide#extension-points"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Key Extension Points</citetitle></link>.
+  For instructions on bundling your custom audit agents, see
+  <link
+   xlink:show="new"
+   xlink:href="geteway-guide#custom-build"
+   xlink:role="http://docbook.org/xlink/role/olink"
+  ><citetitle>Building Customizations</citetitle></link>.
+ </para>
+</chapter>

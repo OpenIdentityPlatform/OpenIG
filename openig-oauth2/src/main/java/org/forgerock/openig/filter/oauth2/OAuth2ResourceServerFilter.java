@@ -11,16 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -46,6 +44,7 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.Headers;
 import org.forgerock.openig.util.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -119,7 +118,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final AccessTokenResolver resolver;
     private final BearerTokenExtractor extractor;
     private final TimeService time;
-    private List<Expression> scopes;
+    private Set<Expression> scopes;
     private String realm;
 
     private final Handler noAuthentication;
@@ -144,7 +143,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
                                       final Expression target) {
-        this(resolver, extractor, time, Collections.<Expression> emptyList(), DEFAULT_REALM_NAME, target);
+        this(resolver, extractor, time, Collections.<Expression> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -157,7 +156,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * @param time
      *         A {@link TimeService} instance used to check if token is expired or not.
      * @param scopes
-     *         A list of scope expressions to be checked in the resolved access tokens.
+     *         A set of scope expressions to be checked in the resolved access tokens.
      * @param realm
      *         Name of the realm (used in authentication challenge returned in case of error).
      * @param target
@@ -167,7 +166,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final List<Expression> scopes,
+                                      final Set<Expression> scopes,
                                       final String realm,
                                       final Expression target) {
         this.resolver = resolver;
@@ -183,10 +182,18 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
     @Override
     public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        String token = getAccessToken(exchange.request);
-        if (token == null) {
-            logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
-            noAuthentication.handle(exchange);
+        String token = null;
+        try {
+            token = getAccessToken(exchange.request);
+            if (token == null) {
+                logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
+                noAuthentication.handle(exchange);
+                return;
+            }
+        } catch (OAuth2TokenException e) {
+            logger.debug("Multiple 'Authorization' headers in the request");
+            logger.debug(e);
+            invalidRequest.handle(exchange);
             return;
         }
 
@@ -196,8 +203,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             accessToken = resolver.resolve(token);
         } catch (OAuth2TokenException e) {
             logger.debug(format("Access Token '%s' cannot be resolved", token));
-            logDetailedException(DEBUG, logger, e);
-            invalidRequest.handle(exchange);
+            logger.debug(e);
+            invalidToken.handle(exchange);
             return;
         }
 
@@ -211,9 +218,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         final Set<String> setOfScopes = getScopes(exchange);
         if (areRequiredScopesMissing(accessToken, setOfScopes)) {
             logger.debug(format("Access Token '%s' is missing required scopes", token));
-            final InsufficientScopeChallengeHandler insufficientScope =
-                    new InsufficientScopeChallengeHandler(realm, setOfScopes);
-            insufficientScope.handle(exchange);
+            new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(exchange);
             return;
         }
 
@@ -255,8 +260,14 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
      * @return The access token, or {@literal null} if the access token was not present or was not using {@literal
      * Bearer} authorization.
      */
-    private String getAccessToken(final Request request) {
-        String header = request.getHeaders().getFirst("Authorization");
+    private String getAccessToken(final Request request) throws OAuth2TokenException {
+        Headers headers = request.getHeaders();
+        List<String> authorizations = headers.get("Authorization");
+        if ((authorizations != null) && (authorizations.size() >= 2)) {
+            throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
+                                                   + " the OAuth2 AccessToken");
+        }
+        String header = headers.getFirst("Authorization");
         return extractor.getAccessToken(header);
     }
 
@@ -287,8 +298,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 
-            List<Expression> scopes =
-                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asList(ofExpression());
+            Set<Expression> scopes =
+                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
@@ -305,7 +316,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {
                 try {
-                    return new EnforcerFilter(new Expression("${exchange.request.uri.scheme == 'https'}"), filter);
+                    return new EnforcerFilter(Expression.valueOf("${exchange.request.uri.scheme == 'https'}"), filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
                 }

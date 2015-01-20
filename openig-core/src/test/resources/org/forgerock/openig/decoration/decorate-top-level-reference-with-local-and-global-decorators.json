@@ -1,0 +1,15 @@
+{
+    "handler": {
+        "name": "HelloWorld",
+        "type": "StaticResponseHandler",
+        "make-title": "h1",
+        "config": {
+            "status": 200,
+            "entity": "Hello World"
+        }
+    },
+    "globalDecorators": {
+        "make-title": "h2"
+    },
+    "make-title": "h3"
+}

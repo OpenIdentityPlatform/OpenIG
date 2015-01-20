@@ -23,6 +23,8 @@ import java.util.Map;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
+import org.forgerock.openig.audit.monitor.MonitorEndpointHandler;
+import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.filter.AssignmentFilter;
 import org.forgerock.openig.filter.CaptureFilter;
@@ -46,7 +48,6 @@ import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.RouterHandler;
-import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.jwt.JwtSessionManager;
 import org.forgerock.openig.log.ConsoleLogSink;
@@ -82,6 +83,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("KeyManager", KeyManager.class);
         ALIASES.put("KeyStore", KeyStore.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
+        ALIASES.put("MonitorEndpointHandler", MonitorEndpointHandler.class);
         ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
         ALIASES.put("Router", RouterHandler.class);

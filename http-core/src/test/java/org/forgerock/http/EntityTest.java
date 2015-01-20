@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
@@ -32,6 +32,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class EntityTest {
         assertThat(entity.getBytes()).isEmpty();
         assertThat(entity.getString()).isEmpty();
         assertThat(entity.toString()).isEmpty();
-        assertThat(entity.isEmpty()).isTrue();
+        assertThat(entity.mayContainData()).isFalse();
         entity.push();
         assertThat(entity.getRawContentInputStream().available()).isEqualTo(0);
         entity.pop();
@@ -74,7 +75,7 @@ public class EntityTest {
         entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getBytes()).isEqualTo(bytes(JSON_CONTENT1));
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.mayContainData()).isTrue();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -94,7 +95,7 @@ public class EntityTest {
     public void getJsonWhenEntityContainsInvalidJsonThrowsIOException() throws Exception {
         mockJsonContent1 = mockContent(INVALID_JSON);
         entity.setRawContentInputStream(mockJsonContent1);
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.mayContainData()).isTrue();
         try {
             entity.getJson();
         } finally {
@@ -107,7 +108,7 @@ public class EntityTest {
     @Test
     public void getJsonWhenEntityIsEmpty() throws Exception {
         assertThat(entity.getJson()).isNull();
-        assertThat(entity.isEmpty()).isTrue();
+        assertThat(entity.mayContainData()).isFalse();
     }
 
     @Test
@@ -132,7 +133,7 @@ public class EntityTest {
         entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getRawContentInputStream()).isSameAs(mockJsonContent1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.mayContainData()).isTrue();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -141,7 +142,7 @@ public class EntityTest {
         entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getString()).isEqualTo(JSON_CONTENT1);
         assertThat(mockJsonContent1.available()).isEqualTo(JSON_CONTENT1.length());
-        assertThat(entity.isEmpty()).isFalse();
+        assertThat(entity.mayContainData()).isTrue();
         verify(mockJsonContent1, never()).close();
     }
 
@@ -250,6 +251,16 @@ public class EntityTest {
     public void shouldParseJsonObjectReturnsLinkedHashMap() throws IOException {
         entity.setRawContentInputStream(mockJsonContent1);
         assertThat(entity.getJson()).isInstanceOf(LinkedHashMap.class);
+    }
+
+    @Test
+    public void shouldMarkTheEntityAsEmpty() throws Exception {
+        // entity is initialized with some content by default
+        assertThat(entity.mayContainData()).isFalse();
+        entity.setJson(new HashMap<String, Object>());
+        assertThat(entity.mayContainData()).isTrue();
+        entity.setEmpty();
+        assertThat(entity.mayContainData()).isFalse();
     }
 
     private void assertThatContentIsJsonContent1() throws IOException {

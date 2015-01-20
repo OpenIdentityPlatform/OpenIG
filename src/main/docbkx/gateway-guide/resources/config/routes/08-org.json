@@ -1,17 +1,6 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "CommunityChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [],
-                    "handler": "ClientHandler"
-                }
-            }
-        ]
-    },
-    "handler": "CommunityChain",
+    "handler": "ClientHandler",
     "condition": "${matches(exchange.request.uri.query, 'site=org')}",
-    "baseURI": "http://forgerock.org:80/"
+    "baseURI": "https://forgerock.org:443/",
+    "audit": "ForgeRock.org route"
 }

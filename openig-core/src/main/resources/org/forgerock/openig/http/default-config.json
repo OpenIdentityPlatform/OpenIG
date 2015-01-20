@@ -30,7 +30,11 @@
                                     "type": "StaticResponseHandler",
                                     "config": {
                                         "status": 404,
-                                        "reason": "Not Found"
+                                        "reason": "Not Found",
+                                        "headers": {
+                                            "Content-Type": [ "application/json" ]
+                                        },
+                                        "entity": "{ \"error\": \"Something gone wrong, please contact your system administrator.\"}"
                                     }
                                 }
                             }
@@ -40,5 +44,6 @@
             }
         }
     ],
-    "handler": "_Router"
+    "handler": "_Router",
+    "audit": "global"
 }

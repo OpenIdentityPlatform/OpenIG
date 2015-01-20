@@ -18,14 +18,12 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.*;
 import static java.util.Collections.*;
-import static org.forgerock.http.URIUtil.withQuery;
+import static org.forgerock.http.URIUtil.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.log.LogLevel.*;
 import static org.forgerock.openig.util.Duration.*;
 import static org.forgerock.openig.util.Json.*;
-import static org.forgerock.openig.util.Logs.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;
@@ -463,7 +461,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private void checkRequestIsSufficientlySecure(final Exchange exchange)
             throws OAuth2ErrorException {
         // FIXME: use enforce filter?
-        if (requireHttps && !exchange.request.getUri().getScheme().equalsIgnoreCase("https")) {
+        if (requireHttps && !exchange.originalUri.getScheme().equalsIgnoreCase("https")) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "SSL is required in order to perform this operation");
         }
@@ -790,7 +788,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
             loginHandler.handle(exchange);
         } else {
             final OAuth2Provider provider = providers.values().iterator().next();
-            sendAuthorizationRedirect(exchange, provider, exchange.request.getUri().toString());
+            sendAuthorizationRedirect(exchange, provider, exchange.originalUri.toString());
         }
     }
 
@@ -984,7 +982,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 } catch (Exception e) {
                     logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 }
             } else {
                 // A cache is configured, extract the value from the cache
@@ -994,11 +992,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 } catch (InterruptedException e) {
                     logger.warning(format("Interrupted when calling UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 } catch (ExecutionException e) {
                     logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
                                           callable.getProvider().getName()));
-                    logDetailedException(WARNING, logger, e);
+                    logger.warning(e);
                 }
             }
 

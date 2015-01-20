@@ -288,10 +288,10 @@
     "config": {
         "status": 200,
         "entity": "<html><p><a
-                   href='/openid/login?provider=openam&goto=${urlEncode(exchange.request.uri)}'
+                   href='/openid/login?provider=openam&goto=${urlEncode(exchange.originalUri)}'
                    >OpenAM Login</a></p>
                    <p><a
-                   href='/openid/login?provider=google&goto=${urlEncode(exchange.request.uri)}'
+                   href='/openid/login?provider=google&goto=${urlEncode(exchange.originalUri)}'
                    >Google Login</a></p>
                    </html>"
     }

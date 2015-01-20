@@ -28,6 +28,7 @@ import static org.forgerock.util.encode.Base64.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -107,7 +108,7 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        verify(logger).logMessage(any(LogLevel.class), anyString());
+        verify(logger).error(any(GeneralSecurityException.class));
 
         assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }
@@ -125,7 +126,7 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(exchange, terminalHandler);
 
-        verify(logger).logMessage(any(LogLevel.class), anyString());
+        verify(logger).error(any(GeneralSecurityException.class));
 
         assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -61,13 +61,13 @@ public class RouteTest {
 
     @Test
     public void testRouteAcceptingTheExchange() throws Exception {
-        Route route = createRoute(null, new Expression("${true}"), null);
+        Route route = createRoute(null, Expression.valueOf("${true}"), null);
         assertThat(route.accept(new Exchange())).isTrue();
     }
 
     @Test
     public void testRouteRejectingTheExchange() throws Exception {
-        Route route = createRoute(null, new Expression("${false}"), null);
+        Route route = createRoute(null, Expression.valueOf("${false}"), null);
         assertThat(route.accept(new Exchange())).isFalse();
     }
 

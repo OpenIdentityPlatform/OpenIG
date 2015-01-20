@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -33,6 +33,7 @@ import javax.el.VariableMapper;
 
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
+import org.forgerock.http.util.Loader;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 
@@ -41,10 +42,30 @@ import de.odysseus.el.ExpressionFactoryImpl;
  * compiling it. Once created, an expression can be evaluated within a supplied scope. An
  * expression can safely be evaluated concurrently in multiple threads.
  */
-public class Expression {
+public final class Expression {
 
     /** The underlying EL expression(s) that this object represents. */
     private final List<ValueExpression> valueExpression;
+
+    /** The expression plugins configured in META-INF/services. */
+    private static final Map<String, ExpressionPlugin> PLUGINS =
+            Collections.unmodifiableMap(Loader.loadMap(String.class, ExpressionPlugin.class));
+
+    /**
+     * Factory method to create an Expression.
+     *
+     * @param expression
+     *            The expression to parse.
+     * @return An expression based on the given string.
+     * @throws ExpressionException
+     *             if the expression was not syntactically correct.
+     */
+    public static final Expression valueOf(String expression) throws ExpressionException {
+        return new Expression(expression);
+    }
+
+    /** The original string used to create this expression. */
+    private final String original;
 
     /**
      * Constructs an expression for later evaluation.
@@ -52,7 +73,8 @@ public class Expression {
      * @param expression the expression to parse.
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    public Expression(String expression) throws ExpressionException {
+    private Expression(String expression) throws ExpressionException {
+        original = expression;
         try {
             // An expression with no pattern will just return the original String so we will always have at least one
             // item in the array.
@@ -173,11 +195,9 @@ public class Expression {
 
             // deal with readonly implicit objects
             if (base == null) {
-                String name = property.toString();
-                if ("system".equals(name)) {
-                    return readOnlySystemProperties();
-                } else if ("env".equals(name)) {
-                    return readOnlyEnvironmentVariables();
+                ExpressionPlugin node = Expression.PLUGINS.get(property.toString());
+                if (node != null) {
+                    return node.getObject();
                 }
             }
 
@@ -214,13 +234,20 @@ public class Expression {
             return (base == null ? String.class : Object.class);
         }
 
-        private Map<String, String> readOnlyEnvironmentVariables() {
-            return Collections.unmodifiableMap(System.getenv());
-        }
+    }
 
-        private Map<Object, Object> readOnlySystemProperties() {
-            return Collections.unmodifiableMap(System.getProperties());
-        }
-
+    /**
+     * Returns the original string used to create this expression, unmodified.
+     * <p>
+     * Note to implementors: That returned value must be usable in
+     * Expression.valueOf() to create an equivalent Expression(somehow cloning
+     * this instance)
+     * </p>
+     *
+     * @return The original string used to create this expression.
+     */
+    @Override
+    public String toString() {
+        return original;
     }
 }

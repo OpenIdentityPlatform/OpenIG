@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.handler;
 
@@ -53,7 +53,7 @@ public class DispatchHandlerTest {
     public void testDispatchWithRebasedUriStandard() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(new Expression(CONDITION), nextHandler, new URI("http://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("http://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -69,7 +69,9 @@ public class DispatchHandlerTest {
     public void testDispatchWithRebasedUriWithUserInfo() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(new Expression(CONDITION), nextHandler, new URI("http://www.hostA.domain.com:443"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION),
+                                    nextHandler,
+                                    new URI("http://www.hostA.domain.com:443"));
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -86,7 +88,7 @@ public class DispatchHandlerTest {
     public void testDispatchWithRebasedUriWithSchemeAndQueryAndFragment() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(new Expression(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -117,7 +119,7 @@ public class DispatchHandlerTest {
 
     @Test
     public void testDispatchWithRebasedURI() throws Exception {
-        final Expression expression = new Expression("${contains(exchange.request.uri.host,'this.domain') and "
+        final Expression expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') and "
                 + "contains(exchange.request.uri.path,'/user.0')}");
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
@@ -136,7 +138,7 @@ public class DispatchHandlerTest {
 
     @Test
     public void testDispatchWithNullBaseURI() throws Exception {
-        final Expression expression = new Expression("${contains(exchange.request.uri.host,'this.domain') and "
+        final Expression expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') and "
                 + "contains(exchange.request.uri.path,'/user.0')}");
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
@@ -157,7 +159,7 @@ public class DispatchHandlerTest {
     public void testDispatchWithMultipleBindings() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(new Expression(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
         final Exchange exchange = new Exchange();
@@ -177,7 +179,6 @@ public class DispatchHandlerTest {
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
 
     }
-
 
     @Test(expectedExceptions = HandlerException.class)
     public void testDispatchNoHandlerToDispatch() throws Exception {

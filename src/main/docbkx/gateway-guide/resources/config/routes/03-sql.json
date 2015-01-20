@@ -1,44 +1,38 @@
 {
-    "heap": {
-        "objects": [
-            {
-                "name": "LoginChain",
-                "type": "Chain",
-                "config": {
-                    "filters": [
-                        {
-                            "type": "SqlAttributesFilter",
-                            "config": {
-                                "dataSource": "java:comp/env/jdbc/forgerock",
-                                "preparedStatement":
-                                  "SELECT username, password FROM users WHERE email = ?;",
-                                "parameters": [
-                                    "george@example.com"
-                                ],
-                                "target": "${exchange.credentials}"
-                            }
-                        },
-                        {
-                            "type": "StaticRequestFilter",
-                            "config": {
-                                "method": "POST",
-                                "uri": "http://www.example.com:8081",
-                                "form": {
-                                    "username": [
-                                        "${exchange.credentials.USERNAME}"
-                                    ],
-                                    "password": [
-                                        "${exchange.credentials.PASSWORD}"
-                                    ]
-                                }
-                            }
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "SqlAttributesFilter",
+                    "config": {
+                        "dataSource": "java:comp/env/jdbc/forgerock",
+                        "preparedStatement":
+                            "SELECT username, password FROM users WHERE email = ?;",
+                        "parameters": [
+                            "george@example.com"
+                        ],
+                        "target": "${exchange.credentials}"
+                    }
+                },
+                {
+                    "type": "StaticRequestFilter",
+                    "config": {
+                        "method": "POST",
+                        "uri": "http://www.example.com:8081",
+                        "form": {
+                            "username": [
+                                "${exchange.credentials.USERNAME}"
+                            ],
+                            "password": [
+                                "${exchange.credentials.PASSWORD}"
+                            ]
                         }
-                    ],
-                    "handler": "ClientHandler"
+                    }
                 }
-            }
-        ]
+            ],
+            "handler": "ClientHandler"
+        }
     },
-    "handler": "LoginChain",
     "condition": "${matches(exchange.request.uri.path, '^/sql')}"
 }

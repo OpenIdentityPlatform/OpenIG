@@ -24,6 +24,10 @@ import java.net.URISyntaxException;
 
 /**
  * A request message.
+ * <p>
+ * A RequestResolver is linked to this class.
+ *
+ * @see org.forgerock.openig.resolver.RequestResolver
  */
 public final class Request extends MessageImpl<Request> {
 
