@@ -10,7 +10,7 @@
   ! Suite 900, Mountain View, California, 94041, USA.
   !
   ! You can also obtain a copy of the license at
-  ! trunk/legal-notices/CC-BY-NC-ND.txt.
+  ! trunk/legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <book xml:id='reference'
@@ -44,7 +44,7 @@
   </abstract>
   <copyright>
    <year>2011-2014</year>
-   <holder>ForgeRock AS</holder>
+   <holder>ForgeRock AS.</holder>
   </copyright>
   <authorgroup>
    <author>

@@ -112,7 +112,7 @@ public final class Entity implements Closeable {
      */
     public boolean mayContainData() {
         // Used reference equality intentionally (not equalsTo())
-        return getRawContentInputStream() != EMPTY_STREAM;
+        return trunk != EMPTY_STREAM;
     }
 
     /**

@@ -40,6 +40,8 @@ public class ExpressionTest {
             { "${1==1}" },
             { "#{myExpression}" },
             { "string-literal" },
+            { "ᓱᓴᓐ ᐊᒡᓗᒃᑲᖅ" }, /** Susan Aglukark (singer) */
+            { "F" + "\u004F" + "\u0052" + "G" + "\u0045" },
             { "" },
             { "foo\\${a} ${a}${b} foo\\${b}" },
             { "${a} \n${b}" } };

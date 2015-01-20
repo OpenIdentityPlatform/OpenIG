@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='Expressions'
@@ -250,6 +250,25 @@
    yields the method of the request, converted to lower case.
    Functions can be operands for operations,
    and can yield parameters for other function calls.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Extensions</title>
+
+  <para>
+   ${projectName} offers a plugin interface for extending expressions.
+   You can find a brief description in the section on
+   <link
+    xlink:show="new"
+    xlink:href="gateway-guide#extension-points"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >Key Extension Points</link>.
+  </para>
+
+  <para>
+   If your deployment uses expression plugins, read the plugin documentation
+   about the additional expressions you can use.
   </para>
  </refsect1>
 
