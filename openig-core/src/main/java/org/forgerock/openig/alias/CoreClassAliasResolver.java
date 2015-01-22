@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.alias;
@@ -24,6 +24,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
 import org.forgerock.openig.audit.monitor.MonitorEndpointHandler;
+import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.filter.AssignmentFilter;
@@ -63,6 +64,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
 
     static {
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);
+        ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
         ALIASES.put("CaptureFilter", CaptureFilter.class);
         ALIASES.put("Chain", Chain.class);
         ALIASES.put("ClientHandler", ClientHandler.class);

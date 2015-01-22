@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.servlet;
@@ -22,6 +22,7 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.audit.AuditSystem.*;
 import static org.forgerock.openig.audit.decoration.AuditDecorator.*;
 import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
 import static org.forgerock.openig.http.HttpClient.*;
@@ -53,6 +54,7 @@ import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.Handler;
@@ -82,7 +84,6 @@ import org.forgerock.openig.util.URIUtil;
  *          ...
  *      },
  *      "handler": "DispatchHandler",
- *      "baseURI": "http://localhost:8080",
  *      "logSink":  "myCustomLogSink",
  *      "temporaryStorage": "myCustomStorage"
  *   }
@@ -116,9 +117,6 @@ public class GatewayServlet extends HttpServlet {
             closeSilently(in);
         }
     }
-
-    /** Overrides request URLs constructed by container; making requests relative to a new base URI. */
-    private URI baseURI;
 
     /**
      * Environment can be provided by the caller or, if null, it will be based on default policy.
@@ -203,8 +201,9 @@ public class GatewayServlet extends HttpServlet {
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
+            heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
             heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
@@ -214,7 +213,6 @@ public class GatewayServlet extends HttpServlet {
                                              TemporaryStorage.class);
             // Let the user change the type of session to use
             sessionFactory = heap.get(SESSION_FACTORY_HEAP_KEY, SessionFactory.class);
-            baseURI = config.get("baseURI").asURI();
             handler = heap.getHandler();
         } catch (final ServletException e) {
             throw e;
@@ -251,9 +249,6 @@ public class GatewayServlet extends HttpServlet {
         exchange.request = new Request();
         exchange.request.setMethod(request.getMethod());
         exchange.request.setUri(uri);
-        if (baseURI != null) {
-            exchange.request.getUri().rebase(baseURI);
-        }
 
         // request headers
         for (final Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements(); ) {
