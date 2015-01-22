@@ -57,10 +57,7 @@ import org.forgerock.openig.http.SessionFactory;
  *     },
  *     {
  *       "name": "ClientHandler",
- *       "type": "ClientHandler",
- *       "config": {
- *         ...
- *       }
+ *       "type": "ClientHandler"
  *     }
  *   ],
  *   "handler": "ClientHandler",
