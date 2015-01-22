@@ -17,10 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.MutableUri.*;
 import static org.mockito.Mockito.*;
-
-import java.net.URI;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
@@ -28,7 +25,6 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.http.SessionFactory;
 import org.mockito.Mock;
@@ -61,19 +57,19 @@ public class RouteTest {
 
     @Test
     public void testRouteAcceptingTheExchange() throws Exception {
-        Route route = createRoute(null, Expression.valueOf("${true}"), null);
+        Route route = createRoute(null, Expression.valueOf("${true}"));
         assertThat(route.accept(new Exchange())).isTrue();
     }
 
     @Test
     public void testRouteRejectingTheExchange() throws Exception {
-        Route route = createRoute(null, Expression.valueOf("${false}"), null);
+        Route route = createRoute(null, Expression.valueOf("${false}"));
         assertThat(route.accept(new Exchange())).isFalse();
     }
 
     @Test
     public void testRouteIsDelegatingTheExchange() throws Exception {
-        Route route = createRoute(null, null, null);
+        Route route = createRoute(null, null);
 
         Exchange exchange = new Exchange();
         route.handle(exchange);
@@ -82,23 +78,9 @@ public class RouteTest {
     }
 
     @Test
-    public void testRouteIsRebasingTheRequestUri() throws Exception {
-        Route route = createRoute(null, null, new URI("https://localhost:443"));
-
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://openig.forgerock.org/demo");
-
-        route.handle(exchange);
-
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
-    }
-
-
-    @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
-        Route route = createRoute(sessionFactory, null, null);
+        Route route = createRoute(sessionFactory, null);
         Exchange exchange = new Exchange();
         exchange.session = original;
 
@@ -120,7 +102,7 @@ public class RouteTest {
     @Test
     public void shouldReplaceBackTheOriginalSessionForUpStreamHandlersWhenExceptionsAreThrown() throws Exception {
 
-        Route route = createRoute(sessionFactory, null, null);
+        Route route = createRoute(sessionFactory, null);
         Exchange exchange = new Exchange();
         exchange.session = original;
 
@@ -143,13 +125,11 @@ public class RouteTest {
     }
 
     private Route createRoute(final SessionFactory sessionFactory,
-                              final Expression condition,
-                              final URI baseURI) {
+                              final Expression condition) {
         return new Route(new HeapImpl(Name.of("anonymous")),
                          handler,
                          sessionFactory,
                          "router",
-                         condition,
-                         baseURI);
+                         condition);
     }
 }
