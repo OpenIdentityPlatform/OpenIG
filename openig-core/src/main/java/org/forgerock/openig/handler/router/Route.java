@@ -40,30 +40,29 @@ import org.forgerock.openig.http.SessionFactory;
  *
  * <pre>
  * {
- *   "heap": {
- *     "objects": [
- *       {
- *         "name": "LogSink",
- *         "type": "ConsoleLogSink",
- *         "config": {
- *           "level": "DEBUG"
- *         }
- *       },
- *       {
- *         "name": "MyJwtSession",
- *         "type": "JwtSession",
- *         "config": {
- *           ...
- *         }
- *       },
- *       {
- *         "name": "ClientHandler",
- *         "type": "ClientHandler",
- *         "config": {
- *         }
- *       },
- *     ]
- *   },
+ *   "heap": [
+ *     {
+ *       "name": "LogSink",
+ *       "type": "ConsoleLogSink",
+ *       "config": {
+ *         "level": "DEBUG"
+ *       }
+ *     },
+ *     {
+ *       "name": "MyJwtSession",
+ *       "type": "JwtSession",
+ *       "config": {
+ *         ...
+ *       }
+ *     },
+ *     {
+ *       "name": "ClientHandler",
+ *       "type": "ClientHandler",
+ *       "config": {
+ *         ...
+ *       }
+ *     }
+ *   ],
  *   "handler": "ClientHandler",
  *   "condition": "${exchange.request.headers['X-Forward'] == '/endpoint'}",
  *   "session": "MyJwtSession",
