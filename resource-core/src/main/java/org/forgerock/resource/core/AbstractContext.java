@@ -60,7 +60,7 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public String getContextName() {
+    public final String getContextName() {
         return name;
     }
 
