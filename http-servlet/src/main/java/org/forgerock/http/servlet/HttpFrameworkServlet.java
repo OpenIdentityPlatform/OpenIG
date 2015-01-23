@@ -243,11 +243,10 @@ public final class HttpFrameworkServlet extends HttpServlet {
         return new HttpServletRequestWrapper(req) {
             @Override
             public ServletInputStream getInputStream() throws IOException {
-                final HttpServletRequestWrapper req = this;
                 return new ServletInputStream() {
                     @Override
                     public int read() throws IOException {
-                        return req.getInputStream().read();
+                        return getRequest().getInputStream().read();
                     }
                 };
             }
