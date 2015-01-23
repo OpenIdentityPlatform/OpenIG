@@ -162,6 +162,12 @@ public final class HttpFrameworkServlet extends HttpServlet {
         final HttpContext httpContext = new HttpContext(new RootContext(), session)
                 .setPrincipal(req.getUserPrincipal());
 
+        Enumeration<String> attributeNames = httpReq.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            String attributeName = attributeNames.nextElement();
+            httpContext.getAttributes().put(attributeName, httpReq.getAttribute(attributeName));
+        }
+
         //FIXME ideally we don't want to expose the HttpServlet Request and Response
         // handy servlet-specific attributes, sure to be abused by downstream filters
         httpContext.getAttributes().put(HttpServletRequest.class.getName(), req);
