@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='HttpBasicAuthFilter'
@@ -181,7 +181,7 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html"
    >org.forgerock.openig.filter.HttpBasicAuthFilter</link>
   </para>
  </refsect1>
