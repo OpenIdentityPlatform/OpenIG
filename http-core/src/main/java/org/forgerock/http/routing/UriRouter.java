@@ -93,11 +93,11 @@ public final class UriRouter extends AbstractUriRouter<UriRouter, Handler> imple
 
     private ResourceName getMatchedUri(Context context) {
         List<String> matched = new ArrayList<String>();
-        for (Context ctx = context; ctx != null; ctx = context.getParent()) {
+        for (Context ctx = context; ctx != null; ctx = ctx.getParent()) {
             if (!ctx.containsContext(RouterContext.class)) {
                 break;
             } else {
-                matched.add(context.asContext(RouterContext.class).getMatchedUri());
+                matched.add(ctx.asContext(RouterContext.class).getMatchedUri());
             }
         }
         return new ResourceName(matched);
