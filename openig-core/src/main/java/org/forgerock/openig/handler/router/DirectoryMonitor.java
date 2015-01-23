@@ -72,7 +72,7 @@ class DirectoryMonitor implements DirectoryScanner {
      * This constructor is intended for test cases where it's useful to provide an initial state under control.
      *
      * @param directory
-     *         a non-{@literal null} directory (it may or may not exists) to monitor
+     *         a non-{@literal null} directory (it may or may not exist) to monitor
      * @param snapshot
      *         initial state of the snapshot
      */

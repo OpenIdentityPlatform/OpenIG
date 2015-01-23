@@ -45,7 +45,7 @@ public final class Files {
         final File file = getRelative(base, name);
         if (!file.isDirectory()) {
             throw new IOException(
-                    format("Path '%s', relative to %s is not a directory (or does not exists)", name, base)
+                    format("Path '%s', relative to %s is not a directory (or does not exist)", name, base)
             );
         }
         return file;
@@ -55,7 +55,7 @@ public final class Files {
         final File file = getRelative(base, name);
         if (!file.isFile()) {
             throw new IOException(
-                    format("Path '%s', relative to %s is not a file (may be a directory or does not exists)",
+                    format("Path '%s', relative to %s is not a file (may be a directory or does not exist)",
                            name,
                            base)
             );
