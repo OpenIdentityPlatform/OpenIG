@@ -256,7 +256,7 @@ public class HttpClient {
             Arrays.asList(
                     // populated in outgoing request by EntityRequest (HttpEntityEnclosingRequestBase):
                     "Content-Encoding", "Content-Length", "Content-Type",
-                    // hop-to-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
+                    // hop-by-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
                     "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
                     "Trailers", "Transfer-Encoding", "Upgrade")
     );
@@ -264,7 +264,7 @@ public class HttpClient {
     /** Headers that are suppressed in response. */
     private static final CaseInsensitiveSet SUPPRESS_RESPONSE_HEADERS = new CaseInsensitiveSet(
             Arrays.asList(
-                    // hop-to-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
+                    // hop-by-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
                     "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
                     "Trailers", "Transfer-Encoding", "Upgrade")
     );
