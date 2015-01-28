@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  * Portions Copyright Spring spring-framework/spring-webmvc/src/main/java/org/springframework/web/servlet/resource/DefaultServletHttpRequestHandler TODO
  */
 
@@ -92,9 +92,8 @@ final class DefaultRouteHandler implements Handler {
      *
      * @param context {@inheritDoc}
      * @param request {@inheritDoc}
-     * @return A {@link ContainerHandledResponse} {@code ResponseException} to signal to the
-     * {@code HttpFrameworkServlet} that a different container Servlet will be handling the request or a
-     * Internal Server Error response if the request could not be dispatched.
+     * @return A successful promise with a {@code null} {@code Response} to signify that the container has already
+     * handled the response or a Internal Server Error response if the request could not be dispatched.
      */
     @Override
     public Promise<Response, ResponseException> handle(Context context, Request request) {
@@ -121,8 +120,8 @@ final class DefaultRouteHandler implements Handler {
                     new ResponseException(new Response().setStatusAndReason(500), e.getMessage(), e));
         }
 
-        // This is a bit misleading as this is the "success" outcome...
-        return Promises.<Response, ResponseException>newFailedPromise(new ContainerHandledResponse());
+        // Returns null as the container has already handled the response.
+        return Promises.newSuccessfulPromise(null);
     }
 
     private String getServletName(Request request) {
