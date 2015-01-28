@@ -34,6 +34,7 @@ import org.forgerock.http.URIUtil;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.ResourceName;
 import org.forgerock.resource.core.RootContext;
 import org.forgerock.resource.core.routing.RouterContext;
 import org.forgerock.util.Factory;
@@ -162,7 +163,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         final HttpContext httpContext = new HttpContext(new RootContext(), session)
                 .setPrincipal(req.getUserPrincipal());
 
-        Enumeration<String> attributeNames = httpReq.getAttributeNames();
+        Enumeration<String> attributeNames = httpReq.getAttributeNames(); //TODO add comment on why this was added as probably shouldn't stick around as only to fix AM's case of forwarding the request from a different servlet?....
         while (attributeNames.hasMoreElements()) {
             String attributeName = attributeNames.nextElement();
             httpContext.getAttributes().put(attributeName, httpReq.getAttribute(attributeName));
@@ -300,6 +301,10 @@ public final class HttpFrameworkServlet extends HttpServlet {
         String contextPath = forceEmptyIfNull(req.getContextPath());
         contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
         String matchedUri = contextPath + forceEmptyIfNull(req.getServletPath());
+        if (ResourceName.valueOf(matchedUri).equals(ResourceName.valueOf(req.getRequestURI()))) {
+            //Must be registered at '/' path
+            matchedUri = contextPath;
+        }
         if (req.getRequestURI().contains(matchedUri)) {
             return new RouterContext(parent, matchedUri, Collections.<String, String>emptyMap());
         } else {
