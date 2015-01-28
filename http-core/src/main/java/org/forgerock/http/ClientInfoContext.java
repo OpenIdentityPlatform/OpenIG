@@ -11,19 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
 import static java.util.Arrays.asList;
 
-import org.forgerock.resource.core.AbstractContext;
-import org.forgerock.resource.core.Context;
-
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
+
+import org.forgerock.resource.core.Context;
+import org.forgerock.resource.core.ServerContext;
 
 /**
  * ClientInfo gives easy access to client-related information that are available into the request.
@@ -36,7 +36,7 @@ import java.util.List;
  *     <li>User-Agent information</li>
  * </ul>
  */
-public class ClientInfoContext extends AbstractContext implements ClientInfo {
+public class ClientInfoContext extends ServerContext implements ClientInfo {
 
     private final String remoteUser;
     private final String remoteAddress;
@@ -45,7 +45,7 @@ public class ClientInfoContext extends AbstractContext implements ClientInfo {
     private final List<X509Certificate> certificates;
     private final String userAgent;
 
-    public ClientInfoContext(Context parent, String remoteUser, String remoteAddress, String remoteHost, int remotePort,
+    private ClientInfoContext(Context parent, String remoteUser, String remoteAddress, String remoteHost, int remotePort,
             List<X509Certificate> certificates, String userAgent) {
         super(parent, "clientInfo");
         this.remoteUser = remoteUser;
@@ -68,10 +68,6 @@ public class ClientInfoContext extends AbstractContext implements ClientInfo {
 
         private ClientInfoContextBuilder(Context parent) {
             this.parent = parent;
-        }
-
-        public static ClientInfoContextBuilder buildClientInfo(Context parent) {
-            return new ClientInfoContextBuilder(parent);
         }
 
         public ClientInfoContextBuilder remoteUser(String remoteUser) {
@@ -116,6 +112,16 @@ public class ClientInfoContext extends AbstractContext implements ClientInfo {
             return new ClientInfoContext(parent, remoteUser, remoteAddress, remoteHost, remotePort, certificates,
                     userAgent);
         }
+    }
+
+    /**
+     * Creates a {@code ClientInfoContextBuilder} for creating {@code ClientInfoContext} instances.
+     *
+     * @param parent The parent context.
+     * @return A builder for a {@code ClientInfoContext} instance.
+     */
+    public static ClientInfoContextBuilder builder(Context parent) {
+        return new ClientInfoContextBuilder(parent);
     }
 
     /**

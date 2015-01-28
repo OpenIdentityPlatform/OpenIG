@@ -430,14 +430,18 @@ public final class Entity implements Closeable {
      *            output content in wrong context (non-matching end-array or
      *            end-object, for example).
      */
-    public void setJson(final Object value) throws IOException {
+    public void setJson(final Object value) {
         message.getHeaders().putSingle(ContentTypeHeader.NAME, APPLICATION_JSON_CHARSET_UTF_8);
         setBytes(writeJson(value));
         json = value;
     }
 
-    private byte[] writeJson(final Object objectToWrite) throws IOException { //TODO move JsonValueUtil/Json to http-core util and use that
-        return OBJECT_MAPPER.writeValueAsBytes(objectToWrite);
+    private byte[] writeJson(final Object objectToWrite) { //TODO move JsonValueUtil/Json to http-core util and use that
+        try {
+            return OBJECT_MAPPER.writeValueAsBytes(objectToWrite);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     /**

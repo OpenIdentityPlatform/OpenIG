@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.http.servlet;
@@ -287,7 +287,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
     }
 
     private ClientInfoContext createClientInfoContext(Context parent, HttpServletRequest req) {
-        return ClientInfoContext.ClientInfoContextBuilder.buildClientInfo(parent)
+        return ClientInfoContext.builder(parent)
                 .remoteUser(req.getRemoteUser())
                 .remoteAddress(req.getRemoteAddr())
                 .remoteHost(req.getRemoteHost())

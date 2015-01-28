@@ -13,14 +13,12 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
 import org.forgerock.http.io.BranchingInputStream;
-
-import java.io.IOException;
 
 /**
  * Abstract message base class.
@@ -63,7 +61,7 @@ abstract class MessageImpl<T extends MessageImpl<T>> implements Message {
         return version;
     }
 
-    final void setEntity0(final Object o) throws IOException {
+    final void setEntity0(final Object o) {
         if (o instanceof BranchingInputStream) {
             entity.setRawContentInputStream((BranchingInputStream) o);
         } else if (o instanceof byte[]) {

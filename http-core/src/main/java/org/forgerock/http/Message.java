@@ -13,13 +13,12 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * Elements common to requests and responses.
@@ -68,10 +67,8 @@ public interface Message extends Closeable {
      * @param o
      *            The object whose value should be stored in the entity.
      * @return This message.
-     * @throws IOException
-     *             If an IO error occurred while reading/mapping the content.
      */
-    Message setEntity(Object o) throws IOException;
+    Message setEntity(Object o);
 
     /**
      * Sets the protocol version. Default: {@code HTTP/1.1}.

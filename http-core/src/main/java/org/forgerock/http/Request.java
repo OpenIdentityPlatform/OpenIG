@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
@@ -94,7 +94,7 @@ public final class Request extends MessageImpl<Request> {
     }
 
     @Override
-    public Request setEntity(Object o) throws IOException {
+    public Request setEntity(Object o) {
         setEntity0(o);
         return this;
     }

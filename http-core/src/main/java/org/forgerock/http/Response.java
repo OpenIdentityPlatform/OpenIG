@@ -13,12 +13,10 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.http;
-
-import java.io.IOException;
 
 /**
  * A response message.
@@ -56,7 +54,7 @@ public final class Response extends MessageImpl<Response> {
     }
 
     @Override
-    public Response setEntity(Object o) throws IOException {
+    public Response setEntity(Object o) {
         setEntity0(o);
         return this;
     }
