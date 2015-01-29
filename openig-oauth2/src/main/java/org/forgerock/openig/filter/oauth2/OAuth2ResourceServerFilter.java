@@ -243,8 +243,9 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         for (final Expression scope : this.scopes) {
             final String result = scope.eval(exchange, String.class);
             if (result == null) {
-                throw new HandlerException(
-                        "The OAuth 2.0 resource server filter scope expression could not be resolved");
+                throw new HandlerException(format(
+                        "The OAuth 2.0 resource server filter scope expression '%s' could not be resolved",
+                        scope.toString()));
             }
             scopeValues.add(result);
         }
