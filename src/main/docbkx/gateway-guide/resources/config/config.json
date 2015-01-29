@@ -2,6 +2,7 @@
     "handler": {
         "type": "Router",
         "audit": "global",
+        "baseURI": "http://www.example.com:8081",
         "capture": "all"
     },
     "heap": [
@@ -28,6 +29,5 @@
                 "_captureExchange": true
             }
         }
-    ],
-    "baseURI": "http://www.example.com:8081"
+    ]
 }

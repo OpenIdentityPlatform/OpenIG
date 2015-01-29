@@ -68,5 +68,26 @@
      >Key Extension Points</link>.
    </para>
   </listitem>
+
+  <listitem>
+   <para>
+    ${projectName} now provides a BaseUriDecorator
+    with a default "baseURI" decorator that replaces the configuration field
+    of the same name in Route and gateway servlet definitions
+    (<link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-180"
+    >OPENIG-180</link>).
+   </para>
+
+   <para>
+    For more information see the reference section,
+    <link
+     xlink:show="new"
+     xlink:href="reference#BaseUriDecorator"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     >BaseUriDecorator</link>.
+   </para>
+  </listitem>
  </itemizedlist>
  </chapter>

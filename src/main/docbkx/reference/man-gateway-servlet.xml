@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010–2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2015 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='gateway-servlet'
@@ -82,6 +82,19 @@
 
    <listitem>
     <para>
+     An
+     <link
+      xlink:show="new"
+      xlink:href="reference#BaseUriDecorator"
+      xlink:role="http://docbook.org/xlink/role/olink"
+     >BaseUriDecorator</link> that you can use
+     to override the scheme, host, and port of the existing request URI.
+     The default BaseUriDecorator is named "baseURI".
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
      A
      <link
       xlink:show="new"
@@ -137,7 +150,6 @@
 {
   "handler": Handler reference or inline Handler declaration,
   "heap": [ configuration object, ... ],
-  "baseURI": string,
   "logSink":  LogSink reference,
   "temporaryStorage": TemporaryStorage reference
 }
@@ -183,24 +195,6 @@
       You can omit an empty array.
       If you only have one object in the heap,
       you can inline it as the handler value.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term><code>"baseURI"</code>: <emphasis>string, optional</emphasis></term>
-    <listitem>
-     <para>
-      Overrides the existing request URI,
-      making requests relative to a new base URI.
-     </para>
-
-     <para>
-      Only scheme, host and port are used in the supplied URI.
-     </para>
-
-     <para>
-      Default: leave the request URI untouched.
      </para>
     </listitem>
    </varlistentry>
