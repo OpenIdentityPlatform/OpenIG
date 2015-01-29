@@ -205,7 +205,7 @@ public class OAuth2ResourceServerFilterTest {
     }
 
     @Test(expectedExceptions = HandlerException.class,
-          expectedExceptionsMessageRegExp = ".*scope expression could not be resolved.*")
+          expectedExceptionsMessageRegExp = ".*scope expression \'.*\' could not be resolved")
     public void shouldFailDueToInvalidScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter = buildResourceServerFilter("${bad.attribute}");
 
