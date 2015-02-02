@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -31,7 +31,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -40,33 +39,28 @@ import java.net.URI;
  *
  * <pre>
  * {
- *   "heap": {
- *     "objects": [
- *       {
- *         "name": "LogSink",
- *         "type": "ConsoleLogSink",
- *         "config": {
- *           "level": "DEBUG"
- *         }
- *       },
- *       {
- *         "name": "MyJwtSession",
- *         "type": "JwtSession",
- *         "config": {
- *           ...
- *         }
- *       },
- *       {
- *         "name": "ClientHandler",
- *         "type": "ClientHandler",
- *         "config": {
- *         }
- *       },
- *     ]
- *   },
+ *   "heap": [
+ *     {
+ *       "name": "LogSink",
+ *       "type": "ConsoleLogSink",
+ *       "config": {
+ *         "level": "DEBUG"
+ *       }
+ *     },
+ *     {
+ *       "name": "MyJwtSession",
+ *       "type": "JwtSession",
+ *       "config": {
+ *         ...
+ *       }
+ *     },
+ *     {
+ *       "name": "ClientHandler",
+ *       "type": "ClientHandler"
+ *     }
+ *   ],
  *   "handler": "ClientHandler",
  *   "condition": "${exchange.request.headers['X-Forward'] == '/endpoint'}",
- *   "baseURI": "http://www.example.com",
  *   "session": "MyJwtSession",
  *   "name": "my-route"
  * }
@@ -79,7 +73,6 @@ import java.net.URI;
  * <ul>
  *   <li>{@literal condition}: an expression that will trigger the
  *       handler execution (if not defined, it always evaluate to true).</li>
- *   <li>{@literal baseURI}: a string used to rebase the request URL.</li>
  *   <li>{@literal name}: a string used name this route (may be used in route ordering).</li>
  *   <li>{@literal session}: the name of a declared heap object of type {@link SessionManager}.</li>
  * </ul>
@@ -106,11 +99,6 @@ class Route extends GenericHandler {
     private final Expression condition;
 
     /**
-     * URI to rebase the incoming request URI onto (may be {@literal null}).
-     */
-    private final URI baseURI;
-
-    /**
      * If this value is not null, it will be used to create a new Session instance.
      */
     private final SessionManager sessionManager;
@@ -133,13 +121,12 @@ class Route extends GenericHandler {
     public Route(final HeapImpl parentHeap, final Name routeHeapName, final JsonValue config,
             final String defaultName) throws HeapException {
         this.heap = new HeapImpl(parentHeap, routeHeapName);
-        heap.init(config, "handler", "session", "name", "condition", "baseURI", "globalDecorators");
+        heap.init(config, "handler", "session", "name", "condition", "globalDecorators");
 
         this.handler = heap.getHandler();
         this.sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
         this.name = config.get("name").defaultTo(defaultName).asString();
         this.condition = asExpression(config.get("condition"));
-        this.baseURI = config.get("baseURI").asURI();
     }
 
     /**
@@ -150,21 +137,18 @@ class Route extends GenericHandler {
      * @param sessionManager user-provided {@link SessionManager} to be used within this route (may be {@code null})
      * @param name route's name
      * @param condition used to dispatch only a subset of Exchanges to this route.
-     * @param baseURI URI to rebase the request URI onto (may be {@literal null})
      */
     public Route(final HeapImpl heap,
                  final Handler handler,
                  final SessionManager sessionManager,
                  final String name,
-                 final Expression condition,
-                 final URI baseURI) {
+                 final Expression condition) {
 
         this.heap = heap;
         this.handler = handler;
         this.sessionManager = sessionManager;
         this.name = name;
         this.condition = condition;
-        this.baseURI = baseURI;
     }
 
     /**
@@ -187,26 +171,18 @@ class Route extends GenericHandler {
     @Override
     public void handle(final Exchange exchange) throws HandlerException, IOException {
         if (sessionManager == null) {
-            doHandle(exchange);
+            handler.handle(exchange);
         } else {
             // Swap the session instance
             Session session = exchange.session;
             exchange.session = sessionManager.load(exchange.request);
             try {
-                doHandle(exchange);
+                handler.handle(exchange);
             } finally {
                 sessionManager.save(exchange.session, exchange.response);
                 exchange.session = session;
             }
         }
-    }
-
-    private void doHandle(final Exchange exchange) throws HandlerException, IOException {
-        // Rebase the request URI if required before delegating
-        if (baseURI != null) {
-            exchange.request.getUri().rebase(baseURI);
-        }
-        handler.handle(exchange);
     }
 
     /**

@@ -278,7 +278,7 @@
 
    <para>
     ${projectName} defines some decorators,
-    such as "audit", "capture", and "timer".
+    such as "audit", "baseURI", "capture", and "timer".
     You can use these without configuring them explicitly.
     For details see the reference section,
     <link
@@ -359,6 +359,7 @@
   </partintro>
 
   <xinclude:include href="man-AuditDecorator.xml" />
+  <xinclude:include href="man-BaseUriDecorator.xml" />
   <xinclude:include href="man-CaptureDecorator.xml" />
   <xinclude:include href="man-TimerDecorator.xml" />
  </reference>

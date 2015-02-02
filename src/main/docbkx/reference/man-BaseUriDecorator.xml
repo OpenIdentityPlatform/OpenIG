@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2015 ForgeRock AS.
+  !
+-->
+<refentry xml:id="BaseUriDecorator"
+          xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refmeta>
+  <refentrytitle>BaseUriDecorator</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+
+ <refnamediv>
+  <refname>BaseUriDecorator</refname>
+  <refpurpose>override scheme, host, and port of request URI</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>Description</title>
+
+  <indexterm>
+   <primary>Decorators</primary>
+   <secondary>BaseUriDecorator</secondary>
+  </indexterm>
+
+  <para>
+   Overrides the scheme, host, and port of the existing request URI,
+   rebasing the URI and so making requests relative to a new base URI.
+   Rebasing changes only the scheme, host, and port of the request URI.
+   Rebasing does not affect the path, query string, or fragment.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Decorator Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": "BaseUriDecorator"
+}
+  </programlisting>
+
+  <para>
+   A BaseUriDecorator does not have configurable properties.
+  </para>
+
+  <para>
+   The Gateway Servlet creates a default BaseUriDecorator named "baseURI"
+   at startup time in the top-level heap,
+   so you can use "baseURI" as the decorator name
+   without adding the decorator declaration explicitly.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Decorated Object Usage</title>
+
+  <programlisting language="javascript">
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    decorator name: string
+}
+  </programlisting>
+
+  <variablelist>
+   <varlistentry>
+    <term><code>"name"</code>: string, required except for inline objects</term>
+    <listitem>
+     <para>
+      The unique name of the object, just like an object that is not decorated
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"type"</code>: string, required</term>
+    <listitem>
+     <para>
+      The class name of the decorated object, which must be either a
+      <link
+       xlink:show="new"
+       xlink:href="reference#filter-conf"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Filter</link> or a
+      <link
+       xlink:show="new"
+       xlink:href="reference#handlers-conf"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >Handler</link>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"config"</code>: object, required unless empty</term>
+    <listitem>
+     <para>
+      The configuration of the object, just like an object that is not decorated
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><replaceable>decorator name</replaceable>: string, required</term>
+    <listitem>
+     <para>
+      A string representing the scheme, host, and port of the new base URI.
+      The port is optional when using the defaults (80 for HTTP, 443 for HTTPS).
+     </para>
+
+     <para>
+      ${projectName} ignores this setting if the value is not a string.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1>
+  <title>Examples</title>
+
+  <para>
+   Add a custom decorator to the heap named "myBaseUri":
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "myBaseUri",
+    "type": "BaseUriDecorator"
+}
+  </programlisting>
+
+  <para>
+   Set a Router's base URI to <literal>https://www.example.com:8443</literal>:
+  </para>
+
+  <programlisting language="javascript">
+{
+    "name": "Router",
+    "type": "Router",
+    "myBaseUri": "https://www.example.com:8443/"
+}
+  </programlisting>
+ </refsect1>
+
+ <refsect1>
+  <title>Javadoc</title>
+
+  <para>
+   <link
+    xlink:show="new"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/decoration/baseuri/BaseUriDecorator.html"
+   >org.forgerock.openig.decoration.baseuri.BaseUriDecorator</link>
+  </para>
+ </refsect1>
+</refentry>

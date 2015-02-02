@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -58,7 +58,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 
 /**
@@ -130,8 +129,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // Create the root handler.
             final org.forgerock.openig.handler.Handler handler = heap.getHandler();
-            final URI baseURI = config.get("baseURI").asURI();
-            Handler rootHandler = new HttpHandler(handler, baseURI);
+            Handler rootHandler = new HttpHandler(handler);
 
             // Let the user override the container's session.
             final SessionManager sessionManager =

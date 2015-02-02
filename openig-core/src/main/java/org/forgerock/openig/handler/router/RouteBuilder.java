@@ -82,7 +82,7 @@ class RouteBuilder {
             fis = new FileInputStream(resource);
             return new JsonValue(readJsonLenient(new FileInputStream(resource)));
         } catch (FileNotFoundException e) {
-            throw new HeapException(format("File %s does not exists", resource), e);
+            throw new HeapException(format("File %s does not exist", resource), e);
         } catch (IOException e) {
             throw new HeapException(format("Cannot read/parse content of %s", resource), e);
         } finally {

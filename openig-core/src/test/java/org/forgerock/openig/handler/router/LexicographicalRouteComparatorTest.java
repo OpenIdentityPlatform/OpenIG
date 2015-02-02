@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -44,8 +44,8 @@ public class LexicographicalRouteComparatorTest {
     public void testName(final String min, final String max) throws Exception {
         LexicographicalRouteComparator comparator = new LexicographicalRouteComparator();
 
-        Route a = new Route(new HeapImpl(Name.of("anonymous")), null, null, min, null, null);
-        Route b = new Route(new HeapImpl(Name.of("anonymous")), null, null, max, null, null);
+        Route a = new Route(new HeapImpl(Name.of("anonymous")), null, null, min, null);
+        Route b = new Route(new HeapImpl(Name.of("anonymous")), null, null, max, null);
 
         assertThat(comparator.compare(a, b)).isLessThan(0);
         assertThat(comparator.compare(b, a)).isGreaterThan(0);

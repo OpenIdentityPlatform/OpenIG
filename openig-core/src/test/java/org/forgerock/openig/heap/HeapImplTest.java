@@ -11,13 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.openig.util.Json.*;
@@ -29,6 +30,7 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.heap.domain.Book;
 import org.forgerock.openig.heap.domain.DecoratorDecorator;
 import org.forgerock.openig.heap.domain.ReferencedObject;
@@ -379,6 +381,7 @@ public class HeapImplTest {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
+        heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
         return heap;
     }
 

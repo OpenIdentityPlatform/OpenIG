@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * Root {@link Handler} for the Servlet Gateway.
@@ -46,17 +45,14 @@ final class HttpHandler implements Handler {
     static final Logger LOG = LoggerFactory.getLogger(HttpHandler.class);
 
     private final org.forgerock.openig.handler.Handler handler;
-    private final URI baseURI;
 
     /**
      * Constructs a new {@code ServletHandler} instance.
      *
      * @param handler The configured {@code Handler}.
-     * @param baseURI The base URI for all HTTP request. Can be {@code null}.
      */
-    HttpHandler(org.forgerock.openig.handler.Handler handler, URI baseURI) {
+    HttpHandler(org.forgerock.openig.handler.Handler handler) {
         this.handler = handler;
-        this.baseURI = baseURI;
     }
 
     /**
@@ -69,9 +65,6 @@ final class HttpHandler implements Handler {
      */
     @Override
     public Promise<Response, ResponseException> handle(Context context, Request request) {
-        if (baseURI != null) {
-            request.getUri().rebase(baseURI);
-        }
         Exchange exchange = asExchange(context, request);
         try {
             handler.handle(exchange);

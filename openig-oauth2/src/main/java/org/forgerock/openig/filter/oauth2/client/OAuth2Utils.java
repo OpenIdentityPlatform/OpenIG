@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.URIUtil.*;
+import static java.lang.String.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.util.Utils.*;
 
@@ -48,7 +49,8 @@ final class OAuth2Utils {
         try {
             String uriString = uriExpression.eval(exchange, String.class);
             if (uriString == null) {
-                throw new HandlerException("Unable to evaluate URI expression");
+                throw new HandlerException(
+                        format("The URI expression '%s' could not be resolved", uriExpression.toString()));
             }
             if (additionalPath != null) {
                 if (uriString.endsWith("/")) {
@@ -81,7 +83,8 @@ final class OAuth2Utils {
         for (final Expression scope : scopeExpressions) {
             final String result = scope.eval(exchange, String.class);
             if (result == null) {
-                throw new HandlerException("The OAuth 2.0 client filter scope expression could not be resolved");
+                throw new HandlerException(format(
+                        "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));
             }
             scopeValues.add(result);
         }

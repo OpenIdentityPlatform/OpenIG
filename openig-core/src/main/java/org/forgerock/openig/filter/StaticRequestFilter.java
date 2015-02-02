@@ -12,11 +12,12 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
+import static java.lang.String.*;
 import static org.forgerock.openig.util.Json.*;
 
 import java.io.IOException;
@@ -152,7 +153,8 @@ public class StaticRequestFilter extends GenericFilter {
                 throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
             }
         } else {
-            throw logger.debug(new HandlerException("The URI expression evaluated to null"));
+            throw logger.debug(
+                    new HandlerException(format("The URI expression '%s' could not be resolved", uri.toString())));
         }
         if (this.version != null) {
             // default in Message class

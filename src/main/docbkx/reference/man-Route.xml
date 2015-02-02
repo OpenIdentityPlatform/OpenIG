@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2014 ForgeRock AS
+  !      Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='Route'
@@ -98,7 +98,6 @@
 {
     "handler": Handler reference or inline Handler declaration,
     "heap": [ configuration object, ... ],
-    "baseURI": string,
     "condition": expression,
     "name": string,
     "session": Session reference
@@ -147,25 +146,6 @@
       You can omit an empty array.
       If you only have one object in the heap,
       you can inline it as the handler value.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term><code>"baseURI"</code>: <emphasis>string, optional</emphasis></term>
-    <listitem>
-     <para>
-      URI on which to rebase the request URL.
-     </para>
-
-     <para>
-      If this is set, the request URL is rebased using the value.
-      Rebasing changes the scheme, host, and port of the request URL.
-      Rebasing does not affect the path, query string, or fragment.
-     </para>
-
-     <para>
-      Default: the request URL remains unchanged.
      </para>
     </listitem>
    </varlistentry>

@@ -11,11 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2014 ForgeRock AS.
+ * Copyright 2012-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
+import static java.lang.String.*;
 import static org.forgerock.openig.util.Json.*;
 
 import java.io.IOException;
@@ -84,7 +85,8 @@ public class LocationHeaderFilter extends GenericFilter {
     private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, HandlerException {
         String uri = baseURI.eval(exchange, String.class);
         if (uri == null) {
-            throw logger.debug(new HandlerException("Evaluated baseURI cannot be null"));
+            throw logger.debug(new HandlerException(format(
+                    "The baseURI expression '%s' could not be resolved", baseURI.toString())));
         }
         return new URI(uri);
     }

@@ -11,10 +11,11 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
 import static org.forgerock.openig.util.Json.*;
 
@@ -200,7 +201,8 @@ public class OAuth2Provider {
     String getClientId(final Exchange exchange) throws HandlerException {
         final String result = clientId.eval(exchange, String.class);
         if (result == null) {
-            throw new HandlerException("Unable to determine the clientId");
+            throw new HandlerException(
+                    format("The clientId expression '%s' could not be resolved", clientId.toString()));
         }
         return result;
     }
@@ -234,7 +236,8 @@ public class OAuth2Provider {
     private String getClientSecret(final Exchange exchange) throws HandlerException {
         final String result = clientSecret.eval(exchange, String.class);
         if (result == null) {
-            throw new HandlerException("Unable to determine the clientSecret");
+            throw new HandlerException(
+                    format("The clientSecret expression '%s' could not be resolved", clientSecret.toString()));
         }
         return result;
     }
