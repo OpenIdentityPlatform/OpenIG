@@ -11,14 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import java.io.File;
 import java.io.IOException;

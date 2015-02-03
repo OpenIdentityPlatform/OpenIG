@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
 import static org.forgerock.openig.util.StandardCharsets.*;
 
