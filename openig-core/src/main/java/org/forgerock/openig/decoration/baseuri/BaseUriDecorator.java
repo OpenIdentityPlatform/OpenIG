@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;

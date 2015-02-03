@@ -18,7 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

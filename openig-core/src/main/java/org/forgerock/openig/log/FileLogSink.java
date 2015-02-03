@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.log;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.openig.util.StandardCharsets.*;
 import static org.forgerock.util.Utils.*;
 

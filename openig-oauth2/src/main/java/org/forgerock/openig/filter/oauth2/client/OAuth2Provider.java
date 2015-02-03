@@ -17,7 +17,7 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import java.net.URI;
 import java.nio.charset.Charset;
