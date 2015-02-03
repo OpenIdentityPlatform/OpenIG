@@ -12,12 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
 
 import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.StandardCharsets.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
@@ -35,11 +36,6 @@ import org.forgerock.openig.heap.Name;
  * A sink that writes log entries to a file.
  */
 public class FileLogSink implements LogSink {
-
-    /**
-     * Default {@link Charset} to use on the output file.
-     */
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
 
     /** File where the entries will be written to. */
     private final File file;
