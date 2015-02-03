@@ -62,11 +62,6 @@ public class JsonTest {
             { "{ :'outputHandler', 'type': 'ClientHandler' }" }}; // Missing attribute name.
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldFailSerializingInvalidNullString() throws Exception {
-        readJson(new StringReader((String) null));
-    }
-
     @Test(dataProvider = "emptyJson")
     public void shouldReturnsNullWhenSerializingEmptyString(final String json) throws Exception {
         assertThat(readJson(from(json))).isNull();
