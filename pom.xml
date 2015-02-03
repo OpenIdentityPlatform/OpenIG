@@ -289,9 +289,9 @@
 
   <distributionManagement>
     <site>
-      <id>forgerock.org</id>
+      <id>community.internal.forgerock.com</id>
       <name>ForgeRock Community Server</name>
-      <url>scp://forgerock.org/var/www/vhosts/openig.forgerock.org/httpdocs</url>
+      <url>scp://community.internal.forgerock.com/var/www/vhosts/openig.forgerock.org/httpdocs</url>
     </site>
   </distributionManagement>
 
@@ -303,7 +303,7 @@
         <version>${javadocPluginVersion}</version>
         <configuration>
           <author>false</author>
-          <bottom>Copyright 2011-2014 ForgeRock AS.</bottom>
+          <bottom>Copyright 2011-2015 ForgeRock AS.</bottom>
           <links>
             <link>http://docs.oracle.com/javase/6/docs/api/</link>
           </links>

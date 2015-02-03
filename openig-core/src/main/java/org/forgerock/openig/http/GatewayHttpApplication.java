@@ -29,8 +29,7 @@ import static org.forgerock.openig.decoration.timer.TimerDecorator.TIMER_HEAP_KE
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
-import static org.forgerock.openig.util.Json.getWithDeprecation;
-import static org.forgerock.openig.util.Json.readJsonLenient;
+import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.util.Utils.closeSilently;
 
 import org.forgerock.http.Handler;

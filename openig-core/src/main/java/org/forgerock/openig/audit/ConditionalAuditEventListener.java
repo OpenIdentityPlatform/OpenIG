@@ -11,19 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit;
 
 import static java.lang.Boolean.*;
 import static org.forgerock.openig.audit.AuditSystem.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Heaplet;
-import org.forgerock.openig.util.Json;
 
 /**
  * A ConditionalAuditEventListener is conditionally invoked {@link AuditEventListener}.
@@ -88,7 +88,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
 
         @Override
         public Object create() throws HeapException {
-            Expression condition = Json.asExpression(config.get("condition").defaultTo("${true}"));
+            Expression condition = asExpression(config.get("condition").defaultTo("${true}"));
             auditSystem = heap.get(AUDIT_SYSTEM_HEAP_KEY, AuditSystem.class);
             AuditEventListener listener = createListener();
             conditional = new ConditionalAuditEventListener(listener, condition);

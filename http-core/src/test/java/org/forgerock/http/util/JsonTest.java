@@ -9,20 +9,22 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyright [year] [name of copyright owner]".
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
-package org.forgerock.openig.util;
+package org.forgerock.http.util;
 
 import static java.lang.Long.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.Json.*;
+import static java.util.Arrays.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.util.Json.*;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +32,8 @@ import java.util.Map;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-
-/**
- * This class is unit testing jackson parser used in OpenIG. Its parser is
- * stricter, gives nicer messages in error cases and easily
- * configurable.
- */
-public class JacksonJsonTest {
+@SuppressWarnings("javadoc")
+public class JsonTest {
 
     private static final String INVALID_JSON = "invalid json";
     private static final String JSON_CONTENT =
@@ -63,11 +60,6 @@ public class JacksonJsonTest {
             { "{ 'name':, 'type': 'ClientHandler' }," }, // A comma too many.
             { "{ 'name':, 'type': 'ClientHandler' }" }, // Missing attribute value.
             { "{ :'outputHandler', 'type': 'ClientHandler' }" }}; // Missing attribute name.
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldFailSerializingInvalidNullString() throws Exception {
-        readJson(new StringReader((String) null));
     }
 
     @Test(dataProvider = "emptyJson")
@@ -235,9 +227,9 @@ public class JacksonJsonTest {
     }
 
     /**
-     * Returns a string reader from the rawjson attribute.
+     * Returns a string reader from the rawJson attribute.
      *
-     * @param rawjson
+     * @param rawJson
      *            Json string to read (can be single quoted).
      * @return a string reader.
      */
@@ -248,5 +240,65 @@ public class JacksonJsonTest {
     /** Remove single quotes from a given string. */
     private static String singleQuotesToDouble(final String value) {
         return value.replace('\'', '\"');
+    }
+
+    @Test
+    public void testJsonCompatibilityBoxedPrimitiveType() throws Exception {
+        checkJsonCompatibility("boolean", true);
+        checkJsonCompatibility("integer", 1);
+        checkJsonCompatibility("short", (short) 12);
+        checkJsonCompatibility("long", -42L);
+        checkJsonCompatibility("float", 42.3F);
+        checkJsonCompatibility("double", 3.14159D);
+        checkJsonCompatibility("char", 'a');
+        checkJsonCompatibility("byte", (byte) 'c');
+    }
+
+    @Test
+    public void testJsonCompatibilityWithCharSequences() throws Exception {
+        checkJsonCompatibility("string", "a string");
+        checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
+        checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
+    }
+
+    @Test
+    public void testJsonCompatibilityWithArrayOfString() throws Exception {
+        String[] strings = {"one", "two", "three"};
+        checkJsonCompatibility("array", strings);
+    }
+
+    @Test
+    public void testJsonCompatibilityWithListOfString() throws Exception {
+        String[] strings = {"one", "two", "three"};
+        checkJsonCompatibility("array", asList(strings));
+    }
+
+    @Test
+    public void testJsonCompatibilityWithMapOfString() throws Exception {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("one", "one");
+        map.put("two", "two");
+        map.put("three", "three");
+        checkJsonCompatibility("map", map);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotAcceptUnsupportedTypes() throws Exception {
+        checkJsonCompatibility("object", new Object());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*'list\\[1\\]'.*")
+    public void shouldWriteErrorTrailForIncorrectList() throws Exception {
+        checkJsonCompatibility("list", asList("one", new Object(), "three"));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*'map/object'.*")
+    public void shouldWriteErrorTrailForIncorrectMap() throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("one", "one");
+        map.put("object", new Object());
+        checkJsonCompatibility("map", map);
     }
 }

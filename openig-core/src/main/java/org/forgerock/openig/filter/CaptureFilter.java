@@ -12,13 +12,14 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
+import static org.forgerock.http.util.StandardCharsets.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,7 +88,7 @@ public class CaptureFilter extends GenericFilter {
          *            specify where the output will be flushed.
          */
         public FileWriterProvider(final File file) {
-            this(file, Charset.forName("UTF-8"));
+            this(file, UTF_8);
         }
 
         /**

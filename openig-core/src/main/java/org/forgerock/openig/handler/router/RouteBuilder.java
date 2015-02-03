@@ -17,7 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.http.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;

@@ -11,23 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
 
-import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.util.Json.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.eq;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.mockito.Mockito.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
@@ -45,7 +37,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class JsonTest {
+public class JsonValuesTest {
 
     @Mock
     private Heap heap;
@@ -124,66 +116,6 @@ public class JsonTest {
 
         assertThat(list.asList(ofRequiredHeapObject(heap, String.class)))
                 .containsExactly("Resolved object #1", "Resolved object #2", "Resolved object #3");
-    }
-
-    @Test
-    public void testJsonCompatibilityBoxedPrimitiveType() throws Exception {
-        checkJsonCompatibility("boolean", true);
-        checkJsonCompatibility("integer", 1);
-        checkJsonCompatibility("short", (short) 12);
-        checkJsonCompatibility("long", -42L);
-        checkJsonCompatibility("float", 42.3F);
-        checkJsonCompatibility("double", 3.14159D);
-        checkJsonCompatibility("char", 'a');
-        checkJsonCompatibility("byte", (byte) 'c');
-    }
-
-    @Test
-    public void testJsonCompatibilityWithCharSequences() throws Exception {
-        checkJsonCompatibility("string", "a string");
-        checkJsonCompatibility("string-buffer", new StringBuffer("a string buffer"));
-        checkJsonCompatibility("string-builder", new StringBuilder("a string builder"));
-    }
-
-    @Test
-    public void testJsonCompatibilityWithArrayOfString() throws Exception {
-        String[] strings = {"one", "two", "three"};
-        checkJsonCompatibility("array", strings);
-    }
-
-    @Test
-    public void testJsonCompatibilityWithListOfString() throws Exception {
-        String[] strings = {"one", "two", "three"};
-        checkJsonCompatibility("array", asList(strings));
-    }
-
-    @Test
-    public void testJsonCompatibilityWithMapOfString() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("one", "one");
-        map.put("two", "two");
-        map.put("three", "three");
-        checkJsonCompatibility("map", map);
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldNotAcceptUnsupportedTypes() throws Exception {
-        checkJsonCompatibility("object", new Object());
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class,
-          expectedExceptionsMessageRegExp = ".*'list\\[1\\]'.*")
-    public void shouldWriteErrorTrailForIncorrectList() throws Exception {
-        checkJsonCompatibility("list", asList("one", new Object(), "three"));
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class,
-          expectedExceptionsMessageRegExp = ".*'map/object'.*")
-    public void shouldWriteErrorTrailForIncorrectMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("one", "one");
-        map.put("object", new Object());
-        checkJsonCompatibility("map", map);
     }
 
     @Test

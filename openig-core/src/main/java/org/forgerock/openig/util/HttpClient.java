@@ -21,7 +21,7 @@ package org.forgerock.openig.util;
 import static java.lang.String.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.forgerock.openig.util.Duration.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;

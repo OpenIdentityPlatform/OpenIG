@@ -21,7 +21,7 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.http.util.Json.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

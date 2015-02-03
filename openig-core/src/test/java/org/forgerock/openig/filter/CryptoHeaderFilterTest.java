@@ -11,12 +11,11 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-import static java.nio.charset.Charset.*;
 import static java.security.KeyPairGenerator.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
@@ -24,6 +23,7 @@ import static org.forgerock.openig.filter.CryptoHeaderFilter.*;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.*;
 import static org.forgerock.openig.util.MessageType.*;
 import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.http.util.StandardCharsets.*;
 import static org.forgerock.util.encode.Base64.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -44,7 +44,6 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.LogLevel;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
@@ -248,7 +247,7 @@ public class CryptoHeaderFilterTest {
         filter.setAlgorithm(DEFAULT_ALGORITHM);
         filter.getHeaders().add(HEADER_NAME);
         filter.setKey(buildKey(DEFAULT_ALGORITHM));
-        filter.setCharset(forName("UTF-8"));
+        filter.setCharset(UTF_8);
         filter.logger = logger;
         return filter;
     }

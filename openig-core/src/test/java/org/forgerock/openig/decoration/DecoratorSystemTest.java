@@ -18,7 +18,7 @@ package org.forgerock.openig.decoration;
 
 import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.http.util.Json.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

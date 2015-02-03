@@ -13,14 +13,14 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 // TODO: distinguish between basic and other schemes that use 401 (Digest, OAuth, ...)
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.IOException;

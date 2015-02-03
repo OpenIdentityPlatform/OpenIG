@@ -16,8 +16,9 @@
 
 package org.forgerock.http;
 
-import static java.nio.charset.Charset.*;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.http.util.Json.*;
+import static org.forgerock.util.Utils.*;
+import static org.forgerock.http.util.StandardCharsets.*;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -63,8 +64,6 @@ import java.util.LinkedList;
  */
 public final class Entity implements Closeable {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     /*
      * Implementation note: this class lazily creates the alternative string and
      * json representations. Updates to the json content, string content, bytes,
@@ -79,12 +78,6 @@ public final class Entity implements Closeable {
     /** Default content stream. */
     private static final BranchingInputStream EMPTY_STREAM = IO
             .newBranchingInputStream(new byte[0]);
-
-    /** Default character set to use if not specified, per RFC 2616. */
-    private static final Charset ISO_8859_1 = forName("ISO-8859-1");
-
-    /** UTF-8 charset. */
-    private static final Charset UTF_8 = forName("UTF-8");
 
     /** The encapsulating Message which may have content encoding headers. */
     private final Message message;
@@ -222,7 +215,7 @@ public final class Entity implements Closeable {
         if (json == null) {
             final BufferedReader reader = newDecodedContentReader(UTF_8); // RFC 7159
             try {
-                json = parse(OBJECT_MAPPER, reader);
+                json = readJson(reader);
             } finally {
                 reader.close();
             }
@@ -432,16 +425,13 @@ public final class Entity implements Closeable {
      */
     public void setJson(final Object value) {
         message.getHeaders().putSingle(ContentTypeHeader.NAME, APPLICATION_JSON_CHARSET_UTF_8);
-        setBytes(writeJson(value));
-        json = value;
-    }
-
-    private byte[] writeJson(final Object objectToWrite) { //TODO move JsonValueUtil/Json to http-core util and use that
         try {
-            return OBJECT_MAPPER.writeValueAsBytes(objectToWrite);
+            setBytes(writeJson(value));
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            // TODO do something better than a runtime exception :)
+            throw new RuntimeException("Cannot produce JSON from " + value, e);
         }
+        json = value;
     }
 
     /**

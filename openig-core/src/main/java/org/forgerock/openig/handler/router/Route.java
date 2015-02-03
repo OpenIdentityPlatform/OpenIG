@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.*;
 
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
