@@ -18,10 +18,8 @@
 package org.forgerock.openig.el;
 
 import java.beans.FeatureDescriptor;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.el.ELContext;
@@ -44,8 +42,8 @@ import de.odysseus.el.ExpressionFactoryImpl;
  */
 public final class Expression {
 
-    /** The underlying EL expression(s) that this object represents. */
-    private final List<ValueExpression> valueExpression;
+    /** The underlying EL expression that this object represents. */
+    private final ValueExpression valueExpression;
 
     /** The expression plugins configured in META-INF/services. */
     private static final Map<String, ExpressionPlugin> PLUGINS =
@@ -76,14 +74,8 @@ public final class Expression {
     private Expression(String expression) throws ExpressionException {
         original = expression;
         try {
-            // An expression with no pattern will just return the original String so we will always have at least one
-            // item in the array.
-            String[] split = expression.split("[\\\\]");
-            valueExpression = new ArrayList<ValueExpression>(split.length);
-            for (String component : split) {
-                valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
-                        new XLContext(null), component, Object.class));
-            }
+            ExpressionFactoryImpl exprFactory = new ExpressionFactoryImpl();
+            valueExpression = exprFactory.createValueExpression(new XLContext(null), expression, Object.class);
         } catch (ELException ele) {
             throw new ExpressionException(ele);
         }
@@ -97,24 +89,8 @@ public final class Expression {
      * @return the result of the expression evaluation, or {@code null} if does not resolve a value.
      */
     public Object eval(final Object scope) {
-
-        XLContext context = new XLContext(scope);
-
         try {
-            // When there are multiple expressions to evaluate it is because original expression had \'s so result
-            // should include them back in again, the result will always be a String.
-            if (valueExpression.size() > 1) {
-                StringBuilder result = new StringBuilder();
-                for (ValueExpression expression : valueExpression) {
-                    if (result.length() > 0) {
-                        result.append("\\");
-                    }
-                    result.append(expression.getValue(context));
-                }
-                return result.toString();
-            } else {
-                return valueExpression.get(0).getValue(context);
-            }
+            return valueExpression.getValue(new XLContext(scope));
         } catch (ELException ele) {
             // unresolved element yields null value
             return null;
@@ -147,11 +123,7 @@ public final class Expression {
      */
     public void set(Object scope, Object value) {
         try {
-            // cannot set multiple items, truncate the List
-            while (valueExpression.size() > 1) {
-                valueExpression.remove(1);
-            }
-            valueExpression.get(0).setValue(new XLContext(scope), value);
+            valueExpression.setValue(new XLContext(scope), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }

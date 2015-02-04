@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.openig.el.Expression;
@@ -63,7 +64,7 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testExpressionEvaluation() throws Exception {
         // TODO Move this test out of here, it has nothing to do with testing the behavior of this filter
-        Expression username = Expression.valueOf("realm\\${exchange.request.headers['username'][0]}");
+        Expression username = Expression.valueOf("realm${'\\\\'}${exchange.request.headers['username'][0]}");
         Expression password = Expression.valueOf("${exchange.request.headers['password'][0]}");
         Exchange exchange = new Exchange();
         exchange.request = new Request();
