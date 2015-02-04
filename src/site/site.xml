@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2015 ForgeRock AS
+  !      Copyright 2011-2015 ForgeRock AS.
   !
 -->
 <project name="${project.name}"
@@ -66,9 +66,9 @@
 
     <menu name="Docs in progress">
       <item name="All Formats" href="docs.html" />
-      <item name="Release Notes" href="./doc/release-notes/index.html" />
-      <item name="Guide to OpenIG" href="./doc/gateway-guide/index.html" />
-      <item name="Config Reference" href="./doc/reference/index.html" />
+      <item name="Release Notes" href="./doc/bootstrap/release-notes/index.html" />
+      <item name="Guide to OpenIG" href="./doc/bootstrap/gateway-guide/index.html" />
+      <item name="Config Reference" href="./doc/bootstrap/reference/index.html" />
       <item name="Javadoc" href="./apidocs/index.html" />
     </menu>
 
