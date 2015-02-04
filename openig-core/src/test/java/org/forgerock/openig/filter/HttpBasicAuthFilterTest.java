@@ -62,25 +62,6 @@ public class HttpBasicAuthFilterTest {
     }
 
     @Test
-    public void testExpressionEvaluation() throws Exception {
-        // TODO Move this test out of here, it has nothing to do with testing the behavior of this filter
-        Expression username = Expression.valueOf("realm${'\\\\'}${exchange.request.headers['username'][0]}");
-        Expression password = Expression.valueOf("${exchange.request.headers['password'][0]}");
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("GET");
-        exchange.request.setUri("http://test.com:123/path/to/resource.html");
-        exchange.request.getHeaders().add("username", "Myname");
-        exchange.request.getHeaders().add("password", "Mypass");
-
-        String user = username.eval(exchange, String.class);
-        String pass = password.eval(exchange, String.class);
-
-        assertThat(user).isEqualTo("realm\\Myname");
-        assertThat(pass).isEqualTo("Mypass");
-    }
-
-    @Test
     public void testHeadersAreRemoved() throws Exception {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(null, null, failureHandler);
         filter.setCacheHeader(false);
