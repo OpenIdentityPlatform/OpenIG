@@ -36,11 +36,6 @@
   <url>http://openig.forgerock.org</url>
 
   <modules>
-    <module>resource-core</module>
-    <module>http-core</module>
-    <module>http-servlet</module>
-    <module>http-apache-httpclient</module>
-    <module>http-test</module>
     <module>openig-core</module>
     <module>openig-war</module>
     <module>openig-saml</module>
@@ -176,6 +171,8 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <!-- 2.9.1 includes security fix for Security vulnerability CVE-2013-1571 -->
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
+    
+    <httpFrameworkVersion>0.0.1-SNAPSHOT</httpFrameworkVersion>
 
     <!-- For a release build, update this to http://docs.forgerock.org/en/openig/${project.version}/ -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>

@@ -34,15 +34,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>openig-core</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
+      <groupId>org.forgerock.http</groupId>
+      <artifactId>chf-http-core</artifactId>
+      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>http-servlet</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.forgerock.http</groupId>
+      <artifactId>chf-http-servlet</artifactId>
+      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.forgerock.openig</groupId>

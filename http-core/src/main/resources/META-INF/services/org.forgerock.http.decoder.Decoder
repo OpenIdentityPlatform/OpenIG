@@ -1,2 +1,0 @@
-org.forgerock.http.decoder.GzipDecoder
-org.forgerock.http.decoder.DeflateDecoder
