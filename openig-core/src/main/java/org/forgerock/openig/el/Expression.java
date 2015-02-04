@@ -45,6 +45,9 @@ public final class Expression {
     /** The underlying EL expression that this object represents. */
     private final ValueExpression valueExpression;
 
+    /** The original string used to create this expression. */
+    private final String original;
+
     /** The expression plugins configured in META-INF/services. */
     private static final Map<String, ExpressionPlugin> PLUGINS =
             Collections.unmodifiableMap(Loader.loadMap(String.class, ExpressionPlugin.class));
@@ -61,9 +64,6 @@ public final class Expression {
     public static final Expression valueOf(String expression) throws ExpressionException {
         return new Expression(expression);
     }
-
-    /** The original string used to create this expression. */
-    private final String original;
 
     /**
      * Constructs an expression for later evaluation.
