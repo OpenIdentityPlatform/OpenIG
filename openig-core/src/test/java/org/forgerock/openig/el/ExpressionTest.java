@@ -17,8 +17,7 @@
 
 package org.forgerock.openig.el;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
+import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public class ExpressionTest {
         HashMap<String, String> scope = new HashMap<String, String>();
         scope.put("a", "bar");
         scope.put("b", "bas");
-        Expression expr = Expression.valueOf("foo\\${a} ${a}${b} foo\\${b}");
+        Expression expr = Expression.valueOf("foo${'\\\\'}${a} ${a}${b} foo${'\\\\'}${b}");
         Object o = expr.eval(scope);
         assertThat(o).isInstanceOf(String.class);
         assertThat(o).isEqualTo("foo\\bar barbas foo\\bas");
