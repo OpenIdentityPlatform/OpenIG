@@ -19,7 +19,7 @@ package org.forgerock.openig.http;
 
 import static org.forgerock.openig.http.Adapters.asExchange;
 
-import org.forgerock.resource.core.Context;
+import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.Request;
 import org.forgerock.http.Response;
