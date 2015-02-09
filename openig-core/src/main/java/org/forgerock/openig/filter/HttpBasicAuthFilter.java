@@ -105,7 +105,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
      * @return the session attribute name, fully qualified the request remote server.
      */
     private String attributeName(Request request) {
-        return this.getClass().getName() + ':' + request.getUri().getScheme() + ':'
+        return getClass().getName() + ':' + request.getUri().getScheme() + ':'
                 + request.getUri().getHost() + ':' + request.getUri().getPort() + ':' + "userpass";
     }
 
