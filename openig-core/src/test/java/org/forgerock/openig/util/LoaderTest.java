@@ -99,13 +99,13 @@ public class LoaderTest {
         Loader.loadList(null);
     }
 
-    @Test()
+    @Test
     public void loadList() {
         final List<Color> list = Loader.loadList(Color.class);
         assertThat(list.size()).isGreaterThanOrEqualTo(2);
     }
 
-    @Test()
+    @Test
     public void loadListExample2() {
         final List<MyColor> list = Loader.loadList(MyColor.class);
         assertThat(list).isNotNull();
