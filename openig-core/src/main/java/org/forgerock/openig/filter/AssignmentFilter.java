@@ -68,7 +68,7 @@ public class AssignmentFilter extends GenericFilter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addRequestBinding(final Expression target) {
-        return this.addRequestBinding(target, null);
+        return addRequestBinding(target, null);
     }
 
     /**
@@ -82,7 +82,7 @@ public class AssignmentFilter extends GenericFilter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addRequestBinding(final Expression target, final Expression value) {
-        return this.addRequestBinding(null, target, value);
+        return addRequestBinding(null, target, value);
     }
 
     /**
@@ -114,7 +114,7 @@ public class AssignmentFilter extends GenericFilter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addResponseBinding(final Expression target) {
-        return this.addResponseBinding(target, null);
+        return addResponseBinding(target, null);
     }
 
     /**
@@ -128,7 +128,7 @@ public class AssignmentFilter extends GenericFilter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addResponseBinding(final Expression target, final Expression value) {
-        return this.addResponseBinding(null, target, value);
+        return addResponseBinding(null, target, value);
     }
 
     /**
