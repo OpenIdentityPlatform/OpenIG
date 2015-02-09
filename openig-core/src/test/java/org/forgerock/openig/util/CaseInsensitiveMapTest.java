@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -44,7 +44,7 @@ public class CaseInsensitiveMapTest {
         lower = upper.toLowerCase();
         value1 = UUID.randomUUID().toString();
         value2 = UUID.randomUUID().toString();
-        spurious = "aaa-" + UUID.randomUUID().toString() + "-BBB";
+        spurious = "aaa-" + UUID.randomUUID() + "-BBB";
     }
 
     // ----- upper case --------------------------------------------------------

@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -150,7 +150,7 @@ public class CookieHeader implements Header {
         }
         StringBuilder sb = new StringBuilder();
         if (version != null) {
-            sb.append("$Version=").append(version.toString());
+            sb.append("$Version=").append(version);
             quoted = true;
         }
         for (Cookie cookie : cookies) {
@@ -208,7 +208,7 @@ public class CookieHeader implements Header {
             if (sb.length() > 0) {
                 sb.append(',');
             }
-            sb.append(port.toString());
+            sb.append(port);
         }
         return sb.toString();
     }

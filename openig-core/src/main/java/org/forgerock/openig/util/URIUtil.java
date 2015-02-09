@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -60,7 +60,7 @@ public final class URIUtil {
         if (host != null) {
             sb.append(host);
             if (port != -1) {
-                sb.append(':').append(Integer.toString(port));
+                sb.append(':').append(port);
             }
         }
         if (rawPath != null) {

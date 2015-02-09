@@ -885,13 +885,13 @@ public final class OAuth2ClientFilter extends GenericFilter {
                             if (exchange.response.getStatus() != 200) {
                                 throw new HeapException(
                                         "Unable to read well-known OpenID Configuration from '"
-                                                + exchange.request.getUri().toString() + "'");
+                                                + exchange.request.getUri() + "'");
                             }
                             provider.setWellKnownConfiguration(getJsonContent(exchange.response));
                         } catch (final Exception e) {
                             throw new HeapException(
                                     "Unable to read well-known OpenID Configuration from '"
-                                            + exchange.request.getUri().toString() + "'", e);
+                                            + exchange.request.getUri() + "'", e);
                         } finally {
                             closeSilently(exchange.response);
                         }
