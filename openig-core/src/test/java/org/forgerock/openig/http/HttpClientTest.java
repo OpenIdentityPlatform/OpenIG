@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.http.Request;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.util.HttpClient;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;

@@ -16,7 +16,7 @@
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
-package org.forgerock.openig.util;
+package org.forgerock.openig.http;
 
 import static java.lang.String.*;
 import static java.util.concurrent.TimeUnit.*;
@@ -79,9 +79,10 @@ import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.util.Duration;
+import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
 
 /**
  * Submits requests to remote servers. In this implementation, requests are

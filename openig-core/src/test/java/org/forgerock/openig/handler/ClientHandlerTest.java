@@ -27,8 +27,8 @@ import java.util.Map;
 
 import org.forgerock.http.Request;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.util.HttpClient;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.Test;

@@ -26,9 +26,9 @@ import static org.forgerock.openig.audit.decoration.AuditDecorator.AUDIT_HEAP_KE
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.TIMER_HEAP_KEY;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.HttpClient.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -50,7 +50,6 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.HttpClient;
 import org.forgerock.util.Factory;
 
 import java.io.File;
