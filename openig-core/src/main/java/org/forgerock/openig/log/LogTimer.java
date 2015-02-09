@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -39,7 +39,7 @@ public class LogTimer {
     private long paused = Long.MIN_VALUE; // indicates the timer has not been paused
 
     /** Time spend between consecutive pause() and resume() calls. */
-    private long ignorable = 0;
+    private long ignorable;
 
     /**
      * Constructs a new timer with a logging level of {@link LogLevel#STAT STAT}.

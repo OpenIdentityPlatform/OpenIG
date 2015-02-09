@@ -78,13 +78,13 @@ public final class Script {
      *
      * @GuardedBy initializationLock
      */
-    private static volatile File groovyScriptCacheDir = null;
+    private static volatile File groovyScriptCacheDir;
     /**
      * The groovy script engine.
      *
      * @GuardedBy initializationLock
      */
-    private static volatile GroovyScriptEngine groovyScriptEngine = null;
+    private static volatile GroovyScriptEngine groovyScriptEngine;
 
     /**
      * Loads a script having the provided content type and file name.

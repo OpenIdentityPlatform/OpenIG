@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt;
@@ -76,7 +76,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     /**
      * Marker used to detect if the session was used or not.
      */
-    private boolean dirty = false;
+    private boolean dirty;
 
     /**
      * Name to be used for the JWT Cookie.

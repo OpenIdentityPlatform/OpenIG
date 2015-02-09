@@ -122,7 +122,7 @@ public class CaptureFilter extends GenericFilter {
                     "application/x-www-form-urlencoded")
     ); // make all entries lower case
 
-    private Expression condition = null;
+    private Expression condition;
 
     private boolean captureEntity = true;
 

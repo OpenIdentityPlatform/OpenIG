@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -24,10 +24,10 @@ import java.io.IOException;
  */
 public class ByteArrayBranchingStream extends BranchingInputStream {
     /** Branch that this was spawned from, or {@code null} if this is the trunk. */
-    private ByteArrayBranchingStream parent = null;
+    private ByteArrayBranchingStream parent;
 
     /** The index of the next byte to read from the byte array. */
-    private int position = 0;
+    private int position;
 
     /** The currently marked position in the stream. */
     private int mark = -1;

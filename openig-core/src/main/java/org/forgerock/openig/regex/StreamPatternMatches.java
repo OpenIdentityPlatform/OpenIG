@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.regex;
@@ -42,7 +42,7 @@ public class StreamPatternMatches implements Closeable {
     private boolean discard;
 
     /** The string pattern match iterator to search each line of input. */
-    private StringPatternMatches matches = null;
+    private StringPatternMatches matches;
 
     /**
      * Constructs a new stream pattern match iterator. If {@code discard} is {@code true},
