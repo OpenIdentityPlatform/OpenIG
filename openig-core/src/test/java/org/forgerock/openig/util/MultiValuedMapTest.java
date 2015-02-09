@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.util;
 
@@ -47,7 +47,7 @@ public class MultiValuedMapTest {
         assertThat(mine.get("syrup-type")).containsOnly("Vanilla");
     }
 
-    @Test()
+    @Test
     public void addToExistingValues() {
         final Coffee mine = new Coffee(getStandard());
         assertThat(mine).hasSize(2);
@@ -67,7 +67,7 @@ public class MultiValuedMapTest {
         assertThat(mine.get("syrup-type")).hasSize(2);
     }
 
-    @Test()
+    @Test
     public void addAllMultivaluedMap() {
         final Coffee mine = new Coffee(getIcedCreamCoffee());
         assertThat(mine).hasSize(3);
@@ -79,7 +79,7 @@ public class MultiValuedMapTest {
         assertThat(mine.get("sugar")).containsOnly("None");
     }
 
-    @Test()
+    @Test
     public void addAllKeyCollection() {
         final Coffee mine = new Coffee(getIcedCreamCoffee());
         mine.addAll("milk-type", Arrays.asList("Steamed"));
