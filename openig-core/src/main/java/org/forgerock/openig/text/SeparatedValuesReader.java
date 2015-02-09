@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.text;
@@ -43,7 +43,7 @@ public class SeparatedValuesReader {
     private int next = -1;
 
     /** Flag indicating that the parse state is currently within quotations. */
-    private boolean quoted = false;
+    private boolean quoted;
 
     /**
      * Constructs a new separated values reader, to read a character stream from the

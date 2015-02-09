@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -37,7 +37,7 @@ public class MemoryBuffer implements Buffer {
     private final int limit;
 
     /** Current length of the buffer. */
-    private int length = 0;
+    private int length;
 
     /**
      * Constructs a new memory buffer.

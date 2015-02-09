@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -56,7 +56,7 @@ public class BranchingStreamWrapperTest {
     private static final byte[][] BUFFERS = new byte[BRANCHES][BUFSIZE];
 
     /** Current read length offset. */
-    private static int currentLengthCounter = 0;
+    private static int currentLengthCounter;
 
     private BranchingStreamWrapper trunk;
 

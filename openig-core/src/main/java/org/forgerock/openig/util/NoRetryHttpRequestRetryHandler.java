@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2014 ForgeRock AS.
+ * Copyright 2012-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -31,7 +31,7 @@ import org.forgerock.openig.log.Logger;
  */
 public class NoRetryHttpRequestRetryHandler implements HttpRequestRetryHandler {
 
-    Logger logger = null;
+    Logger logger;
 
     /**
      * Constructs a new <strong>{@code NoRetryHttpRequestRetryHandler}</strong>.

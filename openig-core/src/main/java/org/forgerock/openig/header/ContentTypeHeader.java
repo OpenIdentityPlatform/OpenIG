@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.header;
@@ -32,13 +32,13 @@ public class ContentTypeHeader implements Header {
     public static final String NAME = "Content-Type";
 
     /** The type/sub-type of the message. */
-    private String type = null;
+    private String type;
 
     /** The character set used in encoding the message. */
-    private String charset = null;
+    private String charset;
 
     /** The boundary value provided in multipart messages. */
-    private String boundary = null;
+    private String boundary;
 
     /**
      * Constructs a new empty header.

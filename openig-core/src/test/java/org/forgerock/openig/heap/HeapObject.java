@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -19,8 +19,8 @@ package org.forgerock.openig.heap;
 @SuppressWarnings("javadoc")
 public class HeapObject {
 
-    public boolean destroyed = false;
-    public String message = null;
+    public boolean destroyed;
+    public String message;
 
     public static class Heaplet extends GenericHeaplet {
 
