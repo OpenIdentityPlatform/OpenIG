@@ -178,7 +178,7 @@ public class StaticRequestFilter extends GenericFilter {
                     }
                 }
             }
-            if (request.getMethod().equals("POST")) {
+            if ("POST".equals(request.getMethod())) {
                 f.toRequestEntity(request);
             } else {
                 f.appendRequestQuery(request);
