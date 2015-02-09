@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -29,7 +29,7 @@ public interface AccessToken {
     /**
      * Marker for never ending tokens.
      */
-    final long NEVER_EXPIRES = Long.MAX_VALUE;
+    long NEVER_EXPIRES = Long.MAX_VALUE;
 
     /**
      * Returns the access token identifier issued from the authorization server.

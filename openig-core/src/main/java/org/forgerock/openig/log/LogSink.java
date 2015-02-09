@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -27,7 +27,7 @@ public interface LogSink {
     /**
      * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
-    public static final String LOGSINK_HEAP_KEY = "LogSink";
+    String LOGSINK_HEAP_KEY = "LogSink";
 
     /**
      * Logs an entry.
