@@ -687,6 +687,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
         final Request savedRequest = exchange.request;
         final Response savedResponse = exchange.response;
         exchange.request = request;
+        // The providerHandler will create a new Response by itself
+        // This prevents some previously created Response to be emptied by HttpClient
+        exchange.response = null;
         try {
             providerHandler.handle(exchange);
             return exchange.response;
