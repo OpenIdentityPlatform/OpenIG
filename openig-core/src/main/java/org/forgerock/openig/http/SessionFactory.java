@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -25,7 +25,7 @@ public interface SessionFactory {
     /**
      * Key to retrieve the default {@link SessionFactory} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
-    public static final String SESSION_FACTORY_HEAP_KEY = "Session";
+    String SESSION_FACTORY_HEAP_KEY = "Session";
 
     /**
      * Builds a new Session for the given Exchange. The implementations are free to keep a reference to the Exchange.

@@ -61,7 +61,7 @@ public final class Expression {
      * @throws ExpressionException
      *             if the expression was not syntactically correct.
      */
-    public static final Expression valueOf(String expression) throws ExpressionException {
+    public static Expression valueOf(String expression) throws ExpressionException {
         return new Expression(expression);
     }
 
