@@ -38,6 +38,11 @@
       <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
+      <groupId>org.forgerock.http</groupId>
+      <artifactId>chf-apache-httpclient</artifactId>
+      <version>${httpFrameworkVersion}</version>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
@@ -64,11 +69,6 @@
       <groupId>de.odysseus.juel</groupId>
       <artifactId>juel-api</artifactId>
       <version>${juel.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>

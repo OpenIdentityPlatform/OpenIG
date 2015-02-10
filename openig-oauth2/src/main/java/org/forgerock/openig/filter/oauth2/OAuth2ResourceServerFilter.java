@@ -17,7 +17,7 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.Duration.*;
+import static org.forgerock.http.util.Duration.*;
 import static org.forgerock.openig.util.JsonValues.*;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.Headers;
-import org.forgerock.openig.util.Duration;
+import org.forgerock.http.util.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**

@@ -28,7 +28,6 @@ import java.util.Map;
 import org.forgerock.http.Request;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.Test;
@@ -53,7 +52,7 @@ public class ClientHandlerTest {
             json.put("k2", "v2");
             exchange.request.setEntity(json);
 
-            final ClientHandler handler = new ClientHandler(new HttpClient(new TemporaryStorage()));
+            final ClientHandler handler = new ClientHandler(new HttpClient());
             handler.handle(exchange);
 
             assertThat(exchange.response.getStatus()).isEqualTo(200);

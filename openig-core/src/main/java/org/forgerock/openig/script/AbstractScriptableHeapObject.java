@@ -71,7 +71,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
             HttpClient httpClient = heap.resolve(config.get("httpClient")
-                                                                 .defaultTo(HTTP_CLIENT_HEAP_KEY),
+.defaultTo(HTTP_CLIENT_HEAP_KEY),
                                                            HttpClient.class);
             component.setHttpClient(httpClient);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {

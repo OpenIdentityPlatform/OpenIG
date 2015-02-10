@@ -23,7 +23,6 @@ import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.http.Request;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
@@ -68,15 +67,12 @@ public class HttpClientTest {
                                withPostBodyContaining("Hello"))
                         .then(status(HttpStatus.OK_200));
 
-        HttpClient client = new HttpClient(new TemporaryStorage());
-
+        HttpClient client = new HttpClient();
         Request request = new Request();
         request.setMethod("POST");
         request.setUri(format("http://localhost:%d/test", server.getPort()));
         request.getEntity().setString("Hello");
-
         assertThat(client.execute(request).getStatus()).isEqualTo(200);
-
     }
 
     @Test
@@ -85,12 +81,10 @@ public class HttpClientTest {
                                not(withPostBody()))
                         .then(status(HttpStatus.OK_200));
 
-        HttpClient client = new HttpClient(new TemporaryStorage());
-
+        HttpClient client = new HttpClient();
         Request request = new Request();
         request.setMethod("POST");
         request.setUri(format("http://localhost:%d/test", server.getPort()));
-
         assertThat(client.execute(request).getStatus()).isEqualTo(200);
     }
 
