@@ -18,8 +18,8 @@ package org.forgerock.openig.handler;
 
 import java.io.IOException;
 
-import org.forgerock.http.Response;
 import org.forgerock.http.io.IO;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;

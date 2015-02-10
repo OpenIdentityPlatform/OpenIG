@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.Headers;
-import org.forgerock.http.Message;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Message;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.handler.Handler;

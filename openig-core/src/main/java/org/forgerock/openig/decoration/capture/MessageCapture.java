@@ -31,10 +31,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.Message;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.openig.log.Logger;
 
 /**

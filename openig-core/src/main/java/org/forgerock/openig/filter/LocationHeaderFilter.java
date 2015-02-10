@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Message;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Message;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

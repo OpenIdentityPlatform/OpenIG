@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.challenge;
 
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Response;
 
 /**
  * Builds an error {@link Response} when the token extracted from the request is invalid (expired, revoked, ...).

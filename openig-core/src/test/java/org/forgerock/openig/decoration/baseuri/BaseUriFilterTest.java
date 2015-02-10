@@ -27,7 +27,7 @@ import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

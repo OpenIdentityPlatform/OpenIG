@@ -22,9 +22,9 @@ import java.net.URI;
 import java.security.Principal;
 
 import org.forgerock.http.ClientInfo;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 
 /**

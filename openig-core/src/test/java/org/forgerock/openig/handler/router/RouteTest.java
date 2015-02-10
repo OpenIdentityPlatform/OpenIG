@@ -19,7 +19,6 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.Request;
 import org.forgerock.http.Session;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
@@ -28,6 +27,7 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.SessionManager;
+import org.forgerock.http.protocol.Request;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;

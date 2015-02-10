@@ -35,10 +35,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.forgerock.http.Message;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;

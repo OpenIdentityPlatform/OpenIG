@@ -31,7 +31,7 @@ import java.util.Set;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.forgerock.http.Message;
+import org.forgerock.http.protocol.Message;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.Handler;

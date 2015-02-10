@@ -32,9 +32,9 @@ import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 import org.forgerock.http.MutableUri;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

@@ -28,8 +28,8 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;

@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.glassfish.grizzly.http.Method;

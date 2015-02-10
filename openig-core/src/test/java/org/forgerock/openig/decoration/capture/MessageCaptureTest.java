@@ -21,8 +21,8 @@ import static org.mockito.Mockito.*;
 
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.log.Logger;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;

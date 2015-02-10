@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Entity;
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;

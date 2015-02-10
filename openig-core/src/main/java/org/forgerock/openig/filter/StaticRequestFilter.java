@@ -25,8 +25,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;

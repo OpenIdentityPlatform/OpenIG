@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
 

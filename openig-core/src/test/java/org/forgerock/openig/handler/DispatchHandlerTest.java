@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;

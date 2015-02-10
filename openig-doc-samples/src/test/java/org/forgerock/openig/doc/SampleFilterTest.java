@@ -18,7 +18,7 @@ package org.forgerock.openig.doc;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.StaticResponseHandler;

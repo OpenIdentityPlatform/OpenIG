@@ -18,7 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import java.io.IOException;
 
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;

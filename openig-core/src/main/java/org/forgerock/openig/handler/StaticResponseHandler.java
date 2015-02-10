@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;

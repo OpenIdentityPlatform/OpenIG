@@ -19,10 +19,10 @@ package org.forgerock.openig.jwt;
 import static java.lang.String.format;
 import static org.forgerock.http.util.Json.*;
 
-import org.forgerock.http.Cookie;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Cookie;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;

@@ -22,8 +22,8 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.net.URI;
 
-import org.forgerock.http.Response;
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.Handler;

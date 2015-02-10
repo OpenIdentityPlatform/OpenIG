@@ -43,10 +43,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
-import org.forgerock.http.Headers;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.LDAPClientContext;
@@ -215,7 +215,7 @@ public class GroovyScriptableFilterTest {
     @Test
     public void testConstructFromString() throws Exception {
         final String script =
-                "import org.forgerock.http.Response;exchange.response = new Response()";
+                "import org.forgerock.http.protocol.Response;exchange.response = new Response()";
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
@@ -259,7 +259,7 @@ public class GroovyScriptableFilterTest {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
-                    "import org.forgerock.http.*",
+                    "import org.forgerock.http.protocol.*",
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
@@ -358,7 +358,7 @@ public class GroovyScriptableFilterTest {
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
                     "import org.forgerock.opendj.ldap.*",
-                    "import org.forgerock.http.Response",
+                    "import org.forgerock.http.protocol.Response",
                     "",
                     "username = exchange.request.headers.Username[0]",
                     "password = exchange.request.headers.Password[0]",
@@ -720,7 +720,7 @@ public class GroovyScriptableFilterTest {
 
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.*",
+                "import org.forgerock.http.protocol.*",
                 "exchange.response = new Response()",
                 "exchange.response.status = 200",
                 "exchange.response.entity = 'hello world'");
@@ -772,7 +772,7 @@ public class GroovyScriptableFilterTest {
     public void testSetResponse() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.Response",
+                "import org.forgerock.http.protocol.Response",
                 "exchange.response = new Response()",
                 "exchange.response.status = 404");
         // @formatter:on

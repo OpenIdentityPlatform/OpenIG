@@ -18,8 +18,8 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
 
-import org.forgerock.http.Header;
-import org.forgerock.http.Message;
+import org.forgerock.http.protocol.Header;
+import org.forgerock.http.protocol.Message;
 
 /**
  * Processes the OAuth 2.0 Bearer <strong>{@code WWW-Authenticate}</strong>

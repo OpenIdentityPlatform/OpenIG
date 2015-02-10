@@ -19,7 +19,7 @@ package org.forgerock.openig.resolver;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 
 /**
  * Resolves {@link Request} objects.

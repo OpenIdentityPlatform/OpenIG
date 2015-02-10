@@ -19,7 +19,7 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.http.MutableUri.uri;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;

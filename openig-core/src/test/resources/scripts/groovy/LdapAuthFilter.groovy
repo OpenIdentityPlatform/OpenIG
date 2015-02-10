@@ -1,5 +1,5 @@
 import org.forgerock.opendj.ldap.*
-import org.forgerock.http.Response
+import org.forgerock.http.protocol.Response
 
 /*
  * Perform LDAP authentication based on user credentials from a form.

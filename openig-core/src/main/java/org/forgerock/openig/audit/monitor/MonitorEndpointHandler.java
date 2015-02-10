@@ -31,7 +31,7 @@ import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.util.EnumUtil;
 
 

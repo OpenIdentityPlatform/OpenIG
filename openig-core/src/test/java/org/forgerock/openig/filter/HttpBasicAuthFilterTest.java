@@ -19,9 +19,9 @@ package org.forgerock.openig.filter;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

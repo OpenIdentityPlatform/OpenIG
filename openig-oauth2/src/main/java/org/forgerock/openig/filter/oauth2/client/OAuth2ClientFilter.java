@@ -39,9 +39,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.Duration;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;

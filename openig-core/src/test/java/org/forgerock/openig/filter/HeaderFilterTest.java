@@ -18,7 +18,7 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;

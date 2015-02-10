@@ -21,12 +21,12 @@ import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.heap.HeapImplTest.*;
 import static org.forgerock.http.MutableUri.*;
 
-import org.forgerock.http.Request;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;

@@ -22,7 +22,7 @@ import static com.xebialabs.restito.semantics.Condition.*;
 import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;

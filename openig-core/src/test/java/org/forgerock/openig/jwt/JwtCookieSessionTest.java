@@ -34,8 +34,8 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;

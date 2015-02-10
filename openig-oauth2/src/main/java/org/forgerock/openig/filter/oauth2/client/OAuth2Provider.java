@@ -24,8 +24,8 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.HandlerException;

@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.handler.Handler;

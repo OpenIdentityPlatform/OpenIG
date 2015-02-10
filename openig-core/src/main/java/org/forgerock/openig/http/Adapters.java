@@ -19,7 +19,7 @@ package org.forgerock.openig.http;
 import org.forgerock.http.ClientInfoContext;
 import org.forgerock.http.Context;
 import org.forgerock.http.HttpContext;
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 
 /**
  * Adapters for converting between HTTP framework and legacy OpenIG APIs.

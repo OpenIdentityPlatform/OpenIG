@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forgerock.http.Request;
+import org.forgerock.http.protocol.Request;
 import org.assertj.core.api.Condition;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;

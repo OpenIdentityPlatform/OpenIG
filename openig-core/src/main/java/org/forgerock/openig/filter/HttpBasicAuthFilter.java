@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;

@@ -36,12 +36,12 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.GenericHandler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.Form;
-import org.forgerock.http.Request;
-import org.forgerock.http.Response;
 import org.forgerock.http.Session;
 
 import com.sun.identity.common.ShutdownManager;
