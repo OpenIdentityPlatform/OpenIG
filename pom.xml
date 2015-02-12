@@ -51,6 +51,33 @@
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
 
+      <!--
+        Copy Groovy test scripts referenced in documentation
+        to avoid absolute paths in pre-processed DocBook XML artifact.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>copy-documented-groovy-scripts</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${docbkxCopiedSourceDirectory}/shared</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/openig-core/src/test/resources/scripts/groovy</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-doc-maven-plugin</artifactId>
@@ -171,7 +198,7 @@
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
 
     <!-- Start documentation properties -->
-    <filteredDocSources>${project.build.directory}/doc-filtered</filteredDocSources>
+    <docbkxCopiedSourceDirectory>${project.build.directory}/docbkx-sources</docbkxCopiedSourceDirectory>
 
     <!-- Reset these to build docs for the final publication: -->
     <docTargetVersion>${project.version}</docTargetVersion>

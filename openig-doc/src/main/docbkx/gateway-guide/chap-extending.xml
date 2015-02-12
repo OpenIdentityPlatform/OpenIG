@@ -185,11 +185,9 @@
   </para>
 
   <programlisting language="java">
-<xinclude:include
- href="${basedir}/openig-core/src/test/resources/scripts/groovy/DispatchHandler.groovy"
- parse="text"
- >
+<xinclude:include href="../shared/DispatchHandler.groovy" parse="text">
  <xinclude:fallback>
+   <!-- The file does not exist in this location until build time. -->
    Failed to include script
  </xinclude:fallback>
 </xinclude:include>
@@ -257,12 +255,10 @@
   </para>
 
   <programlisting language="java">
-<xinclude:include
- href="${basedir}/openig-core/src/test/resources/scripts/groovy/BasicAuthFilter.groovy"
- parse="text"
- >
+<xinclude:include href="../shared/BasicAuthFilter.groovy" parse="text">
  <xinclude:fallback>
-   Failed to include script
+  <!-- The file does not exist in this location until build time. -->
+  Failed to include script
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
@@ -332,11 +328,9 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include
- href="${basedir}/openig-core/src/test/resources/scripts/groovy/LdapAuthFilter.groovy"
- parse="text"
- >
+<xinclude:include href="../shared/LdapAuthFilter.groovy" parse="text">
  <xinclude:fallback>
+   <!-- The file does not exist in this location until build time. -->
    Failed to include script
  </xinclude:fallback>
 </xinclude:include>
@@ -421,11 +415,9 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include
- href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlAccessFilter.groovy"
- parse="text"
- >
+<xinclude:include href="../shared/SqlAccessFilter.groovy" parse="text">
  <xinclude:fallback>
+   <!-- The file does not exist in this location until build time. -->
    Failed to include script
  </xinclude:fallback>
 </xinclude:include>
@@ -438,12 +430,10 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include
- href="${basedir}/openig-core/src/test/resources/scripts/groovy/SqlClient.groovy"
- parse="text"
- >
+<xinclude:include href="../shared/SqlClient.groovy" parse="text">
  <xinclude:fallback>
-   Failed to include script
+  <!-- The file does not exist in this location until build time. -->
+  Failed to include script
  </xinclude:fallback>
 </xinclude:include>
   </programlisting>
