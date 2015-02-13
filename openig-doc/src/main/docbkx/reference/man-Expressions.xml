@@ -254,6 +254,26 @@
  </refsect1>
 
  <refsect1>
+  <title>Escaping Literal Expressions</title>
+
+  <para>
+   Use the backslash <literal>\</literal> character as the escape character.
+   For example, <literal>${true}</literal> as an expression
+   normally evaluates to <literal>true</literal>.
+   To include the string <literal>${true}</literal> in an expression,
+   write <literal>\${true}</literal>.
+  </para>
+
+  <para>
+   You can also escape literal expressions by single-quoting the initial characters.
+   For example, <literal>${'${'}true}</literal> evaluates to <literal>${true}</literal>.
+   To include a single backslash <literal>\</literal> character,
+   write <literal>${'\\'}</literal>.
+   To include a double backslash, write <literal>${'\\\\'}</literal>.
+  </para>
+ </refsect1>
+
+ <refsect1>
   <title>Extensions</title>
 
   <para>
