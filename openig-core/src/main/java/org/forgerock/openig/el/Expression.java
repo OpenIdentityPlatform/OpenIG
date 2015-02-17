@@ -118,6 +118,14 @@ public final class Expression<T> {
     }
 
     /**
+     * Convenient method to eval an Expression that does not need a scope.
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
+     */
+    public T eval() {
+        return eval(null);
+    }
+
+    /**
      * Sets the result of an evaluated expression to a specified value. The expression is
      * treated as an <em>lvalue</em>, the expression resolves to an object whose value will be
      * set. If the expression does not resolve to an object or cannot otherwise be written to

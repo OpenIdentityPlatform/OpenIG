@@ -66,7 +66,7 @@ public final class JsonValues {
             if (value.isString()) {
                 try {
                     Expression<String> expression = Expression.valueOf(value.asString(), String.class);
-                    value.setObject(expression.eval(null));
+                    value.setObject(expression.eval());
                 } catch (ExpressionException e) {
                     throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
                                                    value.asString(),
@@ -179,7 +179,7 @@ public final class JsonValues {
     public static String evaluate(JsonValue value) {
         Expression<String> expression = asExpression(value, String.class);
         if (expression != null) {
-            return expression.eval(null);
+            return expression.eval();
         }
         return null;
     }
