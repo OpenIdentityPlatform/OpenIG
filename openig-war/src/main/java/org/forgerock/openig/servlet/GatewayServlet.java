@@ -251,7 +251,8 @@ public class GatewayServlet extends HttpServlet {
         exchange.request.setUri(uri);
 
         // request headers
-        for (final Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements(); ) {
+        final Enumeration<String> e = request.getHeaderNames();
+        while (e.hasMoreElements()) {
             final String name = e.nextElement();
             exchange.request.getHeaders().addAll(name, Collections.list(request.getHeaders(name)));
         }
