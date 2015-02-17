@@ -50,42 +50,42 @@ public class ExpressionTest {
     @Test
     public void bool() throws ExpressionException {
         Expression<Boolean> expr = Expression.valueOf("${1==1}", Boolean.class);
-        Boolean o = expr.eval(null); // no scope required for non-resolving expression
+        Boolean o = expr.eval();
         assertThat(o).isEqualTo(true);
     }
 
     @Test
     public void boolBadSyntaxIsNull() throws ExpressionException {
         Expression<Boolean> expr = Expression.valueOf("not a boolean", Boolean.class);
-        Boolean o = expr.eval(null); // no scope required for non-resolving expression
+        Boolean o = expr.eval();
         assertThat(o).isNull();
     }
 
     @Test
     public void integerBadSyntaxIsNull() throws ExpressionException {
         Expression<Integer> expr = Expression.valueOf("not an integer", Integer.class);
-        Integer o = expr.eval(null); // no scope required for non-resolving expression
+        Integer o = expr.eval();
         assertThat(o).isNull();
     }
 
     @Test
     public void nullStringIsNull() throws ExpressionException {
         Expression<String> expr = Expression.valueOf("${null}", String.class);
-        String o = expr.eval(null); // no scope required for non-resolving expression
+        String o = expr.eval();
         assertThat(o).isNull();
     }
 
     @Test
     public void empty() throws ExpressionException {
         Expression<String> expr = Expression.valueOf("string-literal", String.class);
-        String o = expr.eval(null); // no scope required for non-resolving expression
+        String o = expr.eval();
         assertThat(o).isEqualTo("string-literal");
     }
 
     @Test
     public void emptyString() throws ExpressionException {
         Expression<String> expr = Expression.valueOf("", String.class);
-        String o = expr.eval(null); // no scope required for non-resolving expression
+        String o = expr.eval();
         assertThat(o).isEqualTo("");
     }
 
@@ -255,8 +255,8 @@ public class ExpressionTest {
 
     @Test
     public void testImplicitObjectsReferences() throws Exception {
-        assertThat(Expression.valueOf("${system['user.home']}", String.class).eval(null)).isNotNull();
-        assertThat(Expression.valueOf("${env['PATH']}", String.class).eval(null)).isNotNull();
+        assertThat(Expression.valueOf("${system['user.home']}", String.class).eval()).isNotNull();
+        assertThat(Expression.valueOf("${env['PATH']}", String.class).eval()).isNotNull();
     }
 
     @Test

@@ -187,7 +187,7 @@ public class FunctionTest {
 
     @Test(dataProvider = "base64EncodingValues")
     public void testBase64Encoding(final String original, final String encoded) throws Exception {
-        assertThat(Expression.valueOf(format("${encodeBase64(%s)}", original), String.class).eval(null))
+        assertThat(Expression.valueOf(format("${encodeBase64(%s)}", original), String.class).eval())
                 .isEqualTo(encoded);
     }
 
@@ -208,21 +208,21 @@ public class FunctionTest {
     @Test(dataProvider = "base64DecodingValues")
     public void testBase64Decoding(final String original, final String decoded) throws Exception {
         String str = format("${decodeBase64(%s)}", original);
-        assertThat(Expression.valueOf(str, String.class).eval(null))
+        assertThat(Expression.valueOf(str, String.class).eval())
                 .isEqualTo(decoded);
     }
 
     @Test
     public void testFileReading() throws Exception {
         File file = Files.getRelativeFile(getClass(), "readme.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval(null))
+        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval())
                 .isEqualTo("Hello World");
     }
 
     @Test
     public void testMissingFileReading() throws Exception {
         File file = Files.getRelative(getClass(), "missing.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval(null)).isNull();
+        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval()).isNull();
     }
 
     @Test
@@ -230,6 +230,6 @@ public class FunctionTest {
         File file = Files.getRelativeFile(getClass(), "configuration.properties");
         String str = format("${readProperties('%s')['key']}", file.getPath());
         Expression<String> expr = Expression.valueOf(str, String.class);
-        assertThat(expr.eval(null)).isEqualTo("some value");
+        assertThat(expr.eval()).isEqualTo("some value");
     }
 }
