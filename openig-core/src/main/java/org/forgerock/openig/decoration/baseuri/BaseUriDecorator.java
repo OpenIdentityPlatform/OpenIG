@@ -22,9 +22,9 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
+import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 
@@ -66,7 +66,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriFilter(delegate, asExpression(decoratorConfig));
+            return new BaseUriFilter(delegate, asExpression(decoratorConfig, String.class));
         }
         return delegate;
     }
@@ -75,7 +75,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriHandler(delegate, asExpression(decoratorConfig));
+            return new BaseUriHandler(delegate, asExpression(decoratorConfig, String.class));
         }
         return delegate;
     }

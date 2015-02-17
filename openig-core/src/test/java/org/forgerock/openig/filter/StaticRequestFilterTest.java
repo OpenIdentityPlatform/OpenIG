@@ -17,7 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.MutableUri.uri;
+import static org.forgerock.openig.util.MutableUri.*;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
@@ -47,7 +47,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testUriMethodAndVersionPropagation() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(Expression.valueOf(URI));
+        filter.setUri(Expression.valueOf(URI, String.class));
         filter.setVersion("1.1");
 
         Exchange exchange = new Exchange();
@@ -62,10 +62,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testHeadersPropagation() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(Expression.valueOf(URI));
-        filter.addHeaderValue("Mono-Valued", Expression.valueOf("First Value"));
-        filter.addHeaderValue("Multi-Valued", Expression.valueOf("One (1)"));
-        filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${exchange.request.version})"));
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.addHeaderValue("Mono-Valued", Expression.valueOf("First Value", String.class));
+        filter.addHeaderValue("Multi-Valued", Expression.valueOf("One (1)", String.class));
+        filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${exchange.request.version})", String.class));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -89,10 +89,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testFormAttributesPropagationWithGetMethod() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("GET");
-        filter.setUri(Expression.valueOf(URI));
-        filter.addFormParameter("mono", Expression.valueOf("one"));
-        filter.addFormParameter("multi", Expression.valueOf("one1"));
-        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}"));
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.addFormParameter("mono", Expression.valueOf("one", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -113,10 +113,10 @@ public class StaticRequestFilterTest {
     @Test
     public void testFormAttributesPropagationWithPostMethod() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(Expression.valueOf(URI));
-        filter.addFormParameter("mono", Expression.valueOf("one"));
-        filter.addFormParameter("multi", Expression.valueOf("one1"));
-        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}"));
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.addFormParameter("mono", Expression.valueOf("one", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
@@ -139,7 +139,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testRequestSaveAndRestore() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(Expression.valueOf(URI));
+        filter.setUri(Expression.valueOf(URI, String.class));
         filter.setRestore(true);
 
         Exchange exchange = new Exchange();
@@ -155,7 +155,7 @@ public class StaticRequestFilterTest {
     @Test
     public void testRequestDisabledSaveAndRestore() throws Exception {
         StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(Expression.valueOf(URI));
+        filter.setUri(Expression.valueOf(URI, String.class));
         filter.setRestore(false);
 
         Exchange exchange = new Exchange();

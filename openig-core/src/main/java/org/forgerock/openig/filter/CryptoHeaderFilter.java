@@ -228,7 +228,7 @@ public class CryptoHeaderFilter extends GenericFilter {
             byte[] key = Base64.decode(evaluate(config.get("key").required()));
             if ((key == null) || (key.length == 0)) {
                 throw new JsonValueException(config.get("key"),
-                                             "key evaluation gave an empty result that is not allowed");
+                        "key evaluation gave an empty result that is not allowed");
             }
             try {
                 filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("AES").asString());

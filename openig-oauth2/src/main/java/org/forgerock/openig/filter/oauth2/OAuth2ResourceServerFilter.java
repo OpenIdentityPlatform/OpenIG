@@ -118,7 +118,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final AccessTokenResolver resolver;
     private final BearerTokenExtractor extractor;
     private final TimeService time;
-    private Set<Expression> scopes;
+    private Set<Expression<String>> scopes;
     private String realm;
 
     private final Handler noAuthentication;
@@ -143,7 +143,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
                                       final Expression target) {
-        this(resolver, extractor, time, Collections.<Expression> emptySet(), DEFAULT_REALM_NAME, target);
+        this(resolver, extractor, time, Collections.<Expression<String>> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -166,7 +166,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Set<Expression> scopes,
+                                      final Set<Expression<String>> scopes,
                                       final String realm,
                                       final Expression target) {
         this.resolver = resolver;
@@ -240,8 +240,8 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
 
     private Set<String> getScopes(final Exchange exchange) throws HandlerException {
         final Set<String> scopeValues = new HashSet<String>(this.scopes.size());
-        for (final Expression scope : this.scopes) {
-            final String result = scope.eval(exchange, String.class);
+        for (final Expression<String> scope : this.scopes) {
+            final String result = scope.eval(exchange);
             if (result == null) {
                 throw new HandlerException(format(
                         "The OAuth 2.0 resource server filter scope expression '%s' could not be resolved",
@@ -299,13 +299,13 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 
-            Set<Expression> scopes =
+            Set<Expression<String>> scopes =
                     getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
-            final Expression target = asExpression(config.get("target").defaultTo(
-                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+            final Expression<?> target = asExpression(config.get("target").defaultTo(
+                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
 
             final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                                                            new BearerTokenExtractor(),
@@ -317,7 +317,9 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {
                 try {
-                    return new EnforcerFilter(Expression.valueOf("${exchange.request.uri.scheme == 'https'}"), filter);
+                    Expression<Boolean> expr = Expression.valueOf("${exchange.request.uri.scheme == 'https'}",
+                                                                  Boolean.class);
+                    return new EnforcerFilter(expr, filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
                 }

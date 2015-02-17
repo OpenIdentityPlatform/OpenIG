@@ -44,11 +44,11 @@ public final class JsonValues {
     private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
             unmodifiableList(loadList(ClassAliasResolver.class));
 
-    private static final Function<JsonValue, Expression, HeapException> OF_EXPRESSION =
-            new Function<JsonValue, Expression, HeapException>() {
+    private static final Function<JsonValue, Expression<String>, HeapException> OF_EXPRESSION =
+            new Function<JsonValue, Expression<String>, HeapException>() {
                 @Override
-                public Expression apply(final JsonValue value) throws HeapException {
-                    return asExpression(value);
+                public Expression<String> apply(final JsonValue value) throws HeapException {
+                    return asExpression(value, String.class);
                 }
             };
 
@@ -65,8 +65,8 @@ public final class JsonValues {
         public void transform(final JsonValue value) {
             if (value.isString()) {
                 try {
-                    Expression expression = Expression.valueOf(value.asString());
-                    value.setObject(expression.eval(null, String.class));
+                    Expression<String> expression = Expression.valueOf(value.asString(), String.class);
+                    value.setObject(expression.eval(null));
                 } catch (ExpressionException e) {
                     throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
                                                    value.asString(),
@@ -153,13 +153,15 @@ public final class JsonValues {
      * Returns a JSON value string value as an expression. If the value is {@code null}, this
      * method returns {@code null}.
      *
+     * @param <T> expected result type
      * @param value the JSON value containing the expression string.
+     * @param expectedType The expected result type of the expression.
      * @return the expression represented by the string value.
      * @throws JsonValueException if the value is not a string or the value is not a valid expression.
      */
-    public static Expression asExpression(JsonValue value) {
+    public static <T> Expression<T> asExpression(JsonValue value, Class<T> expectedType) {
         try {
-            return (value == null || value.isNull() ? null : Expression.valueOf(value.asString()));
+            return (value == null || value.isNull() ? null : Expression.valueOf(value.asString(), expectedType));
         } catch (ExpressionException ee) {
             throw new JsonValueException(value, ee);
         }
@@ -175,9 +177,9 @@ public final class JsonValues {
      *         if the value is not a string or the value is not a valid string typed expression.
      */
     public static String evaluate(JsonValue value) {
-        Expression expression = asExpression(value);
+        Expression<String> expression = asExpression(value, String.class);
         if (expression != null) {
-            return expression.eval(null, String.class);
+            return expression.eval(null);
         }
         return null;
     }
@@ -204,7 +206,7 @@ public final class JsonValues {
      *
      * @return A function for transforming JsonValues to expressions.
      */
-    public static Function<JsonValue, Expression, HeapException> ofExpression() {
+    public static Function<JsonValue, Expression<String>, HeapException> ofExpression() {
         return OF_EXPRESSION;
     }
 

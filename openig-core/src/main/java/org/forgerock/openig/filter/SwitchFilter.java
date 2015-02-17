@@ -43,7 +43,7 @@ public class SwitchFilter extends GenericFilter {
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
         /** Condition to evaluate if exchange should be diverted to handler. */
-        private final Expression condition;
+        private final Expression<Boolean> condition;
 
         /** Handler to divert to if condition yields {@code true}. */
         private final Handler handler;
@@ -53,7 +53,7 @@ public class SwitchFilter extends GenericFilter {
          * @param condition expression to evaluate
          * @param handler handler to be executed if the condition yields
          */
-        public Case(final Expression condition, final Handler handler) {
+        public Case(final Expression<Boolean> condition, final Handler handler) {
             this.condition = condition;
             this.handler = handler;
         }
@@ -71,7 +71,7 @@ public class SwitchFilter extends GenericFilter {
      * @param handler handler to be executed if the condition yields
      * @return this filter for fluent invocation.
      */
-    public SwitchFilter addRequestCase(final Expression condition, final Handler handler) {
+    public SwitchFilter addRequestCase(final Expression<Boolean> condition, final Handler handler) {
         requestCases.add(new Case(condition, handler));
         return this;
     }
@@ -82,7 +82,7 @@ public class SwitchFilter extends GenericFilter {
      * @param handler handler to be executed if the condition yields
      * @return this filter for fluent invocation.
      */
-    public SwitchFilter addResponseCase(final Expression condition, final Handler handler) {
+    public SwitchFilter addResponseCase(final Expression<Boolean> condition, final Handler handler) {
         responseCases.add(new Case(condition, handler));
         return this;
     }
@@ -98,8 +98,7 @@ public class SwitchFilter extends GenericFilter {
 
     private boolean doSwitch(Exchange exchange, List<Case> cases) throws HandlerException, IOException {
         for (Case c : cases) {
-            Object o = (c.condition != null ? c.condition.eval(exchange) : Boolean.TRUE);
-            if (o instanceof Boolean && ((Boolean) o)) {
+            if (c.condition == null || Boolean.TRUE.equals(c.condition.eval(exchange))) {
                 c.handler.handle(exchange);
                 // switched flow
                 return true;
@@ -131,7 +130,7 @@ public class SwitchFilter extends GenericFilter {
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            return new Case(asExpression(value.get("condition")),
+            return new Case(asExpression(value.get("condition"), Boolean.class),
                             heap.resolve(value.get("handler"), Handler.class));
         }
     }

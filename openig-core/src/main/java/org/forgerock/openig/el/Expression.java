@@ -39,14 +39,19 @@ import de.odysseus.el.ExpressionFactoryImpl;
  * An Unified Expression Language expression. Creating an expression is the equivalent to
  * compiling it. Once created, an expression can be evaluated within a supplied scope. An
  * expression can safely be evaluated concurrently in multiple threads.
+ *
+ * @param <T> expected result type
  */
-public final class Expression {
+public final class Expression<T> {
 
     /** The underlying EL expression that this object represents. */
     private final ValueExpression valueExpression;
 
     /** The original string used to create this expression. */
     private final String original;
+
+    /** The expected type of this expression. */
+    private Class<T> expectedType;
 
     /** The expression plugins configured in META-INF/services. */
     private static final Map<String, ExpressionPlugin> PLUGINS =
@@ -55,26 +60,38 @@ public final class Expression {
     /**
      * Factory method to create an Expression.
      *
-     * @param expression
-     *            The expression to parse.
+     * @param <T> expected result type
+     * @param expression The expression to parse.
+     * @param expectedType The expected result type of the expression.
      * @return An expression based on the given string.
      * @throws ExpressionException
      *             if the expression was not syntactically correct.
      */
-    public static Expression valueOf(String expression) throws ExpressionException {
-        return new Expression(expression);
+    public static final <T> Expression<T> valueOf(String expression, Class<T> expectedType) throws ExpressionException {
+        return new Expression<T>(expression, expectedType);
     }
 
     /**
      * Constructs an expression for later evaluation.
      *
      * @param expression the expression to parse.
+     * @param expectedType The expected result type of the expression.
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    private Expression(String expression) throws ExpressionException {
+    private Expression(String expression, Class<T> expectedType) throws ExpressionException {
         original = expression;
+        this.expectedType = expectedType;
         try {
             ExpressionFactoryImpl exprFactory = new ExpressionFactoryImpl();
+            /*
+             * We still use Object.class but use the expectedType in the evaluation. If we use the expectedType instead
+             * of Object.class at the creation, then we had some breaking changes :
+             * - "not a boolean" as Boolean.class => before : null, after : false
+             * - "${null}" as String.class => before : null, after : the empty String
+             * - accessing a missing bean property as an Integer => before : null, after : 0
+             *
+             * But note that by still using Object.class prevents from using our own TypeConverter.
+             */
             valueExpression = exprFactory.createValueExpression(new XLContext(null), expression, Object.class);
         } catch (ELException ele) {
             throw new ExpressionException(ele);
@@ -82,34 +99,22 @@ public final class Expression {
     }
 
     /**
-     * Evaluates the expression within the specified scope and returns the resulting object, or
-     * {@code null} if it does not resolve a value.
+     * Evaluates the expression within the specified scope and returns the resulting object if it matches the specified
+     * type, or {@code null} if it does not resolve or match.
      *
-     * @param scope the scope to evaluate the expression within.
-     * @return the result of the expression evaluation, or {@code null} if does not resolve a value.
+     * @param scope
+     *            the scope to evaluate the expression within.
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
-    public Object eval(final Object scope) {
+    public T eval(final Object scope) {
         try {
-            return valueExpression.getValue(new XLContext(scope));
+            Object value = valueExpression.getValue(new XLContext(scope));
+            return (value != null && expectedType.isInstance(value) ? expectedType.cast(value) : null);
         } catch (ELException ele) {
             // unresolved element yields null value
             return null;
         }
-    }
 
-    /**
-     * Evaluates the expression within the specified scope and returns the resulting object
-     * if it matches the specified type, or {@code null} if it does not resolve or match.
-     *
-     * @param scope the scope to evaluate the expression within.
-     * @param type the type of object the evaluation is expected to yield.
-     * @param <T> expected result type
-     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
-     */
-    @SuppressWarnings("unchecked")
-    public <T> T eval(Object scope, Class<T> type) {
-        Object value = eval(scope);
-        return (value != null && type.isInstance(value) ? (T) value : null);
     }
 
     /**

@@ -58,7 +58,7 @@ public class DispatchHandler extends GenericHandler {
      *            port are used in the supplied URI. Default: leave URI untouched.
      * @return The current dispatch handler.
      */
-    public DispatchHandler addBinding(Expression condition, Handler handler, URI baseURI) {
+    public DispatchHandler addBinding(Expression<Boolean> condition, Handler handler, URI baseURI) {
         bindings.add(new Binding(condition, handler, baseURI));
         return this;
     }
@@ -96,7 +96,7 @@ public class DispatchHandler extends GenericHandler {
     private static class Binding {
 
         /** Condition to dispatch to handler or {@code null} if unconditional. */
-        private Expression condition;
+        private Expression<Boolean> condition;
 
         /** Handler to dispatch to. */
         private Handler handler;
@@ -116,7 +116,7 @@ public class DispatchHandler extends GenericHandler {
          *            Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host
          *            and port are used in the supplied URI. Default: leave URI untouched.
          */
-        public Binding(Expression condition, Handler handler, URI baseURI) {
+        public Binding(Expression<Boolean> condition, Handler handler, URI baseURI) {
             super();
             this.condition = condition;
             this.handler = handler;
@@ -133,7 +133,7 @@ public class DispatchHandler extends GenericHandler {
             DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Expression expression = asExpression(jv.get("condition"));
+                final Expression<Boolean> expression = asExpression(jv.get("condition"), Boolean.class);
                 final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final URI uri = jv.get("baseURI").asURI();
                 dispatchHandler.addBinding(expression, handler, uri);

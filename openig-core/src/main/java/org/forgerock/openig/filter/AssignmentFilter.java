@@ -40,13 +40,13 @@ public class AssignmentFilter extends GenericFilter {
     private static final class Binding {
         /** Condition to evaluate to determine if assignment should occur, or {@code null} if assignment is
          * unconditional. */
-        private Expression condition;
+        private Expression<Boolean> condition;
         /** Expression that yields the target object whose value is to be set. */
-        private Expression target;
+        private Expression<?> target;
         /** Expression that yields the value to be set in the target. */
-        private Expression value;
+        private Expression<?> value;
 
-        private Binding(final Expression condition, final Expression target, final Expression value) {
+        private Binding(final Expression<Boolean> condition, final Expression<?> target, final Expression<?> value) {
             this.condition = condition;
             this.target = target;
             this.value = value;
@@ -67,8 +67,8 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the target object whose value is to be set
      * @return this object for fluent usage
      */
-    public AssignmentFilter addRequestBinding(final Expression target) {
-        return addRequestBinding(target, null);
+    public AssignmentFilter addRequestBinding(final Expression<?> target) {
+        return this.addRequestBinding(target, null);
     }
 
     /**
@@ -81,8 +81,8 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addRequestBinding(final Expression target, final Expression value) {
-        return addRequestBinding(null, target, value);
+    public AssignmentFilter addRequestBinding(final Expression<?> target, final Expression<?> value) {
+        return this.addRequestBinding(null, target, value);
     }
 
     /**
@@ -98,9 +98,9 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addRequestBinding(final Expression condition,
-                                              final Expression target,
-                                              final Expression value) {
+    public AssignmentFilter addRequestBinding(final Expression<Boolean> condition,
+                                              final Expression<?> target,
+                                              final Expression<?> value) {
         this.onRequest.add(new Binding(condition, target, value));
         return this;
     }
@@ -113,8 +113,8 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the target object whose value is to be set
      * @return this object for fluent usage
      */
-    public AssignmentFilter addResponseBinding(final Expression target) {
-        return addResponseBinding(target, null);
+    public AssignmentFilter addResponseBinding(final Expression<?> target) {
+        return this.addResponseBinding(target, null);
     }
 
     /**
@@ -127,8 +127,8 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addResponseBinding(final Expression target, final Expression value) {
-        return addResponseBinding(null, target, value);
+    public AssignmentFilter addResponseBinding(final Expression<?> target, final Expression<?> value) {
+        return this.addResponseBinding(null, target, value);
     }
 
     /**
@@ -144,9 +144,9 @@ public class AssignmentFilter extends GenericFilter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addResponseBinding(final Expression condition,
-                                               final Expression target,
-                                               final Expression value) {
+    public AssignmentFilter addResponseBinding(final Expression<Boolean> condition,
+                                               final Expression<?> target,
+                                               final Expression<?> value) {
         this.onResponse.add(new Binding(condition, target, value));
         return this;
     }
@@ -182,9 +182,9 @@ public class AssignmentFilter extends GenericFilter {
             // optional
             JsonValue bindings = config.get("onRequest").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression condition = asExpression(binding.get("condition"));
-                Expression target = asExpression(binding.get("target").required());
-                Expression value = asExpression(binding.get("value"));
+                Expression<Boolean> condition = asExpression(binding.get("condition"), Boolean.class);
+                Expression<?> target = asExpression(binding.get("target").required(), Object.class);
+                Expression<?> value = asExpression(binding.get("value"), Object.class);
 
                 filter.addRequestBinding(condition, target, value);
             }
@@ -194,9 +194,9 @@ public class AssignmentFilter extends GenericFilter {
             // optional
             JsonValue bindings = config.get("onResponse").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression condition = asExpression(binding.get("condition"));
-                Expression target = asExpression(binding.get("target").required());
-                Expression value = asExpression(binding.get("value"));
+                Expression<Boolean> condition = asExpression(binding.get("condition"), Boolean.class);
+                Expression<?> target = asExpression(binding.get("target").required(), Object.class);
+                Expression<?> value = asExpression(binding.get("value"), Object.class);
 
                 filter.addResponseBinding(condition, target, value);
             }

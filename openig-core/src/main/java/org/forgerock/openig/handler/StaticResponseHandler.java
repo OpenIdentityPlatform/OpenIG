@@ -49,11 +49,11 @@ public class StaticResponseHandler extends GenericHandler {
     private final String version;
 
     /** Message header fields whose values are expressions that are evaluated. */
-    private final MultiValueMap<String, Expression> headers =
-            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+    private final MultiValueMap<String, Expression<String>> headers =
+            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /** The message entity expression. */
-    private final Expression entity;
+    private final Expression<String> entity;
 
     /**
      * Constructor.
@@ -80,7 +80,7 @@ public class StaticResponseHandler extends GenericHandler {
      *            The message entity expression.
      */
     public StaticResponseHandler(final Integer status, final String reason, final String version,
-            final Expression entity) {
+            final Expression<String> entity) {
         super();
         this.status = status;
         this.reason = reason;
@@ -97,7 +97,7 @@ public class StaticResponseHandler extends GenericHandler {
      *            The expression to evaluate.
      * @return The current static response handler.
      */
-    public StaticResponseHandler addHeader(final String key, final Expression expression) {
+    public StaticResponseHandler addHeader(final String key, final Expression<String> expression) {
         headers.add(key, expression);
         return this;
     }
@@ -119,8 +119,8 @@ public class StaticResponseHandler extends GenericHandler {
             response.setVersion(this.version);
         }
         for (String key : this.headers.keySet()) {
-            for (Expression expression : this.headers.get(key)) {
-                String eval = expression.eval(exchange, String.class);
+            for (Expression<String> expression : this.headers.get(key)) {
+                String eval = expression.eval(exchange);
                 if (eval != null) {
                     response.getHeaders().add(key, eval);
                 }
@@ -128,7 +128,7 @@ public class StaticResponseHandler extends GenericHandler {
         }
         if (entity != null) {
             // use content-type charset (or default)
-            response.setEntity(entity.eval(exchange, String.class));
+            response.setEntity(entity.eval(exchange));
         }
         // finally replace response in the exchange
         closeSilently(exchange.response);
@@ -145,12 +145,12 @@ public class StaticResponseHandler extends GenericHandler {
             final String reason = config.get("reason").asString();
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final Expression entity = asExpression(config.get("entity"));
+            final Expression<String> entity = asExpression(config.get("entity"), String.class);
             final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.addHeader(key, asExpression(value.required()));
+                        handler.addHeader(key, asExpression(value.required(), String.class));
                     }
                 }
             }

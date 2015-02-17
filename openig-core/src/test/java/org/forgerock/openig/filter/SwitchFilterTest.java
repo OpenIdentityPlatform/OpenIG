@@ -55,7 +55,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnRequestOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.addRequestCase(Expression.valueOf("${true}"), handler1);
+        filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -67,7 +67,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchOnResponseOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.addResponseCase(Expression.valueOf("${true}"), handler1);
+        filter.addResponseCase(Expression.valueOf("${true}", Boolean.class), handler1);
 
         filter.filter(exchange, terminalHandler);
 
@@ -83,8 +83,8 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Expect the request's case to divert the flow and ignore the response's case
-        filter.addRequestCase(Expression.valueOf("${true}"), handler1);
-        filter.addResponseCase(Expression.valueOf("${true}"), handler2);
+        filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler1);
+        filter.addResponseCase(Expression.valueOf("${true}", Boolean.class), handler2);
 
         filter.filter(exchange, terminalHandler);
 
@@ -100,10 +100,11 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
 
         // Build a chain where only the first matching case should be executed
-        filter.addRequestCase(Expression.valueOf("${false}"), handler1);
-        filter.addRequestCase(Expression.valueOf("${true}"), handler2); // <- This one matches and is executed
-        filter.addRequestCase(Expression.valueOf("${false}"), handler3);
-        filter.addRequestCase(Expression.valueOf("${true}"), handler4);
+        filter.addRequestCase(Expression.valueOf("${false}", Boolean.class), handler1);
+        // The following one matches and is executed
+        filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler2);
+        filter.addRequestCase(Expression.valueOf("${false}", Boolean.class), handler3);
+        filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler4);
 
         filter.filter(exchange, terminalHandler);
 

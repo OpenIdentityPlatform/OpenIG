@@ -64,16 +64,17 @@ import org.forgerock.util.LazyMap;
 public class SqlAttributesFilter extends GenericFilter {
 
     /** Expression that yields the target object that will contain the mapped results. */
-    private final Expression target;
+    @SuppressWarnings("rawtypes")
+    private final Expression<Map> target;
 
     /** The factory for connections to the physical data source. */
     private final DataSource dataSource;
 
-    /** The parametrized SQL query to execute, with ? parameter placeholders. */
+    /** The parameterized SQL query to execute, with ? parameter placeholders. */
     private final String preparedStatement;
 
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
-    private final List<Expression> parameters = new ArrayList<Expression>();
+    private final List<Expression<?>> parameters = new ArrayList<Expression<?>>();
 
     /**
      * Builds a new SqlAttributesFilter that will execute the given SQL statement on the given {@link DataSource},
@@ -84,9 +85,11 @@ public class SqlAttributesFilter extends GenericFilter {
      * @param target
      *         Expression that yields the target object that will contain the mapped results
      * @param preparedStatement
-     *         The parametrized SQL query to execute, with ? parameter placeholders
+     *         The parameterized SQL query to execute, with ? parameter placeholders
      */
-    public SqlAttributesFilter(final DataSource dataSource, final Expression target, final String preparedStatement) {
+    public SqlAttributesFilter(final DataSource dataSource,
+                               @SuppressWarnings("rawtypes") final Expression<Map> target,
+                               final String preparedStatement) {
         this.dataSource = dataSource;
         this.target = target;
         this.preparedStatement = preparedStatement;
@@ -96,7 +99,7 @@ public class SqlAttributesFilter extends GenericFilter {
      * Returns the list of parameters to evaluate and include in the execution of the prepared statement.
      * @return the list of parameters to evaluate and include in the execution of the prepared statement.
      */
-    public List<Expression> getParameters() {
+    public List<Expression<?>> getParameters() {
         return parameters;
     }
 
@@ -152,7 +155,7 @@ public class SqlAttributesFilter extends GenericFilter {
                 ps.clearParameters();
 
                 // Inject evaluated expression values into statement's placeholders
-                Iterator<Expression> expressions = parameters.iterator();
+                Iterator<Expression<?>> expressions = parameters.iterator();
                 int count = ps.getParameterMetaData().getParameterCount();
                 for (int i = 0; i < count; i++) {
                     if (!expressions.hasNext()) {
@@ -199,8 +202,10 @@ public class SqlAttributesFilter extends GenericFilter {
                 throw new JsonValueException(dataSource, "expecting " + DataSource.class.getName() + " type");
             }
 
+            @SuppressWarnings("rawtypes")
+            Expression<Map> targetExpr = asExpression(config.get("target").required(), Map.class);
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                                                                 asExpression(config.get("target").required()),
+                                                                 targetExpr,
                                                                  config.get("preparedStatement").required().asString());
 
             if (config.isDefined("parameters")) {

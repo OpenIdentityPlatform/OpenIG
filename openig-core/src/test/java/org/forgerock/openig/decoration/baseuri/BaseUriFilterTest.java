@@ -52,7 +52,8 @@ public class BaseUriFilterTest {
     @Test
     public void shouldRebaseUri() throws Exception {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf("http://www.example.com:443"));
+                                                              Expression.valueOf("http://www.example.com:443",
+                                                                      String.class));
 
         final Exchange exchange = createExchangeAndSetUri();
         baseUriFilter.filter(exchange, terminal);
@@ -74,7 +75,7 @@ public class BaseUriFilterTest {
     @Test
     public void shouldNotRebaseWithEmptyUri() throws Exception {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf(""));
+                                                              Expression.valueOf("", String.class));
 
         final Exchange exchange = createExchangeAndSetUri();
         baseUriFilter.filter(exchange, terminal);

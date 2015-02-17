@@ -39,15 +39,15 @@ import org.forgerock.openig.http.Response;
  */
 final class OAuth2Utils {
 
-    static URI buildUri(final Exchange exchange, final Expression uriExpression)
+    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression)
             throws HandlerException {
         return buildUri(exchange, uriExpression, null);
     }
 
-    static URI buildUri(final Exchange exchange, final Expression uriExpression,
+    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression,
             final String additionalPath) throws HandlerException {
         try {
-            String uriString = uriExpression.eval(exchange, String.class);
+            String uriString = uriExpression.eval(exchange);
             if (uriString == null) {
                 throw new HandlerException(
                         format("The URI expression '%s' could not be resolved", uriExpression.toString()));
@@ -77,11 +77,11 @@ final class OAuth2Utils {
         }
     }
 
-    static List<String> getScopes(final Exchange exchange, final List<Expression> scopeExpressions)
+    static List<String> getScopes(final Exchange exchange, final List<Expression<String>> scopeExpressions)
             throws HandlerException {
         final List<String> scopeValues = new ArrayList<String>(scopeExpressions.size());
-        for (final Expression scope : scopeExpressions) {
-            final String result = scope.eval(exchange, String.class);
+        for (final Expression<String> scope : scopeExpressions) {
+            final String result = scope.eval(exchange);
             if (result == null) {
                 throw new HandlerException(format(
                         "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));

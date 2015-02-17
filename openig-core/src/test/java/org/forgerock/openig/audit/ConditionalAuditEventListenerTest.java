@@ -49,15 +49,15 @@ public class ConditionalAuditEventListenerTest {
     public static Object[][] delegatingConditions() throws ExpressionException {
         // @Checkstyle:off
         return new Object[][] {
-                {Expression.valueOf("${true}")},
-                {Expression.valueOf("${contains(tags, 'tag#1')}")},
-                {Expression.valueOf("${source.name.leaf == 'source'}")}
+                {Expression.valueOf("${true}", Boolean.class)},
+                {Expression.valueOf("${contains(tags, 'tag#1')}", Boolean.class)},
+                {Expression.valueOf("${source.name.leaf == 'source'}", Boolean.class)}
         };
         // @Checkstyle:on
     }
 
     @Test(dataProvider = "delegatingConditions")
-    public void shouldDelegate(Expression condition) throws Exception {
+    public void shouldDelegate(Expression<Boolean> condition) throws Exception {
         ConditionalAuditEventListener agent = new ConditionalAuditEventListener(delegate, condition);
         agent.onAuditEvent(source);
         verify(delegate).onAuditEvent(source);
@@ -67,16 +67,16 @@ public class ConditionalAuditEventListenerTest {
     public static Object[][] filteringConditions() throws ExpressionException {
         // @Checkstyle:off
         return new Object[][] {
-                {Expression.valueOf("${false}")},
-                {Expression.valueOf("a non boolean value")},
-                {Expression.valueOf("${source.name.leaf == 'not the right name'}")},
-                {Expression.valueOf("${source.wrongProperty == 'java.lang.Object'}")}
+                {Expression.valueOf("${false}", Boolean.class)},
+                {Expression.valueOf("a non boolean value", Boolean.class)},
+                {Expression.valueOf("${source.name.leaf == 'not the right name'}", Boolean.class)},
+                {Expression.valueOf("${source.wrongProperty == 'java.lang.Object'}", Boolean.class)}
         };
         // @Checkstyle:on
     }
 
     @Test(dataProvider = "filteringConditions")
-    public void shouldNotDelegate(Expression condition) throws Exception {
+    public void shouldNotDelegate(Expression<Boolean> condition) throws Exception {
         ConditionalAuditEventListener agent = new ConditionalAuditEventListener(delegate, condition);
         agent.onAuditEvent(source);
         verifyZeroInteractions(delegate);
