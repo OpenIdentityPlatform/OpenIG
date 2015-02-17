@@ -179,9 +179,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
     /** The expression which will be used for storing authorization information in the exchange. */
     public static final String DEFAULT_TOKEN_KEY = "openid";
 
-    private Expression clientEndpoint;
-    private Expression defaultLoginGoto;
-    private Expression defaultLogoutGoto;
+    private Expression<String> clientEndpoint;
+    private Expression<String> defaultLoginGoto;
+    private Expression<String> defaultLogoutGoto;
     private Handler failureHandler;
     private Handler loginHandler;
     private Handler providerHandler;
@@ -189,8 +189,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
             new LinkedHashMap<String, OAuth2Provider>();
     private boolean requireHttps = true;
     private boolean requireLogin = true;
-    private List<Expression> scopes;
-    private Expression target;
+    private List<Expression<String>> scopes;
+    private Expression<?> target;
     private TimeService time = TimeService.SYSTEM;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
 
@@ -262,7 +262,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
      *            for the client end-points.
      * @return This filter.
      */
-    public OAuth2ClientFilter setClientEndpoint(final Expression endpoint) {
+    public OAuth2ClientFilter setClientEndpoint(final Expression<String> endpoint) {
         this.clientEndpoint = endpoint;
         return this;
     }
@@ -280,7 +280,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
      *            login "goto" URI.
      * @return This filter.
      */
-    public OAuth2ClientFilter setDefaultLoginGoto(final Expression endpoint) {
+    public OAuth2ClientFilter setDefaultLoginGoto(final Expression<String> endpoint) {
         this.defaultLoginGoto = endpoint;
         return this;
     }
@@ -298,7 +298,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
      *            logout "goto" URI.
      * @return This filter.
      */
-    public OAuth2ClientFilter setDefaultLogoutGoto(final Expression endpoint) {
+    public OAuth2ClientFilter setDefaultLogoutGoto(final Expression<String> endpoint) {
         this.defaultLogoutGoto = endpoint;
         return this;
     }
@@ -412,8 +412,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
      *            scopes.
      * @return This filter.
      */
-    public OAuth2ClientFilter setScopes(final List<Expression> scopes) {
-        this.scopes = scopes != null ? scopes : Collections.<Expression> emptyList();
+    public OAuth2ClientFilter setScopes(final List<Expression<String>> scopes) {
+        this.scopes = scopes != null ? scopes : Collections.<Expression<String>> emptyList();
         return this;
     }
 
@@ -426,7 +426,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
      *            information in the exchange.
      * @return This filter.
      */
-    public OAuth2ClientFilter setTarget(final Expression target) {
+    public OAuth2ClientFilter setTarget(final Expression<?> target) {
         this.target = target;
         return this;
     }
@@ -672,7 +672,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     private void httpRedirectGoto(final Exchange exchange, final String gotoUri,
-            final Expression defaultGotoUri) throws HandlerException {
+            final Expression<String> defaultGotoUri) throws HandlerException {
         if (gotoUri != null) {
             httpRedirect(exchange, gotoUri);
         } else if (defaultGotoUri != null) {
@@ -852,9 +852,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
             final OAuth2ClientFilter filter = new OAuth2ClientFilter();
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
-                    format("${exchange.%s}", DEFAULT_TOKEN_KEY))));
+                    format("${exchange.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
-            filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required()));
+            filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
             final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
             filter.setLoginHandler(loginHandler);
             filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
@@ -862,8 +862,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
             final Handler providerHandler =
                     heap.resolve(config.get("providerHandler"), Handler.class);
             filter.setProviderHandler(providerHandler);
-            filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto")));
-            filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto")));
+            filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto"), String.class));
+            filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto"), String.class));
             filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
             filter.setRequireLogin(config.get("requireLogin").defaultTo(true).asBoolean());
             int providerCount = 0;
@@ -871,8 +871,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 // Must set the authorization handler before using well-known config.
                 final OAuth2Provider provider =
                         new OAuth2Provider(providerConfig.get("name").required().asString());
-                provider.setClientId(asExpression(providerConfig.get("clientId").required()));
-                provider.setClientSecret(asExpression(providerConfig.get("clientSecret").required()));
+                provider.setClientId(asExpression(providerConfig.get("clientId").required(), String.class));
+                provider.setClientSecret(asExpression(providerConfig.get("clientSecret").required(), String.class));
                 provider.setScopes(providerConfig.get("scopes").defaultTo(emptyList()).asList(
                         ofExpression()));
                 JsonValue knownConfiguration = providerConfig.get("wellKnownConfiguration");
@@ -901,11 +901,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
                     }
                 } else {
                     provider.setAuthorizeEndpoint(asExpression(providerConfig.get(
-                            "authorizeEndpoint").required()));
+                            "authorizeEndpoint").required(), String.class));
                     provider.setTokenEndpoint(asExpression(providerConfig.get("tokenEndpoint")
-                            .required()));
+                            .required(), String.class));
                     provider.setUserInfoEndpoint(asExpression(providerConfig
-                            .get("userInfoEndpoint")));
+                            .get("userInfoEndpoint"), String.class));
                 }
                 filter.addProvider(provider);
                 providerCount++;

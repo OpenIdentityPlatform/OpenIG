@@ -37,7 +37,7 @@ import org.forgerock.openig.heap.Heaplet;
 public class ConditionalAuditEventListener implements AuditEventListener {
 
     private final AuditEventListener delegate;
-    private final Expression condition;
+    private final Expression<Boolean> condition;
 
     /**
      * Builds a new ConditionalAuditEventListener that will delegates to the given {@code delegate} under the given
@@ -48,7 +48,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
      * @param condition
      *         condition to evaluate
      */
-    public ConditionalAuditEventListener(final AuditEventListener delegate, final Expression condition) {
+    public ConditionalAuditEventListener(final AuditEventListener delegate, final Expression<Boolean> condition) {
         this.delegate = delegate;
         this.condition = condition;
     }
@@ -56,7 +56,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
     @Override
     public void onAuditEvent(final AuditEvent event) {
         // Only process selected events
-        if (TRUE.equals(condition.eval(event, Boolean.class))) {
+        if (TRUE.equals(condition.eval(event))) {
             delegate.onAuditEvent(event);
         }
     }
@@ -88,7 +88,8 @@ public class ConditionalAuditEventListener implements AuditEventListener {
 
         @Override
         public Object create() throws HeapException {
-            Expression condition = asExpression(config.get("condition").defaultTo("${true}"));
+            Expression<Boolean> condition = asExpression(config.get("condition").defaultTo("${true}"),
+                    Boolean.class);
             auditSystem = heap.get(AUDIT_SYSTEM_HEAP_KEY, AuditSystem.class);
             AuditEventListener listener = createListener();
             conditional = new ConditionalAuditEventListener(listener, condition);

@@ -32,7 +32,7 @@ class BaseUriHandler implements Handler {
 
     private final Handler delegate;
 
-    private final Expression baseUri;
+    private final Expression<String> baseUri;
 
     /**
      * Creates a new base URI handler.
@@ -42,7 +42,7 @@ class BaseUriHandler implements Handler {
      * @param baseUri
      *            The new base URI to set.
      */
-    BaseUriHandler(final Handler delegate, final Expression baseUri) {
+    BaseUriHandler(final Handler delegate, final Expression<String> baseUri) {
         this.delegate = delegate;
         this.baseUri = baseUri;
     }
@@ -50,7 +50,7 @@ class BaseUriHandler implements Handler {
     @Override
     public void handle(Exchange exchange) throws HandlerException, IOException {
         if (exchange.request != null && exchange.request.getUri() != null) {
-            exchange.request.getUri().rebase(URI.create(baseUri.eval(exchange, String.class)));
+            exchange.request.getUri().rebase(URI.create(baseUri.eval(exchange)));
         }
         delegate.handle(exchange);
     }

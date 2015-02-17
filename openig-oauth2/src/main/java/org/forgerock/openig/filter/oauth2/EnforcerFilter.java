@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -34,7 +34,7 @@ import org.forgerock.openig.http.Exchange;
  */
 public class EnforcerFilter extends GenericFilter {
 
-    private final Expression enforcement;
+    private final Expression<Boolean> enforcement;
     private final Filter delegate;
 
     /**
@@ -46,7 +46,7 @@ public class EnforcerFilter extends GenericFilter {
      * @param delegate
      *         Filter instance to delegate to.
      */
-    public EnforcerFilter(final Expression enforcement, final Filter delegate) {
+    public EnforcerFilter(final Expression<Boolean> enforcement, final Filter delegate) {
         this.enforcement = enforcement;
         this.delegate = delegate;
     }
@@ -60,6 +60,6 @@ public class EnforcerFilter extends GenericFilter {
     }
 
     private boolean isConditionVerified(final Exchange exchange) {
-        return TRUE.equals(enforcement.eval(exchange, Boolean.class));
+        return TRUE.equals(enforcement.eval(exchange));
     }
 }

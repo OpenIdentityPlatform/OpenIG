@@ -95,8 +95,8 @@ public class HttpBasicAuthFilterTest {
 
     @Test
     public void testNominalInteraction() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -113,8 +113,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testNoCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("${null}"),
-                                                             Expression.valueOf("${null}"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("${null}", String.class),
+                                                             Expression.valueOf("${null}", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -136,8 +136,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testInvalidCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -162,8 +162,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void tesAuthorizationHeaderCaching() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(true);
 
@@ -193,8 +193,8 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testRefreshAuthenticationHeader() throws Exception {
 
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("${exchange.password}"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("${exchange.password}", String.class),
                                                              failureHandler);
         filter.setCacheHeader(true);
 
@@ -250,8 +250,8 @@ public class HttpBasicAuthFilterTest {
           expectedExceptions = HandlerException.class,
           expectedExceptionsMessageRegExp = "username must not contain a colon ':' character")
     public void testConformanceErrorIsProducedWhenUsernameContainsColon(final String username) throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username),
-                                                             Expression.valueOf("dont-care"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username, String.class),
+                                                             Expression.valueOf("dont-care", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 

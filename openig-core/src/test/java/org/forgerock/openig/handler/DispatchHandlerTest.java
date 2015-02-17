@@ -24,6 +24,7 @@ import java.net.URI;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Request;
+import org.forgerock.openig.util.MutableUri;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -53,7 +54,8 @@ public class DispatchHandlerTest {
     public void testDispatchWithRebasedUriStandard() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("http://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class),
+                nextHandler, new URI("http://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -69,7 +71,7 @@ public class DispatchHandlerTest {
     public void testDispatchWithRebasedUriWithUserInfo() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(Expression.valueOf(CONDITION),
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class),
                                     nextHandler,
                                     new URI("http://www.hostA.domain.com:443"));
 
@@ -80,15 +82,16 @@ public class DispatchHandlerTest {
         dispatchHandler.handle(exchange);
 
         verify(nextHandler).handle(exchange);
-        assertThat(exchange.request.getUri()).isEqualTo(uri(
-                "http://user.0:password@www.hostA.domain.com:443/key_path"));
+        MutableUri expectedURI = uri("http://user.0:password@www.hostA.domain.com:443/key_path");
+        assertThat(exchange.request.getUri()).isEqualTo(expectedURI);
     }
 
     @Test
     public void testDispatchWithRebasedUriWithSchemeAndQueryAndFragment() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class), nextHandler,
+                new URI("https://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -119,8 +122,8 @@ public class DispatchHandlerTest {
 
     @Test
     public void testDispatchWithRebasedURI() throws Exception {
-        final Expression expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') and "
-                + "contains(exchange.request.uri.path,'/user.0')}");
+        final Expression<Boolean> expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') "
+                + "and contains(exchange.request.uri.path,'/user.0')}", Boolean.class);
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, new URI("https://www.secure.domain.com"));
@@ -138,8 +141,8 @@ public class DispatchHandlerTest {
 
     @Test
     public void testDispatchWithNullBaseURI() throws Exception {
-        final Expression expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') and "
-                + "contains(exchange.request.uri.path,'/user.0')}");
+        final Expression<Boolean> expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') "
+                + "and contains(exchange.request.uri.path,'/user.0')}", Boolean.class);
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, null);
@@ -159,7 +162,8 @@ public class DispatchHandlerTest {
     public void testDispatchWithMultipleBindings() throws Exception {
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
-        dispatchHandler.addBinding(Expression.valueOf(CONDITION), nextHandler, new URI("https://www.hostA.domain.com"));
+        dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class), nextHandler,
+                new URI("https://www.hostA.domain.com"));
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
         final Exchange exchange = new Exchange();

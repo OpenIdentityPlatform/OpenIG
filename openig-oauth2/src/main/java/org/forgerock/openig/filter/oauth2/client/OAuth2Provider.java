@@ -37,12 +37,12 @@ import org.forgerock.util.encode.Base64;
  */
 public class OAuth2Provider {
     private final String name;
-    private Expression authorizeEndpoint;
-    private Expression clientId;
-    private Expression clientSecret;
-    private List<Expression> scopes;
-    private Expression tokenEndpoint;
-    private Expression userInfoEndpoint;
+    private Expression<String> authorizeEndpoint;
+    private Expression<String> clientId;
+    private Expression<String> clientSecret;
+    private List<Expression<String>> scopes;
+    private Expression<String> tokenEndpoint;
+    private Expression<String> userInfoEndpoint;
     private final boolean tokenEndpointUseBasicAuth = false; // Do we want to make this configurable?
 
     /**
@@ -65,7 +65,7 @@ public class OAuth2Provider {
      *            authorization server's authorize end-point.
      * @return This provider.
      */
-    public OAuth2Provider setAuthorizeEndpoint(final Expression endpoint) {
+    public OAuth2Provider setAuthorizeEndpoint(final Expression<String> endpoint) {
         this.authorizeEndpoint = endpoint;
         return this;
     }
@@ -79,7 +79,7 @@ public class OAuth2Provider {
      *            client ID.
      * @return This provider.
      */
-    public OAuth2Provider setClientId(final Expression clientId) {
+    public OAuth2Provider setClientId(final Expression<String> clientId) {
         this.clientId = clientId;
         return this;
     }
@@ -93,7 +93,7 @@ public class OAuth2Provider {
      *            client secret.
      * @return This provider.
      */
-    public OAuth2Provider setClientSecret(final Expression clientSecret) {
+    public OAuth2Provider setClientSecret(final Expression<String> clientSecret) {
         this.clientSecret = clientSecret;
         return this;
     }
@@ -108,8 +108,8 @@ public class OAuth2Provider {
      *            scopes.
      * @return This provider.
      */
-    public OAuth2Provider setScopes(final List<Expression> scopes) {
-        this.scopes = scopes != null ? scopes : Collections.<Expression> emptyList();
+    public OAuth2Provider setScopes(final List<Expression<String>> scopes) {
+        this.scopes = scopes != null ? scopes : Collections.<Expression<String>> emptyList();
         return this;
     }
 
@@ -123,7 +123,7 @@ public class OAuth2Provider {
      *            authorization server's access token end-point.
      * @return This provider.
      */
-    public OAuth2Provider setTokenEndpoint(final Expression endpoint) {
+    public OAuth2Provider setTokenEndpoint(final Expression<String> endpoint) {
         this.tokenEndpoint = endpoint;
         return this;
     }
@@ -138,7 +138,7 @@ public class OAuth2Provider {
      *            authorization server's OpenID Connect user info end-point.
      * @return This provider.
      */
-    public OAuth2Provider setUserInfoEndpoint(final Expression endpoint) {
+    public OAuth2Provider setUserInfoEndpoint(final Expression<String> endpoint) {
         this.userInfoEndpoint = endpoint;
         return this;
     }
@@ -152,9 +152,9 @@ public class OAuth2Provider {
      * @return This provider.
      */
     public OAuth2Provider setWellKnownConfiguration(final JsonValue wellKnown) {
-        setAuthorizeEndpoint(asExpression(wellKnown.get("authorization_endpoint").required()));
-        setTokenEndpoint(asExpression(wellKnown.get("token_endpoint").required()));
-        setUserInfoEndpoint(asExpression(wellKnown.get("userinfo_endpoint")));
+        setAuthorizeEndpoint(asExpression(wellKnown.get("authorization_endpoint").required(), String.class));
+        setTokenEndpoint(asExpression(wellKnown.get("token_endpoint").required(), String.class));
+        setUserInfoEndpoint(asExpression(wellKnown.get("userinfo_endpoint"), String.class));
         return this;
     }
 
@@ -199,7 +199,7 @@ public class OAuth2Provider {
     }
 
     String getClientId(final Exchange exchange) throws HandlerException {
-        final String result = clientId.eval(exchange, String.class);
+        final String result = clientId.eval(exchange);
         if (result == null) {
             throw new HandlerException(
                     format("The clientId expression '%s' could not be resolved", clientId.toString()));
@@ -234,7 +234,7 @@ public class OAuth2Provider {
     }
 
     private String getClientSecret(final Exchange exchange) throws HandlerException {
-        final String result = clientSecret.eval(exchange, String.class);
+        final String result = clientSecret.eval(exchange);
         if (result == null) {
             throw new HandlerException(
                     format("The clientSecret expression '%s' could not be resolved", clientSecret.toString()));

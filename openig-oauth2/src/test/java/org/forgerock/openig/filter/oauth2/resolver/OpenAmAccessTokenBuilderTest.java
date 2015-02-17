@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.mockito.Mockito.*;
 
@@ -59,9 +59,9 @@ public class OpenAmAccessTokenBuilderTest {
         assertThat(token.getExpiresAt()).isEqualTo(10000L + 42L);
         assertThat(token.getScopes()).containsOnly("email", "address");
         assertThat(token.getInfo().get("expires_in")).isEqualTo(10);
-        assertThat(Expression.valueOf("${info.scope[0]}").eval(token, String.class)).isEqualTo("email");
-        assertThat(Expression.valueOf("${info.scope[1]}").eval(token, String.class)).isEqualTo("address");
-        assertThat(Expression.valueOf("${info.access_token}").eval(token, String.class)).isEqualTo(TOKEN);
+        assertThat(Expression.valueOf("${info.scope[0]}", String.class).eval(token)).isEqualTo("email");
+        assertThat(Expression.valueOf("${info.scope[1]}", String.class).eval(token)).isEqualTo("address");
+        assertThat(Expression.valueOf("${info.access_token}", String.class).eval(token)).isEqualTo(TOKEN);
         assertThat(token.asJsonValue()).isSameAs(info);
     }
 

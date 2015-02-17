@@ -60,7 +60,7 @@ public class HeaderFilterTest {
 
         // Prepare a static response handler that provision a response header
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com"));
+        handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com", String.class));
 
         // Execute the filter
         filter.filter(exchange, handler);

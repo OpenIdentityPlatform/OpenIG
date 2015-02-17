@@ -65,7 +65,7 @@ public class EntityExtractFilter extends GenericFilter {
     private final Charset charset;
 
     /** Expression that yields the target object that will contain the mapped extraction results. */
-    private final Expression target;
+    private final Expression<?> target;
 
     /**
      * Builds an EntityExtractFilter that will act either on {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
@@ -77,7 +77,7 @@ public class EntityExtractFilter extends GenericFilter {
      * @param target
      *         Expression that yields the target object that will contain the mapped extraction results
      */
-    public EntityExtractFilter(final MessageType type, final Expression target) {
+    public EntityExtractFilter(final MessageType type, final Expression<?> target) {
         this(type, target, null);
     }
 
@@ -93,7 +93,7 @@ public class EntityExtractFilter extends GenericFilter {
      * @param charset
      *         Overrides the character set encoding specified in message. If {@code null}, the message encoding is used
      */
-    public EntityExtractFilter(final MessageType type, final Expression target, final Charset charset) {
+    public EntityExtractFilter(final MessageType type, final Expression<?> target, final Charset charset) {
         this.messageType = type;
         this.target = target;
         this.charset = charset;
@@ -142,11 +142,10 @@ public class EntityExtractFilter extends GenericFilter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            EntityExtractFilter filter = new EntityExtractFilter(config.get("messageType")
-                                                                         .required()
-                                                                         .asEnum(MessageType.class),
-                                                                 asExpression(config.get("target").required()),
-                                                                 config.get("charset").asCharset());
+            EntityExtractFilter filter = new EntityExtractFilter(
+                    config.get("messageType").required().asEnum(MessageType.class),
+                    asExpression(config.get("target").required(), Object.class),
+                    config.get("charset").asCharset());
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);

@@ -18,8 +18,8 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
 import static org.forgerock.openig.util.StandardCharsets.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -122,7 +122,7 @@ public class CaptureFilter extends GenericFilter {
                     "application/x-www-form-urlencoded")
     ); // make all entries lower case
 
-    private Expression condition;
+    private Expression<Boolean> condition = null;
 
     private boolean captureEntity = true;
 
@@ -146,7 +146,7 @@ public class CaptureFilter extends GenericFilter {
      * Notice that the condition is evaluated when the request flows in this filter.
      * @param condition expression that evaluates to a {@link java.lang.Boolean}
      */
-    public synchronized void setCondition(final Expression condition) {
+    public synchronized void setCondition(final Expression<Boolean> condition) {
         this.condition = condition;
     }
 
@@ -161,8 +161,7 @@ public class CaptureFilter extends GenericFilter {
 
     @Override
     public synchronized void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
-        boolean doCapture = (eval instanceof Boolean && (Boolean) eval);
+        boolean doCapture = condition == null || Boolean.TRUE.equals(condition.eval(exchange));
         long id = 0;
         if (doCapture) {
             id = sequence.incrementAndGet();
@@ -261,7 +260,7 @@ public class CaptureFilter extends GenericFilter {
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.setWriterProvider(buildFileProvider(config));
-            filter.setCondition(asExpression(config.get("condition")));
+            filter.setCondition(asExpression(config.get("condition"), Boolean.class));
             JsonValue capture = config.get("captureEntity");
             filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean());
             return filter;

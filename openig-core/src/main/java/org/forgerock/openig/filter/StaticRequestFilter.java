@@ -55,7 +55,7 @@ public class StaticRequestFilter extends GenericFilter {
     private final String method;
 
     /** URI as an expression to allow dynamic URI construction. */
-    private Expression uri;
+    private Expression<String> uri;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}). */
     private String version;
@@ -64,12 +64,12 @@ public class StaticRequestFilter extends GenericFilter {
     private boolean restore = DEFAULT_RESTORE;
 
     /** Message header fields whose values are expressions that are evaluated. */
-    private final MultiValueMap<String, Expression> headers =
-            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+    private final MultiValueMap<String, Expression<String>> headers =
+            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /** A form to include in the request, whose values are exchange-scoped expressions that are evaluated. */
-    private final MultiValueMap<String, Expression> form =
-            new MultiValueMap<String, Expression>(new CaseInsensitiveMap<List<Expression>>());
+    private final MultiValueMap<String, Expression<String>> form =
+            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /**
      * Builds a new {@link StaticRequestFilter} that will uses the given HTTP method on the resource.
@@ -87,7 +87,7 @@ public class StaticRequestFilter extends GenericFilter {
      * @param uri
      *         target URI expression
      */
-    public void setUri(final Expression uri) {
+    public void setUri(final Expression<String> uri) {
         this.uri = uri;
     }
 
@@ -121,7 +121,7 @@ public class StaticRequestFilter extends GenericFilter {
      *         {@link Expression} that represents the value of the new header
      * @return this object for fluent usage
      */
-    public StaticRequestFilter addHeaderValue(final String key, final Expression value) {
+    public StaticRequestFilter addHeaderValue(final String key, final Expression<String> value) {
         headers.add(key, value);
         return this;
     }
@@ -136,7 +136,7 @@ public class StaticRequestFilter extends GenericFilter {
      *         {@link Expression} that represents the value of the parameter
      * @return this object for fluent usage
      */
-    public StaticRequestFilter addFormParameter(final String name, final Expression value) {
+    public StaticRequestFilter addFormParameter(final String name, final Expression<String> value) {
         form.add(name, value);
         return this;
     }
@@ -145,7 +145,7 @@ public class StaticRequestFilter extends GenericFilter {
     public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
         Request request = new Request();
         request.setMethod(this.method);
-        String value = this.uri.eval(exchange, String.class);
+        String value = this.uri.eval(exchange);
         if (value != null) {
             try {
                 request.setUri(value);
@@ -153,16 +153,16 @@ public class StaticRequestFilter extends GenericFilter {
                 throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
             }
         } else {
-            throw logger.debug(
-                    new HandlerException(format("The URI expression '%s' could not be resolved", uri.toString())));
+            throw logger.debug(new HandlerException(format("The URI expression '%s' could not be resolved",
+                                                           uri.toString())));
         }
         if (this.version != null) {
             // default in Message class
             request.setVersion(version);
         }
         for (String key : this.headers.keySet()) {
-            for (Expression expression : this.headers.get(key)) {
-                String eval = expression.eval(exchange, String.class);
+            for (Expression<String> expression : this.headers.get(key)) {
+                String eval = expression.eval(exchange);
                 if (eval != null) {
                     request.getHeaders().add(key, eval);
                 }
@@ -171,8 +171,8 @@ public class StaticRequestFilter extends GenericFilter {
         if (this.form != null && !this.form.isEmpty()) {
             Form f = new Form();
             for (String key : this.form.keySet()) {
-                for (Expression expression : this.form.get(key)) {
-                    String eval = expression.eval(exchange, String.class);
+                for (Expression<String> expression : this.form.get(key)) {
+                    String eval = expression.eval(exchange);
                     if (eval != null) {
                         f.add(key, eval);
                     }
@@ -197,7 +197,7 @@ public class StaticRequestFilter extends GenericFilter {
         @Override
         public Object create() throws HeapException {
             StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
-            filter.setUri(asExpression(config.get("uri").required()));
+            filter.setUri(asExpression(config.get("uri").required(), String.class));
             filter.setVersion(config.get("version").asString());
             filter.setRestore(config.get("restore").defaultTo(DEFAULT_RESTORE).asBoolean());
 
@@ -205,7 +205,7 @@ public class StaticRequestFilter extends GenericFilter {
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).required().expect(List.class)) {
-                        filter.addHeaderValue(key, asExpression(value.required()));
+                        filter.addHeaderValue(key, asExpression(value.required(), String.class));
                     }
                 }
             }
@@ -213,7 +213,7 @@ public class StaticRequestFilter extends GenericFilter {
             if (form != null) {
                 for (String key : form.keys()) {
                     for (JsonValue value : form.get(key).required().expect(List.class)) {
-                        filter.addFormParameter(key, asExpression(value.required()));
+                        filter.addFormParameter(key, asExpression(value.required(), String.class));
                     }
                 }
             }

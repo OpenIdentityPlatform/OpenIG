@@ -44,7 +44,7 @@ public class EnforcerFilterTest {
 
     @Test
     public void shouldDelegateToTheRealFilter() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}", Boolean.class), delegate);
         Exchange exchange = new Exchange();
         enforcer.filter(exchange, handler);
         verify(delegate).filter(exchange, handler);
@@ -52,13 +52,13 @@ public class EnforcerFilterTest {
 
     @Test(expectedExceptions = HandlerException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsNotVerified() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${false}"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${false}", Boolean.class), delegate);
         enforcer.filter(new Exchange(), handler);
     }
 
     @Test(expectedExceptions = HandlerException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsInvalid() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("not a condition"), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("not a condition", Boolean.class), delegate);
         enforcer.filter(new Exchange(), handler);
     }
 }

@@ -66,10 +66,10 @@ public class HttpBasicAuthFilter extends GenericFilter {
             new CaseInsensitiveSet(Arrays.asList("WWW-Authenticate"));
 
     /** Expression that yields the username to supply during authentication. */
-    private final Expression username;
+    private final Expression<String> username;
 
     /** Expression that yields the password to supply during authentication. */
-    private final Expression password;
+    private final Expression<String> password;
 
     /** Handler dispatch to if authentication fails. */
     private final Handler failureHandler;
@@ -83,7 +83,9 @@ public class HttpBasicAuthFilter extends GenericFilter {
      * @param password the expression that yields the password to supply during authentication.
      * @param failureHandler the Handler to dispatch to if authentication fails.
      */
-    public HttpBasicAuthFilter(final Expression username, final Expression password, final Handler failureHandler) {
+    public HttpBasicAuthFilter(final Expression<String> username,
+            final Expression<String> password,
+            final Handler failureHandler) {
         this.username = username;
         this.password = password;
         this.failureHandler = failureHandler;
@@ -144,8 +146,8 @@ public class HttpBasicAuthFilter extends GenericFilter {
                 return;
             }
             // credentials might be stale, so fetch them
-            String user = username.eval(exchange, String.class);
-            String pass = password.eval(exchange, String.class);
+            String user = username.eval(exchange);
+            String pass = password.eval(exchange);
             // no credentials is equivalent to invalid credentials
             if (user == null || pass == null) {
                 break;
@@ -177,9 +179,9 @@ public class HttpBasicAuthFilter extends GenericFilter {
             Handler failureHandler =
                     heap.resolve(config.get("failureHandler"), Handler.class);
 
-            HttpBasicAuthFilter filter = new HttpBasicAuthFilter(asExpression(config.get("username").required()),
-                                                                 asExpression(config.get("password").required()),
-                                                                 failureHandler);
+            Expression<String> usernameExpr = asExpression(config.get("username").required(), String.class);
+            Expression<String> passwordExpr = asExpression(config.get("password").required(), String.class);
+            HttpBasicAuthFilter filter = new HttpBasicAuthFilter(usernameExpr, passwordExpr, failureHandler);
 
             filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean();
 
@@ -187,5 +189,7 @@ public class HttpBasicAuthFilter extends GenericFilter {
 
             return filter;
         }
+
+
     }
 }

@@ -49,7 +49,7 @@ public class SequenceHandler extends GenericHandler {
      *            evaluated to determine if sequence continues (default: {@code null} a.k.a. unconditional)
      * @return The current dispatch handler.
      */
-    public SequenceHandler addBinding(final Handler handler, final Expression postcondition) {
+    public SequenceHandler addBinding(final Handler handler, final Expression<Boolean> postcondition) {
         bindings.add(new Binding(handler, postcondition));
         return this;
     }
@@ -59,7 +59,7 @@ public class SequenceHandler extends GenericHandler {
 
         private final Handler handler;
 
-        private final Expression postcondition;
+        private final Expression<Boolean> postcondition;
 
         /**
          * Default constructor.
@@ -70,7 +70,7 @@ public class SequenceHandler extends GenericHandler {
          *            Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a.
          *            unconditional).
          */
-        Binding(Handler handler, Expression postcondition) {
+        Binding(Handler handler, Expression<Boolean> postcondition) {
             this.handler = handler;
             this.postcondition = postcondition;
         }
@@ -97,7 +97,7 @@ public class SequenceHandler extends GenericHandler {
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
-                final Expression postcondition = asExpression(jv.get("postcondition"));
+                final Expression<Boolean> postcondition = asExpression(jv.get("postcondition"), Boolean.class);
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;

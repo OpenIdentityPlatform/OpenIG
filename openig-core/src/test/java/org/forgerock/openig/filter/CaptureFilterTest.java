@@ -78,7 +78,7 @@ public class CaptureFilterTest {
     public void testCaptureIsDisabledUnderCondition() throws Exception {
         CaptureFilter filter = new CaptureFilter();
         filter.setWriterProvider(provider);
-        filter.setCondition(Expression.valueOf("${false}"));
+        filter.setCondition(Expression.valueOf("${false}", Boolean.class));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();

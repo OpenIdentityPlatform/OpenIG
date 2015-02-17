@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
@@ -29,7 +29,7 @@ public class StaticResponseHandlerTest {
     @Test
     public void shouldSetStatusReasonAndHeaders() throws Exception {
         final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
-        handler.addHeader("Location", Expression.valueOf("http://www.example.com/"));
+        handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
         final Exchange exchange = new Exchange();
         handler.handle(exchange);
         assertThat(exchange.response.getStatus()).isEqualTo(302);
@@ -45,7 +45,7 @@ public class StaticResponseHandlerTest {
                         null,
                         null,
                         Expression.valueOf(
-                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>"));
+                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>", String.class));
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
         handler.handle(exchange);

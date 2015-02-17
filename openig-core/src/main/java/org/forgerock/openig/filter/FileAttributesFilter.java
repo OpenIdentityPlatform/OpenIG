@@ -51,7 +51,8 @@ import org.forgerock.util.LazyMap;
 public class FileAttributesFilter extends GenericFilter {
 
     /** Expression that yields the target object that will contain the record. */
-    private final Expression target;
+    @SuppressWarnings("rawtypes") // Can't find the correct syntax to write Expression<Map<String, String>>
+    private final Expression<Map> target;
 
     /** The file to read separated values from. */
     private final SeparatedValuesFile file;
@@ -60,7 +61,7 @@ public class FileAttributesFilter extends GenericFilter {
     private final String key;
 
     /** Expression that yields the value to be looked-up within the file. */
-    private final Expression value;
+    private final Expression<?> value;
 
     /**
      * Builds a new FileAttributesFilter extracting values from the given separated values file.
@@ -76,8 +77,8 @@ public class FileAttributesFilter extends GenericFilter {
      */
     public FileAttributesFilter(final SeparatedValuesFile file,
                                 final String key,
-                                final Expression value,
-                                final Expression target) {
+                                final Expression<?> value,
+                                @SuppressWarnings("rawtypes") final Expression<Map> target) {
         this.file = file;
         this.key = key;
         this.value = value;
@@ -90,6 +91,7 @@ public class FileAttributesFilter extends GenericFilter {
             @Override
             public Map<String, String> newInstance() {
                 try {
+                    // Force the call to the method toString() to
                     return file.getRecord(key, value.eval(exchange).toString());
                 } catch (IOException ioe) {
                     logger.warning(ioe);
@@ -105,7 +107,8 @@ public class FileAttributesFilter extends GenericFilter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            SeparatedValuesFile sources = new SeparatedValuesFile(new File(evaluate(config.get("file").required())),
+            String filename = evaluate(config.get("file").required());
+            SeparatedValuesFile sources = new SeparatedValuesFile(new File(filename),
                                                                   config.get("charset").defaultTo("UTF-8").asCharset(),
                                                                   config.get("separator").defaultTo("COMMA")
                                                                           .asEnum(Separators.class).getSeparator(),
@@ -116,8 +119,8 @@ public class FileAttributesFilter extends GenericFilter {
             }
             return new FileAttributesFilter(sources,
                                             config.get("key").required().asString(),
-                                            asExpression(config.get("value").required()),
-                                            asExpression(config.get("target").required()));
+                                            asExpression(config.get("value").required(), String.class),
+                                            asExpression(config.get("target").required(), Map.class));
         }
     }
 }
