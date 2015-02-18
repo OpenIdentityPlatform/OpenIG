@@ -1,0 +1,6 @@
+{
+  "handler": {
+    "type": "DesKeyGenHandler"
+  },
+  "condition": "${matches(exchange.request.uri.path, '^/keygen')}"
+}
