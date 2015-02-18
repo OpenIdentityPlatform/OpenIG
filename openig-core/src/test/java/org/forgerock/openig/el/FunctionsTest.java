@@ -31,7 +31,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class FunctionTest {
+public class FunctionsTest {
 
     private Exchange exchange;
 
