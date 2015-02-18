@@ -107,6 +107,7 @@
 
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
+  <xinclude:include href="man-DesKeyGenHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
   <xinclude:include href="man-MonitorEndpointHandler.xml" />
   <xinclude:include href="man-Route.xml" />
