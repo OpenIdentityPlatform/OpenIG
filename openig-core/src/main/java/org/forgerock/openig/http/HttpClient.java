@@ -299,6 +299,9 @@ public class HttpClient {
      */
     private final TemporaryStorage storage;
 
+    /** The underlying connection manager that manages the connections pool. */
+    private final ClientConnectionManager connectionManager;
+
     /**
      * Creates a new client handler which will cache at most 64 connections, allow all host names for SSL requests
      * and has a both a default connection and so timeout.
@@ -359,7 +362,7 @@ public class HttpClient {
                                                          trustManagers,
                                                          verifier.getHostnameVerifier()),
                                      443));
-        final ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(parameters, registry);
+        connectionManager = new ThreadSafeClientConnManager(parameters, registry);
 
         httpClient = new DefaultHttpClient(connectionManager, parameters);
         httpClient.removeRequestInterceptorByClass(RequestAddCookies.class);
@@ -458,6 +461,13 @@ public class HttpClient {
     }
 
     /**
+     * Shutdowns the HttpClient means this is not possible anymore to execute any request.
+     */
+    public void shutdown() {
+        connectionManager.shutdown();
+    }
+
+    /**
      * Creates and initializes a http client object in a heap environment.
      */
     public static class Heaplet extends GenericHeaplet {
@@ -504,6 +514,12 @@ public class HttpClient {
             } catch (GeneralSecurityException e) {
                 throw new HeapException(format("Cannot build HttpClient named '%s'", name), e);
             }
+        }
+
+        @Override
+        public void destroy() {
+            ((HttpClient) this.object).shutdown();
+            super.destroy();
         }
 
         private TrustManager[] getTrustManagers() throws HeapException {
