@@ -69,13 +69,16 @@ public class HttpClientTest {
 
         HttpClient client = new HttpClient(new TemporaryStorage());
 
-        Request request = new Request();
-        request.setMethod("POST");
-        request.setUri(format("http://localhost:%d/test", server.getPort()));
-        request.getEntity().setString("Hello");
+        try {
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(format("http://localhost:%d/test", server.getPort()));
+            request.getEntity().setString("Hello");
 
-        assertThat(client.execute(request).getStatus()).isEqualTo(200);
-
+            assertThat(client.execute(request).getStatus()).isEqualTo(200);
+        } finally {
+            client.shutdown();
+        }
     }
 
     @Test
@@ -86,11 +89,30 @@ public class HttpClientTest {
 
         HttpClient client = new HttpClient(new TemporaryStorage());
 
+        try {
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(format("http://localhost:%d/test", server.getPort()));
+
+            assertThat(client.execute(request).getStatus()).isEqualTo(200);
+        } finally {
+            client.shutdown();
+        }
+    }
+
+    @Test(expectedExceptions = IllegalStateException.class)
+    public void shouldNotBeAbleToExecuteRequestAfterShutdown() throws Exception {
+        whenHttp(server).match(get("/test")).then(status(HttpStatus.OK_200));
+
+        HttpClient client = new HttpClient(new TemporaryStorage());
+        client.shutdown();
+
         Request request = new Request();
-        request.setMethod("POST");
+        request.setMethod("GET");
         request.setUri(format("http://localhost:%d/test", server.getPort()));
 
-        assertThat(client.execute(request).getStatus()).isEqualTo(200);
+        // Should throw an Exception as we closed the client before.
+        client.execute(request);
     }
 
     /**
