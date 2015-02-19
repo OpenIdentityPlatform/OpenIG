@@ -21,16 +21,16 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010-2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='Functions'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Functions</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -604,7 +604,7 @@
  </refsect1>
 
  <refsect1 xml:id="functions-urlDecode">
-  <title>trim</title>
+  <title>urlDecode</title>
   <literallayout class="monospaced">urlDecode(string)</literallayout>
 
   <para>
@@ -639,7 +639,7 @@
 
 
  <refsect1 xml:id="functions-urlEncode">
-  <title>trim</title>
+  <title>urlEncode</title>
   <literallayout class="monospaced">urlEncode(string)</literallayout>
 
   <para>
