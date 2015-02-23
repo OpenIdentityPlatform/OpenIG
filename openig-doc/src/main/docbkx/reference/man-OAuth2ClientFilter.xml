@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2014 ForgeRock AS
+  !      Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='OAuth2ClientFilter'
@@ -407,7 +407,7 @@
       </varlistentry>
 
       <varlistentry>
-       <term><code>"clientID"</code>: <emphasis><link
+       <term><code>"clientId"</code>: <emphasis><link
         xlink:href="reference#Expressions"
         xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
         required</emphasis></term>
