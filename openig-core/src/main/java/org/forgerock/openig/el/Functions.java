@@ -12,13 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
 
-import static org.forgerock.openig.util.StringUtil.asString;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.util.StringUtil.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -79,6 +79,15 @@ public class Functions extends FunctionMapper {
     }
 
     /**
+     * Create an array of String based on the strings given as parameters.
+     * @param values the strings to put in the array.
+     * @return the array of strings.
+     */
+    public static String[] array(String... values) {
+        return values;
+    }
+
+    /**
      * Returns {@code true} if the object contains the value.
      *
      * @param object the object to be searched.
@@ -127,11 +136,10 @@ public class Functions extends FunctionMapper {
     }
 
     /**
-     * Joins an array of strings into a single string value, with a specified
-     * separator.
+     * Joins an array of strings into a single string value, with a specified separator.
      *
      * @param separator the separator to place between joined elements.
-     * @param values the array of strings to be joined.
+     * @param values the array of strings to be joined. You can use the array() function to construct this argument.
      * @return the string containing the joined strings.
      */
     public static String join(String[] values, String separator) {
@@ -400,4 +408,5 @@ public class Functions extends FunctionMapper {
             closeSilently(fis);
         }
     }
+
 }
