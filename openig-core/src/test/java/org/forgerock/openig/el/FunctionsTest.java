@@ -232,4 +232,17 @@ public class FunctionsTest {
         Expression<String> expr = Expression.valueOf(str, String.class);
         assertThat(expr.eval()).isEqualTo("some value");
     }
+
+    @Test
+    public void array() throws Exception {
+        String o = Expression.valueOf("${array('a', 'b', 'c')[1]}", String.class).eval();
+        assertThat(o).isEqualTo("b");
+    }
+
+    @Test
+    public void combineArrayAndJoin() throws Exception {
+        String o = Expression.valueOf("${join(array('a', 'b', 'c'), ':')}", String.class).eval();
+        assertThat(o).isEqualTo("a:b:c");
+    }
+
 }

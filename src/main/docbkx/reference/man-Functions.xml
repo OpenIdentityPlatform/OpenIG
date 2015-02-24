@@ -52,6 +52,33 @@
   >expressions</link>.</para>
  </refsect1>
 
+ <refsect1 xml:id="functions-array">
+  <title>array</title>
+  <literallayout class="monospaced">array(strings...)</literallayout>
+
+  <para>Returns an array of the strings given as argument.</para>
+
+  <variablelist>
+   <title>Parameters</title>
+   <varlistentry>
+    <term>strings</term>
+    <listitem>
+     <para>the strings to put in the array.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  <variablelist>
+   <title>Returns</title>
+   <varlistentry>
+    <term>&#160;</term>
+    <listitem>
+     <para>the resulting array of containing the given strings.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
  <refsect1 xml:id="functions-contains">
   <title>contains</title>
   <literallayout class="monospaced">contains(object, value)</literallayout>
