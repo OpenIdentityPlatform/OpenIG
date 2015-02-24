@@ -168,7 +168,7 @@
    <varlistentry>
     <term>string</term>
     <listitem>
-     <para>the string to be searched.</para>
+     <para>the string in which to search for the specified substring.</para>
     </listitem>
    </varlistentry>
    <varlistentry>
@@ -186,6 +186,10 @@
     <listitem>
      <para>the index of the first instance of substring, or -1 if not
      found.</para>
+
+     <para>
+      The index count starts from 1, not 0.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -229,11 +233,14 @@
   <title>keyMatch</title>
   <literallayout class="monospaced">keyMatch(map, pattern)</literallayout>
 
-  <para>Returns the first key found in a map that matches the specified <link
-  xlink:href="reference#Expressions"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >regular expression pattern</link>, or <literal>null</literal> if no such
-  match is found.</para>
+  <para>
+   Returns the first key found in a map that matches the specified
+   <link
+    xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+    xlink:show="new"
+   >regular expression pattern</link>,
+   or <literal>null</literal> if no such match is found.
+  </para>
 
   <variablelist>
    <title>Parameters</title>
@@ -296,13 +303,17 @@
   <title>matchingGroups</title>
   <literallayout class="monospaced">matchingGroups(string, pattern)</literallayout>
 
-  <para>Returns an array of matching groups for a <link
-  xlink:href="reference#Expressions"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >regular expression pattern</link> against a string, or
-  <literal>null</literal> if no such match is found. The first element of the
-  array is the entire match, and each subsequent element correlates to any
-  capture group specified within the regular expression.</para>
+  <para>
+   Returns an array of matching groups for the specified
+   <link
+    xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+    xlink:show="new"
+   >regular expression pattern</link> applied to the specified string,
+   or <literal>null</literal> if no such match is found.
+   The first element of the array is the entire match,
+   and each subsequent element correlates to any capture group
+   specified within the regular expression.
+  </para>
 
   <variablelist>
    <title>Parameters</title>
@@ -336,10 +347,13 @@
   <title>matches</title>
   <literallayout class="monospaced">matches(string, pattern)</literallayout>
 
-  <para>Returns <literal>true</literal> if the string contains the specified
-  <link xlink:href="reference#Expressions"
-  xlink:role="http://docbook.org/xlink/role/olink"
-  >regular expression pattern</link>.</para>
+  <para>
+   Returns <literal>true</literal> if the string contains a match for the specified
+   <link
+    xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+    xlink:show="new"
+    >regular expression pattern</link>.
+  </para>
 
   <variablelist>
    <title>Parameters</title>
@@ -462,10 +476,14 @@
   <title>split</title>
   <literallayout class="monospaced">split(string, pattern)</literallayout>
 
-  <para>Splits a string into an array of substrings around matches of the given
-  <link xlink:href="reference#Expressions"
-  xlink:role="http://docbook.org/xlink/role/olink">regular expression
-  pattern</link>.</para>
+  <para>
+   Splits the specified string into
+   an array of substrings around matches for the specified
+   <link
+    xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+    xlink:show="new"
+   >regular expression pattern</link>.
+  </para>
 
   <variablelist>
    <title>Parameters</title>
