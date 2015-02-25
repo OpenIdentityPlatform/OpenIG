@@ -219,7 +219,9 @@ public class OAuth2ResourceServerFilterTest {
                                               time,
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
-                                              Expression.valueOf(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY), String.class));
+                                              Expression.valueOf(
+                                                      format("${exchange.%s}",
+                                                      DEFAULT_ACCESS_TOKEN_KEY), String.class));
     }
 
     private static Set<Expression<String>> getScopes(final String... scopes) throws ExpressionException {
