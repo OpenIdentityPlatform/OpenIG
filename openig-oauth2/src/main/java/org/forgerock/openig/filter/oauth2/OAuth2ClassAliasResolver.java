@@ -29,9 +29,9 @@ public class OAuth2ClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<String, Class<?>>();
 
     static {
+        ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
         ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilter.class);
         ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilter.class);
-        ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
     }
 
     @Override
