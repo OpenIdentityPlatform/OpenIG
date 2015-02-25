@@ -103,7 +103,7 @@ import org.forgerock.util.time.TimeService;
  * {
  *     "name": "OpenIDConnect",
  *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
- *     "config": {,
+ *     "config": {
  *         "target"                : "${exchange.openid}",
  *         "scopes"                : ["openid","profile","email"],
  *         "clientEndpoint"        : "/openid",
