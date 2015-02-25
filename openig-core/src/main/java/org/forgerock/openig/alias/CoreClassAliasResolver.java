@@ -66,13 +66,13 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
     static {
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);
         ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
+        ALIASES.put("CaptureDecorator", CaptureDecorator.class);
         ALIASES.put("CaptureFilter", CaptureFilter.class);
         ALIASES.put("Chain", Chain.class);
         ALIASES.put("ClientHandler", ClientHandler.class);
         ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
-        ALIASES.put("CaptureDecorator", CaptureDecorator.class);
         ALIASES.put("DesKeyGenHandler", DesKeyGenHandler.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
@@ -82,8 +82,8 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("HttpClient", HttpClient.class);
-        ALIASES.put("JwtSessionFactory", JwtSessionFactory.class);
         ALIASES.put("JwtSession", JwtSessionFactory.class);
+        ALIASES.put("JwtSessionFactory", JwtSessionFactory.class);
         ALIASES.put("KeyManager", KeyManager.class);
         ALIASES.put("KeyStore", KeyStore.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
