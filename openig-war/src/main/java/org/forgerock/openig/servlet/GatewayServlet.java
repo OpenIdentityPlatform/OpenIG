@@ -110,7 +110,7 @@ public class GatewayServlet extends HttpServlet {
             in = resource.openStream();
             return new JsonValue(readJsonLenient(in));
         } catch (final FileNotFoundException e) {
-            throw new ServletException(format("File %s does not exists", resource), e);
+            throw new ServletException(format("File %s does not exist", resource), e);
         } catch (final IOException e) {
             throw new ServletException(format("Cannot read/parse content of %s", resource), e);
         } finally {
