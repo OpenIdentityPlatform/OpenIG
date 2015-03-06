@@ -50,8 +50,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.util.Duration;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
@@ -80,21 +78,12 @@ import org.forgerock.util.time.TimeService;
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
  * "failureHandler"               : handler,            [REQUIRED]
- * "providerHandler"              : handler,            [REQUIRED]
  * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
- * "providers"                    : array [
- *     "name"                         : String,         [REQUIRED]
- *     "wellKnownConfiguration"       : String,         [OPTIONAL - if authorize and token end-points are specified]
- *     "authorizeEndpoint"            : uriExpression,  [REQUIRED - if no well-known configuration]
- *     "tokenEndpoint"                : uriExpression,  [REQUIRED - if no well-known configuration]
- *     "userInfoEndpoint"             : uriExpression,  [OPTIONAL - default no user info]
- *     "clientId"                     : expression,     [REQUIRED]
- *     "clientSecret"                 : expression,     [REQUIRED]
- *     "scopes"                       : [ expressions ],[OPTIONAL - overrides global scopes]
+ * "providers"                    : [ strings ]         [REQUIRED]
  * </pre>
  *
  * For example:
@@ -109,27 +98,11 @@ import org.forgerock.util.time.TimeService;
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
- *         "providerHandler"       : "ClientHandler",
  *         "defaultLoginGoto"      : "/homepage",
  *         "defaultLogoutGoto"     : "/loggedOut",
  *         "requireHttps"          : false,
  *         "requireLogin"          : true,
- *         "providers"  : [
- *             {
- *                 "name"          : "openam",
- *                 "wellKnownConfiguration"
- *                                 : "https://openam.example.com:8080/openam/.well-known/openid-configuration",
- *                 "clientId"      : "*****",
- *                 "clientSecret"  : "*****"
- *             },
- *             {
- *                 "name"          : "google",
- *                 "wellKnownConfiguration"
- *                                 : "https://accounts.google.com/.well-known/openid-configuration",
- *                 "clientId"      : "*****",
- *                 "clientSecret"  : "*****"
- *             }
- *         ]
+ *         "providers"             : [ "openam", "google" ]
  *     }
  * }
  * </pre>
@@ -184,7 +157,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
     private Expression<String> defaultLogoutGoto;
     private Handler failureHandler;
     private Handler loginHandler;
-    private Handler providerHandler;
     private final Map<String, OAuth2Provider> providers =
             new LinkedHashMap<String, OAuth2Provider>();
     private boolean requireHttps = true;
@@ -356,20 +328,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
      */
     public OAuth2ClientFilter setLoginHandler(final Handler handler) {
         this.loginHandler = handler;
-        return this;
-    }
-
-    /**
-     * Sets the handler which will be used for communicating with the
-     * authorization server. This configuration parameter is required.
-     *
-     * @param handler
-     *            The handler which will be used for communicating with the
-     *            authorization server.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setProviderHandler(final Handler handler) {
-        this.providerHandler = handler;
         return this;
     }
 
@@ -548,24 +506,9 @@ public final class OAuth2ClientFilter extends GenericFilter {
             throw new OAuth2ErrorException(OAuth2Error.valueOfForm(exchange.request.getForm()));
         }
 
-        /*
-         * Exchange the authorization code for an access token and optional ID
-         * token, and then update the session state.
-         */
-        final Request request =
-                provider.createRequestForAccessToken(exchange, code, buildCallbackUri(exchange)
-                        .toString());
-        final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (response.getStatus() != 200) {
-            if (response.getStatus() == 400 || response.getStatus() == 401) {
-                final JsonValue errorJson = getJsonContent(response);
-                throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
-            } else {
-                throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
-                        "Unable to exchange access token [status=%d]", response.getStatus()));
-            }
-        }
-        final JsonValue accessTokenResponse = getJsonContent(response);
+        final JsonValue accessTokenResponse = provider.getAccessToken(exchange,
+                                                                      code,
+                                                                      buildCallbackUri(exchange).toString());
 
         /*
          * Finally complete the authorization request by redirecting to the
@@ -640,15 +583,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
     }
 
-    private void handleResourceAccessFailure(final Response response) throws OAuth2ErrorException {
-        final OAuth2BearerWWWAuthenticateHeader header =
-                new OAuth2BearerWWWAuthenticateHeader(response);
-        final OAuth2Error error = header.getOAuth2Error();
-        final OAuth2Error bestEffort =
-                OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
-        throw new OAuth2ErrorException(bestEffort);
-    }
-
     private void handleUserInitiatedLogin(final Exchange exchange) throws HandlerException,
             OAuth2ErrorException {
         final String providerName = exchange.request.getForm().getFirst("provider");
@@ -682,27 +616,6 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
     }
 
-    private Response httpRequestToAuthorizationServer(final Exchange exchange, final Request request)
-            throws OAuth2ErrorException, HandlerException {
-        final Request savedRequest = exchange.request;
-        final Response savedResponse = exchange.response;
-        exchange.request = request;
-        // The providerHandler will create a new Response by itself
-        // This prevents some previously created Response to be emptied by HttpClient
-        exchange.response = null;
-        try {
-            providerHandler.handle(exchange);
-            return exchange.response;
-        } catch (final IOException e) {
-            throw new OAuth2ErrorException(E_SERVER_ERROR,
-                    "Authorization failed because an error occurred while trying "
-                            + "to contact the authorization server");
-        } finally {
-            exchange.request = savedRequest;
-            exchange.response = savedResponse;
-        }
-    }
-
     private OAuth2Session prepareExchange(final Exchange exchange, final OAuth2Session session)
             throws HandlerException, OAuth2ErrorException {
         try {
@@ -716,24 +629,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
             final OAuth2Error error = e.getOAuth2Error();
             final OAuth2Provider provider = getProvider(session);
             if (error.is(E_INVALID_TOKEN) && provider != null && session.getRefreshToken() != null) {
-                final Request request = provider.createRequestForTokenRefresh(exchange, session);
-                final Response response = httpRequestToAuthorizationServer(exchange, request);
-                if (response.getStatus() == 200) {
-                    // Update session with new access token.
-                    final JsonValue accessTokenResponse = getJsonContent(response);
-                    final OAuth2Session refreshedSession =
-                            session.stateRefreshed(accessTokenResponse);
-                    tryPrepareExchange(exchange, refreshedSession);
-                    return refreshedSession;
-                }
-                if (response.getStatus() == 400 || response.getStatus() == 401) {
-                    final JsonValue errorJson = getJsonContent(response);
-                    throw new OAuth2ErrorException(OAuth2Error
-                            .valueOfJsonContent(errorJson.asMap()));
-                } else {
-                    throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
-                            "Unable to refresh access token [status=%d]", response.getStatus()));
-                }
+                // The session is updated with new access token.
+                final JsonValue accessTokenResponse = provider.getRefreshToken(exchange, session);
+                final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
+                tryPrepareExchange(exchange, refreshedSession);
+                return refreshedSession;
             }
 
             /*
@@ -859,55 +759,15 @@ public final class OAuth2ClientFilter extends GenericFilter {
             filter.setLoginHandler(loginHandler);
             filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
                     Handler.class));
-            final Handler providerHandler =
-                    heap.resolve(config.get("providerHandler"), Handler.class);
-            filter.setProviderHandler(providerHandler);
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto"), String.class));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto"), String.class));
             filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
             filter.setRequireLogin(config.get("requireLogin").defaultTo(true).asBoolean());
+
             int providerCount = 0;
-            for (final JsonValue providerConfig : config.get("providers").required()) {
-                // Must set the authorization handler before using well-known config.
-                final OAuth2Provider provider =
-                        new OAuth2Provider(providerConfig.get("name").required().asString());
-                provider.setClientId(asExpression(providerConfig.get("clientId").required(), String.class));
-                provider.setClientSecret(asExpression(providerConfig.get("clientSecret").required(), String.class));
-                provider.setScopes(providerConfig.get("scopes").defaultTo(emptyList()).asList(
-                        ofExpression()));
-                JsonValue knownConfiguration = providerConfig.get("wellKnownConfiguration");
-                if (!knownConfiguration.isNull()) {
-                    final URI uri = knownConfiguration.asURI();
-                    if (uri != null) {
-                        final Exchange exchange = new Exchange();
-                        exchange.request = new Request();
-                        exchange.request.setMethod("GET");
-                        exchange.request.setUri(uri);
-                        try {
-                            providerHandler.handle(exchange);
-                            if (exchange.response.getStatus() != 200) {
-                                throw new HeapException(
-                                        "Unable to read well-known OpenID Configuration from '"
-                                                + exchange.request.getUri() + "'");
-                            }
-                            provider.setWellKnownConfiguration(getJsonContent(exchange.response));
-                        } catch (final Exception e) {
-                            throw new HeapException(
-                                    "Unable to read well-known OpenID Configuration from '"
-                                            + exchange.request.getUri() + "'", e);
-                        } finally {
-                            closeSilently(exchange.response);
-                        }
-                    }
-                } else {
-                    provider.setAuthorizeEndpoint(asExpression(providerConfig.get(
-                            "authorizeEndpoint").required(), String.class));
-                    provider.setTokenEndpoint(asExpression(providerConfig.get("tokenEndpoint")
-                            .required(), String.class));
-                    provider.setUserInfoEndpoint(asExpression(providerConfig
-                            .get("userInfoEndpoint"), String.class));
-                }
-                filter.addProvider(provider);
+            for (final JsonValue jv : config.get("providers").expect(List.class)) {
+                final OAuth2Provider oauth2Provider = heap.resolve(jv, OAuth2Provider.class);
+                filter.addProvider(oauth2Provider);
                 providerCount++;
             }
             if (providerCount == 0) {
@@ -1026,19 +886,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
 
         @Override
         public Map<String, Object> call() throws Exception {
-
-            final Request request = provider.createRequestForUserInfo(exchange,
-                                                                      session.getAccessToken());
-            final Response response = httpRequestToAuthorizationServer(exchange, request);
-            if (response.getStatus() != 200) {
-                /*
-                 * The access token may have expired. Trigger an exception,
-                 * catch it and react later.
-                 */
-                handleResourceAccessFailure(response);
-            }
-            final JsonValue userInfoResponse = getJsonContent(response);
-            return userInfoResponse.asMap();
+            return provider.getUserInfo(exchange, session).asMap();
         }
 
         public OAuth2Session getSession() {
