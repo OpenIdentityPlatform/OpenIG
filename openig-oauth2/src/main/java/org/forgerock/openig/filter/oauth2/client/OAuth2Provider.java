@@ -55,7 +55,8 @@ import org.forgerock.util.encode.Base64;
  *   "wellKnownConfiguration"       : String,          [OPTIONAL - if authorize and token end-points are specified]
  *   "authorizeEndpoint"            : uriExpression,   [REQUIRED - if no well-known configuration]
  *   "tokenEndpoint"                : uriExpression,   [REQUIRED - if no well-known configuration]
- *   "userInfoEndpoint"             : uriExpression,   [OPTIONAL - default no user info]
+ *   "userInfoEndpoint"             : uriExpression,   [OPTIONAL - if no well-known configuration,
+ *                                                                 default is no user info]
  *   "scopes"                       : [ expressions ], [OPTIONAL - overrides global scopes]
  *   "providerHandler"              : handler          [OPTIONAL - default is using a new ClientHandler
  *                                                                 wrapping the default HttpClient.]
