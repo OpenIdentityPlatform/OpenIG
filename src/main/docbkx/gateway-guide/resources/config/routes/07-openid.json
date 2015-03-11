@@ -1,7 +1,23 @@
 {
+  "heap": [
+    {
+      "comment": "To reuse providers, configure them in the parent route",
+      "name": "openam",
+      "type": "OAuth2Provider",
+      "config": {
+        "clientId": "${projectName}",
+        "clientSecret": "password",
+        "authorizeEndpoint":
+          "http://openam.example.com:8088/openam/oauth2/authorize",
+        "tokenEndpoint":
+          "http://openam.example.com:8088/openam/oauth2/access_token",
+        "userInfoEndpoint":
+          "http://openam.example.com:8088/openam/oauth2/userinfo"
+      }
+    }
+  ],
   "handler": {
     "type": "Chain",
-    "baseURI": "http://www.example.com:8080",
     "config": {
       "filters": [
         {
@@ -24,16 +40,7 @@
                 "entity": "${exchange.openid}"
               }
             },
-            "providerHandler": "ClientHandler",
-            "providers": [
-              {
-                "name": "openam",
-                "wellKnownConfiguration":
-                    "http://openam.example.com:8088/openam/.well-known/openid-configuration",
-                "clientId": "${projectName}",
-                "clientSecret": "password"
-              }
-            ]
+            "providers": [ "openam" ]
           }
         }
       ],
@@ -62,5 +69,6 @@
       }
     }
   },
-  "condition": "${matches(exchange.request.uri.path, '^/openid')}"
+  "condition": "${matches(exchange.request.uri.path, '^/openid')}",
+  "baseURI": "http://www.example.com:8080"
 }

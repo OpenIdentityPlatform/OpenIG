@@ -46,13 +46,44 @@
 -->
 
   <para>
-   The Route and gateway servlet configurations now use "baseURI" decorators
-   instead of "baseURI" configuration fields.
-  </para>
-
-  <para>
    TODO: Update for the next release
   </para>
+
+  <itemizedlist>
+   <listitem>
+    <para>
+     The Route and gateway servlet configurations now use "baseURI" decorators
+     instead of "baseURI" configuration fields.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     This release introduces an independent "OAuth2Provider" configuration object.
+     The "OAuth2ClientFilter" configuration "providers" field
+     now takes an array of "OAuth2Provider" object names or inline declarations.
+     The "OAuth2ClientFilter" configuration "providerHandler" field
+     is now part of the "OAuth2Provider" configuration.
+    </para>
+
+    <para>
+     Previous configurations cause errors and prevent the route from loading
+     when ${projectName} reads the configuration.
+    </para>
+
+    <programlisting language="none">
+------------------------------
+WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
+The route defined in file '/home/user/.openig/config/routes/07-openid.json
+ cannot be added
+------------------------------
+WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
+/handler/config/filters/0/config/providers/0/type: Expecting a value
+[       JsonValueException] > /handler/config/filters/0/config/providers/0/type:
+ Expecting a value
+    </programlisting>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="deprecated">

@@ -375,6 +375,7 @@
   <xinclude:include href="man-KeyManager.xml" />
   <xinclude:include href="man-KeyStore.xml" />
   <xinclude:include href="man-NullLogSink.xml" />
+  <xinclude:include href="man-OAuth2Provider.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
   <xinclude:include href="man-TrustManager.xml" />
  </reference>
