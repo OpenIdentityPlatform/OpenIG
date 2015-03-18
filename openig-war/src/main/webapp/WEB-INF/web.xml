@@ -12,8 +12,8 @@
   Header, with the fields enclosed by brackets [] replaced by your own identifying
   information: "Portions Copyright [year] [name of copyright owner]".
 
-  Copyright 2010–2011 ApexIdentity Inc.
-  Portions Copyright 2011-2014 ForgeRock AS.
+  Copyright 2010-2011 ApexIdentity Inc.
+  Portions Copyright 2011-2015 ForgeRock AS.
 -->
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
@@ -21,6 +21,7 @@
     <servlet>
         <servlet-name>openig-servlet</servlet-name>
         <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>openig-servlet</servlet-name>
