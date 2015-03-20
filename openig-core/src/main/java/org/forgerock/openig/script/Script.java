@@ -145,7 +145,7 @@ public final class Script {
                 final FileWriter writer = new FileWriter(cachedScript);
                 writer.write(source);
                 writer.close();
-                final Impl impl = new GroovyImpl(engine, cachedScript.getAbsolutePath());
+                final Impl impl = new GroovyImpl(engine, cachedScript.toURI().toURL().toString());
                 return new Script(impl);
             } catch (final IOException e) {
                 throw new ScriptException(e);
