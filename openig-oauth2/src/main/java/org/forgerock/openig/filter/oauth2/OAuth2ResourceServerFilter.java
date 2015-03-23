@@ -124,7 +124,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final Handler noAuthentication;
     private final Handler invalidToken;
     private final Handler invalidRequest;
-    private final Expression target;
+    private final Expression<?> target;
 
     /**
      * Creates a new {@code OAuth2Filter}.
@@ -142,7 +142,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Expression target) {
+                                      final Expression<?> target) {
         this(resolver, extractor, time, Collections.<Expression<String>> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
@@ -168,7 +168,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final TimeService time,
                                       final Set<Expression<String>> scopes,
                                       final String realm,
-                                      final Expression target) {
+                                      final Expression<?> target) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
