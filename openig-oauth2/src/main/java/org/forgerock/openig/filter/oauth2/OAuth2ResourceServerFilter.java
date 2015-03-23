@@ -264,7 +264,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private String getAccessToken(final Request request) throws OAuth2TokenException {
         Headers headers = request.getHeaders();
         List<String> authorizations = headers.get("Authorization");
-        if ((authorizations != null) && (authorizations.size() >= 2)) {
+        if (authorizations != null && authorizations.size() >= 2) {
             throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
                                                    + " the OAuth2 AccessToken");
         }
