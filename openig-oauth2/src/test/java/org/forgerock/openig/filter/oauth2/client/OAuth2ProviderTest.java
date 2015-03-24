@@ -58,9 +58,10 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class OAuth2ProviderTest {
 
-    private Exchange exchange;
-    private OAuth2Session session;
     private AtomicReference<Request> capturedRequest;
+    private Exchange exchange;
+    private HeapImpl heap;
+    private OAuth2Session session;
     private static final String AUTHORIZE_ENDPOINT = "/openam/oauth2/authorize";
     private static final String TOKEN_ENDPOINT = "/openam/oauth2/access_token";
     private static final String USER_INFO_ENDPOINT = "/openam/oauth2/userinfo";
@@ -78,6 +79,7 @@ public class OAuth2ProviderTest {
         exchange = new Exchange(new URI("path"));
         session = OAuth2Session.stateNew(time);
         capturedRequest = new AtomicReference<Request>();
+        heap = buildDefaultHeap();
     }
 
     @DataProvider
@@ -111,26 +113,25 @@ public class OAuth2ProviderTest {
     }
 
     @Test(dataProvider = "missingRequiredAttributes", expectedExceptions = JsonValueException.class)
-    public void shouldFailToCreateHeapletWhenRequiredAttributeIsMissing(final JsonValue config) throws Exception {
+    public void shouldFailToCreateHeapObject(final JsonValue config) throws Exception {
         final OAuth2Provider.Heaplet heaplet = new OAuth2Provider.Heaplet();
-        heaplet.create(Name.of("openam"), config, buildDefaultHeap());
+        heaplet.create(Name.of("openam"), config, heap);
     }
 
     @Test
-    public void shouldSucceedToCreateHeaplet() throws Exception {
-        final JsonValue config =
-                json(object(
+    public void shouldSucceedToCreateHeapObject() throws Exception {
+        final JsonValue config = json(object(
                         field("clientId", "OpenIG"),
                         field("clientSecret", "password"),
-                        field("scopes", array("read")),
+                        field("scopes", array("openid")),
                         field("authorizeEndpoint", "http://www.example.com:8081/openam/oauth2/authorize"),
                         field("tokenEndpoint", "http://www.example.com:8081/openam/oauth2/access_token"),
                         field("userInfoEndpoint", "http://www.example.com:8081/openam/oauth2/userinfo")));
 
         final OAuth2Provider.Heaplet heaplet = new OAuth2Provider.Heaplet();
-        final OAuth2Provider provider = (OAuth2Provider) heaplet.create(Name.of("openam"), config, buildDefaultHeap());
+        final OAuth2Provider provider = (OAuth2Provider) heaplet.create(Name.of("openam"), config, heap);
         assertThat(provider.getClientId(null)).isEqualTo("OpenIG");
-        assertThat(provider.getScopes(null).get(0)).isEqualTo("read");
+        assertThat(provider.getScopes(null).get(0)).isEqualTo("openid");
         assertThat(provider.getName()).isEqualTo("openam");
         assertThat(provider.hasUserInfoEndpoint()).isTrue();
     }
@@ -227,7 +228,8 @@ public class OAuth2ProviderTest {
         provider.setClientId(valueOf("OpenIG", String.class));
         provider.setClientSecret(valueOf("password", String.class));
         final List<Expression<String>> myScopes = new ArrayList<Expression<String>>();
-        myScopes.add(valueOf("OpenIG", String.class));
+        myScopes.add(valueOf("openid", String.class));
+        myScopes.add(valueOf("profile", String.class));
         provider.setScopes(myScopes);
         provider.setAuthorizeEndpoint(valueOf(SAMPLE_URI + AUTHORIZE_ENDPOINT, String.class));
         provider.setTokenEndpoint(valueOf(SAMPLE_URI + TOKEN_ENDPOINT, String.class));
