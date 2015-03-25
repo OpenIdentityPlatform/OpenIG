@@ -19,18 +19,24 @@ package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.AsyncFunction;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Conditionally diverts the exchange to another handler. Before and after the exchange is
@@ -38,7 +44,7 @@ import org.forgerock.openig.http.Exchange;
  * the exchange flow is diverted to the associated handler. If no condition evaluates to
  * {@code true}, then the exchange flows normally through the filter.
  */
-public class SwitchFilter extends GenericFilter {
+public class SwitchFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
@@ -88,25 +94,46 @@ public class SwitchFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        if (!doSwitch(exchange, requestCases)) {
-            // not intercepted
-            next.handle(exchange);
-            doSwitch(exchange, responseCases);
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final org.forgerock.http.Handler next) {
+        final Exchange exchange = context.asContext(Exchange.class);
+
+        // Switch on the request flow
+        Promise<Response, ResponseException> promise = doSwitch(exchange,
+                                                                request,
+                                                                requestCases);
+        if (promise != null) {
+            return promise;
         }
+        // not intercepted on request
+        // Invoke next filter in chain and try switching on the response flow
+        return next.handle(context, request)
+                .thenAsync(new AsyncFunction<Response, Response, ResponseException>() {
+                    @Override
+                    public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
+                        Promise<Response, ResponseException> promise = doSwitch(exchange,
+                                                                                request,
+                                                                                responseCases);
+                        // not intercepted on response, just return the original response
+                        if (promise == null) {
+                            promise = Promises.newSuccessfulPromise(value);
+                        }
+                        return promise;
+                    }
+                });
     }
 
-    private boolean doSwitch(Exchange exchange, List<Case> cases) throws HandlerException, IOException {
+    private Promise<Response, ResponseException> doSwitch(Exchange exchange, Request request, List<Case> cases) {
         for (Case c : cases) {
             Object o = (c.condition != null ? c.condition.eval(exchange) : Boolean.TRUE);
             if (o instanceof Boolean && ((Boolean) o)) {
-                c.handler.handle(exchange);
                 // switched flow
-                return true;
+                return c.handler.handle(exchange, request);
             }
         }
         // no interception
-        return false;
+        return null;
     }
 
     /**
