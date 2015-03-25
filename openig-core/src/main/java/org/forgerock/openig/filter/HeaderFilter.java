@@ -19,26 +19,31 @@ package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * Removes headers from and adds headers to a message.
  */
-public class HeaderFilter extends GenericFilter {
+public class HeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** Indicates the type of message in the exchange to filter headers for. */
     private final MessageType messageType;
@@ -93,14 +98,23 @@ public class HeaderFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
-            process(exchange.request, exchange);
+            process(request, exchange);
         }
-        next.handle(exchange);
+        Promise<Response, ResponseException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
-            process(exchange.response, exchange);
+            return promise.onSuccess(new SuccessHandler<Response>() {
+                @Override
+                public void handleResult(final Response response) {
+                    process(response, exchange);
+                }
+            });
         }
+        return promise;
     }
 
     /** Creates and initializes a header filter in a heap environment. */
