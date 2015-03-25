@@ -11,30 +11,35 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.MutableUri.*;
 import static org.forgerock.openig.handler.router.Files.*;
 import static org.forgerock.openig.heap.HeapImplTest.*;
-import static org.forgerock.http.MutableUri.*;
 
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -60,10 +65,10 @@ public class RouteBuilderTest {
         Route route = builder.build(getTestResourceFile("inlined-handler-route.json"));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        route.handle(exchange);
 
-        assertThat(exchange.response.getStatus()).isEqualTo(42);
+        assertThat(route.handle(exchange, new Request())
+                        .get()
+                        .getStatus()).isEqualTo(42);
     }
 
     @Test
@@ -107,7 +112,7 @@ public class RouteBuilderTest {
         exchange.request = new Request();
         exchange.request.setUri("http://openig.forgerock.org/demo");
 
-        route.handle(exchange);
+        route.handle(exchange, exchange.request);
 
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
@@ -120,11 +125,15 @@ public class RouteBuilderTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.session = new SimpleMapSession();
+        HttpContext httpContext = new HttpContext(new RootContext(), exchange.session);
+        exchange.parent = httpContext;
 
-        route.handle(exchange);
 
-        assertThat(exchange.session).isEmpty();
-        assertThat(exchange.response.getHeaders().getFirst("Set-Cookie")).isNotNull();
+        assertThat(route.handle(exchange, exchange.request)
+                        .get()
+                        .getHeaders()
+                        .getFirst("Set-Cookie")).isNotNull();
+        assertThat(httpContext.getSession()).isEmpty();
 
     }
 
@@ -135,12 +144,13 @@ public class RouteBuilderTest {
         public void save(Response response) throws IOException { }
     }
 
-    public static class SessionHandler extends GenericHandler {
+    public static class SessionHandler implements Handler {
 
         @Override
-        public void handle(final Exchange exchange) throws HandlerException, IOException {
-            exchange.response = new Response();
-            exchange.session.put("ForgeRock", "OpenIG");
+        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+            Session session = context.asContext(HttpContext.class).getSession();
+            session.put("ForgeRock", "OpenIG");
+            return Promises.newSuccessfulPromise(new Response());
         }
 
         public static class Heaplet extends GenericHeaplet {

@@ -19,15 +19,21 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.RootContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.SessionManager;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.SessionManager;
-import org.forgerock.http.protocol.Request;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -50,10 +56,14 @@ public class RouteTest {
     @Mock
     private SessionManager sessionManager;
 
+    private PromiseImpl<Response, ResponseException> promise = PromiseImpl.create();
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(sessionManager.load(any(Request.class))).thenReturn(scoped);
+        when(handler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(promise);
     }
 
     @Test
@@ -71,11 +81,7 @@ public class RouteTest {
     @Test
     public void testRouteIsDelegatingTheExchange() throws Exception {
         Route route = createRoute(null, null);
-
-        Exchange exchange = new Exchange();
-        route.handle(exchange);
-
-        verify(handler).handle(exchange);
+        assertThat(route.handle(new Exchange(), new Request())).isSameAs(promise);
     }
 
     @Test
@@ -83,21 +89,22 @@ public class RouteTest {
 
         Route route = createRoute(sessionManager, null);
         Exchange exchange = new Exchange();
-        exchange.session = original;
+        exchange.parent = new HttpContext(new RootContext(), original);
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(final InvocationOnMock invocation) throws Throwable {
-                Exchange item = (Exchange) invocation.getArguments()[0];
-                assertThat(item.session).isSameAs(scoped);
-                return null;
-            }
-        }).when(handler).handle(exchange);
+        when(handler.handle(exchange, new Request()))
+                .then(new Answer<Void>() {
+                    @Override
+                    public Void answer(final InvocationOnMock invocation) throws Throwable {
+                        Context context = (Context) invocation.getArguments()[0];
+                        assertThat(context.asContext(HttpContext.class).getSession()).isSameAs(scoped);
+                        return null;
+                    }
+                });
 
-        route.handle(exchange);
+        route.handle(exchange, new Request());
+        promise.handleResult(new Response());
 
-        verify(handler).handle(exchange);
-        assertThat(exchange.session).isSameAs(original);
+        assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
     }
 
     @Test
@@ -105,22 +112,26 @@ public class RouteTest {
 
         Route route = createRoute(sessionManager, null);
         Exchange exchange = new Exchange();
-        exchange.session = original;
+        exchange.parent = new HttpContext(new RootContext(), original);
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(final InvocationOnMock invocation) throws Throwable {
-                Exchange item = (Exchange) invocation.getArguments()[0];
-                assertThat(item.session).isSameAs(scoped);
-                throw new HandlerException();
-            }
-        }).when(handler).handle(exchange);
+        when(handler.handle(exchange, new Request()))
+                .then(new Answer<Void>() {
+                    @Override
+                    public Void answer(final InvocationOnMock invocation) throws Throwable {
+                        Context context = (Context) invocation.getArguments()[0];
+                        assertThat(context.asContext(HttpContext.class).getSession()).isSameAs(scoped);
+                        return null;
+                    }
+                });
+
+        promise.handleError(new ResponseException(500));
+        Promise<Response, ResponseException> result = route.handle(exchange, new Request());
 
         try {
-            route.handle(exchange);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
+            result.getOrThrow();
+            failBecauseExceptionWasNotThrown(ResponseException.class);
         } catch (Exception e) {
-            assertThat(exchange.session).isSameAs(original);
+            assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
         }
 
     }

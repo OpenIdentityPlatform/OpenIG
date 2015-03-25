@@ -18,19 +18,26 @@ package org.forgerock.openig.handler.router;
 
 import static org.forgerock.openig.util.JsonValues.*;
 
+import java.io.IOException;
+
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
-
-import java.io.IOException;
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -80,7 +87,7 @@ import java.io.IOException;
  * @see RouterHandler
  * @since 2.2
  */
-class Route extends GenericHandler {
+class Route implements Handler {
 
     /**
      * Contains objects, filters and handlers instances that may be used in this route.
@@ -123,7 +130,7 @@ class Route extends GenericHandler {
         this.heap = new HeapImpl(parentHeap, routeHeapName);
         heap.init(config, "handler", "session", "name", "condition", "globalDecorators");
 
-        this.handler = heap.getHandler();
+        this.handler = Adapters.asChfHandler(heap.getHandler());
         this.sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
         this.name = config.get("name").defaultTo(defaultName).asString();
         this.condition = asExpression(config.get("condition"));
@@ -168,27 +175,49 @@ class Route extends GenericHandler {
         return (condition == null) || Boolean.TRUE.equals(condition.eval(exchange));
     }
 
-    @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-        if (sessionManager == null) {
-            handler.handle(exchange);
-        } else {
-            // Swap the session instance
-            Session session = exchange.session;
-            exchange.session = sessionManager.load(exchange.request);
-            try {
-                handler.handle(exchange);
-            } finally {
-                sessionManager.save(exchange.session, exchange.response);
-                exchange.session = session;
-            }
-        }
-    }
-
     /**
      * Cleanup the resources used by this route.
      */
     public void destroy() {
         heap.destroy();
+    }
+
+    @Override
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        if (sessionManager == null) {
+            return handler.handle(context, request);
+        } else {
+            // Swap the session instance
+            final HttpContext httpContext = context.asContext(HttpContext.class);
+            final Session session = httpContext.getSession();
+            httpContext.setSession(sessionManager.load(request));
+            return handler.handle(context, request)
+                          .then(new SuccessHandler<Response>() {
+                              @Override
+                              public void handleResult(Response response) {
+                                  save(httpContext.getSession(), response);
+                              }
+                          }, new FailureHandler<ResponseException>() {
+                              @Override
+                              public void handleError(ResponseException error) {
+                                  save(httpContext.getSession(), error.getResponse());
+                              }
+                          })
+                          .thenAlways(new Runnable() {
+                              @Override
+                              public void run() {
+                                  httpContext.setSession(session);
+                              }
+                          });
+        }
+    }
+
+    private void save(final Session session, final Response response) {
+        try {
+            sessionManager.save(session, response);
+        } catch (IOException e) {
+            // TODO Use a Logger
+            e.printStackTrace();
+        }
     }
 }
