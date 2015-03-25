@@ -17,20 +17,17 @@
 
 package org.forgerock.openig.http;
 
-import static org.forgerock.openig.http.Adapters.asExchange;
+import static org.forgerock.openig.http.Adapters.*;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Root {@link Handler} for the Servlet Gateway.
@@ -65,16 +62,15 @@ final class HttpHandler implements Handler {
      */
     @Override
     public Promise<Response, ResponseException> handle(Context context, Request request) {
+        // Builds the only Exchange and use it
         Exchange exchange = asExchange(context, request);
         try {
             handler.handle(exchange);
+            // Propagate exchange properties/attributes to the context
             return Promises.newSuccessfulPromise(exchange.response);
-        } catch (HandlerException e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
-            return Promises.newFailedPromise(new ResponseException(exchange.response, e.getMessage(), e));
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-            return Promises.newFailedPromise(new ResponseException(exchange.response, e.getMessage(), e));
+            return Promises.newFailedPromise(new ResponseException("Can't handle the request", e));
         }
     }
 }

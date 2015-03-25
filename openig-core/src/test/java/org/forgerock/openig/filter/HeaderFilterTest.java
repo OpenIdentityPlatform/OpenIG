@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.http.Adapters.asHandler;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
@@ -45,7 +46,7 @@ public class HeaderFilterTest {
         exchange.request.setMethod("DELETE");
         exchange.request.setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(handler);
+        Chain chain = new Chain(asHandler(handler));
         chain.getFilters().add(filter);
         chain.handle(exchange);
 
@@ -63,7 +64,7 @@ public class HeaderFilterTest {
         handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com"));
 
         // Execute the filter
-        filter.filter(exchange, handler);
+        filter.filter(exchange, asHandler(handler));
 
         // Verify that the response header has been removed
         assertThat(exchange.response.getHeaders().get("Location")).isNull();

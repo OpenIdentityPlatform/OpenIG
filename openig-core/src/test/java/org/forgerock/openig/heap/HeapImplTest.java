@@ -22,10 +22,17 @@ import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.http.util.Json.*;
+import static org.mockito.Mockito.verify;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Map;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
@@ -36,12 +43,26 @@ import org.forgerock.openig.heap.domain.DecoratorDecorator;
 import org.forgerock.openig.heap.domain.ReferencedObject;
 import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
+
+    @Mock
+    private org.forgerock.openig.handler.Handler handler;
+
+    @BeforeMethod
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test(description = "OPENIG-329")
     public void shouldAllowEmptyHeap() throws Exception {
@@ -370,6 +391,52 @@ public class HeapImplTest {
                                field("config", object(field("architect-ref", architect))));
 
         heap.init(json(object(field("heap", array(matrix, matrix2)))));
+    }
+
+    @Test
+    public void shouldWrapsChfHandlerIntoAnOpenIgHandler() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+        heap.put("chf-handler", new Handler() {
+            @Override
+            public Promise<Response, ResponseException> handle(final org.forgerock.http.Context context,
+                                                               final Request request) {
+                Response response = new Response();
+                response.setStatusAndReason(200);
+                return Promises.newSuccessfulPromise(response);
+            }
+        });
+
+        org.forgerock.openig.handler.Handler handler = heap.get("chf-handler",
+                                                                org.forgerock.openig.handler.Handler.class);
+        assertThat(handler).isNotNull();
+
+        Exchange exchange = new Exchange();
+        handler.handle(exchange);
+        assertThat(exchange.response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    public void shouldWrapsChfFilterIntoAnOpenIgFilter() throws Exception {
+        HeapImpl heap = buildDefaultHeap();
+        heap.put("chf-filter", new Filter() {
+            @Override
+            public Promise<Response, ResponseException> filter(final org.forgerock.http.Context context,
+                                                               final Request request,
+                                                               final Handler next) {
+                context.asContext(Exchange.class).put("hello", "world");
+                return next.handle(context, request);
+            }
+        });
+
+        org.forgerock.openig.filter.Filter filter = heap.get("chf-filter",
+                                                             org.forgerock.openig.filter.Filter.class);
+        assertThat(filter).isNotNull();
+
+        Exchange exchange = new Exchange();
+        filter.filter(exchange, handler);
+
+        assertThat((Map<String, Object>) exchange).containsEntry("hello", "world");
+        verify(handler).handle(exchange);
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {

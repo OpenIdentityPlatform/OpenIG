@@ -25,6 +25,7 @@ import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallenge
 import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -171,7 +172,7 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
+        assertThat((Map<String, Object>) exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
         verify(nextHandler).handle(exchange);
     }
 
@@ -185,7 +186,7 @@ public class OAuth2ResourceServerFilterTest {
         final Exchange exchange = buildAuthorizedExchange();
         filter.filter(exchange, nextHandler);
 
-        assertThat(exchange).containsKey("myToken");
+        assertThat((Map<String, Object>) exchange).containsKey("myToken");
         assertThat(exchange.get("myToken")).isInstanceOf(AccessToken.class);
         verify(nextHandler).handle(exchange);
     }

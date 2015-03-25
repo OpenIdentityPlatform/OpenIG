@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.openig.http.Adapters.asHandler;
 
 import java.io.IOException;
 
@@ -43,7 +44,7 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(handler);
+        Chain chain = new Chain(asHandler(handler));
         chain.getFilters().add(filter);
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange);
@@ -60,7 +61,7 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setUri("www.example.com");
 
-        Chain chain = new Chain(new StaticResponseHandler(200, "OK"));
+        Chain chain = new Chain(asHandler(new StaticResponseHandler(200, "OK")));
         chain.getFilters().add(filter);
 
         chain.handle(exchange);
@@ -76,7 +77,7 @@ public class AssignmentFilterTest {
 
         Exchange exchange = new Exchange();
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(handler);
+        Chain chain = new Chain(asHandler(handler));
         chain.getFilters().add(filter);
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange);

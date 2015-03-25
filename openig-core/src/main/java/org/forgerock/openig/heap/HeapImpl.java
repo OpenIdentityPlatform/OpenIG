@@ -43,7 +43,9 @@ import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
+import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -278,11 +280,29 @@ public class HeapImpl implements Heap {
 
     @Override
     public <T> T get(final String name, final Class<T> type) throws HeapException {
-        ExtractedObject extracted = extract(name);
+        ExtractedObject extracted = extract(name, type);
         if (extracted.object == null) {
             return null;
         }
+        // TODO When we'll start to have components extracting Chf Handler/Filter from the heap,
+        // we'll have to convert them here
         return type.cast(applyGlobalDecorations(extracted));
+    }
+
+    private <T> Object transformChfFilter(final Object o) {
+        // From CHF Filter to IG Filter
+        if (o instanceof org.forgerock.http.Filter && !(o instanceof Filter)) {
+            return Adapters.asFilter((org.forgerock.http.Filter) o);
+        }
+        return o;
+    }
+
+    private <T> Object transformChfHandler(final Object o) {
+        // From CHF Handler to IG Handler
+        if (o instanceof org.forgerock.http.Handler && !(o instanceof Handler)) {
+            return Adapters.asHandler((org.forgerock.http.Handler) o);
+        }
+        return o;
     }
 
     /**
@@ -298,7 +318,7 @@ public class HeapImpl implements Heap {
      * associated context (never returns {@code null})
      * @throws HeapException if extraction failed
      */
-    ExtractedObject extract(final String name) throws HeapException {
+    ExtractedObject extract(final String name, final Class<?> type) throws HeapException {
         if (resolving.contains(name)) {
             // Fail for recursive object resolution
             throw new HeapException(
@@ -316,6 +336,11 @@ public class HeapImpl implements Heap {
                     if (object == null) {
                         throw new HeapException(new NullPointerException());
                     }
+                    // Convert to OpenIG API *before* applying decorators
+                    // TODO This should be removed when we'll natively use the CHF API
+                    object = transformChfHandler(object);
+                    object = transformChfFilter(object);
+
                     object = applyObjectLevelDecorations(name, object, configuration);
                     put(name, object);
                 } finally {
@@ -323,7 +348,7 @@ public class HeapImpl implements Heap {
                 }
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.extract(name);
+                return parent.extract(name, type);
             }
         }
         return new ExtractedObject(object, contexts.get(name));
@@ -420,7 +445,10 @@ public class HeapImpl implements Heap {
      * @param object the object to be put into the heap.
      */
     public synchronized void put(final String name, final Object object) {
-        objects.put(name, object);
+        // TODO to be removed after CHF migration
+        Object o = transformChfHandler(object);
+        o = transformChfFilter(o);
+        objects.put(name, o);
         contexts.put(name, new DecorationContext(this, this.name.child(name), json(emptyMap())));
     }
 
@@ -448,7 +476,7 @@ public class HeapImpl implements Heap {
         }
 
         // Apply global decorations (may be inherited from parent heap)
-        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY);
+        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
         if (deco.object != null) {
             Decorator globalDecorator = (Decorator) deco.object;
             decorated = globalDecorator.decorate(decorated, null, extracted.context);

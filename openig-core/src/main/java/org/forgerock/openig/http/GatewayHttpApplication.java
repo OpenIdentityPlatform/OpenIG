@@ -17,20 +17,26 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.format;
-import static org.forgerock.http.Http.chainOf;
-import static org.forgerock.http.Http.newSessionFilter;
+import static java.lang.String.*;
+import static org.forgerock.http.Http.*;
+import static org.forgerock.http.util.Json.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.audit.AuditSystem.AUDIT_SYSTEM_HEAP_KEY;
-import static org.forgerock.openig.audit.decoration.AuditDecorator.AUDIT_HEAP_KEY;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.decoration.capture.CaptureDecorator.CAPTURE_HEAP_KEY;
-import static org.forgerock.openig.decoration.timer.TimerDecorator.TIMER_HEAP_KEY;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.forgerock.http.util.Json.readJsonLenient;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.audit.AuditSystem.*;
+import static org.forgerock.openig.audit.decoration.AuditDecorator.*;
+import static org.forgerock.openig.config.Environment.*;
+import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
+import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
+import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
+import static org.forgerock.openig.http.HttpClient.*;
+import static org.forgerock.openig.io.TemporaryStorage.*;
+import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.util.Utils.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
@@ -42,6 +48,7 @@ import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.heap.HeapImpl;
@@ -51,12 +58,6 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Factory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 /**
  * Configuration class for configuring the OpenIG Gateway.
@@ -114,6 +115,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(null, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator());
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
+            heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");

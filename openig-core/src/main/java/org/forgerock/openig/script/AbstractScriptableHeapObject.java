@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.script;
 
@@ -70,9 +70,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
-            HttpClient httpClient = heap.resolve(config.get("httpClient")
-.defaultTo(HTTP_CLIENT_HEAP_KEY),
-                                                           HttpClient.class);
+            HttpClient httpClient = heap.resolve(config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
+                                                 HttpClient.class);
             component.setHttpClient(httpClient);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());

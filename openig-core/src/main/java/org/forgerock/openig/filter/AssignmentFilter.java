@@ -23,6 +23,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
@@ -30,11 +34,13 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
  */
-public class AssignmentFilter extends GenericFilter {
+public class AssignmentFilter extends GenericFilter implements org.forgerock.http.Filter {
 
     /** Defines assignment condition, target and value expressions. */
     private static final class Binding {
@@ -166,6 +172,27 @@ public class AssignmentFilter extends GenericFilter {
         if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
             binding.target.set(exchange, binding.value != null ? binding.value.eval(exchange) : null);
         }
+    }
+
+    @Override
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final org.forgerock.http.Handler next) {
+        final Exchange exchange = context.asContext(Exchange.class);
+
+        for (Binding binding : onRequest) {
+            eval(binding, exchange);
+        }
+        Promise<Response, ResponseException> nextOne = next.handle(context, request);
+        return nextOne.onSuccess(new SuccessHandler<Response>() {
+            @Override
+            public void handleResult(final Response result) {
+                for (Binding binding : onResponse) {
+                    eval(binding, exchange);
+                }
+            }
+        });
+
     }
 
     /** Creates and initializes an assignment filter in a heap environment. */

@@ -13,19 +13,23 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.http.HttpClient.*;
 
-import java.io.IOException;
-
+import org.forgerock.http.Context;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched through the {@link
@@ -42,7 +46,7 @@ import org.forgerock.openig.http.HttpClient;
  *   }
  * </pre>
  */
-public class ClientHandler extends GenericHandler {
+public class ClientHandler extends GenericHeapObject implements org.forgerock.http.Handler {
 
     /** The HTTP client to transmit requests through. */
     private final HttpClient client;
@@ -57,8 +61,9 @@ public class ClientHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
-        client.execute(exchange);
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        // TODO Maybe this could be done asynchronously
+        return Promises.newSuccessfulPromise(client.execute(request));
     }
 
     /** Creates and initializes a client handler in a heap environment. */

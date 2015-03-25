@@ -18,25 +18,29 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a static response in an HTTP exchange.
  */
-public class StaticResponseHandler extends GenericHandler {
+public class StaticResponseHandler extends GenericHeapObject implements org.forgerock.http.Handler {
 
     /** The response status code (e.g. 200). */
     private final Integer status;
@@ -102,7 +106,9 @@ public class StaticResponseHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        // TODO Remove that when Expression will no more use an Exchange
+        Exchange exchange = context.asContext(Exchange.class);
         Response response = new Response();
         if (this.reason == null) {
             response.setStatusAndReason(this.status);
@@ -125,9 +131,7 @@ public class StaticResponseHandler extends GenericHandler {
             // use content-type charset (or default)
             response.setEntity(entity.eval(exchange, String.class));
         }
-        // finally replace response in the exchange
-        closeSilently(exchange.response);
-        exchange.response = response;
+        return Promises.newSuccessfulPromise(response);
     }
 
     /**

@@ -25,8 +25,11 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
@@ -36,6 +39,8 @@ import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a new request with in the exchange object. It will replace any request that may
@@ -44,7 +49,7 @@ import org.forgerock.openig.http.Exchange;
  * {@code application/x-www-form-urlencoded} format if request method is {@code POST}, or
  * otherwise as (additional) query parameters in the URI.
  */
-public class StaticRequestFilter extends GenericFilter {
+public class StaticRequestFilter extends GenericFilter implements org.forgerock.http.Filter {
 
     /**
      * By default, do not restore the original {@link Request} back into {@code exchange.request}.
@@ -190,6 +195,59 @@ public class StaticRequestFilter extends GenericFilter {
         if (restore) {
             exchange.request = saved;
         }
+    }
+
+    @Override
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final org.forgerock.http.Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
+        Request newRequest = new Request();
+        newRequest.setMethod(this.method);
+        String value = this.uri.eval(exchange, String.class);
+        if (value != null) {
+            try {
+                newRequest.setUri(value);
+            } catch (URISyntaxException e) {
+                return Promises.newFailedPromise(
+                        logger.debug(
+                                new ResponseException(
+                                        format("The URI %s was not valid, %s", value, e.getMessage()), e)));
+            }
+        } else {
+            return Promises.newFailedPromise(logger.debug(
+                    new ResponseException(format("The URI expression '%s' could not be resolved", uri.toString()))));
+        }
+        if (this.version != null) {
+            // default in Message class
+            newRequest.setVersion(version);
+        }
+        for (String key : this.headers.keySet()) {
+            for (Expression expression : this.headers.get(key)) {
+                String eval = expression.eval(exchange, String.class);
+                if (eval != null) {
+                    newRequest.getHeaders().add(key, eval);
+                }
+            }
+        }
+        if (this.form != null && !this.form.isEmpty()) {
+            Form f = new Form();
+            for (String key : this.form.keySet()) {
+                for (Expression expression : this.form.get(key)) {
+                    String eval = expression.eval(exchange, String.class);
+                    if (eval != null) {
+                        f.add(key, eval);
+                    }
+                }
+            }
+            if (newRequest.getMethod().equals("POST")) {
+                f.toRequestEntity(newRequest);
+            } else {
+                f.appendRequestQuery(newRequest);
+            }
+        }
+        return next.handle(context, newRequest);
+        // Note Can't restore in promise-land because I can't change the reference to the given request parameter
     }
 
     /** Creates and initializes a request filter in a heap environment. */

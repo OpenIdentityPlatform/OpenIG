@@ -23,22 +23,28 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Context;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Function;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Rewrites Location headers on responses that generate a redirect that would
  * take the user directly to the application being proxied rather than taking
  * the user through OpenIG.
  */
-public class LocationHeaderFilter extends GenericFilter {
+public class LocationHeaderFilter extends GenericFilter implements org.forgerock.http.Filter {
 
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
     private Expression baseURI;
@@ -89,6 +95,27 @@ public class LocationHeaderFilter extends GenericFilter {
                     "The baseURI expression '%s' could not be resolved", baseURI.toString())));
         }
         return new URI(uri);
+    }
+
+    @Override
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final org.forgerock.http.Handler next) {
+        // We only care about responses so just call the next handler in the chain.
+        return next.handle(context, request)
+                   .<Response>then(new Function<Response, Response, ResponseException>() {
+                       @Override
+                       public Response apply(final Response value) throws ResponseException {
+                           Exchange exchange = context.asContext(Exchange.class);
+                           exchange.response = value;
+                           try {
+                               processResponse(exchange);
+                           } catch (HandlerException e) {
+                               throw new ResponseException("Can't update Location header", e);
+                           }
+                           return value;
+                       }
+                   });
     }
 
     /** Creates and initializes a LocationHeaderFilter in a heap environment. */
