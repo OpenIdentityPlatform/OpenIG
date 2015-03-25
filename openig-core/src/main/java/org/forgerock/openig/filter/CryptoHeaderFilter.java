@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static java.util.Collections.*;
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -31,16 +30,21 @@ import java.util.Set;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * Encrypts and decrypts header fields.
@@ -49,7 +53,7 @@ import org.forgerock.util.encode.Base64;
  * not implement a way to set/retrieve the initialization vector(IV) (OPENIG-42)
  * therefore, the CryptoHeader can not decrypt cipher algorithm using IV.
  */
-public class CryptoHeaderFilter extends GenericFilter {
+public class CryptoHeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /**
      * Default cipher algorithm to be used when none is specified.
@@ -206,14 +210,25 @@ public class CryptoHeaderFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
         if (messageType == MessageType.REQUEST) {
-            process(exchange.request);
+            process(request);
         }
-        next.handle(exchange);
+
+        Promise<Response, ResponseException> promise = next.handle(context, request);
+
+        // Hook a post-processing function only if needed
         if (messageType == MessageType.RESPONSE) {
-            process(exchange.response);
+            return promise.onSuccess(new SuccessHandler<Response>() {
+                @Override
+                public void handleResult(final Response response) {
+                    process(response);
+                }
+            });
         }
+        return promise;
     }
 
     /** Creates and initializes a header filter in a heap environment. */
