@@ -11,18 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
 import static org.mockito.Mockito.*;
 
-import org.forgerock.http.io.BranchingInputStream;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -37,9 +36,6 @@ public class ExceptionFilterTest {
     @Mock
     private Handler exceptionHandler;
 
-    @Mock
-    private BranchingInputStream entity;
-
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -47,27 +43,27 @@ public class ExceptionFilterTest {
 
     @Test
     public void testExceptionHandlerNotInvokedWhenNoExceptionIsThrown() throws Exception {
+
+        when(nextHandler.handle(null, null))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
-        filter.filter(null, nextHandler);
+        filter.filter(null, null, nextHandler);
 
-        verify(nextHandler).handle(null);
         verifyZeroInteractions(exceptionHandler);
     }
 
     @Test
-    public void testExceptionHandlerIsInvokedAndResponseEntityIsClosedWhenExceptionIsThrown() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.response = new Response();
-        exchange.response.setEntity(entity);
+    public void testExceptionHandlerIsInvokedWhenFiledPromiseIsReturned() throws Exception {
 
-        doThrow(new HandlerException("Boom")).when(nextHandler).handle(exchange);
+        when(nextHandler.handle(null, null))
+                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
-        filter.filter(exchange, nextHandler);
+        filter.filter(null, null, nextHandler);
 
-        verify(exceptionHandler).handle(exchange);
-        verify(entity).close();
+        verify(exceptionHandler).handle(null, null);
     }
 }

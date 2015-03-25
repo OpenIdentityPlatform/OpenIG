@@ -12,20 +12,21 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.util.Utils.*;
-
-import java.io.IOException;
-
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Catches any exceptions thrown during handing of a request. This allows friendlier error
@@ -37,7 +38,7 @@ import org.forgerock.openig.http.Exchange;
  * close any open entity within the response object prior to dispatching the exchange to the
  * exception handler.
  */
-public class ExceptionFilter extends GenericFilter {
+public class ExceptionFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** Handler to dispatch to in the event of caught exceptions. */
     private final Handler handler;
@@ -51,15 +52,18 @@ public class ExceptionFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        try {
-            next.handle(exchange);
-        } catch (Throwable t) {
-            // user-impacting
-            logger.warning(t);
-            closeSilently(exchange.response);
-            handler.handle(exchange);
-        }
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        return next.handle(context, request)
+                .onFailure(new FailureHandler<ResponseException>() {
+                    @Override
+                    public void handleError(final ResponseException error) {
+                        // user-impacting
+                        logger.warning(error);
+                        handler.handle(context, request);
+                    }
+                });
     }
 
     /**
