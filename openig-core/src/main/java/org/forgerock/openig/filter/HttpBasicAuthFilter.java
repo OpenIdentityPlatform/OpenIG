@@ -22,21 +22,26 @@ package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
+import static org.forgerock.util.promise.Promises.*;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
@@ -55,7 +60,7 @@ import org.forgerock.util.encode.Base64;
  * yielded from the {@code username} or {@code password} expressions, then the exchange is diverted
  * to the authentication failure handler.
  */
-public class HttpBasicAuthFilter extends GenericFilter {
+public class HttpBasicAuthFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** Headers that are suppressed from incoming request. */
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS =
@@ -110,64 +115,75 @@ public class HttpBasicAuthFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+
+        Exchange exchange = context.asContext(Exchange.class);
+        Session session = context.asContext(HttpContext.class).getSession();
 
         // Remove existing headers from incoming message
         for (String header : SUPPRESS_REQUEST_HEADERS) {
-            exchange.request.getHeaders().remove(header);
+            request.getHeaders().remove(header);
         }
 
         String userpass = null;
 
         // loop to retry for initially retrieved (or refreshed) credentials
-        for (int n = 0; n < 2; n++) {
-            // put a branch of the trunk in the entity to allow retries
-            exchange.request.getEntity().push();
-            try {
-                // because credentials are sent in every request, this class caches them in the session
+        try {
+            for (int n = 0; n < 2; n++) {
+                // put a branch of the trunk in the entity to allow retries
+                request.getEntity().push();
+                Response response;
+                try {
+                    // because credentials are sent in every request, this class caches them in the session
+                    if (cacheHeader) {
+                        userpass = (String) session.get(attributeName(request));
+                    }
+                    if (userpass != null) {
+                        request.getHeaders().add("Authorization", "Basic " + userpass);
+                    }
+                    response = next.handle(context, request).getOrThrow();
+                } finally {
+                    request.getEntity().pop();
+                }
+                // successful exchange from this filter's standpoint
+                if (response.getStatus() != 401) {
+                    // Remove headers from outgoing message
+                    for (String header : SUPPRESS_RESPONSE_HEADERS) {
+                        response.getHeaders().remove(header);
+                    }
+                    return newSuccessfulPromise(response);
+                }
+                // close the incoming response because it's about to be dereferenced
+                closeSilently(response);
+
+                // credentials might be stale, so fetch them
+                String user = username.eval(exchange, String.class);
+                String pass = password.eval(exchange, String.class);
+                // no credentials is equivalent to invalid credentials
+                if (user == null || pass == null) {
+                    break;
+                }
+                // ensure conformance with specification
+                if (user.indexOf(':') >= 0) {
+                    return newFailedPromise(new ResponseException("username must not contain a colon ':' character"));
+                }
                 if (cacheHeader) {
-                    userpass = (String) exchange.session.get(attributeName(exchange.request));
+                    // set in session for fetch in next iteration of this loop
+                    session.put(attributeName(request),
+                                         Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset())));
+                } else {
+                    userpass = Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset()));
                 }
-                if (userpass != null) {
-                    exchange.request.getHeaders().add("Authorization", "Basic " + userpass);
-                }
-                next.handle(exchange);
-            } finally {
-                exchange.request.getEntity().pop();
             }
-            // successful exchange from this filter's standpoint
-            if (exchange.response.getStatus() != 401) {
-                // Remove headers from outgoing message
-                for (String header : SUPPRESS_RESPONSE_HEADERS) {
-                    exchange.response.getHeaders().remove(header);
-                }
-                return;
-            }
-            // credentials might be stale, so fetch them
-            String user = username.eval(exchange, String.class);
-            String pass = password.eval(exchange, String.class);
-            // no credentials is equivalent to invalid credentials
-            if (user == null || pass == null) {
-                break;
-            }
-            // ensure conformance with specification
-            if (user.indexOf(':') >= 0) {
-                throw new HandlerException("username must not contain a colon ':' character");
-            }
-            if (cacheHeader) {
-                // set in session for fetch in next iteration of this loop
-                exchange.session.put(attributeName(exchange.request),
-                        Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset())));
-            } else {
-                userpass = Base64.encode((user + ":" + pass).getBytes(Charset.defaultCharset()));
-            }
+        } catch (Exception e) {
+            return newFailedPromise(new ResponseException("Can't authenticate user with Basic Http Authorization", e));
         }
-        // close the incoming response because it's about to be dereferenced
-        closeSilently(exchange.response);
+
 
         // credentials were missing or invalid; let failure handler deal with it
-        exchange.response = new Response();
-        failureHandler.handle(exchange);
+        return failureHandler.handle(context, request);
     }
 
     /** Creates and initializes an HTTP basic authentication filter in a heap environment. */
