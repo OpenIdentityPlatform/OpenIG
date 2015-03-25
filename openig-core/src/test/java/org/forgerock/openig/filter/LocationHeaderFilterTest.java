@@ -17,18 +17,18 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.net.URI;
 
+import org.forgerock.http.Context;
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.testng.annotations.Test;
 
 /**
@@ -110,7 +110,6 @@ public class LocationHeaderFilterTest {
     public void caseBaseUriAsExpression() throws Exception {
         LocationHeaderFilter filter = new LocationHeaderFilter();
         filter.setBaseURI(Expression.valueOf("http://${exchange.host}:8080"));
-        Handler next = mock(Handler.class);
 
         Exchange exchange = new Exchange();
         exchange.put("host", "app.example.com");
@@ -120,10 +119,11 @@ public class LocationHeaderFilterTest {
         exchange.response.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
         exchange.response.setStatus(302);
 
-        filter.filter(exchange, next);
+        ResponseHandler next = new ResponseHandler(exchange.response);
 
-        verify(next).handle(exchange);
-        assertThat(exchange.response.getHeaders().getFirst(LocationHeader.NAME))
+        Response response = filter.filter(exchange, null, next).get();
+
+        assertThat(response.getHeaders().getFirst(LocationHeader.NAME))
                 .isEqualTo("http://app.example.com:8080/redirected");
     }
 
@@ -140,26 +140,33 @@ public class LocationHeaderFilterTest {
     }
 
     private void callFilter(LocationHeaderFilter filter, URI testRedirectionURI, String expectedResult)
-            throws IOException, HandlerException {
+            throws Exception {
 
         Exchange exchange = new Exchange();
         exchange.response = new Response();
         exchange.response.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
         exchange.response.setStatus(302);
 
-        DummyHander handler = new DummyHander();
+        ResponseHandler next = new ResponseHandler(exchange.response);
 
-        filter.filter(exchange, handler);
+        Response response = filter.filter(exchange, null, next).get();
 
-        LocationHeader header = LocationHeader.valueOf(exchange.response);
+        LocationHeader header = LocationHeader.valueOf(response);
         assertThat(header.toString()).isNotNull();
         assertThat(expectedResult).isEqualTo(header.toString());
     }
 
-    private class DummyHander extends GenericHandler {
+    private static class ResponseHandler implements org.forgerock.http.Handler {
+
+        private final Response response;
+
+        private ResponseHandler(final Response response) {
+            this.response = response;
+        }
 
         @Override
-        public void handle(Exchange exchange) throws HandlerException, IOException {
+        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+            return Promises.newSuccessfulPromise(response);
         }
     }
 }
