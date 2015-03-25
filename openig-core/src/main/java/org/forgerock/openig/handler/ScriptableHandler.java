@@ -24,7 +24,6 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * A scriptable handler. This handler acts as a simple wrapper around the
@@ -47,13 +46,7 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements o
     @Override
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
-        exchange.request = request;
-        try {
-            runScript(exchange, null);
-        } catch (Exception e) {
-            return Promises.newFailedPromise(new ResponseException("Can't execute script", e));
-        }
-        return Promises.newSuccessfulPromise(exchange.response);
+        return runScript(exchange, request, null);
     }
 
     /**
