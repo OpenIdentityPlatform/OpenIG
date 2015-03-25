@@ -38,7 +38,7 @@ import org.forgerock.util.Reject;
  * attributes via its {@code ExtensibleFieldMap} superclass.
  * <p>
  * The contract of an exchange is such that it is the responsibility of the caller of a
- * {@link org.forgerock.openig.handler.Handler} object to create and populate the request object,
+ * {@link org.forgerock.http.Handler} object to create and populate the request object,
  * and responsibility of the handler to create and populate the response object.
  * <p>
  * If an existing response object exists in the exchange and the handler intends to replace

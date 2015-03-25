@@ -45,7 +45,7 @@ import org.forgerock.util.promise.Promise;
  * calling {@code chain.handle(exchange)} and generate its own response or dispatch to a
  * completely different handler.
  *
- * @see Filter
+ * @see org.forgerock.http.Filter
  */
 public class Chain extends GenericHeapObject implements org.forgerock.http.Handler {
 

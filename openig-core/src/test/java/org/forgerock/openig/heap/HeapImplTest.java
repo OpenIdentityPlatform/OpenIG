@@ -38,21 +38,10 @@ import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class HeapImplTest {
-
-    @Mock
-    private org.forgerock.openig.handler.Handler handler;
-
-    @BeforeMethod
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test(description = "OPENIG-329")
     public void shouldAllowEmptyHeap() throws Exception {
