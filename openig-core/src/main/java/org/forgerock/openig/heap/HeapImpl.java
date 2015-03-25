@@ -286,10 +286,28 @@ public class HeapImpl implements Heap {
         }
         // TODO When we'll start to have components extracting Chf Handler/Filter from the heap,
         // we'll have to convert them here
+        extracted.object = transformIgHandler(extracted.object, type);
+        extracted.object = transformIgFilter(extracted.object, type);
         return type.cast(applyGlobalDecorations(extracted));
     }
 
-    private <T> Object transformChfFilter(final Object o) {
+    private <T> Object transformIgFilter(final Object o, final Class<T> type) {
+        // From IG handler to CHF Handler
+        if (o instanceof Handler && org.forgerock.http.Handler.class.isAssignableFrom(type)) {
+            return Adapters.asChfHandler((Handler) o);
+        }
+        return o;
+    }
+
+    private <T> Object transformIgHandler(final Object o, final Class<T> type) {
+        // From IG Filter to CHF Filter
+        if (o instanceof Filter && org.forgerock.http.Filter.class.isAssignableFrom(type)) {
+            return Adapters.asChfFilter((Filter) o);
+        }
+        return o;
+    }
+
+    private Object transformChfFilter(final Object o) {
         // From CHF Filter to IG Filter
         if (o instanceof org.forgerock.http.Filter && !(o instanceof Filter)) {
             return Adapters.asFilter((org.forgerock.http.Filter) o);
@@ -297,7 +315,7 @@ public class HeapImpl implements Heap {
         return o;
     }
 
-    private <T> Object transformChfHandler(final Object o) {
+    private Object transformChfHandler(final Object o) {
         // From CHF Handler to IG Handler
         if (o instanceof org.forgerock.http.Handler && !(o instanceof Handler)) {
             return Adapters.asHandler((org.forgerock.http.Handler) o);
