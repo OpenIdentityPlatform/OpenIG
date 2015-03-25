@@ -11,29 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
-
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.filter.oauth2.AccessToken;
+import org.forgerock.openig.filter.oauth2.FailureHandler;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.filter.oauth2.ResponseHandler;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -43,26 +38,11 @@ public class OpenAmAccessTokenResolverTest {
     public static final String TOKEN = "ACCESS_TOKEN";
 
     @Mock
-    private Handler client;
-
-    @Mock
     private TimeService time;
-
-    private OpenAmAccessTokenResolver resolver;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
-
-        doAnswer(new ExchangeAnswer() {
-            @Override
-            protected void answer(final Exchange exchange) throws Exception {
-                exchange.response = response(200, doubleQuote("{'expires_in':10, "
-                                                                      + "'access_token':'ACCESS_TOKEN', "
-                                                                      + "'scope': [ 'email', 'name' ]}"));
-            }
-        }).when(client).handle(any(Exchange.class));
     }
 
     private Response response(final int status, final String content) throws Exception {
@@ -72,6 +52,11 @@ public class OpenAmAccessTokenResolverTest {
     @Test
     public void shouldProduceAnAccessToken() throws Exception {
         when(time.now()).thenReturn(0L);
+        Handler client = new ResponseHandler(response(200, doubleQuote("{'expires_in':10, "
+                                                                       + "'access_token':'ACCESS_TOKEN', "
+                                                                       + "'scope': [ 'email', 'name' ]}")));
+        OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
+
         AccessToken token = resolver.resolve(TOKEN);
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L);
@@ -81,13 +66,8 @@ public class OpenAmAccessTokenResolverTest {
     public void shouldThrowAnOAuthTokenExceptionCausedByAnError() throws Exception {
 
         //Given
-        doAnswer(new ExchangeAnswer() {
-            @Override
-            protected void answer(final Exchange exchange) throws Exception {
-                exchange.response = response(400, doubleQuote("{'error':'ERROR'}"));
-            }
-        }).when(client).handle(any(Exchange.class));
-
+        Handler client = new ResponseHandler(response(400, doubleQuote("{'error':'ERROR'}")));
+        OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         //When
         resolver.resolve(TOKEN);
@@ -97,7 +77,8 @@ public class OpenAmAccessTokenResolverTest {
     public void shouldThrowAnOAuthTokenExceptionCausedByAnIOException() throws Exception {
 
         //Given
-        doThrow(new IOException()).when(client).handle(any(Exchange.class));
+        Handler client = new FailureHandler(new ResponseException(404));
+        OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         //When
         resolver.resolve(TOKEN);
@@ -107,16 +88,5 @@ public class OpenAmAccessTokenResolverTest {
 
     private static String doubleQuote(final String value) {
         return value.replaceAll("'", "\"");
-    }
-
-    private static abstract class ExchangeAnswer implements Answer<Void> {
-        @Override
-        public Void answer(final InvocationOnMock invocation) throws Throwable {
-            Exchange exchange = (Exchange) invocation.getArguments()[0];
-            answer(exchange);
-            return null;
-        }
-
-        protected abstract void answer(final Exchange exchange) throws Exception;
     }
 }

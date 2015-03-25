@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.protocol.Response;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -29,13 +29,12 @@ public class NoAuthenticationChallengeHandlerTest {
     public void should401WithRealmOnlyChallenge() throws Exception {
         NoAuthenticationChallengeHandler handler = new NoAuthenticationChallengeHandler("test");
 
-        Exchange exchange = new Exchange();
-        handler.handle(exchange);
+        Response response = handler.handle(null, null).get();
 
-        assertThat(exchange.response.getStatus()).isEqualTo(401);
-        assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getReason()).isEqualTo("Unauthorized");
 
-        List<String> authenticates = exchange.response.getHeaders().get("WWW-Authenticate");
+        List<String> authenticates = response.getHeaders().get("WWW-Authenticate");
         assertThat(authenticates).containsOnly("Bearer realm=\"test\"");
 
     }
