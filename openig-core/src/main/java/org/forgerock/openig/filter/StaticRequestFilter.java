@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static java.lang.String.*;
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +33,7 @@ import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
@@ -49,12 +47,7 @@ import org.forgerock.util.promise.Promises;
  * {@code application/x-www-form-urlencoded} format if request method is {@code POST}, or
  * otherwise as (additional) query parameters in the URI.
  */
-public class StaticRequestFilter extends GenericFilter implements org.forgerock.http.Filter {
-
-    /**
-     * By default, do not restore the original {@link Request} back into {@code exchange.request}.
-     */
-    public static final boolean DEFAULT_RESTORE = false;
+public class StaticRequestFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** The HTTP method to be performed on the resource. */
     private final String method;
@@ -64,9 +57,6 @@ public class StaticRequestFilter extends GenericFilter implements org.forgerock.
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}). */
     private String version;
-
-    /** Restore the original Request after execution (defaults to {@literal false}). */
-    private boolean restore = DEFAULT_RESTORE;
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression> headers =
@@ -107,16 +97,6 @@ public class StaticRequestFilter extends GenericFilter implements org.forgerock.
     }
 
     /**
-     * Sets to {@literal false} if this filter should not restore the original Request after execution.
-     *
-     * @param restore
-     *         {@literal true} if restore is required, {@literal false} otherwise
-     */
-    public void setRestore(final boolean restore) {
-        this.restore = restore;
-    }
-
-    /**
      * Adds a new header value using the given {@code key} with the given {@link Expression}. As headers are
      * multi-valued objects, it's perfectly legal to call this method multiple times with the same key.
      *
@@ -144,57 +124,6 @@ public class StaticRequestFilter extends GenericFilter implements org.forgerock.
     public StaticRequestFilter addFormParameter(final String name, final Expression value) {
         form.add(name, value);
         return this;
-    }
-
-    @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        Request request = new Request();
-        request.setMethod(this.method);
-        String value = this.uri.eval(exchange, String.class);
-        if (value != null) {
-            try {
-                request.setUri(value);
-            } catch (URISyntaxException e) {
-                throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
-            }
-        } else {
-            throw logger.debug(
-                    new HandlerException(format("The URI expression '%s' could not be resolved", uri.toString())));
-        }
-        if (this.version != null) {
-            // default in Message class
-            request.setVersion(version);
-        }
-        for (String key : this.headers.keySet()) {
-            for (Expression expression : this.headers.get(key)) {
-                String eval = expression.eval(exchange, String.class);
-                if (eval != null) {
-                    request.getHeaders().add(key, eval);
-                }
-            }
-        }
-        if (this.form != null && !this.form.isEmpty()) {
-            Form f = new Form();
-            for (String key : this.form.keySet()) {
-                for (Expression expression : this.form.get(key)) {
-                    String eval = expression.eval(exchange, String.class);
-                    if (eval != null) {
-                        f.add(key, eval);
-                    }
-                }
-            }
-            if (request.getMethod().equals("POST")) {
-                f.toRequestEntity(request);
-            } else {
-                f.appendRequestQuery(request);
-            }
-        }
-        Request saved = exchange.request;
-        exchange.request = request;
-        next.handle(exchange);
-        if (restore) {
-            exchange.request = saved;
-        }
     }
 
     @Override
@@ -257,7 +186,6 @@ public class StaticRequestFilter extends GenericFilter implements org.forgerock.
             StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
             filter.setUri(asExpression(config.get("uri").required()));
             filter.setVersion(config.get("version").asString());
-            filter.setRestore(config.get("restore").defaultTo(DEFAULT_RESTORE).asBoolean());
 
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
