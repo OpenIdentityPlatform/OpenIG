@@ -66,7 +66,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriFilter(delegate, asExpression(decoratorConfig));
+            return new BaseUriFilter(delegate, asExpression(decoratorConfig, String.class));
         }
         return delegate;
     }
@@ -75,7 +75,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriHandler(delegate, asExpression(decoratorConfig));
+            return new BaseUriHandler(delegate, asExpression(decoratorConfig, String.class));
         }
         return delegate;
     }

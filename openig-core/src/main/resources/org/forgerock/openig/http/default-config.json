@@ -11,8 +11,7 @@
                             {
                                 "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
                                 "handler": {
-                                    "type": "WelcomeHandler",
-                                    "config": {}
+                                    "type": "WelcomeHandler"
                                 }
                             },
                             {

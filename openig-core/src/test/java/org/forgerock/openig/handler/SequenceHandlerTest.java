@@ -87,7 +87,7 @@ public class SequenceHandlerTest {
     @Test
     public void shouldExecuteMultiElementSequencePartially() throws Exception {
         SequenceHandler sequence = new SequenceHandler();
-        sequence.addBinding(handler1, Expression.valueOf("${false}"));
+        sequence.addBinding(handler1, Expression.valueOf("${false}", Boolean.class));
         sequence.addBinding(handler2, null);
         Response response1 = new Response();
         promise1.handleResult(response1);

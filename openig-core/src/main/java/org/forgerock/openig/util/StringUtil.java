@@ -12,8 +12,8 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2009 Sun Microsystems Inc.
- * Portions Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2010-2011 ApexIdentity Inc.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -49,7 +49,7 @@ public final class StringUtil {
     public static String join(String separator, Iterable<?> elements) {
         StringBuilder sb = new StringBuilder();
         for (Iterator<?> i = elements.iterator(); i.hasNext();) {
-            sb.append(i.next().toString());
+            sb.append(i.next());
             if (i.hasNext() && separator != null) {
                 sb.append(separator);
             }

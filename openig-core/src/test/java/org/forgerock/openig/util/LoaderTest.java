@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.util;
 
@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class LoaderTest {
 
-    private static int counter = 0;
+    private static int counter;
 
     @BeforeMethod
     public void before() {
@@ -101,13 +101,13 @@ public class LoaderTest {
         Loader.loadList(null);
     }
 
-    @Test()
+    @Test
     public void loadList() {
         final List<Color> list = Loader.loadList(Color.class);
         assertThat(list.size()).isGreaterThanOrEqualTo(2);
     }
 
-    @Test()
+    @Test
     public void loadListExample2() {
         final List<MyColor> list = Loader.loadList(MyColor.class);
         assertThat(list).isNotNull();

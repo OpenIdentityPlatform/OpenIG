@@ -32,7 +32,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 
 /**
@@ -40,16 +39,16 @@ import org.forgerock.openig.http.Exchange;
  */
 final class OAuth2Utils {
 
-    static URI buildUri(final Exchange exchange, final Expression uriExpression)
+    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression)
             throws ResponseException {
         return buildUri(exchange, uriExpression, null);
     }
 
-    static URI buildUri(final Exchange exchange, final Expression uriExpression,
+    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression,
             final String additionalPath) throws ResponseException {
         String uriString = null;
         try {
-            uriString = uriExpression.eval(exchange, String.class);
+            uriString = uriExpression.eval(exchange);
             if (uriString == null) {
                 throw new ResponseException(
                         format("The URI expression '%s' could not be resolved", uriExpression.toString()));
@@ -79,11 +78,11 @@ final class OAuth2Utils {
         }
     }
 
-    static List<String> getScopes(final Exchange exchange, final List<Expression> scopeExpressions)
+    static List<String> getScopes(final Exchange exchange, final List<Expression<String>> scopeExpressions)
             throws ResponseException {
         final List<String> scopeValues = new ArrayList<String>(scopeExpressions.size());
-        for (final Expression scope : scopeExpressions) {
-            final String result = scope.eval(exchange, String.class);
+        for (final Expression<String> scope : scopeExpressions) {
+            final String result = scope.eval(exchange);
             if (result == null) {
                 throw new ResponseException(format(
                         "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));

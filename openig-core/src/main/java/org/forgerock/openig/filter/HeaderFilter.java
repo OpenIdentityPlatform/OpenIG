@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -82,8 +82,6 @@ public class HeaderFilter extends GenericHeapObject implements org.forgerock.htt
 
     /**
      * Removes all specified headers, then adds all specified headers.
-     *
-     * @param message the message to remove headers from and add headers to.
      */
     private void process(Message message, Exchange exchange) {
         for (String s : this.removedHeaders) {
@@ -92,7 +90,7 @@ public class HeaderFilter extends GenericHeapObject implements org.forgerock.htt
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key)) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, (String) asExpression(jsonValue).eval(exchange));
+                message.getHeaders().add(key, asExpression(jsonValue, String.class).eval(exchange));
             }
         }
     }

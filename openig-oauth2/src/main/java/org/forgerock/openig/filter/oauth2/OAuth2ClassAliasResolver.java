@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter;
+import org.forgerock.openig.filter.oauth2.client.OAuth2Provider;
 
 /**
  * Register all the aliases supported by the {@literal openig-oauth2} module.
@@ -29,9 +30,10 @@ public class OAuth2ClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<String, Class<?>>();
 
     static {
+        ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
+        ALIASES.put("OAuth2Provider", OAuth2Provider.class);
         ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilter.class);
         ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilter.class);
-        ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
     }
 
     @Override

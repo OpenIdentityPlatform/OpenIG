@@ -49,7 +49,8 @@ public class BaseUriHandlerTest {
     @Test
     public void shouldRebaseUri() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
-                                                          Expression.valueOf("http://www.example.com:443"));
+                                                          Expression.valueOf("http://www.example.com:443",
+                                                                  String.class));
 
         final Request request = createRequest();
         handler.handle(exchange, request);
@@ -73,7 +74,7 @@ public class BaseUriHandlerTest {
     @Test
     public void shouldNotRebaseWithEmptyUri() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
-                                                          Expression.valueOf(""));
+                                                          Expression.valueOf("", String.class));
 
         final Request request = createRequest();
         handler.handle(exchange, request);

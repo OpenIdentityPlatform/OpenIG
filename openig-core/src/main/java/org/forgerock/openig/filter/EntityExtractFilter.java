@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -71,7 +71,7 @@ public class EntityExtractFilter extends GenericHeapObject implements org.forger
     private final Charset charset;
 
     /** Expression that yields the target object that will contain the mapped extraction results. */
-    private final Expression target;
+    private final Expression<?> target;
 
     /**
      * Builds an EntityExtractFilter that will act either on {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
@@ -83,7 +83,7 @@ public class EntityExtractFilter extends GenericHeapObject implements org.forger
      * @param target
      *         Expression that yields the target object that will contain the mapped extraction results
      */
-    public EntityExtractFilter(final MessageType type, final Expression target) {
+    public EntityExtractFilter(final MessageType type, final Expression<?> target) {
         this(type, target, null);
     }
 
@@ -99,7 +99,7 @@ public class EntityExtractFilter extends GenericHeapObject implements org.forger
      * @param charset
      *         Overrides the character set encoding specified in message. If {@code null}, the message encoding is used
      */
-    public EntityExtractFilter(final MessageType type, final Expression target, final Charset charset) {
+    public EntityExtractFilter(final MessageType type, final Expression<?> target, final Charset charset) {
         this.messageType = type;
         this.target = target;
         this.charset = charset;
@@ -158,11 +158,10 @@ public class EntityExtractFilter extends GenericHeapObject implements org.forger
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            EntityExtractFilter filter = new EntityExtractFilter(config.get("messageType")
-                                                                         .required()
-                                                                         .asEnum(MessageType.class),
-                                                                 asExpression(config.get("target").required()),
-                                                                 config.get("charset").asCharset());
+            EntityExtractFilter filter = new EntityExtractFilter(
+                    config.get("messageType").required().asEnum(MessageType.class),
+                    asExpression(config.get("target").required(), Object.class),
+                    config.get("charset").asCharset());
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);

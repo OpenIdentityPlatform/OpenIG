@@ -122,13 +122,13 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     private final AccessTokenResolver resolver;
     private final BearerTokenExtractor extractor;
     private final TimeService time;
-    private Set<Expression> scopes;
+    private Set<Expression<String>> scopes;
     private String realm;
 
     private final Handler noAuthentication;
     private final Handler invalidToken;
     private final Handler invalidRequest;
-    private final Expression target;
+    private final Expression<?> target;
 
     /**
      * Creates a new {@code OAuth2Filter}.
@@ -146,8 +146,8 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Expression target) {
-        this(resolver, extractor, time, Collections.<Expression> emptySet(), DEFAULT_REALM_NAME, target);
+                                      final Expression<?> target) {
+        this(resolver, extractor, time, Collections.<Expression<String>> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
     /**
@@ -170,9 +170,9 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Set<Expression> scopes,
+                                      final Set<Expression<String>> scopes,
                                       final String realm,
-                                      final Expression target) {
+                                      final Expression<?> target) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
@@ -245,8 +245,8 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
 
     private Set<String> getScopes(final Exchange exchange) throws ResponseException {
         final Set<String> scopeValues = new HashSet<String>(this.scopes.size());
-        for (final Expression scope : this.scopes) {
-            final String result = scope.eval(exchange, String.class);
+        for (final Expression<String> scope : this.scopes) {
+            final String result = scope.eval(exchange);
             if (result == null) {
                 throw new ResponseException(format(
                         "The OAuth 2.0 resource server filter scope expression '%s' could not be resolved",
@@ -269,7 +269,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     private String getAccessToken(final Request request) throws OAuth2TokenException {
         Headers headers = request.getHeaders();
         List<String> authorizations = headers.get("Authorization");
-        if ((authorizations != null) && (authorizations.size() >= 2)) {
+        if (authorizations != null && authorizations.size() >= 2) {
             throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
                                                    + " the OAuth2 AccessToken");
         }
@@ -304,13 +304,13 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 
-            Set<Expression> scopes =
+            Set<Expression<String>> scopes =
                     getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
-            final Expression target = asExpression(config.get("target").defaultTo(
-                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+            final Expression<?> target = asExpression(config.get("target").defaultTo(
+                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
 
             final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                                                            new BearerTokenExtractor(),
@@ -322,7 +322,9 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {
                 try {
-                    return new EnforcerFilter(Expression.valueOf("${exchange.request.uri.scheme == 'https'}"), filter);
+                    Expression<Boolean> expr = Expression.valueOf("${exchange.request.uri.scheme == 'https'}",
+                                                                  Boolean.class);
+                    return new EnforcerFilter(expr, filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
                 }

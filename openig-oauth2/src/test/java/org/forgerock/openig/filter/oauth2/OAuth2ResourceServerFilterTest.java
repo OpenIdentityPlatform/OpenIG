@@ -180,7 +180,7 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                Expression.valueOf("${exchange.myToken}"));
+                Expression.valueOf("${exchange.myToken}", String.class));
 
         final Exchange exchange = new Exchange();
         Request request = buildAuthorizedRequest();
@@ -221,13 +221,15 @@ public class OAuth2ResourceServerFilterTest {
                                               time,
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
-                                              Expression.valueOf(format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)));
+                                              Expression.valueOf(
+                                                      format("${exchange.%s}",
+                                                      DEFAULT_ACCESS_TOKEN_KEY), String.class));
     }
 
-    private static Set<Expression> getScopes(final String... scopes) throws ExpressionException {
-        final Set<Expression> expScopes = new HashSet<Expression>(scopes.length);
+    private static Set<Expression<String>> getScopes(final String... scopes) throws ExpressionException {
+        final Set<Expression<String>> expScopes = new HashSet<Expression<String>>(scopes.length);
         for (final String scope : scopes) {
-            expScopes.add(Expression.valueOf(scope));
+            expScopes.add(Expression.valueOf(scope, String.class));
         }
         return expScopes;
     }

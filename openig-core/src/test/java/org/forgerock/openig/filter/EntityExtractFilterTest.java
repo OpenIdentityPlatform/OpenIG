@@ -17,7 +17,6 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -51,7 +50,7 @@ public class EntityExtractFilterTest {
     @Test
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
         EntityExtractFilter filter =
-                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}"));
+                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
@@ -73,7 +72,7 @@ public class EntityExtractFilterTest {
     @Test
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
         EntityExtractFilter filter =
-                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}"));
+                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
@@ -95,7 +94,7 @@ public class EntityExtractFilterTest {
     @Test
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
         EntityExtractFilter filter = new EntityExtractFilter(MessageType.RESPONSE,
-                                                             Expression.valueOf("${exchange.result}"));
+                                                             Expression.valueOf("${exchange.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();

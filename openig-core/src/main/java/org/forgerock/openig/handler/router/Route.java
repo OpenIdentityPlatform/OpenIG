@@ -102,7 +102,7 @@ class Route implements Handler {
      * If the expression evaluates to {@literal true} for a given {@link Exchange}, this route
      * will process the exchange. May be {@literal null} (semantically equivalent to "always {@literal true}").
      */
-    private final Expression condition;
+    private final Expression<Boolean> condition;
 
     /**
      * If this value is not null, it will be used to create a new Session instance.
@@ -132,7 +132,7 @@ class Route implements Handler {
         this.handler = heap.getHandler();
         this.sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
         this.name = config.get("name").defaultTo(defaultName).asString();
-        this.condition = asExpression(config.get("condition"));
+        this.condition = asExpression(config.get("condition"), Boolean.class);
     }
 
     /**
@@ -148,7 +148,7 @@ class Route implements Handler {
                  final Handler handler,
                  final SessionManager sessionManager,
                  final String name,
-                 final Expression condition) {
+                 final Expression<Boolean> condition) {
 
         this.heap = heap;
         this.handler = handler;

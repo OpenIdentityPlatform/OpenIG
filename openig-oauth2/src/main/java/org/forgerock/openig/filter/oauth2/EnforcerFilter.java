@@ -37,7 +37,7 @@ import org.forgerock.util.promise.Promise;
  */
 public class EnforcerFilter implements Filter {
 
-    private final Expression enforcement;
+    private final Expression<Boolean> enforcement;
     private final Filter delegate;
 
     /**
@@ -49,7 +49,7 @@ public class EnforcerFilter implements Filter {
      * @param delegate
      *         Filter instance to delegate to.
      */
-    public EnforcerFilter(final Expression enforcement, final Filter delegate) {
+    public EnforcerFilter(final Expression<Boolean> enforcement, final Filter delegate) {
         this.enforcement = enforcement;
         this.delegate = delegate;
     }
@@ -66,6 +66,6 @@ public class EnforcerFilter implements Filter {
     }
 
     private boolean isConditionVerified(final Exchange exchange) {
-        return TRUE.equals(enforcement.eval(exchange, Boolean.class));
+        return TRUE.equals(enforcement.eval(exchange));
     }
 }

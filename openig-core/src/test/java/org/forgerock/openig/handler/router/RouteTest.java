@@ -68,13 +68,13 @@ public class RouteTest {
 
     @Test
     public void testRouteAcceptingTheExchange() throws Exception {
-        Route route = createRoute(null, Expression.valueOf("${true}"));
+        Route route = createRoute(null, Expression.valueOf("${true}", Boolean.class));
         assertThat(route.accept(new Exchange())).isTrue();
     }
 
     @Test
     public void testRouteRejectingTheExchange() throws Exception {
-        Route route = createRoute(null, Expression.valueOf("${false}"));
+        Route route = createRoute(null, Expression.valueOf("${false}", Boolean.class));
         assertThat(route.accept(new Exchange())).isFalse();
     }
 
@@ -137,7 +137,7 @@ public class RouteTest {
     }
 
     private Route createRoute(final SessionManager sessionManager,
-                              final Expression condition) {
+                              final Expression<Boolean> condition) {
         return new Route(new HeapImpl(Name.of("anonymous")),
                          handler,
                          sessionManager,

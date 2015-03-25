@@ -43,6 +43,7 @@ import org.forgerock.openig.filter.SqlAttributesFilter;
 import org.forgerock.openig.filter.StaticRequestFilter;
 import org.forgerock.openig.filter.SwitchFilter;
 import org.forgerock.openig.handler.ClientHandler;
+import org.forgerock.openig.handler.DesKeyGenHandler;
 import org.forgerock.openig.handler.DispatchHandler;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.handler.SequenceHandler;
@@ -65,13 +66,14 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
     static {
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);
         ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
+        ALIASES.put("CaptureDecorator", CaptureDecorator.class);
         ALIASES.put("CaptureFilter", CaptureFilter.class);
         ALIASES.put("Chain", Chain.class);
         ALIASES.put("ClientHandler", ClientHandler.class);
         ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
-        ALIASES.put("CaptureDecorator", CaptureDecorator.class);
+        ALIASES.put("DesKeyGenHandler", DesKeyGenHandler.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("ExceptionFilter", ExceptionFilter.class);

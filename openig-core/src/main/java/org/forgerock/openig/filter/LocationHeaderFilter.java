@@ -47,13 +47,13 @@ import org.forgerock.util.promise.Promise;
 public class LocationHeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
-    private Expression baseURI;
+    private Expression<String> baseURI;
 
     /**
      * Sets the base URI used to rewrite Location headers.
      * @param baseURI expression that, when evaluated, will represents the base URI of this OpenIG instance
      */
-    public void setBaseURI(final Expression baseURI) {
+    public void setBaseURI(final Expression<String> baseURI) {
         this.baseURI = baseURI;
     }
 
@@ -81,7 +81,8 @@ public class LocationHeaderFilter extends GenericHeapObject implements org.forge
     }
 
     private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, HandlerException {
-        String uri = baseURI.eval(exchange, String.class);
+        String uri = baseURI.eval(exchange);
+
         if (uri == null) {
             throw logger.debug(new HandlerException(format(
                     "The baseURI expression '%s' could not be resolved", baseURI.toString())));
@@ -116,7 +117,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements org.forge
         public Object create() throws HeapException {
 
             LocationHeaderFilter filter = new LocationHeaderFilter();
-            filter.baseURI = asExpression(config.get("baseURI").required());
+            filter.baseURI = asExpression(config.get("baseURI").required(), String.class);
 
             return filter;
         }

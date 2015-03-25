@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -33,9 +33,9 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression target = Expression.valueOf("${exchange.newAttr}");
+        final Expression<String> target = Expression.valueOf("${exchange.newAttr}", String.class);
         filter.addRequestBinding(target,
-                                 Expression.valueOf("${exchange.request.method}"));
+                                 Expression.valueOf("${exchange.request.method}", String.class));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -50,8 +50,8 @@ public class AssignmentFilterTest {
     @Test
     public void shouldChangeUriOnRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        filter.addRequestBinding(Expression.valueOf("${exchange.request.uri}"),
-                                 Expression.valueOf("www.forgerock.com"));
+        filter.addRequestBinding(Expression.valueOf("${exchange.request.uri}", String.class),
+                                 Expression.valueOf("www.forgerock.com", String.class));
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
@@ -66,9 +66,9 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression target = Expression.valueOf("${exchange.newAttr}");
+        final Expression<String> target = Expression.valueOf("${exchange.newAttr}", String.class);
         filter.addResponseBinding(target,
-                                  Expression.valueOf("${exchange.response.status}"));
+                                  Expression.valueOf("${exchange.response.status}", Integer.class));
 
         Exchange exchange = new Exchange();
         Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(as(filter)));

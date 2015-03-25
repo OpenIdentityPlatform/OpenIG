@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.script;
 
@@ -37,7 +37,7 @@ public final class Script {
     /**
      * Groovy script implementation.
      */
-    private final static class GroovyImpl implements Impl {
+    private static final class GroovyImpl implements Impl {
         private final GroovyScriptEngine engine;
         private final String fileName;
 
@@ -78,13 +78,13 @@ public final class Script {
      *
      * @GuardedBy initializationLock
      */
-    private static volatile File groovyScriptCacheDir = null;
+    private static volatile File groovyScriptCacheDir;
     /**
      * The groovy script engine.
      *
      * @GuardedBy initializationLock
      */
-    private static volatile GroovyScriptEngine groovyScriptEngine = null;
+    private static volatile GroovyScriptEngine groovyScriptEngine;
 
     /**
      * Loads a script having the provided content type and file name.
@@ -145,7 +145,7 @@ public final class Script {
                 final FileWriter writer = new FileWriter(cachedScript);
                 writer.write(source);
                 writer.close();
-                final Impl impl = new GroovyImpl(engine, cachedScript.getAbsolutePath());
+                final Impl impl = new GroovyImpl(engine, cachedScript.toURI().toURL().toString());
                 return new Script(impl);
             } catch (final IOException e) {
                 throw new ScriptException(e);

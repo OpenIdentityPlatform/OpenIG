@@ -12,18 +12,16 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2009 Sun Microsystems Inc.
- * Portions Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.format;
-import static org.forgerock.http.util.Duration.duration;
-import static org.forgerock.openig.util.JsonValues.evaluate;
-import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
-import static org.forgerock.openig.util.JsonValues.warnForDeprecation;
-import static org.forgerock.util.Utils.closeSilently;
+import static java.lang.String.*;
+import static org.forgerock.http.util.Duration.*;
+import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,54 +79,49 @@ import org.forgerock.openig.heap.HeapException;
  * </pre>
  * <p>
  * <strong>Note:</strong> This implementation does not verify hostnames for
- * outgoing SSL connections by default. This is because the gateway will usually
- * access the SSL endpoint using a raw IP address rather than a fully-qualified
- * hostname.
+ * outgoing SSL connections by default. This is because the gateway will usually access the
+ * SSL endpoint using a raw IP address rather than a fully-qualified hostname.
  * <p>
- * It's possible to override that behavior using the {@literal hostnameVerifier}
- * attribute (case is not important, but unknown values will produce an error).
+ * It's possible to override that behavior using the {@literal hostnameVerifier} attribute (case is not important,
+ * but unknown values will produce an error).
  * <p>
  * Accepted values are:
  * <ul>
- * <li>{@literal ALLOW_ALL} (the default)</li>
- * <li>{@literal BROWSER_COMPATIBLE}</li>
- * <li>{@literal STRICT}</li>
+ *     <li>{@literal ALLOW_ALL} (the default)</li>
+ *     <li>{@literal BROWSER_COMPATIBLE}</li>
+ *     <li>{@literal STRICT}</li>
  * </ul>
  * <p>
- * The <strong>deprecated</strong> {@literal keystore} and {@literal truststore}
- * optional attributes are both supporting the following attributes:
+ * The <strong>deprecated</strong> {@literal keystore} and {@literal truststore} optional attributes are both
+ * supporting the following attributes:
  * <ul>
- * <li>{@literal file}: path to the key store</li>
- * <li>{@literal type}: key store type (defaults to {@literal JKS})</li>
- * <li>{@literal alg}: certificate algorithm to use (defaults to
- * {@literal SunX509})</li>
- * <li>{@literal password}: mandatory for key store, optional for trust store,
- * defined as an {@link org.forgerock.openig.el.Expression}</li>
+ *     <li>{@literal file}: path to the key store</li>
+ *     <li>{@literal type}: key store type (defaults to {@literal JKS})</li>
+ *     <li>{@literal alg}: certificate algorithm to use (defaults to {@literal SunX509})</li>
+ *     <li>{@literal password}: mandatory for key store, optional for trust store, defined as an
+ *     {@link org.forgerock.openig.el.Expression}</li>
  * </ul>
  * <p>
- * The new (since OpenIG 3.1) {@literal keyManager} and {@literal trustManager}
- * optional attributes are referencing a list of {@link KeyManager} (and
- * {@link TrustManager} respectively). They support singleton value (use a
- * single reference) as well as multi-valued references (a list):
- *
+ * The new (since OpenIG 3.1) {@literal keyManager} and {@literal trustManager} optional attributes are referencing a
+ * list of {@link KeyManager} (and {@link TrustManager} respectively). They support singleton value (use a single
+ * reference) as well as multi-valued references (a list):
  * <pre>
  *     "keyManager": "SingleKeyManagerReference",
  *     "trustManager": [ "RefOne", "RefTwo" ]
  * </pre>
  * <p>
- * The {@literal soTimeout} optional attribute specifies a socket timeout (the
- * given amount of time a connection will live before being considered a stalled
- * and automatically destroyed). It defaults to {@literal 10 seconds}.
+ * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection
+ * will live before being considered a stalled and automatically destroyed). It defaults to {@literal 10 seconds}.
  * <p>
- * The {@literal connectionTimeout} optional attribute specifies a connection
- * timeout (the given amount of time to wait until the connection is
- * established). It defaults to {@literal 10 seconds}.
+ * The {@literal connectionTimeout} optional attribute specifies a connection timeout (the given amount of time to
+ * wait until the connection is established). It defaults to {@literal 10 seconds}.
  *
  * @see Duration
  * @see org.forgerock.openig.security.KeyManagerHeaplet
  * @see org.forgerock.openig.security.TrustManagerHeaplet
  */
 public class HttpClient {
+
     /** Creates and initializes an {@link HttpClient} in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
@@ -257,6 +250,12 @@ public class HttpClient {
             return keyManagers;
         }
 
+        @Override
+        public void destroy() {
+            ((HttpClient) this.object).shutdown();
+            super.destroy();
+        }
+
         private TrustManager[] getTrustManagers() throws HeapException {
             // Build an optional TrustManagerFactory
             TrustManager[] trustManagers = null;
@@ -354,5 +353,12 @@ public class HttpClient {
         } catch (final ResponseException e) {
             return e.getResponse();
         }
+    }
+
+    /**
+     * Shutdowns the HttpClient means this is not possible anymore to execute any request.
+     */
+    public void shutdown() {
+        closeSilently(client);
     }
 }

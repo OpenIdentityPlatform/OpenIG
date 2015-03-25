@@ -36,7 +36,7 @@ class BaseUriFilter implements Filter {
 
     private final Filter delegate;
 
-    private final Expression baseUri;
+    private final Expression<String> baseUri;
 
     /**
      * Creates a new base URI filter.
@@ -46,7 +46,7 @@ class BaseUriFilter implements Filter {
      * @param baseUri
      *            The new base URI to set.
      */
-    BaseUriFilter(final Filter delegate, final Expression baseUri) {
+    BaseUriFilter(final Filter delegate, final Expression<String> baseUri) {
         this.delegate = delegate;
         this.baseUri = baseUri;
     }
@@ -57,7 +57,7 @@ class BaseUriFilter implements Filter {
                                                        final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(exchange, String.class)));
+            request.getUri().rebase(URI.create(baseUri.eval(exchange)));
         }
         return delegate.filter(context, request, next);
     }

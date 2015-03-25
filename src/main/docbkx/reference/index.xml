@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2010–2011 ApexIdentity Inc.
+  !      Copyright 2010-2011 ApexIdentity Inc.
   !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
@@ -43,7 +43,7 @@
    </para>
   </abstract>
   <copyright>
-   <year>2011-2014</year>
+   <year>2011-2015</year>
    <holder>ForgeRock AS.</holder>
   </copyright>
   <authorgroup>
@@ -107,6 +107,7 @@
 
   <xinclude:include href="man-Chain.xml" />
   <xinclude:include href="man-ClientHandler.xml" />
+  <xinclude:include href="man-DesKeyGenHandler.xml" />
   <xinclude:include href="man-DispatchHandler.xml" />
   <xinclude:include href="man-MonitorEndpointHandler.xml" />
   <xinclude:include href="man-Route.xml" />
@@ -374,6 +375,7 @@
   <xinclude:include href="man-KeyManager.xml" />
   <xinclude:include href="man-KeyStore.xml" />
   <xinclude:include href="man-NullLogSink.xml" />
+  <xinclude:include href="man-OAuth2Provider.xml" />
   <xinclude:include href="man-TemporaryStorage.xml" />
   <xinclude:include href="man-TrustManager.xml" />
  </reference>

@@ -11,13 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
@@ -30,7 +30,7 @@ public class StaticResponseHandlerTest {
     @Test
     public void shouldSetStatusReasonAndHeaders() throws Exception {
         final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
-        handler.addHeader("Location", Expression.valueOf("http://www.example.com/"));
+        handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
         final Exchange exchange = new Exchange();
         Response response = handler.handle(exchange, null).get();
         assertThat(response.getStatus()).isEqualTo(302);
@@ -46,7 +46,7 @@ public class StaticResponseHandlerTest {
                         null,
                         null,
                         Expression.valueOf(
-                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>"));
+                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>", String.class));
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
         Response response = handler.handle(exchange, null).get();

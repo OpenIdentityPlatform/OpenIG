@@ -35,7 +35,7 @@ class BaseUriHandler implements Handler {
 
     private final Handler delegate;
 
-    private final Expression baseUri;
+    private final Expression<String> baseUri;
 
     /**
      * Creates a new base URI handler.
@@ -45,7 +45,7 @@ class BaseUriHandler implements Handler {
      * @param baseUri
      *            The new base URI to set.
      */
-    BaseUriHandler(final Handler delegate, final Expression baseUri) {
+    BaseUriHandler(final Handler delegate, final Expression<String> baseUri) {
         this.delegate = delegate;
         this.baseUri = baseUri;
     }
@@ -54,7 +54,7 @@ class BaseUriHandler implements Handler {
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(exchange, String.class)));
+            request.getUri().rebase(URI.create(baseUri.eval(exchange)));
         }
         return delegate.handle(context, request);
     }

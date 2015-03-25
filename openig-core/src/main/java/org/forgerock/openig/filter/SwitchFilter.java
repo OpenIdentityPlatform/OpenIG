@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -49,7 +49,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
         /** Condition to evaluate if exchange should be diverted to handler. */
-        private final Expression condition;
+        private final Expression<Boolean> condition;
 
         /** Handler to divert to if condition yields {@code true}. */
         private final Handler handler;
@@ -59,7 +59,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
          * @param condition expression to evaluate
          * @param handler handler to be executed if the condition yields
          */
-        public Case(final Expression condition, final Handler handler) {
+        public Case(final Expression<Boolean> condition, final Handler handler) {
             this.condition = condition;
             this.handler = handler;
         }
@@ -77,7 +77,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
      * @param handler handler to be executed if the condition yields
      * @return this filter for fluent invocation.
      */
-    public SwitchFilter addRequestCase(final Expression condition, final Handler handler) {
+    public SwitchFilter addRequestCase(final Expression<Boolean> condition, final Handler handler) {
         requestCases.add(new Case(condition, handler));
         return this;
     }
@@ -88,7 +88,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
      * @param handler handler to be executed if the condition yields
      * @return this filter for fluent invocation.
      */
-    public SwitchFilter addResponseCase(final Expression condition, final Handler handler) {
+    public SwitchFilter addResponseCase(final Expression<Boolean> condition, final Handler handler) {
         responseCases.add(new Case(condition, handler));
         return this;
     }
@@ -126,8 +126,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
 
     private Promise<Response, ResponseException> doSwitch(Exchange exchange, Request request, List<Case> cases) {
         for (Case c : cases) {
-            Object o = (c.condition != null ? c.condition.eval(exchange) : Boolean.TRUE);
-            if (o instanceof Boolean && ((Boolean) o)) {
+            if (c.condition == null || Boolean.TRUE.equals(c.condition.eval(exchange))) {
                 // switched flow
                 return c.handler.handle(exchange, request);
             }
@@ -158,7 +157,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            return new Case(asExpression(value.get("condition")),
+            return new Case(asExpression(value.get("condition"), Boolean.class),
                             heap.resolve(value.get("handler"), Handler.class));
         }
     }

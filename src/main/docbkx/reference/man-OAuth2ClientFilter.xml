@@ -20,7 +20,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2014 ForgeRock AS
+  !      Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='OAuth2ClientFilter'
@@ -161,8 +161,7 @@
     "failureHandler": Handler reference,
     "loginHandler": Handler reference,
     "cacheExpiration": duration string,
-    "providerHandler": Handler reference,
-    "providers": [ provider configuration object, ... ],
+    "providers": [ provider reference, ... ],
     "target": expression,
     "defaultLoginGoto": expression,
     "defaultLogoutGoto": expression,
@@ -328,177 +327,20 @@
       </listitem>
     </varlistentry>
 
-    <varlistentry>
-    <term><code>"providerHandler"</code>: <emphasis><link
-      xlink:show="new"
-      xlink:href="reference#handlers-conf"
-      xlink:role="http://docbook.org/xlink/role/olink"
-     >Handler</link> reference, required</emphasis></term>
-    <listitem>
-     <para>
-      Invoke this HTTP client handler to communicate with the provider.
-     </para>
-
-     <para>
-      Provide either the name of a Handler object defined in the heap,
-      or an inline Handler configuration object.
-     </para>
-
-     <para>
-      Usually set this to the name of a
-      <link
-       xlink:show="new"
-       xlink:href="reference#ClientHandler"
-       xlink:role="http://docbook.org/xlink/role/olink"
-      >ClientHandler</link> configured in the heap,
-      or a chain that ends in a ClientHandler.
-     </para>
-    </listitem>
-   </varlistentry>
-
    <varlistentry>
     <term><code>"providers"</code>:
-     <emphasis>array of provider configuration objects, required</emphasis></term>
+     <emphasis>array of provider references, required</emphasis></term>
     <listitem>
      <para>
-      One or more provider configuration objects
+      One or more provider names or inline declarations
       that indicate how the client communicates with authorization providers.
+      Providers are declared as
+      <link
+       xlink:show="new"
+       xlink:href="reference#OAuth2Provider"
+       xlink:role="http://docbook.org/xlink/role/olink"
+      >OAuth2Provider</link> configuration objects.
      </para>
-
-     <para>
-      If the provider has a well-known configuration URL
-      as defined for OpenID Connect 1.0 Discovery
-      that returns JSON with at least authorization and token endpoint URLs,
-      then you can specify that URL in the provider configuration.
-      Otherwise, you must specify
-      at least the provider authorization and token endpoint URLs,
-      and optionally the user info endpoint URL.
-     </para>
-
-     <para>
-      Provider configuration objects have the following layout:
-     </para>
-
-     <programlisting language="javascript">
-{
-    "name": string,
-    "clientId": expression,
-    "clientSecret": expression,
-    "wellKnownConfiguration": URL string,
-    "authorizeEndpoint": URI expression,
-    "tokenEndpoint": URI expression,
-    "userInfoEndpoint": URI expression,
-    "scopes": [ "expression", ... ]
-}
-     </programlisting>
-
-     <variablelist>
-      <para>
-       The provider configuration object properties are as follows.
-      </para>
-
-      <varlistentry>
-       <term><code>"name"</code>: <emphasis>string, required</emphasis></term>
-       <listitem>
-        <para>
-         A name for the provider configuration.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"clientID"</code>: <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required</emphasis></term>
-       <listitem>
-        <para>
-         The <literal>client_id</literal> obtained
-         when registering with the provider.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"clientSecret"</code>: <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required</emphasis></term>
-       <listitem>
-        <para>
-         The <literal>client_secret</literal> obtained
-         when registering with the provider.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"wellKnownConfiguration"</code>: <emphasis>URL string,
-        required unless "authorizeEndpoint" and "tokenEndpoint" are specified</emphasis></term>
-       <listitem>
-        <para>
-         The URL to the well-known configuration resource
-         as described in OpenID Connect 1.0 Discovery.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"authorizeEndpoint"</code>: <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required unless obtained through "wellKnownConfiguration"</emphasis></term>
-       <listitem>
-        <para>
-         The URL to the provider's OAuth 2.0 authorization endpoint.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"tokenEndpoint"</code>: <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        required unless obtained through "wellKnownConfiguration"</emphasis></term>
-       <listitem>
-        <para>
-         The URL to the provider's OAuth 2.0 token endpoint.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"userInfoEndpoint"</code>: <emphasis><link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>,
-        optional</emphasis></term>
-       <listitem>
-        <para>
-         The URL to the provider's OpenID Connect UserInfo endpoint.
-        </para>
-
-        <para>
-         Default: no UserInfo is obtained from the provider.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term><code>"scopes"</code>: <emphasis>array of <link
-        xlink:href="reference#Expressions"
-        xlink:role="http://docbook.org/xlink/role/olink">expression</link>s,
-        optional</emphasis></term>
-       <listitem>
-        <para>
-         Overrides the list of scopes specified globally for the filter.
-        </para>
-
-        <para>
-         Default: use the list of scopes specified globally for the filter.
-        </para>
-       </listitem>
-      </varlistentry>
-     </variablelist>
     </listitem>
    </varlistentry>
 
@@ -642,32 +484,23 @@
         "clientEndpoint"        : "/openid",
         "loginHandler"          : "NascarPage",
         "failureHandler"        : "Dump",
-        "providerHandler"       : "ClientHandler",
         "defaultLoginGoto"      : "/dump",
         "defaultLogoutGoto"     : "/unprotected",
         "requireHttps"          : false,
         "requireLogin"          : true,
-        "providers"             : [
-            {
-                "name"          : "openam",
-                "wellKnownConfiguration"
-                                :
-                  "http://openam.example.com:8080/openam/.well-known/openid-configuration",
-                "clientId"      : "********",
-                "clientSecret"  : "********"
-            },
-            {
-                "name"          : "google",
-                "wellKnownConfiguration"
-                                :
-                  "https://accounts.google.com/.well-known/openid-configuration",
-                "clientId"      : "**************.apps.googleusercontent.com",
-                "clientSecret"  : "**************"
-            }
-        ]
+        "providers"             : [ "openam", "google" ]
     }
 }
   </programlisting>
+
+  <para>
+   For details regarding configuration of providers, see
+   <link
+    xlink:show="new"
+    xlink:href="reference#OAuth2Provider"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >OAuth2Provider</link>.
+  </para>
 
   <para>
    Notice that this configuration is for development and testing purposes only,

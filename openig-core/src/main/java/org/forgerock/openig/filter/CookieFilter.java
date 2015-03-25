@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2009 Sun Microsystems Inc.
- * Portions Copyright 2010–2011 ApexIdentity Inc.
+ * Portions Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -350,7 +350,7 @@ public class CookieFilter extends GenericHeapObject implements org.forgerock.htt
                 for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                     String header = hi.next();
                     ArrayList<String> parts;
-                    if (name.equals("Set-Cookie2")) {
+                    if ("Set-Cookie2".equals(name)) {
                         // RFC 2965 cookie
                         parts = new ArrayList<String>(Arrays.asList(DELIM_COMMA.split(header, 0)));
                     } else {

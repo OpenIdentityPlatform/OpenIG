@@ -11,17 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
 
 import java.beans.FeatureDescriptor;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.el.ELContext;
@@ -41,11 +39,19 @@ import de.odysseus.el.ExpressionFactoryImpl;
  * An Unified Expression Language expression. Creating an expression is the equivalent to
  * compiling it. Once created, an expression can be evaluated within a supplied scope. An
  * expression can safely be evaluated concurrently in multiple threads.
+ *
+ * @param <T> expected result type
  */
-public final class Expression {
+public final class Expression<T> {
 
-    /** The underlying EL expression(s) that this object represents. */
-    private final List<ValueExpression> valueExpression;
+    /** The underlying EL expression that this object represents. */
+    private final ValueExpression valueExpression;
+
+    /** The original string used to create this expression. */
+    private final String original;
+
+    /** The expected type of this expression. */
+    private Class<T> expectedType;
 
     /** The expression plugins configured in META-INF/services. */
     private static final Map<String, ExpressionPlugin> PLUGINS =
@@ -54,86 +60,69 @@ public final class Expression {
     /**
      * Factory method to create an Expression.
      *
-     * @param expression
-     *            The expression to parse.
+     * @param <T> expected result type
+     * @param expression The expression to parse.
+     * @param expectedType The expected result type of the expression.
      * @return An expression based on the given string.
      * @throws ExpressionException
      *             if the expression was not syntactically correct.
      */
-    public static final Expression valueOf(String expression) throws ExpressionException {
-        return new Expression(expression);
+    public static final <T> Expression<T> valueOf(String expression, Class<T> expectedType) throws ExpressionException {
+        return new Expression<T>(expression, expectedType);
     }
-
-    /** The original string used to create this expression. */
-    private final String original;
 
     /**
      * Constructs an expression for later evaluation.
      *
      * @param expression the expression to parse.
+     * @param expectedType The expected result type of the expression.
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    private Expression(String expression) throws ExpressionException {
+    private Expression(String expression, Class<T> expectedType) throws ExpressionException {
         original = expression;
+        this.expectedType = expectedType;
         try {
-            // An expression with no pattern will just return the original String so we will always have at least one
-            // item in the array.
-            String[] split = expression.split("[\\\\]");
-            valueExpression = new ArrayList<ValueExpression>(split.length);
-            for (String component : split) {
-                valueExpression.add(new ExpressionFactoryImpl().createValueExpression(
-                        new XLContext(null), component, Object.class));
-            }
+            ExpressionFactoryImpl exprFactory = new ExpressionFactoryImpl();
+            /*
+             * We still use Object.class but use the expectedType in the evaluation. If we use the expectedType instead
+             * of Object.class at the creation, then we had some breaking changes :
+             * - "not a boolean" as Boolean.class => before : null, after : false
+             * - "${null}" as String.class => before : null, after : the empty String
+             * - accessing a missing bean property as an Integer => before : null, after : 0
+             *
+             * But note that by still using Object.class prevents from using our own TypeConverter.
+             */
+            valueExpression = exprFactory.createValueExpression(new XLContext(null), expression, Object.class);
         } catch (ELException ele) {
             throw new ExpressionException(ele);
         }
     }
 
     /**
-     * Evaluates the expression within the specified scope and returns the resulting object, or
-     * {@code null} if it does not resolve a value.
+     * Evaluates the expression within the specified scope and returns the resulting object if it matches the specified
+     * type, or {@code null} if it does not resolve or match.
      *
-     * @param scope the scope to evaluate the expression within.
-     * @return the result of the expression evaluation, or {@code null} if does not resolve a value.
+     * @param scope
+     *            the scope to evaluate the expression within.
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
-    public Object eval(final Object scope) {
-
-        XLContext context = new XLContext(scope);
-
+    public T eval(final Object scope) {
         try {
-            // When there are multiple expressions to evaluate it is because original expression had \'s so result
-            // should include them back in again, the result will always be a String.
-            if (valueExpression.size() > 1) {
-                StringBuilder result = new StringBuilder();
-                for (ValueExpression expression : valueExpression) {
-                    if (result.length() > 0) {
-                        result.append("\\");
-                    }
-                    result.append(expression.getValue(context));
-                }
-                return result.toString();
-            } else {
-                return valueExpression.get(0).getValue(context);
-            }
+            Object value = valueExpression.getValue(new XLContext(scope));
+            return (value != null && expectedType.isInstance(value) ? expectedType.cast(value) : null);
         } catch (ELException ele) {
             // unresolved element yields null value
             return null;
         }
+
     }
 
     /**
-     * Evaluates the expression within the specified scope and returns the resulting object
-     * if it matches the specified type, or {@code null} if it does not resolve or match.
-     *
-     * @param scope the scope to evaluate the expression within.
-     * @param type the type of object the evaluation is expected to yield.
-     * @param <T> expected result type
+     * Convenient method to eval an Expression that does not need a scope.
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
-    @SuppressWarnings("unchecked")
-    public <T> T eval(Object scope, Class<T> type) {
-        Object value = eval(scope);
-        return (value != null && type.isInstance(value) ? (T) value : null);
+    public T eval() {
+        return eval(null);
     }
 
     /**
@@ -147,11 +136,7 @@ public final class Expression {
      */
     public void set(Object scope, Object value) {
         try {
-            // cannot set multiple items, truncate the List
-            while (valueExpression.size() > 1) {
-                valueExpression.remove(1);
-            }
-            valueExpression.get(0).setValue(new XLContext(scope), value);
+            valueExpression.setValue(new XLContext(scope), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }

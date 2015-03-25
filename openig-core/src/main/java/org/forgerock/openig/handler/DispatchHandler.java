@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -47,7 +47,7 @@ import org.forgerock.util.promise.Promises;
  * Therefore, it's advisable to have a single "default" handler at the end of the list
  * with no condition (unconditional) to handle otherwise un-dispatched requests.
  */
-public class DispatchHandler extends GenericHeapObject implements org.forgerock.http.Handler {
+public class DispatchHandler extends GenericHeapObject implements Handler {
 
     /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
     private final List<Binding> bindings = new ArrayList<Binding>();
@@ -65,7 +65,7 @@ public class DispatchHandler extends GenericHeapObject implements org.forgerock.
      *            port are used in the supplied URI. Default: leave URI untouched.
      * @return The current dispatch handler.
      */
-    public DispatchHandler addBinding(Expression condition, org.forgerock.http.Handler handler, URI baseURI) {
+    public DispatchHandler addBinding(Expression<Boolean> condition, Handler handler, URI baseURI) {
         bindings.add(new Binding(condition, handler, baseURI));
         return this;
     }
@@ -80,7 +80,7 @@ public class DispatchHandler extends GenericHeapObject implements org.forgerock.
      *            port are used in the supplied URI. Default: leave URI untouched.
      * @return The current dispatch handler.
      */
-    public DispatchHandler addUnconditionalBinding(org.forgerock.http.Handler handler, URI baseURI) {
+    public DispatchHandler addUnconditionalBinding(Handler handler, URI baseURI) {
         bindings.add(new Binding(null, handler, baseURI));
         return this;
     }
@@ -103,10 +103,10 @@ public class DispatchHandler extends GenericHeapObject implements org.forgerock.
     private static class Binding {
 
         /** Condition to dispatch to handler or {@code null} if unconditional. */
-        private Expression condition;
+        private Expression<Boolean> condition;
 
         /** Handler to dispatch to. */
-        private org.forgerock.http.Handler handler;
+        private Handler handler;
 
         /** Overrides scheme/host/port of the request with a base URI. */
         private URI baseURI;
@@ -123,7 +123,7 @@ public class DispatchHandler extends GenericHeapObject implements org.forgerock.
          *            Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host
          *            and port are used in the supplied URI. Default: leave URI untouched.
          */
-        public Binding(Expression condition, org.forgerock.http.Handler handler, URI baseURI) {
+        public Binding(Expression<Boolean> condition, Handler handler, URI baseURI) {
             super();
             this.condition = condition;
             this.handler = handler;
@@ -140,8 +140,8 @@ public class DispatchHandler extends GenericHeapObject implements org.forgerock.
             DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Expression expression = asExpression(jv.get("condition"));
-                final org.forgerock.http.Handler handler = heap.resolve(jv.get("handler"), Handler.class);
+                final Expression<Boolean> expression = asExpression(jv.get("condition"), Boolean.class);
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
                 final URI uri = jv.get("baseURI").asURI();
                 dispatchHandler.addBinding(expression, handler, uri);
             }

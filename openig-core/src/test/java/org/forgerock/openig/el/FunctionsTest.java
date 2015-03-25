@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -31,7 +31,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class FunctionTest {
+public class FunctionsTest {
 
     private Exchange exchange;
 
@@ -44,38 +44,33 @@ public class FunctionTest {
     @Test
     public void toStringTest() throws Exception {
         exchange.request.setUri("http://www.forgerock.org/");
-        Object o = Expression.valueOf("${toString(exchange.request.uri)}").eval(exchange);
-        assertThat(o).isInstanceOf(String.class);
+        String o = Expression.valueOf("${toString(exchange.request.uri)}", String.class).eval(exchange);
         assertThat(o).isEqualTo(exchange.request.getUri().toString());
     }
 
     @Test
     public void keyMatch() throws ExpressionException {
-        Object o = Expression.valueOf("${exchange[keyMatch(exchange, '^requ.*')]}").eval(exchange);
-        assertThat(o).isInstanceOf(Request.class);
+        Request o = Expression.valueOf("${exchange[keyMatch(exchange, '^requ.*')]}", Request.class).eval(exchange);
         assertThat(o).isSameAs(exchange.request);
     }
 
     @Test
     public void lengthString() throws ExpressionException {
         exchange.put("foo", "12345678901");
-        Object o = Expression.valueOf("${length(exchange.foo)}").eval(exchange);
-        assertThat(o).isInstanceOf(Integer.class);
+        Integer o = Expression.valueOf("${length(exchange.foo)}", Integer.class).eval(exchange);
         assertThat(o).isEqualTo(11);
     }
 
     @Test
     public void lengthCollection() throws ExpressionException {
         exchange.put("foo", Arrays.asList("1", "2", "3", "4", "5"));
-        Object o = Expression.valueOf("${length(exchange.foo)}").eval(exchange);
-        assertThat(o).isInstanceOf(Integer.class);
+        Integer o = Expression.valueOf("${length(exchange.foo)}", Integer.class).eval(exchange);
         assertThat(o).isEqualTo(5);
     }
 
     @Test
     public void split() throws ExpressionException {
-        Object o = Expression.valueOf("${split('a,b,c,d,e', ',')[2]}").eval(exchange);
-        assertThat(o).isInstanceOf(String.class);
+        String o = Expression.valueOf("${split('a,b,c,d,e', ',')[2]}", String.class).eval(exchange);
         assertThat(o).isEqualTo("c");
     }
 
@@ -83,8 +78,7 @@ public class FunctionTest {
     public void join() throws ExpressionException {
         String[] s = {"a", "b", "c"};
         exchange.put("foo", s);
-        Object o = Expression.valueOf("${join(exchange.foo, ',')}").eval(exchange);
-        assertThat(o).isInstanceOf(String.class);
+        String o = Expression.valueOf("${join(exchange.foo, ',')}", String.class).eval(exchange);
         assertThat(o).isEqualTo("a,b,c");
     }
 
@@ -92,8 +86,7 @@ public class FunctionTest {
     public void contains() throws ExpressionException {
         String s = "allyoucaneat";
         exchange.put("s", s);
-        Object o = Expression.valueOf("${contains(exchange.s, 'can')}").eval(exchange);
-        assertThat(o).isInstanceOf(Boolean.class);
+        Boolean o = Expression.valueOf("${contains(exchange.s, 'can')}", Boolean.class).eval(exchange);
         assertThat(o).isEqualTo(true);
     }
 
@@ -101,8 +94,7 @@ public class FunctionTest {
     public void notContains() throws ExpressionException {
         String s = "allyoucaneat";
         exchange.put("s", s);
-        Object o = Expression.valueOf("${contains(exchange.s, 'foo')}").eval(exchange);
-        assertThat(o).isInstanceOf(Boolean.class);
+        Boolean o = Expression.valueOf("${contains(exchange.s, 'foo')}", Boolean.class).eval(exchange);
         assertThat(o).isEqualTo(false);
     }
 
@@ -110,8 +102,7 @@ public class FunctionTest {
     public void containsSplit() throws ExpressionException {
         String s = "all,you,can,eat";
         exchange.put("s", s);
-        Object o = Expression.valueOf("${contains(split(exchange.s, ','), 'can')}").eval(exchange);
-        assertThat(o).isInstanceOf(Boolean.class);
+        Boolean o = Expression.valueOf("${contains(split(exchange.s, ','), 'can')}", Boolean.class).eval(exchange);
         assertThat(o).isEqualTo(true);
     }
 
@@ -135,21 +126,20 @@ public class FunctionTest {
     public void matches(String s, String pattern, boolean matches, String[] groups)
             throws Exception {
         exchange.put("s", s);
-        Object o = Expression.valueOf("${matches(exchange.s, '" + pattern + "')}").eval(exchange);
-        assertThat(o).isInstanceOf(Boolean.class);
-        Boolean b = (Boolean) o;
-        assertThat(b).isEqualTo(matches);
+        Boolean o = Expression.valueOf("${matches(exchange.s, '" + pattern + "')}", Boolean.class).eval(exchange);
+        assertThat(o).isEqualTo(matches);
     }
 
     @Test(dataProvider = "matchData")
     public void matchingGroups(String s, String pattern, boolean matches, String[] groups)
             throws Exception {
         exchange.put("s", s);
-        Object o =
-                Expression.valueOf("${matchingGroups(exchange.s, '" + pattern + "')}").eval(exchange);
+        Expression<String[]> stringArrayExpr = Expression.valueOf("${matchingGroups(exchange.s, '" + pattern + "')}",
+                String[].class);
+        String[] o = stringArrayExpr.eval(exchange);
         if (matches) {
             assertThat(o).isInstanceOf(String[].class);
-            String[] ss = (String[]) o;
+            String[] ss = o;
             assertThat(ss).isEqualTo(groups);
         } else {
             assertThat(o).isNull();
@@ -171,14 +161,14 @@ public class FunctionTest {
     @Test(dataProvider = "urlEncodings")
     public void urlEncode(String decoded, String encoded) throws ExpressionException {
         exchange.put("s", decoded);
-        Object o = Expression.valueOf("${urlEncode(exchange.s)}").eval(exchange);
+        String o = Expression.valueOf("${urlEncode(exchange.s)}", String.class).eval(exchange);
         assertThat(o).isEqualTo(encoded);
     }
 
     @Test(dataProvider = "urlEncodings")
     public void urlDecode(String decoded, String encoded) throws ExpressionException {
         exchange.put("s", encoded);
-        Object o = Expression.valueOf("${urlDecode(exchange.s)}").eval(exchange);
+        String o = Expression.valueOf("${urlDecode(exchange.s)}", String.class).eval(exchange);
         assertThat(o).isEqualTo(decoded);
     }
 
@@ -197,7 +187,7 @@ public class FunctionTest {
 
     @Test(dataProvider = "base64EncodingValues")
     public void testBase64Encoding(final String original, final String encoded) throws Exception {
-        assertThat(Expression.valueOf(format("${encodeBase64(%s)}", original)).eval(null))
+        assertThat(Expression.valueOf(format("${encodeBase64(%s)}", original), String.class).eval())
                 .isEqualTo(encoded);
     }
 
@@ -217,27 +207,42 @@ public class FunctionTest {
 
     @Test(dataProvider = "base64DecodingValues")
     public void testBase64Decoding(final String original, final String decoded) throws Exception {
-        assertThat(Expression.valueOf(format("${decodeBase64(%s)}", original)).eval(null))
+        String str = format("${decodeBase64(%s)}", original);
+        assertThat(Expression.valueOf(str, String.class).eval())
                 .isEqualTo(decoded);
     }
 
     @Test
     public void testFileReading() throws Exception {
         File file = Files.getRelativeFile(getClass(), "readme.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath())).eval(null))
+        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval())
                 .isEqualTo("Hello World");
     }
 
     @Test
     public void testMissingFileReading() throws Exception {
         File file = Files.getRelative(getClass(), "missing.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath())).eval(null)).isNull();
+        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval()).isNull();
     }
 
     @Test
     public void testPropertiesReading() throws Exception {
         File file = Files.getRelativeFile(getClass(), "configuration.properties");
-        assertThat(Expression.valueOf(format("${readProperties('%s')['key']}", file.getPath())).eval(null))
-                .isEqualTo("some value");
+        String str = format("${readProperties('%s')['key']}", file.getPath());
+        Expression<String> expr = Expression.valueOf(str, String.class);
+        assertThat(expr.eval()).isEqualTo("some value");
     }
+
+    @Test
+    public void array() throws Exception {
+        String o = Expression.valueOf("${array('a', 'b', 'c')[1]}", String.class).eval();
+        assertThat(o).isEqualTo("b");
+    }
+
+    @Test
+    public void combineArrayAndJoin() throws Exception {
+        String o = Expression.valueOf("${join(array('a', 'b', 'c'), ':')}", String.class).eval();
+        assertThat(o).isEqualTo("a:b:c");
+    }
+
 }

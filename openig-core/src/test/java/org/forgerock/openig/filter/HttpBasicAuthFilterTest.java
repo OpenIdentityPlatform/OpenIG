@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.http.Handler;
@@ -64,25 +65,6 @@ public class HttpBasicAuthFilterTest {
     }
 
     @Test
-    public void testExpressionEvaluation() throws Exception {
-        // TODO Move this test out of here, it has nothing to do with testing the behavior of this filter
-        Expression username = Expression.valueOf("realm\\${exchange.request.headers['username'][0]}");
-        Expression password = Expression.valueOf("${exchange.request.headers['password'][0]}");
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("GET");
-        exchange.request.setUri("http://test.com:123/path/to/resource.html");
-        exchange.request.getHeaders().add("username", "Myname");
-        exchange.request.getHeaders().add("password", "Mypass");
-
-        String user = username.eval(exchange, String.class);
-        String pass = password.eval(exchange, String.class);
-
-        assertThat(user).isEqualTo("realm\\Myname");
-        assertThat(pass).isEqualTo("Mypass");
-    }
-
-    @Test
     public void testHeadersAreRemoved() throws Exception {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(null, null, failureHandler);
         filter.setCacheHeader(false);
@@ -113,8 +95,8 @@ public class HttpBasicAuthFilterTest {
 
     @Test
     public void testNominalInteraction() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -132,8 +114,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testNoCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("${null}"),
-                                                             Expression.valueOf("${null}"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("${null}", String.class),
+                                                             Expression.valueOf("${null}", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -156,8 +138,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void testInvalidCredentialsProvided() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
@@ -183,8 +165,8 @@ public class HttpBasicAuthFilterTest {
      */
     @Test
     public void tesAuthorizationHeaderCaching() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("hifalutin"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(true);
 
@@ -216,8 +198,8 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testRefreshAuthenticationHeader() throws Exception {
 
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen"),
-                                                             Expression.valueOf("${exchange.password}"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                                             Expression.valueOf("${exchange.password}", String.class),
                                                              failureHandler);
         filter.setCacheHeader(true);
 
@@ -273,8 +255,8 @@ public class HttpBasicAuthFilterTest {
           expectedExceptions = ResponseException.class,
           expectedExceptionsMessageRegExp = "username must not contain a colon ':' character")
     public void testConformanceErrorIsProducedWhenUsernameContainsColon(final String username) throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username),
-                                                             Expression.valueOf("dont-care"),
+        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username, String.class),
+                                                             Expression.valueOf("dont-care", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 

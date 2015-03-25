@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
@@ -416,7 +416,7 @@ public final class OAuth2Error {
      *             If the header value was malformed.
      */
     public static OAuth2Error valueOfWWWAuthenticateHeader(final String s) {
-        if (s.equals(H_BEARER)) {
+        if (H_BEARER.equals(s)) {
             return EMPTY;
         } else if (s.startsWith(H_BEARER_WITH_SPACE)) {
             return valueOf(s.substring(H_BEARER_WITH_SPACE.length()));

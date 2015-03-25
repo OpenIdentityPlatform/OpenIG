@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -125,8 +125,7 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
                     "application/x-www-form-urlencoded")
     ); // make all entries lower case
 
-
-    private Expression condition = null;
+    private Expression<Boolean> condition = null;
 
     private boolean captureEntity = true;
 
@@ -150,7 +149,7 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
      * Notice that the condition is evaluated when the request flows in this filter.
      * @param condition expression that evaluates to a {@link java.lang.Boolean}
      */
-    public synchronized void setCondition(final Expression condition) {
+    public synchronized void setCondition(final Expression<Boolean> condition) {
         this.condition = condition;
     }
 
@@ -287,7 +286,7 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
         public Object create() throws HeapException {
             CaptureFilter filter = new CaptureFilter();
             filter.setWriterProvider(buildFileProvider(config));
-            filter.setCondition(asExpression(config.get("condition")));
+            filter.setCondition(asExpression(config.get("condition"), Boolean.class));
             JsonValue capture = config.get("captureEntity");
             filter.setCaptureEntity(capture.defaultTo(filter.captureEntity).asBoolean());
             return filter;

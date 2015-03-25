@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2010–2011 ApexIdentity Inc.
+ * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
@@ -44,7 +45,7 @@ import org.forgerock.util.promise.SuccessHandler;
  * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
  * extracting form content (e.g. nonce) and submitting in a subsequent request.
  */
-public class SequenceHandler extends GenericHeapObject implements org.forgerock.http.Handler {
+public class SequenceHandler extends GenericHeapObject implements Handler {
 
     /** Handlers and associated sequence processing postconditions. */
     private final List<Binding> bindings = new ArrayList<Binding>();
@@ -58,7 +59,7 @@ public class SequenceHandler extends GenericHeapObject implements org.forgerock.
      *            evaluated to determine if sequence continues (default: {@code null} a.k.a. unconditional)
      * @return The current dispatch handler.
      */
-    public SequenceHandler addBinding(final org.forgerock.http.Handler handler, final Expression postcondition) {
+    public SequenceHandler addBinding(final Handler handler, final Expression<Boolean> postcondition) {
         bindings.add(new Binding(handler, postcondition));
         return this;
     }
@@ -109,9 +110,9 @@ public class SequenceHandler extends GenericHeapObject implements org.forgerock.
     /** Binds sequenced handlers with sequence processing postconditions. */
     private static class Binding {
 
-        private final org.forgerock.http.Handler handler;
+        private final Handler handler;
 
-        private final Expression postcondition;
+        private final Expression<Boolean> postcondition;
 
         /**
          * Default constructor.
@@ -122,7 +123,7 @@ public class SequenceHandler extends GenericHeapObject implements org.forgerock.
          *            Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a.
          *            unconditional).
          */
-        Binding(org.forgerock.http.Handler handler, Expression postcondition) {
+        Binding(Handler handler, Expression<Boolean> postcondition) {
             this.handler = handler;
             this.postcondition = postcondition;
         }
@@ -135,9 +136,8 @@ public class SequenceHandler extends GenericHeapObject implements org.forgerock.
             final SequenceHandler sequenceHandler = new SequenceHandler();
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                final org.forgerock.http.Handler handler = heap.resolve(jv.get("handler"),
-                                                                        org.forgerock.http.Handler.class);
-                final Expression postcondition = asExpression(jv.get("postcondition"));
+                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
+                final Expression<Boolean> postcondition = asExpression(jv.get("postcondition"), Boolean.class);
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;
