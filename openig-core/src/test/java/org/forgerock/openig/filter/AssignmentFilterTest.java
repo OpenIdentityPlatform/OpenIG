@@ -17,15 +17,12 @@
 
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.http.Adapters.asHandler;
-
-import java.io.IOException;
+import static org.forgerock.openig.http.Adapters.*;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
@@ -34,7 +31,7 @@ import org.testng.annotations.Test;
 public class AssignmentFilterTest {
 
     @Test
-    public void onRequest() throws ExpressionException, HandlerException, IOException {
+    public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression target = Expression.valueOf("${exchange.newAttr}");
         filter.addRequestBinding(target,
@@ -44,10 +41,9 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(asHandler(handler));
-        chain.getFilters().add(filter);
+        Chain chain = new Chain(handler, singletonList(asChfFilter(filter)));
         assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange);
+        chain.handle(exchange, exchange.request).get();
         assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
     }
 
@@ -61,26 +57,23 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setUri("www.example.com");
 
-        Chain chain = new Chain(asHandler(new StaticResponseHandler(200, "OK")));
-        chain.getFilters().add(filter);
+        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(asChfFilter(filter)));
 
-        chain.handle(exchange);
+        chain.handle(exchange, exchange.request).get();
         assertThat(exchange.request.getUri().toString()).isEqualTo("www.forgerock.com");
     }
 
     @Test
-    public void onResponse() throws ExpressionException, HandlerException, IOException {
+    public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression target = Expression.valueOf("${exchange.newAttr}");
         filter.addResponseBinding(target,
                                   Expression.valueOf("${exchange.response.status}"));
 
         Exchange exchange = new Exchange();
-        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(asHandler(handler));
-        chain.getFilters().add(filter);
+        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(asChfFilter(filter)));
         assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange);
+        chain.handle(exchange, exchange.request).get();
         assertThat(exchange.get("newAttr")).isEqualTo(200);
     }
 }

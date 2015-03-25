@@ -16,10 +16,12 @@
 
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.http.Adapters.asHandler;
+import static org.forgerock.openig.http.Adapters.*;
 
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -46,11 +48,10 @@ public class HeaderFilterTest {
         exchange.request.setMethod("DELETE");
         exchange.request.setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(asHandler(handler));
-        chain.getFilters().add(filter);
-        chain.handle(exchange);
+        Chain chain = new Chain(handler, singletonList(asChfFilter(filter)));
+        Response response = chain.handle(exchange, exchange.request).get();
 
-        assertThat(exchange.response.getHeaders().get("Location"))
+        assertThat(response.getHeaders().get("Location"))
                 .containsOnly("http://newtest.com:321/path/to/resource.html");
     }
 
