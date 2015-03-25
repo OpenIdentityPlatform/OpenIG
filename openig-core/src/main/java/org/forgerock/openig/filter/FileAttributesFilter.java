@@ -23,9 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
@@ -33,6 +37,7 @@ import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Retrieves and exposes a record from a delimier-separated file. Lookup of the record is
@@ -48,7 +53,7 @@ import org.forgerock.util.LazyMap;
  *
  * @see SeparatedValuesFile
  */
-public class FileAttributesFilter extends GenericFilter {
+public class FileAttributesFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** Expression that yields the target object that will contain the record. */
     private final Expression target;
@@ -85,7 +90,10 @@ public class FileAttributesFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        final Exchange exchange = context.asContext(Exchange.class);
         target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {
@@ -98,7 +106,7 @@ public class FileAttributesFilter extends GenericFilter {
                 }
             }
         }));
-        next.handle(exchange);
+        return next.handle(context, request);
     }
 
     /** Creates and initializes a separated values file attribute provider in a heap environment. */
