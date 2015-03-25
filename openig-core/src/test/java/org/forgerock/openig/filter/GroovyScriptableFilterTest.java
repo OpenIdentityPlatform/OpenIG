@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -22,7 +22,7 @@ import static com.xebialabs.restito.semantics.Condition.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.mockito.Mockito.*;
 
@@ -47,6 +47,7 @@ import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.LDAPClientContext;
@@ -67,6 +68,7 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
+import org.forgerock.util.promise.Promise;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.h2.jdbcx.JdbcDataSource;
@@ -158,22 +160,22 @@ public class GroovyScriptableFilterTest {
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bjensen");
         exchange.request.getHeaders().add("Password", "hifalutin");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
+        Promise<Response, ResponseException> promise1 = handler.handle(exchange, exchange.request);
+        assertThat(promise1.get().getStatus()).isEqualTo(200);
 
         // Try with invalid credentials
         exchange.request = new Request();
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bob");
         exchange.request.getHeaders().add("Password", "dobbs");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(403);
+        Promise<Response, ResponseException> promise2 = handler.handle(exchange, exchange.request);
+        assertThat(promise2.get().getStatus()).isEqualTo(403);
 
         // Try with different path
         exchange.request = new Request();
         exchange.request.setUri(new URI("http://test/index.html"));
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(401);
+        Promise<Response, ResponseException> promise3 = handler.handle(exchange, exchange.request);
+        assertThat(promise3.get().getStatus()).isEqualTo(401);
     }
 
     @Test
