@@ -25,7 +25,9 @@ import org.forgerock.openig.http.Exchange;
 
 /**
  * Filters the request and/or response of an HTTP exchange.
+ * @deprecated in OpenIG 4.0
  */
+@Deprecated
 public interface Filter {
 
     /**
