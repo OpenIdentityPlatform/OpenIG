@@ -22,13 +22,9 @@ import org.forgerock.http.ClientInfoContext;
 import org.forgerock.http.Context;
 import org.forgerock.http.HttpContext;
 import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.openig.filter.Filter;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * Adapters for converting between HTTP framework and legacy OpenIG APIs.
@@ -59,44 +55,6 @@ public final class Adapters {
         return new ChfHandlerDelegate(handler);
     }
 
-    public static Filter asFilter(org.forgerock.http.Filter filter) {
-        return new ChfFilterDelegate(filter);
-    }
-
-    public static org.forgerock.http.Handler asChfHandler(final Handler handler) {
-        return new org.forgerock.http.Handler() {
-            @Override
-            public Promise<Response, ResponseException> handle(final Context context, final Request request) {
-                Exchange exchange = context.asContext(Exchange.class);
-                try {
-                    exchange.request = request;
-                    handler.handle(exchange);
-                    return Promises.newSuccessfulPromise(exchange.response);
-                } catch (Exception e) {
-                    return Promises.newFailedPromise(new ResponseException(e.getMessage(), e));
-                }
-            }
-        };
-    }
-
-    public static org.forgerock.http.Filter asChfFilter(final Filter filter) {
-        return new org.forgerock.http.Filter() {
-            @Override
-            public Promise<Response, ResponseException> filter(final Context context,
-                                                               final Request request,
-                                                               final org.forgerock.http.Handler next) {
-                Exchange exchange = context.asContext(Exchange.class);
-                exchange.request = request;
-                try {
-                    filter.filter(exchange, asHandler(next));
-                    return Promises.newSuccessfulPromise(exchange.response);
-                } catch (Exception e) {
-                    return Promises.newFailedPromise(new ResponseException(e.getMessage(), e));
-                }
-            }
-        };
-    }
-
     private static class ChfHandlerDelegate implements Handler {
         private final org.forgerock.http.Handler handler;
 
@@ -108,27 +66,6 @@ public final class Adapters {
         public void handle(final Exchange exchange) throws HandlerException, IOException {
             try {
                 exchange.response = handler.handle(exchange, exchange.request).getOrThrow();
-            } catch (InterruptedException e) {
-                throw new HandlerException(e);
-            } catch (ResponseException re) {
-                throw new HandlerException(re);
-            }
-        }
-    }
-
-    private static class ChfFilterDelegate implements Filter {
-        private final org.forgerock.http.Filter filter;
-
-        public ChfFilterDelegate(final org.forgerock.http.Filter filter) {
-            this.filter = filter;
-        }
-
-        @Override
-        public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-            try {
-                exchange.response = filter.filter(exchange,
-                                                  exchange.request,
-                                                  asChfHandler(next)).getOrThrow();
             } catch (InterruptedException e) {
                 throw new HandlerException(e);
             } catch (ResponseException re) {

@@ -25,9 +25,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Root {@link Handler} for the Servlet Gateway.
@@ -36,20 +33,15 @@ import org.slf4j.LoggerFactory;
  */
 final class HttpHandler implements Handler {
 
-    /**
-     * {@link Logger} instance for the openig-war module.
-     */
-    static final Logger LOG = LoggerFactory.getLogger(HttpHandler.class);
-
-    private final org.forgerock.openig.handler.Handler handler;
+    private final Handler delegate;
 
     /**
      * Constructs a new {@code ServletHandler} instance.
      *
-     * @param handler The configured {@code Handler}.
+     * @param delegate The configured {@code Handler}.
      */
-    HttpHandler(org.forgerock.openig.handler.Handler handler) {
-        this.handler = handler;
+    HttpHandler(Handler delegate) {
+        this.delegate = delegate;
     }
 
     /**
@@ -64,13 +56,6 @@ final class HttpHandler implements Handler {
     public Promise<Response, ResponseException> handle(Context context, Request request) {
         // Builds the only Exchange and use it
         Exchange exchange = asExchange(context, request);
-        try {
-            handler.handle(exchange);
-            // Propagate exchange properties/attributes to the context
-            return Promises.newSuccessfulPromise(exchange.response);
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            return Promises.newFailedPromise(new ResponseException("Can't handle the request", e));
-        }
+        return delegate.handle(exchange, request);
     }
 }

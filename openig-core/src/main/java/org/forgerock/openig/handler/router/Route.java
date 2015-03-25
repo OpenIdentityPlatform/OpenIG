@@ -33,7 +33,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.FailureHandler;
 import org.forgerock.util.promise.Promise;
@@ -130,7 +129,7 @@ class Route implements Handler {
         this.heap = new HeapImpl(parentHeap, routeHeapName);
         heap.init(config, "handler", "session", "name", "condition", "globalDecorators");
 
-        this.handler = Adapters.asChfHandler(heap.getHandler());
+        this.handler = heap.getHandler();
         this.sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
         this.name = config.get("name").defaultTo(defaultName).asString();
         this.condition = asExpression(config.get("condition"));

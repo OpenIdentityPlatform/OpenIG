@@ -18,12 +18,12 @@ package org.forgerock.openig.decoration.baseuri;
 
 import static org.forgerock.openig.util.JsonValues.*;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;

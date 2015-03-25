@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
@@ -90,10 +90,8 @@ public class MessageCapture {
      * @param mode
      *         one of {@link CapturePoint#REQUEST},  {@link CapturePoint#FILTERED_REQUEST},
      *         {@link CapturePoint#FILTERED_RESPONSE} or {@link CapturePoint#RESPONSE}
-     * @throws IOException
-     *         if the entity content could not be print
      */
-    public void capture(final Exchange exchange, final CapturePoint mode) throws IOException {
+    public void capture(final Exchange exchange, final CapturePoint mode) {
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
         int exchangeId = System.identityHashCode(exchange);
@@ -124,6 +122,18 @@ public class MessageCapture {
         logger.info(out.toString());
     }
 
+    public void capture(final Exchange exchange, Request request, final CapturePoint mode) {
+        // FIXME Compat
+        exchange.request = request;
+        capture(exchange, mode);
+    }
+
+    public void capture(final Exchange exchange, Response response, final CapturePoint mode) {
+        // FIXME Compat
+        exchange.response = response;
+        capture(exchange, mode);
+    }
+
     private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
         Map<String, Object> map = new LinkedHashMap<String, Object>(exchange);
         map.remove("exchange");
@@ -134,42 +144,42 @@ public class MessageCapture {
         writer.println(prettyPrint(toJson(map)));
     }
 
-    private void captureRequest(PrintWriter writer, Request request, long id) throws IOException {
+    private void captureRequest(PrintWriter writer, Request request, long id) {
         writer.printf("%n%n--- (request) exchange:%d --->%n%n", id);
         if (request != null) {
             captureRequestMessage(writer, request);
         }
     }
 
-    private void captureFilteredRequest(PrintWriter writer, Request request, long id) throws IOException {
+    private void captureFilteredRequest(PrintWriter writer, Request request, long id) {
         writer.printf("%n%n--- (filtered-request) exchange:%d --->%n%n", id);
         if (request != null) {
             captureRequestMessage(writer, request);
         }
     }
 
-    private void captureResponse(PrintWriter writer, Response response, long id) throws IOException {
+    private void captureResponse(PrintWriter writer, Response response, long id) {
         writer.printf("%n%n<--- (response) exchange:%d ---%n%n", id);
         if (response != null) {
             captureResponseMessage(writer, response);
         }
     }
 
-    private void captureFilteredResponse(PrintWriter writer, Response response, long id) throws IOException {
+    private void captureFilteredResponse(PrintWriter writer, Response response, long id) {
         writer.printf("%n%n<--- (filtered-response) exchange:%d ---%n%n", id);
         if (response != null) {
             captureResponseMessage(writer, response);
         }
     }
 
-    private void captureRequestMessage(final PrintWriter writer, Request request) throws IOException {
+    private void captureRequestMessage(final PrintWriter writer, Request request) {
         writer.println(request.getMethod() + " " + request.getUri() + " " + request.getVersion());
         writeHeaders(writer, request);
         writeEntity(writer, request);
         writer.flush();
     }
 
-    private void captureResponseMessage(final PrintWriter writer, Response response) throws IOException {
+    private void captureResponseMessage(final PrintWriter writer, Response response) {
         writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
         writeHeaders(writer, response);
         writeEntity(writer, response);
@@ -184,7 +194,7 @@ public class MessageCapture {
         }
     }
 
-    private void writeEntity(final PrintWriter writer, Message message) throws IOException {
+    private void writeEntity(final PrintWriter writer, Message message) {
         ContentTypeHeader contentType = ContentTypeHeader.valueOf(message);
         if (message.getEntity() == null || contentType.getType() == null) {
             return;
@@ -212,6 +222,8 @@ public class MessageCapture {
             writer.println("[entity contains characters in unsupported character set]");
         } catch (IllegalCharsetNameException icne) {
             writer.println("[entity contains characters in illegal character set]");
+        } catch (IOException e) {
+            writer.println("[IOException during entity writing] - " + e.getMessage());
         }
         // entity may not terminate with new line, so here it is
         writer.println();

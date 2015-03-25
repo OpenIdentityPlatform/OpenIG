@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
@@ -20,12 +20,16 @@ import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.decoration.Context;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -46,6 +50,8 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     public void setUp() throws Exception {
         super.setUp();
         when(context.getName()).thenReturn(Name.of("config.json", "Router"));
+        when(handler.handle(any(org.forgerock.http.Context.class), any(Request.class)))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
     }
 
     @Test
@@ -64,7 +70,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     public void shouldExtractAdditionalTags() throws Exception {
         AuditDecorator decorator = new AuditDecorator(auditSystem);
         Handler decorated = decorator.decorateHandler(handler, json(array("tag-1", "tag-2")), context);
-        decorated.handle(new Exchange());
+        decorated.handle(new Exchange(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
         AuditEvent event = captor.getValue();

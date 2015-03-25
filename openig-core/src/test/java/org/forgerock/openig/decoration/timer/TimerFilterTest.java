@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
@@ -19,16 +19,19 @@ package org.forgerock.openig.decoration.timer;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.io.IOException;
-
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -62,12 +65,14 @@ public class TimerFilterTest {
         TimerFilter time = new TimerFilter(delegate, logger);
 
         Exchange exchange = new Exchange();
-        time.filter(exchange, terminal);
+        when(delegate.filter(exchange, null, terminal))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+        time.filter(exchange, null, terminal).get();
 
         InOrder inOrder = inOrder(timer, terminal);
         inOrder.verify(timer).start();
         inOrder.verify(timer).pause();
-        inOrder.verify(terminal).handle(exchange);
+        inOrder.verify(terminal).handle(exchange, null);
         inOrder.verify(timer).resume();
         inOrder.verify(timer).stop();
     }
@@ -77,12 +82,13 @@ public class TimerFilterTest {
         TimerFilter time = new TimerFilter(delegate, logger);
         Exchange exchange = new Exchange();
 
-        doThrow(HandlerException.class).when(terminal).handle(exchange);
+        when(terminal.handle(exchange, null))
+                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
 
         try {
-            time.filter(exchange, terminal);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (Exception e) {
+            time.filter(exchange, null, terminal).getOrThrow();
+            failBecauseExceptionWasNotThrown(ResponseException.class);
+        } catch (ResponseException e) {
             InOrder inOrder = inOrder(timer);
             inOrder.verify(timer).start();
             inOrder.verify(timer).pause();
@@ -93,8 +99,10 @@ public class TimerFilterTest {
 
     private static class DelegateFilter implements Filter {
         @Override
-        public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-            next.handle(exchange);
+        public Promise<Response, ResponseException> filter(final Context context,
+                                                           final Request request,
+                                                           final Handler next) {
+            return next.handle(context, request);
         }
     }
 }

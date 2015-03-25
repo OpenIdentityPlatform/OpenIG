@@ -37,15 +37,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Handler;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -284,44 +282,8 @@ public class HeapImpl implements Heap {
         if (extracted.object == null) {
             return null;
         }
-        // TODO When we'll start to have components extracting Chf Handler/Filter from the heap,
-        // we'll have to convert them here
         Object o = applyGlobalDecorations(extracted);
-        o = transformIgHandler(o, type);
-        o = transformIgFilter(o, type);
         return type.cast(o);
-    }
-
-    private <T> Object transformIgHandler(final Object o, final Class<T> type) {
-        // From IG handler to CHF Handler
-        if (o instanceof Handler && org.forgerock.http.Handler.class.isAssignableFrom(type)) {
-            return Adapters.asChfHandler((Handler) o);
-        }
-        return o;
-    }
-
-    private <T> Object transformIgFilter(final Object o, final Class<T> type) {
-        // From IG Filter to CHF Filter
-        if (o instanceof Filter && org.forgerock.http.Filter.class.isAssignableFrom(type)) {
-            return Adapters.asChfFilter((Filter) o);
-        }
-        return o;
-    }
-
-    private Object transformChfFilter(final Object o) {
-        // From CHF Filter to IG Filter
-        if (o instanceof org.forgerock.http.Filter && !(o instanceof Filter)) {
-            return Adapters.asFilter((org.forgerock.http.Filter) o);
-        }
-        return o;
-    }
-
-    private Object transformChfHandler(final Object o) {
-        // From CHF Handler to IG Handler
-        if (o instanceof org.forgerock.http.Handler && !(o instanceof Handler)) {
-            return Adapters.asHandler((org.forgerock.http.Handler) o);
-        }
-        return o;
     }
 
     /**
@@ -355,11 +317,6 @@ public class HeapImpl implements Heap {
                     if (object == null) {
                         throw new HeapException(new NullPointerException());
                     }
-                    // Convert to OpenIG API *before* applying decorators
-                    // TODO This should be removed when we'll natively use the CHF API
-                    object = transformChfHandler(object);
-                    object = transformChfFilter(object);
-
                     object = applyObjectLevelDecorations(name, object, configuration);
                     put(name, object);
                 } finally {
@@ -464,10 +421,7 @@ public class HeapImpl implements Heap {
      * @param object the object to be put into the heap.
      */
     public synchronized void put(final String name, final Object object) {
-        // TODO to be removed after CHF migration
-        Object o = transformChfHandler(object);
-        o = transformChfFilter(o);
-        objects.put(name, o);
+        objects.put(name, object);
         contexts.put(name, new DecorationContext(this, this.name.child(name), json(emptyMap())));
     }
 

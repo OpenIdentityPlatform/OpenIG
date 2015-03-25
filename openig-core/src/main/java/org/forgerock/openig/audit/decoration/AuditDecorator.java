@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
@@ -21,6 +21,8 @@ import static org.forgerock.util.Reject.*;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
@@ -28,8 +30,6 @@ import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapException;
 
 /**

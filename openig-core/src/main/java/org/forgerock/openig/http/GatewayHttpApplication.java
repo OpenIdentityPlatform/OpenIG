@@ -58,6 +58,7 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Factory;
+import org.slf4j.LoggerFactory;
 
 /**
  * Configuration class for configuring the OpenIG Gateway.
@@ -65,6 +66,11 @@ import org.forgerock.util.Factory;
  * @since 3.1.0
  */
 public final class GatewayHttpApplication implements HttpApplication {
+    /**
+     * {@link Logger} instance for the openig-war module.
+     */
+    static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GatewayHttpApplication.class);
+
     /**
      * Key to retrieve the default {@link SessionManager} instance from the
      * {@link org.forgerock.openig.heap.Heap}.
@@ -128,8 +134,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                     TemporaryStorage.class);
 
             // Create the root handler.
-            final org.forgerock.openig.handler.Handler handler = heap.getHandler();
-            Handler rootHandler = new HttpHandler(handler);
+            Handler rootHandler = new HttpHandler(heap.getHandler());
 
             // Let the user override the container's session.
             final SessionManager sessionManager =
@@ -141,7 +146,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             httpHandler = rootHandler;
             return httpHandler;
         } catch (Exception e) {
-            HttpHandler.LOG.error("Failed to initialise Http Application", e);
+            LOG.error("Failed to initialise Http Application", e);
             throw new HttpApplicationException("Unable to start OpenIG", e);
         }
     }

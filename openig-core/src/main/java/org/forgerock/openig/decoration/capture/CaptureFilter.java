@@ -11,20 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
 
 import static org.forgerock.openig.decoration.capture.CapturePoint.*;
 
-import java.io.IOException;
 import java.util.Set;
 
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * Capture both original and filtered requests and responses, delegating to a given encapsulated
@@ -52,34 +56,41 @@ class CaptureFilter implements Filter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
 
-        try {
-            if (points.contains(REQUEST)) {
-                capture.capture(exchange, REQUEST);
-            }
-            // Wraps the next handler to capture the filtered request and the provided response
-            delegate.filter(exchange, new Handler() {
-                @Override
-                public void handle(final Exchange exchange) throws HandlerException, IOException {
-                    try {
-                        if (points.contains(FILTERED_REQUEST)) {
-                            capture.capture(exchange, FILTERED_REQUEST);
-                        }
-                        next.handle(exchange);
-                    } finally {
-                        if (points.contains(RESPONSE)) {
-                            capture.capture(exchange, RESPONSE);
-                        }
-                    }
-                }
-            });
-
-        } finally {
-            if (points.contains(FILTERED_RESPONSE)) {
-                capture.capture(exchange, FILTERED_RESPONSE);
-            }
+        final Exchange exchange = context.asContext(Exchange.class);
+        if (points.contains(REQUEST)) {
+            capture.capture(exchange, request, REQUEST);
         }
-    }
 
+        // Wraps the next handler to capture the filtered request and the provided response
+        return delegate.filter(context, request, new Handler() {
+            @Override
+            public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+                if (points.contains(FILTERED_REQUEST)) {
+                    capture.capture(exchange, request, FILTERED_REQUEST);
+                }
+                return next.handle(context, request)
+                        .then(new SuccessHandler<Response>() {
+                            @Override
+                            public void handleResult(final Response response) {
+                                if (points.contains(RESPONSE)) {
+                                    capture.capture(exchange, response, RESPONSE);
+                                }
+                            }
+                        });
+            }
+
+        }).then(new SuccessHandler<Response>() {
+            @Override
+            public void handleResult(final Response response) {
+                if (points.contains(FILTERED_RESPONSE)) {
+                    capture.capture(exchange, response, FILTERED_RESPONSE);
+                }
+
+            }
+        });
+    }
 }
