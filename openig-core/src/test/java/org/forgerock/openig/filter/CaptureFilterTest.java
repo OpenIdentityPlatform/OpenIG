@@ -16,11 +16,10 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.io.IO.nullOutputStream;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.io.IO.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,11 +27,14 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -51,6 +53,8 @@ public class CaptureFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
     }
 
     @Test
@@ -66,11 +70,8 @@ public class CaptureFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.response = new Response();
 
-        filter.filter(exchange, terminalHandler);
-
-        verify(terminalHandler).handle(exchange);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
         assertThat(req.toString()).contains("--- REQUEST 1 --->");
         assertThat(resp.toString()).contains("<--- RESPONSE 1 ---");
@@ -84,11 +85,9 @@ public class CaptureFilterTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.response = new Response();
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
-        verify(terminalHandler).handle(exchange);
         verifyZeroInteractions(provider);
     }
 
@@ -108,9 +107,7 @@ public class CaptureFilterTest {
         exchange.request.getHeaders().add("Multi", "Third");
         exchange.response = new Response();
 
-        filter.filter(exchange, terminalHandler);
-
-        verify(terminalHandler).handle(exchange);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
         assertThat(req.toString())
                 .contains("Host: openig.forgerock.org")
@@ -130,9 +127,8 @@ public class CaptureFilterTest {
 
         Exchange exchange = buildRequestOnlyExchange("this is an entity", "text/plain");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
-        verify(terminalHandler).handle(exchange);
         assertThat(req.toString())
                 .contains("[entity]")
                 .doesNotContain("this is an entity");
@@ -150,9 +146,8 @@ public class CaptureFilterTest {
         String entity = "this is a binary entity";
         Exchange exchange = buildRequestOnlyExchange(entity, mimeType);
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
-        verify(terminalHandler).handle(exchange);
         assertThat(req.toString())
                 .contains("[binary entity]")
                 .doesNotContain(entity);
@@ -170,9 +165,8 @@ public class CaptureFilterTest {
         String entity = "this is an entity";
         Exchange exchange = buildRequestOnlyExchange(entity, mimeType);
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, exchange.request, terminalHandler).get();
 
-        verify(terminalHandler).handle(exchange);
         assertThat(req.toString())
                 .contains(entity);
     }
