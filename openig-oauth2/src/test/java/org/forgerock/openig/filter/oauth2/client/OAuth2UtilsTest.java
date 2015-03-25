@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
@@ -42,7 +43,7 @@ public class OAuth2UtilsTest {
         assertThat(uri).isEqualTo(new URI("http://accounts.google.com/openid/authorize"));
     }
 
-    @Test(expectedExceptions = HandlerException.class)
+    @Test(expectedExceptions = ResponseException.class)
     public void shouldFailIfComputedUriIsNotValid() throws Exception {
         // {} are invalid URI characters
         OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("http://www.example.com/{boom}"));

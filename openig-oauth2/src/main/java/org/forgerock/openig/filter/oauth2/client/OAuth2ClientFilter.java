@@ -25,8 +25,8 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
+import static org.forgerock.util.promise.Promises.*;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.SecureRandom;
@@ -39,22 +39,27 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.Duration;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
+import org.forgerock.util.promise.AsyncFunction;
+import org.forgerock.util.promise.Function;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -174,7 +179,7 @@ import org.forgerock.util.time.TimeService;
  * }
  * </pre>
  */
-public final class OAuth2ClientFilter extends GenericFilter {
+public final class OAuth2ClientFilter extends GenericHeapObject implements Filter {
 
     /** The expression which will be used for storing authorization information in the exchange. */
     public static final String DEFAULT_TOKEN_KEY = "openid";
@@ -209,33 +214,34 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException,
-            IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
         try {
             // Login: {clientEndpoint}/login?provider={name}[&goto={url}]
             if (matchesUri(exchange, buildLoginUri(exchange))) {
                 checkRequestIsSufficientlySecure(exchange);
-                handleUserInitiatedLogin(exchange);
-                return;
+                return handleUserInitiatedLogin(exchange, request);
             }
 
             // Authorize call-back: {clientEndpoint}/callback?...
             if (matchesUri(exchange, buildCallbackUri(exchange))) {
                 checkRequestIsSufficientlySecure(exchange);
-                handleAuthorizationCallback(exchange);
-                return;
+                return handleAuthorizationCallback(exchange, request);
             }
 
             // Logout: {clientEndpoint}/logout[?goto={url}]
             if (matchesUri(exchange, buildLogoutUri(exchange))) {
-                handleUserInitiatedLogout(exchange);
-                return;
+                return handleUserInitiatedLogout(exchange, request);
             }
 
             // Everything else...
-            handleProtectedResource(exchange, next);
+            return handleProtectedResource(exchange, request, next);
         } catch (final OAuth2ErrorException e) {
-            handleOAuth2ErrorException(exchange, e);
+            return handleOAuth2ErrorException(exchange, request, e);
+        } catch (ResponseException re) {
+            return newFailedPromise(re);
         }
     }
 
@@ -446,15 +452,15 @@ public final class OAuth2ClientFilter extends GenericFilter {
         return this;
     }
 
-    private URI buildCallbackUri(final Exchange exchange) throws HandlerException {
+    private URI buildCallbackUri(final Exchange exchange) throws ResponseException {
         return buildUri(exchange, clientEndpoint, "callback");
     }
 
-    private URI buildLoginUri(final Exchange exchange) throws HandlerException {
+    private URI buildLoginUri(final Exchange exchange) throws ResponseException {
         return buildUri(exchange, clientEndpoint, "login");
     }
 
-    private URI buildLogoutUri(final Exchange exchange) throws HandlerException {
+    private URI buildLogoutUri(final Exchange exchange) throws ResponseException {
         return buildUri(exchange, clientEndpoint, "logout");
     }
 
@@ -497,7 +503,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     private List<String> getScopes(final Exchange exchange, final OAuth2Provider provider)
-            throws HandlerException {
+            throws ResponseException {
         final List<String> providerScopes = provider.getScopes(exchange);
         if (!providerScopes.isEmpty()) {
             return providerScopes;
@@ -505,81 +511,91 @@ public final class OAuth2ClientFilter extends GenericFilter {
         return OAuth2Utils.getScopes(exchange, scopes);
     }
 
-    private void handleAuthorizationCallback(final Exchange exchange) throws HandlerException,
-            OAuth2ErrorException {
-        if (!"GET".equals(exchange.request.getMethod())) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization call-back failed because the request was not a GET");
-        }
+    private Promise<Response, ResponseException> handleAuthorizationCallback(final Exchange exchange,
+                                                                             final Request request) throws OAuth2ErrorException {
 
-        /*
-         * The state must be valid regardless of whether the authorization
-         * succeeded or failed.
-         */
-        final String state = exchange.request.getForm().getFirst("state");
-        if (state == null) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization call-back failed because there was no state parameter");
-        }
-        final OAuth2Session session = loadOrCreateSession(exchange);
-        if (!session.isAuthorizing()) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization call-back failed because there is no authorization in progress");
-        }
-        final int colonPos = state.indexOf(':');
-        final String actualHash = colonPos < 0 ? state : state.substring(0, colonPos);
-        final String gotoUri = colonPos < 0 ? null : state.substring(colonPos + 1);
-        final String expectedHash =
-                createAuthorizationNonceHash(session.getAuthorizationRequestNonce());
-        if (!expectedHash.equals(actualHash)) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization call-back failed because the state parameter contained "
-                            + "an unexpected value");
-        }
-
-        final OAuth2Provider provider = getProvider(session);
-        if (provider == null) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization call-back failed because the provider name was unrecognized");
-        }
-
-        final String code = exchange.request.getForm().getFirst("code");
-        if (code == null) {
-            throw new OAuth2ErrorException(OAuth2Error.valueOfForm(exchange.request.getForm()));
-        }
-
-        /*
-         * Exchange the authorization code for an access token and optional ID
-         * token, and then update the session state.
-         */
-        final Request request =
-                provider.createRequestForAccessToken(exchange, code, buildCallbackUri(exchange)
-                        .toString());
-        final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (response.getStatus() != 200) {
-            if (response.getStatus() == 400 || response.getStatus() == 401) {
-                final JsonValue errorJson = getJsonContent(response);
-                throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
-            } else {
-                throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
-                        "Unable to exchange access token [status=%d]", response.getStatus()));
+        try {
+            if (!"GET".equals(request.getMethod())) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                        "Authorization call-back failed because the request was not a GET");
             }
-        }
-        final JsonValue accessTokenResponse = getJsonContent(response);
 
-        /*
-         * Finally complete the authorization request by redirecting to the
-         * original goto URI and saving the session. It is important to save the
-         * session after setting the response because it may need to access
-         * response cookies.
-         */
-        final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
-        httpRedirectGoto(exchange, gotoUri, defaultLoginGoto);
-        saveSession(exchange, authorizedSession);
+            /*
+             * The state must be valid regardless of whether the authorization
+             * succeeded or failed.
+             */
+            final String state = request.getForm().getFirst("state");
+            if (state == null) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                        "Authorization call-back failed because there was no state parameter");
+            }
+            final OAuth2Session session = loadOrCreateSession(exchange);
+            if (!session.isAuthorizing()) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                        "Authorization call-back failed because there is no authorization in progress");
+            }
+            final int colonPos = state.indexOf(':');
+            final String actualHash = colonPos < 0 ? state : state.substring(0, colonPos);
+            final String gotoUri = colonPos < 0 ? null : state.substring(colonPos + 1);
+            final String expectedHash =
+                    createAuthorizationNonceHash(session.getAuthorizationRequestNonce());
+            if (!expectedHash.equals(actualHash)) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                        "Authorization call-back failed because the state parameter contained "
+                                + "an unexpected value");
+            }
+
+            final OAuth2Provider provider = getProvider(session);
+            if (provider == null) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                        "Authorization call-back failed because the provider name was unrecognized");
+            }
+
+            final String code = request.getForm().getFirst("code");
+            if (code == null) {
+                throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
+            }
+
+            /*
+             * Exchange the authorization code for an access token and optional ID
+             * token, and then update the session state.
+             */
+            final Request tokenRequest = provider.createRequestForAccessToken(exchange, code, buildCallbackUri(exchange).toString());
+            final Response tokenResponse = httpRequestToAuthorizationServer(exchange, tokenRequest);
+            if (tokenResponse.getStatus() != 200) {
+                if (tokenResponse.getStatus() == 400 || tokenResponse.getStatus() == 401) {
+                    final JsonValue errorJson = getJsonContent(tokenResponse);
+                    throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
+                } else {
+                    throw new OAuth2ErrorException(E_SERVER_ERROR, String.format(
+                            "Unable to exchange access token [status=%d]", tokenResponse.getStatus()));
+                }
+            }
+            final JsonValue accessTokenResponse = getJsonContent(tokenResponse);
+
+            /*
+             * Finally complete the authorization request by redirecting to the
+             * original goto URI and saving the session. It is important to save the
+             * session after setting the response because it may need to access
+             * response cookies.
+             */
+            final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
+            return httpRedirectGoto(exchange, gotoUri, defaultLoginGoto)
+                    .then(new Function<Response, Response, ResponseException>() {
+                        @Override
+                        public Response apply(final Response response) throws ResponseException {
+                            saveSession(exchange, authorizedSession);
+                            return response;
+                        }
+                    });
+        } catch (ResponseException e) {
+            return newFailedPromise(e);
+        }
     }
 
-    private void handleOAuth2ErrorException(final Exchange exchange, final OAuth2ErrorException e)
-            throws HandlerException, IOException {
+    private Promise<Response, ResponseException> handleOAuth2ErrorException(final Exchange exchange,
+                                                                            final Request request,
+                                                                            final OAuth2ErrorException e) {
         final OAuth2Error error = e.getOAuth2Error();
         if (error.is(E_ACCESS_DENIED) || error.is(E_INVALID_TOKEN)) {
             logger.debug(e.getMessage());
@@ -614,29 +630,40 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
         info.put("error", error.toJsonContent());
         target.set(exchange, info);
-        failureHandler.handle(exchange);
+        return failureHandler.handle(exchange, request);
     }
 
-    private void handleProtectedResource(final Exchange exchange, final Handler next)
-            throws HandlerException, IOException, OAuth2ErrorException {
-        final OAuth2Session session = loadOrCreateSession(exchange);
-        if (!session.isAuthorized() && requireLogin) {
-            sendRedirectForAuthorization(exchange);
-            return;
-        }
-        final OAuth2Session refreshedSession =
-                session.isAuthorized() ? prepareExchange(exchange, session) : session;
-        next.handle(exchange);
-        if (exchange.response.getStatus() == 401 && !refreshedSession.isAuthorized()) {
-            closeSilently(exchange.response);
-            exchange.response = null;
-            sendRedirectForAuthorization(exchange);
-        } else if (session != refreshedSession) {
-            /*
-             * Only update the session if it has changed in order to avoid send
-             * back JWT session cookies with every response.
-             */
-            saveSession(exchange, refreshedSession);
+    private Promise<Response, ResponseException> handleProtectedResource(final Exchange exchange,
+                                                                         final Request request,
+                                                                         final Handler next)
+            throws OAuth2ErrorException {
+        try {
+            final OAuth2Session session = loadOrCreateSession(exchange);
+            if (!session.isAuthorized() && requireLogin) {
+                return sendRedirectForAuthorization(exchange, request);
+            }
+            final OAuth2Session refreshedSession =
+                    session.isAuthorized() ? prepareExchange(exchange, session) : session;
+            return next.handle(exchange, request)
+                    .thenAsync(new AsyncFunction<Response, Response, ResponseException>() {
+                        @Override
+                        public Promise<Response, ResponseException> apply(final Response response)
+                                throws ResponseException {
+                            if (response.getStatus() == 401 && !refreshedSession.isAuthorized()) {
+                                closeSilently(response);
+                                return sendRedirectForAuthorization(exchange, request);
+                            } else if (session != refreshedSession) {
+                                /*
+                                 * Only update the session if it has changed in order to avoid send
+                                 * back JWT session cookies with every response.
+                                 */
+                                saveSession(exchange, refreshedSession);
+                            }
+                            return newSuccessfulPromise(response);
+                        }
+                    });
+        } catch (ResponseException e) {
+            return newFailedPromise(e);
         }
     }
 
@@ -649,10 +676,10 @@ public final class OAuth2ClientFilter extends GenericFilter {
         throw new OAuth2ErrorException(bestEffort);
     }
 
-    private void handleUserInitiatedLogin(final Exchange exchange) throws HandlerException,
-            OAuth2ErrorException {
-        final String providerName = exchange.request.getForm().getFirst("provider");
-        final String gotoUri = exchange.request.getForm().getFirst("goto");
+    private Promise<Response, ResponseException> handleUserInitiatedLogin(final Exchange exchange,
+                                                                          final Request request) throws OAuth2ErrorException {
+        final String providerName = request.getForm().getFirst("provider");
+        final String gotoUri = request.getForm().getFirst("goto");
         if (providerName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization provider must be specified");
@@ -662,46 +689,55 @@ public final class OAuth2ClientFilter extends GenericFilter {
             throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization provider '"
                     + providerName + "' was not recognized");
         }
-        sendAuthorizationRedirect(exchange, provider, gotoUri);
+        return sendAuthorizationRedirect(exchange, request, provider, gotoUri);
     }
 
-    private void handleUserInitiatedLogout(final Exchange exchange) throws HandlerException {
-        final String gotoUri = exchange.request.getForm().getFirst("goto");
-        httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto);
-        removeSession(exchange);
+    private Promise<Response, ResponseException> handleUserInitiatedLogout(final Exchange exchange,
+                                                                           final Request request) throws ResponseException {
+        final String gotoUri = request.getForm().getFirst("goto");
+        return httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto)
+                .then(new Function<Response, Response, ResponseException>() {
+                    @Override
+                    public Response apply(final Response response) throws ResponseException {
+                        removeSession(exchange);
+                        return response;
+                    }
+                });
     }
 
-    private void httpRedirectGoto(final Exchange exchange, final String gotoUri,
-            final Expression defaultGotoUri) throws HandlerException {
-        if (gotoUri != null) {
-            httpRedirect(exchange, gotoUri);
-        } else if (defaultGotoUri != null) {
-            httpRedirect(exchange, buildUri(exchange, defaultGotoUri).toString());
-        } else {
-            httpResponse(exchange, 200);
+    private Promise<Response, ResponseException> httpRedirectGoto(final Exchange exchange, final String gotoUri,
+            final Expression defaultGotoUri) {
+        try {
+            if (gotoUri != null) {
+                return completion(httpRedirect(gotoUri));
+            } else if (defaultGotoUri != null) {
+                return completion(httpRedirect(buildUri(exchange, defaultGotoUri).toString()));
+            } else {
+                return completion(httpResponse(200));
+            }
+        } catch (ResponseException e) {
+            return newFailedPromise(e);
         }
     }
 
+    private Promise<Response, ResponseException> completion(Response response) {
+        return newSuccessfulPromise(response);
+    }
+
     private Response httpRequestToAuthorizationServer(final Exchange exchange, final Request request)
-            throws OAuth2ErrorException, HandlerException {
-        final Request savedRequest = exchange.request;
-        final Response savedResponse = exchange.response;
-        exchange.request = request;
+            throws OAuth2ErrorException, ResponseException {
         try {
-            providerHandler.handle(exchange);
-            return exchange.response;
-        } catch (final IOException e) {
+            return providerHandler.handle(exchange, request).getOrThrow();
+        } catch (final InterruptedException e) {
+            // FIXME Changed IOException to InterruptedException, not very sure about that
             throw new OAuth2ErrorException(E_SERVER_ERROR,
                     "Authorization failed because an error occurred while trying "
                             + "to contact the authorization server");
-        } finally {
-            exchange.request = savedRequest;
-            exchange.response = savedResponse;
         }
     }
 
     private OAuth2Session prepareExchange(final Exchange exchange, final OAuth2Session session)
-            throws HandlerException, OAuth2ErrorException {
+            throws ResponseException, OAuth2ErrorException {
         try {
             tryPrepareExchange(exchange, session);
             return session;
@@ -713,8 +749,8 @@ public final class OAuth2ClientFilter extends GenericFilter {
             final OAuth2Error error = e.getOAuth2Error();
             final OAuth2Provider provider = getProvider(session);
             if (error.is(E_INVALID_TOKEN) && provider != null && session.getRefreshToken() != null) {
-                final Request request = provider.createRequestForTokenRefresh(exchange, session);
-                final Response response = httpRequestToAuthorizationServer(exchange, request);
+                final Request refreshRequest = provider.createRequestForTokenRefresh(exchange, session);
+                final Response response = httpRequestToAuthorizationServer(exchange, refreshRequest);
                 if (response.getStatus() == 200) {
                     // Update session with new access token.
                     final JsonValue accessTokenResponse = getJsonContent(response);
@@ -742,62 +778,74 @@ public final class OAuth2ClientFilter extends GenericFilter {
         }
     }
 
-    private void sendAuthorizationRedirect(final Exchange exchange, final OAuth2Provider provider,
-            final String gotoUri) throws HandlerException {
-        final URI uri = provider.getAuthorizeEndpoint(exchange);
-        final List<String> requestedScopes = getScopes(exchange, provider);
-        final Form query = new Form();
-        if (uri.getRawQuery() != null) {
-            query.fromString(uri.getRawQuery());
+    private Promise<Response, ResponseException> sendAuthorizationRedirect(final Exchange exchange,
+                                                                           final Request request,
+                                                                           final OAuth2Provider provider,
+                                                                           final String gotoUri) {
+        try {
+            final URI uri = provider.getAuthorizeEndpoint(exchange);
+            final List<String> requestedScopes = getScopes(exchange, provider);
+            final Form query = new Form();
+            if (uri.getRawQuery() != null) {
+                query.fromString(uri.getRawQuery());
+            }
+            query.add("response_type", "code");
+            query.add("client_id", provider.getClientId(exchange));
+            query.add("redirect_uri", buildCallbackUri(exchange).toString());
+            query.add("scope", joinAsString(" ", requestedScopes));
+
+            /*
+             * Construct the state parameter whose purpose is to prevent CSRF
+             * attacks. The state will be passed back from the authorization server
+             * once authorization has completed and the call-back will verify that
+             * it received the same state that it sent originally by comparing it
+             * with the value stored in the session or cookie (depending on the
+             * persistence strategy).
+             */
+            final String nonce = createAuthorizationNonce();
+            final String hash = createAuthorizationNonceHash(nonce);
+            query.add("state", createAuthorizationState(hash, gotoUri));
+
+            final String redirect = withQuery(uri, query).toString();
+            return completion(httpRedirect(redirect))
+                    .then(new Function<Response, Response, ResponseException>() {
+                        @Override
+                        public Response apply(final Response response) throws ResponseException {
+                            /*
+                             * Finally create and save the session. This may involve updating
+                             * response cookies, so it is important to do it after creating the
+                             * response.
+                             */
+                            final String clientUri = buildUri(exchange, clientEndpoint).toString();
+                            final OAuth2Session session =
+                                    stateNew(time).stateAuthorizing(provider.getName(), clientUri, nonce,
+                                                                    requestedScopes);
+                            saveSession(exchange, session);
+                            return response;
+                        }
+                    });
+
+        } catch (ResponseException e) {
+            return newFailedPromise(e);
         }
-        query.add("response_type", "code");
-        query.add("client_id", provider.getClientId(exchange));
-        query.add("redirect_uri", buildCallbackUri(exchange).toString());
-        query.add("scope", joinAsString(" ", requestedScopes));
-
-        /*
-         * Construct the state parameter whose purpose is to prevent CSRF
-         * attacks. The state will be passed back from the authorization server
-         * once authorization has completed and the call-back will verify that
-         * it received the same state that it sent originally by comparing it
-         * with the value stored in the session or cookie (depending on the
-         * persistence strategy).
-         */
-        final String nonce = createAuthorizationNonce();
-        final String hash = createAuthorizationNonceHash(nonce);
-        query.add("state", createAuthorizationState(hash, gotoUri));
-
-        final String redirect = withQuery(uri, query).toString();
-        httpRedirect(exchange, redirect);
-
-        /*
-         * Finally create and save the session. This may involve updating
-         * response cookies, so it is important to do it after creating the
-         * response.
-         */
-        final String clientUri = buildUri(exchange, clientEndpoint).toString();
-        final OAuth2Session session =
-                stateNew(time).stateAuthorizing(provider.getName(), clientUri, nonce,
-                        requestedScopes);
-        saveSession(exchange, session);
     }
 
-    private void sendRedirectForAuthorization(final Exchange exchange) throws HandlerException,
-            IOException {
+    private Promise<Response, ResponseException> sendRedirectForAuthorization(final Exchange exchange,
+                                                                              final Request request) {
         if (loginHandler != null) {
-            loginHandler.handle(exchange);
+            return loginHandler.handle(exchange, request);
         } else {
             final OAuth2Provider provider = providers.values().iterator().next();
-            sendAuthorizationRedirect(exchange, provider, exchange.originalUri.toString());
+            return sendAuthorizationRedirect(exchange, request, provider, exchange.originalUri.toString());
         }
     }
 
-    private String sessionKey(final Exchange exchange) throws HandlerException {
+    private String sessionKey(final Exchange exchange) throws ResponseException {
         return "oauth2:" + buildUri(exchange, clientEndpoint);
     }
 
     private void tryPrepareExchange(final Exchange exchange, final OAuth2Session session)
-            throws HandlerException, OAuth2ErrorException {
+            throws ResponseException, OAuth2ErrorException {
         final Map<String, Object> info =
                 new LinkedHashMap<String, Object>(session.getAccessTokenResponse());
         // Override these with effective values.
@@ -876,24 +924,31 @@ public final class OAuth2ClientFilter extends GenericFilter {
                 if (!knownConfiguration.isNull()) {
                     final URI uri = knownConfiguration.asURI();
                     if (uri != null) {
-                        final Exchange exchange = new Exchange();
-                        exchange.request = new Request();
-                        exchange.request.setMethod("GET");
-                        exchange.request.setUri(uri);
+                        final Request request = new Request();
+                        request.setMethod("GET");
+                        request.setUri(uri);
                         try {
-                            providerHandler.handle(exchange);
-                            if (exchange.response.getStatus() != 200) {
-                                throw new HeapException(
-                                        "Unable to read well-known OpenID Configuration from '"
-                                                + exchange.request.getUri().toString() + "'");
-                            }
-                            provider.setWellKnownConfiguration(getJsonContent(exchange.response));
+                            providerHandler.handle(new Exchange(), request)
+                                    .then(new Function<Response, Response, ResponseException>() {
+                                        @Override
+                                        public Response apply(final Response response) throws ResponseException {
+                                            if (response.getStatus() != 200) {
+                                                throw new ResponseException(
+                                                        "Unable to read well-known OpenID Configuration from '"
+                                                                + request.getUri().toString() + "'");
+                                            }
+                                            try {
+                                                provider.setWellKnownConfiguration(getJsonContent(response));
+                                            } catch (OAuth2ErrorException e) {
+                                                throw new ResponseException("Cannot read JSON", e);
+                                            }
+                                            return response;
+                                        }
+                                    }).getOrThrow();
                         } catch (final Exception e) {
                             throw new HeapException(
                                     "Unable to read well-known OpenID Configuration from '"
-                                            + exchange.request.getUri().toString() + "'", e);
-                        } finally {
-                            closeSilently(exchange.response);
+                                            + request.getUri().toString() + "'", e);
                         }
                     }
                 } else {
@@ -935,7 +990,7 @@ public final class OAuth2ClientFilter extends GenericFilter {
     }
 
     private OAuth2Session loadOrCreateSession(final Exchange exchange) throws OAuth2ErrorException,
-            HandlerException {
+                                                                              ResponseException {
         final Object sessionJson = exchange.session.get(sessionKey(exchange));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
@@ -943,11 +998,11 @@ public final class OAuth2ClientFilter extends GenericFilter {
         return stateNew(time);
     }
 
-    private void removeSession(Exchange exchange) throws HandlerException {
+    private void removeSession(Exchange exchange) throws ResponseException {
         exchange.session.remove(sessionKey(exchange));
     }
 
-    private void saveSession(Exchange exchange, OAuth2Session session) throws HandlerException {
+    private void saveSession(Exchange exchange, OAuth2Session session) throws ResponseException {
         exchange.session.put(sessionKey(exchange), session.toJson().getObject());
     }
 

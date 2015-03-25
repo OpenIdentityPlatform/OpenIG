@@ -26,9 +26,9 @@ import java.util.List;
 
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.encode.Base64;
 
@@ -159,7 +159,7 @@ public class OAuth2Provider {
     }
 
     Request createRequestForAccessToken(final Exchange exchange, final String code,
-            final String callbackUri) throws HandlerException {
+            final String callbackUri) throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(buildUri(exchange, tokenEndpoint));
@@ -173,7 +173,7 @@ public class OAuth2Provider {
     }
 
     Request createRequestForTokenRefresh(final Exchange exchange, final OAuth2Session session)
-            throws HandlerException {
+            throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(buildUri(exchange, tokenEndpoint));
@@ -186,7 +186,7 @@ public class OAuth2Provider {
     }
 
     Request createRequestForUserInfo(final Exchange exchange, final String accessToken)
-            throws HandlerException {
+            throws ResponseException {
         final Request request = new Request();
         request.setMethod("GET");
         request.setUri(buildUri(exchange, userInfoEndpoint));
@@ -194,14 +194,14 @@ public class OAuth2Provider {
         return request;
     }
 
-    URI getAuthorizeEndpoint(final Exchange exchange) throws HandlerException {
+    URI getAuthorizeEndpoint(final Exchange exchange) throws ResponseException {
         return buildUri(exchange, authorizeEndpoint);
     }
 
-    String getClientId(final Exchange exchange) throws HandlerException {
+    String getClientId(final Exchange exchange) throws ResponseException {
         final String result = clientId.eval(exchange, String.class);
         if (result == null) {
-            throw new HandlerException(
+            throw new ResponseException(
                     format("The clientId expression '%s' could not be resolved", clientId.toString()));
         }
         return result;
@@ -211,7 +211,7 @@ public class OAuth2Provider {
         return name;
     }
 
-    List<String> getScopes(final Exchange exchange) throws HandlerException {
+    List<String> getScopes(final Exchange exchange) throws ResponseException {
         return OAuth2Utils.getScopes(exchange, scopes);
     }
 
@@ -220,7 +220,7 @@ public class OAuth2Provider {
     }
 
     private void addClientIdAndSecret(final Exchange exchange, final Request request,
-            final Form form) throws HandlerException {
+            final Form form) throws ResponseException {
         final String user = getClientId(exchange);
         final String pass = getClientSecret(exchange);
         if (!tokenEndpointUseBasicAuth) {
@@ -233,10 +233,10 @@ public class OAuth2Provider {
         }
     }
 
-    private String getClientSecret(final Exchange exchange) throws HandlerException {
+    private String getClientSecret(final Exchange exchange) throws ResponseException {
         final String result = clientSecret.eval(exchange, String.class);
         if (result == null) {
-            throw new HandlerException(
+            throw new ResponseException(
                     format("The clientSecret expression '%s' could not be resolved", clientSecret.toString()));
         }
         return result;

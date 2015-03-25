@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.HandlerException;
@@ -40,16 +41,17 @@ import org.forgerock.openig.http.Exchange;
 final class OAuth2Utils {
 
     static URI buildUri(final Exchange exchange, final Expression uriExpression)
-            throws HandlerException {
+            throws ResponseException {
         return buildUri(exchange, uriExpression, null);
     }
 
     static URI buildUri(final Exchange exchange, final Expression uriExpression,
-            final String additionalPath) throws HandlerException {
+            final String additionalPath) throws ResponseException {
+        String uriString = null;
         try {
-            String uriString = uriExpression.eval(exchange, String.class);
+            uriString = uriExpression.eval(exchange, String.class);
             if (uriString == null) {
-                throw new HandlerException(
+                throw new ResponseException(
                         format("The URI expression '%s' could not be resolved", uriExpression.toString()));
             }
             if (additionalPath != null) {
@@ -62,7 +64,7 @@ final class OAuth2Utils {
             // Resolve the computed Uri against the original Exchange URI
             return exchange.originalUri.resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
-            throw new HandlerException(e);
+            throw new ResponseException(format("Cannot build URI from %s", uriString), e);
         }
     }
 
@@ -78,12 +80,12 @@ final class OAuth2Utils {
     }
 
     static List<String> getScopes(final Exchange exchange, final List<Expression> scopeExpressions)
-            throws HandlerException {
+            throws ResponseException {
         final List<String> scopeValues = new ArrayList<String>(scopeExpressions.size());
         for (final Expression scope : scopeExpressions) {
             final String result = scope.eval(exchange, String.class);
             if (result == null) {
-                throw new HandlerException(format(
+                throw new ResponseException(format(
                         "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));
             }
             scopeValues.add(result);
@@ -91,16 +93,17 @@ final class OAuth2Utils {
         return scopeValues;
     }
 
-    static void httpRedirect(final Exchange exchange, final String uri) {
+    static Response httpRedirect(final String uri) {
         // FIXME: this constant should in HTTP package?
-        httpResponse(exchange, 302);
-        exchange.response.getHeaders().add(LocationHeader.NAME, uri);
+        Response response = httpResponse(302);
+        response.getHeaders().add(LocationHeader.NAME, uri);
+        return response;
     }
 
-    static void httpResponse(final Exchange exchange, final int status) {
-        closeSilently(exchange.response);
-        exchange.response = new Response();
-        exchange.response.setStatus(status);
+    static Response httpResponse(final int status) {
+        Response response = new Response();
+        response.setStatus(status);
+        return response;
     }
 
     static boolean matchesUri(final Exchange exchange, final URI uri) {
