@@ -18,8 +18,8 @@ package org.forgerock.openig.doc;
 
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.http.Adapters.*;
 
+import org.forgerock.http.Filter;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.filter.Chain;
@@ -39,7 +39,7 @@ public class SampleFilterTest {
         Exchange exchange = new Exchange();
         Request request = new Request();
 
-        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(asChfFilter(filter)));
+        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList((Filter) filter));
 
         Response response = chain.handle(exchange, request).get();
 
