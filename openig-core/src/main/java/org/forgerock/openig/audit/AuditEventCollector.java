@@ -20,7 +20,7 @@ import static org.forgerock.openig.audit.Tag.*;
 
 import java.util.Set;
 
-import org.forgerock.audit.event.AuditEventBuilder.AccessAuditEventBuilder;
+import org.forgerock.audit.event.AccessAuditEventBuilder;
 import org.forgerock.json.resource.Connection;
 import org.forgerock.json.resource.ConnectionFactory;
 import org.forgerock.json.resource.Context;
