@@ -120,6 +120,11 @@
      <version>0.11.4.1</version>
      <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-core</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
   <build>
     <resources>

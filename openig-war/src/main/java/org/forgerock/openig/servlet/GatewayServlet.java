@@ -34,6 +34,7 @@ import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -42,6 +43,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -49,7 +52,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.forgerock.audit.AuditService;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.resource.ConnectionFactory;
+import org.forgerock.json.resource.ResourceException;
+import org.forgerock.json.resource.Resources;
+import org.forgerock.json.resource.Router;
+import org.forgerock.json.resource.RoutingMode;
+import org.forgerock.openig.audit.AuditEventCollector;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
@@ -64,6 +74,7 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Request;
+import org.forgerock.openig.http.ServerInfo;
 import org.forgerock.openig.http.Session;
 import org.forgerock.openig.http.SessionFactory;
 import org.forgerock.openig.io.BranchingStreamWrapper;
@@ -72,7 +83,9 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.util.CaseInsensitiveSet;
+import org.forgerock.openig.util.Json;
 import org.forgerock.openig.util.URIUtil;
+import org.forgerock.util.time.TimeService;
 
 /**
  * The main OpenIG HTTP Servlet which is responsible for bootstrapping the configuration and delegating all request
@@ -193,6 +206,10 @@ public class GatewayServlet extends HttpServlet {
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
 
             AuditSystem auditSystem = new ForwardingAuditSystem();
+            if (config.get("auditEnabled").defaultTo(Boolean.FALSE).asBoolean()) {
+                auditSystem.registerListener(new AuditEventCollector(TimeService.SYSTEM,
+                                                                     buildAuditConnectionFactory(environment.getConfigDirectory())));
+            }
 
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
@@ -221,6 +238,27 @@ public class GatewayServlet extends HttpServlet {
         }
     }
 
+    private static ConnectionFactory buildAuditConnectionFactory(File directory) throws ServletException {
+        final Router router = new Router();
+        AuditService auditService = new AuditService();
+
+        try {
+            FileReader auditConfigReader = new FileReader(new File(directory, "audit-config-ig.json"));
+            JsonValue auditConfig = new JsonValue(Json.<Map>readJson(auditConfigReader));
+            auditService.configure(auditConfig);
+            auditConfigReader.close(); // TODO Move it to a finally block
+        } catch (FileNotFoundException e) {
+            throw new ServletException(e);
+        } catch (ResourceException e) {
+            throw new ServletException(e);
+        } catch (IOException e) {
+            throw new ServletException(e);
+        }
+
+        router.addRoute(RoutingMode.STARTS_WITH, "/audit", auditService);
+        return Resources.newInternalConnectionFactory(router);
+    }
+
     /**
      * Handles a servlet request by dispatching it to a handler. It receives a servlet request, translates it into an
      * exchange object, dispatches the exchange to a handler, then translates the exchange response into the servlet
@@ -241,9 +279,14 @@ public class GatewayServlet extends HttpServlet {
     public void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException,
             ServletException {
 
+        ServerInfo serverInfo = buildServerInfo(request);
+
         // Build Exchange
         URI uri = createRequestUri(request);
         final Exchange exchange = new Exchange(uri);
+        exchange.put(AuditEventCollector.START, TimeService.SYSTEM.now());
+        exchange.put(AuditEventCollector.TRANSACTION_ID, getTransactionId(request));
+        exchange.put("ServerInfo", serverInfo);
 
         // populate request
         exchange.request = new Request();
@@ -302,6 +345,18 @@ public class GatewayServlet extends HttpServlet {
             // final cleanup
             closeSilently(exchange.request, exchange.response);
         }
+    }
+
+    static String getTransactionId(HttpServletRequest request) {
+        String headerTxID = request.getHeader("X-ForgeRock-TransactionId");
+        if (headerTxID != null && headerTxID.trim().length() > 0) {
+            return headerTxID;
+        }
+        return UUID.randomUUID().toString();
+    }
+
+    private ServerInfo buildServerInfo(HttpServletRequest request) {
+        return new ServerInfo(request.getLocalAddr(), request.getLocalName(), request.getLocalPort());
     }
 
     private static URI createRequestUri(final HttpServletRequest request) throws ServletException {
