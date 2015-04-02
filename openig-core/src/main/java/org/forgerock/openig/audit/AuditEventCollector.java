@@ -96,22 +96,6 @@ public class AuditEventCollector extends GenericHeapObject implements AuditEvent
                   exchange.originalUri.getQuery(),
                   exchange.request.getHeaders());
 
-//        RequestCookies requestCookies = exchange.request.getCookies();
-//        List<Object> cookiesList = new ArrayList<Object>(requestCookies.size());
-//        for (String cookieName : requestCookies.keySet()) {
-//            List<Cookie> cookies = requestCookies.get(cookieName);
-//
-//            // TODO Handle the multi-cookies with the same name
-//            for(Cookie cookie : cookies) {
-//                Object jsonCookie = object(field("name", cookie.getName()),
-//                                           field("value", cookie.getValue());
-//                cookiesList.add(jsonCookie);
-//            }
-//        }
-//        Object cookies = json(array(cookiesList));
-
-        //TOREMOVE
-        System.out.println("request: " + accessEventBuilder.toEvent().getValue());
         return generateAuditEvent(accessEventBuilder.toEvent(), "access");
     }
 
@@ -122,8 +106,6 @@ public class AuditEventCollector extends GenericHeapObject implements AuditEvent
             .timestamp(time.now())
             .response(Integer.toString(exchange.response.getStatus()), time.since((Long) exchange.get(START)));
 
-        //TOREMOVE
-        System.out.println("response: " + accessEventBuilder.toEvent().getValue());
         return generateAuditEvent(accessEventBuilder.toEvent(), "access");
     }
 
