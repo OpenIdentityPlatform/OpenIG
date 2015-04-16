@@ -80,7 +80,7 @@ class RouteBuilder {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(resource);
-            return new JsonValue(readJsonLenient(new FileInputStream(resource)));
+            return new JsonValue(readJsonLenient(fis));
         } catch (FileNotFoundException e) {
             throw new HeapException(format("File %s does not exist", resource), e);
         } catch (IOException e) {
