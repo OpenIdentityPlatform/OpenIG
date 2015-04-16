@@ -12,11 +12,10 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 /**
- * Models and manages elements of the Hypertext Transfer Protocol. For more information, see
- * <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a>.
+ * Integrates with the ForgeRock HTTP Framework.
  */
 package org.forgerock.openig.http;

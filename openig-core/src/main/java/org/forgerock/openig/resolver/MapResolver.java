@@ -19,7 +19,7 @@ package org.forgerock.openig.resolver;
 
 import java.util.Map;
 
-import org.forgerock.openig.util.UnmodifiableCollection;
+import org.forgerock.http.util.UnmodifiableCollection;
 
 /**
  * Resolves {@link Map} objects.

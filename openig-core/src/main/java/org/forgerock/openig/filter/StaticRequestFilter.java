@@ -20,22 +20,25 @@ package org.forgerock.openig.filter;
 import static java.lang.String.*;
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.util.CaseInsensitiveMap;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.MultiValueMap;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a new request with in the exchange object. It will replace any request that may
@@ -44,12 +47,7 @@ import org.forgerock.openig.util.MultiValueMap;
  * {@code application/x-www-form-urlencoded} format if request method is {@code POST}, or
  * otherwise as (additional) query parameters in the URI.
  */
-public class StaticRequestFilter extends GenericFilter {
-
-    /**
-     * By default, do not restore the original {@link Request} back into {@code exchange.request}.
-     */
-    public static final boolean DEFAULT_RESTORE = false;
+public class StaticRequestFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /** The HTTP method to be performed on the resource. */
     private final String method;
@@ -59,9 +57,6 @@ public class StaticRequestFilter extends GenericFilter {
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}). */
     private String version;
-
-    /** Restore the original Request after execution (defaults to {@literal false}). */
-    private boolean restore = DEFAULT_RESTORE;
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression<String>> headers =
@@ -102,16 +97,6 @@ public class StaticRequestFilter extends GenericFilter {
     }
 
     /**
-     * Sets to {@literal false} if this filter should not restore the original Request after execution.
-     *
-     * @param restore
-     *         {@literal true} if restore is required, {@literal false} otherwise
-     */
-    public void setRestore(final boolean restore) {
-        this.restore = restore;
-    }
-
-    /**
      * Adds a new header value using the given {@code key} with the given {@link Expression}. As headers are
      * multi-valued objects, it's perfectly legal to call this method multiple times with the same key.
      *
@@ -142,29 +127,35 @@ public class StaticRequestFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        Request request = new Request();
-        request.setMethod(this.method);
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final org.forgerock.http.Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
+        Request newRequest = new Request();
+        newRequest.setMethod(this.method);
         String value = this.uri.eval(exchange);
         if (value != null) {
             try {
-                request.setUri(value);
+                newRequest.setUri(value);
             } catch (URISyntaxException e) {
-                throw logger.debug(new HandlerException("The URI " + value + " was not valid, " + e.getMessage(), e));
+                return Promises.newFailedPromise(
+                        logger.debug(
+                                new ResponseException(
+                                        format("The URI %s was not valid, %s", value, e.getMessage()), e)));
             }
         } else {
-            throw logger.debug(new HandlerException(format("The URI expression '%s' could not be resolved",
-                                                           uri.toString())));
+            return Promises.newFailedPromise(logger.debug(
+                    new ResponseException(format("The URI expression '%s' could not be resolved", uri.toString()))));
         }
         if (this.version != null) {
             // default in Message class
-            request.setVersion(version);
+            newRequest.setVersion(version);
         }
         for (String key : this.headers.keySet()) {
             for (Expression<String> expression : this.headers.get(key)) {
                 String eval = expression.eval(exchange);
                 if (eval != null) {
-                    request.getHeaders().add(key, eval);
+                    newRequest.getHeaders().add(key, eval);
                 }
             }
         }
@@ -178,18 +169,14 @@ public class StaticRequestFilter extends GenericFilter {
                     }
                 }
             }
-            if ("POST".equals(request.getMethod())) {
-                f.toRequestEntity(request);
+            if ("POST".equals(newRequest.getMethod())) {
+                f.toRequestEntity(newRequest);
             } else {
-                f.appendRequestQuery(request);
+                f.appendRequestQuery(newRequest);
             }
         }
-        Request saved = exchange.request;
-        exchange.request = request;
-        next.handle(exchange);
-        if (restore) {
-            exchange.request = saved;
-        }
+        return next.handle(context, newRequest);
+        // Note Can't restore in promise-land because I can't change the reference to the given request parameter
     }
 
     /** Creates and initializes a request filter in a heap environment. */
@@ -199,7 +186,6 @@ public class StaticRequestFilter extends GenericFilter {
             StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
             filter.setUri(asExpression(config.get("uri").required(), String.class));
             filter.setVersion(config.get("version").asString());
-            filter.setRestore(config.get("restore").defaultTo(DEFAULT_RESTORE).asBoolean());
 
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {

@@ -23,12 +23,9 @@ import static org.forgerock.util.Utils.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +37,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.el.FunctionMapper;
 
+import org.forgerock.http.URIUtil;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
 
@@ -320,11 +318,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlEncode(String value) {
-        try {
-            return value != null ? URLEncoder.encode(value, "UTF-8") : null;
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
+        return URIUtil.urlEncode(value);
     }
 
     /**
@@ -336,11 +330,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlDecode(String value) {
-        try {
-            return value != null ? URLDecoder.decode(value, "UTF-8") : null;
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
+        return URIUtil.urlDecode(value);
     }
 
     /**

@@ -18,7 +18,7 @@ package org.forgerock.openig.util;
 
 import static java.lang.String.*;
 import static java.util.Collections.*;
-import static org.forgerock.openig.util.Loader.*;
+import static org.forgerock.http.util.Loader.*;
 
 import java.util.List;
 

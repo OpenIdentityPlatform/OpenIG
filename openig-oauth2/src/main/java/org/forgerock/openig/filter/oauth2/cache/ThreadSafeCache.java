@@ -25,7 +25,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.openig.util.Duration;
+import org.forgerock.http.util.Duration;
 
 /**
  * ThreadSafeCache is a thread-safe write-through cache.

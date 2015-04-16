@@ -18,12 +18,12 @@ package org.forgerock.openig.filter;
 
 import static java.security.KeyPairGenerator.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.util.StandardCharsets.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.*;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.*;
-import static org.forgerock.openig.http.MessageType.*;
 import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.StandardCharsets.*;
+import static org.forgerock.openig.util.MessageType.*;
 import static org.forgerock.util.encode.Base64.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -37,15 +37,16 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -100,16 +101,16 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(REQUEST);
         filter.setKey(new SecretKeySpec(decode("zuul"), "AES"));
 
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
+        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
-        exchange.request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        when(terminalHandler.handle(null, request))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, request, terminalHandler);
 
         verify(logger).error(any(GeneralSecurityException.class));
-
-        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
+        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }
 
     @Test
@@ -118,16 +119,16 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(REQUEST);
         filter.setAlgorithm("Unknown");
 
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
+        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
-        exchange.request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        when(terminalHandler.handle(null, request))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, request, terminalHandler);
 
         verify(logger).error(any(GeneralSecurityException.class));
-
-        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME)).isNull();
+        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isNull();
     }
 
     @Test
@@ -135,16 +136,16 @@ public class CryptoHeaderFilterTest {
         CryptoHeaderFilter filter = buildDefaultCryptoHeader();
         filter.setMessageType(REQUEST);
 
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
+        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
-        exchange.request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        when(terminalHandler.handle(null, request))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, request, terminalHandler);
 
         verifyZeroInteractions(logger);
-
-        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME))
+        assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
 
@@ -154,16 +155,16 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(REQUEST);
         filter.setOperation(DECRYPT);
 
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
+        request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
-        exchange.request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        when(terminalHandler.handle(null, request))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, request, terminalHandler);
 
         verifyZeroInteractions(logger);
-
-        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME))
+        assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
 
@@ -172,16 +173,16 @@ public class CryptoHeaderFilterTest {
         CryptoHeaderFilter filter = buildDefaultCryptoHeader();
         filter.setMessageType(RESPONSE);
 
-        final Exchange exchange = new Exchange();
-        exchange.response = new Response();
+        Response response = new Response();
+        response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
-        exchange.response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        when(terminalHandler.handle(null, null))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, null, terminalHandler);
 
         verifyZeroInteractions(logger);
-
-        assertThat(exchange.response.getHeaders().getFirst(HEADER_NAME))
+        assertThat(response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
 
@@ -191,16 +192,16 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(RESPONSE);
         filter.setOperation(CryptoHeaderFilter.Operation.DECRYPT);
 
-        final Exchange exchange = new Exchange();
-        exchange.response = new Response();
+        Response response = new Response();
+        response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
-        exchange.response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        when(terminalHandler.handle(null, null))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, null, terminalHandler);
 
         verifyZeroInteractions(logger);
-
-        assertThat(exchange.response.getHeaders().getFirst(HEADER_NAME))
+        assertThat(response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
 
@@ -215,16 +216,13 @@ public class CryptoHeaderFilterTest {
         filter.getHeaders().add(HEADER_NAME);
         filter.logger = logger;
 
-        Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
+        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
-        exchange.request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
-
-        filter.filter(exchange, terminalHandler);
+        filter.filter(null, request, terminalHandler);
 
         verifyZeroInteractions(logger);
-
-        assertThat(exchange.request.getHeaders().getFirst(HEADER_NAME))
+        assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isNotNull()
                 .isNotEmpty()
                 .isNotEqualTo(CLEAR_TEXT_VALUE);

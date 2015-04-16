@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
@@ -24,10 +24,10 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.helper.LazyReference;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;

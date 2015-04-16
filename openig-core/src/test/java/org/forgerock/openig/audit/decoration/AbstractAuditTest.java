@@ -11,12 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
 
 import static org.assertj.core.api.Assertions.*;
+
+import java.util.Map;
 
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
@@ -46,6 +48,6 @@ public abstract class AbstractAuditTest {
     protected void assertThatEventIncludes(final AuditEvent event, final Exchange exchange, final String... tags) {
         assertThat(event.getTags()).containsOnly(tags);
         assertThat(event.getSource()).isSameAs(source);
-        assertThat(event.getExchange()).isSameAs(exchange);
+        assertThat((Map<String, Object>) event.getExchange()).isSameAs(exchange);
     }
 }

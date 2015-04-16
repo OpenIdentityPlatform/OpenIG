@@ -11,23 +11,26 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
-import java.io.IOException;
-
+import org.forgerock.http.Context;
+import org.forgerock.http.io.IO;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.io.BranchingStreamWrapper;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a static response containing a simple HTML welcome page.
  */
-public class WelcomeHandler extends GenericHandler {
+public class WelcomeHandler extends GenericHeapObject implements org.forgerock.http.Handler {
 
     /**
      * Creates a new welcome page handler.
@@ -37,14 +40,14 @@ public class WelcomeHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.setStatus(200);
         response.setReason("OK");
         response.getHeaders().add("Content-Type", "text/html");
-        response.setEntity(new BranchingStreamWrapper(getClass().getResourceAsStream(
+        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
                 "welcome.html"), storage));
-        exchange.response = response;
+        return Promises.newSuccessfulPromise(response);
     }
 
     /**

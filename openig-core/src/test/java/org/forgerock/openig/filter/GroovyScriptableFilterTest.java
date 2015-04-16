@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -22,8 +22,6 @@ import static com.xebialabs.restito.semantics.Condition.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.heap.Name.*;
-import static org.forgerock.openig.http.HttpClient.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
 import static org.mockito.Mockito.*;
@@ -41,10 +39,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.LDAPClientContext;
@@ -54,27 +58,21 @@ import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.http.Session;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.h2.jdbcx.JdbcDataSource;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.mockito.stubbing.Stubber;
 import org.testng.annotations.Test;
 
 import com.xebialabs.restito.semantics.Condition;
@@ -100,14 +98,12 @@ public class GroovyScriptableFilterTest {
                 "next.handle(exchange)",
                 "exchange.test = exchange.response.status == 302");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
         final Response response = new Response();
         response.setStatus(302);
-        returnResponse(response).when(handler).handle(exchange);
-        filter.filter(exchange, handler);
-        assertThat(exchange.get("test")).isEqualTo(true);
+        final Handler handler = new ResponseHandler(response);
+        Exchange exchange = new Exchange();
+        filter.filter(exchange, null, handler);
+        assertThat((Boolean) exchange.get("test")).isTrue();
     }
 
     @Test
@@ -120,10 +116,8 @@ public class GroovyScriptableFilterTest {
                 "assert logger != null",
                 "assert next != null");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        filter.filter(new Exchange(), new Request(), handler);
         verifyZeroInteractions(handler);
     }
 
@@ -139,12 +133,10 @@ public class GroovyScriptableFilterTest {
                 (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Response response = filter.filter(new Exchange(), null, handler).get();
+        assertThat(response).isNotNull();
         verifyZeroInteractions(handler);
-        assertThat(exchange.response).isNotNull();
     }
 
     @Test
@@ -160,22 +152,22 @@ public class GroovyScriptableFilterTest {
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bjensen");
         exchange.request.getHeaders().add("Password", "hifalutin");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
+        Promise<Response, ResponseException> promise1 = handler.handle(exchange, exchange.request);
+        assertThat(promise1.get().getStatus()).isEqualTo(200);
 
         // Try with invalid credentials
         exchange.request = new Request();
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bob");
         exchange.request.getHeaders().add("Password", "dobbs");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(403);
+        Promise<Response, ResponseException> promise2 = handler.handle(exchange, exchange.request);
+        assertThat(promise2.get().getStatus()).isEqualTo(403);
 
         // Try with different path
         exchange.request = new Request();
         exchange.request.setUri(new URI("http://test/index.html"));
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(401);
+        Promise<Response, ResponseException> promise3 = handler.handle(exchange, exchange.request);
+        assertThat(promise3.get().getStatus()).isEqualTo(401);
     }
 
     @Test
@@ -185,15 +177,14 @@ public class GroovyScriptableFilterTest {
                 (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://www.example.com/"));
+        Request request = new Request();
+        request.setUri(new URI("http://www.example.com/"));
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        filter.filter(new Exchange(), request, handler);
         // base64-encode "bjensen:hifalutin" -> "YmplbnNlbjpoaWZhbHV0aW4="
-        assertThat(exchange.request.getHeaders().get("Authorization").toString())
+        assertThat(request.getHeaders().get("Authorization").toString())
                 .isEqualTo("[Basic YmplbnNlbjpoaWZhbHV0aW4=]");
-        assertThat(exchange.request.getUri().getScheme()).isEqualTo("https");
+        assertThat(request.getUri().getScheme()).isEqualTo("https");
     }
 
     @Test
@@ -203,21 +194,20 @@ public class GroovyScriptableFilterTest {
                                                                                 new JsonValue(config),
                                                                                 getHeap());
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        final Headers headers = exchange.request.getHeaders();
+        Response response = filter.filter(new Exchange(), request, handler).get();
+        final Headers headers = request.getHeaders();
         assertThat(headers.get("title").toString()).isEqualTo("[Coffee time]");
-        assertThat(exchange.response.getStatus()).isEqualTo(418);
-        assertThat(exchange.response.getReason()).isEqualTo("Acceptable");
-        assertThat(exchange.response.getEntity().toString()).contains("1:koffie, 2:kafe, 3:cafe, 4:kafo");
+        assertThat(response.getStatus()).isEqualTo(418);
+        assertThat(response.getReason()).isEqualTo("Acceptable");
+        assertThat(response.getEntity().toString()).contains("1:koffie, 2:kafe, 3:cafe, 4:kafo");
     }
 
     @Test
     public void testConstructFromString() throws Exception {
         final String script =
-                "import org.forgerock.openig.http.Response;exchange.response = new Response()";
+                "import org.forgerock.http.protocol.Response;exchange.response = new Response()";
         final Map<String, Object> config = new HashMap<String, Object>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
@@ -225,12 +215,10 @@ public class GroovyScriptableFilterTest {
                 (ScriptableFilter) new Heaplet().create(Name.of("test"), new JsonValue(
                         config), getHeap());
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Response response = filter.filter(new Exchange(), new Request(), handler).get();
         verifyZeroInteractions(handler);
-        assertThat(exchange.response).isNotNull();
+        assertThat(response).isNotNull();
     }
 
     @Test
@@ -240,11 +228,9 @@ public class GroovyScriptableFilterTest {
                 "assert globals.x == null",
                 "globals.x = 'value'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        filter.filter(new Exchange(), null, null);
         try {
-            filter.filter(exchange, handler);
+            filter.filter(new Exchange(), null, null);
             fail("Second iteration succeeded unexpectedly");
         } catch (final AssertionError e) {
             // Expected.
@@ -261,22 +247,21 @@ public class GroovyScriptableFilterTest {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
-                    "import org.forgerock.openig.http.*",
+                    "import org.forgerock.http.protocol.*",
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
                     "exchange.response = http.execute(request)");
-            filter.setHttpClient(new HttpClient(new TemporaryStorage()));
+            filter.setHttpClient(new HttpClient());
 
             // @formatter:on
             final Exchange exchange = new Exchange();
             exchange.request = new Request();
-            final Handler handler = mock(Handler.class);
-            filter.filter(exchange, handler);
+            Response response = filter.filter(exchange, null, null).get();
 
             verifyHttp(server).once(method(Method.GET), Condition.uri("/example"));
-            assertThat(exchange.response.getStatus()).isEqualTo(200);
-            assertThat(exchange.response.getEntity().getString()).isEqualTo(JSON_CONTENT);
+            assertThat(response.getStatus()).isEqualTo(200);
+            assertThat(response.getEntity().getString()).isEqualTo(JSON_CONTENT);
         } finally {
             server.stop();
         }
@@ -290,13 +275,11 @@ public class GroovyScriptableFilterTest {
                 "next.handle(exchange)");
         // @formatter:on
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        filter.filter(new Exchange(), request, new ResponseHandler(new Response()));
 
-        verify(handler).handle(exchange);
-        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com/example");
+        assertThat(request.getUri().toString())
+                .isEqualTo("http://www.example.com/example");
     }
 
     @Test
@@ -308,13 +291,16 @@ public class GroovyScriptableFilterTest {
                 "next.handle(exchange)");
         // @formatter:on
 
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        // TODO How to deal with Handler.handle() returning Promise in scripts ?
+        // Maybe we'll have to keep IG's Handler API just for script compatibility until a decision is made
 
-        verify(handler).handle(exchange);
-        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com/example");
+        final Exchange exchange = new Exchange();
+        Request request = new Request();
+        TerminalHandler handler = new TerminalHandler();
+        filter.filter(exchange, request, handler);
+
+        assertThat(handler.request).isSameAs(request);
+        assertThat(handler.request.getUri().toString()).isEqualTo("http://www.example.com/example");
     }
 
     @Test(enabled = true)
@@ -360,7 +346,7 @@ public class GroovyScriptableFilterTest {
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
                     "import org.forgerock.opendj.ldap.*",
-                    "import org.forgerock.openig.http.Response",
+                    "import org.forgerock.http.protocol.Response",
                     "",
                     "username = exchange.request.headers.Username[0]",
                     "password = exchange.request.headers.Password[0]",
@@ -394,22 +380,20 @@ public class GroovyScriptableFilterTest {
             // @formatter:on
 
             // Authenticate using correct password.
-            final Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.getHeaders().add("Username", "bjensen");
-            exchange.request.getHeaders().add("Password", "password");
-            final Handler handler = mock(Handler.class);
-            filter.filter(exchange, handler);
-            assertThat(exchange.response.getStatus()).as(exchange.response.getReason()).isEqualTo(200);
-            assertThat(exchange.response.getReason()).isEqualTo("test user");
+            Request authorizedRequest = new Request();
+            authorizedRequest.getHeaders().add("Username", "bjensen");
+            authorizedRequest.getHeaders().add("Password", "password");
+            Response response = filter.filter(new Exchange(), authorizedRequest, null).get();
+            assertThat(response.getStatus()).as(response.getReason()).isEqualTo(200);
+            assertThat(response.getReason()).isEqualTo("test user");
 
             // Authenticate using wrong password.
-            exchange.request = new Request();
-            exchange.request.getHeaders().add("Username", "bjensen");
-            exchange.request.getHeaders().add("Password", "wrong");
-            filter.filter(exchange, handler);
-            assertThat(exchange.response.getStatus()).isEqualTo(403);
-            assertThat(exchange.response.getReason()).isNotNull();
+            Request request = new Request();
+            request.getHeaders().add("Username", "bjensen");
+            request.getHeaders().add("Password", "wrong");
+            Response response1 = filter.filter(new Exchange(), request, null).get();
+            assertThat(response1.getStatus()).isEqualTo(403);
+            assertThat(response1.getReason()).isNotNull();
         } finally {
             listener.close();
         }
@@ -419,7 +403,7 @@ public class GroovyScriptableFilterTest {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void close() throws IOException { }
+        public void save(Response response) throws IOException { }
     }
 
     @Test(enabled = true)
@@ -470,32 +454,32 @@ public class GroovyScriptableFilterTest {
 
             // Authenticate using correct password.
             final Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
+            Request request = new Request();
+            request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
             exchange.put("ldapHost", "localhost");
-            exchange.put("ldapPort", "" + port);
+            exchange.put("ldapPort", String.valueOf(port));
             exchange.session = new SimpleMapSession();
-            final Handler handler = mock(Handler.class);
-            filter.filter(exchange, handler);
+            filter.filter(exchange, request, mock(Handler.class));
+
             Set<String> cnValues = new HashSet<String>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
             assertThat(exchange.get("cn")).isEqualTo(cnValues);
             assertThat(exchange.get("description"))
                     .isEqualTo("New description set by my script");
-            assertThat(exchange.request.getHeaders().get("Ldap-User-Dn").toString())
+            assertThat(request.getHeaders().get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
 
             // Authenticate using wrong password.
-            exchange.request = new Request();
-            exchange.request.setUri(new URI("http://test?username=bjensen&password=wrong"));
+            Request request2 = new Request();
+            request2.setUri(new URI("http://test?username=bjensen&password=wrong"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
-            exchange.request.getHeaders().add("LdapHost", "0.0.0.0");
-            exchange.request.getHeaders().add("LdapPort", "" + port);
-            filter.filter(exchange, handler);
-            assertThat(exchange.response.getStatus()).isEqualTo(403);
-            assertThat(exchange.response.getReason()).isNotNull();
+            request2.getHeaders().add("LdapHost", "0.0.0.0");
+            request2.getHeaders().add("LdapPort", "" + port);
+            Response response = filter.filter(exchange, request2, mock(Handler.class)).get();
+            assertThat(response.getStatus()).isEqualTo(403);
+            assertThat(response.getReason()).isNotNull();
         } finally {
             listener.close();
         }
@@ -514,7 +498,7 @@ public class GroovyScriptableFilterTest {
             jdbcDataSource.setUser("sa");
             jdbcDataSource.setPassword("sa");
 
-            Context context = new InitialContext();
+            InitialContext context = new InitialContext();
             context.bind("jdbc/forgerock", jdbcDataSource);
 
             connection = jdbcDataSource.getConnection();
@@ -547,15 +531,14 @@ public class GroovyScriptableFilterTest {
                             .create(Name.of("test"), new JsonValue(config), getHeap());
 
             final Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setUri(new URI("http://test?mail=bjensen@example.com"));
-            final Handler handler = mock(Handler.class);
-            filter.filter(exchange, handler);
-            assertThat(exchange.request.getHeaders().get("Username").toString())
+            Request request = new Request();
+            request.setUri(new URI("http://test?mail=bjensen@example.com"));
+            filter.filter(exchange, request, mock(Handler.class));
+            assertThat(request.getHeaders().get("Username").toString())
                     .isEqualTo("[bjensen]");
-            assertThat(exchange.request.getHeaders().get("Password").toString())
+            assertThat(request.getHeaders().get("Password").toString())
                     .isEqualTo("[hifalutin]");
-            assertThat(exchange.request.getUri().getScheme()).isEqualTo("https");
+            assertThat(request.getUri().getScheme()).isEqualTo("https");
         } finally {
             try {
                 if (resultSet != null) {
@@ -577,10 +560,8 @@ public class GroovyScriptableFilterTest {
     public void testLogging() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("logger.error('test')");
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
         filter.logger = mock(Logger.class);
-        filter.filter(exchange, handler);
+        filter.filter(exchange, new Request(), mock(Handler.class));
         verify(filter.logger).error("test");
     }
 
@@ -588,21 +569,16 @@ public class GroovyScriptableFilterTest {
     public void testNextHandlerCanBeInvoked() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("next.handle(exchange)");
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
         final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        verify(handler).handle(exchange);
+        filter.filter(exchange, request, handler);
+        verify(handler).handle(exchange, request);
     }
 
-    @Test(expectedExceptions = HandlerException.class)
+    @Test(expectedExceptions = ResponseException.class)
     public void testNextHandlerCanThrowHandlerException() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("next.handle(exchange)");
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        doThrow(new HandlerException()).when(handler).handle(exchange);
-
-        filter.filter(exchange, handler);
+        filter.filter(new Exchange(), null, new FailureHandler(new ResponseException(404))).getOrThrow();
     }
 
     @Test
@@ -613,14 +589,10 @@ public class GroovyScriptableFilterTest {
                 "next.handle(exchange)",
                 "assert exchange.response != null");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
         final Response expectedResponse = new Response();
-        final Handler handler = mock(Handler.class);
-        returnResponse(expectedResponse).when(handler).handle(exchange);
-        filter.filter(exchange, handler);
-        verify(handler).handle(exchange);
-        assertThat(exchange.response).isSameAs(expectedResponse);
+        final Handler handler = new ResponseHandler(expectedResponse);
+        Response response = filter.filter(new Exchange(), new Request(), handler).get();
+        assertThat(response).isSameAs(expectedResponse);
     }
 
     @Test(enabled = true)
@@ -631,11 +603,9 @@ public class GroovyScriptableFilterTest {
                 "assert exchange.request.entity.json.person.lastName == 'Yates'",
                 "assert exchange.request.entity.json.person.address.country == 'UK'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity(JSON_CONTENT);
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        request.setEntity(JSON_CONTENT);
+        filter.filter(new Exchange(), request, null).getOrThrow();
     }
 
     @Test(enabled = false)
@@ -644,11 +614,9 @@ public class GroovyScriptableFilterTest {
         final ScriptableFilter filter = newGroovyFilter(
                 "assert exchange.request.entity.xml.root.a"); // TODO
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity(XML_CONTENT);
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        request.setEntity(XML_CONTENT);
+        filter.filter(new Exchange(), request, null).getOrThrow();
     }
 
     @Test
@@ -657,11 +625,9 @@ public class GroovyScriptableFilterTest {
         final ScriptableFilter filter = newGroovyFilter(
                 "assert exchange.request.cookies.username[0].value == 'test'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.getHeaders().add("Cookie", "username=test;Path=/");
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        request.getHeaders().add("Cookie", "username=test;Path=/");
+        filter.filter(new Exchange(), request, null).getOrThrow();
     }
 
     @Test
@@ -670,11 +636,10 @@ public class GroovyScriptableFilterTest {
         final ScriptableFilter filter = newGroovyFilter(
                 "assert exchange.request.form.username[0] == 'test'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://test?username=test"));
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        request.setUri(new URI("http://test?username=test"));
+        filter.filter(new Exchange(), request, null).getOrThrow();
+
     }
 
     @Test
@@ -685,13 +650,12 @@ public class GroovyScriptableFilterTest {
                 "exchange.request.headers.Test = [ 'test' ]",
                 "assert exchange.request.headers.remove('Username')");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.getHeaders().add("Username", "test");
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        assertThat(exchange.request.getHeaders().get("Test")).containsOnly("test");
-        assertThat(exchange.request.getHeaders().get("Username")).isNull();
+        Request request = new Request();
+        request.getHeaders().add("Username", "test");
+        filter.filter(new Exchange(), request, null).getOrThrow();
+
+        assertThat(request.getHeaders().get("Test")).containsOnly("test");
+        assertThat(request.getHeaders().get("Username")).isNull();
     }
 
     @Test
@@ -704,11 +668,9 @@ public class GroovyScriptableFilterTest {
                 "assert exchange.request.uri.path == '/users'",
                 "assert exchange.request.uri.query == 'action=create'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://example.com:8080/users?action=create"));
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        request.setUri(new URI("http://example.com:8080/users?action=create"));
+        filter.filter(new Exchange(), request, null).getOrThrow();
     }
 
     @Test
@@ -722,31 +684,25 @@ public class GroovyScriptableFilterTest {
 
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.http.*",
-                "import org.forgerock.openig.io.*",
+                "import org.forgerock.http.protocol.*",
                 "exchange.response = new Response()",
                 "exchange.response.status = 200",
-                "exchange.response.entity = new ByteArrayBranchingStream('hello world'.getBytes())");
+                "exchange.response.entity = 'hello world'");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        Request request = new Request();
+        Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
-        assertThat(exchange.response.getEntity().getString()).isEqualTo("hello world");
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getEntity().getString()).isEqualTo("hello world");
     }
 
     @Test(expectedExceptions = ScriptException.class)
     public void testRunTimeFailure() throws Throwable {
         final ScriptableFilter filter = newGroovyFilter("dummy + 1");
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
         try {
-            filter.filter(exchange, handler);
+            filter.filter(new Exchange(), null, null).getOrThrow();
             fail("Script exception expected");
-        } catch (final HandlerException e) {
+        } catch (final ResponseException e) {
             throw e.getCause();
         }
     }
@@ -763,8 +719,7 @@ public class GroovyScriptableFilterTest {
         exchange.session = mock(Session.class);
         when(exchange.session.get("inKey")).thenReturn("inValue");
         when(exchange.session.remove("inKey")).thenReturn(true);
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
+        filter.filter(exchange, null, null);
         verify(exchange.session).get("inKey");
         verify(exchange.session).put("outKey", "outValue");
         verify(exchange.session).remove("inKey");
@@ -775,30 +730,33 @@ public class GroovyScriptableFilterTest {
     public void testSetResponse() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.http.Response",
+                "import org.forgerock.http.protocol.Response",
                 "exchange.response = new Response()",
                 "exchange.response.status = 404");
         // @formatter:on
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        assertThat(exchange.response).isNotNull();
-        assertThat(exchange.response.getStatus()).isEqualTo(404);
+        Response response = filter.filter(exchange, null, null).getOrThrow();
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(404);
     }
 
     @Test(expectedExceptions = HandlerException.class, expectedExceptionsMessageRegExp = "test")
-    public void testThrowHandlerException() throws Exception {
+    public void testThrowHandlerException() throws Throwable {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
                 "import org.forgerock.openig.handler.HandlerException",
-                "throw new HandlerException(\"test\")");
+                "throw new HandlerException('test')");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
 
-        filter.filter(exchange, handler);
+        try {
+            filter.filter(new Exchange(), null, null).getOrThrow();
+        } catch (ResponseException e) {
+            // CHF API throws ResponseException where IG API is all about HandlerException
+            // As I seek compatibility for the moment, I've kept HandlerException as-is in the scripts
+            // double getCause() because of the following wrapping:
+            // ResponseException > ScriptException > HandlerException
+            throw e.getCause().getCause();
+        }
     }
 
     @Test(enabled = false)
@@ -816,11 +774,9 @@ public class GroovyScriptableFilterTest {
                     "}",
                 "}");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        assertThat(exchange.request.getEntity().getString()).isEqualTo(JSON_CONTENT);
+        Request request = new Request();
+        filter.filter(new Exchange(), request, null);
+        assertThat(request.getEntity().getString()).isEqualTo(JSON_CONTENT);
     }
 
     @Test(enabled = false)
@@ -834,11 +790,9 @@ public class GroovyScriptableFilterTest {
                 "}",
                 "}");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        final Handler handler = mock(Handler.class);
-        filter.filter(exchange, handler);
-        assertThat(exchange.request.getEntity().getString()).isEqualTo(XML_CONTENT);
+        Request request = new Request();
+        filter.filter(new Exchange(), request, null);
+        assertThat(request.getEntity().getString()).isEqualTo(XML_CONTENT);
     }
 
     private HeapImpl getHeap() throws Exception {
@@ -846,7 +800,7 @@ public class GroovyScriptableFilterTest {
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new TemporaryStorage()));
+        heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient());
         return heap;
     }
 
@@ -964,15 +918,13 @@ public class GroovyScriptableFilterTest {
         return new ScriptableFilter(script);
     }
 
-    private static Stubber returnResponse(final Response response) {
-        return doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(final InvocationOnMock invocation) {
-                final Object[] args = invocation.getArguments();
-                ((Exchange) args[0]).response = response;
-                return null;
-            }
-        });
+    private static class TerminalHandler implements Handler {
+        Request request;
+        @Override
+        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+            this.request = request;
+            return Promises.newSuccessfulPromise(new Response());
+        }
     }
 
 }

@@ -11,43 +11,41 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.doc;
 
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.filter.Chain;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
 
 @SuppressWarnings("javadoc")
 public class SampleFilterTest {
 
     @Test
-    public void onRequest() throws IOException, HandlerException {
+    public void onRequest() throws Exception {
         SampleFilter filter = new SampleFilter();
         filter.name  = "X-Greeting";
         filter.value = "Hello world";
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        Request request = new Request();
 
-        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
-        Chain chain = new Chain(handler);
-        chain.getFilters().add(filter);
+        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList((Filter) filter));
 
-        chain.handle(exchange);
+        Response response = chain.handle(exchange, request).get();
 
-        assertThat(exchange.request.getHeaders().get(filter.name))
+        assertThat(request.getHeaders().get(filter.name))
                 .containsOnly("Hello world");
-        assertThat(exchange.response.getHeaders().get(filter.name))
+        assertThat(response.getHeaders().get(filter.name))
                 .containsOnly("Hello world");
     }
 }

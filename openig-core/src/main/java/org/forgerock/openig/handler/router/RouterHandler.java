@@ -21,7 +21,6 @@ import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.util.JsonValues.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,14 +30,19 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -62,7 +66,7 @@ import org.forgerock.util.time.TimeService;
  *
  * @since 2.2
  */
-public class RouterHandler extends GenericHandler implements FileChangeListener {
+public class RouterHandler extends GenericHeapObject implements FileChangeListener, Handler {
 
     /**
      * Toolkit to load Routes from monitored files.
@@ -239,24 +243,23 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
     }
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         // Run the directory scanner
         directoryScanner.scan(this);
 
         // Traverse the routes
         read.lock();
         try {
+            Exchange exchange = context.asContext(Exchange.class);
             for (Route route : sorted) {
                 if (route.accept(exchange)) {
-                    route.handle(exchange);
-                    return;
+                    return route.handle(context, request);
                 }
             }
             if (defaultHandler != null) {
-                defaultHandler.handle(exchange);
-                return;
+                return defaultHandler.handle(context, request);
             }
-            throw new HandlerException("no handler to dispatch to");
+            return Promises.newFailedPromise(new ResponseException("no handler to dispatch to"));
         } finally {
             read.unlock();
         }
@@ -296,7 +299,8 @@ public class RouterHandler extends GenericHandler implements FileChangeListener 
 
             RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap, qualified), scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
-                                                     Handler.class, true));
+                                                   Handler.class,
+                                                   true));
             return handler;
         }
 

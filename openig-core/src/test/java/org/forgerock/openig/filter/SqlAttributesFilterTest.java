@@ -30,9 +30,14 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -66,6 +71,8 @@ public class SqlAttributesFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
     }
 
     @Test
@@ -76,10 +83,8 @@ public class SqlAttributesFilterTest {
         mockDatabaseInteractions();
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
-        // Verify the terminal handler has been called
-        verify(terminalHandler).handle(exchange);
         // The expression has stored the Map result as an entry in the Exchange's backing map
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) exchange.get("result");
@@ -98,7 +103,7 @@ public class SqlAttributesFilterTest {
         when(pmetadata.getParameterCount()).thenReturn(2);
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
         exchange.get("result").hashCode();
@@ -119,7 +124,7 @@ public class SqlAttributesFilterTest {
         when(source.getConnection()).thenThrow(new SQLException("Unexpected"));
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
         // There should be a 'result' entry that is an empty map
         // And the logger should have been invoked with the caught exception
@@ -142,7 +147,7 @@ public class SqlAttributesFilterTest {
         when(pmetadata.getParameterCount()).thenReturn(0);
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
         exchange.get("result").hashCode();
@@ -162,7 +167,7 @@ public class SqlAttributesFilterTest {
         when(pmetadata.getParameterCount()).thenReturn(3);
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
         exchange.get("result").hashCode();

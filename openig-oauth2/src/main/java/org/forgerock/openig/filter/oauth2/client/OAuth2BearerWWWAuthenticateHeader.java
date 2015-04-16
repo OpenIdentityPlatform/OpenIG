@@ -16,8 +16,10 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import org.forgerock.openig.header.Header;
-import org.forgerock.openig.http.Message;
+import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
+
+import org.forgerock.http.protocol.Header;
+import org.forgerock.http.protocol.Message;
 
 /**
  * Processes the OAuth 2.0 Bearer <strong>{@code WWW-Authenticate}</strong>
@@ -30,70 +32,57 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
     public static final String NAME = "WWW-Authenticate";
 
     /** The possibly null OAuth 2.0 error. */
-    private OAuth2Error error;
+    private final OAuth2Error error;
 
     /**
      * Constructs a new empty header.
      */
     public OAuth2BearerWWWAuthenticateHeader() {
+        this(null);
+    }
+
+    /**
+     * Constructs a new header with the provided error.
+     *
+     * @param error
+     *            The possibly null OAuth 2.0 error.
+     */
+    public OAuth2BearerWWWAuthenticateHeader(OAuth2Error error) {
+        this.error = error;
     }
 
     /**
      * Constructs a new header, initialized from the specified message.
      *
      * @param message
-     *            the message to initialize the header from.
+     *            The message to initialize the header from.
+     * @return The parsed header.
      */
-    public OAuth2BearerWWWAuthenticateHeader(final Message<?> message) {
-        fromMessage(message);
+    public static OAuth2BearerWWWAuthenticateHeader valueOf(final Message message) {
+        return valueOf(parseSingleValuedHeader(message, NAME));
     }
 
     /**
      * Constructs a new header, initialized from the specified string value.
      *
      * @param string
-     *            the value to initialize the header from.
+     *            The value to initialize the header from.
+     * @return The parsed header.
      */
-    public OAuth2BearerWWWAuthenticateHeader(final String string) {
-        fromString(string);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (o == this) {
-            return true;
-        } else if (o instanceof OAuth2BearerWWWAuthenticateHeader) {
-            final OAuth2BearerWWWAuthenticateHeader other = (OAuth2BearerWWWAuthenticateHeader) o;
-            if (error == null) {
-                return other.error == null;
-            }
-            return error.equals(((OAuth2BearerWWWAuthenticateHeader) o).error);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public void fromMessage(final Message<?> message) {
-        if (message != null && message.getHeaders() != null) {
-            fromString(message.getHeaders().getFirst(NAME));
-        }
-    }
-
-    @Override
-    public void fromString(final String string) {
-        error = null;
+    public static OAuth2BearerWWWAuthenticateHeader valueOf(final String string) {
         if (string != null) {
             try {
-                error = OAuth2Error.valueOfWWWAuthenticateHeader(string);
+                return new OAuth2BearerWWWAuthenticateHeader(OAuth2Error
+                        .valueOfWWWAuthenticateHeader(string));
             } catch (final IllegalArgumentException e) {
                 // Ignore parsing errors - just reset the header.
             }
         }
+        return new OAuth2BearerWWWAuthenticateHeader();
     }
 
     @Override
-    public String getKey() {
+    public String getName() {
         return NAME;
     }
 
@@ -104,19 +93,6 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
      */
     public OAuth2Error getOAuth2Error() {
         return error;
-    }
-
-    @Override
-    public int hashCode() {
-        return error != null ? error.hashCode() : 0;
-    }
-
-    @Override
-    public void toMessage(final Message<?> message) {
-        final String value = toString();
-        if (value != null) {
-            message.getHeaders().putSingle(NAME, value);
-        }
     }
 
     @Override

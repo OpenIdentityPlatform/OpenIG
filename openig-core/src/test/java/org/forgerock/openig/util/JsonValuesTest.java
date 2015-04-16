@@ -21,9 +21,9 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.http.Handler;
 import org.forgerock.json.fluent.JsonException;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.log.Logger;
 import org.hamcrest.BaseMatcher;

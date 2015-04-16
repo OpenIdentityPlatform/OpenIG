@@ -17,24 +17,23 @@
 package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.*;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.testng.annotations.Test;
 
 import java.util.Map;
+
+import org.forgerock.http.protocol.Response;
+import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class DesKeyGenHandlerTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void getGeneratedKey() throws Exception {
         final DesKeyGenHandler handler = new DesKeyGenHandler();
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
-        assertThat(exchange.response.getReason()).isEqualTo("OK");
-        assertThat((Map<String, Object>) exchange.response.getEntity().getJson()).containsKey("key");
-        exchange.response.close();
+        Response response = handler.handle(null, null).get();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getReason()).isEqualTo("OK");
+        assertThat((Map<String, Object>) response.getEntity().getJson()).containsKey("key");
+        response.close();
     }
 }

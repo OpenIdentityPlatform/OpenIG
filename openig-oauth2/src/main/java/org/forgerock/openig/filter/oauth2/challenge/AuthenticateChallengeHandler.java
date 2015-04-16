@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.challenge;
@@ -19,12 +19,13 @@ package org.forgerock.openig.filter.oauth2.challenge;
 import static java.lang.String.*;
 import static org.forgerock.util.Reject.*;
 
-import java.io.IOException;
-
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * This handler build an authentication challenge to be returned in the {@link Response} {@literal Authorization} HTTP
@@ -67,15 +68,16 @@ public abstract class AuthenticateChallengeHandler implements Handler {
     }
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-        exchange.response = createResponse();
-        exchange.response.getHeaders().putSingle(WWW_AUTHENTICATE,
-                                            format("Bearer %s", buildChallenge()));
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        Response response = createResponse();
+        response.getHeaders().putSingle(WWW_AUTHENTICATE,
+                                        format("Bearer %s", buildChallenge()));
+        return Promises.newSuccessfulPromise(response);
     }
 
     /**
      * Creates a {@link Response} with the appropriate status code and reason. This method is called each time the
-     * {@link #handle(Exchange)} method is invoked.
+     * {@link #handle(Context, Request)} method is invoked.
      *
      * @return a new initialized {@link Response} instance
      */

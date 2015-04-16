@@ -11,24 +11,23 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
-import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
-import static com.xebialabs.restito.semantics.Action.status;
+import static com.xebialabs.restito.builder.stub.StubHttp.*;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.*;
+import static com.xebialabs.restito.semantics.Action.*;
 import static com.xebialabs.restito.semantics.Condition.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.Test;
@@ -43,22 +42,21 @@ public class ClientHandlerTest {
         final int port = server.getPort();
         whenHttp(server).match(alwaysTrue()).then(status(HttpStatus.OK_200));
         try {
-            final Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("POST");
-            exchange.request.setUri("http://0.0.0.0:" + port + "/example");
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri("http://0.0.0.0:" + port + "/example");
 
             final Map<String, Object> json = new LinkedHashMap<String, Object>();
             json.put("k1", "v1");
             json.put("k2", "v2");
-            exchange.request.setEntity(json);
+            request.setEntity(json);
 
-            final ClientHandler handler = new ClientHandler(new HttpClient(new TemporaryStorage()));
-            handler.handle(exchange);
+            final ClientHandler handler = new ClientHandler(new HttpClient());
+            Response response = handler.handle(null, request).get();
 
-            assertThat(exchange.response.getStatus()).isEqualTo(200);
+            assertThat(response.getStatus()).isEqualTo(200);
             verifyHttp(server).once(method(Method.POST), uri("/example"),
-                    withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
+                                    withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
         } finally {
             server.stop();
         }

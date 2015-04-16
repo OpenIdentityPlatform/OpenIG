@@ -18,10 +18,10 @@ package org.forgerock.openig.filter.oauth2;
 
 import static org.mockito.Mockito.*;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -46,19 +46,19 @@ public class EnforcerFilterTest {
     public void shouldDelegateToTheRealFilter() throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}", Boolean.class), delegate);
         Exchange exchange = new Exchange();
-        enforcer.filter(exchange, handler);
-        verify(delegate).filter(exchange, handler);
+        enforcer.filter(exchange, null, handler);
+        verify(delegate).filter(exchange, null, handler);
     }
 
-    @Test(expectedExceptions = HandlerException.class)
+    @Test(expectedExceptions = ResponseException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsNotVerified() throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${false}", Boolean.class), delegate);
-        enforcer.filter(new Exchange(), handler);
+        enforcer.filter(new Exchange(), null, handler).getOrThrow();
     }
 
-    @Test(expectedExceptions = HandlerException.class)
+    @Test(expectedExceptions = ResponseException.class)
     public void shouldThrowAHandlerExceptionBecauseConditionIsInvalid() throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("not a condition", Boolean.class), delegate);
-        enforcer.filter(new Exchange(), handler);
+        enforcer.filter(new Exchange(), null, handler).getOrThrow();
     }
 }
