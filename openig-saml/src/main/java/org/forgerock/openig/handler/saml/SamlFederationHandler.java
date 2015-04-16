@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.handler.saml;
 
@@ -31,18 +31,23 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.Session;
+import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.header.LocationHeader;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.http.Session;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 import com.sun.identity.common.ShutdownManager;
 import com.sun.identity.plugin.session.SessionException;
@@ -65,10 +70,15 @@ import com.sun.identity.saml2.servlet.SPSingleLogoutServiceSOAP;
 /**
  * The SAML federation handler.
  */
-public class SamlFederationHandler extends GenericHandler {
+public class SamlFederationHandler extends GenericHeapObject implements Handler {
 
     /** Default Realm is always / in this case. */
     private static final String DEFAULT_REALM = "/";
+
+    /**
+     * Marker for already-completed CHF Response (response filled through Servlet API).
+     */
+    private static final Response RESPONSE_ALREADY_COMPLETED = null;
 
     /** The attribute mapping. */
     private final Map<String, String> attributeMapping;
@@ -158,31 +168,41 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
-        HttpServletRequest request = adaptRequest(exchange);
-        HttpServletResponse response = adaptResponse(exchange);
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        Exchange exchange = context.asContext(Exchange.class);
+        HttpServletRequest servletRequest = adaptRequest(exchange);
+        HttpServletResponse servletResponse = adaptResponse(exchange);
+
+        Session session = context.asContext(HttpContext.class).getSession();
         try {
-            String path = exchange.request.getUri().getPath();
+            String path = request.getUri().getPath();
             if (path.indexOf(assertionConsumerEndpoint) > 0) {
-                serviceAssertionConsumer(exchange, request, response);
+                return complete(serviceAssertionConsumer(session, servletRequest, servletResponse));
             } else if (path.indexOf(sPinitiatedSSOEndpoint) > 0) {
-                serviceSPInitiatedSSO(exchange, request, response);
+                return complete(serviceSPInitiatedSSO(request, servletRequest, servletResponse));
             } else if (path.indexOf(sPinitiatedSLOEndpoint) > 0) {
-                serviceSPInitiatedSLO(exchange, request, response);
+                return complete(serviceSPInitiatedSLO(request, session, servletRequest, servletResponse));
             } else if (path.indexOf(singleLogoutEndpointSoap) > 0) {
-                serviceIDPInitiatedSLOSOAP(request, response);
+                return complete(serviceIDPInitiatedSLOSOAP(servletRequest, servletResponse));
             } else if (path.indexOf(singleLogoutEndpoint) > 0) {
-                serviceIDPInitiatedSLO(exchange, request, response);
+                return complete(serviceIDPInitiatedSLO(request, session, servletRequest, servletResponse));
             } else {
-                logger.warning(format("FederationServlet warning: URI not in service %s", exchange.request.getUri()));
+                logger.warning(format("FederationServlet warning: URI not in service %s", request.getUri()));
+                return complete(RESPONSE_ALREADY_COMPLETED);
             }
+        } catch (IOException ioe) {
+            return complete(withError(servletResponse, ioe.getMessage()));
         } catch (ServletException se) {
-            errorResponse(exchange, response, se.getMessage());
+            return complete(withError(servletResponse, se.getMessage()));
         } catch (SAML2Exception sme) {
-            errorResponse(exchange, response, sme.getMessage());
+            return complete(withError(servletResponse, sme.getMessage()));
         } catch (SessionException se) {
-            errorResponse(exchange, response, se.getMessage());
+            return complete(withError(servletResponse, se.getMessage()));
         }
+    }
+
+    private static Promise<Response, ResponseException> complete(Response response) {
+        return Promises.newSuccessfulPromise(response);
     }
 
     /**
@@ -191,14 +211,14 @@ public class SamlFederationHandler extends GenericHandler {
      * The assertion is validated, attributes are retrieved from and set in the HttpSession where downstream filters
      * can access them and pass them on to the target application.
      */
-    private void serviceAssertionConsumer(Exchange exchange,
-                                          HttpServletRequest request,
-                                          HttpServletResponse response) throws IOException,
-                                                                               ServletException,
-                                                                               SAML2Exception,
-                                                                               SessionException {
+    private Response serviceAssertionConsumer(Session session,
+                                              HttpServletRequest request,
+                                              HttpServletResponse response) throws IOException,
+                                                                                   ServletException,
+                                                                                   SAML2Exception,
+                                                                                   SessionException {
         Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
-        addAttributesToSession(exchange.session, map);
+        addAttributesToSession(session, map);
         /*
          * Redirect back to the original target application's login page and let the filters take over. If the relayURI
          * is set in the assertion we must use that, otherwise we will use the configured value, which should be the
@@ -206,7 +226,7 @@ public class SamlFederationHandler extends GenericHandler {
          */
         String relayURI = (String) map.get(SAML2Constants.RELAY_STATE);
         String uri = isRelayURIProvided(relayURI) ? relayURI : redirectURI;
-        sendRedirect(exchange, uri);
+        return sendRedirect(uri);
     }
 
     private boolean isRelayURIProvided(String relayURI) {
@@ -277,10 +297,10 @@ public class SamlFederationHandler extends GenericHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private static void serviceSPInitiatedSSO(Exchange exchange,
-                                              HttpServletRequest request,
-                                              HttpServletResponse response) throws SAML2Exception {
-        Form form = exchange.request.getForm();
+    private static Response serviceSPInitiatedSSO(Request request,
+                                              HttpServletRequest servletRequest,
+                                              HttpServletResponse servletResponse) throws SAML2Exception {
+        Form form = request.getForm();
         String metaAlias = form.getFirst(SAML2Constants.METAALIAS);
         if (metaAlias == null || metaAlias.length() == 0) {
             SAML2MetaManager manager = new SAML2MetaManager();
@@ -291,7 +311,7 @@ public class SamlFederationHandler extends GenericHandler {
             }
         }
         String idpEntityID = form.getFirst(SAML2Constants.IDPENTITYID);
-        Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(request);
+        Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(servletRequest);
         List<String> list = new ArrayList<String>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
@@ -315,7 +335,8 @@ public class SamlFederationHandler extends GenericHandler {
         if (metaAlias == null || idpEntityID == null) {
             throw new SAML2Exception("No metadata for SP or IDP");
         }
-        SPSSOFederate.initiateAuthnRequest(request, response, metaAlias, idpEntityID, paramsMap);
+        SPSSOFederate.initiateAuthnRequest(servletRequest, servletResponse, metaAlias, idpEntityID, paramsMap);
+        return RESPONSE_ALREADY_COMPLETED;
     }
 
     /**
@@ -333,11 +354,12 @@ public class SamlFederationHandler extends GenericHandler {
      * </ul>
      */
     @SuppressWarnings("unchecked")
-    private void serviceSPInitiatedSLO(Exchange exchange, HttpServletRequest request, HttpServletResponse response)
+    private Response serviceSPInitiatedSLO(Request request, Session session,
+                                           HttpServletRequest servletRequest,
+                                           HttpServletResponse servletResponse)
             throws IOException, SAML2Exception {
         logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
 
-        Session session = exchange.session;
         // Retrieve these values from the session, if they do not exist then the session has expired
         // or this is being called before we have authenticated to the IDP
         String nameID = (String) session.get(subjectMapping);
@@ -346,7 +368,7 @@ public class SamlFederationHandler extends GenericHandler {
             throw new SAML2Exception(SAML2Utils.bundle.getString("nullNameID"));
         }
 
-        Form form = exchange.request.getForm();
+        Form form = request.getForm();
         SAML2MetaManager manager = new SAML2MetaManager();
         String relayState = form.getFirst(SAML2Constants.RELAY_STATE);
         String spEntityID = form.getFirst(SAML2Constants.SPENTITYID);
@@ -389,7 +411,7 @@ public class SamlFederationHandler extends GenericHandler {
 
         // If the binding has not been specified then look up the IDP's default binding.
         if (binding == null) {
-            binding = LogoutUtil.getSLOBindingInfo(request, metaAlias, SAML2Constants.SP_ROLE, idpEntityID);
+            binding = LogoutUtil.getSLOBindingInfo(servletRequest, metaAlias, SAML2Constants.SP_ROLE, idpEntityID);
         }
 
         if (!SAML2Utils.isSPProfileBindingSupported(DEFAULT_REALM, spEntityID, SAML2Constants.SLO_SERVICE, binding)) {
@@ -421,50 +443,56 @@ public class SamlFederationHandler extends GenericHandler {
 
         logger.debug(format("FederationServlet.serviceSPInitiatedSLO relayState: %s", relayState));
 
-        SPSingleLogout.initiateLogoutRequest(request, response, binding, paramsMap);
+        SPSingleLogout.initiateLogoutRequest(servletRequest, servletResponse, binding, paramsMap);
 
         if (SAML2Constants.SOAP.equalsIgnoreCase(binding)) {
-            sendRedirect(exchange, relayState);
+            return sendRedirect(relayState);
         }
+
+        return RESPONSE_ALREADY_COMPLETED;
     }
 
-    private void serviceIDPInitiatedSLO(final Exchange exchange,
-                                        HttpServletRequest request,
-                                        HttpServletResponse response)
+    private Response serviceIDPInitiatedSLO(final Request request,
+                                            final Session session,
+                                            HttpServletRequest servletRequest,
+                                            HttpServletResponse servletResponse)
             throws SAML2Exception, SessionException, IOException {
         logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
 
-        String relayState = getLogoutRelayState(exchange.request);
+        String relayState = getLogoutRelayState(request);
         logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState : %s", relayState));
 
-        Form form = exchange.request.getForm();
+        Form form = request.getForm();
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = form.getFirst(SAML2Constants.SAML_REQUEST);
         if (samlRequest != null) {
             logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP request");
-            SPSingleLogout.processLogoutRequest(request, response, samlRequest, relayState);
+            SPSingleLogout.processLogoutRequest(servletRequest, servletResponse, samlRequest, relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
             String samlResponse = form.getFirst(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
                 logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP response");
-                SPSingleLogout.processLogoutResponse(request, response, samlResponse, relayState);
+                SPSingleLogout.processLogoutResponse(servletRequest, servletResponse, samlResponse, relayState);
                 if (relayState != null) {
-                    sendRedirect(exchange, relayState);
+                    return sendRedirect(relayState);
                 }
             }
         }
 
-        cleanSession(exchange.session);
+        cleanSession(session);
+        return RESPONSE_ALREADY_COMPLETED;
     }
 
-    private void serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
+    private Response serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         logger.debug("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
 
         SPSingleLogoutServiceSOAP spSingleLogoutServiceSOAP = new SPSingleLogoutServiceSOAP();
         spSingleLogoutServiceSOAP.doPost(request, response);
+
+        return RESPONSE_ALREADY_COMPLETED;
     }
 
     private String getLogoutRelayState(Request request) {
@@ -502,28 +530,30 @@ public class SamlFederationHandler extends GenericHandler {
         }
     }
 
-    private void errorResponse(Exchange exchange, HttpServletResponse response, String message) throws IOException {
+    private Response withError(HttpServletResponse response, String message) {
         final String msg = format("SSO Failed: %s", message);
-        if (!response.isCommitted()) {
-            sendError(exchange, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
-        }
         logger.error(msg);
+        if (!response.isCommitted()) {
+            return sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+        }
+        return null;
     }
 
-    private static void sendError(Exchange exchange, int status, String message) {
-        exchange.response = new Response();
-        exchange.response.setStatus(status);
-        exchange.response.getEntity().setString(message);
+    private static Response sendError(int status, String message) {
+        Response response = new Response();
+        response.setStatus(status);
+        response.getEntity().setString(message);
+        return response;
     }
 
-    private static void sendRedirect(Exchange exchange, String redirectUri) {
-        exchange.response = new Response();
+    private static Response sendRedirect(String redirectUri) {
+        Response response = new Response();
         // Redirect with a 302 (Found) status code
-        exchange.response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setStatus(HttpServletResponse.SC_FOUND);
         // Web container was rebasing location header against server URL
         // Not useful if relayState is already (and always) an absolute URL
-        LocationHeader header = new LocationHeader(redirectUri);
-        header.toMessage(exchange.response);
+        response.getHeaders().putSingle(LocationHeader.NAME, redirectUri);
+        return response;
     }
 
     private static HttpServletResponse adaptResponse(Exchange exchange) {

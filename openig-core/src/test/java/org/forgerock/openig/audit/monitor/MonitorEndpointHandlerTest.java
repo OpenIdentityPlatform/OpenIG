@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.monitor;
@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.Tag;
@@ -52,10 +53,9 @@ public class MonitorEndpointHandlerTest {
         MonitorEndpointHandler monitor = new MonitorEndpointHandler();
         monitor.onAuditEvent(buildAuditEvent(tag));
 
-        Exchange exchange = new Exchange();
-        monitor.handle(exchange);
+        Response response = monitor.handle(null, null).get();
 
-        assertThat(getJsonObject(exchange)).isEmpty();
+        assertThat(getJsonObject(response)).isEmpty();
     }
 
     @Test
@@ -63,10 +63,9 @@ public class MonitorEndpointHandlerTest {
         MonitorEndpointHandler monitor = new MonitorEndpointHandler();
         monitor.onAuditEvent(buildAuditEvent("my-tag", "response", "completed"));
 
-        Exchange exchange = new Exchange();
-        monitor.handle(exchange);
+        Response response = monitor.handle(null, null).get();
 
-        Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
+        Map<String, AtomicLong> tag = getJsonObject(response).get("my-tag");
         assertThat(tag.get("completed").get()).isEqualTo(1L);
         assertThat(tag.get("internal errors").get()).isEqualTo(0L);
     }
@@ -76,10 +75,9 @@ public class MonitorEndpointHandlerTest {
         MonitorEndpointHandler monitor = new MonitorEndpointHandler();
         monitor.onAuditEvent(buildAuditEvent("my-tag", "response", "exception"));
 
-        Exchange exchange = new Exchange();
-        monitor.handle(exchange);
+        Response response = monitor.handle(null, null).get();
 
-        Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
+        Map<String, AtomicLong> tag = getJsonObject(response).get("my-tag");
         assertThat(tag.get("completed").get()).isEqualTo(0L);
         assertThat(tag.get("internal errors").get()).isEqualTo(1L);
     }
@@ -89,29 +87,27 @@ public class MonitorEndpointHandlerTest {
         MonitorEndpointHandler monitor = new MonitorEndpointHandler();
         monitor.onAuditEvent(buildAuditEvent("my-tag", "request"));
 
-        Exchange exchange = new Exchange();
-        monitor.handle(exchange);
+        Response response1 = monitor.handle(null, null).get();
 
-        Map<String, AtomicLong> tag = getJsonObject(exchange).get("my-tag");
+        Map<String, AtomicLong> tag = getJsonObject(response1).get("my-tag");
         assertThat(tag.get("in progress").get()).isEqualTo(1L);
         assertThat(tag.get("completed").get()).isEqualTo(0L);
         assertThat(tag.get("internal errors").get()).isEqualTo(0L);
 
         monitor.onAuditEvent(buildAuditEvent("my-tag", "response"));
 
-        Exchange exchange2 = new Exchange();
-        monitor.handle(exchange2);
+        Response response2 = monitor.handle(null, null).get();
 
-        Map<String, AtomicLong> tag2 = getJsonObject(exchange2).get("my-tag");
+        Map<String, AtomicLong> tag2 = getJsonObject(response2).get("my-tag");
         assertThat(tag2.get("in progress").get()).isEqualTo(0L);
         assertThat(tag2.get("completed").get()).isEqualTo(0L);
         assertThat(tag2.get("internal errors").get()).isEqualTo(0L);
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Map<String, AtomicLong>> getJsonObject(final Exchange exchange)
+    private static Map<String, Map<String, AtomicLong>> getJsonObject(final Response response)
             throws IOException {
-        return (Map) exchange.response.getEntity().getJson();
+        return (Map) response.getEntity().getJson();
     }
 
     private static AuditEvent buildAuditEvent(final String... tags) {

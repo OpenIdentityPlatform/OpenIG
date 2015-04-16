@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -25,13 +25,16 @@ import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.util.HashMap;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.header.CookieHeader;
-import org.forgerock.openig.http.Cookie;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.http.Session;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.Session;
+import org.forgerock.http.header.CookieHeader;
+import org.forgerock.http.protocol.Cookie;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -42,23 +45,22 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class CookieFilterTest {
 
-    private Exchange exchange;
-
     @Mock
     private Handler terminalHandler;
 
+    private HttpContext context;
     private Session session;
+    private Request request;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://openig.example.org");
+        request = new Request();
+        request.setUri("http://openig.example.org");
 
         session = new SimpleMapSession();
-        exchange.session = session;
+        context = new HttpContext(null, session);
     }
 
 
@@ -73,36 +75,36 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getManaged().add("Test-Managed");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // As the terminal handler is a mock, prepare an empty Response in the exchange
-                exchange.response = new Response();
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
+                        // Expecting to find the managed cookie, not the original one
+                        // CookieFilter produces a single 'Cookie' value
+                        assertThat(request.getHeaders().getFirst("Cookie"))
+                                .contains("Test-Managed=\"Overridden value\"");
 
-                // Expecting to find the managed cookie, not the original one
-                // CookieFilter produces a single 'Cookie' value
-                assertThat(exchange.request.getHeaders().getFirst("Cookie"))
-                        .contains("Test-Managed=\"Overridden value\"");
+                        // request.cookies is not in sync with the message's headers' content
+                        // Cannot assert on request.cookies due to OPENIG-123
+                        // assertFalse(exchange.request.cookies.containsKey("Test-Managed"));
 
-                // request.cookies is not in sync with the message's headers' content
-                // Cannot assert on request.cookies due to OPENIG-123
-                // assertFalse(exchange.request.cookies.containsKey("Test-Managed"));
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        return Promises.newSuccessfulPromise(new Response());
+                    }
+                });
 
         // Prepare the manager with a managed cookie to transmit in place of the original one
         CookieManager manager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         manager.getCookieStore()
-               .add(exchange.request.getUri().asURI(),
+               .add(request.getUri().asURI(),
                     buildCookie("Test-Managed", "Overridden value"));
         session.put(CookieManager.class.getName(), manager);
 
         // Prepare the request with an existing cookie that will be overridden
         appendRequestCookie("Test-Managed", ".example.org");
 
-        assertThat(exchange.request.getCookies().containsKey("Test-Managed")).isTrue();
-        filter.filter(exchange, terminalHandler);
+        assertThat(request.getCookies().containsKey("Test-Managed")).isTrue();
+        filter.filter(context, request, terminalHandler).get();
 
     }
 
@@ -116,23 +118,23 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getManaged().add("Test-Managed");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // As the terminal handler is a mock, prepare an empty Response in the exchange
-                exchange.response = new Response();
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                // As the cookie should have been removed, we should not have any Cookie header now
-                assertThat(exchange.request.getHeaders().get("Cookie")).isNull();
+                        // As the cookie should have been removed, we should not have any Cookie header now
+                        assertThat(request.getHeaders().get("Cookie")).isNull();
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        return Promises.newSuccessfulPromise(new Response());
+                    }
+                });
 
         // Prepare the request with an existing cookie that will be overridden
         appendRequestCookie("Test-Managed", ".example.org");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(context, request, terminalHandler).get();
     }
 
     /**
@@ -145,23 +147,23 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getSuppressed().add("Will-Be-Deleted");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // As the terminal handler is a mock, prepare an empty Response in the exchange
-                exchange.response = new Response();
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                // As the cookie should have been removed, we should not have any Cookie header now
-                assertThat(exchange.request.getHeaders().get("Cookie")).isNull();
+                        // As the cookie should have been removed, we should not have any Cookie header now
+                        assertThat(request.getHeaders().get("Cookie")).isNull();
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        return Promises.newSuccessfulPromise(new Response());
+                    }
+                });
 
         // Prepare the request with an existing cookie
         appendRequestCookie("Will-Be-Deleted", ".example.org");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(context, request, terminalHandler).get();
     }
 
     /**
@@ -174,23 +176,23 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getRelayed().add("Will-Be-Relayed");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // As the terminal handler is a mock, prepare an empty Response in the exchange
-                exchange.response = new Response();
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                assertThat(exchange.request.getHeaders().getFirst("Cookie"))
-                        .contains("Will-Be-Relayed=\"Default Value\"");
+                        assertThat(request.getHeaders().getFirst("Cookie"))
+                                .contains("Will-Be-Relayed=\"Default Value\"");
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        return Promises.newSuccessfulPromise(new Response());
+                    }
+                });
 
         // Prepare the request with an existing cookie
         appendRequestCookie("Will-Be-Relayed", ".example.org");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(context, request, terminalHandler).get();
     }
 
     private HttpCookie buildCookie(String name, String value) {
@@ -205,20 +207,22 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getManaged().add("Hidden-Cookie");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // Populate the response with a cookie that should be invisible to client
-                exchange.response = new Response();
-                exchange.response.getHeaders().putSingle("Set-cookie2", "Hidden-Cookie=value");
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        // Populate the response with a cookie that should be invisible to client
+                        Response response = new Response();
+                        response.getHeaders().putSingle("Set-cookie2", "Hidden-Cookie=value");
 
-        filter.filter(exchange, terminalHandler);
+                        return Promises.newSuccessfulPromise(response);
+                    }
+                });
 
-        assertThat(exchange.response.getHeaders().get("Set-cookie2")).isEmpty();
+        Response response = filter.filter(context, request, terminalHandler).get();
+        assertThat(response.getHeaders().get("Set-cookie2")).isEmpty();
     }
 
     @Test
@@ -227,20 +231,22 @@ public class CookieFilterTest {
         CookieFilter filter = new CookieFilter();
         filter.getSuppressed().add("Suppressed-Cookie");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // Populate the response with a cookie that should be invisible to client
-                exchange.response = new Response();
-                exchange.response.getHeaders().putSingle("Set-cookie2", "Suppressed-Cookie=value");
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        // Populate the response with a cookie that should be invisible to client
+                        Response response = new Response();
+                        response.getHeaders().putSingle("Set-cookie2", "Suppressed-Cookie=value");
 
-        filter.filter(exchange, terminalHandler);
+                        return Promises.newSuccessfulPromise(response);
+                    }
+                });
 
-        assertThat(exchange.response.getHeaders().get("Set-cookie2")).isEmpty();
+        Response response = filter.filter(context, request, terminalHandler).get();
+        assertThat(response.getHeaders().get("Set-cookie2")).isEmpty();
     }
 
     /**
@@ -277,49 +283,47 @@ public class CookieFilterTest {
 
         // Step #4
         // Mock the first 'next handler' invocation (returns the cookie)
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                // Populate the response with a cookie that should be invisible to client
-                exchange.response = new Response();
-                exchange.response.getHeaders().putSingle("Set-cookie2", "Managed=value");
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange);
+                        // Populate the response with a cookie that should be invisible to client
+                        Response response = new Response();
+                        response.getHeaders().putSingle("Set-cookie2", "Managed=value");
 
+                        return Promises.newSuccessfulPromise(response);
+                    }
+                });
 
         // First call
-        filter.filter(exchange, terminalHandler);
+        filter.filter(context, request, terminalHandler).get();
 
         // Second call in the same session
 
         // Prepare the mock objects
-        final Exchange exchange2 = new Exchange();
-        exchange2.session = session;
-        exchange2.request = new Request();
-        exchange2.request.setUri("http://openig.example.org");
-        exchange2.response = null;
+        final HttpContext context2 = new HttpContext(null, session);
+        final Request request2 = new Request();
+        request2.setUri("http://openig.example.org");
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
+        when(terminalHandler.handle(context2, request2))
+                .then(new Answer<Promise<Response, ResponseException>>() {
+                    @Override
+                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
 
-                // Ensure the next handler have the cookie
-                String cookie = exchange2.request.getHeaders().getFirst("Cookie");
-                assertThat(cookie).isEqualTo("Managed=value");
+                        // Ensure the next handler have the cookie
+                        String cookie = request2.getHeaders().getFirst("Cookie");
+                        assertThat(cookie).isEqualTo("Managed=value");
 
-                // Prepare a stubbed Response to avoid NPE
-                exchange2.response = new Response();
-                return null;
-            }
-        }).when(terminalHandler).handle(exchange2);
+                        return Promises.newSuccessfulPromise(new Response());
+                    }
+                });
 
         // Perform the call
-        filter.filter(exchange2, terminalHandler);
-
-        assertThat(exchange2.response.getHeaders().get("Set-cookie2")).isNullOrEmpty();
-
+        Response response = filter.filter(context2, request2, terminalHandler).get();
+        assertThat(response.getHeaders().get("Set-cookie2")).isNullOrEmpty();
     }
 
     private void appendRequestCookie(String name, String domain) {
@@ -328,17 +332,17 @@ public class CookieFilterTest {
         cookie.setValue("Default Value");
         cookie.setDomain(domain);
         cookie.setPath("/");
-        CookieHeader header = new CookieHeader(exchange.request);
+        CookieHeader header = CookieHeader.valueOf(request);
         header.getCookies().add(cookie);
 
         // Serialize the newly created Cookie inside the request
-        header.toMessage(exchange.request);
+        request.getHeaders().putSingle(header);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void close() throws IOException { }
+        public void save(Response response) throws IOException { }
     }
 }

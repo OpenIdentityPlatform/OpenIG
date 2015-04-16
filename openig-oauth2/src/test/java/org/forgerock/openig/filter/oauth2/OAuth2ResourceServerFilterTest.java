@@ -25,17 +25,19 @@ import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallenge
 import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.assertj.core.api.Condition;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -94,33 +96,32 @@ public class OAuth2ResourceServerFilterTest {
     public void shouldFailWithUnauthorizedGenericError(final String authorizationValue) throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
-        final Exchange exchange = buildUnAuthorizedExchange();
+        Request request = buildUnAuthorizedRequest();
         if (authorizationValue != null) {
-            exchange.request.getHeaders().putSingle("Authorization", authorizationValue);
+            request.getHeaders().putSingle("Authorization", authorizationValue);
         }
-        filter.filter(exchange, nextHandler);
+        Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(exchange.response.getStatus()).isEqualTo(401);
-        assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
-        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
+        assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .isEqualTo(doubleQuote("Bearer realm='OpenIG'"));
-        verifyZeroInteractions(nextHandler);
     }
 
     @Test
     public void shouldFailBecauseOfMultipleAuthorizationHeaders() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
-        final Exchange exchange = buildUnAuthorizedExchange();
-        exchange.request.getHeaders().add("Authorization", "Bearer 1234");
-        exchange.request.getHeaders().add("Authorization", "Bearer 5678");
-        filter.filter(exchange, nextHandler);
+        Request request = buildUnAuthorizedRequest();
+        request.getHeaders().add("Authorization", "Bearer 1234");
+        request.getHeaders().add("Authorization", "Bearer 5678");
 
-        assertThat(exchange.response.getStatus()).isEqualTo(400);
-        assertThat(exchange.response.getReason()).isEqualTo("Bad Request");
-        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
+        Response response = filter.filter(new Exchange(), request, null).get();
+
+        assertThat(response.getStatus()).isEqualTo(400);
+        assertThat(response.getReason()).isEqualTo("Bad Request");
+        assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_request'"));
-        verifyZeroInteractions(nextHandler);
     }
 
     @Test
@@ -139,40 +140,39 @@ public class OAuth2ResourceServerFilterTest {
 
     private void runAndExpectUnauthorizedInvalidTokenResponse() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
+        Request request = buildAuthorizedRequest();
 
-        final Exchange exchange = buildAuthorizedExchange();
-        filter.filter(exchange, nextHandler);
+        Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(exchange.response.getStatus()).isEqualTo(401);
-        assertThat(exchange.response.getReason()).isEqualTo("Unauthorized");
-        assertThat(exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE))
+        assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_token'"));
-        verifyZeroInteractions(nextHandler);
     }
 
     @Test
     public void shouldFailBecauseOfMissingScopes() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter("a-missing-scope", "another-one");
+        Request request = buildAuthorizedRequest();
 
-        final Exchange exchange = buildAuthorizedExchange();
-        filter.filter(exchange, nextHandler);
+        Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(exchange.response.getStatus()).isEqualTo(403);
-        assertThat(exchange.response.getReason()).isEqualTo("Forbidden");
-        String header = exchange.response.getHeaders().getFirst(WWW_AUTHENTICATE);
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getReason()).isEqualTo("Forbidden");
+        String header = response.getHeaders().getFirst(WWW_AUTHENTICATE);
         assertThat(header).has(scopes("another-one", "a-missing-scope"));
-        verifyZeroInteractions(nextHandler);
     }
 
     @Test
     public void shouldStoreAccessTokenInTheExchange() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
-        final Exchange exchange = buildAuthorizedExchange();
-        filter.filter(exchange, nextHandler);
+        Exchange exchange = new Exchange();
+        Request request = buildAuthorizedRequest();
+        filter.filter(exchange, request, nextHandler);
 
-        assertThat(exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
-        verify(nextHandler).handle(exchange);
+        assertThat((Map<String, Object>) exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
+        verify(nextHandler).handle(exchange, request);
     }
 
     @Test
@@ -182,12 +182,13 @@ public class OAuth2ResourceServerFilterTest {
                 time,
                 Expression.valueOf("${exchange.myToken}", String.class));
 
-        final Exchange exchange = buildAuthorizedExchange();
-        filter.filter(exchange, nextHandler);
+        final Exchange exchange = new Exchange();
+        Request request = buildAuthorizedRequest();
+        filter.filter(exchange, request, nextHandler);
 
-        assertThat(exchange).containsKey("myToken");
+        assertThat((Map<String, Object>) exchange).containsKey("myToken");
         assertThat(exchange.get("myToken")).isInstanceOf(AccessToken.class);
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, request);
     }
 
     @Test
@@ -197,20 +198,21 @@ public class OAuth2ResourceServerFilterTest {
                                           "${split('to,b,or,not,to', ',')[1]}",
                                           "c");
 
-        final Exchange exchange = buildAuthorizedExchange();
+        final Exchange exchange = new Exchange();
         exchange.put("attribute", "a");
-        filter.filter(exchange, nextHandler);
+        Request request = buildAuthorizedRequest();
+        filter.filter(exchange, request, nextHandler);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, request);
     }
 
-    @Test(expectedExceptions = HandlerException.class,
+    @Test(expectedExceptions = ResponseException.class,
           expectedExceptionsMessageRegExp = ".*scope expression \'.*\' could not be resolved")
     public void shouldFailDueToInvalidScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter = buildResourceServerFilter("${bad.attribute}");
 
-        final Exchange exchange = buildAuthorizedExchange();
-        filter.filter(exchange, nextHandler);
+        Request request = buildAuthorizedRequest();
+        filter.filter(new Exchange(), request, null).getOrThrow();
     }
 
     private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) throws ExpressionException {
@@ -232,17 +234,14 @@ public class OAuth2ResourceServerFilterTest {
         return expScopes;
     }
 
-    private static Exchange buildUnAuthorizedExchange() {
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        return exchange;
+    private static Request buildUnAuthorizedRequest() {
+        return new Request();
     }
 
-    private static Exchange buildAuthorizedExchange() {
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.getHeaders().add("Authorization", format("Bearer %s", TOKEN_ID));
-        return exchange;
+    private static Request buildAuthorizedRequest() {
+        Request request = new Request();
+        request.getHeaders().add("Authorization", format("Bearer %s", TOKEN_ID));
+        return request;
     }
 
     private static String doubleQuote(final String value) {

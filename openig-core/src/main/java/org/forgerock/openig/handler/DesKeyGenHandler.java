@@ -16,18 +16,24 @@
 
 package org.forgerock.openig.handler;
 
-import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
-import org.forgerock.util.encode.Base64;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.heap.GenericHeapObject;
+import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a static response with a generated DES key.
@@ -53,7 +59,7 @@ import java.util.Map;
  *
  * <pre>{"error":"Failed to generate a key: ..."}</pre>
  */
-public class DesKeyGenHandler extends GenericHandler {
+public class DesKeyGenHandler extends GenericHeapObject implements Handler {
 
     /**
      * Generate a base64-encoded DES key.
@@ -74,12 +80,12 @@ public class DesKeyGenHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.setStatus(200);
         response.setReason("OK");
         response.setEntity(getSharedKey());
-        exchange.response = response;
+        return Promises.newSuccessfulPromise(response);
     }
 
     /**

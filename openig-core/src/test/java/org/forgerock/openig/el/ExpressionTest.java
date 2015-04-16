@@ -23,9 +23,9 @@ import static org.forgerock.json.fluent.JsonValue.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

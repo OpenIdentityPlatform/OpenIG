@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -30,16 +30,15 @@ public class WelcomeHandlerTest {
     @Test
     public void getWelcomePage() throws Exception {
         final WelcomeHandler handler = new WelcomeHandler();
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("GET");
-        exchange.request.setUri("http://example.com/");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
-        assertThat(exchange.response.getReason()).isEqualTo("OK");
-        assertThat(exchange.response.getHeaders()).containsEntry("Content-Type",
+        Request request = new Request();
+        request.setMethod("GET");
+        request.setUri("http://example.com/");
+        Response response = handler.handle(null, request).get();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getReason()).isEqualTo("OK");
+        assertThat(response.getHeaders()).containsEntry("Content-Type",
                 Arrays.asList("text/html"));
-        assertThat(exchange.response.getEntity().getRawInputStream().available()).isGreaterThan(0);
-        exchange.response.close();
+        assertThat(response.getEntity().getRawContentInputStream().available()).isGreaterThan(0);
+        response.close();
     }
 }

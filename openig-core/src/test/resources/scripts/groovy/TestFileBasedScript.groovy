@@ -1,2 +1,2 @@
-import org.forgerock.openig.http.Response
+import org.forgerock.http.protocol.Response
 exchange.response = new Response()

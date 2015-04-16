@@ -183,6 +183,11 @@
         <artifactId>jackson-databind</artifactId>
         <version>2.4.3</version>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.5</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -193,6 +198,8 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <!-- 2.9.1 includes security fix for Security vulnerability CVE-2013-1571 -->
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
+    
+    <httpFrameworkVersion>0.0.1-SNAPSHOT</httpFrameworkVersion>
 
     <!-- For a release build, update this to http://docs.forgerock.org/en/openig/${project.version}/ -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>

@@ -21,7 +21,7 @@ import static java.lang.String.*;
 import java.util.Collections;
 import java.util.Set;
 
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.protocol.Response;
 
 /**
  * Builds an error {@link Response} when the request is missing some required scope.

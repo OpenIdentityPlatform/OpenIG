@@ -11,14 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.script;
 
 import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.http.HttpClient.*;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,20 +25,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.ScriptException;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * An abstract scriptable heap object which should be used as the base class for
- * implementing {@link org.forgerock.openig.filter.Filter filters} and {@link Handler handlers}. This heap
+ * implementing {@link org.forgerock.http.Filter filters} and {@link Handler handlers}. This heap
  * object acts as a simple wrapper around the scripting engine. Scripts are
  * provided with the following variable bindings:
  * <ul>
@@ -70,9 +74,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script);
-            HttpClient httpClient = heap.resolve(config.get("httpClient")
-                                                                 .defaultTo(HTTP_CLIENT_HEAP_KEY),
-                                                           HttpClient.class);
+            HttpClient httpClient = heap.resolve(config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
+                                                 HttpClient.class);
             component.setHttpClient(httpClient);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
@@ -175,32 +178,21 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * forwarding handler.
      *
      * @param exchange The HTTP exchange.
+     * @param request the HTTP request
      * @param next The next handler in the chain if applicable, may be
      * {@code null}.
-     * @throws HandlerException If an error occurred while evaluating the script.
-     * @throws IOException If an I/O exception occurs.
+     * @return the Promise of a Response produced by the script
      */
-    protected final void runScript(final Exchange exchange, final Handler next)
-            throws HandlerException, IOException {
-
+    protected final Promise<Response, ResponseException> runScript(final Exchange exchange,
+                                                                   final Request request,
+                                                                   final Handler next) {
         try {
+            // TODO Do we need to force update exchange.request ?
+            exchange.request = request;
             compiledScript.run(createBindings(exchange, next));
+            return Promises.newSuccessfulPromise(exchange.response);
         } catch (final ScriptException e) {
-            if (e.getCause() instanceof HandlerException) {
-                /*
-                 * This may result from invoking the next handler (for filters),
-                 * or it may have been generated intentionally by the script.
-                 * Either way, just pass it back up the chain.
-                 */
-                throw (HandlerException) e.getCause();
-            }
-
-            /*
-             * The exception was unintentional: we could throw the cause or the
-             * script exception. Let's throw the script exception because it may
-             * contain useful line number information.
-             */
-            throw new HandlerException("Script failed unexpectedly", e);
+            return Promises.newFailedPromise(new ResponseException("Cannot execute script", e));
         }
     }
 
@@ -215,7 +207,8 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
         bindings.put("ldap", ldapClient);
         if (next != null) {
-            bindings.put("next", next);
+            // FIXME For compatibity reasons, we still offer IG's Handler to scripts
+            bindings.put("next", Adapters.asHandler(next));
         }
         if (args != null) {
             for (final Entry<String, Object> entry : args.entrySet()) {

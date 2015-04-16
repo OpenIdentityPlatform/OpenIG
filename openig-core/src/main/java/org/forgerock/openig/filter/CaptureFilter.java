@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.http.util.StandardCharsets.*;
 import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.openig.util.StandardCharsets.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
@@ -35,24 +35,28 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.header.ContentTypeHeader;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Message;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.SuccessHandler;
 
 /**
  * Captures request and response messages for further analysis.
  * @deprecated since OpenIG 3.1
  */
 @Deprecated
-public class CaptureFilter extends GenericFilter {
+public class CaptureFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
     /**
      * Provides an abstraction to make PrintWriter plugable.
@@ -114,7 +118,6 @@ public class CaptureFilter extends GenericFilter {
         }
     }
 
-
     /** Set of common textual content with non-text content-types to capture. */
     private static final Set<String> TEXT_TYPES = new HashSet<String>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
@@ -160,42 +163,65 @@ public class CaptureFilter extends GenericFilter {
     }
 
     @Override
-    public synchronized void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        boolean doCapture = condition == null || Boolean.TRUE.equals(condition.eval(exchange));
-        long id = 0;
-        if (doCapture) {
-            id = sequence.incrementAndGet();
-            captureRequest(exchange.request, id);
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
+        Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
+        boolean doCapture = (eval instanceof Boolean && (Boolean) eval);
+
+        // Exit fast if we have nothing to do
+        if (!doCapture) {
+            return next.handle(context, request);
         }
-        next.handle(exchange);
-        if (doCapture) {
-            captureResponse(exchange.response, id);
+
+        final long id = sequence.incrementAndGet();
+        captureRequest(request, id);
+        return next.handle(context, request)
+                .onSuccess(new SuccessHandler<Response>() {
+                    @Override
+                    public void handleResult(final Response result) {
+                        captureResponse(result, id);
+                    }
+                });
+    }
+
+    private void captureRequest(Request request, long id) {
+        try {
+            PrintWriter writer = provider.getWriter();
+            writer.println();
+            writer.println("--- REQUEST " + id + " --->");
+            writer.println();
+            writer.println(request.getMethod() + " " + request.getUri() + " " + request.getVersion());
+            writeHeaders(writer, request);
+            writeEntity(writer, request);
+            writer.flush();
+        } catch (IOException e) {
+            // Just print a warning, do not abort message processing
+            logger.warning("Can't print request message for exchange " + id);
+            logger.debug(e);
         }
     }
 
-    private void captureRequest(Request request, long id) throws IOException {
-        PrintWriter writer = provider.getWriter();
-        writer.println();
-        writer.println("--- REQUEST " + id + " --->");
-        writer.println();
-        writer.println(request.getMethod() + " " + request.getUri() + " " + request.getVersion());
-        writeHeaders(writer, request);
-        writeEntity(writer, request);
-        writer.flush();
+    private void captureResponse(Response response, long id) {
+        try {
+            PrintWriter writer = provider.getWriter();
+            writer.println();
+            writer.println("<--- RESPONSE " + id + " ---");
+            writer.println();
+            writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
+            writeHeaders(writer, response);
+            writeEntity(writer, response);
+            writer.flush();
+        } catch (IOException e) {
+            // Just print a warning, do not abort message processing
+            logger.warning("Can't print response message for exchange " + id);
+            logger.debug(e);
+
+        }
     }
 
-    private void captureResponse(Response response, long id) throws IOException {
-        PrintWriter writer = provider.getWriter();
-        writer.println();
-        writer.println("<--- RESPONSE " + id + " ---");
-        writer.println();
-        writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
-        writeHeaders(writer, response);
-        writeEntity(writer, response);
-        writer.flush();
-    }
-
-    private void writeHeaders(final PrintWriter writer, Message<?> message) {
+    private void writeHeaders(final PrintWriter writer, Message message) {
         for (String key : message.getHeaders().keySet()) {
             for (String value : message.getHeaders().get(key)) {
                 writer.println(key + ": " + value);
@@ -203,8 +229,8 @@ public class CaptureFilter extends GenericFilter {
         }
     }
 
-    private void writeEntity(final PrintWriter writer, Message<?> message) throws IOException {
-        ContentTypeHeader contentType = new ContentTypeHeader(message);
+    private void writeEntity(final PrintWriter writer, Message message) throws IOException {
+        ContentTypeHeader contentType = ContentTypeHeader.valueOf(message);
         if (message.getEntity() == null || contentType.getType() == null) {
             return;
         }

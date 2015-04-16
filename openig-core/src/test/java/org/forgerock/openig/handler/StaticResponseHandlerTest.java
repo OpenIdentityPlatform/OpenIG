@@ -19,6 +19,7 @@ package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
@@ -31,10 +32,10 @@ public class StaticResponseHandlerTest {
         final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
         handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
         final Exchange exchange = new Exchange();
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(302);
-        assertThat(exchange.response.getReason()).isEqualTo("Found");
-        assertThat(exchange.response.getHeaders().getFirst("Location")).isEqualTo("http://www.example.com/");
+        Response response = handler.handle(exchange, null).get();
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getReason()).isEqualTo("Found");
+        assertThat(response.getHeaders().getFirst("Location")).isEqualTo("http://www.example.com/");
     }
 
     @Test
@@ -48,10 +49,10 @@ public class StaticResponseHandlerTest {
                         "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>", String.class));
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
-        handler.handle(exchange);
-        assertThat(exchange.response.getStatus()).isEqualTo(200);
-        assertThat(exchange.response.getReason()).isEqualTo("OK");
-        assertThat(exchange.response.getEntity().getString()).isEqualTo(
+        Response response = handler.handle(exchange, null).get();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getReason()).isEqualTo("OK");
+        assertThat(response.getEntity().getString()).isEqualTo(
                 "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");
     }
 }

@@ -17,22 +17,25 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.Boolean.*;
+import static org.forgerock.util.promise.Promises.*;
 
-import java.io.IOException;
-
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.filter.GenericFilter;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
 
 /**
  * A {@link EnforcerFilter} makes sure that the handled {@link Exchange} verifies a condition.
  * If the condition is not verified, it simply throws a {@link HandlerException} (that actually stops the chain
  * execution).
  */
-public class EnforcerFilter extends GenericFilter {
+public class EnforcerFilter implements Filter {
 
     private final Expression<Boolean> enforcement;
     private final Filter delegate;
@@ -52,11 +55,14 @@ public class EnforcerFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> filter(final Context context,
+                                                       final Request request,
+                                                       final Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
         if (!isConditionVerified(exchange)) {
-            throw new HandlerException("Exchange could not satisfy the enforcement expression");
+            return newFailedPromise(new ResponseException("Exchange could not satisfy the enforcement expression"));
         }
-        delegate.filter(exchange, next);
+        return delegate.filter(context, request, next);
     }
 
     private boolean isConditionVerified(final Exchange exchange) {

@@ -11,18 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
-import java.io.IOException;
-
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
 
 @SuppressWarnings("javadoc")
 public class DestroyDetectHandler implements Handler {
@@ -33,7 +34,8 @@ public class DestroyDetectHandler implements Handler {
     }
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        return null;
     }
 
     public static class Heaplet extends GenericHeaplet {

@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.resolver;
 
-import org.forgerock.openig.util.Indexed;
+import org.forgerock.http.util.Indexed;
 
 /**
  * Exposes an object's elements for access through dynamic expressions and

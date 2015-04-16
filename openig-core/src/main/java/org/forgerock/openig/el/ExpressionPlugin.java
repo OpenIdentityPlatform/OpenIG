@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.el;
 
-import org.forgerock.openig.util.Indexed;
+import org.forgerock.http.util.Indexed;
 
 /**
  * A plugin that contributes a node to the {@link Expression} context tree.

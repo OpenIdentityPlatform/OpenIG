@@ -22,6 +22,8 @@ import static org.forgerock.openig.resolver.Resolver.*;
 
 import java.net.URI;
 
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.resolver.RequestResolver;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

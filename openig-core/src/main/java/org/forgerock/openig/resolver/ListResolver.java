@@ -19,7 +19,7 @@ package org.forgerock.openig.resolver;
 
 import java.util.List;
 
-import org.forgerock.openig.util.UnmodifiableCollection;
+import org.forgerock.http.util.UnmodifiableCollection;
 
 /**
  * Resolves {@link List} objects.

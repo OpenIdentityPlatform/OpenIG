@@ -19,17 +19,24 @@ package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.util.JsonValues.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
@@ -40,7 +47,7 @@ import org.forgerock.openig.http.Exchange;
  * Therefore, it's advisable to have a single "default" handler at the end of the list
  * with no condition (unconditional) to handle otherwise un-dispatched requests.
  */
-public class DispatchHandler extends GenericHandler {
+public class DispatchHandler extends GenericHeapObject implements Handler {
 
     /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
     private final List<Binding> bindings = new ArrayList<Binding>();
@@ -79,17 +86,17 @@ public class DispatchHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        Exchange exchange = context.asContext(Exchange.class);
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
                 if (binding.baseURI != null) {
-                    exchange.request.getUri().rebase(binding.baseURI);
+                    request.getUri().rebase(binding.baseURI);
                 }
-                binding.handler.handle(exchange);
-                return;
+                return binding.handler.handle(exchange, request);
             }
         }
-        throw logger.debug(new HandlerException("no handler to dispatch to"));
+        return Promises.newFailedPromise(logger.debug(new ResponseException("no handler to dispatch to")));
     }
 
     /** Binds an expression with a handler to dispatch to. */

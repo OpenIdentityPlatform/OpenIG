@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
@@ -20,13 +20,13 @@ import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.io.IOException;
-
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -39,7 +39,11 @@ public class AuditHandlerTest extends AbstractAuditTest {
     public void shouldEmitAuditEventsWhenCompleted() throws Exception {
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, singleton("tag"));
         Exchange exchange = new Exchange();
-        audit.handle(exchange);
+
+        when(delegate.handle(exchange, null))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+
+        audit.handle(exchange, null).get();
 
         verify(auditSystem, times(2)).onAuditEvent(captor.capture());
 
@@ -52,26 +56,18 @@ public class AuditHandlerTest extends AbstractAuditTest {
                                 "tag", "response", "completed");
     }
 
-    @DataProvider
-    public static Object[][] supportedExceptions() {
-        // @Checkstyle:off
-        return new Object[][] {
-                {new HandlerException("boom")},
-                {new IOException("boom")}
-        };
-        // @Checkstyle:on
-    }
+    @Test
+    public void shouldEmitAuditEventsWhenFailed() throws Exception {
+        when(delegate.handle(any(Exchange.class), any(Request.class)))
+                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
 
-    @Test(dataProvider = "supportedExceptions")
-    public void shouldEmitAuditEventsWhenFailed(Exception cause) throws Exception {
-        doThrow(cause).when(delegate).handle(any(Exchange.class));
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, singleton("tag"));
 
         Exchange exchange = new Exchange();
         try {
-            audit.handle(exchange);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (Exception e) {
+            audit.handle(exchange, null).getOrThrow();
+            failBecauseExceptionWasNotThrown(ResponseException.class);
+        } catch (ResponseException e) {
             verify(auditSystem, times(2)).onAuditEvent(captor.capture());
 
             assertThatEventIncludes(captor.getAllValues().get(0),

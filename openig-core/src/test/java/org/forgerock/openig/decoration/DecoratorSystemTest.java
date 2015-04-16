@@ -11,27 +11,31 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration;
 
 import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.http.util.Json.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.HeapImplTest;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.Function;
+import org.forgerock.util.promise.Promise;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -241,9 +245,8 @@ public class DecoratorSystemTest {
     }
 
     private void assertThatResponseEntityIsEqualTo(final Handler handler, final String expected) throws Exception {
-        Exchange exchange = new Exchange();
-        handler.handle(exchange);
-        assertThat(exchange.response.getEntity().getString()).isEqualTo(expected);
+        Response response = handler.handle(new Exchange(), null).getOrThrow();
+        assertThat(response.getEntity().getString()).isEqualTo(expected);
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {
@@ -265,10 +268,24 @@ public class DecoratorSystemTest {
             final Handler handler = (Handler) delegate;
             return new Handler() {
                 @Override
-                public void handle(final Exchange exchange) throws HandlerException, IOException {
-                    handler.handle(exchange);
-                    String content = format("<%s>%s</%s>", header, exchange.response.getEntity().getString(), header);
-                    exchange.response.getEntity().setString(content);
+                public Promise<Response, ResponseException> handle(final org.forgerock.http.Context context,
+                                                                   final Request request) {
+                    return handler.handle(context, request)
+                            .then(new Function<Response, Response, ResponseException>() {
+                                @Override
+                                public Response apply(final Response response) throws ResponseException {
+                                    try {
+                                        String content = format("<%s>%s</%s>",
+                                                                header,
+                                                                response.getEntity().getString(),
+                                                                header);
+                                        response.getEntity().setString(content);
+                                        return response;
+                                    } catch (IOException e) {
+                                        throw new ResponseException("IOException", e);
+                                    }
+                                }
+                            });
                 }
             };
         }

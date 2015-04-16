@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -38,9 +38,12 @@ public class BaseUriHandlerTest {
     @Mock
     private Handler delegate;
 
+    private Exchange exchange;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        exchange = new Exchange();
     }
 
     @Test
@@ -49,12 +52,12 @@ public class BaseUriHandlerTest {
                                                           Expression.valueOf("http://www.example.com:443",
                                                                   String.class));
 
-        final Exchange exchange = createExchangeAndSetUri();
-        handler.handle(exchange);
+        final Request request = createRequest();
+        handler.handle(exchange, request);
 
-        verify(delegate).handle(exchange);
+        verify(delegate).handle(exchange, request);
 
-        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
+        assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -62,10 +65,10 @@ public class BaseUriHandlerTest {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
                                                           null);
 
-        final Exchange exchange = createExchangeAndSetUri();
-        handler.handle(exchange);
+        final Request request = createRequest();
+        handler.handle(exchange, request);
 
-        verify(delegate).handle(exchange);
+        verify(delegate).handle(exchange, request);
     }
 
     @Test
@@ -73,18 +76,17 @@ public class BaseUriHandlerTest {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
                                                           Expression.valueOf("", String.class));
 
-        final Exchange exchange = createExchangeAndSetUri();
-        handler.handle(exchange);
+        final Request request = createRequest();
+        handler.handle(exchange, request);
 
-        verify(delegate).handle(exchange);
+        verify(delegate).handle(exchange, request);
 
-        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.forgerock.org/key_path");
+        assertThat(request.getUri().toString()).isEqualTo("http://www.forgerock.org/key_path");
     }
 
-    private Exchange createExchangeAndSetUri() throws URISyntaxException {
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(REQUEST_URI);
-        return exchange;
+    private Request createRequest() throws URISyntaxException {
+        Request request = new Request();
+        request.setUri(REQUEST_URI);
+        return request;
     }
 }
