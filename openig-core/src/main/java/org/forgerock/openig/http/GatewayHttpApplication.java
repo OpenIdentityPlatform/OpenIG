@@ -124,7 +124,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
-            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "baseURI", "globalDecorators");
+            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
