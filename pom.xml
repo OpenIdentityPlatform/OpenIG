@@ -194,8 +194,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Java source and bytecode level -->
-    <maven.compiler.target>1.6</maven.compiler.target>
-    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
     <!-- 2.9.1 includes security fix for Security vulnerability CVE-2013-1571 -->
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
 
