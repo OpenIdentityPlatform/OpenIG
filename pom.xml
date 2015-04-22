@@ -258,6 +258,14 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>forgerock-snapshots-repository</id>
+      <name>ForgeRock Snapshot Repository</name>
+      <url>http://maven.forgerock.org/repo/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
     <!-- /may-be-temporary -->
   </repositories>
 
