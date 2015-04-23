@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.http.Handler;
@@ -44,12 +45,14 @@ public class ExceptionFilterTest {
     @Test
     public void testExceptionHandlerNotInvokedWhenNoExceptionIsThrown() throws Exception {
 
+        Response response = new Response();
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
-        filter.filter(null, null, nextHandler);
+        assertThat(filter.filter(null, null, nextHandler).getOrThrowUninterruptibly())
+                .isEqualTo(response);
 
         verifyZeroInteractions(exceptionHandler);
     }
@@ -57,13 +60,16 @@ public class ExceptionFilterTest {
     @Test
     public void testExceptionHandlerIsInvokedWhenFiledPromiseIsReturned() throws Exception {
 
+        Response response = new Response();
+        when(exceptionHandler.handle(null, null))
+                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
         when(nextHandler.handle(null, null))
                 .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
-        filter.filter(null, null, nextHandler);
-
-        verify(exceptionHandler).handle(null, null);
+        // this shouldn't throw any exception
+        assertThat(filter.filter(null, null, nextHandler).getOrThrowUninterruptibly())
+                .isEqualTo(response);
     }
 }
