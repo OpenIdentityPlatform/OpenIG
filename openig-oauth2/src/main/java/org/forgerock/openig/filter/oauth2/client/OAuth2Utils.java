@@ -101,7 +101,7 @@ final class OAuth2Utils {
 
     static Response httpResponse(final int status) {
         Response response = new Response();
-        response.setStatus(status);
+        response.setStatusAndReason(status);
         return response;
     }
 
