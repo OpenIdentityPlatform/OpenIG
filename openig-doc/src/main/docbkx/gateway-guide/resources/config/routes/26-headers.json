@@ -13,12 +13,12 @@
                                     "type": "StaticRequestFilter",
                                     "config": {
                                         "method": "POST",
-                                        "uri": "https://TARGETIP/login",
+                                        "uri": "https://www.example.com:8444/login",
                                         "form": {
-                                            "USER": [
+                                            "username": [
                                                 "${exchange.request.headers['username'][0]}"
                                             ],
-                                            "PASSWORD": [
+                                            "password": [
                                                 "${exchange.request.headers['password'][0]}"
                                             ]
                                         }
@@ -27,14 +27,14 @@
                             ],
                             "handler": "ClientHandler"
                         }
-                    },
-                    "baseURI": "http://TARGETIP"
+                    }
                 },
                 {
                     "handler": "ClientHandler",
-                    "baseURI": "http://TARGETIP"
+                    "baseURI": "http://www.example.com:8081"
                 }
             ]
         }
-    }
+    },
+    "condition": "${matches(exchange.request.uri.query, 'demo=headers')}"
 }

@@ -129,6 +129,9 @@
                 <port>
                   <name>port</name>
                 </port>
+                <port>
+                  <name>sslPort</name>
+                </port>
               </ports>
             </configuration>
           </execution>
@@ -153,6 +156,7 @@
         <configuration>
           <systemPropertyVariables>
             <serverPort>${port}</serverPort>
+            <serverSslPort>${sslPort}</serverSslPort>
           </systemPropertyVariables>
         </configuration>
         <executions>

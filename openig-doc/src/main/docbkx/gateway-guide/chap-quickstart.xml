@@ -24,13 +24,13 @@
   !    
 -->
 <chapter xml:id='chap-quickstart'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+         xmlns='http://docbook.org/ns/docbook'
+         version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xlink='http://www.w3.org/1999/xlink'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Getting Started</title>
 
  <indexterm>
@@ -194,39 +194,52 @@ $ <userinput>/path/to/jetty/bin/jetty.sh stop</userinput>
 
     <screen>
 $ <userinput>java -jar ${sampleServerJar}</userinput>
-<computeroutput>Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Starting HTTP server on port 8081
-Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.NetworkListener start
+<computeroutput>Preparing to listen for HTTP on port 8081.
+Preparing to listen for HTTPS on port 8444.
+The server will use a self-signed certificate not known to browsers.
+When using HTTPS with curl for example, try --insecure.
+Starting server...
+Apr 22, 2015 10:53:44 AM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8444]
+Apr 22, 2015 10:53:44 AM org.glassfish.grizzly.http.server.NetworkListener start
 INFO: Started listener bound to [0.0.0.0:8081]
-Jun 11, 2014 4:32:42 PM org.glassfish.grizzly.http.server.HttpServer start
+Apr 22, 2015 10:53:44 AM org.glassfish.grizzly.http.server.HttpServer start
 INFO: [HttpServer] Started.
-Jun 11, 2014 4:32:42 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Press Ctrl+C to stop the server.
-</computeroutput>
+Press Ctrl+C to stop the server.</computeroutput>
     </screen>
 
     <para>
-     By default, this server listens on port 8081.
-     If that port is not free, specify another port.
+     By default, this server listens for HTTP on port 8081,
+     and for HTTPS on port 8444.
+     If one or both of those ports are not free, specify other ports.
     </para>
 
     <screen>
-$ <userinput>java -jar ${sampleServerJar} 8888</userinput>
-<computeroutput>Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Starting HTTP server on port 8888
-Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.NetworkListener start
+$ <userinput>java -jar ${sampleServerJar} 8888 8889</userinput>
+<computeroutput>Preparing to listen for HTTP on port 8888.
+Preparing to listen for HTTPS on port 8889.
+The server will use a self-signed certificate not known to browsers.
+When using HTTPS with curl for example, try --insecure.
+Starting server...
+Apr 22, 2015 10:56:59 AM org.glassfish.grizzly.http.server.NetworkListener start
+INFO: Started listener bound to [0.0.0.0:8889]
+Apr 22, 2015 10:56:59 AM org.glassfish.grizzly.http.server.NetworkListener start
 INFO: Started listener bound to [0.0.0.0:8888]
-Jun 11, 2014 4:33:04 PM org.glassfish.grizzly.http.server.HttpServer start
+Apr 22, 2015 10:56:59 AM org.glassfish.grizzly.http.server.HttpServer start
 INFO: [HttpServer] Started.
-Jun 11, 2014 4:33:04 PM org.forgerock.openig.doc.SampleServer runServer
-INFO: Press Ctrl+C to stop the server.</computeroutput>
+Press Ctrl+C to stop the server.</computeroutput>
     </screen>
+
+    <para>
+     If you change the port numbers when starting the server,
+     also account for the differences when using the examples.
+    </para>
    </step>
 
    <step>
     <para>
-     Now access the minimal HTTP server through a browser at
-     <link xlink:show="new" xlink:href="http://localhost:8081" />.
+     Now access the minimal HTTP server through a browser on the appropriate port,
+     such as <link xlink:show="new" xlink:href="http://localhost:8081" />.
     </para>
 
     <para>

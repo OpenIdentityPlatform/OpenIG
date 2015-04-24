@@ -29,10 +29,10 @@
                     "type": "StaticRequestFilter",
                     "config": {
                       "method": "POST",
-                      "uri": "https://65.55.171.158/owa/auth/owaauth.dll",
+                      "uri": "https://login.microsoftonline.com",
                       "headers": {
                         "Host": [
-                          "red001.mail.microsoftonline.com"
+                          "login.microsoftonline.com"
                         ],
                         "Content-Type": [
                           "Content-Type:application/x-www-form-urlencoded"
@@ -40,7 +40,7 @@
                       },
                       "form": {
                         "destination": [
-                          "https://red001.mail.microsoftonline.com/owa/"
+                          "https://login.microsoftonline.com/owa/"
                         ],
                         "forcedownlevel": [
                           "0"
@@ -51,7 +51,7 @@
                         "username": [
                           "${exchange.request.headers['username'][0]}"
                         ],
-                        "password": [
+                        "passwd": [
                           "${exchange.request.headers['password'][0]}"
                         ],
                         "isUtf8": [
@@ -64,11 +64,11 @@
                 "handler": "OutgoingChain"
               }
             },
-            "baseURI": "https://65.55.171.158"
+            "baseURI": "https://login.microsoftonline.com"
           },
           {
             "handler": "OutgoingChain",
-            "baseURI": "https://65.55.171.158"
+            "baseURI": "https://login.microsoftonline.com"
           }
         ]
       }
@@ -95,5 +95,6 @@
       }
     }
   ],
-  "handler": "DispatchHandler"
+  "handler": "DispatchHandler",
+  "condition": "${matches(exchange.request.uri.query, 'demo=owa')}"
 }
