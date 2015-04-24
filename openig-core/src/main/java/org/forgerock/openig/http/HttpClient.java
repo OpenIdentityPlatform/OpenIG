@@ -44,6 +44,7 @@ import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.Duration;
 import org.forgerock.http.util.Options;
 import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 
@@ -120,7 +121,7 @@ import org.forgerock.openig.heap.HeapException;
  * @see org.forgerock.openig.security.KeyManagerHeaplet
  * @see org.forgerock.openig.security.TrustManagerHeaplet
  */
-public class HttpClient {
+public class HttpClient extends GenericHeapObject {
 
     /** Creates and initializes an {@link HttpClient} in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
@@ -351,6 +352,7 @@ public class HttpClient {
         try {
             return client.send(request);
         } catch (final ResponseException e) {
+            logger.warning(e);
             return e.getResponse();
         }
     }
