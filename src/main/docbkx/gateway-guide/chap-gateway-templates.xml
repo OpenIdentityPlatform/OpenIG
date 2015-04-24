@@ -21,7 +21,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010-2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <chapter xml:id='chap-gateway-templates'
@@ -82,24 +82,48 @@
   </para>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   with a "DispatchHandler" to change the scheme to HTTPS on login.
-   Simply change the "baseURI" to that of the target application,
-   and login to the application.
-   This template references a "ClientHandler"
+   The route shown in <xref linkend="example-proxy-capture" />
+   uses a DispatchHandler to change the scheme to HTTPS on login.
+   To use this template change the baseURI settings
+   to match those of the target application.
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <para>
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+   If the certificate was signed by a well-known Certificate Authority,
+   then there should be no further configuration to do.
+   Otherwise use a ClientHandler that references a trust store
+   holding the certificate.
+  </para>
+
+  <example xml:id="example-proxy-capture"><?dbfo pgwide="1"?>
+   <title>Proxy and Capture</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/capture.json">
+<xinclude:include parse="text" href="resources/config/routes/20-capture.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/20-capture.json</filename>,
+   and browse to
+   <link xlink:href="http://www.example.com:8080/login?demo=capture" xlink:show="new" />.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
+  </para>
  </section>
 
  <section xml:id="template-simple-login">
@@ -111,30 +135,50 @@
   </indexterm>
 
   <para>
-   Logs the user into the target application
+   The route in <xref linkend="example-simple-login" />
+   logs the user into the target application
    with hard-coded user name and password.
-   This template intercepts the login page request
+   The route intercepts the login page request
    and replaces it with the login form.
+   Adapt the uri, form, and baseURI settings as necessary.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-simple-login"><?dbfo pgwide="1"?>
+   <title>Simple Login Form</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/simple.json">
+<xinclude:include parse="text" href="resources/config/routes/21-simple.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "StaticRequestFilter" for your application.
-   This template references a "ClientHandler"
+   The parameters in the StaticRequestFilter form,
+   such as <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   can have string values, and they can also use expressions.
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/21-simple.json</filename>,
+   replace <literal>MY_USERNAME</literal> with <literal>demo</literal>
+   and <literal>MY_PASSWORD</literal> with <literal>changeit</literal>,
+   and browse to
+   <link xlink:href="http://www.example.com:8080/login?demo=simple" xlink:show="new" />.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 
@@ -147,31 +191,51 @@
   </indexterm>
 
   <para>
-   For applications that expect a cookie from the login page
+   Some applications expect a cookie from the login page
    to be sent in the login request form.
-   This templates allows the login page request to go through to the target,
+   The route in <xref linkend="example-login-cookie" />
+   allows the login page request to go through to the target,
    intercepts the response,
    then creates the login form and adds the intercepted cookie to the POST.
+   Adapt the baseURI, uri, form, and cookie settings as necessary.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-login-cookie"><?dbfo pgwide="1"?>
+   <title>Login Form With Cookie From Login Page</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/cookie.json">
+<xinclude:include parse="text" href="resources/config/routes/22-cookie.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "StaticRequestFilter" for your application.
-   This template references a "ClientHandler"
+   The parameters in the StaticRequestFilter form,
+   such as <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   can have string values, and they can also use expressions.
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/22-cookie.json</filename>,
+   replace <literal>MY_USERNAME</literal> with <literal>kramer</literal>
+   and <literal>MY_PASSWORD</literal> with <literal>newman</literal>,
+   and browse to
+   <link xlink:href="http://www.example.com:8080/login?demo=cookie" xlink:show="new" />.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 
@@ -184,49 +248,71 @@
   </indexterm>
 
   <para>
-   For applications that return the login page
+   The route in <xref linkend="example-login-extract-cookie-filters" />
+   works with an application that returns the login page
    when the user tries to access a page without a valid session.
-   This template shows how to use the "ExtractFilter"
-   to find the login page on the response
-   and use the "CookieFilter" to ensure
-   the cookies from the application are replayed on each request.
-   The sample application in this template is OpenAM.
+   This route shows how to use the EntityExtractFilter to find the login page
+   with a pattern that matches the OpenAM Classic UI page.
+   The route uses the CookieFilter to ensure
+   that the cookies from the application are replayed on each request.
   </para>
 
   <note>
    <para>
-    Without the "CookieFilter" in the "OutgoingChain"
+    Without the CookieFilter in the OutgoingChain
     the cookie set in the login page response would not get set in the browser
     since that request is intercepted before it gets to the browser.
     The simplest way to deal with this situation is
-    to let ${projectName} manage all the cookies
-    by enabling the "CookieFilter".
+    to let ${projectName} manage all the cookies by enabling the CookieFilter.
     The side effect of ${projectName} managing cookies is
     none of the cookies are sent to the browser,
     but are managed locally by ${projectName}.
    </para>
   </note>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-login-extract-cookie-filters"><?dbfo pgwide="1"?>
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/extract-cookie.json">
+<xinclude:include parse="text" href="resources/config/routes/23-classic.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of OpenAM,
-   <literal>TARGETFQDN</literal> with the fully qualified domain name of OpenAM,
-   and <literal>PORT</literal> with the port on which OpenAM listens.
-   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>
-   to match those of your OpenAM user.
-   This template references a "ClientHandler"
+   The parameters in the StaticRequestFilter form,
+   can have string values, and they can also use expressions.
+   This route references a ClientHandler
    defined in <filename>config.json</filename>.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/23-classic.json</filename>,
+   and use the <command>curl</command> command to check that it works
+   as in the following example,
+   which shows that the CookieFilter has removed cookies from the response
+   except for the session cookie added by the container.
+  </para>
+
+  <screen>
+$ <userinput>curl -D- http://www.example.com:8080/login/?demo=classic</userinput>
+<computeroutput>HTTP/1.1 200 OK
+...
+Set-Cookie: JSESSIONID=1gwp5h0ugkciv1g200c9hid4sp;Path=/
+Content-Length: 15
+Content-Type: text/plain;charset=ISO-8859-1
+...
+
+Welcome, demo!</computeroutput>
+  </screen>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter,
+   and adjust the EntityExtractFilter and StaticRequestFilter as necessary.
   </para>
  </section>
 
@@ -239,66 +325,100 @@
   </indexterm>
 
   <para>
-   Extracts a hidden value from the login page
-   and includes it in the login form POSTed to the target application.
+   Some applications call for extracting a hidden value from the login page
+   and including the value in the login form POSTed to the target application.
+   The route in <xref linkend="example-login-hidden-value" />
+   extracts a hidden value from the login page,
+   and posts a static form including the hidden value.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-login-hidden-value"><?dbfo pgwide="1"?>
+   <title>Login Which Requires a Hidden Value From the Login Page</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/extract-hidden.json">
+<xinclude:include parse="text" href="resources/config/routes/24-hidden.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also change <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
-   and adapt the "StaticRequestFilter" for your application.
-   This template references a "ClientHandler"
+   The parameters in the StaticRequestFilter form,
+   such as <literal>MY_USERNAME</literal> and <literal>MY_PASSWORD</literal>,
+   can have string values, and they can also use expressions.
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/24-hidden.json</filename>,
+   replace <literal>MY_USERNAME</literal> with <literal>scarter</literal>
+   and <literal>MY_PASSWORD</literal> with <literal>sprain</literal>,
+   and browse to
+   <link xlink:href="http://www.example.com:8080/login?demo=hidden" xlink:show="new" />.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 
  <section xml:id="template-http-and-https">
-  <title>HTTP &amp; HTTPS Application</title>
+  <title>HTTP and HTTPS Application</title>
 
   <indexterm>
    <primary>Configuration</primary>
-   <secondary>HTTP &amp; HTTPS</secondary>
+   <secondary>HTTP and HTTPS</secondary>
   </indexterm>
 
   <para>
-   Proxies traffic to an application listening on ports 80 and 443.
-   The assumption is the application uses HTTPS for authentication
+   The route in <xref linkend="example-http-and-https" />
+   proxies traffic to an application with both HTTP and HTTPS ports.
+   The application uses HTTPS for authentication
    and HTTP for the general application features.
-   Assuming all login requests go to port 443,
-   you must add the login filters and handlers to the "Chain".
+   Assuming all login requests are made over HTTPS,
+   you must add the login filters and handlers to the Chain.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-http-and-https"><?dbfo pgwide="1"?>
+   <title>HTTP and HTTPS Application</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/http-https.json">
+<xinclude:include parse="text" href="resources/config/routes/25-https.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also add the necessary filter configurations
-   that are required for login with your application,
-   and then change <literal>MY_FILTERS</literal> to identify the added filters.
-   This template references a "ClientHandler"
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/25-https.json</filename>,
+   and browse to
+   <link xlink:href="http://www.example.com:8080/login?demo=https" xlink:show="new" />.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 
@@ -306,32 +426,56 @@
   <title>OpenAM Integration With Headers</title>
 
   <para>
-   Logs the user into the target application
-   using the headers passed down from an OpenAM policy agent.
-   This template assumes the user name and password
-   are passed down by the OpenAM policy agent as headers.
+   The route in <xref linkend="example-am-integration-headers" />
+   logs the user into the target application
+   using the headers such as those passed in from an OpenAM policy agent.
    If the header passed in contains only a user name or subject
    and requires a lookup to an external data source,
    you must add an attribute filter to the chain to retrieve the credentials.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-am-integration-headers"><?dbfo pgwide="1"?>
+   <title>OpenAM Integration With Headers</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/openam-headers.json">
+<xinclude:include parse="text" href="resources/config/routes/26-headers.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
-   This template is a replacement for the default route,
-   <filename>${warRoutesDir}/99-default.json</filename>,
-   Substitute <literal>TARGETIP</literal> with the IP address of your application.
-   Also adapt the "StaticRequestFilter" for your application.
-   This template references a "ClientHandler"
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+   When connecting to the protected application over HTTPS,
+   the ClientHandler must use an HttpClient
+   that can trust the application's public key server certificate.
+  </para>
+
+  <para>
+   To try this example with the sample application,
+   save the file as <filename>${warRoutesDir}/25-headers.json</filename>,
+   and use the <command>curl</command> command
+   to simulate the headers being passed in from an OpenAM policy agent
+   as in the following example:
+  </para>
+
+  <screen>
+$ <userinput>curl \
+ --header "username: kvaughan" \
+ --header "password: bribery" \
+ http://www.example.com:8080/login?demo=headers</userinput>
+<computeroutput>...<![CDATA[
+    <title id="welcome">Howdy, kvaughan</title>
+]]>...</computeroutput>
+  </screen>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 
@@ -344,8 +488,9 @@
   </indexterm>
 
   <para>
-   Logs the user into Microsoft Online Outlook Web Access (OWA).
-   This template shows how you would use ${projectName}
+   The route in <xref linkend="example-owa-online" />
+   logs the user into Microsoft Online Outlook Web Access (OWA).
+   The example shows how you would use ${projectName}
    and the OpenAM password capture feature to integrate with OWA.
    You can follow the chapter on
    <link
@@ -356,17 +501,21 @@
    and substitute this template as a replacement for the default route.
   </para>
 
-  <informalexample><?dbfo pgwide="1"?>
+  <example xml:id="example-owa-online"><?dbfo pgwide="1"?>
+   <title>Microsoft Online Outlook Web Access</title>
+
    <programlisting language="javascript">
-<xinclude:include parse="text" href="resources/templates/owa.json">
+<xinclude:include parse="text" href="resources/config/routes/27-owa.json">
  <xinclude:fallback>
   Failed to include JSON
  </xinclude:fallback>
 </xinclude:include>
    </programlisting>
-  </informalexample>
+  </example>
 
   <para>
+   To try this example  save the file as
+   <filename>${warRoutesDir}/27-owa.json</filename>.
    Change <literal>DESKEY</literal> to the actual key value
    that you generated when following the instructions in
    <link
@@ -374,8 +523,14 @@
     xlink:href="gateway-guide#password-capture-configuration"
     xlink:role="http://docbook.org/xlink/role/olink"
    >Configuring Password Capture</link>.
-   This template references a "ClientHandler"
+   This template references a ClientHandler
    defined in <filename>config.json</filename>.
+  </para>
+
+  <para>
+   To use this as a default route with a real application,
+   remove the route-level condition on the handler
+   that specifies a <literal>demo</literal> query string parameter.
   </para>
  </section>
 </chapter>

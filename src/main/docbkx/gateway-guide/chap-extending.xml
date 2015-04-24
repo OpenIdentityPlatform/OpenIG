@@ -226,7 +226,7 @@
    The response from the script says <literal>Please
    <link
     xlink:show="new"
-    xlink:href="http://www.example.com:8080/login"
+    xlink:href="http://www.example.com:8080/mylogin"
    >log in</link>.</literal>
    When you click the "log in" link,
    the "HeaderFilter" sets Username and Password headers in the request,

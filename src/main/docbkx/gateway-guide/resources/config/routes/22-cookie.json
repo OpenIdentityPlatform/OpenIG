@@ -6,7 +6,7 @@
             "config": {
                 "bindings": [
                     {
-                        "condition": "${exchange.request.uri.path == '/eum/login'}",
+                        "condition": "${exchange.request.uri.path == '/login'}",
                         "handler": {
                             "type": "Chain",
                             "config": {
@@ -24,12 +24,11 @@
                                 ],
                                 "handler": "ClientHandler"
                             }
-                        },
-                        "baseURI": "http://TARGETIP"
+                        }
                     },
                     {
                         "handler": "ClientHandler",
-                        "baseURI": "http://TARGETIP"
+                        "baseURI": "http://www.example.com:8081"
                     }
                 ]
             }
@@ -43,12 +42,12 @@
                         "type": "StaticRequestFilter",
                         "config": {
                             "method": "POST",
-                            "uri": "https://TARGETIP/login",
+                            "uri": "https://www.example.com:8444/login",
                             "form": {
-                                "USER": [
+                                "username": [
                                     "MY_USERNAME"
                                 ],
-                                "PASSWORD": [
+                                "password": [
                                     "MY_PASSWORD"
                                 ]
                             },
@@ -64,5 +63,6 @@
             }
         }
     ],
-    "handler": "DispatchHandler"
+    "handler": "DispatchHandler",
+    "condition": "${matches(exchange.request.uri.query, 'demo=cookie')}"
 }

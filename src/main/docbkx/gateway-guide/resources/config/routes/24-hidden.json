@@ -19,7 +19,7 @@
                                             {
                                                 "key": "value",
                                                 "pattern":
-                                                    "wpLoginToken\"\\s.*value=\"(.*)\"",
+                                                    "loginToken\\s+value=\"(.*)\"",
                                                 "template": "$1"
                                             }
                                         ]
@@ -29,12 +29,12 @@
                                     "type": "StaticRequestFilter",
                                     "config": {
                                         "method": "POST",
-                                        "uri": "https://TARGETIP/login",
+                                        "uri": "https://www.example.com:8444/login",
                                         "form": {
-                                            "USER": [
+                                            "username": [
                                                 "MY_USERNAME"
                                             ],
-                                            "PASSWORD": [
+                                            "password": [
                                                 "MY_PASSWORD"
                                             ],
                                             "hiddenValue": [
@@ -46,14 +46,14 @@
                             ],
                             "handler": "ClientHandler"
                         }
-                    },
-                    "baseURI": "http://TARGETIP"
+                    }
                 },
                 {
                     "handler": "ClientHandler",
-                    "baseURI": "http://TARGETIP"
+                    "baseURI": "http://www.example.com:8081"
                 }
             ]
         }
-    }
+    },
+    "condition": "${matches(exchange.request.uri.query, 'demo=hidden')}"
 }

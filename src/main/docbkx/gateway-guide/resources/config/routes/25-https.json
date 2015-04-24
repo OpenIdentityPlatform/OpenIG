@@ -6,26 +6,26 @@
                 {
                     "condition": "${exchange.request.uri.scheme == 'http'}",
                     "handler": "ClientHandler",
-                    "baseURI": "http://TARGETIP"
+                    "baseURI": "http://www.example.com:8081"
                 },
                 {
                     "condition": "${exchange.request.uri.path == '/login'}",
                     "handler": {
                         "type": "Chain",
                         "config": {
-                            "filters": [
-                                "MY_FILTERS"
-                            ],
+                            "comment": "Add one or more filters to handle login.",
+                            "filters": [],
                             "handler": "ClientHandler"
                         }
                     },
-                    "baseURI": "https://TARGETIP"
+                    "baseURI": "https://www.example.com:8444"
                 },
                 {
                     "handler": "ClientHandler",
-                    "baseURI": "https://TARGETIP"
+                    "baseURI": "https://www.example.com:8444"
                 }
             ]
         }
-    }
+    },
+    "condition": "${matches(exchange.request.uri.query, 'demo=https')}"
 }

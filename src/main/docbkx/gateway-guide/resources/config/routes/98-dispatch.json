@@ -7,7 +7,7 @@
                 "bindings": [
                     {
                         "condition":
-                            "${matches(exchange.request.uri.path, '^/login')}",
+                            "${matches(exchange.request.uri.path, '/mylogin')}",
                         "handler": {
                             "type": "Chain",
                             "config": {
