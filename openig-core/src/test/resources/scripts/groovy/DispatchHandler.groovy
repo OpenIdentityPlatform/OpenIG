@@ -33,7 +33,7 @@ switch (exchange.request.uri.path) {
     default:
 
         exchange.response.status = 401
-        exchange.response.entity = "<html><p>Please <a href='./login'>log in</a>.</p></html>"
+        exchange.response.entity = "<html><p>Please <a href='./mylogin'>log in</a>.</p></html>"
 
         break
 
