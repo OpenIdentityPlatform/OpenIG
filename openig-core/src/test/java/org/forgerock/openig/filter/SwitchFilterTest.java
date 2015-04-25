@@ -56,15 +56,15 @@ public class SwitchFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         when(handler1.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         when(handler2.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         when(handler3.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         when(handler4.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
     }
 
     @Test

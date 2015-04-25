@@ -142,7 +142,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(200);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
         // when
         provider.getRefreshToken(exchange, session);
         // then
@@ -162,7 +162,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(200);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         // when
         provider.getAccessToken(exchange, code, callbackUri);
@@ -182,7 +182,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(200);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         // when
         provider.getUserInfo(exchange, session);
@@ -201,7 +201,7 @@ public class OAuth2ProviderTest {
         response.setStatus(errorResponseStatus);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         getOAuth2Provider().getRefreshToken(exchange, session);
     }
@@ -213,7 +213,7 @@ public class OAuth2ProviderTest {
         response.setStatus(errorResponseStatus);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         getOAuth2Provider().getAccessToken(exchange, "code", "callbackUri");
     }
@@ -226,7 +226,7 @@ public class OAuth2ProviderTest {
         response.setStatus(418);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         getOAuth2Provider().getUserInfo(exchange, session);
     }

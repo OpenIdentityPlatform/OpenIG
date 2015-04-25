@@ -49,7 +49,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Captures request and response messages for further analysis.
@@ -178,7 +178,7 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
         final long id = sequence.incrementAndGet();
         captureRequest(request, id);
         return next.handle(context, request)
-                .onSuccess(new SuccessHandler<Response>() {
+                .thenOnResult(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response result) {
                         captureResponse(result, id);

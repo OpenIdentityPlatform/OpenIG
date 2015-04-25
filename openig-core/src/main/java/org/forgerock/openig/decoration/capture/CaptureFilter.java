@@ -28,7 +28,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Capture both original and filtered requests and responses, delegating to a given encapsulated
@@ -73,7 +73,7 @@ class CaptureFilter implements Filter {
                     capture.capture(exchange, request, FILTERED_REQUEST);
                 }
                 return next.handle(context, request)
-                        .then(new SuccessHandler<Response>() {
+                        .thenOnResult(new ResultHandler<Response>() {
                             @Override
                             public void handleResult(final Response response) {
                                 if (points.contains(RESPONSE)) {
@@ -83,7 +83,7 @@ class CaptureFilter implements Filter {
                         });
             }
 
-        }).then(new SuccessHandler<Response>() {
+        }).thenOnResult(new ResultHandler<Response>() {
             @Override
             public void handleResult(final Response response) {
                 if (points.contains(FILTERED_RESPONSE)) {

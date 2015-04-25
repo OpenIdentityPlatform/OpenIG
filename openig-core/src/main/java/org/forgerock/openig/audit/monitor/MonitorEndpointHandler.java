@@ -52,7 +52,7 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
         Response response = new Response();
         response.getEntity().setJson(metrics);
         response.setStatus(200);
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     @Override

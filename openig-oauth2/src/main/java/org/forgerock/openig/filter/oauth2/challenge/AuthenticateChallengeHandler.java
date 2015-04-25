@@ -72,7 +72,7 @@ public abstract class AuthenticateChallengeHandler implements Handler {
         Response response = createResponse();
         response.getHeaders().putSingle(WWW_AUTHENTICATE,
                                         format("Bearer %s", buildChallenge()));
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     /**

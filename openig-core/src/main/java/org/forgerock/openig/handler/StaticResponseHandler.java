@@ -131,7 +131,7 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
             // use content-type charset (or default)
             response.setEntity(entity.eval(exchange));
         }
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     /**

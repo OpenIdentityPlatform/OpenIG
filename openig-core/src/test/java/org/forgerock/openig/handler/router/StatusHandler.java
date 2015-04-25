@@ -38,7 +38,7 @@ public class StatusHandler implements Handler {
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.setStatus(status);
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     public static class Heaplet extends GenericHeaplet {

@@ -109,7 +109,7 @@ public class SequenceHandlerTest {
         Response response1 = new Response();
         promise1.handleResult(response1);
         ResponseException error = new ResponseException(404, "Boom");
-        promise2.handleError(error);
+        promise2.handleException(error);
 
         Exchange exchange = new Exchange();
         Request request = new Request();

@@ -225,7 +225,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
                 return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
             }
         } catch (ResponseException e) {
-            return newFailedPromise(e);
+            return newExceptionPromise(e);
         }
 
         // Store the AccessToken in the exchange for downstream handlers

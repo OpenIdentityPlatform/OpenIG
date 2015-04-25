@@ -85,7 +85,7 @@ public class DesKeyGenHandler extends GenericHeapObject implements Handler {
         response.setStatus(200);
         response.setReason("OK");
         response.setEntity(getSharedKey());
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     /**

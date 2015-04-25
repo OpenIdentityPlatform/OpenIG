@@ -138,13 +138,13 @@ public class StaticRequestFilter extends GenericHeapObject implements org.forger
             try {
                 newRequest.setUri(value);
             } catch (URISyntaxException e) {
-                return Promises.newFailedPromise(
+                return Promises.newExceptionPromise(
                         logger.debug(
                                 new ResponseException(
                                         format("The URI %s was not valid, %s", value, e.getMessage()), e)));
             }
         } else {
-            return Promises.newFailedPromise(logger.debug(
+            return Promises.newExceptionPromise(logger.debug(
                     new ResponseException(format("The URI expression '%s' could not be resolved", uri.toString()))));
         }
         if (this.version != null) {

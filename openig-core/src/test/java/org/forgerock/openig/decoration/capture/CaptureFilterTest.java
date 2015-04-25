@@ -62,7 +62,7 @@ public class CaptureFilterTest {
         MockitoAnnotations.initMocks(this);
         response = new Response();
         when(terminal.handle(any(org.forgerock.http.Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
     }
 
     @DataProvider

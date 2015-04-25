@@ -34,7 +34,7 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.HeapImplTest;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.Function;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 import org.testng.annotations.Test;
 

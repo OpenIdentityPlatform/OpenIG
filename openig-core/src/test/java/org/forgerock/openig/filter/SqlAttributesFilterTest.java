@@ -72,7 +72,7 @@ public class SqlAttributesFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
     }
 
     @Test

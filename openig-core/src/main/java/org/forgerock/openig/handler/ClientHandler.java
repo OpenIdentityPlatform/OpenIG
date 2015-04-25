@@ -63,7 +63,7 @@ public class ClientHandler extends GenericHeapObject implements org.forgerock.ht
     @Override
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         // TODO Maybe this could be done asynchronously
-        return Promises.newSuccessfulPromise(client.execute(request));
+        return Promises.newResultPromise(client.execute(request));
     }
 
     /** Creates and initializes a client handler in a heap environment. */

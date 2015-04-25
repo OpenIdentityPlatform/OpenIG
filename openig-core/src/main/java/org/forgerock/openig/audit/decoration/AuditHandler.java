@@ -26,9 +26,9 @@ import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.ExceptionHandler;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Intercept execution flow and send audit notifications with relevant tags.
@@ -49,14 +49,14 @@ class AuditHandler extends AuditBaseObject implements Handler {
         final Exchange exchange = context.asContext(Exchange.class);
         fireAuditEvent(exchange, requestTags);
         return delegate.handle(context, request)
-                .then(new SuccessHandler<Response>() {
+                .thenOnResultOrException(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response result) {
                         fireAuditEvent(exchange, completedResponseTags);
                     }
-                }, new FailureHandler<ResponseException>() {
+                }, new ExceptionHandler<ResponseException>() {
                     @Override
-                    public void handleError(final ResponseException error) {
+                    public void handleException(final ResponseException error) {
                         fireAuditEvent(exchange, failedResponseTags);
                     }
                 });

@@ -259,7 +259,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             if (defaultHandler != null) {
                 return defaultHandler.handle(context, request);
             }
-            return Promises.newFailedPromise(new ResponseException("no handler to dispatch to"));
+            return Promises.newExceptionPromise(new ResponseException("no handler to dispatch to"));
         } finally {
             read.unlock();
         }

@@ -124,7 +124,7 @@ public class RouteTest {
                     }
                 });
 
-        promise.handleError(new ResponseException(500));
+        promise.handleException(new ResponseException(500));
         Promise<Response, ResponseException> result = route.handle(exchange, new Request());
 
         try {

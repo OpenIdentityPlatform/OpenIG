@@ -80,7 +80,7 @@ public class HttpBasicAuthFilterTest {
                 Response response = new Response();
                 response.setStatus(HTTP_SUCCESS);
                 response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Realm toto");
-                return Promises.newSuccessfulPromise(response);
+                return Promises.newResultPromise(response);
 
             }
         }).when(terminalHandler).handle(eq(exchange),
@@ -298,7 +298,7 @@ public class HttpBasicAuthFilterTest {
             Response response = new Response();
             response.setStatus(HTTP_UNAUTHORIZED);
             response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
-            return Promises.newSuccessfulPromise(response);
+            return Promises.newResultPromise(response);
         }
     }
 
@@ -321,7 +321,7 @@ public class HttpBasicAuthFilterTest {
             // Produce a valid response, no special headers are required
             Response response = new Response();
             response.setStatus(HTTP_SUCCESS);
-            return Promises.newSuccessfulPromise(response);
+            return Promises.newResultPromise(response);
         }
     }
 

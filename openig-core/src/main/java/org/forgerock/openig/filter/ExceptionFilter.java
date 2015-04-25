@@ -25,7 +25,7 @@ import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.util.promise.AsyncFunction;
+import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -47,7 +47,7 @@ public class ExceptionFilter extends GenericHeapObject implements org.forgerock.
     private static final AsyncFunction<Response, Response, ResponseException> NOOP_ASYNCFUNCTION = new AsyncFunction<Response, Response, ResponseException>() {
         @Override
         public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
-            return Promises.newSuccessfulPromise(value);
+            return Promises.newResultPromise(value);
         }
     };
 

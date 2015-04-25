@@ -43,7 +43,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.StringUtil;
-import org.forgerock.util.promise.Function;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -233,7 +233,7 @@ public class CookieFilter extends GenericHeapObject implements org.forgerock.htt
         try {
             addRequestCookies(manager, resolved, request);
         } catch (IOException e) {
-            return Promises.newFailedPromise(new ResponseException("Can't add request cookies", e));
+            return Promises.newExceptionPromise(new ResponseException("Can't add request cookies", e));
         }
 
         // pass exchange to next handler in chain

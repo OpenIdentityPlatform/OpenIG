@@ -44,7 +44,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Encrypts and decrypts header fields.
@@ -221,7 +221,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements org.forgero
 
         // Hook a post-processing function only if needed
         if (messageType == MessageType.RESPONSE) {
-            return promise.onSuccess(new SuccessHandler<Response>() {
+            return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
                     process(response);

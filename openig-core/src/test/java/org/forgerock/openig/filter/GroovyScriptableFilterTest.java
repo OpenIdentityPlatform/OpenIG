@@ -923,7 +923,7 @@ public class GroovyScriptableFilterTest {
         @Override
         public Promise<Response, ResponseException> handle(final Context context, final Request request) {
             this.request = request;
-            return Promises.newSuccessfulPromise(new Response());
+            return Promises.newResultPromise(new Response());
         }
     }
 

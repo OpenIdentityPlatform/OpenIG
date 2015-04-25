@@ -51,7 +51,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         super.setUp();
         when(context.getName()).thenReturn(Name.of("config.json", "Router"));
         when(handler.handle(any(org.forgerock.http.Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
     }
 
     @Test
