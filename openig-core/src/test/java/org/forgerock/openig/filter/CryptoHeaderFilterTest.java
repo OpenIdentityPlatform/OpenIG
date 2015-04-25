@@ -105,7 +105,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -123,7 +123,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -140,7 +140,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -159,7 +159,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -177,7 +177,7 @@ public class CryptoHeaderFilterTest {
         response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         filter.filter(null, null, terminalHandler);
 
@@ -196,7 +196,7 @@ public class CryptoHeaderFilterTest {
         response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         filter.filter(null, null, terminalHandler);
 

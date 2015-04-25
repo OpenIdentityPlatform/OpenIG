@@ -102,7 +102,7 @@ public class EntityExtractFilterTest {
         response.setEntity((String) null);
 
         when(terminalHandler.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         filter.filter(exchange, null, terminalHandler);
 

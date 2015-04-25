@@ -41,7 +41,7 @@ public class AuditHandlerTest extends AbstractAuditTest {
         Exchange exchange = new Exchange();
 
         when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         audit.handle(exchange, null).get();
 
@@ -59,7 +59,7 @@ public class AuditHandlerTest extends AbstractAuditTest {
     @Test
     public void shouldEmitAuditEventsWhenFailed() throws Exception {
         when(delegate.handle(any(Exchange.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
 
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, singleton("tag"));
 

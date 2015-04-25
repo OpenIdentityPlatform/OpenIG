@@ -34,7 +34,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.AsyncFunction;
+import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -117,7 +117,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
                                                                                 responseCases);
                         // not intercepted on response, just return the original response
                         if (promise == null) {
-                            promise = Promises.newSuccessfulPromise(value);
+                            promise = Promises.newResultPromise(value);
                         }
                         return promise;
                     }

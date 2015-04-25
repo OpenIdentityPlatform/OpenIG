@@ -47,7 +47,7 @@ public class ExceptionFilterTest {
 
         Response response = new Response();
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
@@ -62,9 +62,9 @@ public class ExceptionFilterTest {
 
         Response response = new Response();
         when(exceptionHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 

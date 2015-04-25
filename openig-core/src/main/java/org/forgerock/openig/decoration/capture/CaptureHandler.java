@@ -27,7 +27,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Capture both requests and responses, delegating to a given encapsulated {@link Handler} instance.
@@ -61,7 +61,7 @@ class CaptureHandler implements Handler {
             capture.capture(exchange, request, REQUEST);
         }
         return delegate.handle(context, request)
-                .then(new SuccessHandler<Response>() {
+                .thenOnResult(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response response) {
                         if (points.contains(RESPONSE)) {

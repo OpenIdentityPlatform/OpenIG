@@ -47,7 +47,7 @@ public class WelcomeHandler extends GenericHeapObject implements org.forgerock.h
         response.getHeaders().add("Content-Type", "text/html");
         response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
                 "welcome.html"), storage));
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     /**

@@ -50,7 +50,7 @@ public class CaptureHandlerTest {
         MockitoAnnotations.initMocks(this);
         response = new Response();
         when(delegate.handle(any(org.forgerock.http.Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(response));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
     }
 
     @DataProvider

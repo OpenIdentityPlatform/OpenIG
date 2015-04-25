@@ -89,7 +89,7 @@ public class CookieFilterTest {
                         // Cannot assert on request.cookies due to OPENIG-123
                         // assertFalse(exchange.request.cookies.containsKey("Test-Managed"));
 
-                        return Promises.newSuccessfulPromise(new Response());
+                        return Promises.newResultPromise(new Response());
                     }
                 });
 
@@ -127,7 +127,7 @@ public class CookieFilterTest {
                         // As the cookie should have been removed, we should not have any Cookie header now
                         assertThat(request.getHeaders().get("Cookie")).isNull();
 
-                        return Promises.newSuccessfulPromise(new Response());
+                        return Promises.newResultPromise(new Response());
                     }
                 });
 
@@ -156,7 +156,7 @@ public class CookieFilterTest {
                         // As the cookie should have been removed, we should not have any Cookie header now
                         assertThat(request.getHeaders().get("Cookie")).isNull();
 
-                        return Promises.newSuccessfulPromise(new Response());
+                        return Promises.newResultPromise(new Response());
                     }
                 });
 
@@ -185,7 +185,7 @@ public class CookieFilterTest {
                         assertThat(request.getHeaders().getFirst("Cookie"))
                                 .contains("Will-Be-Relayed=\"Default Value\"");
 
-                        return Promises.newSuccessfulPromise(new Response());
+                        return Promises.newResultPromise(new Response());
                     }
                 });
 
@@ -217,7 +217,7 @@ public class CookieFilterTest {
                         Response response = new Response();
                         response.getHeaders().putSingle("Set-cookie2", "Hidden-Cookie=value");
 
-                        return Promises.newSuccessfulPromise(response);
+                        return Promises.newResultPromise(response);
                     }
                 });
 
@@ -241,7 +241,7 @@ public class CookieFilterTest {
                         Response response = new Response();
                         response.getHeaders().putSingle("Set-cookie2", "Suppressed-Cookie=value");
 
-                        return Promises.newSuccessfulPromise(response);
+                        return Promises.newResultPromise(response);
                     }
                 });
 
@@ -293,7 +293,7 @@ public class CookieFilterTest {
                         Response response = new Response();
                         response.getHeaders().putSingle("Set-cookie2", "Managed=value");
 
-                        return Promises.newSuccessfulPromise(response);
+                        return Promises.newResultPromise(response);
                     }
                 });
 
@@ -317,7 +317,7 @@ public class CookieFilterTest {
                         String cookie = request2.getHeaders().getFirst("Cookie");
                         assertThat(cookie).isEqualTo("Managed=value");
 
-                        return Promises.newSuccessfulPromise(new Response());
+                        return Promises.newResultPromise(new Response());
                     }
                 });
 

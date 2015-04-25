@@ -33,6 +33,6 @@ public class FailureHandler implements Handler {
 
     @Override
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
-        return Promises.newFailedPromise(error);
+        return Promises.newExceptionPromise(error);
     }
 }

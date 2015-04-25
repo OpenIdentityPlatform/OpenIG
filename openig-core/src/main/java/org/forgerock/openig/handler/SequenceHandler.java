@@ -36,10 +36,10 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.ExceptionHandler;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
@@ -74,7 +74,7 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
 
         Binding binding = theBindings.peekFirst();
         Promise<Response, ResponseException> promise = binding.handler.handle(context, request);
-        promise.onSuccess(new SuccessHandler<Response>() {
+        promise.thenOnResult(new ResultHandler<Response>() {
 
             @Override
             public void handleResult(final Response result) {
@@ -87,20 +87,20 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
                     // Next promise
                     final Binding next = theBindings.peekFirst();
                     next.handler.handle(context, request)
-                                .onSuccess(this)
-                                .onFailure(new FailureHandler<ResponseException>() {
+                                .thenOnResult(this)
+                                .thenOnException(new ExceptionHandler<ResponseException>() {
                                     @Override
-                                    public void handleError(final ResponseException error) {
-                                        composite.handleError(error);
+                                    public void handleException(final ResponseException error) {
+                                        composite.handleException(error);
                                     }
                                 });
 
                 }
             }
-        }).onFailure(new FailureHandler<ResponseException>() {
+        }).thenOnException(new ExceptionHandler<ResponseException>() {
             @Override
-            public void handleError(final ResponseException error) {
-                composite.handleError(error);
+            public void handleException(final ResponseException error) {
+                composite.handleException(error);
             }
         });
 

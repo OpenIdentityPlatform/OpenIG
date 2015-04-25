@@ -66,7 +66,7 @@ public class TimerFilterTest {
 
         Exchange exchange = new Exchange();
         when(delegate.filter(exchange, null, terminal))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         time.filter(exchange, null, terminal).get();
 
         InOrder inOrder = inOrder(timer, terminal);
@@ -83,7 +83,7 @@ public class TimerFilterTest {
         Exchange exchange = new Exchange();
 
         when(terminal.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
 
         try {
             time.filter(exchange, null, terminal).getOrThrow();

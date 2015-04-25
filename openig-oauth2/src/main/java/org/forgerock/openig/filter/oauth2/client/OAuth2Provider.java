@@ -44,7 +44,7 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.encode.Base64;
-import org.forgerock.util.promise.Function;
+import org.forgerock.util.Function;
 
 /**
  * A configuration for an OAuth 2.0 authorization server or OpenID Connect Provider.

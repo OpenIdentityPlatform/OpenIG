@@ -59,7 +59,7 @@ public class TimerHandlerTest {
 
         Exchange exchange = new Exchange();
         when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
         time.handle(exchange, null).get();
 
         InOrder inOrder = inOrder(timer, delegate);
@@ -74,7 +74,7 @@ public class TimerHandlerTest {
         Exchange exchange = new Exchange();
 
         when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
 
         try {
             time.handle(exchange, null).getOrThrow();

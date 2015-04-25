@@ -34,7 +34,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
@@ -172,7 +172,7 @@ public class AssignmentFilter extends GenericHeapObject implements org.forgerock
             eval(binding, exchange);
         }
         Promise<Response, ResponseException> nextOne = next.handle(context, request);
-        return nextOne.onSuccess(new SuccessHandler<Response>() {
+        return nextOne.thenOnResult(new ResultHandler<Response>() {
             @Override
             public void handleResult(final Response result) {
                 // Needed because expressions can rely on exchange.response to be set

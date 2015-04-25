@@ -34,9 +34,9 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.FailureHandler;
+import org.forgerock.util.promise.ExceptionHandler;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -191,14 +191,14 @@ class Route implements Handler {
             final Session session = httpContext.getSession();
             httpContext.setSession(sessionManager.load(request));
             return handler.handle(context, request)
-                          .then(new SuccessHandler<Response>() {
+                          .thenOnResultOrException(new ResultHandler<Response>() {
                               @Override
                               public void handleResult(Response response) {
                                   save(httpContext.getSession(), response);
                               }
-                          }, new FailureHandler<ResponseException>() {
+                          }, new ExceptionHandler<ResponseException>() {
                               @Override
-                              public void handleError(ResponseException error) {
+                              public void handleException(ResponseException error) {
                                   save(httpContext.getSession(), error.getResponse());
                               }
                           })

@@ -60,7 +60,7 @@ public class EnforcerFilter implements Filter {
                                                        final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         if (!isConditionVerified(exchange)) {
-            return newFailedPromise(new ResponseException("Exchange could not satisfy the enforcement expression"));
+            return newExceptionPromise(new ResponseException("Exchange could not satisfy the enforcement expression"));
         }
         return delegate.filter(context, request, next);
     }

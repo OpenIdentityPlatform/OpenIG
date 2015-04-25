@@ -166,7 +166,7 @@ public class LocationHeaderFilterTest {
 
         @Override
         public Promise<Response, ResponseException> handle(final Context context, final Request request) {
-            return Promises.newSuccessfulPromise(response);
+            return Promises.newResultPromise(response);
         }
     }
 }

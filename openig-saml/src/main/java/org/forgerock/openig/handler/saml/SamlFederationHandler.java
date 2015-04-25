@@ -202,7 +202,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     }
 
     private static Promise<Response, ResponseException> complete(Response response) {
-        return Promises.newSuccessfulPromise(response);
+        return Promises.newResultPromise(response);
     }
 
     /**

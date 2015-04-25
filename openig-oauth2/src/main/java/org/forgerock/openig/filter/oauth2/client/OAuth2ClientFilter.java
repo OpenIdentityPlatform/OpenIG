@@ -57,8 +57,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
-import org.forgerock.util.promise.AsyncFunction;
-import org.forgerock.util.promise.Function;
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
 
@@ -215,7 +215,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         } catch (final OAuth2ErrorException e) {
             return handleOAuth2ErrorException(exchange, request, e);
         } catch (ResponseException re) {
-            return newFailedPromise(re);
+            return newExceptionPromise(re);
         }
     }
 
@@ -536,7 +536,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         }
                     });
         } catch (ResponseException e) {
-            return newFailedPromise(e);
+            return newExceptionPromise(e);
         }
     }
 
@@ -606,11 +606,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                  */
                                 saveSession(exchange, refreshedSession);
                             }
-                            return newSuccessfulPromise(response);
+                            return newResultPromise(response);
                         }
                     });
         } catch (ResponseException e) {
-            return newFailedPromise(e);
+            return newExceptionPromise(e);
         }
     }
 
@@ -654,12 +654,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 return completion(httpResponse(200));
             }
         } catch (ResponseException e) {
-            return newFailedPromise(e);
+            return newExceptionPromise(e);
         }
     }
 
     private Promise<Response, ResponseException> completion(Response response) {
-        return newSuccessfulPromise(response);
+        return newResultPromise(response);
     }
 
     private OAuth2Session prepareExchange(final Exchange exchange, final OAuth2Session session)
@@ -739,7 +739,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     });
 
         } catch (ResponseException e) {
-            return newFailedPromise(e);
+            return newExceptionPromise(e);
         }
     }
 

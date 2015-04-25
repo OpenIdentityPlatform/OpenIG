@@ -45,7 +45,7 @@ public class AuditFilterTest extends AbstractAuditTest {
         AuditFilter audit = new AuditFilter(auditSystem, source, delegate, singleton("tag"));
         Exchange exchange = new Exchange();
         when(delegate.filter(exchange, null, handler))
-                .thenReturn(Promises.<Response, ResponseException>newSuccessfulPromise(new Response()));
+                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
 
         audit.filter(exchange, null, handler).getOrThrow();
 
@@ -57,7 +57,7 @@ public class AuditFilterTest extends AbstractAuditTest {
     @Test
     public void shouldEmitAuditEventsWhenFailed() throws Exception {
         when(delegate.filter(any(Exchange.class), any(Request.class), eq(handler)))
-                .thenReturn(Promises.<Response, ResponseException>newFailedPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
 
         AuditFilter audit = new AuditFilter(auditSystem, source, delegate, singleton("tag"));
 

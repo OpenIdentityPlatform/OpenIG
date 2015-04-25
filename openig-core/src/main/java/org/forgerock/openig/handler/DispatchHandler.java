@@ -96,7 +96,7 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
                 return binding.handler.handle(exchange, request);
             }
         }
-        return Promises.newFailedPromise(logger.debug(new ResponseException("no handler to dispatch to")));
+        return Promises.newExceptionPromise(logger.debug(new ResponseException("no handler to dispatch to")));
     }
 
     /** Binds an expression with a handler to dispatch to. */

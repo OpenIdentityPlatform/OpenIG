@@ -27,7 +27,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Filter to set a header in the incoming request and in the outgoing response.
@@ -70,7 +70,7 @@ public class SampleFilter extends GenericHeapObject implements Filter {
         // Pass to the next filter or handler in the chain.
         return next.handle(context, request)
                 // When it has been successfully executed, execute the following callback
-                .then(new SuccessHandler<Response>() {
+                .thenOnResult(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response response) {
                         // Set header in the response.

@@ -38,7 +38,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.SuccessHandler;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Removes headers from and adds headers to a message.
@@ -105,7 +105,7 @@ public class HeaderFilter extends GenericHeapObject implements org.forgerock.htt
         }
         Promise<Response, ResponseException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
-            return promise.onSuccess(new SuccessHandler<Response>() {
+            return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
                     process(response, exchange);
