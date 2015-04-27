@@ -19,7 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.http.MutableUri.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.heap.HeapImplTest.*;
+import static org.forgerock.openig.heap.HeapUtilsTest.*;
 
 import java.io.IOException;
 import java.util.HashMap;

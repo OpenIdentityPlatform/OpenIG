@@ -19,6 +19,7 @@ package org.forgerock.openig.decoration;
 import static java.lang.String.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.http.util.Json.*;
+import static org.forgerock.openig.heap.HeapUtilsTest.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,7 +32,6 @@ import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.HeapImplTest;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.Function;
@@ -43,7 +43,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectDeclaration() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
 
         JsonValue config = asJson("decorate-object-declaration.json");
@@ -54,7 +54,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateAllObjectDeclarations() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
 
         JsonValue config = asJson("decorate-all-object-declarations.json");
@@ -67,7 +67,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelReference() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         heap.init(asJson("decorate-top-level-reference.json"));
 
@@ -82,7 +82,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelInlineReference() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         JsonValue config = asJson("decorate-top-level-inline-reference.json");
         heap.init(config);
@@ -99,7 +99,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateGetReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -119,7 +119,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateResolvedReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -140,7 +140,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelGetReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -165,7 +165,7 @@ public class DecoratorSystemTest {
         //      -> h3
         //  -> h4
 
-        HeapImpl h1 = HeapImplTest.buildDefaultHeap();
+        HeapImpl h1 = buildDefaultHeap();
         h1.put("make-title", new MakeTitleDecorator());
         h1.init(asJson("decorate-reference-with-decorator-inheritance-1.json"));
 
@@ -194,7 +194,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectWithInheritedGlobalDecorator() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-object-with-inherited-global-decorator-parent.json"));
 
@@ -207,7 +207,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectWithInheritedAndLocalGlobalDecorator() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-object-with-inherited-global-decorator-parent.json"));
 
@@ -222,7 +222,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldApplyDecoratorsInTheRightOrder() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         heap.init(asJson("decorate-top-level-reference-with-local-and-global-decorators.json"));
 
@@ -232,7 +232,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldApplyDecoratorsInTheRightOrder2() throws Exception {
-        HeapImpl one = HeapImplTest.buildDefaultHeap();
+        HeapImpl one = buildDefaultHeap();
         one.put("make-title", new MakeTitleDecorator());
         one.init(asJson("decorate-object-in-order-with-inheritance-parent.json"));
 

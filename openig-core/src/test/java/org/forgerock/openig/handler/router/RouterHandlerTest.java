@@ -19,7 +19,7 @@ package org.forgerock.openig.handler.router;
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.heap.HeapImplTest.*;
+import static org.forgerock.openig.heap.HeapUtilsTest.*;
 import static org.forgerock.util.Utils.*;
 import static org.mockito.Mockito.*;
 
