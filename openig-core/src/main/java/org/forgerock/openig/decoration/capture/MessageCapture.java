@@ -122,13 +122,13 @@ public class MessageCapture {
         logger.info(out.toString());
     }
 
-    public void capture(final Exchange exchange, Request request, final CapturePoint mode) {
+    void capture(final Exchange exchange, Request request, final CapturePoint mode) {
         // FIXME Compat
         exchange.request = request;
         capture(exchange, mode);
     }
 
-    public void capture(final Exchange exchange, Response response, final CapturePoint mode) {
+    void capture(final Exchange exchange, Response response, final CapturePoint mode) {
         // FIXME Compat
         exchange.response = response;
         capture(exchange, mode);
