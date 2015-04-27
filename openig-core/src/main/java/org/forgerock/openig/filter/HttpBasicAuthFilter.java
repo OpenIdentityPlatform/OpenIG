@@ -169,7 +169,8 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements org.forger
                 }
                 // ensure conformance with specification
                 if (user.indexOf(':') >= 0) {
-                    return newExceptionPromise(new ResponseException("username must not contain a colon ':' character"));
+                    return newExceptionPromise(
+                            new ResponseException("username must not contain a colon ':' character"));
                 }
                 if (cacheHeader) {
                     // set in session for fetch in next iteration of this loop
@@ -180,7 +181,8 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements org.forger
                 }
             }
         } catch (Exception e) {
-            return newExceptionPromise(new ResponseException("Can't authenticate user with Basic Http Authorization", e));
+            return newExceptionPromise(
+                    new ResponseException("Can't authenticate user with Basic Http Authorization", e));
         }
 
 
