@@ -44,12 +44,13 @@ public class ExceptionFilter extends GenericHeapObject implements org.forgerock.
     /**
      * Idempotent AsyncFunction for successful Promise.
      */
-    private static final AsyncFunction<Response, Response, ResponseException> NOOP_ASYNCFUNCTION = new AsyncFunction<Response, Response, ResponseException>() {
-        @Override
-        public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
-            return Promises.newResultPromise(value);
-        }
-    };
+    private static final AsyncFunction<Response, Response, ResponseException> NOOP_ASYNCFUNCTION =
+            new AsyncFunction<Response, Response, ResponseException>() {
+                @Override
+                public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
+                    return Promises.newResultPromise(value);
+                }
+            };
 
     /** Handler to dispatch to in the event of caught exceptions. */
     private final Handler handler;
