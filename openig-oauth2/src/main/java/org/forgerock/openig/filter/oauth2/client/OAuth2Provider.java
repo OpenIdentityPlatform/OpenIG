@@ -21,9 +21,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
 import static org.forgerock.openig.http.HttpClient.*;
 import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.closeSilently;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -40,8 +38,6 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.protocol.Form;
-import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.Function;
