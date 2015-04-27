@@ -23,7 +23,6 @@ import java.net.URISyntaxException;
 
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.protocol.Request;
 import org.testng.annotations.Test;

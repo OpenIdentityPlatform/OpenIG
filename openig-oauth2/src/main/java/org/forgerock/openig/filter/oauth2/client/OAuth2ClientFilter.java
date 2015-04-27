@@ -472,7 +472,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private Promise<Response, ResponseException> handleAuthorizationCallback(final Exchange exchange,
-                                                                             final Request request) throws OAuth2ErrorException {
+                                                                             final Request request)
+            throws OAuth2ErrorException {
 
         try {
             if (!"GET".equals(request.getMethod())) {
@@ -615,7 +616,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private Promise<Response, ResponseException> handleUserInitiatedLogin(final Exchange exchange,
-                                                                          final Request request) throws OAuth2ErrorException {
+                                                                          final Request request)
+            throws OAuth2ErrorException {
         final String providerName = request.getForm().getFirst("provider");
         final String gotoUri = request.getForm().getFirst("goto");
         if (providerName == null) {
@@ -631,7 +633,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private Promise<Response, ResponseException> handleUserInitiatedLogout(final Exchange exchange,
-                                                                           final Request request) throws ResponseException {
+                                                                           final Request request)
+            throws ResponseException {
         final String gotoUri = request.getForm().getFirst("goto");
         return httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto)
                 .then(new Function<Response, Response, ResponseException>() {
