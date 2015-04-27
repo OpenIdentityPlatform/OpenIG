@@ -352,7 +352,12 @@ public class HttpClient extends GenericHeapObject {
         try {
             return client.send(request);
         } catch (final ResponseException e) {
-            logger.warning(e);
+            // TODO (Ugly I known) Filter out the non-2xx responses that are wrapped into ResponseException
+            // That code should be removed when CHF will implement the non-interpretation
+            // of HTTP responses (not turning non-2xx into exceptions)
+            if (e.getCause() != null) {
+                logger.warning(e);
+            }
             return e.getResponse();
         }
     }
