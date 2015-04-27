@@ -37,6 +37,16 @@ public final class Adapters {
         // Prevent instantiation.
     }
 
+    /**
+     * Builds the exchange from the current context and request.
+     *
+     * @param context
+     *            The context associated with a request currently being
+     *            processed.
+     * @param request
+     *            The current request.
+     * @return An HTTP exchange of request which can be used in legacy OpenIG.
+     */
     public static Exchange asExchange(Context context, Request request) {
         HttpContext requestContext = context.asContext(HttpContext.class);
         final Exchange exchange = new Exchange(request.getUri().asURI());
@@ -51,6 +61,14 @@ public final class Adapters {
         return exchange;
     }
 
+    /**
+     * Converts a {@link org.forgerock.http.Handler} to a
+     * {@link org.forgerock.openig.handler.Handler} used in scripts.
+     *
+     * @param handler
+     *            The handler to converts to.
+     * @return A {@link org.forgerock.openig.handler.Handler} used in scripts.
+     */
     public static Handler asHandler(org.forgerock.http.Handler handler) {
         return new ChfHandlerDelegate(handler);
     }
