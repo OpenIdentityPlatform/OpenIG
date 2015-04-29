@@ -465,6 +465,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         Form form = request.getForm();
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = form.getFirst(SAML2Constants.SAML_REQUEST);
+        Response response = RESPONSE_ALREADY_COMPLETED;
         if (samlRequest != null) {
             logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP request");
             SPSingleLogout.processLogoutRequest(servletRequest, servletResponse, samlRequest, relayState);
@@ -475,13 +476,13 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                 logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP response");
                 SPSingleLogout.processLogoutResponse(servletRequest, servletResponse, samlResponse, relayState);
                 if (relayState != null) {
-                    return sendRedirect(relayState);
+                    response = sendRedirect(relayState);
                 }
             }
         }
 
         cleanSession(session);
-        return RESPONSE_ALREADY_COMPLETED;
+        return response;
     }
 
     private Response serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
