@@ -16,11 +16,16 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.heap.HeapUtilsTest.*;
-import static org.forgerock.util.Utils.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
@@ -38,6 +43,7 @@ import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -87,20 +93,20 @@ public class RouterHandlerTest {
         handler.start();
 
         // Verify that the initial route is active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Copy the 2nd route into the monitored directory
         File destination = copyFileFromSupplyToRoutes("addition.json");
 
         // Verify that both routes are active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
-        assertStatusAfterHandle(handler, "OpenAM", 404);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
+        assertStatusAfterHandle(handler, "OpenAM", Status.NOT_FOUND);
 
         // Delete the additional file
         assertThat(destination.delete()).isTrue();
 
         // Verify that the first route is still active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Verify that the second route is inactive
         Exchange fifth = new Exchange();
@@ -137,7 +143,7 @@ public class RouterHandlerTest {
         handler.start();
 
         // Verify that the initial route is active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         try {
             // Should throw since no routes match and there is no default handler.
@@ -246,7 +252,7 @@ public class RouterHandlerTest {
 
     private void assertStatusAfterHandle(final RouterHandler handler,
                                          final String value,
-                                         final int expected) throws Exception {
+                                         final Status expected) throws Exception {
         Exchange exchange = handle(handler, value);
         assertThat(exchange.response.getStatus()).isEqualTo(expected);
     }

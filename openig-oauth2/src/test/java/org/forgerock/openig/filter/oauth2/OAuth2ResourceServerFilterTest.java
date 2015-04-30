@@ -16,13 +16,15 @@
 
 package org.forgerock.openig.filter.oauth2;
 
-import static java.lang.String.*;
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.util.Sets.*;
-import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.*;
-import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.*;
-import static org.mockito.Mockito.*;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Sets.newLinkedHashSet;
+import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.DEFAULT_ACCESS_TOKEN_KEY;
+import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.DEFAULT_REALM_NAME;
+import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.WWW_AUTHENTICATE;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
@@ -102,8 +105,7 @@ public class OAuth2ResourceServerFilterTest {
         }
         Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(response.getStatus()).isEqualTo(401);
-        assertThat(response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .isEqualTo(doubleQuote("Bearer realm='OpenIG'"));
     }
@@ -118,8 +120,7 @@ public class OAuth2ResourceServerFilterTest {
 
         Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(response.getStatus()).isEqualTo(400);
-        assertThat(response.getReason()).isEqualTo("Bad Request");
+        assertThat(response.getStatus()).isEqualTo(Status.BAD_REQUEST);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_request'"));
     }
@@ -144,8 +145,7 @@ public class OAuth2ResourceServerFilterTest {
 
         Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(response.getStatus()).isEqualTo(401);
-        assertThat(response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
                 .startsWith(doubleQuote("Bearer realm='OpenIG', error='invalid_token'"));
     }
@@ -157,8 +157,7 @@ public class OAuth2ResourceServerFilterTest {
 
         Response response = filter.filter(new Exchange(), request, null).get();
 
-        assertThat(response.getStatus()).isEqualTo(403);
-        assertThat(response.getReason()).isEqualTo("Forbidden");
+        assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
         String header = response.getHeaders().getFirst(WWW_AUTHENTICATE);
         assertThat(header).has(scopes("another-one", "a-missing-scope"));
     }

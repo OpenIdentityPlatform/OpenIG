@@ -28,6 +28,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -82,8 +83,7 @@ public class DesKeyGenHandler extends GenericHeapObject implements Handler {
     @Override
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
-        response.setStatus(200);
-        response.setReason("OK");
+        response.setStatus(Status.OK);
         response.setEntity(getSharedKey());
         return Promises.newResultPromise(response);
     }

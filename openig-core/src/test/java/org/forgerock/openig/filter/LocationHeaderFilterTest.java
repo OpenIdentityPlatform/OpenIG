@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 
@@ -25,6 +25,7 @@ import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
@@ -117,7 +118,7 @@ public class LocationHeaderFilterTest {
         // Prepare a response
         exchange.response = new Response();
         exchange.response.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
-        exchange.response.setStatus(302);
+        exchange.response.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(exchange.response);
 
@@ -145,7 +146,7 @@ public class LocationHeaderFilterTest {
         Exchange exchange = new Exchange();
         exchange.response = new Response();
         exchange.response.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
-        exchange.response.setStatus(302);
+        exchange.response.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(exchange.response);
 

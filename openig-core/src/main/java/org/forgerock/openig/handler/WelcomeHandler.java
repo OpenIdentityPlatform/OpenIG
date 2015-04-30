@@ -21,6 +21,7 @@ import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -42,8 +43,7 @@ public class WelcomeHandler extends GenericHeapObject implements org.forgerock.h
     @Override
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
-        response.setStatus(200);
-        response.setReason("OK");
+        response.setStatus(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
         response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
                 "welcome.html"), storage));

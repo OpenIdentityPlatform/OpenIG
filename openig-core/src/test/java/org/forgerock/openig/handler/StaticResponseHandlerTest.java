@@ -17,9 +17,10 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.Test;
@@ -33,8 +34,7 @@ public class StaticResponseHandlerTest {
         handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
         final Exchange exchange = new Exchange();
         Response response = handler.handle(exchange, null).get();
-        assertThat(response.getStatus()).isEqualTo(302);
-        assertThat(response.getReason()).isEqualTo("Found");
+        assertThat(response.getStatus()).isEqualTo(Status.FOUND);
         assertThat(response.getHeaders().getFirst("Location")).isEqualTo("http://www.example.com/");
     }
 
@@ -50,8 +50,7 @@ public class StaticResponseHandlerTest {
         final Exchange exchange = new Exchange();
         exchange.put("goto", "http://goto.url");
         Response response = handler.handle(exchange, null).get();
-        assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(response.getReason()).isEqualTo("OK");
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
         assertThat(response.getEntity().getString()).isEqualTo(
                 "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");
     }

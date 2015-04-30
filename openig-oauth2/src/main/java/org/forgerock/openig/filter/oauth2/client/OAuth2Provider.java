@@ -15,12 +15,14 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -32,6 +34,7 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
@@ -39,8 +42,8 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.util.encode.Base64;
 import org.forgerock.util.Function;
+import org.forgerock.util.encode.Base64;
 
 /**
  * A configuration for an OAuth 2.0 authorization server or OpenID Connect Provider.
@@ -208,7 +211,7 @@ public class OAuth2Provider {
                            .then(new Function<Response, Response, ResponseException>() {
                                @Override
                                public Response apply(final Response response) throws ResponseException {
-                                   if (response.getStatus() != 200) {
+                                   if (!response.getStatus().equals(Status.OK)) {
                                        throw new ResponseException(
                                                "Unable to read well-known OpenID Configuration from '"
                                                        + uri + "'");
@@ -375,14 +378,15 @@ public class OAuth2Provider {
 
     private void checkResponseStatus(final Response response,
                                      final boolean isRefreshToken) throws OAuth2ErrorException {
-        if (response.getStatus() != 200) {
-            if (response.getStatus() == 400 || response.getStatus() == 401) {
+        Status status = response.getStatus();
+        if (!status.equals(Status.OK)) {
+            if (status.equals(Status.BAD_REQUEST) || status.equals(Status.UNAUTHORIZED)) {
                 final JsonValue errorJson = getJsonContent(response);
                 throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
             } else {
                 final String errorMessage =
                         format("Unable to %s access token [status=%d]", isRefreshToken ? "refresh" : "exchange",
-                                response.getStatus());
+                                status.getCode());
                 throw new OAuth2ErrorException(E_SERVER_ERROR, errorMessage);
             }
         }
@@ -412,14 +416,15 @@ public class OAuth2Provider {
                           final OAuth2Session session) throws ResponseException, OAuth2ErrorException  {
         final Request request = createRequestForUserInfo(exchange, session.getAccessToken());
         final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (response.getStatus() != 200) {
+        if (!response.getStatus().equals(Status.OK)) {
             /*
              * The access token may have expired. Trigger an exception,
              * catch it and react later.
              */
             final OAuth2BearerWWWAuthenticateHeader header = OAuth2BearerWWWAuthenticateHeader.valueOf(response);
             final OAuth2Error error = header.getOAuth2Error();
-            final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
+            final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus().getCode(),
+                                                                                     error);
             throw new OAuth2ErrorException(bestEffort);
         }
         return getJsonContent(response);

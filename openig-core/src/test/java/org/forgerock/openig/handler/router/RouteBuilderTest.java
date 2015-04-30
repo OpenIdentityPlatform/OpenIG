@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.MutableUri.*;
-import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.heap.HeapUtilsTest.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
+import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,6 +32,7 @@ import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -68,7 +69,7 @@ public class RouteBuilderTest {
 
         assertThat(route.handle(exchange, new Request())
                         .get()
-                        .getStatus()).isEqualTo(42);
+                        .getStatus()).isEqualTo(Status.TEAPOT);
     }
 
     @Test

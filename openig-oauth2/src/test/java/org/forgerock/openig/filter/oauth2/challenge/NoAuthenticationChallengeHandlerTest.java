@@ -11,16 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.challenge;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -31,8 +32,7 @@ public class NoAuthenticationChallengeHandlerTest {
 
         Response response = handler.handle(null, null).get();
 
-        assertThat(response.getStatus()).isEqualTo(401);
-        assertThat(response.getReason()).isEqualTo("Unauthorized");
+        assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
 
         List<String> authenticates = response.getHeaders().get("WWW-Authenticate");
         assertThat(authenticates).containsOnly("Bearer realm=\"test\"");

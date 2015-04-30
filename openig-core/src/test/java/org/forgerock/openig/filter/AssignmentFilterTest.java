@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.protocol.Request;
@@ -68,7 +68,7 @@ public class AssignmentFilterTest {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression<String> target = Expression.valueOf("${exchange.newAttr}", String.class);
         filter.addResponseBinding(target,
-                                  Expression.valueOf("${exchange.response.status}", Integer.class));
+                                  Expression.valueOf("${exchange.response.status.code}", Integer.class));
 
         Exchange exchange = new Exchange();
         Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(as(filter)));

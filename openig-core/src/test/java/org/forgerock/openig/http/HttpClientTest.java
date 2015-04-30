@@ -16,13 +16,17 @@
 
 package org.forgerock.openig.http;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.*;
-import static com.xebialabs.restito.semantics.Action.*;
-import static com.xebialabs.restito.semantics.Condition.*;
-import static java.lang.String.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
+import static com.xebialabs.restito.semantics.Action.status;
+import static com.xebialabs.restito.semantics.Condition.get;
+import static com.xebialabs.restito.semantics.Condition.post;
+import static com.xebialabs.restito.semantics.Condition.withPostBody;
+import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Status;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
@@ -73,7 +77,7 @@ public class HttpClientTest {
             request.setMethod("POST");
             request.setUri(format("http://localhost:%d/test", server.getPort()));
             request.getEntity().setString("Hello");
-            assertThat(client.execute(request).getStatus()).isEqualTo(200);
+            assertThat(client.execute(request).getStatus()).isEqualTo(Status.OK);
         } finally {
             client.shutdown();
         }
@@ -90,7 +94,7 @@ public class HttpClientTest {
             Request request = new Request();
             request.setMethod("POST");
             request.setUri(format("http://localhost:%d/test", server.getPort()));
-            assertThat(client.execute(request).getStatus()).isEqualTo(200);
+            assertThat(client.execute(request).getStatus()).isEqualTo(Status.OK);
         } finally {
             client.shutdown();
         }

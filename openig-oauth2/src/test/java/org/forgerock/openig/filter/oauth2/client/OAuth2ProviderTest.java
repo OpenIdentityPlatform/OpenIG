@@ -15,13 +15,19 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.el.Expression.*;
-import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.fluent.JsonValue.array;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.forgerock.json.fluent.JsonValue.object;
+import static org.forgerock.openig.el.Expression.valueOf;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +38,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
@@ -82,9 +89,9 @@ public class OAuth2ProviderTest {
 
     @DataProvider
     private Object[][] errorResponseStatus() {
-        return new Object[][] {
-            { 400 },
-            { 502 } };
+        return new Status[][] {
+            { Status.BAD_REQUEST },
+            { Status.BAD_GATEWAY } };
     }
 
     @DataProvider
@@ -140,7 +147,7 @@ public class OAuth2ProviderTest {
         // given
         final OAuth2Provider provider = getOAuth2Provider();
         Response response = new Response();
-        response.setStatus(200);
+        response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
         // when
@@ -160,7 +167,7 @@ public class OAuth2ProviderTest {
         final String callbackUri = "shouldBeACallbackUri";
         final OAuth2Provider provider = getOAuth2Provider();
         Response response = new Response();
-        response.setStatus(200);
+        response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
@@ -180,7 +187,7 @@ public class OAuth2ProviderTest {
         // given
         final OAuth2Provider provider = getOAuth2Provider();
         Response response = new Response();
-        response.setStatus(200);
+        response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
 
@@ -195,7 +202,7 @@ public class OAuth2ProviderTest {
     }
 
     @Test(dataProvider = "errorResponseStatus", expectedExceptions = OAuth2ErrorException.class)
-    public void shouldFailToGetRefreshTokenWhenReceiveErrorResponse(final int errorResponseStatus) throws Exception {
+    public void shouldFailToGetRefreshTokenWhenReceiveErrorResponse(final Status errorResponseStatus) throws Exception {
 
         Response response = new Response();
         response.setStatus(errorResponseStatus);
@@ -207,7 +214,7 @@ public class OAuth2ProviderTest {
     }
 
     @Test(dataProvider = "errorResponseStatus", expectedExceptions = OAuth2ErrorException.class)
-    public void shouldFailToGetAccessTokenWhenReceiveErrorResponse(final int errorResponseStatus) throws Exception {
+    public void shouldFailToGetAccessTokenWhenReceiveErrorResponse(final Status errorResponseStatus) throws Exception {
 
         Response response = new Response();
         response.setStatus(errorResponseStatus);
@@ -223,7 +230,7 @@ public class OAuth2ProviderTest {
     public void shouldFailToGetUserInfoWhenReceiveErrorResponse() throws Exception {
 
         Response response = new Response();
-        response.setStatus(418);
+        response.setStatus(Status.TEAPOT);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));

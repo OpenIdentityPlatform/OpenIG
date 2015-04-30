@@ -16,7 +16,10 @@
 
 package org.forgerock.openig.audit.monitor;
 
-import static org.forgerock.openig.audit.Tag.*;
+import static org.forgerock.openig.audit.Tag.completed;
+import static org.forgerock.openig.audit.Tag.exception;
+import static org.forgerock.openig.audit.Tag.request;
+import static org.forgerock.openig.audit.Tag.response;
 
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -28,6 +31,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditEventListener;
 import org.forgerock.openig.audit.ConditionalAuditEventListener;
@@ -51,7 +55,7 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
     public Promise<Response, ResponseException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.getEntity().setJson(metrics);
-        response.setStatus(200);
+        response.setStatus(Status.OK);
         return Promises.newResultPromise(response);
     }
 

@@ -16,8 +16,10 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
@@ -28,6 +30,7 @@ import org.forgerock.http.SessionManager;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -124,7 +127,7 @@ public class RouteTest {
                     }
                 });
 
-        promise.handleException(new ResponseException(500));
+        promise.handleException(new ResponseException(Status.INTERNAL_SERVER_ERROR));
         Promise<Response, ResponseException> result = route.handle(exchange, new Request());
 
         try {
