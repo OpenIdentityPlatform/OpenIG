@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.handler.saml;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +40,7 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -535,12 +536,12 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         final String msg = format("SSO Failed: %s", message);
         logger.error(msg);
         if (!response.isCommitted()) {
-            return sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            return sendError(Status.INTERNAL_SERVER_ERROR, msg);
         }
         return null;
     }
 
-    private static Response sendError(int status, String message) {
+    private static Response sendError(Status status, String message) {
         Response response = new Response();
         response.setStatus(status);
         response.getEntity().setString(message);
@@ -550,7 +551,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     private static Response sendRedirect(String redirectUri) {
         Response response = new Response();
         // Redirect with a 302 (Found) status code
-        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setStatus(Status.FOUND);
         // Web container was rebasing location header against server URL
         // Not useful if relayState is already (and always) an absolute URL
         response.getHeaders().putSingle(LocationHeader.NAME, redirectUri);
