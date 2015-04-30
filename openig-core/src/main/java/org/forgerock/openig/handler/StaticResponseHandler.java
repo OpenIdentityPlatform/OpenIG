@@ -43,11 +43,8 @@ import org.forgerock.util.promise.Promises;
  */
 public class StaticResponseHandler extends GenericHeapObject implements org.forgerock.http.Handler {
 
-    /** The response status code (e.g. 200). */
-    private final Integer status;
-
-    /** The response status reason (e.g. "OK"). */
-    private final String reason;
+    /** The status (code + reason) */
+    private final Status status;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}. */
     private final String version;
@@ -64,11 +61,9 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
      *
      * @param status
      *            The response status to set.
-     * @param reason
-     *            The response status reason to set.
      */
-    public StaticResponseHandler(final Integer status, final String reason) {
-        this(status, reason, null, null);
+    public StaticResponseHandler(final Status status) {
+        this(status, null, null);
     }
 
     /**
@@ -76,18 +71,15 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
      *
      * @param status
      *            The response status to set.
-     * @param reason
-     *            The response status reason to set.
      * @param version
      *            The protocol version.
      * @param entity
      *            The message entity expression.
      */
-    public StaticResponseHandler(final Integer status, final String reason, final String version,
-            final Expression<String> entity) {
-        super();
+    public StaticResponseHandler(final Status status,
+                                 final String version,
+                                 final Expression<String> entity) {
         this.status = status;
-        this.reason = reason;
         this.version = version;
         this.entity = entity;
     }
@@ -111,11 +103,7 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
         // TODO Remove that when Expression will no more use an Exchange
         Exchange exchange = context.asContext(Exchange.class);
         Response response = new Response();
-        if (this.reason == null) {
-            response.setStatus(Status.valueOf(this.status));
-        } else {
-            response.setStatus(Status.valueOf(this.status, this.reason));
-        }
+        response.setStatus(this.status);
         if (this.version != null) { // default in Message class
             response.setVersion(this.version);
         }
@@ -140,12 +128,13 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final int status = config.get("status").required().asInteger();
+            final int code = config.get("status").required().asInteger();
             final String reason = config.get("reason").asString();
+            Status status = Status.valueOf(code, reason);
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
             final Expression<String> entity = asExpression(config.get("entity"), String.class);
-            final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
+            final StaticResponseHandler handler = new StaticResponseHandler(status, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {

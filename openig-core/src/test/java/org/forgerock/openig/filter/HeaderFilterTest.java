@@ -16,11 +16,12 @@
 
 package org.forgerock.openig.filter;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -46,7 +47,7 @@ public class HeaderFilterTest {
 
         exchange.request.setMethod("DELETE");
         exchange.request.setUri("http://test.com:123/path/to/resource.html");
-        StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
+        StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((org.forgerock.http.Filter) filter));
         Response response = chain.handle(exchange, exchange.request).get();
 
@@ -60,7 +61,7 @@ public class HeaderFilterTest {
         filter.getRemovedHeaders().add("Location");
 
         // Prepare a static response handler that provision a response header
-        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com", String.class));
 
         // Execute the filter
