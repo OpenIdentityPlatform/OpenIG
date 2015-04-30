@@ -17,8 +17,10 @@
 
 package org.forgerock.openig.el;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.object;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -180,7 +182,8 @@ public class ExpressionTest {
         boolExpr = Expression.valueOf("${exchange.request.uri.scheme == 'http'}", Boolean.class);
         assertThat(boolExpr.eval(exchange)).isTrue();
 
-        boolExpr = Expression.valueOf("${not (exchange.response.status == 302 and not empty exchange.session.gotoURL)}",
+        boolExpr = Expression.valueOf("${not (exchange.response.status.code == 302 and "
+                + "not empty exchange.session.gotoURL)}",
                 Boolean.class);
         assertThat(boolExpr.eval(exchange)).isTrue();
 

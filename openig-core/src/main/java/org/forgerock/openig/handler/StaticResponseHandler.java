@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +26,7 @@ import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
@@ -111,10 +112,9 @@ public class StaticResponseHandler extends GenericHeapObject implements org.forg
         Exchange exchange = context.asContext(Exchange.class);
         Response response = new Response();
         if (this.reason == null) {
-            response.setStatusAndReason(this.status);
+            response.setStatus(Status.valueOf(this.status));
         } else {
-            response.setStatus(this.status);
-            response.setReason(this.reason);
+            response.setStatus(Status.valueOf(this.status, this.reason));
         }
         if (this.version != null) { // default in Message class
             response.setVersion(this.version);

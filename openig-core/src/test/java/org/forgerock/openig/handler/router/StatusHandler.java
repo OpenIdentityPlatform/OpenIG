@@ -21,6 +21,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.promise.Promise;
@@ -28,9 +29,9 @@ import org.forgerock.util.promise.Promises;
 
 @SuppressWarnings("javadoc")
 public class StatusHandler implements Handler {
-    private final int status;
+    private final Status status;
 
-    public StatusHandler(final int status) {
+    public StatusHandler(final Status status) {
         this.status = status;
     }
 
@@ -45,7 +46,7 @@ public class StatusHandler implements Handler {
 
         @Override
         public Object create() throws HeapException {
-            return new StatusHandler(config.get("status").required().asInteger());
+            return new StatusHandler(Status.valueOf(config.get("status").required().asInteger()));
         }
     }
 }

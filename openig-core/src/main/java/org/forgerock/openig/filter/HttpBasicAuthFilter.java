@@ -20,9 +20,10 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
-import static org.forgerock.util.promise.Promises.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -150,7 +152,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements org.forger
                     request.getEntity().pop();
                 }
                 // successful exchange from this filter's standpoint
-                if (response.getStatus() != 401) {
+                if (!response.getStatus().equals(Status.UNAUTHORIZED)) {
                     // Remove headers from outgoing message
                     for (String header : SUPPRESS_RESPONSE_HEADERS) {
                         response.getHeaders().remove(header);

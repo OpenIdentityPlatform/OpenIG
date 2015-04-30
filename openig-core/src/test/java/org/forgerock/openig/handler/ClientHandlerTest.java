@@ -16,17 +16,21 @@
 
 package org.forgerock.openig.handler;
 
-import static com.xebialabs.restito.builder.stub.StubHttp.*;
-import static com.xebialabs.restito.builder.verify.VerifyHttp.*;
-import static com.xebialabs.restito.semantics.Action.*;
-import static com.xebialabs.restito.semantics.Condition.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
+import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
+import static com.xebialabs.restito.semantics.Action.status;
+import static com.xebialabs.restito.semantics.Condition.alwaysTrue;
+import static com.xebialabs.restito.semantics.Condition.method;
+import static com.xebialabs.restito.semantics.Condition.uri;
+import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.http.HttpClient;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -54,7 +58,7 @@ public class ClientHandlerTest {
             final ClientHandler handler = new ClientHandler(new HttpClient());
             Response response = handler.handle(null, request).get();
 
-            assertThat(response.getStatus()).isEqualTo(200);
+            assertThat(response.getStatus()).isEqualTo(Status.OK);
             verifyHttp(server).once(method(Method.POST), uri("/example"),
                                     withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
         } finally {

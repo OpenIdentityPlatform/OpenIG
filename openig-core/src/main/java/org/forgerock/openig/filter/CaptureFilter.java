@@ -17,9 +17,10 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.http.util.StandardCharsets.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.http.util.StandardCharsets.UTF_8;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -209,7 +210,12 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
             writer.println();
             writer.println("<--- RESPONSE " + id + " ---");
             writer.println();
-            writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
+            writer.print(response.getVersion() + " ");
+            if (response.getStatus() != null) {
+                writer.print(response.getStatus().getCode() + " ");
+                writer.print(response.getStatus().getReasonPhrase());
+            }
+            writer.println();
             writeHeaders(writer, response);
             writeEntity(writer, response);
             writer.flush();

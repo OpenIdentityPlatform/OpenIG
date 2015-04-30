@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.http.URIUtil.*;
-import static java.lang.String.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static org.forgerock.http.URIUtil.withoutQueryAndFragment;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +30,7 @@ import java.util.Map;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
@@ -93,15 +94,14 @@ final class OAuth2Utils {
     }
 
     static Response httpRedirect(final String uri) {
-        // FIXME: this constant should in HTTP package?
-        Response response = httpResponse(302);
+        Response response = httpResponse(Status.FOUND);
         response.getHeaders().add(LocationHeader.NAME, uri);
         return response;
     }
 
-    static Response httpResponse(final int status) {
+    static Response httpResponse(final Status status) {
         Response response = new Response();
-        response.setStatusAndReason(status);
+        response.setStatus(status);
         return response;
     }
 

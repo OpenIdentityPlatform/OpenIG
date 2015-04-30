@@ -1,5 +1,6 @@
 import org.forgerock.opendj.ldap.*
 import org.forgerock.http.protocol.Response
+import org.forgerock.http.protocol.Status
 
 /*
  * Perform LDAP authentication based on user credentials from a form.
@@ -56,8 +57,7 @@ try {
     // HTTP status code 403 Forbidden.
 
     exchange.response = new Response()
-    exchange.response.status = 403
-    exchange.response.reason = e.message
+    exchange.response.status = Status.FORBIDDEN
     exchange.response.entity = "<html><p>Authentication failed: " + e.message + "</p></html>"
 
 } catch (Exception e) {
@@ -66,8 +66,7 @@ try {
     // so fail the exchange with HTTP 500 Internal Server Error.
 
     exchange.response = new Response()
-    exchange.response.status = 500
-    exchange.response.reason = e.message
+    exchange.response.status = Status.INTERNAL_SERVER_ERROR
     exchange.response.entity = "<html><p>Server error: " + e.message + "</p></html>"
 
 } finally {

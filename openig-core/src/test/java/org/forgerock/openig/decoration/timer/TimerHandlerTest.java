@@ -16,12 +16,15 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
@@ -73,8 +76,9 @@ public class TimerHandlerTest {
         TimerHandler time = new TimerHandler(delegate, logger);
         Exchange exchange = new Exchange();
 
+        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
         when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
 
         try {
             time.handle(exchange, null).getOrThrow();

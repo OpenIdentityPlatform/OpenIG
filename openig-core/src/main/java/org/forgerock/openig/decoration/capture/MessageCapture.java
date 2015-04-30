@@ -16,7 +16,8 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static groovy.json.JsonOutput.*;
+import static groovy.json.JsonOutput.prettyPrint;
+import static groovy.json.JsonOutput.toJson;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -180,7 +181,12 @@ public class MessageCapture {
     }
 
     private void captureResponseMessage(final PrintWriter writer, Response response) {
-        writer.println(response.getVersion() + " " + response.getStatus() + " " + response.getReason());
+        writer.print(response.getVersion() + " ");
+        if (response.getStatus() != null) {
+            writer.print(response.getStatus().getCode() + " ");
+            writer.print(response.getStatus().getReasonPhrase());
+        }
+        writer.println();
         writeHeaders(writer, response);
         writeEntity(writer, response);
         writer.flush();

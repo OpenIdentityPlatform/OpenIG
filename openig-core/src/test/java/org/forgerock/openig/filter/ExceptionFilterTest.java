@@ -16,12 +16,14 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -63,8 +65,9 @@ public class ExceptionFilterTest {
         Response response = new Response();
         when(exceptionHandler.handle(null, null))
                 .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 

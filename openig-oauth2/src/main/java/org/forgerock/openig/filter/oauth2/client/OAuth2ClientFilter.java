@@ -16,16 +16,25 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.*;
-import static java.util.Collections.*;
-import static org.forgerock.http.URIUtil.*;
-import static org.forgerock.http.util.Duration.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
-import static org.forgerock.util.promise.Promises.*;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.forgerock.http.URIUtil.withQuery;
+import static org.forgerock.http.util.Duration.duration;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpResponse;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.Utils.joinAsString;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -46,6 +55,7 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.util.Duration;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
@@ -55,10 +65,10 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.Factory;
-import org.forgerock.util.LazyMap;
 import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
+import org.forgerock.util.LazyMap;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
 
@@ -597,7 +607,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         @Override
                         public Promise<Response, ResponseException> apply(final Response response)
                                 throws ResponseException {
-                            if (response.getStatus() == 401 && !refreshedSession.isAuthorized()) {
+                            if (response.getStatus().equals(Status.UNAUTHORIZED) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
                                 return sendRedirectForAuthorization(exchange, request);
                             } else if (session != refreshedSession) {
@@ -654,7 +664,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             } else if (defaultGotoUri != null) {
                 return completion(httpRedirect(buildUri(exchange, defaultGotoUri).toString()));
             } else {
-                return completion(httpResponse(200));
+                return completion(httpResponse(Status.OK));
             }
         } catch (ResponseException e) {
             return newExceptionPromise(e);

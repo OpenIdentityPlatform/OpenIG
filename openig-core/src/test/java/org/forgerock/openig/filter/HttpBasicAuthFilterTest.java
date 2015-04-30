@@ -16,9 +16,15 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.endsWith;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpContext;
@@ -26,6 +32,7 @@ import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
@@ -44,8 +51,6 @@ import org.testng.annotations.Test;
 public class HttpBasicAuthFilterTest {
 
     public static final String AUTHENTICATE_HEADER = "WWW-Authenticate";
-    public static final int HTTP_SUCCESS = 200;
-    public static final int HTTP_UNAUTHORIZED = 401;
     public static final String INITIAL_CREDENTIALS = "YmplbnNlbjpoaWZhbHV0aW4=";
     public static final String REFRESHED_CREDENTIALS = "YmplbnNlbjpoaWZhbHV0aW4y";
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -78,7 +83,7 @@ public class HttpBasicAuthFilterTest {
             public Promise<Response, ResponseException> answer(final InvocationOnMock invocation) throws Throwable {
                 // Produce a valid response with an authentication challenge
                 Response response = new Response();
-                response.setStatus(HTTP_SUCCESS);
+                response.setStatus(Status.OK);
                 response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Realm toto");
                 return Promises.newResultPromise(response);
 
@@ -106,7 +111,7 @@ public class HttpBasicAuthFilterTest {
         Request request = newRequest();
         Response response = filter.filter(exchange, request, terminalHandler).getOrThrow();
 
-        assertThat(response.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
     }
 
     /**
@@ -191,8 +196,8 @@ public class HttpBasicAuthFilterTest {
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
 
         // Responses should be OK for all outgoing responses
-        assertThat(firstResponse.getStatus()).isEqualTo(HTTP_SUCCESS);
-        assertThat(secondResponse.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(firstResponse.getStatus()).isEqualTo(Status.OK);
+        assertThat(secondResponse.getStatus()).isEqualTo(Status.OK);
     }
 
     @Test
@@ -246,9 +251,9 @@ public class HttpBasicAuthFilterTest {
         verify(session).put(endsWith(":userpass"), eq(REFRESHED_CREDENTIALS));
 
         // Responses should be OK for all outgoing responses
-        assertThat(firstResponse.getStatus()).isEqualTo(HTTP_SUCCESS);
-        assertThat(secondResponse.getStatus()).isEqualTo(HTTP_SUCCESS);
-        assertThat(thirdResponse.getStatus()).isEqualTo(HTTP_SUCCESS);
+        assertThat(firstResponse.getStatus()).isEqualTo(Status.OK);
+        assertThat(secondResponse.getStatus()).isEqualTo(Status.OK);
+        assertThat(thirdResponse.getStatus()).isEqualTo(Status.OK);
     }
 
     @Test(dataProvider = "invalidUserNames",
@@ -296,7 +301,7 @@ public class HttpBasicAuthFilterTest {
         @Override
         public Promise<Response, ResponseException> answer(InvocationOnMock invocation) throws Throwable {
             Response response = new Response();
-            response.setStatus(HTTP_UNAUTHORIZED);
+            response.setStatus(Status.UNAUTHORIZED);
             response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
             return Promises.newResultPromise(response);
         }
@@ -320,7 +325,7 @@ public class HttpBasicAuthFilterTest {
 
             // Produce a valid response, no special headers are required
             Response response = new Response();
-            response.setStatus(HTTP_SUCCESS);
+            response.setStatus(Status.OK);
             return Promises.newResultPromise(response);
         }
     }

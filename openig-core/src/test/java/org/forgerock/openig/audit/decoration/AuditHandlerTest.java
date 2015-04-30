@@ -16,14 +16,18 @@
 
 package org.forgerock.openig.audit.decoration;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -58,8 +62,9 @@ public class AuditHandlerTest extends AbstractAuditTest {
 
     @Test
     public void shouldEmitAuditEventsWhenFailed() throws Exception {
+        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
         when(delegate.handle(any(Exchange.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(new ResponseException(500)));
+                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
 
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, singleton("tag"));
 

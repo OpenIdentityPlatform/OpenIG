@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
-import static java.lang.String.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,6 +29,7 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
@@ -141,7 +142,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus() == 200;
+        return response.getStatus().equals(Status.OK);
     }
 
     /**

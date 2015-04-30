@@ -16,14 +16,18 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
@@ -108,7 +112,7 @@ public class SequenceHandlerTest {
         sequence.addBinding(handler2, null);
         Response response1 = new Response();
         promise1.handleResult(response1);
-        ResponseException error = new ResponseException(404, "Boom");
+        ResponseException error = new ResponseException(Status.NOT_FOUND, "Boom");
         promise2.handleException(error);
 
         Exchange exchange = new Exchange();
@@ -119,7 +123,7 @@ public class SequenceHandlerTest {
             failBecauseExceptionWasNotThrown(ResponseException.class);
         } catch (ResponseException re) {
             assertThat(re).hasMessage("Boom");
-            assertThat(re.getResponse().getStatus()).isEqualTo(404);
+            assertThat(re.getResponse().getStatus()).isEqualTo(Status.NOT_FOUND);
         }
         verify(handler1).handle(exchange, request);
     }

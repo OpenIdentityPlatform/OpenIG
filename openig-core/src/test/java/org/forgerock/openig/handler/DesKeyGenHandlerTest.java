@@ -16,11 +16,12 @@
 
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -31,8 +32,7 @@ public class DesKeyGenHandlerTest {
     public void getGeneratedKey() throws Exception {
         final DesKeyGenHandler handler = new DesKeyGenHandler();
         Response response = handler.handle(null, null).get();
-        assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(response.getReason()).isEqualTo("OK");
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
         assertThat((Map<String, Object>) response.getEntity().getJson()).containsKey("key");
         response.close();
     }
