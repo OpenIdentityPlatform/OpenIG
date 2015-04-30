@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -40,7 +41,7 @@ public class AssignmentFilterTest {
         Exchange exchange = new Exchange();
         exchange.request = new Request();
         exchange.request.setMethod("DELETE");
-        final StaticResponseHandler handler = new StaticResponseHandler(200, "OK");
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList(as(filter)));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.request).get();
@@ -57,7 +58,7 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setUri("www.example.com");
 
-        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(as(filter)));
+        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList(as(filter)));
 
         chain.handle(exchange, exchange.request).get();
         assertThat(exchange.request.getUri().toString()).isEqualTo("www.forgerock.com");
@@ -71,7 +72,7 @@ public class AssignmentFilterTest {
                                   Expression.valueOf("${exchange.response.status.code}", Integer.class));
 
         Exchange exchange = new Exchange();
-        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList(as(filter)));
+        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList(as(filter)));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.request).get();
         assertThat(exchange.get("newAttr")).isEqualTo(200);

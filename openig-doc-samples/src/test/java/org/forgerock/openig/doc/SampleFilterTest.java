@@ -16,12 +16,13 @@
 
 package org.forgerock.openig.doc;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
@@ -39,7 +40,7 @@ public class SampleFilterTest {
         Exchange exchange = new Exchange();
         Request request = new Request();
 
-        Chain chain = new Chain(new StaticResponseHandler(200, "OK"), singletonList((Filter) filter));
+        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
         Response response = chain.handle(exchange, request).get();
 

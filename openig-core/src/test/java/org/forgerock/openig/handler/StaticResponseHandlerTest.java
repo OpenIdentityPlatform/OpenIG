@@ -30,7 +30,7 @@ public class StaticResponseHandlerTest {
 
     @Test
     public void shouldSetStatusReasonAndHeaders() throws Exception {
-        final StaticResponseHandler handler = new StaticResponseHandler(302, "Found");
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.FOUND);
         handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
         final Exchange exchange = new Exchange();
         Response response = handler.handle(exchange, null).get();
@@ -42,8 +42,7 @@ public class StaticResponseHandlerTest {
     public void shouldEvaluateTheEntityExpressionContent() throws Exception {
         final StaticResponseHandler handler =
                 new StaticResponseHandler(
-                        200,
-                        null,
+                        Status.OK,
                         null,
                         Expression.valueOf(
                         "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>", String.class));
