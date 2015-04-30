@@ -40,22 +40,22 @@
   <authorgroup>
    <author>
     <personname>
-     <firstname>Paul </firstname><surname>Bryan</surname>
+     <firstname>Paul</firstname> <surname>Bryan</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Mark </firstname><surname>Craig</surname>
+     <firstname>Mark</firstname> <surname>Craig</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Jamie </firstname><surname>Nelson</surname>
+     <firstname>Jamie</firstname> <surname>Nelson</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Guillaume </firstname><surname>Sauthier</surname>
+     <firstname>Guillaume</firstname> <surname>Sauthier</surname>
     </personname>
     <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
