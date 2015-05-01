@@ -142,7 +142,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus().equals(Status.OK);
+        return Status.OK.equals(response.getStatus());
     }
 
     /**

@@ -607,7 +607,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         @Override
                         public Promise<Response, ResponseException> apply(final Response response)
                                 throws ResponseException {
-                            if (response.getStatus().equals(Status.UNAUTHORIZED) && !refreshedSession.isAuthorized()) {
+                            if (Status.UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
                                 return sendRedirectForAuthorization(exchange, request);
                             } else if (session != refreshedSession) {

@@ -152,7 +152,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements org.forger
                     request.getEntity().pop();
                 }
                 // successful exchange from this filter's standpoint
-                if (!response.getStatus().equals(Status.UNAUTHORIZED)) {
+                if (!Status.UNAUTHORIZED.equals(response.getStatus())) {
                     // Remove headers from outgoing message
                     for (String header : SUPPRESS_RESPONSE_HEADERS) {
                         response.getHeaders().remove(header);
