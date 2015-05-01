@@ -211,7 +211,7 @@ public class OAuth2Provider {
                            .then(new Function<Response, Response, ResponseException>() {
                                @Override
                                public Response apply(final Response response) throws ResponseException {
-                                   if (!response.getStatus().equals(Status.OK)) {
+                                   if (!Status.OK.equals(response.getStatus())) {
                                        throw new ResponseException(
                                                "Unable to read well-known OpenID Configuration from '"
                                                        + uri + "'");
@@ -378,15 +378,15 @@ public class OAuth2Provider {
 
     private void checkResponseStatus(final Response response,
                                      final boolean isRefreshToken) throws OAuth2ErrorException {
-        Status status = response.getStatus();
-        if (!status.equals(Status.OK)) {
-            if (status.equals(Status.BAD_REQUEST) || status.equals(Status.UNAUTHORIZED)) {
+        final Status status = response.getStatus();
+        if (!Status.OK.equals(status)) {
+            if (Status.BAD_REQUEST.equals(status) || Status.UNAUTHORIZED.equals(status)) {
                 final JsonValue errorJson = getJsonContent(response);
                 throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
             } else {
-                final String errorMessage =
-                        format("Unable to %s access token [status=%d]", isRefreshToken ? "refresh" : "exchange",
-                                status.getCode());
+                final String errorMessage = format("Unable to %s access token [status=%d]",
+                                                   isRefreshToken ? "refresh" : "exchange",
+                                                   status.getCode());
                 throw new OAuth2ErrorException(E_SERVER_ERROR, errorMessage);
             }
         }
@@ -416,7 +416,7 @@ public class OAuth2Provider {
                           final OAuth2Session session) throws ResponseException, OAuth2ErrorException  {
         final Request request = createRequestForUserInfo(exchange, session.getAccessToken());
         final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (!response.getStatus().equals(Status.OK)) {
+        if (!Status.OK.equals(response.getStatus())) {
             /*
              * The access token may have expired. Trigger an exception,
              * catch it and react later.
