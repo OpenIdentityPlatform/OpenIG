@@ -423,8 +423,7 @@ public class OAuth2Provider {
              */
             final OAuth2BearerWWWAuthenticateHeader header = OAuth2BearerWWWAuthenticateHeader.valueOf(response);
             final OAuth2Error error = header.getOAuth2Error();
-            final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus().getCode(),
-                                                                                     error);
+            final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
             throw new OAuth2ErrorException(bestEffort);
         }
         return getJsonContent(response);
