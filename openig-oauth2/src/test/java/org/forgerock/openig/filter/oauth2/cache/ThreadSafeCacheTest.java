@@ -17,7 +17,7 @@
 package org.forgerock.openig.filter.oauth2.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.util.Duration.duration;
+import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
