@@ -17,9 +17,9 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.*;
-import static org.forgerock.http.util.Duration.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.promise.Promises.*;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,7 +35,6 @@ import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.util.Duration;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
@@ -50,6 +49,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**

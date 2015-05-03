@@ -19,9 +19,9 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.*;
-import static org.forgerock.http.util.Duration.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Utils.*;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,12 +41,12 @@ import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.util.Duration;
-import org.forgerock.http.util.Options;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.Options;
+import org.forgerock.util.time.Duration;
 
 /**
  * Submits requests to remote servers. In this implementation, requests are

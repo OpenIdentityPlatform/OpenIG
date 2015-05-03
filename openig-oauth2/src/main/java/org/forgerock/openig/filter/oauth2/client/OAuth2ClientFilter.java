@@ -20,7 +20,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.forgerock.http.URIUtil.withQuery;
-import static org.forgerock.http.util.Duration.duration;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
@@ -35,6 +34,7 @@ import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.Utils.joinAsString;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -56,7 +56,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.http.util.Duration;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
@@ -70,6 +69,7 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.forgerock.util.LazyMap;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**
