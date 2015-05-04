@@ -43,7 +43,7 @@ import org.forgerock.util.promise.Promises;
  */
 public class StaticResponseHandler extends GenericHeapObject implements org.forgerock.http.Handler {
 
-    /** The status (code + reason) */
+    /** The status (code + reason). */
     private final Status status;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}. */
