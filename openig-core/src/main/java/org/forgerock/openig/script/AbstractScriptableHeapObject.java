@@ -64,7 +64,7 @@ import org.forgerock.util.promise.Promises;
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
-    protected static abstract class AbstractScriptableHeaplet extends GenericHeaplet {
+    protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
         private static final String CONFIG_OPTION_FILE = "file";
         private static final String CONFIG_OPTION_SOURCE = "source";
         private static final String CONFIG_OPTION_TYPE = "type";
