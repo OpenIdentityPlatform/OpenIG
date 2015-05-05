@@ -45,12 +45,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <!-- forgerock-parent uses m-c-p 3.0 -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-
       <!--
         Copy Groovy test scripts referenced in documentation
         to avoid absolute paths in pre-processed DocBook XML artifact.
