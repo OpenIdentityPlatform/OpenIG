@@ -131,8 +131,6 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         } catch (ResponseException e) {
             throw new OAuth2TokenException(format("Could not handle call to token_info endpoint %s", tokenInfoEndpoint),
                                            e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot load AccessToken from %s", tokenInfoEndpoint), e);
         }
     }
 
