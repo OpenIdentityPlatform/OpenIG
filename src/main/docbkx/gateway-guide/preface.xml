@@ -21,42 +21,197 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010-2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <preface xml:id='preface'
- xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+         xmlns='http://docbook.org/ns/docbook' version='5.0' xml:lang='en'
+         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://docbook.org/ns/docbook
+                             http://docbook.org/xml/5.0/xsd/docbook.xsd'
+         xmlns:xinclude='http://www.w3.org/2001/XInclude'>
  <title>Preface</title>
 
  <para>
-  This guide shows you how to install and configure ${projectName},
+  This guide provides instructions for installing and configuring ${projectName},
   a high-performance reverse proxy server with specialized session management
   and credential replay functionality.
  </para>
 
+ <para>
+  As a reverse proxy server (also referred to as a gateway in HTTP RFCs),
+  ${projectName} filters all traffic to and from a server application,
+  adapting requests to protect the service
+  and adapting responses to filter outgoing content.
+  The credential replay functionality effectively enables single sign-on
+  with applications that do not integrate easily
+  into a traditional single sign-on service.
+ </para>
+
+ <itemizedlist>
+  <para>
+   In reading and following the instructions in this guide, you will learn how to:
+  </para>
+
+  <listitem>
+   <para>
+    Install ${projectName} and evaluate all ${projectName} features
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Protect server applications and integrate them with single sign-on solutions
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Use ${projectName} to allow an existing application
+    to act as an OAuth 2.0 resource server
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Use ${projectName} to allow an existing application
+    to act as an OAuth 2.0 client or OpenID Connect 1.0 Relying Party
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Use ${projectName} to allow an existing application
+    to act as a SAML 2.0 Service Provider
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Configure ${projectName} to handle authentication in common use cases
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Monitor and audit traffic flowing through ${projectName}
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Extend ${projectName} with Groovy scripts and Java plugins
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Troubleshoot typical problems
+   </para>
+  </listitem>
+ </itemizedlist>
+
  <section>
-  <title>Who Should Use this Guide</title>
+  <title>Using This Guide</title>
 
   <para>
-   This guide is written for access management designers and administrators
-   who develop, build, deploy, and maintain ${projectName} deployments
-   for their organizations.
-   This guide covers the tasks you might perform once
-   or repeat throughout the life cycle of an ${projectName} release.
+   This guide is intended for access management designers and administrators
+   who develop, build, deploy, and maintain ${projectName} for their organizations.
   </para>
 
   <para>
-   You do not need to be an expert to learn something from this guide,
-   though a background in HTTP, access management web applications can help.
-   You do need some background in managing services on your operating systems
-   and in your application servers.
-   You can nevertheless get started with this guide,
-   and then learn more as you go along.
+   This guide is written so you can get started with ${projectName} quickly,
+   and learn more as you progress through the guide.
   </para>
+
+  <itemizedlist>
+   <para>
+    This guide is also written with the assumption
+    that you already have basic familiarity with the following topics:
+   </para>
+
+   <listitem>
+    <para>
+     Hypertext Transfer Protocol (HTTP), including
+     how clients and servers exchange messages,
+     and the role that a reverse proxy (gateway) plays
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     JavaScript Object Notation (JSON),
+     which is the format for ${projectName} configuration files
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Managing services on operating systems and application servers
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Configuring network connections on operating systems
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Managing Public Key Infrastructure (PKI) used to establish HTTPS connections
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Access management for web applications
+    </para>
+   </listitem>
+  </itemizedlist>
+
+  <itemizedlist>
+   <para>
+    Depending on the features you use,
+    you should also have basic familiarity with the following topics:
+   </para>
+
+   <listitem>
+    <para>
+     Lightweight Directory Access Protocol (LDAP)
+     if you use ${projectName} with LDAP directory services
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Structured Query Language (SQL)
+     if you use ${projectName} with relational databases
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     Configuring OpenAM if you use password capture and replay,
+     or if you plan to follow the OAuth 2.0 or SAML 2.0 tutorials
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The Groovy programming language
+     if you plan to extend ${projectName} with scripts
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The Java programming language
+     if you plan to extend ${projectName} with plugins,
+     and Apache Maven for building plugins
+    </para>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <xinclude:include href="../shared/sec-formatting-conventions.xml" />
