@@ -132,7 +132,6 @@
   <xinclude:include href="man-CookieFilter.xml" />
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-EntityExtractFilter.xml" />
-  <xinclude:include href="man-ExceptionFilter.xml" />
   <xinclude:include href="man-FileAttributesFilter.xml" />
   <xinclude:include href="man-HeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />
