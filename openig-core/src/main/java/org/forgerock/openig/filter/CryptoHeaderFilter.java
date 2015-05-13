@@ -31,6 +31,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
@@ -53,7 +54,7 @@ import org.forgerock.util.promise.ResultHandler;
  * not implement a way to set/retrieve the initialization vector(IV) (OPENIG-42)
  * therefore, the CryptoHeader can not decrypt cipher algorithm using IV.
  */
-public class CryptoHeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
 
     /**
      * Default cipher algorithm to be used when none is specified.

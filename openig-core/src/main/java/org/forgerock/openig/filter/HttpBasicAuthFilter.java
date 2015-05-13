@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpContext;
 import org.forgerock.http.Session;
@@ -62,7 +63,7 @@ import org.forgerock.util.promise.Promise;
  * yielded from the {@code username} or {@code password} expressions, then the exchange is diverted
  * to the authentication failure handler.
  */
-public class HttpBasicAuthFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
 
     /** Headers that are suppressed from incoming request. */
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS =

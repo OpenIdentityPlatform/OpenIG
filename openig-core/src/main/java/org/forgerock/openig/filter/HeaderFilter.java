@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Message;
@@ -43,7 +44,7 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Removes headers from and adds headers to a message.
  */
-public class HeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class HeaderFilter extends GenericHeapObject implements Filter {
 
     /** Indicates the type of message in the exchange to filter headers for. */
     private final MessageType messageType;

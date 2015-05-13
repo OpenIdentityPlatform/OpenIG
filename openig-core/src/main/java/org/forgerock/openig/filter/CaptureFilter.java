@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.protocol.Message;
@@ -57,7 +58,7 @@ import org.forgerock.util.promise.ResultHandler;
  * @deprecated since OpenIG 3.1
  */
 @Deprecated
-public class CaptureFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class CaptureFilter extends GenericHeapObject implements Filter {
 
     /**
      * Provides an abstraction to make PrintWriter plugable.

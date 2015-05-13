@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -41,7 +42,7 @@ import org.forgerock.util.promise.Promises;
 /**
  * Creates a static response in an HTTP exchange.
  */
-public class StaticResponseHandler extends GenericHeapObject implements org.forgerock.http.Handler {
+public class StaticResponseHandler extends GenericHeapObject implements Handler {
 
     /** The status (code + reason). */
     private final Status status;

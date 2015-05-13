@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -50,7 +51,7 @@ public class DispatchHandlerTest {
     private static final String CONDITION = String.format("${contains(request.uri.path,'%s')}", URI_PART);
 
     @Mock
-    private org.forgerock.http.Handler nextHandler;
+    private Handler nextHandler;
 
     @Mock
     private Promise<Response, NeverThrowsException> promise;

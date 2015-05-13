@@ -21,6 +21,7 @@ package org.forgerock.openig.handler;
 import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -46,7 +47,7 @@ import org.forgerock.util.promise.Promises;
  *   }
  * </pre>
  */
-public class ClientHandler extends GenericHeapObject implements org.forgerock.http.Handler {
+public class ClientHandler extends GenericHeapObject implements Handler {
 
     /** The HTTP client to transmit requests through. */
     private final HttpClient client;

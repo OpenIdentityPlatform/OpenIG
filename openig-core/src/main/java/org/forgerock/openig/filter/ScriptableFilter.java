@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -46,7 +47,7 @@ import org.forgerock.util.promise.Promise;
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
-public class ScriptableFilter extends AbstractScriptableHeapObject implements org.forgerock.http.Filter {
+public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,

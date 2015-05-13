@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.header.LocationHeader;
@@ -44,7 +45,7 @@ import org.forgerock.util.promise.Promise;
  * take the user directly to the application being proxied rather than taking
  * the user through OpenIG.
  */
-public class LocationHeaderFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class LocationHeaderFilter extends GenericHeapObject implements Filter {
 
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
     private Expression<String> baseURI;

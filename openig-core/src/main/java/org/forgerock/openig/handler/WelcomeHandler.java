@@ -17,6 +17,7 @@
 package org.forgerock.openig.handler;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -31,7 +32,7 @@ import org.forgerock.util.promise.Promises;
 /**
  * Creates a static response containing a simple HTML welcome page.
  */
-public class WelcomeHandler extends GenericHeapObject implements org.forgerock.http.Handler {
+public class WelcomeHandler extends GenericHeapObject implements Handler {
 
     /**
      * Creates a new welcome page handler.
