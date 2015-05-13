@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -157,7 +158,7 @@ public class LocationHeaderFilterTest {
         assertThat(expectedResult).isEqualTo(header.toString());
     }
 
-    private static class ResponseHandler implements org.forgerock.http.Handler {
+    private static class ResponseHandler implements Handler {
 
         private final Response response;
 

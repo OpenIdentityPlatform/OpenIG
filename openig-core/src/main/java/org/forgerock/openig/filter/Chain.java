@@ -22,6 +22,8 @@ import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
 import java.util.List;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.http.Http;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -45,20 +47,20 @@ import org.forgerock.util.promise.Promise;
  * calling {@code chain.handle(exchange)} and generate its own response or dispatch to a
  * completely different handler.
  *
- * @see org.forgerock.http.Filter
+ * @see Filter
  */
-public class Chain extends GenericHeapObject implements org.forgerock.http.Handler {
+public class Chain extends GenericHeapObject implements Handler {
 
     /** The CHF Chain implementation. */
-    private final org.forgerock.http.Handler delegate;
+    private final Handler delegate;
 
     /**
      * Builds a chain of filters that will finally dispatch to the given handler.
      * List of Filters is empty by default.
      * @param handler terminus of the chain
-     * @param filters list of {@link org.forgerock.http.Filter}
+     * @param filters list of {@link Filter}s
      */
-    public Chain(final org.forgerock.http.Handler handler, final List<org.forgerock.http.Filter> filters) {
+    public Chain(final Handler handler, final List<Filter> filters) {
         delegate = Http.chainOf(handler, filters);
     }
 
@@ -71,13 +73,12 @@ public class Chain extends GenericHeapObject implements org.forgerock.http.Handl
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            org.forgerock.http.Handler terminus = heap.resolve(config.get("handler"),
-                                                               org.forgerock.http.Handler.class);
+            Handler terminus = heap.resolve(config.get("handler"),
+                                            Handler.class);
             JsonValue list = config.get("filters")
                                    .required()
                                    .expect(List.class);
-            List<org.forgerock.http.Filter> filters = list.asList(
-                    ofRequiredHeapObject(heap, org.forgerock.http.Filter.class));
+            List<Filter> filters = list.asList(ofRequiredHeapObject(heap, Filter.class));
             return new Chain(terminus, filters);
         }
     }

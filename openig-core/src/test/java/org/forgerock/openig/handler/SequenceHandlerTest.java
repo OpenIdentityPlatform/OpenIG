@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
@@ -40,10 +41,10 @@ public class SequenceHandlerTest {
     private PromiseImpl<Response, NeverThrowsException> promise2;
 
     @Mock
-    private org.forgerock.http.Handler handler1;
+    private Handler handler1;
 
     @Mock
-    private org.forgerock.http.Handler handler2;
+    private Handler handler2;
 
     @BeforeMethod
     public void setUp() throws Exception {

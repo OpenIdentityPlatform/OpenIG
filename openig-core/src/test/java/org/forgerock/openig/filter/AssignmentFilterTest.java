@@ -42,7 +42,7 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
-        Chain chain = new Chain(handler, singletonList(as(filter)));
+        Chain chain = new Chain(handler, singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.request).get();
         assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
@@ -58,7 +58,7 @@ public class AssignmentFilterTest {
         exchange.request = new Request();
         exchange.request.setUri("www.example.com");
 
-        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList(as(filter)));
+        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
         chain.handle(exchange, exchange.request).get();
         assertThat(exchange.request.getUri().toString()).isEqualTo("www.forgerock.com");
@@ -72,16 +72,9 @@ public class AssignmentFilterTest {
                                   Expression.valueOf("${exchange.response.status.code}", Integer.class));
 
         Exchange exchange = new Exchange();
-        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList(as(filter)));
+        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.request).get();
         assertThat(exchange.get("newAttr")).isEqualTo(200);
-    }
-
-    /**
-     * Collections.singletonList cannot infer properly the generic type argument
-     */
-    private static org.forgerock.http.Filter as(final Filter filter) {
-        return filter;
     }
 }

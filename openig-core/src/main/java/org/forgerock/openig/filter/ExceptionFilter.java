@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -39,7 +40,7 @@ import org.forgerock.util.promise.Promises;
  * close any open entity within the response object prior to dispatching the exchange to the
  * exception handler.
  */
-public class ExceptionFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class ExceptionFilter extends GenericHeapObject implements Filter {
 
     /** Handler to dispatch to in the event of caught exceptions. */
     private final Handler handler;

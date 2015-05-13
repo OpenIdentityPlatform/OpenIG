@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -39,7 +40,7 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Conditionally assigns values to expressions before and after the exchange is handled.
  */
-public class AssignmentFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class AssignmentFilter extends GenericHeapObject implements Filter {
 
     /** Defines assignment condition, target and value expressions. */
     private static final class Binding {

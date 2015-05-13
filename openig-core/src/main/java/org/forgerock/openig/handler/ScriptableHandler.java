@@ -16,6 +16,7 @@
 package org.forgerock.openig.handler;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.HeapException;
@@ -41,7 +42,7 @@ import org.forgerock.util.promise.Promise;
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  */
-public class ScriptableHandler extends AbstractScriptableHeapObject implements org.forgerock.http.Handler {
+public class ScriptableHandler extends AbstractScriptableHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {

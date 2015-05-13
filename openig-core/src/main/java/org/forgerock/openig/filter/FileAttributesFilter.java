@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -54,7 +55,7 @@ import org.forgerock.util.promise.Promise;
  *
  * @see SeparatedValuesFile
  */
-public class FileAttributesFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class FileAttributesFilter extends GenericHeapObject implements Filter {
 
     /** Expression that yields the target object that will contain the record. */
     @SuppressWarnings("rawtypes") // Can't find the correct syntax to write Expression<Map<String, String>>

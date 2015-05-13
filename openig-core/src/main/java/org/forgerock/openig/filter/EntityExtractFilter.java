@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
@@ -59,7 +60,7 @@ import org.forgerock.util.promise.ResultHandler;
  * @see StreamPatternExtractor
  * @see PatternTemplate
  */
-public class EntityExtractFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class EntityExtractFilter extends GenericHeapObject implements Filter {
 
     /** Extracts regular expression patterns from entities. */
     private final StreamPatternExtractor extractor = new StreamPatternExtractor();
