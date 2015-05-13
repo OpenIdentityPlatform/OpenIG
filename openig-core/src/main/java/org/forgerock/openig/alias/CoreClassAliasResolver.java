@@ -33,7 +33,6 @@ import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.filter.CookieFilter;
 import org.forgerock.openig.filter.CryptoHeaderFilter;
 import org.forgerock.openig.filter.EntityExtractFilter;
-import org.forgerock.openig.filter.ExceptionFilter;
 import org.forgerock.openig.filter.FileAttributesFilter;
 import org.forgerock.openig.filter.HeaderFilter;
 import org.forgerock.openig.filter.HttpBasicAuthFilter;
@@ -76,7 +75,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("DesKeyGenHandler", DesKeyGenHandler.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
-        ALIASES.put("ExceptionFilter", ExceptionFilter.class);
         ALIASES.put("FileAttributesFilter", FileAttributesFilter.class);
         ALIASES.put("FileLogSink", FileLogSink.class);
         ALIASES.put("HeaderFilter", HeaderFilter.class);
