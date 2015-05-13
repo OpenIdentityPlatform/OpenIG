@@ -42,13 +42,13 @@ import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -164,9 +164,9 @@ public class CaptureFilter extends GenericHeapObject implements org.forgerock.ht
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         Object eval = (condition != null ? condition.eval(exchange) : Boolean.TRUE);
         boolean doCapture = (eval instanceof Boolean && (Boolean) eval);

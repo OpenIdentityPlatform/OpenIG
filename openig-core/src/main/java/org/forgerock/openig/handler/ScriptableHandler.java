@@ -18,11 +18,11 @@ package org.forgerock.openig.handler;
 import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -44,7 +44,7 @@ import org.forgerock.util.promise.Promise;
 public class ScriptableHandler extends AbstractScriptableHeapObject implements org.forgerock.http.Handler {
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
         return runScript(exchange, request, null);
     }

@@ -31,10 +31,10 @@ import org.forgerock.http.HttpContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.hamcrest.BaseMatcher;
@@ -78,9 +78,9 @@ public class HttpBasicAuthFilterTest {
         Request request = newRequest();
         request.getHeaders().putSingle(AUTHORIZATION_HEADER, "Basic azerty");
 
-        doAnswer(new Answer<Promise<Response, ResponseException>>() {
+        doAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
             @Override
-            public Promise<Response, ResponseException> answer(final InvocationOnMock invocation) throws Throwable {
+            public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation) throws Throwable {
                 // Produce a valid response with an authentication challenge
                 Response response = new Response();
                 response.setStatus(Status.OK);
@@ -256,9 +256,7 @@ public class HttpBasicAuthFilterTest {
         assertThat(thirdResponse.getStatus()).isEqualTo(Status.OK);
     }
 
-    @Test(dataProvider = "invalidUserNames",
-          expectedExceptions = ResponseException.class,
-          expectedExceptionsMessageRegExp = "username must not contain a colon ':' character")
+    @Test(dataProvider = "invalidUserNames")
     public void testConformanceErrorIsProducedWhenUsernameContainsColon(final String username) throws Exception {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username, String.class),
                                                              Expression.valueOf("dont-care", String.class),
@@ -267,7 +265,9 @@ public class HttpBasicAuthFilterTest {
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 
-        filter.filter(newExchange(), newRequest(), terminalHandler).getOrThrow();
+        Response response = filter.filter(newExchange(), newRequest(), terminalHandler).get();
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).contains("username must not contain a colon ':' character");
     }
 
     @DataProvider
@@ -296,10 +296,10 @@ public class HttpBasicAuthFilterTest {
         return request;
     }
 
-    private static class UnauthorizedAnswer implements Answer<Promise<Response, ResponseException>> {
+    private static class UnauthorizedAnswer implements Answer<Promise<Response, NeverThrowsException>> {
         // 1st time called: Mock a 401 (Unauthorized status) response
         @Override
-        public Promise<Response, ResponseException> answer(InvocationOnMock invocation) throws Throwable {
+        public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) throws Throwable {
             Response response = new Response();
             response.setStatus(Status.UNAUTHORIZED);
             response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
@@ -307,7 +307,7 @@ public class HttpBasicAuthFilterTest {
         }
     }
 
-    private static class AuthorizedAnswer implements Answer<Promise<Response, ResponseException>> {
+    private static class AuthorizedAnswer implements Answer<Promise<Response, NeverThrowsException>> {
 
         private final String credentials;
 
@@ -316,7 +316,7 @@ public class HttpBasicAuthFilterTest {
         }
 
         @Override
-        public Promise<Response, ResponseException> answer(InvocationOnMock invocation) throws Throwable {
+        public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) throws Throwable {
             Request request = (Request) invocation.getArguments()[1];
 
             // Verify the authorization header: base64(user:pass)

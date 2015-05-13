@@ -17,13 +17,15 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.openig.http.Responses;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,7 +51,7 @@ public class ExceptionFilterTest {
 
         Response response = new Response();
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
@@ -60,19 +62,18 @@ public class ExceptionFilterTest {
     }
 
     @Test
-    public void testExceptionHandlerIsInvokedWhenFiledPromiseIsReturned() throws Exception {
+    public void testExceptionHandlerIsInvokedWhenFailedPromiseIsReturned() throws Exception {
 
         Response response = new Response();
         when(exceptionHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
-        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
         when(nextHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(
+                        newInternalServerError(new Exception())));
 
         ExceptionFilter filter = new ExceptionFilter(exceptionHandler);
 
-        // this shouldn't throw any exception
-        assertThat(filter.filter(null, null, nextHandler).getOrThrowUninterruptibly())
+        assertThat(filter.filter(null, null, nextHandler).get())
                 .isEqualTo(response);
     }
 }

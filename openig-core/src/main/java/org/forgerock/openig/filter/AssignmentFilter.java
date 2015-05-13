@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +26,13 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -163,7 +163,7 @@ public class AssignmentFilter extends GenericHeapObject implements org.forgerock
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
+    public Promise<Response, NeverThrowsException> filter(final Context context,
                                                        final Request request,
                                                        final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
@@ -171,7 +171,7 @@ public class AssignmentFilter extends GenericHeapObject implements org.forgerock
         for (Binding binding : onRequest) {
             eval(binding, exchange);
         }
-        Promise<Response, ResponseException> nextOne = next.handle(context, request);
+        Promise<Response, NeverThrowsException> nextOne = next.handle(context, request);
         return nextOne.thenOnResult(new ResultHandler<Response>() {
             @Override
             public void handleResult(final Response result) {

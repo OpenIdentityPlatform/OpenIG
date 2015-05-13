@@ -16,9 +16,11 @@
 
 package org.forgerock.openig.filter.oauth2;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.promise.Promises.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
 import java.util.Collections;
@@ -48,6 +50,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
@@ -185,9 +188,9 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         String token = null;
         try {
@@ -225,7 +228,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
                 return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
             }
         } catch (ResponseException e) {
-            return newExceptionPromise(e);
+            return newResultPromise(e.getResponse());
         }
 
         // Store the AccessToken in the exchange for downstream handlers

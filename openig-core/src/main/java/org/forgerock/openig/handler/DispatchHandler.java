@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,13 +28,14 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Responses;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -86,7 +87,7 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
         for (Binding binding : bindings) {
             if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
@@ -96,7 +97,7 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
                 return binding.handler.handle(exchange, request);
             }
         }
-        return Promises.newExceptionPromise(logger.debug(new ResponseException("no handler to dispatch to")));
+        return Promises.newResultPromise(Responses.newNotFound("no handler to dispatch to"));
     }
 
     /** Binds an expression with a handler to dispatch to. */

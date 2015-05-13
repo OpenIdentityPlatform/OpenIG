@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.decoration;
 
-import static java.lang.String.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.util.Json.*;
-import static org.forgerock.openig.heap.HeapUtilsTest.*;
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.util.Json.readJson;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,13 +28,14 @@ import java.io.Reader;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.util.Function;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.testng.annotations.Test;
 
@@ -268,12 +269,12 @@ public class DecoratorSystemTest {
             final Handler handler = (Handler) delegate;
             return new Handler() {
                 @Override
-                public Promise<Response, ResponseException> handle(final org.forgerock.http.Context context,
-                                                                   final Request request) {
+                public Promise<Response, NeverThrowsException> handle(final org.forgerock.http.Context context,
+                                                                      final Request request) {
                     return handler.handle(context, request)
-                            .then(new Function<Response, Response, ResponseException>() {
+                            .then(new Function<Response, Response, NeverThrowsException>() {
                                 @Override
-                                public Response apply(final Response response) throws ResponseException {
+                                public Response apply(final Response response) throws NeverThrowsException {
                                     try {
                                         String content = format("<%s>%s</%s>",
                                                                 header,
@@ -282,7 +283,7 @@ public class DecoratorSystemTest {
                                         response.getEntity().setString(content);
                                         return response;
                                     } catch (IOException e) {
-                                        throw new ResponseException("IOException", e);
+                                        return Responses.newInternalServerError("IOException", e);
                                     }
                                 }
                             });

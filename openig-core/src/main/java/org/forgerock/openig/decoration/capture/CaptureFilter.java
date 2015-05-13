@@ -16,7 +16,10 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static org.forgerock.openig.decoration.capture.CapturePoint.*;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_RESPONSE;
+import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
 
 import java.util.Set;
 
@@ -25,8 +28,8 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -56,9 +59,9 @@ class CaptureFilter implements Filter {
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
 
         final Exchange exchange = context.asContext(Exchange.class);
         if (points.contains(REQUEST)) {
@@ -68,7 +71,7 @@ class CaptureFilter implements Filter {
         // Wraps the next handler to capture the filtered request and the provided response
         return delegate.filter(context, request, new Handler() {
             @Override
-            public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+            public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
                 if (points.contains(FILTERED_REQUEST)) {
                     capture.capture(exchange, request, FILTERED_REQUEST);
                 }

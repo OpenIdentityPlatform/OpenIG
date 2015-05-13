@@ -24,10 +24,10 @@ import org.forgerock.http.Context;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.testng.annotations.Test;
@@ -166,7 +166,7 @@ public class LocationHeaderFilterTest {
         }
 
         @Override
-        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             return Promises.newResultPromise(response);
         }
     }

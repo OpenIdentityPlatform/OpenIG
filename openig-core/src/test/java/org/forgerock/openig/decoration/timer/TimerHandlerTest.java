@@ -16,20 +16,18 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -62,7 +60,7 @@ public class TimerHandlerTest {
 
         Exchange exchange = new Exchange();
         when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         time.handle(exchange, null).get();
 
         InOrder inOrder = inOrder(timer, delegate);
@@ -71,22 +69,4 @@ public class TimerHandlerTest {
         inOrder.verify(timer).stop();
     }
 
-    @Test
-    public void shouldLogStartedAndElapsedMessagesWhenDelegateHandlerIsFailing() throws Exception {
-        TimerHandler time = new TimerHandler(delegate, logger);
-        Exchange exchange = new Exchange();
-
-        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
-        when(delegate.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
-
-        try {
-            time.handle(exchange, null).getOrThrow();
-            failBecauseExceptionWasNotThrown(ResponseException.class);
-        } catch (ResponseException e) {
-            InOrder inOrder = inOrder(timer);
-            inOrder.verify(timer).start();
-            inOrder.verify(timer).stop();
-        }
-    }
 }

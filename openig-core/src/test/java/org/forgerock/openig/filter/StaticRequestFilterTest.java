@@ -16,16 +16,16 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.MutableUri.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.testng.annotations.BeforeMethod;
@@ -147,7 +147,7 @@ public class StaticRequestFilterTest {
     private static class TerminalHandler implements Handler {
         Request request;
         @Override
-        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             this.request = request;
             return Promises.newResultPromise(new Response());
         }

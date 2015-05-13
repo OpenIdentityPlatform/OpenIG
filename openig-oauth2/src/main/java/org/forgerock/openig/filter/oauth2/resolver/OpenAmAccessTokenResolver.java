@@ -28,7 +28,6 @@ import org.forgerock.http.protocol.Entity;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
@@ -128,9 +127,6 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
                     format("The token_info endpoint %s could not be accessed because it is a malformed URI",
                            tokenInfoEndpoint),
                     e);
-        } catch (ResponseException e) {
-            throw new OAuth2TokenException(format("Could not handle call to token_info endpoint %s", tokenInfoEndpoint),
-                                           e);
         }
     }
 

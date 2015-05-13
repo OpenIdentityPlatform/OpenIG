@@ -37,7 +37,6 @@ import org.forgerock.http.Client;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
@@ -48,6 +47,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 import org.mockito.ArgumentCaptor;
@@ -149,7 +149,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
         // when
         provider.getRefreshToken(exchange, session);
         // then
@@ -169,7 +169,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         // when
         provider.getAccessToken(exchange, code, callbackUri);
@@ -189,7 +189,7 @@ public class OAuth2ProviderTest {
         Response response = new Response();
         response.setStatus(Status.OK);
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         // when
         provider.getUserInfo(exchange, session);
@@ -208,7 +208,7 @@ public class OAuth2ProviderTest {
         response.setStatus(errorResponseStatus);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getRefreshToken(exchange, session);
     }
@@ -220,7 +220,7 @@ public class OAuth2ProviderTest {
         response.setStatus(errorResponseStatus);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getAccessToken(exchange, "code", "callbackUri");
     }
@@ -233,7 +233,7 @@ public class OAuth2ProviderTest {
         response.setStatus(Status.TEAPOT);
         response.setEntity(setErrorEntity());
         when(providerHandler.handle(eq(exchange), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getUserInfo(exchange, session);
     }

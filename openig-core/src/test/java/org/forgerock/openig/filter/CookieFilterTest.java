@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -32,7 +32,7 @@ import org.forgerock.http.header.CookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -76,9 +76,9 @@ public class CookieFilterTest {
         filter.getManaged().add("Test-Managed");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
                         // Expecting to find the managed cookie, not the original one
                         // CookieFilter produces a single 'Cookie' value
@@ -119,9 +119,9 @@ public class CookieFilterTest {
         filter.getManaged().add("Test-Managed");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // As the cookie should have been removed, we should not have any Cookie header now
@@ -148,9 +148,9 @@ public class CookieFilterTest {
         filter.getSuppressed().add("Will-Be-Deleted");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // As the cookie should have been removed, we should not have any Cookie header now
@@ -177,9 +177,9 @@ public class CookieFilterTest {
         filter.getRelayed().add("Will-Be-Relayed");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         assertThat(request.getHeaders().getFirst("Cookie"))
@@ -208,9 +208,9 @@ public class CookieFilterTest {
         filter.getManaged().add("Hidden-Cookie");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
@@ -232,9 +232,9 @@ public class CookieFilterTest {
         filter.getSuppressed().add("Suppressed-Cookie");
 
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
@@ -284,9 +284,9 @@ public class CookieFilterTest {
         // Step #4
         // Mock the first 'next handler' invocation (returns the cookie)
         when(terminalHandler.handle(context, request))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
@@ -308,9 +308,9 @@ public class CookieFilterTest {
         request2.setUri("http://openig.example.org");
 
         when(terminalHandler.handle(context2, request2))
-                .then(new Answer<Promise<Response, ResponseException>>() {
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
-                    public Promise<Response, ResponseException> answer(final InvocationOnMock invocation)
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
                         // Ensure the next handler have the cookie

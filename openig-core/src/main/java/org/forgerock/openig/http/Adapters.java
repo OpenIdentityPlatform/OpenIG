@@ -22,7 +22,6 @@ import org.forgerock.http.ClientInfoContext;
 import org.forgerock.http.Context;
 import org.forgerock.http.HttpContext;
 import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
 
@@ -86,8 +85,6 @@ public final class Adapters {
                 exchange.response = handler.handle(exchange, exchange.request).getOrThrow();
             } catch (InterruptedException e) {
                 throw new HandlerException(e);
-            } catch (ResponseException re) {
-                throw new HandlerException(re);
             }
         }
     }

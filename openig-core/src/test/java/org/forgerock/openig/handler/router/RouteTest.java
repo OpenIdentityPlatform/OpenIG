@@ -17,7 +17,6 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -29,13 +28,11 @@ import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -59,7 +56,7 @@ public class RouteTest {
     @Mock
     private SessionManager sessionManager;
 
-    private PromiseImpl<Response, ResponseException> promise = PromiseImpl.create();
+    private PromiseImpl<Response, NeverThrowsException> promise = PromiseImpl.create();
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -108,35 +105,6 @@ public class RouteTest {
         promise.handleResult(new Response());
 
         assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
-    }
-
-    @Test
-    public void shouldReplaceBackTheOriginalSessionForUpStreamHandlersWhenExceptionsAreThrown() throws Exception {
-
-        Route route = createRoute(sessionManager, null);
-        Exchange exchange = new Exchange();
-        exchange.parent = new HttpContext(new RootContext(), original);
-
-        when(handler.handle(exchange, new Request()))
-                .then(new Answer<Void>() {
-                    @Override
-                    public Void answer(final InvocationOnMock invocation) throws Throwable {
-                        Context context = (Context) invocation.getArguments()[0];
-                        assertThat(context.asContext(HttpContext.class).getSession()).isSameAs(scoped);
-                        return null;
-                    }
-                });
-
-        promise.handleException(new ResponseException(Status.INTERNAL_SERVER_ERROR));
-        Promise<Response, ResponseException> result = route.handle(exchange, new Request());
-
-        try {
-            result.getOrThrow();
-            failBecauseExceptionWasNotThrown(ResponseException.class);
-        } catch (Exception e) {
-            assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
-        }
-
     }
 
     private Route createRoute(final SessionManager sessionManager,

@@ -17,19 +17,16 @@
 package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
@@ -39,8 +36,8 @@ import org.testng.annotations.Test;
 
 public class SequenceHandlerTest {
 
-    private PromiseImpl<Response, ResponseException> promise1;
-    private PromiseImpl<Response, ResponseException> promise2;
+    private PromiseImpl<Response, NeverThrowsException> promise1;
+    private PromiseImpl<Response, NeverThrowsException> promise2;
 
     @Mock
     private org.forgerock.http.Handler handler1;
@@ -68,7 +65,7 @@ public class SequenceHandlerTest {
 
         Exchange exchange = new Exchange();
         Request request = new Request();
-        Promise<Response, ResponseException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
         assertThat(result.get()).isSameAs(response);
     }
 
@@ -84,7 +81,7 @@ public class SequenceHandlerTest {
 
         Exchange exchange = new Exchange();
         Request request = new Request();
-        Promise<Response, ResponseException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
         assertThat(result.get()).isSameAs(response2);
     }
 
@@ -100,31 +97,8 @@ public class SequenceHandlerTest {
 
         Exchange exchange = new Exchange();
         Request request = new Request();
-        Promise<Response, ResponseException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
         assertThat(result.get()).isSameAs(response1);
         verifyZeroInteractions(handler2);
-    }
-
-    @Test
-    public void shouldReturnFailedPromise() throws Exception {
-        SequenceHandler sequence = new SequenceHandler();
-        sequence.addBinding(handler1, null);
-        sequence.addBinding(handler2, null);
-        Response response1 = new Response();
-        promise1.handleResult(response1);
-        ResponseException error = new ResponseException(Status.NOT_FOUND, "Boom");
-        promise2.handleException(error);
-
-        Exchange exchange = new Exchange();
-        Request request = new Request();
-        Promise<Response, ResponseException> result = sequence.handle(exchange, request);
-        try {
-            result.getOrThrow();
-            failBecauseExceptionWasNotThrown(ResponseException.class);
-        } catch (ResponseException re) {
-            assertThat(re).hasMessage("Boom");
-            assertThat(re.getResponse().getStatus()).isEqualTo(Status.NOT_FOUND);
-        }
-        verify(handler1).handle(exchange, request);
     }
 }

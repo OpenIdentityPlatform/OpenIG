@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -29,14 +29,13 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.ExceptionHandler;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.promise.ResultHandler;
@@ -65,15 +64,15 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
 
-        final PromiseImpl<Response, ResponseException> composite = PromiseImpl.create();
+        final PromiseImpl<Response, NeverThrowsException> composite = PromiseImpl.create();
 
         final Exchange exchange = context.asContext(Exchange.class);
         final Deque<Binding> theBindings = new ArrayDeque<Binding>(bindings);
 
         Binding binding = theBindings.peekFirst();
-        Promise<Response, ResponseException> promise = binding.handler.handle(context, request);
+        Promise<Response, NeverThrowsException> promise = binding.handler.handle(context, request);
         promise.thenOnResult(new ResultHandler<Response>() {
 
             @Override
@@ -87,20 +86,9 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
                     // Next promise
                     final Binding next = theBindings.peekFirst();
                     next.handler.handle(context, request)
-                                .thenOnResult(this)
-                                .thenOnException(new ExceptionHandler<ResponseException>() {
-                                    @Override
-                                    public void handleException(final ResponseException error) {
-                                        composite.handleException(error);
-                                    }
-                                });
+                                .thenOnResult(this);
 
                 }
-            }
-        }).thenOnException(new ExceptionHandler<ResponseException>() {
-            @Override
-            public void handleException(final ResponseException error) {
-                composite.handleException(error);
             }
         });
 
