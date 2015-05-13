@@ -20,8 +20,6 @@ package org.forgerock.openig.http;
 
 import java.net.URI;
 import java.security.Principal;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import org.forgerock.http.ClientInfo;
 import org.forgerock.http.Context;
@@ -162,24 +160,6 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     @Override
     public boolean isRootContext() {
         return false;
-    }
-
-    @Override
-    public Iterator<Context> iterator() {
-        return EMPTY_ITERATOR;
-    }
-
-    @Override
-    public <T extends Context> Iterator<T> iterator(final Class<T> clazz) {
-        return null;
-    }
-
-    static final EmptyIterator<Context> EMPTY_ITERATOR = new EmptyIterator<Context>();
-
-    private static class EmptyIterator<E> implements Iterator<E> {
-        public boolean hasNext() { return false; }
-        public E next() { throw new NoSuchElementException(); }
-        public void remove() { throw new IllegalStateException(); }
     }
 
 }
