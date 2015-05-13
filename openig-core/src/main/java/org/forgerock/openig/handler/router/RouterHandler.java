@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.io.File;
 import java.util.Comparator;
@@ -34,13 +34,14 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Responses;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
@@ -243,7 +244,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         // Run the directory scanner
         directoryScanner.scan(this);
 
@@ -259,7 +260,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             if (defaultHandler != null) {
                 return defaultHandler.handle(context, request);
             }
-            return Promises.newExceptionPromise(new ResponseException("no handler to dispatch to"));
+            return Promises.newResultPromise(Responses.newNotFound("no handler to dispatch to"));
         } finally {
             read.unlock();
         }

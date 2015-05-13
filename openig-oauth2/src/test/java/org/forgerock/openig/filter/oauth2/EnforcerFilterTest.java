@@ -16,16 +16,19 @@
 
 package org.forgerock.openig.filter.oauth2;
 
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -50,15 +53,21 @@ public class EnforcerFilterTest {
         verify(delegate).filter(exchange, null, handler);
     }
 
-    @Test(expectedExceptions = ResponseException.class)
-    public void shouldThrowAHandlerExceptionBecauseConditionIsNotVerified() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${false}", Boolean.class), delegate);
-        enforcer.filter(new Exchange(), null, handler).getOrThrow();
+    @DataProvider
+    public static Object[][] conditionsEvaluatingToFalse() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { "${false}" },
+                { "not a condition" },
+                { "exchange.missing" }
+        };
+        // @Checkstyle:on
     }
 
-    @Test(expectedExceptions = ResponseException.class)
-    public void shouldThrowAHandlerExceptionBecauseConditionIsInvalid() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("not a condition", Boolean.class), delegate);
-        enforcer.filter(new Exchange(), null, handler).getOrThrow();
+    @Test(dataProvider = "conditionsEvaluatingToFalse")
+    public void shouldReturnAnInternalServerErrorForInvalidOrEvaluatedToFalseConditions(String condition) throws Exception {
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf(condition, Boolean.class), delegate);
+        Response response = enforcer.filter(new Exchange(), null, handler).get();
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 }

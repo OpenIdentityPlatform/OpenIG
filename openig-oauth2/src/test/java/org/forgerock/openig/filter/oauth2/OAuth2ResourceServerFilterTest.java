@@ -36,7 +36,6 @@ import org.assertj.core.api.Condition;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
@@ -205,13 +204,14 @@ public class OAuth2ResourceServerFilterTest {
         verify(nextHandler).handle(exchange, request);
     }
 
-    @Test(expectedExceptions = ResponseException.class,
-          expectedExceptionsMessageRegExp = ".*scope expression \'.*\' could not be resolved")
+    @Test
     public void shouldFailDueToInvalidScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter = buildResourceServerFilter("${bad.attribute}");
 
         Request request = buildAuthorizedRequest();
-        filter.filter(new Exchange(), request, null).getOrThrow();
+        Response response = filter.filter(new Exchange(), request, null).getOrThrow();
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).matches(".*scope expression \'.*\' could not be resolved");
     }
 
     private OAuth2ResourceServerFilter buildResourceServerFilter(String... scopes) throws ExpressionException {

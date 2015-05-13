@@ -17,17 +17,17 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -35,6 +35,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -44,7 +45,7 @@ import org.forgerock.util.promise.Promises;
  * the exchange flow is diverted to the associated handler. If no condition evaluates to
  * {@code true}, then the exchange flows normally through the filter.
  */
-public class SwitchFilter extends GenericHeapObject implements org.forgerock.http.Filter {
+public class SwitchFilter extends GenericHeapObject implements Filter {
 
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
@@ -94,27 +95,27 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final org.forgerock.http.Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
 
         // Switch on the request flow
-        Promise<Response, ResponseException> promise = doSwitch(exchange,
-                                                                request,
-                                                                requestCases);
+        Promise<Response, NeverThrowsException> promise = doSwitch(exchange,
+                                                                   request,
+                                                                   requestCases);
         if (promise != null) {
             return promise;
         }
         // not intercepted on request
         // Invoke next filter in chain and try switching on the response flow
         return next.handle(context, request)
-                .thenAsync(new AsyncFunction<Response, Response, ResponseException>() {
+                .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                     @Override
-                    public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
-                        Promise<Response, ResponseException> promise = doSwitch(exchange,
-                                                                                request,
-                                                                                responseCases);
+                    public Promise<Response, NeverThrowsException> apply(final Response value) {
+                        Promise<Response, NeverThrowsException> promise = doSwitch(exchange,
+                                                                                   request,
+                                                                                   responseCases);
                         // not intercepted on response, just return the original response
                         if (promise == null) {
                             promise = Promises.newResultPromise(value);
@@ -124,7 +125,7 @@ public class SwitchFilter extends GenericHeapObject implements org.forgerock.htt
                 });
     }
 
-    private Promise<Response, ResponseException> doSwitch(Exchange exchange, Request request, List<Case> cases) {
+    private Promise<Response, NeverThrowsException> doSwitch(Exchange exchange, Request request, List<Case> cases) {
         for (Case c : cases) {
             if (c.condition == null || Boolean.TRUE.equals(c.condition.eval(exchange))) {
                 // switched flow

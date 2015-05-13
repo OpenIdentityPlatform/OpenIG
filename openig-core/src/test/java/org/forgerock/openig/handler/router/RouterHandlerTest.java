@@ -18,7 +18,6 @@ package org.forgerock.openig.handler.router;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.util.Utils.closeSilently;
@@ -26,7 +25,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.matches;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileReader;
@@ -42,14 +45,13 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
@@ -111,12 +113,9 @@ public class RouterHandlerTest {
         // Verify that the second route is inactive
         Exchange fifth = new Exchange();
         fifth.put("name", "OpenAM");
-        try {
-            handler.handle(fifth, new Request()).getOrThrow();
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (ResponseException e) {
-            assertThat(e).hasMessage("no handler to dispatch to");
-        }
+        Response response = handler.handle(fifth, new Request()).get();
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        assertThat(response.getEntity().getString()).isEqualTo("no handler to dispatch to");
 
         handler.stop();
     }
@@ -145,26 +144,21 @@ public class RouterHandlerTest {
         // Verify that the initial route is active
         assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
-        try {
-            // Should throw since no routes match and there is no default handler.
-            handle(handler, "OpenAM");
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (ResponseException e) {
-            // Ok - the request could not be routed.
-            assertThat(e).hasMessage("no handler to dispatch to");
-        }
+        // Should returns a 404 since no routes match and there is no default handler.
+        Exchange exchange = handle(handler, "OpenAM");
+        assertThat(exchange.response.getStatus()).isEqualTo(Status.NOT_FOUND);
 
         Handler defaultHandler = mockDefaultHandler();
         handler.setDefaultHandler(defaultHandler);
 
         // Should route to default handler.
-        Exchange exchange = handle(handler, "OpenAM");
+        exchange = handle(handler, "OpenAM");
         verify(defaultHandler).handle(eq(exchange), any(Request.class));
     }
 
     private Handler mockDefaultHandler() {
         // Create a successful promise
-        PromiseImpl<Response, ResponseException> result = PromiseImpl.create();
+        PromiseImpl<Response, NeverThrowsException> result = PromiseImpl.create();
         result.handleResult(new Response());
         // Mock the handler to return the promise
         Handler defaultHandler = mock(Handler.class);

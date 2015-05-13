@@ -17,13 +17,13 @@
 
 package org.forgerock.openig.http;
 
-import static org.forgerock.openig.http.Adapters.*;
+import static org.forgerock.openig.http.Adapters.asExchange;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -53,7 +53,7 @@ final class HttpHandler implements Handler {
      * @return {@inheritDoc}
      */
     @Override
-    public Promise<Response, ResponseException> handle(Context context, Request request) {
+    public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
         // Builds the only Exchange and use it
         Exchange exchange = asExchange(context, request);
         return delegate.handle(exchange, request);

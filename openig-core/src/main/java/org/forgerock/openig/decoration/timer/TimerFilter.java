@@ -21,10 +21,10 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -42,15 +42,15 @@ class TimerFilter implements Filter {
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         final LogTimer timer = logger.getTimer().start();
         // Wraps the next handler to mark when the flow exits/re-enter the delegated filter
         // Used to pause/resume the timer
         return delegate.filter(context, request, new Handler() {
             @Override
-            public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+            public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
                 timer.pause();
                 return next.handle(context, request)
                         .thenAlways(new Runnable() {

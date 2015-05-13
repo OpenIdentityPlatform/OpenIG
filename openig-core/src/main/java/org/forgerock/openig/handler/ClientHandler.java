@@ -18,16 +18,16 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.http.HttpClient.*;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -61,7 +61,7 @@ public class ClientHandler extends GenericHeapObject implements org.forgerock.ht
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         // TODO Maybe this could be done asynchronously
         return Promises.newResultPromise(client.execute(request));
     }

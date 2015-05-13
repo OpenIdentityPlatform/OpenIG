@@ -17,20 +17,15 @@
 package org.forgerock.openig.audit.decoration;
 
 import static java.util.Collections.singleton;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.testng.annotations.Test;
@@ -49,7 +44,7 @@ public class AuditFilterTest extends AbstractAuditTest {
         AuditFilter audit = new AuditFilter(auditSystem, source, delegate, singleton("tag"));
         Exchange exchange = new Exchange();
         when(delegate.filter(exchange, null, handler))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
         audit.filter(exchange, null, handler).getOrThrow();
 
@@ -58,22 +53,4 @@ public class AuditFilterTest extends AbstractAuditTest {
         assertThatEventIncludes(captor.getAllValues().get(1), exchange, "tag", "response", "completed");
     }
 
-    @Test
-    public void shouldEmitAuditEventsWhenFailed() throws Exception {
-        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
-        when(delegate.filter(any(Exchange.class), any(Request.class), eq(handler)))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
-
-        AuditFilter audit = new AuditFilter(auditSystem, source, delegate, singleton("tag"));
-
-        Exchange exchange = new Exchange();
-        try {
-            audit.filter(exchange, null, handler).getOrThrow();
-            failBecauseExceptionWasNotThrown(ResponseException.class);
-        } catch (ResponseException e) {
-            verify(auditSystem, times(2)).onAuditEvent(captor.capture());
-            assertThatEventIncludes(captor.getAllValues().get(0), exchange, "tag", "request");
-            assertThatEventIncludes(captor.getAllValues().get(1), exchange, "tag", "response", "exception");
-        }
-    }
 }

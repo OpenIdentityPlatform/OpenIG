@@ -16,17 +16,23 @@
 
 package org.forgerock.openig.filter;
 
-import static java.security.KeyPairGenerator.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.util.StandardCharsets.*;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.filter.CryptoHeaderFilter.*;
-import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.MessageType.*;
-import static org.forgerock.util.encode.Base64.*;
+import static java.security.KeyPairGenerator.getInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.util.StandardCharsets.UTF_8;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.forgerock.json.fluent.JsonValue.object;
+import static org.forgerock.openig.filter.CryptoHeaderFilter.DEFAULT_ALGORITHM;
+import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.DECRYPT;
+import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.ENCRYPT;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.MessageType.REQUEST;
+import static org.forgerock.openig.util.MessageType.RESPONSE;
+import static org.forgerock.util.encode.Base64.decode;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -40,12 +46,12 @@ import javax.crypto.spec.SecretKeySpec;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -105,7 +111,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -123,7 +129,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -140,7 +146,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -159,7 +165,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
         filter.filter(null, request, terminalHandler);
 
@@ -177,7 +183,7 @@ public class CryptoHeaderFilterTest {
         response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         filter.filter(null, null, terminalHandler);
 
@@ -196,7 +202,7 @@ public class CryptoHeaderFilterTest {
         response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         filter.filter(null, null, terminalHandler);
 

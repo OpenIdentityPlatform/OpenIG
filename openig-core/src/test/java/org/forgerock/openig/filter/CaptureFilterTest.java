@@ -16,10 +16,11 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.io.IO.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.nullOutputStream;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,9 +32,9 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -54,7 +55,7 @@ public class CaptureFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
     }
 
     @Test

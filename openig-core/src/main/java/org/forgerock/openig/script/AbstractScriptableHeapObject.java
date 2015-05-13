@@ -15,8 +15,8 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.http.HttpClient.*;
+import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,6 @@ import javax.script.ScriptException;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -37,7 +36,9 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.ldap.LdapClient;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -183,16 +184,16 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * {@code null}.
      * @return the Promise of a Response produced by the script
      */
-    protected final Promise<Response, ResponseException> runScript(final Exchange exchange,
-                                                                   final Request request,
-                                                                   final Handler next) {
+    protected final Promise<Response, NeverThrowsException> runScript(final Exchange exchange,
+                                                                      final Request request,
+                                                                      final Handler next) {
         try {
             // TODO Do we need to force update exchange.request ?
             exchange.request = request;
             compiledScript.run(createBindings(exchange, next));
             return Promises.newResultPromise(exchange.response);
         } catch (final ScriptException e) {
-            return Promises.newExceptionPromise(new ResponseException("Cannot execute script", e));
+            return Promises.newResultPromise(Responses.newInternalServerError("Cannot execute script", e));
         }
     }
 

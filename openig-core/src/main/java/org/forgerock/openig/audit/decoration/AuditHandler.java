@@ -22,11 +22,10 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.ExceptionHandler;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -45,19 +44,14 @@ class AuditHandler extends AuditBaseObject implements Handler {
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
         fireAuditEvent(exchange, requestTags);
         return delegate.handle(context, request)
-                .thenOnResultOrException(new ResultHandler<Response>() {
+                .thenOnResult(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response result) {
                         fireAuditEvent(exchange, completedResponseTags);
-                    }
-                }, new ExceptionHandler<ResponseException>() {
-                    @Override
-                    public void handleException(final ResponseException error) {
-                        fireAuditEvent(exchange, failedResponseTags);
                     }
                 });
     }

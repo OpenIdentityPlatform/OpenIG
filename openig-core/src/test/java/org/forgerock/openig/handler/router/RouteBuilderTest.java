@@ -31,7 +31,6 @@ import org.forgerock.http.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -39,6 +38,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -148,7 +148,7 @@ public class RouteBuilderTest {
     public static class SessionHandler implements Handler {
 
         @Override
-        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             Session session = context.asContext(HttpContext.class).getSession();
             session.put("ForgeRock", "OpenIG");
             return Promises.newResultPromise(new Response());

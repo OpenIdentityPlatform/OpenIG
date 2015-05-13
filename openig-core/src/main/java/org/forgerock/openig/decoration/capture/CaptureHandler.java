@@ -16,7 +16,8 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static org.forgerock.openig.decoration.capture.CapturePoint.*;
+import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
 
 import java.util.Set;
 
@@ -24,8 +25,8 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -55,7 +56,7 @@ class CaptureHandler implements Handler {
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
         if (points.contains(REQUEST)) {
             capture.capture(exchange, request, REQUEST);

@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -26,13 +25,12 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
@@ -69,7 +67,7 @@ public class TimerFilterTest {
 
         Exchange exchange = new Exchange();
         when(delegate.filter(exchange, null, terminal))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         time.filter(exchange, null, terminal).get();
 
         InOrder inOrder = inOrder(timer, terminal);
@@ -80,32 +78,11 @@ public class TimerFilterTest {
         inOrder.verify(timer).stop();
     }
 
-    @Test
-    public void shouldLogStartedAndElapsedMessagesWhenDelegateFilterIsFailing() throws Exception {
-        TimerFilter time = new TimerFilter(delegate, logger);
-        Exchange exchange = new Exchange();
-
-        ResponseException exception = new ResponseException(Status.INTERNAL_SERVER_ERROR);
-        when(terminal.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newExceptionPromise(exception));
-
-        try {
-            time.filter(exchange, null, terminal).getOrThrow();
-            failBecauseExceptionWasNotThrown(ResponseException.class);
-        } catch (ResponseException e) {
-            InOrder inOrder = inOrder(timer);
-            inOrder.verify(timer).start();
-            inOrder.verify(timer).pause();
-            inOrder.verify(timer).resume();
-            inOrder.verify(timer).stop();
-        }
-    }
-
     private static class DelegateFilter implements Filter {
         @Override
-        public Promise<Response, ResponseException> filter(final Context context,
-                                                           final Request request,
-                                                           final Handler next) {
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
             return next.handle(context, request);
         }
     }

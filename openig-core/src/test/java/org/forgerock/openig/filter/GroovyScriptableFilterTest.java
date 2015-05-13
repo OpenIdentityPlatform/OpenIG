@@ -26,7 +26,11 @@ import static org.assertj.core.api.Fail.fail;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +54,6 @@ import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
@@ -61,7 +64,6 @@ import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -71,11 +73,13 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.h2.jdbcx.JdbcDataSource;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.xebialabs.restito.semantics.Condition;
@@ -155,7 +159,7 @@ public class GroovyScriptableFilterTest {
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bjensen");
         exchange.request.getHeaders().add("Password", "hifalutin");
-        Promise<Response, ResponseException> promise1 = handler.handle(exchange, exchange.request);
+        Promise<Response, NeverThrowsException> promise1 = handler.handle(exchange, exchange.request);
         assertThat(promise1.get().getStatus()).isEqualTo(Status.OK);
 
         // Try with invalid credentials
@@ -163,13 +167,13 @@ public class GroovyScriptableFilterTest {
         exchange.request.setUri(new URI("http://test/login"));
         exchange.request.getHeaders().add("Username", "bob");
         exchange.request.getHeaders().add("Password", "dobbs");
-        Promise<Response, ResponseException> promise2 = handler.handle(exchange, exchange.request);
+        Promise<Response, NeverThrowsException> promise2 = handler.handle(exchange, exchange.request);
         assertThat(promise2.get().getStatus()).isEqualTo(Status.FORBIDDEN);
 
         // Try with different path
         exchange.request = new Request();
         exchange.request.setUri(new URI("http://test/index.html"));
-        Promise<Response, ResponseException> promise3 = handler.handle(exchange, exchange.request);
+        Promise<Response, NeverThrowsException> promise3 = handler.handle(exchange, exchange.request);
         assertThat(promise3.get().getStatus()).isEqualTo(Status.UNAUTHORIZED);
     }
 
@@ -572,12 +576,6 @@ public class GroovyScriptableFilterTest {
         verify(handler).handle(exchange, request);
     }
 
-    @Test(expectedExceptions = ResponseException.class)
-    public void testNextHandlerCanThrowHandlerException() throws Exception {
-        final ScriptableFilter filter = newGroovyFilter("next.handle(exchange)");
-        filter.filter(new Exchange(), null, new FailureHandler(new ResponseException(Status.NOT_FOUND))).getOrThrow();
-    }
-
     @Test
     public void testNextHandlerPreAndPostConditions() throws Exception {
         // @formatter:off
@@ -693,15 +691,22 @@ public class GroovyScriptableFilterTest {
         assertThat(response.getEntity().getString()).isEqualTo("hello world");
     }
 
-    @Test(expectedExceptions = ScriptException.class)
-    public void testRunTimeFailure() throws Throwable {
-        final ScriptableFilter filter = newGroovyFilter("dummy + 1");
-        try {
-            filter.filter(new Exchange(), null, null).getOrThrow();
-            fail("Script exception expected");
-        } catch (final ResponseException e) {
-            throw e.getCause();
-        }
+    @Test(dataProvider = "failingScripts")
+    public void testRunTimeFailure(String script) throws Exception {
+        final ScriptableFilter filter = newGroovyFilter(script);
+        Response response = filter.filter(new Exchange(), null, null).get();
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).contains("Cannot execute script");
+    }
+
+    @DataProvider
+    public static Object[][] failingScripts() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { "dummy + 1" },
+                { "import org.forgerock.openig.handler.HandlerException; throw new HandlerException('test')" }
+        };
+        // @Checkstyle:on
     }
 
     @Test
@@ -736,25 +741,6 @@ public class GroovyScriptableFilterTest {
         Response response = filter.filter(exchange, null, null).getOrThrow();
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
-    }
-
-    @Test(expectedExceptions = HandlerException.class, expectedExceptionsMessageRegExp = "test")
-    public void testThrowHandlerException() throws Throwable {
-        // @formatter:off
-        final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.openig.handler.HandlerException",
-                "throw new HandlerException('test')");
-        // @formatter:on
-
-        try {
-            filter.filter(new Exchange(), null, null).getOrThrow();
-        } catch (ResponseException e) {
-            // CHF API throws ResponseException where IG API is all about HandlerException
-            // As I seek compatibility for the moment, I've kept HandlerException as-is in the scripts
-            // double getCause() because of the following wrapping:
-            // ResponseException > ScriptException > HandlerException
-            throw e.getCause().getCause();
-        }
     }
 
     @Test(enabled = false)
@@ -919,7 +905,7 @@ public class GroovyScriptableFilterTest {
     private static class TerminalHandler implements Handler {
         Request request;
         @Override
-        public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             this.request = request;
             return Promises.newResultPromise(new Response());
         }

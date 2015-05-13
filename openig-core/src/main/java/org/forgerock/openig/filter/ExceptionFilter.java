@@ -21,11 +21,11 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -41,17 +41,6 @@ import org.forgerock.util.promise.Promises;
  */
 public class ExceptionFilter extends GenericHeapObject implements org.forgerock.http.Filter {
 
-    /**
-     * Idempotent AsyncFunction for successful Promise.
-     */
-    private static final AsyncFunction<Response, Response, ResponseException> NOOP_ASYNCFUNCTION =
-            new AsyncFunction<Response, Response, ResponseException>() {
-                @Override
-                public Promise<Response, ResponseException> apply(final Response value) throws ResponseException {
-                    return Promises.newResultPromise(value);
-                }
-            };
-
     /** Handler to dispatch to in the event of caught exceptions. */
     private final Handler handler;
 
@@ -64,18 +53,19 @@ public class ExceptionFilter extends GenericHeapObject implements org.forgerock.
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         return next.handle(context, request)
-                .thenAsync(NOOP_ASYNCFUNCTION, new AsyncFunction<ResponseException, Response, ResponseException>() {
-                    @Override
-                    public Promise<Response, ResponseException> apply(final ResponseException value)
-                            throws ResponseException {
-                        logger.warning(value);
-                        return handler.handle(context, request);
-                    }
-                });
+                   .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
+                       @Override
+                       public Promise<Response, NeverThrowsException> apply(final Response value) {
+                           if (value.getCause() != null) {
+                               return handler.handle(context, request);
+                           }
+                           return Promises.newResultPromise(value);
+                       }
+                   });
     }
 
     /**

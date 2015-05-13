@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -31,7 +31,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
@@ -42,6 +41,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -134,15 +134,15 @@ public class EntityExtractFilter extends GenericHeapObject implements org.forger
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
 
         final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
             process(exchange, request);
         }
-        Promise<Response, ResponseException> promise = next.handle(context, request);
+        Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
             return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override

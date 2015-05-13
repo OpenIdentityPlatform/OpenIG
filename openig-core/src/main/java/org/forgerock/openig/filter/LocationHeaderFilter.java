@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.filter;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,17 +26,17 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.URIUtil;
 import org.forgerock.http.header.LocationHeader;
-import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.util.Function;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -62,51 +62,49 @@ public class LocationHeaderFilter extends GenericHeapObject implements org.forge
      *
      * @param exchange the exchange containing the response message containing the Location header
      */
-    private void processResponse(Exchange exchange) throws HandlerException {
-        Message message = exchange.response;
-        LocationHeader header = LocationHeader.valueOf(message);
+    private Response processResponse(Exchange exchange) {
+        Response response = exchange.response;
+        LocationHeader header = LocationHeader.valueOf(response);
         if (header.toString() != null) {
             try {
                 URI currentURI = new URI(header.toString());
                 URI rebasedURI = URIUtil.rebase(currentURI, evaluateBaseUri(exchange));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
-                    message.getHeaders().remove(LocationHeader.NAME);
-                    message.getHeaders().add(LocationHeader.NAME, rebasedURI.toString());
+                    response.getHeaders().remove(LocationHeader.NAME);
+                    response.getHeaders().add(LocationHeader.NAME, rebasedURI.toString());
                 }
-            } catch (URISyntaxException ex) {
-                throw logger.debug(new HandlerException(ex));
+            } catch (URISyntaxException | ResponseException ex) {
+                logger.debug(ex);
+                return Responses.newInternalServerError(ex);
             }
         }
+
+        return response;
     }
 
-    private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, HandlerException {
+    private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, ResponseException {
         String uri = baseURI.eval(exchange);
 
         if (uri == null) {
-            throw logger.debug(new HandlerException(format(
+            throw logger.debug(new ResponseException(format(
                     "The baseURI expression '%s' could not be resolved", baseURI.toString())));
         }
         return new URI(uri);
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         // We only care about responses so just call the next handler in the chain.
         return next.handle(context, request)
-                   .then(new Function<Response, Response, ResponseException>() {
+                   .then(new Function<Response, Response, NeverThrowsException>() {
                        @Override
-                       public Response apply(final Response value) throws ResponseException {
+                       public Response apply(final Response value) {
                            Exchange exchange = context.asContext(Exchange.class);
                            exchange.response = value;
-                           try {
-                               processResponse(exchange);
-                           } catch (HandlerException e) {
-                               throw new ResponseException("Can't update Location header", e);
-                           }
-                           return value;
+                           return processResponse(exchange);
                        }
                    });
     }

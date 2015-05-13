@@ -16,8 +16,10 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -25,11 +27,11 @@ import java.util.regex.Pattern;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -102,7 +104,7 @@ public class EntityExtractFilterTest {
         response.setEntity((String) null);
 
         when(terminalHandler.handle(exchange, null))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         filter.filter(exchange, null, terminalHandler);
 

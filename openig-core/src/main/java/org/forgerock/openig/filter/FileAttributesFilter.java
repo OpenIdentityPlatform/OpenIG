@@ -17,7 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,6 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -37,6 +37,7 @@ import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -91,9 +92,9 @@ public class FileAttributesFilter extends GenericHeapObject implements org.forge
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
         target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
             @Override

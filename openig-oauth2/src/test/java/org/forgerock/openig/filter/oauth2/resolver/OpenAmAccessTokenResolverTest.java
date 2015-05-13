@@ -21,10 +21,8 @@ import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.FailureHandler;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.filter.oauth2.ResponseHandler;
 import org.forgerock.util.time.TimeService;
@@ -73,19 +71,6 @@ public class OpenAmAccessTokenResolverTest {
         //When
         resolver.resolve(TOKEN);
     }
-
-    @Test(expectedExceptions = OAuth2TokenException.class)
-    public void shouldThrowAnOAuthTokenExceptionCausedByAnIOException() throws Exception {
-
-        //Given
-        Handler client = new FailureHandler(new ResponseException(Status.NOT_FOUND));
-        OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
-
-        //When
-        resolver.resolve(TOKEN);
-    }
-
-    // TODO Implements other tests for errors
 
     private static String doubleQuote(final String value) {
         return value.replaceAll("'", "\"");

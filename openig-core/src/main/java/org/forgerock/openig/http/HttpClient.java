@@ -18,9 +18,11 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.warnForDeprecation;
+import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.time.Duration.duration;
 
 import java.io.File;
@@ -40,7 +42,6 @@ import org.forgerock.http.Client.HostnameVerifier;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -349,17 +350,7 @@ public class HttpClient extends GenericHeapObject {
      * @return The HTTP response.
      */
     public Response execute(final Request request) {
-        try {
-            return client.send(request);
-        } catch (final ResponseException e) {
-            // TODO (Ugly I known) Filter out the non-2xx responses that are wrapped into ResponseException
-            // That code should be removed when CHF will implement the non-interpretation
-            // of HTTP responses (not turning non-2xx into exceptions)
-            if (e.getCause() != null) {
-                logger.warning(e);
-            }
-            return e.getResponse();
-        }
+        return client.send(request);
     }
 
     /**

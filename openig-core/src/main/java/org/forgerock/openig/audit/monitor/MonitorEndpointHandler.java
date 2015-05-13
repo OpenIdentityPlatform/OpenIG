@@ -30,7 +30,6 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditEventListener;
@@ -38,6 +37,7 @@ import org.forgerock.openig.audit.ConditionalAuditEventListener;
 import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.util.EnumUtil;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
@@ -52,7 +52,7 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
     private ConcurrentHashMap<String, TagMetric> metrics = new ConcurrentHashMap<String, TagMetric>();
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.getEntity().setJson(metrics);
         response.setStatus(Status.OK);

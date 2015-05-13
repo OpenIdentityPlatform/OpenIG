@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-import static java.util.Collections.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static java.util.Collections.emptyList;
+import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -35,7 +35,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -43,6 +42,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -210,14 +210,14 @@ public class CryptoHeaderFilter extends GenericHeapObject implements org.forgero
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         if (messageType == MessageType.REQUEST) {
             process(request);
         }
 
-        Promise<Response, ResponseException> promise = next.handle(context, request);
+        Promise<Response, NeverThrowsException> promise = next.handle(context, request);
 
         // Hook a post-processing function only if needed
         if (messageType == MessageType.RESPONSE) {

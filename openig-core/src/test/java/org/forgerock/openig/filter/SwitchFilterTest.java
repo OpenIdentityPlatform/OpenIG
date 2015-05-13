@@ -16,15 +16,19 @@
 
 package org.forgerock.openig.filter;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -56,15 +60,15 @@ public class SwitchFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         when(handler1.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         when(handler2.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         when(handler3.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
         when(handler4.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
     }
 
     @Test

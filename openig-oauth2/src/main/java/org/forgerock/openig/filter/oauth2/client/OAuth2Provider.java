@@ -42,8 +42,10 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.util.Function;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.NeverThrowsException;
 
 /**
  * A configuration for an OAuth 2.0 authorization server or OpenID Connect Provider.
@@ -206,32 +208,35 @@ public class OAuth2Provider {
         request.setMethod("GET");
         request.setUri(uri);
 
-        try {
-            providerHandler.handle(new Exchange(), request)
-                           .then(new Function<Response, Response, ResponseException>() {
-                               @Override
-                               public Response apply(final Response response) throws ResponseException {
-                                   if (!Status.OK.equals(response.getStatus())) {
-                                       throw new ResponseException(
-                                               "Unable to read well-known OpenID Configuration from '"
-                                                       + uri + "'");
-                                   }
-                                   try {
-                                       final JsonValue config = getJsonContent(response);
-                                       setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint")
-                                                                               .required(), String.class));
-                                       setTokenEndpoint(asExpression(config.get("token_endpoint").required(),
-                                                                     String.class));
-                                       setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"), String.class));
-                                   } catch (OAuth2ErrorException e) {
-                                       throw new ResponseException("Cannot read JSON", e);
-                                   }
-                                   return response;
-                               }
-                           }).getOrThrow();
-        } catch (Exception e) {
-            throw new HeapException("Unable to read well-known OpenID Configuration from '" + uri
-                                            + "'", e);
+        // Extracted for more readability
+        Function<Response, Response, NeverThrowsException> loadConfiguration =
+                new Function<Response, Response, NeverThrowsException>() {
+            @Override
+            public Response apply(final Response response) throws NeverThrowsException {
+                if (!Status.OK.equals(response.getStatus())) {
+                    return Responses.newInternalServerError(format("Unable to read well-known OpenID " +
+                                                                           "Configuration from '%s'",
+                                                                   uri));
+                }
+                try {
+                    final JsonValue config = getJsonContent(response);
+                    setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint").required(),
+                                                      String.class));
+                    setTokenEndpoint(asExpression(config.get("token_endpoint").required(),
+                                                  String.class));
+                    setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"), String.class));
+                } catch (OAuth2ErrorException e) {
+                    return Responses.newInternalServerError("Cannot read JSON", e);
+                }
+                return response;
+            }
+        };
+
+        Response response = providerHandler.handle(new Exchange(), request)
+                                           .then(loadConfiguration)
+                                           .getOrThrowUninterruptibly();
+        if (!Status.OK.equals(response.getStatus())) {
+            throw new HeapException("Unable to read well-known OpenID Configuration from '" + uri + "'");
         }
         return this;
     }
@@ -249,7 +254,7 @@ public class OAuth2Provider {
     }
 
     private Request createRequestForAccessToken(final Exchange exchange, final String code,
-            final String callbackUri) throws ResponseException {
+                                                final String callbackUri) throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(buildUri(exchange, tokenEndpoint));

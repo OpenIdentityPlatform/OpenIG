@@ -23,11 +23,10 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.ExceptionHandler;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -48,21 +47,16 @@ class AuditFilter extends AuditBaseObject implements Filter {
     }
 
     @Override
-    public Promise<Response, ResponseException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
         fireAuditEvent(exchange, requestTags);
         return delegate.filter(context, request, next)
-                       .thenOnResultOrException(new ResultHandler<Response>() {
+                       .thenOnResult(new ResultHandler<Response>() {
                            @Override
                            public void handleResult(final Response result) {
                                fireAuditEvent(exchange, completedResponseTags);
-                           }
-                       }, new ExceptionHandler<ResponseException>() {
-                           @Override
-                           public void handleException(final ResponseException error) {
-                               fireAuditEvent(exchange, failedResponseTags);
                            }
                        });
     }

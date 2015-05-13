@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 import java.net.URISyntaxException;
 
@@ -26,9 +26,9 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -98,9 +98,9 @@ public class BaseUriFilterTest {
 
     private static class DelegateFilter implements Filter {
         @Override
-        public Promise<Response, ResponseException> filter(final Context context,
-                                                           final Request request,
-                                                           final Handler next) {
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
             return next.handle(context, request);
         }
     }

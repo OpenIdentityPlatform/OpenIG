@@ -15,18 +15,22 @@
  */
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.MutableUri.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,7 +53,7 @@ public class DispatchHandlerTest {
     private org.forgerock.http.Handler nextHandler;
 
     @Mock
-    private Promise<Response, ResponseException> promise;
+    private Promise<Response, NeverThrowsException> promise;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -192,8 +196,10 @@ public class DispatchHandlerTest {
 
     }
 
-    @Test(expectedExceptions = ResponseException.class)
+    @Test
     public void testDispatchNoHandlerToDispatch() throws Exception {
-        new DispatchHandler().handle(new Exchange(), new Request()).getOrThrow();
+        Response response = new DispatchHandler().handle(new Exchange(), new Request()).get();
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        assertThat(response.getEntity().getString()).contains("no handler to dispatch to");
     }
 }

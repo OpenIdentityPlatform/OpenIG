@@ -16,19 +16,23 @@
 
 package org.forgerock.openig.audit.decoration;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.fluent.JsonValue.array;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
@@ -51,7 +55,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         super.setUp();
         when(context.getName()).thenReturn(Name.of("config.json", "Router"));
         when(handler.handle(any(org.forgerock.http.Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
     }
 
     @Test

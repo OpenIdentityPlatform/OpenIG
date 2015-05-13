@@ -16,9 +16,15 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static java.util.Arrays.*;
-import static org.forgerock.openig.decoration.capture.CapturePoint.*;
-import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_RESPONSE;
+import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.TreeSet;
@@ -28,8 +34,8 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -43,9 +49,9 @@ public class CaptureFilterTest {
 
     private Filter delegate = new Filter() {
         @Override
-        public Promise<Response, ResponseException> filter(final Context context,
-                                                           final Request request,
-                                                           final Handler next) {
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
             return next.handle(context, request);
         }
     };
@@ -62,7 +68,7 @@ public class CaptureFilterTest {
         MockitoAnnotations.initMocks(this);
         response = new Response();
         when(terminal.handle(any(org.forgerock.http.Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, ResponseException>newResultPromise(response));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
     }
 
     @DataProvider

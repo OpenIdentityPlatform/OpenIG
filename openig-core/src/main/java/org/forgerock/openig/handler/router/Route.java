@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
 
@@ -27,14 +27,13 @@ import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.util.promise.ExceptionHandler;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
@@ -182,7 +181,7 @@ class Route implements Handler {
     }
 
     @Override
-    public Promise<Response, ResponseException> handle(final Context context, final Request request) {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         if (sessionManager == null) {
             return handler.handle(context, request);
         } else {
@@ -191,15 +190,10 @@ class Route implements Handler {
             final Session session = httpContext.getSession();
             httpContext.setSession(sessionManager.load(request));
             return handler.handle(context, request)
-                          .thenOnResultOrException(new ResultHandler<Response>() {
+                          .thenOnResult(new ResultHandler<Response>() {
                               @Override
                               public void handleResult(Response response) {
                                   save(httpContext.getSession(), response);
-                              }
-                          }, new ExceptionHandler<ResponseException>() {
-                              @Override
-                              public void handleException(ResponseException error) {
-                                  save(httpContext.getSession(), error.getResponse());
                               }
                           })
                           .thenAlways(new Runnable() {
