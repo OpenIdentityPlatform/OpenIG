@@ -55,8 +55,8 @@ public final class Adapters {
         exchange.principal = requestContext.getPrincipal();
         exchange.session = requestContext.getSession();
         exchange.request = request;
-        // FIXME: exchange field map should write through to context attributes.
-        exchange.putAll(requestContext.getAttributes());
+        // FIXME To be removed
+        requestContext.getAttributes().clear();
         return exchange;
     }
 
