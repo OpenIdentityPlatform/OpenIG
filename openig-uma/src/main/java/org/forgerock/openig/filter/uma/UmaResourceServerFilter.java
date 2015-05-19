@@ -20,7 +20,6 @@ import static java.lang.String.format;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.json;
 import static org.forgerock.json.fluent.JsonValue.object;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,8 +64,12 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
     private final String resourceSetId;
     private final Set<String> requiredScopes;
 
-    public UmaResourceServerFilter(BearerTokenExtractor extractor, PermissionTicketCreator permissionTicketCreator,
-                                   RptIntrospector introspector, String realm, String asUri, String resourceSetId,
+    public UmaResourceServerFilter(BearerTokenExtractor extractor,
+                                   PermissionTicketCreator permissionTicketCreator,
+                                   RptIntrospector introspector,
+                                   String realm,
+                                   String asUri,
+                                   String resourceSetId,
                                    Set<String> requiredScopes) {
         this.extractor = extractor;
         this.permissionTicketCreator = permissionTicketCreator;
@@ -101,8 +104,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             return invalidRequest.handle(context, request); //TODO not really correct
         }
 
-        Response response = new Response();
-        response.setStatus(Status.FORBIDDEN);
+        Response response = new Response(Status.FORBIDDEN);
         response.getHeaders().put("WWW-Authenticate",
                                   Arrays.asList("UMA realm=\"" + realm + "\"", "as_uri=\"" + asUri + "\""));
         response.getHeaders().add("Content-Type", "application/json");
@@ -154,9 +156,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
 
         @Override
         public Object create() throws HeapException {
-            Handler httpHandler =
-                    heap.resolve(getWithDeprecation(config, logger, "providerHandler",
-                            "httpHandler").required(), Handler.class);
+            Handler httpHandler = heap.resolve(config.get("providerHandler").required(), Handler.class);
 
             String clientId = config.get("clientId").required().asString();
             String clientSecret = config.get("clientSecret").required().asString();
@@ -164,17 +164,26 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             Timer timer = new Timer();
 
             DemoPatGetter patGetter = new DemoPatGetter(httpHandler,
-                    config.get("accessTokenEndpoint").required().asString(),
-                    clientId,
-                    clientSecret,
-                    config.get("username").required().asString(),
-                    config.get("password").required().asString());
+                                                        config.get("accessTokenEndpoint").required().asURI(),
+                                                        clientId,
+                                                        clientSecret,
+                                                        config.get("username").required().asString(),
+                                                        config.get("password").required().asString());
 
-            PermissionTicketCreator permissionTicketCreator = new OpenAMPermissionTicketCreator(httpHandler,
-                    config.get("permissionRequestEndpoint").required().asString(), patGetter, timer);
+            PermissionTicketCreator permissionTicketCreator =
+                    new OpenAMPermissionTicketCreator(httpHandler,
+                                                      config.get("permissionRequestEndpoint")
+                                                            .required()
+                                                            .asURI(),
+                                                      patGetter,
+                                                      timer);
 
             RptIntrospector introspector = new OpenAMRptIntrospector(httpHandler,
-                    config.get("tokenIntrospectionEndpoint").required().asString(), clientId, clientSecret);
+                                                                     config.get("tokenIntrospectionEndpoint")
+                                                                           .required()
+                                                                           .asURI(),
+                                                                     clientId,
+                                                                     clientSecret);
 
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
@@ -184,7 +193,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             String resourceSetId;
             try {
                 resourceSetId = new ResourceSetRegistrar(httpHandler,
-                        config.get("resourceServerEndpoint").required().asString())
+                                                         config.get("resourceServerEndpoint").required().asURI())
                         .getResourceSetId();
             } catch (OAuth2TokenException e) {
                 throw new HeapException("Failed to get/register resource set", e);
@@ -192,13 +201,17 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             Set<String> requiredScopes = config.get("requiredScopes").required().asSet(String.class);
 
             UmaResourceServerFilter filter = new UmaResourceServerFilter(new BearerTokenExtractor(),
-                    permissionTicketCreator, introspector, realm, asUri, resourceSetId, requiredScopes);
+                                                                         permissionTicketCreator,
+                                                                         introspector,
+                                                                         realm,
+                                                                         asUri,
+                                                                         resourceSetId,
+                                                                         requiredScopes);
 
-            if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
-                    Boolean.TRUE).asBoolean()) {
+            if (config.get("requireHttps").defaultTo(Boolean.TRUE).asBoolean()) {
                 try {
                     Expression<Boolean> expr = Expression.valueOf("${exchange.request.uri.scheme == 'https'}",
-                            Boolean.class);
+                                                                  Boolean.class);
                     return new EnforcerFilter(expr, filter);
                 } catch (ExpressionException e) {
                     // Can be ignored, since we completely control the expression
@@ -206,13 +219,6 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             }
 
             return filter;
-        }
-
-
-
-        @Override
-        public void destroy() {
-            super.destroy();
         }
     }
 }
