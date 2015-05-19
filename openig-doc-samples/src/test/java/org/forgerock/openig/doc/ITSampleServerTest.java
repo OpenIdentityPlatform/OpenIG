@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.doc;
@@ -38,21 +38,26 @@ public class ITSampleServerTest {
 
     private WebClient webClient;
     private URL serverUrl;
+    private URL httpsServerUrl;
     private static final Logger logger =
             Logger.getLogger(ITSampleServerTest.class.getName());
     private static String port;
+    private static String sslPort;
     private static HttpServer httpServer;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         port = System.getProperty("serverPort");
-        httpServer = SampleServer.start(Integer.parseInt(port));
+        sslPort = System.getProperty("serverSslPort");
+        httpServer = SampleServer.start(Integer.parseInt(port), Integer.parseInt(sslPort));
     }
 
     @Before
     public void setUp() throws Exception {
         webClient = new WebClient();
+        webClient.setUseInsecureSSL(true);
         serverUrl = new URL("http://localhost:" + port);
+        httpsServerUrl = new URL("https://localhost:" + sslPort);
     }
 
     @After
@@ -82,6 +87,17 @@ public class ITSampleServerTest {
     }
 
     @Test
+    public void testGetHomePageHttps() throws Exception {
+        logger.info("Testing the equivalent of curl --verbose " + httpsServerUrl);
+
+        final WebRequest webRequest = new WebRequest(httpsServerUrl, HttpMethod.GET);
+        final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+        Assert.assertEquals(webResponse.getStatusCode(), 200);
+        Assert.assertTrue(webResponse.getContentAsString().contains("Howdy, Anonymous User"));
+    }
+
+    @Test
     public void testPostValidCredentials() throws Exception {
 
         // Check for HTTP 200 OK and the username in the body of the response
@@ -91,6 +107,20 @@ public class ITSampleServerTest {
         final WebRequest webRequest = new WebRequest(serverUrl, HttpMethod.POST);
         webRequest.setEncodingType(FormEncodingType.URL_ENCODED);
         webRequest.setRequestBody("username=demo&password=changeit");
+        final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+        Assert.assertEquals(webResponse.getStatusCode(), 200);
+        Assert.assertTrue(webResponse.getContentAsString().contains("Howdy, demo"));
+    }
+
+    @Test
+    public void testPostValidCredentialsAsHeaders() throws Exception {
+        logger.info("Testing equivalent of "
+                + "curl --verbose --H \"username: demo\" --H \"password=changeit\" http://localhost:" + port);
+
+        final WebRequest webRequest = new WebRequest(serverUrl, HttpMethod.POST);
+        webRequest.setAdditionalHeader("username", "demo");
+        webRequest.setAdditionalHeader("password", "changeit");
         final WebResponse webResponse = webClient.loadWebResponse(webRequest);
 
         Assert.assertEquals(webResponse.getStatusCode(), 200);

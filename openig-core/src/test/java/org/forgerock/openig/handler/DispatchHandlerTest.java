@@ -15,16 +15,24 @@
  */
 package org.forgerock.openig.handler;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.MutableUri.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.util.MutableUri;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -40,14 +48,19 @@ public class DispatchHandlerTest {
     private static final String URI_PART = "/key_path";
 
     /** The condition to dispatch the handler. */
-    private static final String CONDITION = String.format("${contains(exchange.request.uri.path,'%s')}", URI_PART);
+    private static final String CONDITION = String.format("${contains(request.uri.path,'%s')}", URI_PART);
 
     @Mock
     private Handler nextHandler;
 
+    @Mock
+    private Promise<Response, NeverThrowsException> promise;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(nextHandler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(promise);
     }
 
     @Test
@@ -61,9 +74,9 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.example.com/key_path");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
         assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.hostA.domain.com/key_path"));
     }
 
@@ -79,11 +92,11 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://user.0:password@www.example.com/key_path");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
-        MutableUri expectedURI = uri("http://user.0:password@www.hostA.domain.com:443/key_path");
-        assertThat(exchange.request.getUri()).isEqualTo(expectedURI);
+        verify(nextHandler).handle(exchange, exchange.request);
+        assertThat(exchange.request.getUri()).isEqualTo(uri(
+                "http://user.0:password@www.hostA.domain.com:443/key_path"));
     }
 
     @Test
@@ -97,9 +110,9 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.example.com:40/key_path?query=true&name=b%20jensen#20");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
         assertThat(exchange.request.getUri()).isEqualTo(uri(
                 "https://www.hostA.domain.com/key_path?query=true&name=b%20jensen#20"));
     }
@@ -114,16 +127,16 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.example.com:40/key_path/path");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/key_path/path"));
     }
 
     @Test
     public void testDispatchWithRebasedURI() throws Exception {
-        final Expression<Boolean> expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') "
-                + "and contains(exchange.request.uri.path,'/user.0')}", Boolean.class);
+        final Expression<Boolean> expression = Expression.valueOf("${contains(request.uri.host,'this.domain') "
+                + "and contains(request.uri.path,'/user.0')}", Boolean.class);
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, new URI("https://www.secure.domain.com"));
@@ -132,17 +145,17 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
 
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.secure.domain.com/data/user.0"));
     }
 
     @Test
     public void testDispatchWithNullBaseURI() throws Exception {
-        final Expression<Boolean> expression = Expression.valueOf("${contains(exchange.request.uri.host,'this.domain') "
-                + "and contains(exchange.request.uri.path,'/user.0')}", Boolean.class);
+        final Expression<Boolean> expression = Expression.valueOf("${contains(request.uri.host,'this.domain') "
+                + "and contains(request.uri.path,'/user.0')}", Boolean.class);
 
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, null);
@@ -151,9 +164,9 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
 
         assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.this.domain.com/data/user.0"));
     }
@@ -170,22 +183,24 @@ public class DispatchHandlerTest {
         exchange.request = new Request();
         exchange.request.setUri("http://www.example.com/");
 
-        dispatchHandler.handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
 
-        verify(nextHandler).handle(exchange);
+        verify(nextHandler).handle(exchange, exchange.request);
         // Only the first verified binding applies.
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/"));
 
         // Now with an URI which verifies the first condition
         exchange.request.setUri("http://www.example.com/key_path");
-        dispatchHandler.handle(exchange);
-        verify(nextHandler, times(2)).handle(exchange);
+        dispatchHandler.handle(exchange, exchange.request);
+        verify(nextHandler, times(2)).handle(exchange, exchange.request);
         assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
 
     }
 
-    @Test(expectedExceptions = HandlerException.class)
+    @Test
     public void testDispatchNoHandlerToDispatch() throws Exception {
-        new DispatchHandler().handle(new Exchange());
+        Response response = new DispatchHandler().handle(new Exchange(), new Request()).get();
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        assertThat(response.getEntity().getString()).contains("no handler to dispatch to");
     }
 }

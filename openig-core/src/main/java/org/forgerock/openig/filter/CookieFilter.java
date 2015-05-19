@@ -31,17 +31,24 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.MutableUri;
+import org.forgerock.http.Session;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.http.Session;
-import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.MutableUri;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.util.StringUtil;
+import org.forgerock.util.Function;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Suppresses, relays and manages cookies. The names of filtered cookies are stored in one of
@@ -57,7 +64,7 @@ import org.forgerock.openig.util.StringUtil;
  * {@link Session} object. The default {@code policy} is to accept all incoming cookies, but
  * can be changed to others as appropriate.
  */
-public class CookieFilter extends GenericFilter {
+public class CookieFilter extends GenericHeapObject implements Filter {
 
     /** Action to be performed for a cookie. */
     public enum Action {
@@ -214,21 +221,40 @@ public class CookieFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        HttpContext httpContext = context.asContext(HttpContext.class);
+
         // resolve to client-supplied host header
-        MutableUri resolved = resolveHostURI(exchange.request);
+        final MutableUri resolved = resolveHostURI(request);
         // session cookie jar
-        CookieManager manager = getManager(exchange.session);
+        final CookieManager manager = getManager(httpContext.getSession());
         // remove cookies that are suppressed or managed
-        suppress(exchange.request);
+        suppress(request);
         // add any request cookies to header
-        addRequestCookies(manager, resolved, exchange.request);
+        try {
+            addRequestCookies(manager, resolved, request);
+        } catch (IOException e) {
+            return Promises.newResultPromise(Responses.newInternalServerError("Can't add request cookies", e));
+        }
+
         // pass exchange to next handler in chain
-        next.handle(exchange);
-        // manage cookie headers in response
-        manager.put(resolved.asURI(), exchange.response.getHeaders());
-        // remove cookies that are suppressed or managed
-        suppress(exchange.response);
+        return next.handle(context, request)
+                .then(new Function<Response, Response, NeverThrowsException>() {
+                    @Override
+                    public Response apply(final Response value) {
+                        // manage cookie headers in response
+                        try {
+                            manager.put(resolved.asURI(), value.getHeaders());
+                        } catch (IOException e) {
+                            return Responses.newInternalServerError("Can't process managed cookies in response", e);
+                        }
+                        // remove cookies that are suppressed or managed
+                        suppress(value);
+                        return value;
+                    }
+                });
     }
 
     /**

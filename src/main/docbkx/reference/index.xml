@@ -49,17 +49,17 @@
   <authorgroup>
    <author>
     <personname>
-     <firstname>Paul </firstname><surname>Bryan</surname>
+     <firstname>Paul</firstname> <surname>Bryan</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Mark </firstname><surname>Craig</surname>
+     <firstname>Mark</firstname> <surname>Craig</surname>
     </personname>
    </author>
    <author>
     <personname>
-     <firstname>Jamie </firstname><surname>Nelson</surname>
+     <firstname>Jamie</firstname> <surname>Nelson</surname>
     </personname>
     <xinclude:include href="../shared/affiliation-fr.xml"/>
    </author>
@@ -132,7 +132,6 @@
   <xinclude:include href="man-CookieFilter.xml" />
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-EntityExtractFilter.xml" />
-  <xinclude:include href="man-ExceptionFilter.xml" />
   <xinclude:include href="man-FileAttributesFilter.xml" />
   <xinclude:include href="man-HeaderFilter.xml" />
   <xinclude:include href="man-HttpBasicAuthFilter.xml" />

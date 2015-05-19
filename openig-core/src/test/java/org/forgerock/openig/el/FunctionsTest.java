@@ -23,9 +23,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.File;
 import java.util.Arrays;
 
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.router.Files;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -135,7 +135,7 @@ public class FunctionsTest {
             throws Exception {
         exchange.put("s", s);
         Expression<String[]> stringArrayExpr = Expression.valueOf("${matchingGroups(exchange.s, '" + pattern + "')}",
-                String[].class);
+                                                                  String[].class);
         String[] o = stringArrayExpr.eval(exchange);
         if (matches) {
             assertThat(o).isInstanceOf(String[].class);
@@ -215,20 +215,22 @@ public class FunctionsTest {
     @Test
     public void testFileReading() throws Exception {
         File file = Files.getRelativeFile(getClass(), "readme.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval())
+        assertThat(Expression.valueOf(format("${read('%s')}", escapeBackslashes(file.getPath())),
+                                      String.class).eval())
                 .isEqualTo("Hello World");
     }
 
     @Test
     public void testMissingFileReading() throws Exception {
         File file = Files.getRelative(getClass(), "missing.txt");
-        assertThat(Expression.valueOf(format("${read('%s')}", file.getPath()), String.class).eval()).isNull();
+        assertThat(Expression.valueOf(format("${read('%s')}", escapeBackslashes(file.getPath())),
+                                      String.class).eval()).isNull();
     }
 
     @Test
     public void testPropertiesReading() throws Exception {
         File file = Files.getRelativeFile(getClass(), "configuration.properties");
-        String str = format("${readProperties('%s')['key']}", file.getPath());
+        String str = format("${readProperties('%s')['key']}", escapeBackslashes(file.getPath()));
         Expression<String> expr = Expression.valueOf(str, String.class);
         assertThat(expr.eval()).isEqualTo("some value");
     }
@@ -243,6 +245,14 @@ public class FunctionsTest {
     public void combineArrayAndJoin() throws Exception {
         String o = Expression.valueOf("${join(array('a', 'b', 'c'), ':')}", String.class).eval();
         assertThat(o).isEqualTo("a:b:c");
+    }
+
+    /**
+     * EL doesn't accept windows style path (with backslashes).
+     * We need to protect (escape) them in order to have parse-able expressions.
+     */
+    private static String escapeBackslashes(final String value) {
+        return value.replace("\\", "\\\\");
     }
 
 }

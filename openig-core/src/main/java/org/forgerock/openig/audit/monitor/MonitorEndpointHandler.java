@@ -11,45 +11,52 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.monitor;
 
-import static org.forgerock.openig.audit.Tag.*;
+import static org.forgerock.openig.audit.Tag.completed;
+import static org.forgerock.openig.audit.Tag.exception;
+import static org.forgerock.openig.audit.Tag.request;
+import static org.forgerock.openig.audit.Tag.response;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditEventListener;
 import org.forgerock.openig.audit.ConditionalAuditEventListener;
 import org.forgerock.openig.audit.Tag;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Response;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.util.EnumUtil;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 
 /**
  * Sample statistic endpoint provider that returns JSON-formatted collected statistic values.
  */
-public class MonitorEndpointHandler extends GenericHandler implements AuditEventListener {
+public class MonitorEndpointHandler extends GenericHeapObject implements AuditEventListener, Handler {
 
     private static final Set<String> STANDARD_TAG_NAMES = EnumUtil.names(Tag.class);
 
     private ConcurrentHashMap<String, TagMetric> metrics = new ConcurrentHashMap<String, TagMetric>();
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Response response = new Response();
         response.getEntity().setJson(metrics);
-        response.setStatus(200);
-        exchange.response = response;
+        response.setStatus(Status.OK);
+        return Promises.newResultPromise(response);
     }
 
     @Override

@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.util;
 
+import org.forgerock.http.util.Indexed;
+
 /**
  * This interface is used by the LoaderTest class.
  */

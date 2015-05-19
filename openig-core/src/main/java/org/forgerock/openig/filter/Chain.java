@@ -12,22 +12,27 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+
 import java.util.List;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.Http;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.GenericHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
  * A chain of exchange zero or more filters and one handler. The chain is responsible for
@@ -44,62 +49,37 @@ import org.forgerock.openig.http.Exchange;
  *
  * @see Filter
  */
-public class Chain extends GenericHandler {
+public class Chain extends GenericHeapObject implements Handler {
 
-    /** A list of filters, in the order they are to be dispatched by the chain. */
-    private final List<Filter> filters = new ArrayList<Filter>();
-
-    /** The handler dispatch the exchange to; terminus of the chain. */
-    private final Handler handler;
+    /** The CHF Chain implementation. */
+    private final Handler delegate;
 
     /**
      * Builds a chain of filters that will finally dispatch to the given handler.
      * List of Filters is empty by default.
      * @param handler terminus of the chain
+     * @param filters list of {@link Filter}s
      */
-    public Chain(final Handler handler) {
-        this.handler = handler;
-    }
-
-    /**
-     * Returns the list of filters, in the order they are to be dispatched by the chain.
-     * @return the list of filters, in the order they are to be dispatched by the chain.
-     */
-    public List<Filter> getFilters() {
-        return filters;
+    public Chain(final Handler handler, final List<Filter> filters) {
+        delegate = Http.chainOf(handler, filters);
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
-        new Handler() {
-            private int cursor = 0;
-
-            @Override
-            public void handle(Exchange exchange) throws HandlerException, IOException {
-                // save position to restore after the call
-                int saved = cursor;
-                try {
-                    if (cursor < filters.size()) {
-                        filters.get(cursor++).filter(exchange, this);
-                    } else {
-                        handler.handle(exchange);
-                    }
-                } finally {
-                    cursor = saved;
-                }
-            }
-        } .handle(exchange);
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        return delegate.handle(context, request);
     }
 
     /** Creates and initializes a filter chain in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Chain chain = new Chain(heap.resolve(config.get("handler"), Handler.class));
-            for (JsonValue filter : config.get("filters").required().expect(List.class)) {
-                chain.filters.add(heap.resolve(filter, Filter.class));
-            }
-            return chain;
+            Handler terminus = heap.resolve(config.get("handler"),
+                                            Handler.class);
+            JsonValue list = config.get("filters")
+                                   .required()
+                                   .expect(List.class);
+            List<Filter> filters = list.asList(ofRequiredHeapObject(heap, Filter.class));
+            return new Chain(terminus, filters);
         }
     }
 }

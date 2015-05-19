@@ -17,118 +17,39 @@
 
 package org.forgerock.openig.io;
 
-import java.io.File;
-
+import org.forgerock.http.io.Buffer;
+import org.forgerock.http.io.IO;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Factory;
 
-
 /**
- * Allocates temporary buffers for caching streamed content during request processing.
+ * A wrapper class around {@link IO#newTemporaryStorage} to make it usable
+ * within a heaplet environment.
  */
 public class TemporaryStorage implements Factory<Buffer> {
-
     /**
-     * Key to retrieve a {@link TemporaryStorage} instance from the {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve a {@link TemporaryStorage} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";
 
-    /**
-     * 8 KiB.
-     */
-    public static final int HEIGHT_KB = 8 * 1024;
+    private final Factory<Buffer> factory;
 
     /**
-     * 64 KiB.
-     */
-    public static final int SIXTY_FOUR_KB = 64 * 1024;
-
-    /**
-     * 1 MiB.
-     */
-    public static final int ONE_MB = 1 * 1024 * 1024;
-
-    /**
-     * The initial length of memory buffer byte array. Default: 8 KiB.
-     */
-    private final int initialLength;
-
-    /**
-     * The length limit of the memory buffer. Attempts to exceed this limit will result in
-     * promoting the buffer from a memory to a file buffer. Default: 64 KiB.
-     */
-    private final int memoryLimit;
-
-    /**
-     * The length limit of the file buffer. Attempts to exceed this limit will result in an
-     * {@link OverflowException} being thrown. Default: 1 MiB.
-     */
-    private final int fileLimit;
-
-    /**
-     * The directory where temporary files are created. If {@code null}, then the
-     * system-dependent default temporary directory will be used. Default: {@code null}.
-     *
-     * @see java.io.File#createTempFile(String, String, File)
-     */
-    private final File directory;
-
-    /**
-     * Builds a storage using the system dependent default temporary directory and default sizes.
-     * Equivalent to call {@code new TemporaryStorage(null)}.
-     * @see #TemporaryStorage(File)
+     * Creates a new temporary storage with a default implementation.
      */
     public TemporaryStorage() {
-        this(null);
+        this(IO.newTemporaryStorage());
     }
 
-    /**
-     * Builds a storage using the given directory (may be {@literal null}) and default sizes. Equivalent to call {@code
-     * new TemporaryStorage(directory, HEIGHT_KB, SIXTY_FOUR_KB, ONE_MB)}.
-     *
-     * @param directory
-     *         The directory where temporary files are created. If {@code null}, then the system-dependent default
-     *         temporary directory will be used.
-     * @see #TemporaryStorage(File, int, int, int)
-     */
-    public TemporaryStorage(final File directory) {
-        this(directory, HEIGHT_KB, SIXTY_FOUR_KB, ONE_MB);
+    private TemporaryStorage(final Factory<Buffer> factory) {
+        this.factory = factory;
     }
 
-    /**
-     * Builds a storage using the given directory (may be {@literal null}) and provided sizes.
-     *
-     * @param directory
-     *         The directory where temporary files are created. If {@code null}, then the system-dependent default
-     *         temporary directory will be used.
-     * @param initialLength
-     *         The initial length of memory buffer byte array.
-     * @param memoryLimit
-     *         The length limit of the memory buffer. Attempts to exceed this limit will result in promoting the buffer
-     *         from a memory to a file buffer.
-     * @param fileLimit
-     *         The length limit of the file buffer. Attempts to exceed this limit will result in an {@link
-     *         OverflowException} being thrown.
-     * @see #TemporaryStorage(File, int, int, int)
-     */
-    public TemporaryStorage(final File directory,
-                            final int initialLength,
-                            final int memoryLimit,
-                            final int fileLimit) {
-        this.initialLength = initialLength;
-        this.memoryLimit = memoryLimit;
-        this.fileLimit = fileLimit;
-        this.directory = directory;
-    }
-
-    /**
-     * Creates and returns a new instance of a temporary buffer.
-     *
-     * @return a new instance of a temporary buffer.
-     */
+    @Override
     public Buffer newInstance() {
-        return new TemporaryBuffer(initialLength, memoryLimit, fileLimit, directory);
+        return factory.newInstance();
     }
 
     /**
@@ -137,10 +58,10 @@ public class TemporaryStorage implements Factory<Buffer> {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            return new TemporaryStorage(config.get("directory").asFile(),
-                                        config.get("initialLength").defaultTo(HEIGHT_KB).asInteger(),
-                                        config.get("memoryLimit").defaultTo(SIXTY_FOUR_KB).asInteger(),
-                                        config.get("fileLimit").defaultTo(ONE_MB).asInteger());
+            return new TemporaryStorage(IO.newTemporaryStorage(config.get("directory").asFile(),
+                    config.get("initialLength").defaultTo(IO.DEFAULT_TMP_INIT_LENGTH).asInteger(),
+                    config.get("memoryLimit").defaultTo(IO.DEFAULT_TMP_MEMORY_LIMIT).asInteger(),
+                    config.get("fileLimit").defaultTo(IO.DEFAULT_TMP_FILE_LIMIT).asInteger()));
         }
     }
 }

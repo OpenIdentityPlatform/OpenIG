@@ -51,6 +51,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.forgerock.http</groupId>
+      <artifactId>chf-http-core</artifactId>
+      <version>${httpFrameworkVersion}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <version>2.3.4</version>
@@ -123,6 +129,9 @@
                 <port>
                   <name>port</name>
                 </port>
+                <port>
+                  <name>sslPort</name>
+                </port>
               </ports>
             </configuration>
           </execution>
@@ -147,6 +156,7 @@
         <configuration>
           <systemPropertyVariables>
             <serverPort>${port}</serverPort>
+            <serverSslPort>${sslPort}</serverSslPort>
           </systemPropertyVariables>
         </configuration>
         <executions>

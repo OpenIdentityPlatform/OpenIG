@@ -11,20 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
 
-import java.io.IOException;
 import java.util.Set;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Intercept execution flow and send audit notifications with relevant tags.
@@ -43,17 +47,17 @@ class AuditFilter extends AuditBaseObject implements Filter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-        try {
-            fireAuditEvent(exchange, requestTags);
-            delegate.filter(exchange, next);
-            fireAuditEvent(exchange, completedResponseTags);
-        } catch (HandlerException e) {
-            fireAuditEvent(exchange, failedResponseTags);
-            throw e;
-        } catch (IOException e) {
-            fireAuditEvent(exchange, failedResponseTags);
-            throw e;
-        }
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        final Exchange exchange = context.asContext(Exchange.class);
+        fireAuditEvent(exchange, requestTags);
+        return delegate.filter(context, request, next)
+                       .thenOnResult(new ResultHandler<Response>() {
+                           @Override
+                           public void handleResult(final Response result) {
+                               fireAuditEvent(exchange, completedResponseTags);
+                           }
+                       });
     }
 }

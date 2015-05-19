@@ -24,7 +24,9 @@ import org.forgerock.openig.http.Exchange;
 
 /**
  * Handles an HTTP exchange request by producing an associated response.
+ * @deprecated in OpenIG 4.0
  */
+@Deprecated
 public interface Handler {
 
     /**

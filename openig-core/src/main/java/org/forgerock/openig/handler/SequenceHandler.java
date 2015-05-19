@@ -17,25 +17,34 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
-import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.PromiseImpl;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
  * extracting form content (e.g. nonce) and submitting in a subsequent request.
  */
-public class SequenceHandler extends GenericHandler {
+public class SequenceHandler extends GenericHeapObject implements Handler {
 
     /** Handlers and associated sequence processing postconditions. */
     private final List<Binding> bindings = new ArrayList<Binding>();
@@ -52,6 +61,38 @@ public class SequenceHandler extends GenericHandler {
     public SequenceHandler addBinding(final Handler handler, final Expression<Boolean> postcondition) {
         bindings.add(new Binding(handler, postcondition));
         return this;
+    }
+
+    @Override
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+
+        final PromiseImpl<Response, NeverThrowsException> composite = PromiseImpl.create();
+
+        final Exchange exchange = context.asContext(Exchange.class);
+        final Deque<Binding> theBindings = new ArrayDeque<Binding>(bindings);
+
+        Binding binding = theBindings.peekFirst();
+        Promise<Response, NeverThrowsException> promise = binding.handler.handle(context, request);
+        promise.thenOnResult(new ResultHandler<Response>() {
+
+            @Override
+            public void handleResult(final Response result) {
+                Binding binding = theBindings.removeFirst();
+                if ((binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(exchange)))
+                        || theBindings.isEmpty()) {
+                    // Do not continue
+                    composite.handleResult(result);
+                } else {
+                    // Next promise
+                    final Binding next = theBindings.peekFirst();
+                    next.handler.handle(context, request)
+                                .thenOnResult(this);
+
+                }
+            }
+        });
+
+        return composite;
     }
 
     /** Binds sequenced handlers with sequence processing postconditions. */
@@ -73,19 +114,6 @@ public class SequenceHandler extends GenericHandler {
         Binding(Handler handler, Expression<Boolean> postcondition) {
             this.handler = handler;
             this.postcondition = postcondition;
-        }
-    }
-
-    @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
-        for (Binding binding : bindings) {
-            // avoid downstream filters/handlers inadvertently using response
-            closeSilently(exchange.response);
-            exchange.response = null;
-            binding.handler.handle(exchange);
-            if (binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(exchange))) {
-                break;
-            }
         }
     }
 

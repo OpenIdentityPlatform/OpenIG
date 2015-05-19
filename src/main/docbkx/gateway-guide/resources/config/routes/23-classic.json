@@ -1,0 +1,114 @@
+{
+    "heap": [
+        {
+            "name": "DispatchHandler",
+            "type": "DispatchHandler",
+            "config": {
+                "bindings": [
+                    {
+                        "handler": {
+                            "type": "Chain",
+                            "config": {
+                                "filters": [
+                                    "IsLoginPage",
+                                    {
+                                        "type": "EntityExtractFilter",
+                                        "config": {
+                                            "messageType": "response",
+                                            "target": "${exchange.isLoginPage}",
+                                            "bindings": [
+                                                {
+                                                    "key": "found",
+                                                    "pattern": "OpenAM\\s\\(Login\\)",
+                                                    "template": "true"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "handler": "OutgoingChain"
+                            }
+                        },
+                        "comments": [
+                            "Base URI for OpenAM deployment.",
+                            "The sample app simulates OpenAM."
+                        ],
+                        "baseURI": "http://www.example.com:8081"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "IsLoginPage",
+            "type": "SwitchFilter",
+            "config": {
+                "onResponse": [
+                    {
+                        "condition": "${exchange.isLoginPage.found == 'true'}",
+                        "handler": {
+                            "type": "Chain",
+                            "config": {
+                                "filters": [
+                                    {
+                                        "type": "StaticRequestFilter",
+                                        "comments": [
+                                            "An example based on OpenAM classic UI: ",
+                                            "uri is for the OpenAM login page; ",
+                                            "IDToken1 is the username field; ",
+                                            "IDToken2 is the password field; ",
+                                            "host takes the OpenAM FQDN:port.",
+                                            "The sample app simulates OpenAM."
+                                        ],
+                                        "config": {
+                                            "method": "POST",
+                                            "uri": "http://www.example.com:8081/openam/UI/Login",
+                                            "form": {
+                                                "IDToken0": [
+                                                    ""
+                                                ],
+                                                "IDToken1": [
+                                                    "demo"
+                                                ],
+                                                "IDToken2": [
+                                                    "changeit"
+                                                ],
+                                                "IDButton": [
+                                                    "Log+In"
+                                                ],
+                                                "encoded": [
+                                                    "false"
+                                                ]
+                                            },
+                                            "headers": {
+                                                "host": [
+                                                    "www.example.com:8081"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "handler": "OutgoingChain"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "OutgoingChain",
+            "type": "Chain",
+            "config": {
+                "filters": [
+                    {
+                        "type": "CookieFilter"
+                    }
+                ],
+                "handler": {
+                    "type": "ClientHandler"
+                }
+            }
+        }
+    ],
+    "handler": "DispatchHandler",
+    "condition": "${matches(exchange.request.uri.query, 'demo=classic')}"
+}

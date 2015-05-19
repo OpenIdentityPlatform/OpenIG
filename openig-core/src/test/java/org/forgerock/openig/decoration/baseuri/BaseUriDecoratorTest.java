@@ -21,9 +21,9 @@ import static org.forgerock.json.fluent.JsonValue.*;
 
 import java.util.ArrayList;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.openig.decoration.Context;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;

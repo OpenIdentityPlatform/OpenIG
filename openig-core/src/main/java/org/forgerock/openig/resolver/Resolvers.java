@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.openig.util.Loader;
+import org.forgerock.http.util.Loader;
 
 /**
  * Performs object resolution by object type. A given object may have more than

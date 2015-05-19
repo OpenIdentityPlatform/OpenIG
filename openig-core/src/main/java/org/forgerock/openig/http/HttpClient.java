@@ -18,75 +18,43 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.forgerock.openig.util.Duration.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.warnForDeprecation;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.HttpClientParams;
-import org.apache.http.client.protocol.RequestAddCookies;
-import org.apache.http.client.protocol.RequestProxyAuthentication;
-import org.apache.http.client.protocol.RequestTargetAuthentication;
-import org.apache.http.client.protocol.ResponseProcessCookies;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnPerRouteBean;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.NoConnectionReuseStrategy;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpProtocolParams;
+import org.forgerock.http.Client;
+import org.forgerock.http.Client.HostnameVerifier;
+import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.header.ConnectionHeader;
-import org.forgerock.openig.header.ContentEncodingHeader;
-import org.forgerock.openig.header.ContentLengthHeader;
-import org.forgerock.openig.header.ContentTypeHeader;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.io.BranchingStreamWrapper;
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.CaseInsensitiveSet;
-import org.forgerock.openig.util.Duration;
-import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
+import org.forgerock.util.Options;
+import org.forgerock.util.time.Duration;
 
 /**
  * Submits requests to remote servers. In this implementation, requests are
  * dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
  * <p>
+ *
  * <pre>
  *   {
  *     "name": "HttpClient",
@@ -154,366 +122,134 @@ import org.forgerock.openig.util.NoRetryHttpRequestRetryHandler;
  * @see org.forgerock.openig.security.KeyManagerHeaplet
  * @see org.forgerock.openig.security.TrustManagerHeaplet
  */
-public class HttpClient {
+public class HttpClient extends GenericHeapObject {
 
-    /**
-     * Key to retrieve an {@link HttpClient} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
-
-    /** Reuse of Http connection is disabled by default. */
-    public static final boolean DISABLE_CONNECTION_REUSE = false;
-
-    /** Http connection retries are disabled by default. */
-    public static final boolean DISABLE_RETRIES = false;
-
-    /** Default maximum number of collections through HTTP client. */
-    public static final int DEFAULT_CONNECTIONS = 64;
-
-    /**
-     * Value of the default timeout.
-     */
-    public static final String TEN_SECONDS = "10 seconds";
-
-    /**
-     * Default socket timeout as a {@link Duration}.
-     */
-    public static final Duration DEFAULT_SO_TIMEOUT = duration(TEN_SECONDS);
-
-    /**
-     * Default connection timeout as a {@link Duration}.
-     */
-    public static final Duration DEFAULT_CONNECTION_TIMEOUT = duration(TEN_SECONDS);
-
-    /** A request that encloses an entity. */
-    private static class EntityRequest extends HttpEntityEnclosingRequestBase {
-        private final String method;
-
-        public EntityRequest(final Request request) {
-            this.method = request.getMethod();
-            final InputStreamEntity entity =
-                    new InputStreamEntity(request.getEntity().getRawInputStream(),
-                            new ContentLengthHeader(request).getLength());
-            entity.setContentType(new ContentTypeHeader(request).toString());
-            entity.setContentEncoding(new ContentEncodingHeader(request).toString());
-            setEntity(entity);
-        }
-
-        @Override
-        public String getMethod() {
-            return method;
-        }
-    }
-
-    /** A request that does not enclose an entity. */
-    private static class NonEntityRequest extends HttpRequestBase {
-        private final String method;
-
-        public NonEntityRequest(final Request request) {
-            this.method = request.getMethod();
-            final Header[] contentLengthHeader = getHeaders(ContentLengthHeader.NAME);
-            if ((contentLengthHeader == null || contentLengthHeader.length == 0)
-                    && ("PUT".equals(method) || "POST".equals(method) || "PROPFIND".equals(method))) {
-                setHeader(ContentLengthHeader.NAME, "0");
-            }
-        }
-
-        @Override
-        public String getMethod() {
-            return method;
-        }
-    }
-
-    /**
-     * The set of accepted configuration values for the {@literal hostnameVerifier} attribute.
-     */
-    private static enum Verifier {
-        ALLOW_ALL {
-            @Override
-            X509HostnameVerifier getHostnameVerifier() {
-                return SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-            }
-        },
-        BROWSER_COMPATIBLE {
-            @Override
-            X509HostnameVerifier getHostnameVerifier() {
-                return SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-            }
-        },
-        STRICT {
-            @Override
-            X509HostnameVerifier getHostnameVerifier() {
-                return SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-            }
-        };
-
-        abstract X509HostnameVerifier getHostnameVerifier();
-    }
-
-    /** Headers that are suppressed in request. */
-    // FIXME: How should the the "Expect" header be handled?
-    private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS = new CaseInsensitiveSet(
-            Arrays.asList(
-                    // populated in outgoing request by EntityRequest (HttpEntityEnclosingRequestBase):
-                    "Content-Encoding", "Content-Length", "Content-Type",
-                    // hop-by-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
-                    "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
-                    "Trailers", "Transfer-Encoding", "Upgrade")
-    );
-
-    /** Headers that are suppressed in response. */
-    private static final CaseInsensitiveSet SUPPRESS_RESPONSE_HEADERS = new CaseInsensitiveSet(
-            Arrays.asList(
-                    // hop-by-hop headers, not forwarded by proxies, per RFC 2616 §13.5.1:
-                    "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization", "TE",
-                    "Trailers", "Transfer-Encoding", "Upgrade")
-    );
-
-    /**
-     * Returns a new SSL socket factory that does not perform hostname verification.
-     *
-     * @param keyManagers
-     *         Provides Keys/Certificates in case of SSL/TLS connections
-     * @param trustManagers
-     *         Provides TrustManagers in case of SSL/TLS connections
-     * @param hostnameVerifier hostname verification strategy
-     * @throws GeneralSecurityException
-     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
-     */
-    private static SSLSocketFactory newSSLSocketFactory(final KeyManager[] keyManagers,
-                                                        final TrustManager[] trustManagers,
-                                                        final X509HostnameVerifier hostnameVerifier)
-            throws GeneralSecurityException {
-        SSLContext context = SSLContext.getInstance("TLS");
-        context.init(keyManagers, trustManagers, null);
-        SSLSocketFactory factory = new SSLSocketFactory(context);
-        factory.setHostnameVerifier(hostnameVerifier);
-        return factory;
-    }
-
-    /** The HTTP client to transmit requests through. */
-    private final DefaultHttpClient httpClient;
-    /**
-     * Allocates temporary buffers for caching streamed content during request
-     * processing.
-     */
-    private final TemporaryStorage storage;
-
-    /** The underlying connection manager that manages the connections pool. */
-    private final ClientConnectionManager connectionManager;
-
-    /**
-     * Creates a new client handler which will cache at most 64 connections, allow all host names for SSL requests
-     * and has a both a default connection and so timeout.
-     *
-     * @param storage the TemporaryStorage to use
-     * @throws GeneralSecurityException
-     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
-     */
-    public HttpClient(final TemporaryStorage storage) throws GeneralSecurityException {
-        this(storage,
-             DEFAULT_CONNECTIONS,
-             null,
-             null,
-             Verifier.ALLOW_ALL,
-             DEFAULT_SO_TIMEOUT,
-             DEFAULT_CONNECTION_TIMEOUT);
-    }
-
-    /**
-     * Creates a new client handler with the specified maximum number of cached connections.
-     *
-     * @param storage the {@link TemporaryStorage} to use
-     * @param connections the maximum number of connections to open.
-     * @param keyManagers Provides Keys/Certificates in case of SSL/TLS connections
-     * @param trustManagers Provides TrustManagers in case of SSL/TLS connections
-     * @param verifier hostname verification strategy
-     * @param soTimeout socket timeout duration
-     * @param connectionTimeout connection timeout duration
-     * @throws GeneralSecurityException
-     *         if the SSL algorithm is unsupported or if an error occurs during SSL configuration
-     */
-    public HttpClient(final TemporaryStorage storage,
-                      final int connections,
-                      final KeyManager[] keyManagers,
-                      final TrustManager[] trustManagers,
-                      final Verifier verifier,
-                      final Duration soTimeout,
-                      final Duration connectionTimeout) throws GeneralSecurityException {
-        this.storage = storage;
-
-        final BasicHttpParams parameters = new BasicHttpParams();
-        final int maxConnections = connections <= 0 ? DEFAULT_CONNECTIONS : connections;
-        ConnManagerParams.setMaxTotalConnections(parameters, maxConnections);
-        ConnManagerParams.setMaxConnectionsPerRoute(parameters, new ConnPerRouteBean(maxConnections));
-        if (!soTimeout.isUnlimited()) {
-            HttpConnectionParams.setSoTimeout(parameters, (int) soTimeout.to(MILLISECONDS));
-        }
-        if (!connectionTimeout.isUnlimited()) {
-            HttpConnectionParams.setConnectionTimeout(parameters, (int) connectionTimeout.to(MILLISECONDS));
-        }
-        HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
-        HttpClientParams.setRedirecting(parameters, false);
-
-        final SchemeRegistry registry = new SchemeRegistry();
-        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        registry.register(new Scheme("https",
-                                     newSSLSocketFactory(keyManagers,
-                                                         trustManagers,
-                                                         verifier.getHostnameVerifier()),
-                                     443));
-        connectionManager = new ThreadSafeClientConnManager(parameters, registry);
-
-        httpClient = new DefaultHttpClient(connectionManager, parameters);
-        httpClient.removeRequestInterceptorByClass(RequestAddCookies.class);
-        httpClient.removeRequestInterceptorByClass(RequestProxyAuthentication.class);
-        httpClient.removeRequestInterceptorByClass(RequestTargetAuthentication.class);
-        httpClient.removeResponseInterceptorByClass(ResponseProcessCookies.class);
-    }
-
-    /**
-     * Disables connection caching.
-     *
-     * @return this HTTP client.
-     */
-    public HttpClient disableConnectionReuse() {
-        httpClient.setReuseStrategy(new NoConnectionReuseStrategy());
-        return this;
-    }
-
-    /**
-     * Disables automatic retrying of failed requests.
-     *
-     * @param logger a logger which should be used for logging the reason that a
-     * request failed.
-     * @return this HTTP client.
-     */
-    public HttpClient disableRetries(final Logger logger) {
-        httpClient.setHttpRequestRetryHandler(new NoRetryHttpRequestRetryHandler(logger));
-        return this;
-    }
-
-    /**
-     * Submits the exchange request to the remote server. Creates and populates
-     * the exchange response from that provided by the remote server.
-     *
-     * @param exchange The HTTP exchange containing the request to send and where the
-     * response will be placed.
-     * @throws IOException If an IO error occurred while performing the request.
-     */
-    public void execute(final Exchange exchange) throws IOException {
-        // recover any previous response connection, if present
-        closeSilently(exchange.response);
-        exchange.response = execute(exchange.request);
-    }
-
-    /**
-     * Submits the request to the remote server. Creates and populates the
-     * response from that provided by the remote server.
-     *
-     * @param request The HTTP request to send.
-     * @return The HTTP response.
-     * @throws IOException If an IO error occurred while performing the request.
-     */
-    public Response execute(final Request request) throws IOException {
-        final HttpRequestBase clientRequest =
-                request.getEntity().mayContainData() ? new EntityRequest(request) : new NonEntityRequest(request);
-        clientRequest.setURI(request.getUri().asURI());
-        // connection headers to suppress
-        final CaseInsensitiveSet suppressConnection = new CaseInsensitiveSet();
-        // parse request connection headers to be suppressed in request
-        suppressConnection.addAll(new ConnectionHeader(request).getTokens());
-        // request headers
-        for (final String name : request.getHeaders().keySet()) {
-            if (!SUPPRESS_REQUEST_HEADERS.contains(name) && !suppressConnection.contains(name)) {
-                for (final String value : request.getHeaders().get(name)) {
-                    clientRequest.addHeader(name, value);
-                }
-            }
-        }
-        // send request
-        final HttpResponse clientResponse = httpClient.execute(clientRequest);
-        final Response response = new Response();
-        // response entity
-        final HttpEntity clientResponseEntity = clientResponse.getEntity();
-        if (clientResponseEntity != null) {
-            response.setEntity(new BranchingStreamWrapper(clientResponseEntity.getContent(),
-                    storage));
-        }
-        // response status line
-        final StatusLine statusLine = clientResponse.getStatusLine();
-        response.setVersion(statusLine.getProtocolVersion().toString());
-        response.setStatus(statusLine.getStatusCode());
-        response.setReason(statusLine.getReasonPhrase());
-        // parse response connection headers to be suppressed in response
-        suppressConnection.clear();
-        suppressConnection.addAll(new ConnectionHeader(response).getTokens());
-        // response headers
-        for (final HeaderIterator i = clientResponse.headerIterator(); i.hasNext();) {
-            final Header header = i.nextHeader();
-            final String name = header.getName();
-            if (!SUPPRESS_RESPONSE_HEADERS.contains(name) && !suppressConnection.contains(name)) {
-                response.getHeaders().add(name, header.getValue());
-            }
-        }
-        // TODO: decide if need to try-finally to call httpRequest.abort?
-        return response;
-    }
-
-    /**
-     * Shutdowns the HttpClient means this is not possible anymore to execute any request.
-     */
-    public void shutdown() {
-        connectionManager.shutdown();
-    }
-
-    /**
-     * Creates and initializes a http client object in a heap environment.
-     */
+    /** Creates and initializes an {@link HttpClient} in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
         @Override
         public Object create() throws HeapException {
-            // optional, default to DEFAULT_CONNECTIONS number of connections
-            Integer connections = config.get("connections").defaultTo(DEFAULT_CONNECTIONS).asInteger();
-            // determines if connections should be reused, disables keep-alive
-            Boolean disableReuseConnection = config.get("disableReuseConnection")
-                                                   .defaultTo(DISABLE_CONNECTION_REUSE)
-                                                   .asBoolean();
-            // determines if requests should be retried on failure
-            Boolean disableRetries = config.get("disableRetries").defaultTo(DISABLE_RETRIES).asBoolean();
+            final Options options = Options.defaultOptions();
 
-            Verifier verifier = config.get("hostnameVerifier")
-                                      .defaultTo(Verifier.ALLOW_ALL.name())
-                                      .asEnum(Verifier.class);
+            if (config.isDefined("connections")) {
+                options.set(Client.OPTION_MAX_CONNECTIONS, config.get("connections").asInteger());
+            }
 
-            // Timeouts
-            Duration soTimeout = duration(config.get("soTimeout").defaultTo(TEN_SECONDS).asString());
-            Duration connectionTimeout = duration(config.get("connectionTimeout")
-                                                        .defaultTo(TEN_SECONDS)
-                                                        .asString());
+            if (config.isDefined("disableReuseConnection")) {
+                options.set(Client.OPTION_REUSE_CONNECTIONS, !config.get("disableReuseConnection")
+                        .asBoolean());
+            }
+
+            if (config.isDefined("disableRetries")) {
+                options.set(Client.OPTION_RETRY_REQUESTS, !config.get("disableRetries").asBoolean());
+            }
+
+            if (config.isDefined("hostnameVerifier")) {
+                options.set(Client.OPTION_HOSTNAME_VERIFIER, config.get("hostnameVerifier").asEnum(
+                        HostnameVerifier.class));
+            }
+
+            if (config.isDefined("soTimeout")) {
+                options.set(Client.OPTION_SO_TIMEOUT, duration(config.get("soTimeout").asString()));
+            }
+
+            if (config.isDefined("connectionTimeout")) {
+                options.set(Client.OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout")
+                        .asString()));
+            }
+
+            options.set(Client.OPTION_TEMPORARY_STORAGE, storage);
+            options.set(Client.OPTION_KEY_MANAGERS, getKeyManagers());
+            options.set(Client.OPTION_TRUST_MANAGERS, getTrustManagers());
 
             // Create the HttpClient instance
             try {
-                HttpClient client = new HttpClient(storage,
-                                                   connections,
-                                                   getKeyManagers(),
-                                                   getTrustManagers(),
-                                                   verifier,
-                                                   soTimeout,
-                                                   connectionTimeout);
-
-                if (disableRetries) {
-                    client.disableRetries(logger);
-                }
-                if (disableReuseConnection) {
-                    client.disableConnectionReuse();
-                }
-
-                return client;
-            } catch (GeneralSecurityException e) {
+                return new HttpClient(new Client(options));
+            } catch (final HttpApplicationException e) {
                 throw new HeapException(format("Cannot build HttpClient named '%s'", name), e);
             }
+        }
+
+        private KeyManagerFactory buildKeyManagerFactory(final File keystoreFile,
+                final String type, final String algorithm, final String password)
+                throws HeapException {
+            try {
+                final KeyManagerFactory keyManagerFactory =
+                        KeyManagerFactory.getInstance(algorithm);
+                final KeyStore keyStore = buildKeyStore(keystoreFile, type, password);
+                keyManagerFactory.init(keyStore, password.toCharArray());
+                return keyManagerFactory;
+            } catch (final Exception e) {
+                throw new HeapException(
+                        format("Cannot build KeyManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
+                                algorithm, type, keystoreFile), e);
+            }
+        }
+
+        private KeyStore buildKeyStore(final File keystoreFile, final String type,
+                final String password) throws Exception {
+            final KeyStore keyStore = KeyStore.getInstance(type);
+            InputStream keyInput = null;
+            try {
+                keyInput = new FileInputStream(keystoreFile);
+                final char[] credentials = password == null ? null : password.toCharArray();
+                keyStore.load(keyInput, credentials);
+            } finally {
+                closeSilently(keyInput);
+            }
+            return keyStore;
+        }
+
+        private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile,
+                final String type, final String algorithm, final String password)
+                throws HeapException {
+            try {
+                final TrustManagerFactory factory = TrustManagerFactory.getInstance(algorithm);
+                final KeyStore store = buildKeyStore(truststoreFile, type, password);
+                factory.init(store);
+                return factory;
+            } catch (final Exception e) {
+                throw new HeapException(
+                        format("Cannot build TrustManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
+                                algorithm, type, truststoreFile), e);
+            }
+        }
+
+        private KeyManager[] getKeyManagers() throws HeapException {
+            // Build an optional KeyManagerFactory
+            KeyManager[] keyManagers = null;
+            if (config.isDefined("keystore")) {
+                // This attribute is deprecated: warn the user
+                warnForDeprecation(config, logger, "keyManager", "keystore");
+
+                final JsonValue store = config.get("keystore");
+                final File keystoreFile = store.get("file").required().asFile();
+                final String password = evaluate(store.get("password").required());
+                final String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                final String algorithm = store.get("alg").defaultTo("SunX509").asString();
+
+                keyManagers =
+                        buildKeyManagerFactory(keystoreFile, type, algorithm, password)
+                                .getKeyManagers();
+            }
+
+            // Uses KeyManager references
+            if (config.isDefined("keyManager")) {
+                if (keyManagers != null) {
+                    logger.warning("Cannot use both 'keystore' and 'keyManager' attributes, "
+                            + "will use configuration from 'keyManager' attribute");
+                }
+                final JsonValue keyManagerConfig = config.get("keyManager");
+                final List<KeyManager> managers = new ArrayList<KeyManager>();
+                if (keyManagerConfig.isList()) {
+                    managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap,
+                            KeyManager.class)));
+                } else {
+                    managers.add(heap.resolve(keyManagerConfig, KeyManager.class));
+                }
+                keyManagers = managers.toArray(new KeyManager[managers.size()]);
+            }
+            return keyManagers;
         }
 
         @Override
@@ -529,27 +265,30 @@ public class HttpClient {
                 // This attribute is deprecated: warn the user
                 warnForDeprecation(config, logger, "trustManager", "truststore");
 
-                JsonValue store = config.get("truststore");
-                File truststoreFile = store.get("file").required().asFile();
+                final JsonValue store = config.get("truststore");
+                final File truststoreFile = store.get("file").required().asFile();
 
                 // Password is optional for trust store
-                String password = evaluate(store.get("password"));
-                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
-                String algorithm = store.get("alg").defaultTo("SunX509").asString();
+                final String password = evaluate(store.get("password"));
+                final String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
+                final String algorithm = store.get("alg").defaultTo("SunX509").asString();
 
-                trustManagers = buildTrustManagerFactory(truststoreFile, type, algorithm, password).getTrustManagers();
+                trustManagers =
+                        buildTrustManagerFactory(truststoreFile, type, algorithm, password)
+                                .getTrustManagers();
             }
 
             // Uses TrustManager references
             if (config.isDefined("trustManager")) {
                 if (trustManagers != null) {
                     logger.warning("Cannot use both 'truststore' and 'trustManager' attributes, "
-                                   + "will use configuration from 'trustManager' attribute");
+                            + "will use configuration from 'trustManager' attribute");
                 }
-                JsonValue trustManagerConfig = config.get("trustManager");
-                List<TrustManager> managers = new ArrayList<TrustManager>();
+                final JsonValue trustManagerConfig = config.get("trustManager");
+                final List<TrustManager> managers = new ArrayList<TrustManager>();
                 if (trustManagerConfig.isList()) {
-                    managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap, TrustManager.class)));
+                    managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap,
+                            TrustManager.class)));
                 } else {
                     managers.add(heap.resolve(trustManagerConfig, TrustManager.class));
                 }
@@ -557,94 +296,67 @@ public class HttpClient {
             }
             return trustManagers;
         }
-
-        private KeyManager[] getKeyManagers() throws HeapException {
-            // Build an optional KeyManagerFactory
-            KeyManager[] keyManagers = null;
-            if (config.isDefined("keystore")) {
-                // This attribute is deprecated: warn the user
-                warnForDeprecation(config, logger, "keyManager", "keystore");
-
-                JsonValue store = config.get("keystore");
-                File keystoreFile = store.get("file").required().asFile();
-                String password = evaluate(store.get("password").required());
-                String type = store.get("type").defaultTo("JKS").asString().toUpperCase();
-                String algorithm = store.get("alg").defaultTo("SunX509").asString();
-
-                keyManagers = buildKeyManagerFactory(keystoreFile, type, algorithm, password).getKeyManagers();
-            }
-
-            // Uses KeyManager references
-            if (config.isDefined("keyManager")) {
-                if (keyManagers != null) {
-                    logger.warning("Cannot use both 'keystore' and 'keyManager' attributes, "
-                                           + "will use configuration from 'keyManager' attribute");
-                }
-                JsonValue keyManagerConfig = config.get("keyManager");
-                List<KeyManager> managers = new ArrayList<KeyManager>();
-                if (keyManagerConfig.isList()) {
-                    managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap, KeyManager.class)));
-                } else {
-                    managers.add(heap.resolve(keyManagerConfig, KeyManager.class));
-                }
-                keyManagers = managers.toArray(new KeyManager[managers.size()]);
-            }
-            return keyManagers;
-        }
-
-        private TrustManagerFactory buildTrustManagerFactory(final File truststoreFile,
-                                                             final String type,
-                                                             final String algorithm,
-                                                             final String password)
-                throws HeapException {
-            try {
-                TrustManagerFactory factory = TrustManagerFactory.getInstance(algorithm);
-                KeyStore store = buildKeyStore(truststoreFile, type, password);
-                factory.init(store);
-                return factory;
-            } catch (Exception e) {
-                throw new HeapException(format(
-                        "Cannot build TrustManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
-                        algorithm,
-                        type,
-                        truststoreFile),
-                                        e);
-            }
-        }
-
-        private KeyManagerFactory buildKeyManagerFactory(final File keystoreFile,
-                                                         final String type,
-                                                         final String algorithm,
-                                                         final String password)
-                throws HeapException {
-            try {
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(algorithm);
-                KeyStore keyStore = buildKeyStore(keystoreFile, type, password);
-                keyManagerFactory.init(keyStore, password.toCharArray());
-                return keyManagerFactory;
-            } catch (Exception e) {
-                throw new HeapException(format(
-                        "Cannot build KeyManagerFactory[alg:%s] from KeyStore[type:%s] stored in %s",
-                        algorithm,
-                        type,
-                        keystoreFile),
-                                        e);
-            }
-        }
-
-        private KeyStore buildKeyStore(final File keystoreFile, final String type, final String password)
-                throws Exception {
-            KeyStore keyStore = KeyStore.getInstance(type);
-            InputStream keyInput = null;
-            try {
-                keyInput = new FileInputStream(keystoreFile);
-                char[] credentials = (password == null) ? null : password.toCharArray();
-                keyStore.load(keyInput, credentials);
-            } finally {
-                closeSilently(keyInput);
-            }
-            return keyStore;
-        }
     }
 
+    /**
+     * Key to retrieve an {@link HttpClient} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
+
+    private final Client client;
+
+    /**
+     * Creates a new {@code HttpClient} using the provided commons HTTP client.
+     *
+     * @param client
+     *            The commons HTTP client.
+     */
+    public HttpClient(final Client client) {
+        this.client = client;
+    }
+
+    /**
+     * Creates a new {@code HttpClient} using a commons HTTP client with default
+     * settings.
+     *
+     * @throws HttpApplicationException
+     *             If no client provider could be found.
+     */
+    public HttpClient() throws HttpApplicationException {
+        this(new Client());
+    }
+
+    /**
+     * Submits the exchange request to the remote server. Creates and populates
+     * the exchange response from that provided by the remote server.
+     *
+     * @param exchange
+     *            The HTTP exchange containing the request to send and where the
+     *            response will be placed.
+     */
+    public void execute(final Exchange exchange) {
+        // recover any previous response connection, if present
+        closeSilently(exchange.response);
+        exchange.response = execute(exchange.request);
+    }
+
+    /**
+     * Submits the request to the remote server. Creates and populates the
+     * response from that provided by the remote server.
+     *
+     * @param request
+     *            The HTTP request to send.
+     * @return The HTTP response.
+     */
+    public Response execute(final Request request) {
+        return client.send(request);
+    }
+
+    /**
+     * Shutdowns the HttpClient means this is not possible anymore to execute any request.
+     */
+    public void shutdown() {
+        closeSilently(client);
+    }
 }

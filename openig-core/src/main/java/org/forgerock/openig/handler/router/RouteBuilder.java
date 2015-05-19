@@ -17,7 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.http.util.Json.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
@@ -80,7 +80,7 @@ class RouteBuilder {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(resource);
-            return new JsonValue(readJsonLenient(new FileInputStream(resource)));
+            return new JsonValue(readJsonLenient(fis));
         } catch (FileNotFoundException e) {
             throw new HeapException(format("File %s does not exist", resource), e);
         } catch (IOException e) {

@@ -16,14 +16,17 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import java.io.IOException;
 import java.net.URI;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
  * BaseUriFilter overrides the existing request URI, making requests relative to
@@ -49,10 +52,13 @@ class BaseUriFilter implements Filter {
     }
 
     @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        if (exchange.request != null && exchange.request.getUri() != null) {
-            exchange.request.getUri().rebase(URI.create(baseUri.eval(exchange)));
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
+        if (request != null && request.getUri() != null) {
+            request.getUri().rebase(URI.create(baseUri.eval(exchange)));
         }
-        delegate.filter(exchange, next);
+        return delegate.filter(context, request, next);
     }
 }

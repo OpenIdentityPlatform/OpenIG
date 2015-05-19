@@ -1,4 +1,5 @@
-import org.forgerock.openig.http.Response
+import org.forgerock.http.protocol.Response
+import org.forgerock.http.protocol.Status
 /*
  * The parameters are stored directly in bindings. 
  * e.g. The json configuration looks like :
@@ -29,8 +30,8 @@ import org.forgerock.openig.http.Response
 exchange.request.headers.add("title", title)
 
 exchange.response = new Response()
-exchange.response.status = "${status}" as Integer
+exchange.response.status = Status.valueOf("${status}" as Integer)
 
-exchange.response.reason = reason[2]
+//exchange.response.reason = reason[2]
 assert names.size() == 4
 exchange.response.entity = "<html><p>Coffee ==> " + names + "</p></html>"

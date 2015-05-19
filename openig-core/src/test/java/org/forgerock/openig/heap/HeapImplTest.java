@@ -17,11 +17,9 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.forgerock.http.util.Json.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.forgerock.openig.util.Json.*;
+import static org.forgerock.openig.heap.HeapUtilsTest.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -30,14 +28,11 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
-import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.heap.domain.Book;
 import org.forgerock.openig.heap.domain.DecoratorDecorator;
 import org.forgerock.openig.heap.domain.ReferencedObject;
 import org.forgerock.openig.heap.domain.TheOne;
 import org.forgerock.openig.heap.domain.UseListOfReferences;
-import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.NullLogSink;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -375,14 +370,6 @@ public class HeapImplTest {
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
         return new JsonValue(readJson(reader));
-    }
-
-    public static HeapImpl buildDefaultHeap() throws Exception {
-        HeapImpl heap = new HeapImpl();
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
-        heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
-        return heap;
     }
 
     private static class BookDecorator implements Decorator {

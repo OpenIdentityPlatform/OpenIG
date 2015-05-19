@@ -16,19 +16,23 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.MessageType;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.regex.PatternTemplate;
+import org.forgerock.openig.util.MessageType;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -54,17 +58,17 @@ public class EntityExtractFilterTest {
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity("Hello OpenIG");
+        Request request = new Request();
+        request.setEntity("Hello OpenIG");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, request, terminalHandler);
 
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results).containsOnly(
                 entry("hello", " OpenIG"),
                 entry("none", null));
-        verify(terminalHandler).handle(exchange);
+        verify(terminalHandler).handle(exchange, request);
     }
 
     @Test
@@ -75,10 +79,10 @@ public class EntityExtractFilterTest {
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity("Hello OpenIG");
+        Request request = new Request();
+        request.setEntity("Hello OpenIG");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, request, terminalHandler);
 
         // The entry has a non-null value if it matches or a null value if it does not match
         @SuppressWarnings("unchecked")
@@ -86,7 +90,7 @@ public class EntityExtractFilterTest {
         assertThat(results).containsOnly(
                 entry("hello", "Hello OpenIG"),
                 entry("none", null));
-        verify(terminalHandler).handle(exchange);
+        verify(terminalHandler).handle(exchange, request);
     }
 
     @Test
@@ -96,14 +100,16 @@ public class EntityExtractFilterTest {
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();
-        exchange.response = new Response();
-        exchange.response.setEntity((String) null);
+        Response response = new Response();
+        response.setEntity((String) null);
 
-        filter.filter(exchange, terminalHandler);
+        when(terminalHandler.handle(exchange, null))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
+        filter.filter(exchange, null, terminalHandler);
 
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.get("result");
         assertThat(results).containsOnly(entry("hello", null));
-        verify(terminalHandler).handle(exchange);
     }
 }

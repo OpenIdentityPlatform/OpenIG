@@ -16,15 +16,18 @@
 
 package org.forgerock.openig.filter;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.MutableUri.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.MutableUri.uri;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -32,12 +35,11 @@ import org.testng.annotations.Test;
 public class StaticRequestFilterTest {
 
     public static final String URI = "http://openig.forgerock.org";
-    @Mock
-    private Handler terminalHandler;
+    private TerminalHandler terminalHandler;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        terminalHandler = new TerminalHandler();
     }
 
     /**
@@ -51,12 +53,14 @@ public class StaticRequestFilterTest {
         filter.setVersion("1.1");
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, null, terminalHandler);
 
-        assertThat(exchange.request).isNotNull();
-        assertThat(exchange.request.getUri()).isEqualTo(uri(URI));
-        assertThat(exchange.request.getMethod()).isEqualTo("GET");
-        assertThat(exchange.request.getVersion()).isEqualTo("1.1");
+        // Verify the request transmitted to downstream filters is not the original one
+        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        assertThat(terminalHandler.request).isNotNull();
+        assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
+        assertThat(terminalHandler.request.getMethod()).isEqualTo("GET");
+        assertThat(terminalHandler.request.getVersion()).isEqualTo("1.1");
     }
 
     @Test
@@ -73,15 +77,15 @@ public class StaticRequestFilterTest {
         original.setVersion("2");
         exchange.request = original;
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, original, terminalHandler);
 
-        // Verify that the request have been replaced
-        // And check that headers have been properly populated
-        assertThat(exchange.request).isNotSameAs(original);
-        assertThat(exchange.request.getHeaders().get("Mono-Valued"))
+        // Verify the request transmitted to downstream filters is not the original one
+        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        // Check that headers have been properly populated
+        assertThat(terminalHandler.request.getHeaders().get("Mono-Valued"))
                 .hasSize(1)
                 .containsOnly("First Value");
-        assertThat(exchange.request.getHeaders().get("Multi-Valued"))
+        assertThat(terminalHandler.request.getHeaders().get("Multi-Valued"))
                 .hasSize(2)
                 .containsOnly("One (1)", "Two (2)");
     }
@@ -99,15 +103,17 @@ public class StaticRequestFilterTest {
         exchange.request = new Request();
         exchange.request.setVersion("2");
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, exchange.request, terminalHandler);
 
+        // Verify the request transmitted to downstream filters is not the original one
+        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
         // Verify that the new request URI contains the form's fields
-        assertThat(exchange.request.getUri().toString())
+        assertThat(terminalHandler.request.getUri().toString())
                 .startsWith(URI)
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
-        assertThat(exchange.request.getEntity().getString()).isEmpty();
+        assertThat(terminalHandler.request.getEntity().getString()).isEmpty();
     }
 
     @Test
@@ -124,47 +130,26 @@ public class StaticRequestFilterTest {
         original.setVersion("2");
         exchange.request = original;
 
-        filter.filter(exchange, terminalHandler);
+        filter.filter(exchange, original, terminalHandler);
 
+        // Verify the request transmitted to downstream filters is not the original one
+        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
         // Verify that the new request entity contains the form's fields
-        assertThat(exchange.request.getMethod()).isEqualTo("POST");
-        assertThat(exchange.request.getHeaders().getFirst("Content-Type")).isEqualTo(
+        assertThat(terminalHandler.request.getMethod()).isEqualTo("POST");
+        assertThat(terminalHandler.request.getHeaders().getFirst("Content-Type")).isEqualTo(
                 "application/x-www-form-urlencoded");
-        assertThat(exchange.request.getEntity().getString())
+        assertThat(terminalHandler.request.getEntity().getString())
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
     }
 
-    @Test
-    public void testRequestSaveAndRestore() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(Expression.valueOf(URI, String.class));
-        filter.setRestore(true);
-
-        Exchange exchange = new Exchange();
-        Request original = new Request();
-        exchange.request = original;
-
-        filter.filter(exchange, terminalHandler);
-
-        // Verify that the original request is restored
-        assertThat(exchange.request).isSameAs(original);
-    }
-
-    @Test
-    public void testRequestDisabledSaveAndRestore() throws Exception {
-        StaticRequestFilter filter = new StaticRequestFilter("POST");
-        filter.setUri(Expression.valueOf(URI, String.class));
-        filter.setRestore(false);
-
-        Exchange exchange = new Exchange();
-        Request original = new Request();
-        exchange.request = original;
-
-        filter.filter(exchange, terminalHandler);
-
-        // Verify that the original request is not restored
-        assertThat(exchange.request).isNotSameAs(original);
+    private static class TerminalHandler implements Handler {
+        Request request;
+        @Override
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+            this.request = request;
+            return Promises.newResultPromise(new Response());
+        }
     }
 }

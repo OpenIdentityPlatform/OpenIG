@@ -1,0 +1,59 @@
+{
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${exchange.request.uri.path == '/login'}",
+                    "handler": {
+                        "name": "LoginChain",
+                        "type": "Chain",
+                        "config": {
+                            "filters": [
+                                {
+                                    "type": "EntityExtractFilter",
+                                    "config": {
+                                        "messageType": "response",
+                                        "target": "${exchange.hiddenValue}",
+                                        "bindings": [
+                                            {
+                                                "key": "value",
+                                                "pattern":
+                                                    "loginToken\\s+value=\"(.*)\"",
+                                                "template": "$1"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "StaticRequestFilter",
+                                    "config": {
+                                        "method": "POST",
+                                        "uri": "https://www.example.com:8444/login",
+                                        "form": {
+                                            "username": [
+                                                "MY_USERNAME"
+                                            ],
+                                            "password": [
+                                                "MY_PASSWORD"
+                                            ],
+                                            "hiddenValue": [
+                                                "${exchange.hiddenValue.value}"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "handler": "ClientHandler"
+                        }
+                    }
+                },
+                {
+                    "handler": "ClientHandler",
+                    "baseURI": "http://www.example.com:8081"
+                }
+            ]
+        }
+    },
+    "condition": "${matches(exchange.request.uri.query, 'demo=hidden')}"
+}

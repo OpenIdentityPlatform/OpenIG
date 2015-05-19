@@ -11,27 +11,32 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration;
 
-import static java.lang.String.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.util.Json.*;
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.util.Json.readJson;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.HeapImplTest;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.Responses;
+import org.forgerock.util.Function;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -39,7 +44,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectDeclaration() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
 
         JsonValue config = asJson("decorate-object-declaration.json");
@@ -50,7 +55,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateAllObjectDeclarations() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
 
         JsonValue config = asJson("decorate-all-object-declarations.json");
@@ -63,7 +68,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelReference() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         heap.init(asJson("decorate-top-level-reference.json"));
 
@@ -78,7 +83,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelInlineReference() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         JsonValue config = asJson("decorate-top-level-inline-reference.json");
         heap.init(config);
@@ -95,7 +100,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateGetReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -115,7 +120,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateResolvedReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -136,7 +141,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateTopLevelGetReferencesFromParentHeap() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-reference-from-parent-heap-parent.json"));
 
@@ -161,7 +166,7 @@ public class DecoratorSystemTest {
         //      -> h3
         //  -> h4
 
-        HeapImpl h1 = HeapImplTest.buildDefaultHeap();
+        HeapImpl h1 = buildDefaultHeap();
         h1.put("make-title", new MakeTitleDecorator());
         h1.init(asJson("decorate-reference-with-decorator-inheritance-1.json"));
 
@@ -190,7 +195,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectWithInheritedGlobalDecorator() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-object-with-inherited-global-decorator-parent.json"));
 
@@ -203,7 +208,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldDecorateObjectWithInheritedAndLocalGlobalDecorator() throws Exception {
-        HeapImpl parent = HeapImplTest.buildDefaultHeap();
+        HeapImpl parent = buildDefaultHeap();
         parent.put("make-title", new MakeTitleDecorator());
         parent.init(asJson("decorate-object-with-inherited-global-decorator-parent.json"));
 
@@ -218,7 +223,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldApplyDecoratorsInTheRightOrder() throws Exception {
-        HeapImpl heap = HeapImplTest.buildDefaultHeap();
+        HeapImpl heap = buildDefaultHeap();
         heap.put("make-title", new MakeTitleDecorator());
         heap.init(asJson("decorate-top-level-reference-with-local-and-global-decorators.json"));
 
@@ -228,7 +233,7 @@ public class DecoratorSystemTest {
 
     @Test
     public void shouldApplyDecoratorsInTheRightOrder2() throws Exception {
-        HeapImpl one = HeapImplTest.buildDefaultHeap();
+        HeapImpl one = buildDefaultHeap();
         one.put("make-title", new MakeTitleDecorator());
         one.init(asJson("decorate-object-in-order-with-inheritance-parent.json"));
 
@@ -241,9 +246,8 @@ public class DecoratorSystemTest {
     }
 
     private void assertThatResponseEntityIsEqualTo(final Handler handler, final String expected) throws Exception {
-        Exchange exchange = new Exchange();
-        handler.handle(exchange);
-        assertThat(exchange.response.getEntity().getString()).isEqualTo(expected);
+        Response response = handler.handle(new Exchange(), null).getOrThrow();
+        assertThat(response.getEntity().getString()).isEqualTo(expected);
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {
@@ -265,10 +269,24 @@ public class DecoratorSystemTest {
             final Handler handler = (Handler) delegate;
             return new Handler() {
                 @Override
-                public void handle(final Exchange exchange) throws HandlerException, IOException {
-                    handler.handle(exchange);
-                    String content = format("<%s>%s</%s>", header, exchange.response.getEntity().getString(), header);
-                    exchange.response.getEntity().setString(content);
+                public Promise<Response, NeverThrowsException> handle(final org.forgerock.http.Context context,
+                                                                      final Request request) {
+                    return handler.handle(context, request)
+                            .then(new Function<Response, Response, NeverThrowsException>() {
+                                @Override
+                                public Response apply(final Response response) throws NeverThrowsException {
+                                    try {
+                                        String content = format("<%s>%s</%s>",
+                                                                header,
+                                                                response.getEntity().getString(),
+                                                                header);
+                                        response.getEntity().setString(content);
+                                        return response;
+                                    } catch (IOException e) {
+                                        return Responses.newInternalServerError("IOException", e);
+                                    }
+                                }
+                            });
                 }
             };
         }

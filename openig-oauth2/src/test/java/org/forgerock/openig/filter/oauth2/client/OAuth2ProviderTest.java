@@ -15,39 +15,45 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.el.Expression.*;
-import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.fluent.JsonValue.array;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.forgerock.json.fluent.JsonValue.object;
+import static org.forgerock.openig.el.Expression.valueOf;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.net.URI;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.forgerock.http.Client;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.mockito.stubbing.Stubber;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -60,7 +66,6 @@ public class OAuth2ProviderTest {
 
     private Exchange exchange;
     private OAuth2Session session;
-    private AtomicReference<Request> capturedRequest;
     private static final String AUTHORIZE_ENDPOINT = "/openam/oauth2/authorize";
     private static final String TOKEN_ENDPOINT = "/openam/oauth2/access_token";
     private static final String USER_INFO_ENDPOINT = "/openam/oauth2/userinfo";
@@ -72,19 +77,21 @@ public class OAuth2ProviderTest {
     @Mock
     private TimeService time;
 
+    @Captor
+    private ArgumentCaptor<Request> captor;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         exchange = new Exchange(new URI("path"));
         session = OAuth2Session.stateNew(time);
-        capturedRequest = new AtomicReference<Request>();
     }
 
     @DataProvider
     private Object[][] errorResponseStatus() {
-        return new Object[][] {
-            { 400 },
-            { 502 } };
+        return new Status[][] {
+            { Status.BAD_REQUEST },
+            { Status.BAD_GATEWAY } };
     }
 
     @DataProvider
@@ -139,14 +146,18 @@ public class OAuth2ProviderTest {
     public void shouldGetRefreshToken() throws Exception {
         // given
         final OAuth2Provider provider = getOAuth2Provider();
-        respondWith(200).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(Status.OK);
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
         // when
         provider.getRefreshToken(exchange, session);
         // then
-        verify(providerHandler).handle(exchange);
-        assertThat(capturedRequest.get().getMethod()).isEqualTo("POST");
-        assertThat(capturedRequest.get().getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
-        assertThat(capturedRequest.get().getEntity().getString()).contains("grant_type=refresh_token");
+        verify(providerHandler).handle(eq(exchange), captor.capture());
+        Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(request.getEntity().getString()).contains("grant_type=refresh_token");
     }
 
     @Test
@@ -155,43 +166,61 @@ public class OAuth2ProviderTest {
         final String code = "sampleAuthorizationCodeForTestOnly";
         final String callbackUri = "shouldBeACallbackUri";
         final OAuth2Provider provider = getOAuth2Provider();
-        respondWith(200).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(Status.OK);
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
         // when
         provider.getAccessToken(exchange, code, callbackUri);
         // then
-        verify(providerHandler).handle(exchange);
-        assertThat(capturedRequest.get().getMethod()).isEqualTo("POST");
-        assertThat(capturedRequest.get().getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
-        assertThat(capturedRequest.get().getEntity().getString()).contains("grant_type=authorization_code",
-                "redirect_uri=" + callbackUri, "code=" + code);
+        verify(providerHandler).handle(eq(exchange), captor.capture());
+        Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(request.getEntity().getString()).contains("grant_type=authorization_code",
+                                                             "redirect_uri=" + callbackUri, "code=" + code);
     }
 
     @Test
     public void shouldGetUserInfo() throws Exception {
         // given
         final OAuth2Provider provider = getOAuth2Provider();
-        respondWith(200).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(Status.OK);
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
         // when
         provider.getUserInfo(exchange, session);
         // then
-        verify(providerHandler).handle(exchange);
-        assertThat(capturedRequest.get().getMethod()).isEqualTo("GET");
-        assertThat(capturedRequest.get().getUri().toASCIIString()).isEqualTo(SAMPLE_URI + USER_INFO_ENDPOINT);
-        assertThat(capturedRequest.get().getHeaders().get("Authorization")).isNotEmpty();
+        verify(providerHandler).handle(eq(exchange), captor.capture());
+        Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + USER_INFO_ENDPOINT);
+        assertThat(request.getHeaders().get("Authorization")).isNotEmpty();
     }
 
     @Test(dataProvider = "errorResponseStatus", expectedExceptions = OAuth2ErrorException.class)
-    public void shouldFailToGetRefreshTokenWhenReceiveErrorResponse(final int errorResponseStatus) throws Exception {
+    public void shouldFailToGetRefreshTokenWhenReceiveErrorResponse(final Status errorResponseStatus) throws Exception {
 
-        respondWith(errorResponseStatus, setErrorEntity()).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(errorResponseStatus);
+        response.setEntity(setErrorEntity());
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getRefreshToken(exchange, session);
     }
 
     @Test(dataProvider = "errorResponseStatus", expectedExceptions = OAuth2ErrorException.class)
-    public void shouldFailToGetAccessTokenWhenReceiveErrorResponse(final int errorResponseStatus) throws Exception {
+    public void shouldFailToGetAccessTokenWhenReceiveErrorResponse(final Status errorResponseStatus) throws Exception {
 
-        respondWith(errorResponseStatus, setErrorEntity()).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(errorResponseStatus);
+        response.setEntity(setErrorEntity());
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getAccessToken(exchange, "code", "callbackUri");
     }
@@ -200,26 +229,13 @@ public class OAuth2ProviderTest {
             expectedExceptionsMessageRegExp = "error=\"server_error\"")
     public void shouldFailToGetUserInfoWhenReceiveErrorResponse() throws Exception {
 
-        respondWith(418, setErrorEntity()).when(providerHandler).handle(exchange);
+        Response response = new Response();
+        response.setStatus(Status.TEAPOT);
+        response.setEntity(setErrorEntity());
+        when(providerHandler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         getOAuth2Provider().getUserInfo(exchange, session);
-    }
-
-    private Stubber respondWith(final int status) {
-        return respondWith(status, null);
-    }
-
-    private Stubber respondWith(final int status,
-                                final Object entity) {
-        return doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) throws IOException {
-                capturedRequest.set(exchange.request);
-                exchange.response = new Response();
-                exchange.response.setStatus(status);
-                exchange.response.setEntity(entity);
-                return null;
-            }
-        });
     }
 
     private OAuth2Provider getOAuth2Provider() throws Exception {
@@ -236,11 +252,11 @@ public class OAuth2ProviderTest {
         return provider;
     }
 
-    private HeapImpl buildDefaultHeap() throws GeneralSecurityException {
+    private HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new TemporaryStorage()));
+        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new Client()));
         return heap;
     }
 

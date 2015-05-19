@@ -17,11 +17,11 @@
 
 package org.forgerock.openig.filter;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.log.LogLevel.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.log.LogLevel.DEBUG;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,16 +37,22 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Executes a SQL query through a prepared statement and exposes its first result. Parameters
@@ -61,7 +67,7 @@ import org.forgerock.util.LazyMap;
  *
  * @see PreparedStatement
  */
-public class SqlAttributesFilter extends GenericFilter {
+public class SqlAttributesFilter extends GenericHeapObject implements Filter {
 
     /** Expression that yields the target object that will contain the mapped results. */
     @SuppressWarnings("rawtypes")
@@ -104,7 +110,12 @@ public class SqlAttributesFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(final Exchange exchange, Handler next) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+
+        final Exchange exchange = context.asContext(Exchange.class);
+
         target.set(exchange, new LazyMap<String, Object>(new Factory<Map<String, Object>>() {
             @Override
             public Map<String, Object> newInstance() {
@@ -179,7 +190,7 @@ public class SqlAttributesFilter extends GenericFilter {
                 return ps;
             }
         }));
-        next.handle(exchange);
+        return next.handle(context, request);
     }
 
     /** Creates and initializes a static attribute provider in a heap environment. */

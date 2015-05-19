@@ -11,18 +11,25 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.handler.router.Files.*;
-import static org.forgerock.openig.heap.HeapImplTest.*;
-import static org.forgerock.openig.log.LogLevel.*;
-import static org.forgerock.util.Utils.*;
-import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.matches;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,14 +40,19 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.io.IO;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.io.Streamer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -83,30 +95,27 @@ public class RouterHandlerTest {
         handler.start();
 
         // Verify that the initial route is active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Copy the 2nd route into the monitored directory
         File destination = copyFileFromSupplyToRoutes("addition.json");
 
         // Verify that both routes are active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
-        assertStatusAfterHandle(handler, "OpenAM", 404);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
+        assertStatusAfterHandle(handler, "OpenAM", Status.NOT_FOUND);
 
         // Delete the additional file
         assertThat(destination.delete()).isTrue();
 
         // Verify that the first route is still active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Verify that the second route is inactive
         Exchange fifth = new Exchange();
         fifth.put("name", "OpenAM");
-        try {
-            handler.handle(fifth);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (HandlerException e) {
-            assertThat(e).hasMessage("no handler to dispatch to");
-        }
+        Response response = handler.handle(fifth, new Request()).get();
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        assertThat(response.getEntity().getString()).isEqualTo("no handler to dispatch to");
 
         handler.stop();
     }
@@ -133,22 +142,28 @@ public class RouterHandlerTest {
         handler.start();
 
         // Verify that the initial route is active
-        assertStatusAfterHandle(handler, "OpenIG", 42);
+        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
-        try {
-            // Should throw since no routes match and there is no default handler.
-            handle(handler, "OpenAM");
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (HandlerException e) {
-            // Ok - the request could not be routed.
-        }
+        // Should returns a 404 since no routes match and there is no default handler.
+        Exchange exchange = handle(handler, "OpenAM");
+        assertThat(exchange.response.getStatus()).isEqualTo(Status.NOT_FOUND);
 
-        Handler defaultHandler = mock(Handler.class);
+        Handler defaultHandler = mockDefaultHandler();
         handler.setDefaultHandler(defaultHandler);
 
         // Should route to default handler.
-        Exchange exchange = handle(handler, "OpenAM");
-        verify(defaultHandler).handle(exchange);
+        exchange = handle(handler, "OpenAM");
+        verify(defaultHandler).handle(eq(exchange), any(Request.class));
+    }
+
+    private Handler mockDefaultHandler() {
+        // Create a successful promise
+        PromiseImpl<Response, NeverThrowsException> result = PromiseImpl.create();
+        result.handleResult(new Response());
+        // Mock the handler to return the promise
+        Handler defaultHandler = mock(Handler.class);
+        when(defaultHandler.handle(any(Context.class), any(Request.class))).thenReturn(result);
+        return defaultHandler;
     }
 
     private File copyFileFromSupplyToRoutes(final String filename) throws IOException {
@@ -160,7 +175,7 @@ public class RouterHandlerTest {
             destination = new File(routes, filename);
             destination.deleteOnExit();
             writer = new FileWriter(destination);
-            Streamer.stream(reader, writer);
+            IO.stream(reader, writer);
             writer.flush();
         } finally {
             closeSilently(reader, writer);
@@ -182,7 +197,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet(),
                                            Collections.<File>emptySet()));
 
-        router.handle(exchange);
+        router.handle(exchange, new Request()).getOrThrow();
 
         // Simulate file renaming
         router.onChanges(new FileChangeSet(null,
@@ -190,7 +205,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet(),
                                            Collections.singleton(before)));
 
-        router.handle(exchange);
+        router.handle(exchange, new Request()).getOrThrow();
 
     }
 
@@ -231,16 +246,16 @@ public class RouterHandlerTest {
 
     private void assertStatusAfterHandle(final RouterHandler handler,
                                          final String value,
-                                         final int expected) throws HandlerException, IOException {
+                                         final Status expected) throws Exception {
         Exchange exchange = handle(handler, value);
         assertThat(exchange.response.getStatus()).isEqualTo(expected);
     }
 
     private Exchange handle(final RouterHandler handler, final String value)
-            throws HandlerException, IOException {
+            throws Exception {
         Exchange exchange = new Exchange();
         exchange.put("name", value);
-        handler.handle(exchange);
+        exchange.response = handler.handle(exchange, new Request()).getOrThrow();
         return exchange;
     }
 }

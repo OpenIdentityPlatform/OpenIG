@@ -11,29 +11,29 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
 import static java.lang.String.format;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -86,24 +86,29 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     public AccessToken resolve(final String token) throws OAuth2TokenException {
         try {
             Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("GET");
-            exchange.request.setUri(new URI(tokenInfoEndpoint));
+            Request request = new Request();
+            request.setMethod("GET");
+            request.setUri(new URI(tokenInfoEndpoint));
 
             // Append the access_token as a query parameter (automatically performs encoding)
             Form form = new Form();
             form.add("access_token", token);
-            form.toRequestQuery(exchange.request);
+            form.toRequestQuery(request);
 
             // Call the client handler
-            client.handle(exchange);
+            Response response = null;
+            try {
+                response = client.handle(exchange, request).getOrThrow();
+            } catch (InterruptedException e) {
+                throw new OAuth2TokenException("AccessToken loading has been interrupted", e);
+            }
 
-            if (isResponseEmpty(exchange)) {
+            if (isResponseEmpty(response)) {
                 throw new OAuth2TokenException("Authorization Server did not return any AccessToken");
             }
 
-            JsonValue content = asJson(exchange.response.getEntity());
-            if (isOk(exchange.response)) {
+            JsonValue content = asJson(response.getEntity());
+            if (isOk(response)) {
                 return builder.build(content);
             }
 
@@ -122,20 +127,16 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
                     format("The token_info endpoint %s could not be accessed because it is a malformed URI",
                            tokenInfoEndpoint),
                     e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot load AccessToken from %s", tokenInfoEndpoint), e);
-        } catch (HandlerException e) {
-            throw new OAuth2TokenException(format("Could not handle call to token_info endpoint %s", tokenInfoEndpoint),
-                                           e);
         }
     }
 
-    private boolean isResponseEmpty(final Exchange exchange) {
-        return (exchange.response == null) || (exchange.response.getEntity() == null);
+    private boolean isResponseEmpty(final Response response) {
+        // response.entity is NEVER null !!!
+        return (response == null) || (response.getEntity() == null);
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus() == 200;
+        return Status.OK.equals(response.getStatus());
     }
 
     /**

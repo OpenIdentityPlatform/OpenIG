@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -26,18 +26,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Message;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Message;
-import org.forgerock.openig.http.MessageType;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
+import org.forgerock.openig.util.MessageType;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either
@@ -53,7 +60,7 @@ import org.forgerock.openig.regex.StreamPatternExtractor;
  * @see StreamPatternExtractor
  * @see PatternTemplate
  */
-public class EntityExtractFilter extends GenericFilter {
+public class EntityExtractFilter extends GenericHeapObject implements Filter {
 
     /** Extracts regular expression patterns from entities. */
     private final StreamPatternExtractor extractor = new StreamPatternExtractor();
@@ -107,18 +114,7 @@ public class EntityExtractFilter extends GenericFilter {
         return extractor;
     }
 
-    @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        if (messageType == MessageType.REQUEST) {
-            process(exchange, exchange.request);
-        }
-        next.handle(exchange);
-        if (messageType == MessageType.RESPONSE) {
-            process(exchange, exchange.response);
-        }
-    }
-
-    private void process(Exchange exchange, Message<?> message) {
+    private void process(Exchange exchange, Message message) {
         HashMap<String, String> map = new HashMap<String, String>();
         if (message != null) {
             try {
@@ -136,6 +132,27 @@ public class EntityExtractFilter extends GenericFilter {
             }
         }
         target.set(exchange, map);
+    }
+
+    @Override
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+
+        final Exchange exchange = context.asContext(Exchange.class);
+        if (messageType == MessageType.REQUEST) {
+            process(exchange, request);
+        }
+        Promise<Response, NeverThrowsException> promise = next.handle(context, request);
+        if (messageType == MessageType.RESPONSE) {
+            return promise.thenOnResult(new ResultHandler<Response>() {
+                @Override
+                public void handleResult(final Response response) {
+                    process(exchange, response);
+                }
+            });
+        }
+        return promise;
     }
 
     /** Creates and initializes an entity extract handler in a heap environment. */

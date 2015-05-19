@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.header.HeaderUtil.parseParameters;
-import static org.forgerock.openig.header.HeaderUtil.quote;
-import static org.forgerock.openig.header.HeaderUtil.split;
+import static org.forgerock.http.header.HeaderUtil.parseParameters;
+import static org.forgerock.http.header.HeaderUtil.quote;
+import static org.forgerock.http.header.HeaderUtil.split;
 import static org.forgerock.util.Utils.joinAsString;
 
 import java.util.Arrays;
@@ -27,9 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
-import org.forgerock.openig.http.Form;
 import org.forgerock.util.Reject;
 
 /**
@@ -244,41 +245,39 @@ public final class OAuth2Error {
      * @return A non-{@code null} error whose error code has been determined
      *         from the HTTP status code.
      */
-    public static OAuth2Error bestEffortResourceServerError(final int status,
-            final OAuth2Error incomplete) {
+    public static OAuth2Error bestEffortResourceServerError(final Status status,
+                                                            final OAuth2Error incomplete) {
         if (incomplete != null && incomplete.error != null) {
             // Seems ok.
             return incomplete;
         }
-        final String error;
-        switch (status) {
-        case 400:
-            error = E_INVALID_REQUEST;
-            break;
-        case 401:
-            error = E_INVALID_TOKEN;
-            break;
-        case 403:
-            error = E_INVALID_SCOPE;
-            break;
-        case 405:
-            error = E_INVALID_REQUEST;
-            break;
-        case 500:
-            error = E_SERVER_ERROR;
-            break;
-        case 503:
-            error = E_TEMPORARILY_UNAVAILABLE;
-            break;
-        default:
-            error = E_SERVER_ERROR; // no idea.
-            break;
-        }
+        final String error = mapStatusToError(status);
         if (incomplete == null) {
             return new OAuth2Error(null, null, error, null, null);
         } else {
-            return new OAuth2Error(incomplete.getRealm(), incomplete.getScope(), error, incomplete
-                    .getErrorDescription(), incomplete.getErrorUri());
+            return new OAuth2Error(incomplete.getRealm(),
+                                   incomplete.getScope(),
+                                   error,
+                                   incomplete.getErrorDescription(),
+                                   incomplete.getErrorUri());
+        }
+    }
+
+    private static String mapStatusToError(final Status status) {
+        if (Status.BAD_REQUEST.equals(status)) {
+            return E_INVALID_REQUEST;
+        } else if (Status.UNAUTHORIZED.equals(status)) {
+            return E_INVALID_TOKEN;
+        } else if (Status.FORBIDDEN.equals(status)) {
+            return E_INVALID_SCOPE;
+        } else if (Status.METHOD_NOT_ALLOWED.equals(status)) {
+            return E_INVALID_REQUEST;
+        } else if (Status.INTERNAL_SERVER_ERROR.equals(status)) {
+            return E_SERVER_ERROR;
+        } else if (Status.SERVICE_UNAVAILABLE.equals(status)) {
+            return E_TEMPORARILY_UNAVAILABLE;
+        } else {
+            return E_SERVER_ERROR; // No idea
         }
     }
 

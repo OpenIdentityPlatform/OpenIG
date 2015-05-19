@@ -37,15 +37,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.json.fluent.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
-import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.MultiValueMap;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
@@ -278,11 +278,12 @@ public class HeapImpl implements Heap {
 
     @Override
     public <T> T get(final String name, final Class<T> type) throws HeapException {
-        ExtractedObject extracted = extract(name);
+        ExtractedObject extracted = extract(name, type);
         if (extracted.object == null) {
             return null;
         }
-        return type.cast(applyGlobalDecorations(extracted));
+        Object o = applyGlobalDecorations(extracted);
+        return type.cast(o);
     }
 
     /**
@@ -298,7 +299,7 @@ public class HeapImpl implements Heap {
      * associated context (never returns {@code null})
      * @throws HeapException if extraction failed
      */
-    ExtractedObject extract(final String name) throws HeapException {
+    ExtractedObject extract(final String name, final Class<?> type) throws HeapException {
         if (resolving.contains(name)) {
             // Fail for recursive object resolution
             throw new HeapException(
@@ -323,7 +324,7 @@ public class HeapImpl implements Heap {
                 }
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.extract(name);
+                return parent.extract(name, type);
             }
         }
         return new ExtractedObject(object, contexts.get(name));
@@ -448,7 +449,7 @@ public class HeapImpl implements Heap {
         }
 
         // Apply global decorations (may be inherited from parent heap)
-        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY);
+        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
         if (deco.object != null) {
             Decorator globalDecorator = (Decorator) deco.object;
             decorated = globalDecorator.decorate(decorated, null, extracted.context);

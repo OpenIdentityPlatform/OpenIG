@@ -11,22 +11,23 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
-import java.io.IOException;
-
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
- * Log a {@literal started} message when an {@link Exchange} is flowing into this Handler and an {@literal elapsed}
- * message when the {@link Exchange} is flowing out, delegating to a given encapsulated {@link Handler} instance.
+ * Log a {@literal started} message when a {@link Request} is flowing into this Handler and an {@literal elapsed}
+ * message when the {@link Response} is flowing out, delegating to a given encapsulated {@link Handler} instance.
  */
 class TimerHandler implements Handler {
     private final Handler delegate;
@@ -38,12 +39,14 @@ class TimerHandler implements Handler {
     }
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-        LogTimer timer = logger.getTimer().start();
-        try {
-            delegate.handle(exchange);
-        } finally {
-            timer.stop();
-        }
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        final LogTimer timer = logger.getTimer().start();
+        return delegate.handle(context, request)
+                .thenAlways(new Runnable() {
+                    @Override
+                    public void run() {
+                        timer.stop();
+                    }
+                });
     }
 }

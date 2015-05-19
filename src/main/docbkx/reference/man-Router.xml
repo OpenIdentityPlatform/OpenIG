@@ -144,6 +144,15 @@
        xlink:role="http://docbook.org/xlink/role/olink"
       ><citetitle>Installing ${projectName}</citetitle></link>.
      </para>
+
+     <important>
+      <para>
+       If you define a new Router in the default base directory,
+       then you must set the "directory" property
+       to a different directory from the default base directory
+       in order to avoid a circular reference to the new Router.
+      </para>
+     </important>
     </listitem>
    </varlistentry>
 

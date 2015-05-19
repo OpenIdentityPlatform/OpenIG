@@ -22,14 +22,18 @@ import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 
 /**
- * A generic base class for heap objects with handy injected heap objects. This implementation
- * provides reasonable safe defaults, to be overridden by the concrete object's heaplet.
+ * A generic base class for heap objects with handy injected heap objects. This
+ * implementation provides reasonable safe defaults, to be overridden by the
+ * concrete object's heaplet.
  */
 public class GenericHeapObject {
 
     /** Provides methods for various logging activities. */
     public Logger logger = new Logger(new NullLogSink(), Name.of(getClass()));
 
-    /** Allocates temporary buffers for caching streamed content during processing. */
+    /**
+     * Allocates temporary buffers for caching streamed content during
+     * processing.
+     */
     public TemporaryStorage storage = new TemporaryStorage();
 }

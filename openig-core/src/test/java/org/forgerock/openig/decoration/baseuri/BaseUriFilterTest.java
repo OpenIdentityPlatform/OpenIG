@@ -16,18 +16,20 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -43,10 +45,13 @@ public class BaseUriFilterTest {
     @Mock
     private Handler terminal;
 
+    private Exchange exchange;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         delegate = new DelegateFilter();
+        exchange = new Exchange();
     }
 
     @Test
@@ -55,12 +60,12 @@ public class BaseUriFilterTest {
                                                               Expression.valueOf("http://www.example.com:443",
                                                                       String.class));
 
-        final Exchange exchange = createExchangeAndSetUri();
-        baseUriFilter.filter(exchange, terminal);
+        final Request request = createRequest();
+        baseUriFilter.filter(exchange, request, terminal);
 
-        verify(terminal).handle(exchange);
+        verify(terminal).handle(exchange, request);
 
-        assertThat(exchange.request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
+        assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -68,8 +73,8 @@ public class BaseUriFilterTest {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
                                                               null);
 
-        final Exchange exchange = createExchangeAndSetUri();
-        baseUriFilter.filter(exchange, terminal);
+        final Request request = createRequest();
+        baseUriFilter.filter(exchange, request, terminal);
     }
 
     @Test
@@ -77,25 +82,26 @@ public class BaseUriFilterTest {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
                                                               Expression.valueOf("", String.class));
 
-        final Exchange exchange = createExchangeAndSetUri();
-        baseUriFilter.filter(exchange, terminal);
+        final Request request = createRequest();
+        baseUriFilter.filter(exchange, request, terminal);
 
-        verify(terminal).handle(exchange);
+        verify(terminal).handle(exchange, request);
 
-        assertThat(exchange.request.getUri().toString()).isEqualTo(REQUEST_URI);
+        assertThat(request.getUri().toString()).isEqualTo(REQUEST_URI);
     }
 
-    private Exchange createExchangeAndSetUri() throws URISyntaxException {
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(REQUEST_URI);
-        return exchange;
+    private Request createRequest() throws URISyntaxException {
+        Request request = new Request();
+        request.setUri(REQUEST_URI);
+        return request;
     }
 
     private static class DelegateFilter implements Filter {
         @Override
-        public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-            next.handle(exchange);
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
+            return next.handle(context, request);
         }
     }
 }

@@ -32,18 +32,48 @@
  <title>Understanding ${projectName}</title>
 
  <para>
-  This chapter introduces ${projectName}, briefly covering essential concepts.
+  This chapter introduces ${projectName}.
+  In this chapter, you will learn the essentials of using ${projectName} including:
  </para>
+
+ <itemizedlist>
+  <listitem>
+   <para>
+    What problems ${projectName} solves and where it fits in your deployment
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    How ${projectName} acts on HTTP requests and responses
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    How the configuration files for ${projectName} are organized
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    The roles played by routes, filters, handlers, and chains,
+    which are the building blocks of an ${projectName} configuration
+   </para>
+  </listitem>
+ </itemizedlist>
 
  <section xml:id="about">
   <title>About ${projectName}</title>
 
   <para>
    Most organizations have valuable existing services
-   that they cannot easily integrate into newer architectures.
-   Often, however, they also cannot change the existing services.
-   Without a gateway to bridge the gap,
-   some client applications cannot communicate with these existing services.
+   that are not easily integrated into newer architectures.
+   These existing services cannot often be changed.
+   Many client applications cannot communicate
+   as they lack a gateway to bridge the gap.
+   <xref linkend="figure-missing-gateway" />
+   illustrates one example of a missing gateway.
   </para>
 
   <figure xml:id="figure-missing-gateway">
@@ -64,13 +94,11 @@
   </figure>
 
   <para>
-   ${projectName} works as an HTTP gateway, also known as a
-   <link
-    xlink:show="new"
-    xlink:href="http://en.wikipedia.org/wiki/Reverse_proxy"
-   >reverse proxy</link>.
-   You deploy ${projectName} on the network
-   so that it intercepts both client requests and also server responses.
+   ${projectName} works as an HTTP gateway, also known as a reverse proxy.
+   ${projectName} is deployed on a network so it can intercept
+   both client requests and server responses.
+   <xref linkend="figure-gateway-deployed" />
+   illustrates a ${projectName} deployment.
   </para>
 
   <figure xml:id="figure-gateway-deployed">
@@ -90,15 +118,14 @@
   </figure>
 
   <para>
-   Clients then exchange with protected servers through ${projectName}.
-   This means that without touching either clients or servers,
-   you can configure ${projectName} to add new capabilities
-   to existing services.
+   Clients exchange with protected servers through ${projectName}.
+   ${projectName} can be configured to add new capabilities to existing services
+   without affecting current clients or servers.
   </para>
 
   <itemizedlist>
    <para>
-    The list that follows names some of what you can add by using ${projectName}.
+    The list that follows names some of what you can add by using ${projectName}:
    </para>
 
    <listitem>
@@ -166,8 +193,8 @@
    ${projectName} supports these capabilities
    as out-of-the-box configuration options.
    Once you understand the essential concepts covered in this chapter,
-   try the demonstrations in this guide to see for yourself
-   how to add these features by using ${projectName}.
+   try the additional instructions in this guide
+   to use ${projectName} to add other features.
   </para>
  </section>
 
@@ -180,21 +207,20 @@
   </para>
 
   <para>
-   The ${projectName} exchange encapsulates HTTP requests and responses
+   The exchange encapsulates HTTP requests and responses
    that pass through ${projectName},
    as well as the principal associated with the request,
    the session context associated with the client,
    and any other state information needed.
-   ${projectName} makes it easy
-   to access arbitrary state information through the exchange
-   so that you can use it throughout the duration of the exchange,
-   even when the exchange calls for interaction with additional services.
+   It is easy to access arbitrary state information with ${projectName}
+   through the exchange for use throughout the duration of the exchange,
+   including when the exchange calls for interaction with additional services.
   </para>
 
   <para>
-   In addition, ${projectName} includes information in the exchange
+   ${projectName} includes information in the exchange
    about the client that made the incoming request,
-   such as the client host, port, and IP address,
+   including the client host, port, and IP address,
    and also the user-agent description,
    the login of the user making the request,
    and the X.509 certificates presented by the client
@@ -206,25 +232,26 @@
   <title>The Configuration</title>
 
   <para>
-   ${projectName} represents its configuration in JSON format,
-   which is store in flat files.<footnote>
+   The configuration for ${projectName} is stored in flat files,
+   which are mainly in JavaScript Object Notation (JSON) format.<footnote>
     <para>
-     ${projectName} also uses additional file formats for SAML 2.0,
-     but the primary configuration files are in JSON format.
+     ${projectName} also uses Java properties files and XML files for SAML 2.0.
     </para>
    </footnote>
-   You configure ${projectName} by editing the JSON flat files.
+   Configure ${projectName} by editing the JSON files.
   </para>
 
   <para>
-   After installation, you add at least one configuration file.
-   Each configuration file holds a JSON object.
-   At minimum, the JSON object specifies a "handler" to deal with the exchange.
+   When installation is complete, add at least one configuration file.
+   Each configuration file holds a JSON object,
+   which specifies a <firstterm>handler</firstterm> to deal with the exchange.
+   A handler is an object responsible for producing a response to a request.
+   Every route must call a handler.
   </para>
 
   <para>
    The following very simple configuration routes exchanges
-   to be handled according to separate route configurations.
+   to be handled according to separate route configurations:
   </para>
 
   <programlisting language="javascript">
@@ -236,13 +263,7 @@
   </programlisting>
 
   <para>
-   The "handler" indicates which object ${projectName} invokes first.
-   A handler is an object responsible for producing a response to a request,
-   therefore every route must call a handler.
-  </para>
-
-  <para>
-   Notice in this case that the "handler" field takes an object as its value.
+   Notice in this case that the handler field takes an object as its value.
    This is an inline declaration.
    If you only use the object once where it is declared,
    then it makes sense to use an inline declaration.
@@ -251,14 +272,14 @@
   <para>
    To change the definition of an object defined by default
    or when you need to declare an object once and use it multiple times,
-   you declare object definitions in the "heap",
-   and then reference the objects by "name".
-   You can also use this technique instead of inline declarations.
+   declare the object in the <firstterm>heap</firstterm>.
+   The heap is a collection of named configuration objects
+   that can be referenced by their names from elsewhere in the configuration.
   </para>
 
   <para>
-   The following example declares an identical "Router" object as above
-   and references it by its name.
+   The following example declares a reusable Router
+   and references it by its name, as follows:
   </para>
 
   <programlisting language="javascript">
@@ -274,41 +295,31 @@
   </programlisting>
 
   <para>
-   Notice that the "heap" takes an array.
-   As the "heap" holds configuration objects all at the same level,
+   Notice that the heap takes an array.
+   Because the heap holds configuration objects all at the same level,
    you can impose any hierarchy or order that you like when referencing objects.
-   Yet, when you declare all objects in the "heap" and reference them by name,
+   Note that when you declare all objects in the heap and reference them by name,
    neither hierarchy nor ordering are obvious
    from the structure of the configuration file alone.
   </para>
 
   <itemizedlist>
    <para>
-    Each configuration object has a "type", a "name", and an optional "config".
+    Each configuration object has a <firstterm>type</firstterm>,
+    a <firstterm>name</firstterm>, and an optional <firstterm>config</firstterm>.
+    For example:
    </para>
 
    <listitem>
     <para>
-     The "type" must be the type name of the configuration object.<footnote>
-     <para>
-      For built-in objects, you can use the short name alias.
-      If the object has no alias,
-      use the fully qualified class name
-      of the Java class implementing the object.
-     </para>
-    </footnote>
-    </para>
-
-    <para>
-     As you see in the rest of this guide
-     and in the <citetitle>Reference</citetitle>,
+     The type must be the type name of the configuration object.
      ${projectName} defines many types for different purposes.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     The "name" takes a string that is unique in the list of objects.
+     The name takes a string that is unique in the list of objects.
     </para>
 
     <para>
@@ -318,16 +329,17 @@
 
    <listitem>
     <para>
-     The contents of the "config" object depend on the "type".
+     The contents of the config object depend on the type.
     </para>
 
     <para>
      When all the configuration settings for the type are optional,
-     the "config" field is also optional, as in this example.
+     the config field is also optional, as in the Router example.
      If all configuration settings are optional,
-     then omitting the "config" field,
-     or setting the "config" field to an empty object, "config": {},
-     or setting "config": null
+     then omitting the config field,
+     setting the config field to an empty object,
+     <literal>"config": {}</literal>,
+     or setting <literal>"config": null</literal>
      all signify that the object uses default settings.
     </para>
    </listitem>
@@ -335,11 +347,12 @@
 
   <para>
    The configuration can specify additional objects as well.
-   For example, you can configure an "HttpClient"
+   For example, you can configure an <firstterm>HttpClient</firstterm> object
    that ${projectName} uses to connect to servers.
-   The following "HttpClient" configuration uses defaults for all settings,
-   except "hostnameVerifier", which it configures to
-   verify host names in SSL certificates in the same way as most browsers.
+   The following HttpClient configuration uses defaults for all settings,
+   except <firstterm>hostnameVerifier</firstterm>,
+   which it configures to verify host names in SSL certificates
+   in the same way as most browsers:
   </para>
 
   <programlisting language="javascript">
@@ -355,15 +368,15 @@
   <para>
    <firstterm>Decorators</firstterm> are additional heap objects
    that let you extend what another object can do.
-   For example, a "CaptureDecorator" enables filters and handlers
-   to log requests and responses.
-   A "TimerDecorator" logs processing times.
-   You decorate the configuration of other objects
-   with the names of decorators as field names.
-   ${projectName} defines both a "CaptureDecorator" named "capture"
-   and also a "TimerDecorator" named "timer" by default.
-   You can therefore log requests, responses, and processing times
-   by adding decorations as shown in the following example.
+   For example, a <firstterm>CaptureDecorator</firstterm>
+   extends the capability of filters and handlers to log requests and responses.
+   A <firstterm>TimerDecorator</firstterm> logs processing times.
+   Decorate configuration objects with decorator names as field names.
+   By default ${projectName} defines both
+   a CaptureDecorator named <literal>capture</literal>
+   and also a TimerDecorator named <literal>timer</literal>.
+   Log requests, responses, and processing times
+   by adding decorations as shown in the following example:
   </para>
 
   <programlisting language="javascript">
@@ -377,17 +390,18 @@
   </programlisting>
 
   <para>
-   In addition to decorators, ${projectName} also creates
-   other utility objects with default settings,
-   including "HttpClient", "LogSink", and "TemporaryStorage".
-   You can reference these objects by name without configuring them
-   unless you need to override the default configurations.
+   ${projectName} also creates additional utility objects with default settings,
+   including HttpClient, <firstterm>LogSink</firstterm>,
+   and <firstterm>TemporaryStorage</firstterm>.
+   These objects can be referenced by name
+   and do not need to be configured
+   unless they are needed to override the default configurations.
   </para>
 
   <para>
-   Routes, mentioned here
-   and described in more detail in <xref linkend="routing" />,
-   inherit settings from their parent configurations.
+   <firstterm>Routes</firstterm> are configuration objects
+   whose behavior is triggered when their conditions are matched.
+   Routes inherit settings from their parent configurations.
    This means that you can
    configure global objects in the "heap" of the base configuration for example,
    and then reference the objects by name
@@ -405,31 +419,32 @@
   </para>
 
   <para>
-   You can use routing where ${projectName} protects multiple services,
-   or multiple different endpoints of the same service.
-   You can also use routing when handling an exchange involves multiple steps,
-   for example because you must redirect the client
-   to authenticate with an identity provider
-   before accessing the service.
+   Use routing where ${projectName} protects multiple services
+   or multiple and different endpoints of the same service.
+   Routing is also used when working with an exchange with multiple steps,
+   because the client must be redirected to authenticate
+   with an identity provider before accessing the service.
   </para>
 
   <para>
-   A <firstterm>router</firstterm>,
-   as shown in <xref linkend="the-configuration" />,
-   takes responsibility for managing the routes used,
+   As illustrated in <xref linkend="the-configuration" />
+   a <firstterm>router</firstterm> manages the routes in its file system directory,
    periodically reloading changed routes
-   unless configured to load them only at startup.
+   unless it is configured to load them only at startup.
   </para>
 
   <para>
-   Notice in the example that the router does not specify any routes.
-   Instead, routes optionally specify their own "condition".
-   If a route "condition" is true, then the route handles the exchange.
+   A router does not explicitly specify any routes.
+   Instead the router specifies a directory where route configuration files are found,
+   or uses the default directory.
+   Routes specify their own <firstterm>condition</firstterm>,
+   which is an expression that evaluates to true, false, or null.
+   If a route condition is true, then the route handles the exchange.
   </para>
 
   <para>
    The following example specifies a condition
-   that is true when the incoming request path is <literal>/login</literal>.
+   that is true when the request path is <literal>/login</literal>:
   </para>
 
   <programlisting language="javascript">
@@ -437,9 +452,9 @@
   </programlisting>
 
   <para>
-   If the route has no "condition", or if the value of the condition is null,
+   If the route has no condition, or if the value of the condition is null,
    then the route matches any exchange.
-   Furthermore, ${projectName} orders routes lexicographically by name.
+   Furthermore, ${projectName} orders routes lexicographically by file name.
   </para>
 
   <para>
@@ -448,22 +463,22 @@
    <filename>01-login.json</filename>,
    <filename>02-protected.json</filename>,
    <filename>99-default.json</filename>.
-   Alternatively, you can name routes using the "name" property on the route.
+   Alternatively, you can name routes by using the name property on the route.
   </para>
 
   <para>
    A router configuration can specify where to look for route files.
-   As a "Router" is a kind of "handler", routes can have routers, too.
+   As a router is a kind of handler, routes can have routers, too.
   </para>
  </section>
 
  <section xml:id="filters-handlers-chains">
-  <title>Filters, Handlers, &amp; Chains</title>
+  <title>Filters, Handlers, and Chains</title>
 
   <para>
    Routing only delegates exchange handling.
-   It does not actually deal with exchanges.
-   To deal with an exchange, you chain together filters and handlers.
+   It does not actually modify the exchanges.
+   To modify an exchange, chain together filters and handlers.
   </para>
 
   <itemizedlist>
@@ -474,14 +489,14 @@
     </para>
 
     <para>
-     One way of producing a response is
+     One way to produce a response is
      to send a request to and receive a response from an external service.
      In this case, ${projectName} acts as a client of the service,
      often on behalf of the client whose request initiated the exchange.
     </para>
 
     <para>
-     Another way of producing a response is
+     Another way to produce a response is
      to build a response either statically or based on something in the exchange.
      In this case, ${projectName} plays the role of server,
      generating a response to return to the client.
@@ -490,47 +505,41 @@
 
    <listitem>
     <para>
-     A <firstterm>filter</firstterm> transforms something in the exchange.
+     A <firstterm>filter</firstterm> either transforms data in the exchange,
+     or performs an action when the exchange passes through the filter.
     </para>
 
     <para>
      A filter can leave the exchange unchanged.
-     Alternatively a filter can even replace the request or the response,
-     for example generating a static request that replaces the client request.
-     Other filters only add or change some of the data in the exchange.
+     For example, it can log the exchange as it passes through the filter.
+     Alternatively, it can change request or response.
+     For example, it can generate a static request to replace the client request,
+     add a header to the request, or remove a header from a response.
     </para>
    </listitem>
 
    <listitem>
     <para>
-     A <firstterm>chain</firstterm> takes a list of filters and one handler.
-     (The list of filters can be empty.)
-    </para>
-
-    <para>
-     Like a router, a chain itself is technically a handler.
-     You can therefore place a chain anywhere in the configuration
-     that you can place a handler.
-    </para>
-
-    <para>
-     The chain dispatches processing to the filters in order,
+     A <firstterm>chain</firstterm> is a type of handler
+     that dispatches processing to a list of filters in order,
      and then to the handler.
     </para>
 
     <para>
-     Initially the filters process the incoming exchange,
-     with each filter handing off to the next filter and finally the handler.
-     Then after the handler produces the response,
-     the filters process the outgoing exchange on its way to the client.
-     The same filter can process the incoming request and the outgoing response.
-     Many filters, however, either process the request or the response.
+     A chain can be placed anywhere in a configuration that a handler can be placed.
+     Filters process the incoming exchange
+     and pass it on to the next filter and the handler.
+     After the handler produces a response,
+     the filters process the outgoing exchange as it makes its way to the client.
+     Note that the same filter can process
+     both the incoming request and the outgoing response
+     but most filters do one or the other.
     </para>
    </listitem>
   </itemizedlist>
 
   <para>
-   The following diagram shows the flow inside a chain that has
+   <xref linkend="figure-chain" /> shows the flow inside a chain with
    a request filter transforming the request,
    a response filter transforming the response,
    and a handler sending a request to a service to get a response.
@@ -557,11 +566,14 @@
   </figure>
 
   <para>
-   The following route configuration demonstrates the flow,
-   but without an external service.
+   The route configuration in <xref linkend="example-chain" />
+   demonstrates the flow through a chain that does not call an external service.
   </para>
 
-  <programlisting language="javascript"><![CDATA[
+  <example xml:id="example-chain">
+   <title>Chain Without An External Service</title>
+
+   <programlisting language="javascript"><![CDATA[
 {
     "handler": {
         "type": "Chain",
@@ -612,63 +624,69 @@
 }
   ]]></programlisting>
 
-  <orderedlist>
-   <para>
-    When the "Chain" gets the request, it processes the exchange as follows.
-   </para>
-
-   <listitem>
+   <itemizedlist>
     <para>
-     The first "HeaderFilter" adds a header to the incoming request.
+     The chain receives the exchange and process it as follows:
     </para>
-   </listitem>
 
-   <listitem>
-    <para>
-     The second "HeaderFilter" deals with responses,
-     so it simply passes the exchange to the handler.
-    </para>
-   </listitem>
+    <listitem>
+     <para>
+      The first HeaderFilter adds a header to the incoming request.
+     </para>
+    </listitem>
 
-   <listitem>
-    <para>
-     The "StaticResponseHandler" captures (logs) the request.
-    </para>
-   </listitem>
+    <listitem>
+     <para>
+      The second HeaderFilter is configured to manage responses, not requests,
+      so it simply passes the exchange to the handler.
+     </para>
+    </listitem>
 
-   <listitem>
-    <para>
-     The "StaticResponseHandler" itself produces a response
-     having an entity body and a header.
-    </para>
-   </listitem>
+    <listitem>
+     <para>
+      The StaticResponseHandler captures (logs) the request.
+     </para>
+    </listitem>
 
-   <listitem>
-    <para>
-     The second "HeaderFilter" captures (logs) the response.
-    </para>
-   </listitem>
+    <listitem>
+     <para>
+      The StaticResponseHandler produces a response with an entity body and a header.
+     </para>
+    </listitem>
 
-   <listitem>
-    <para>
-     The second "HeaderFilter" removes the header added to the response.
-    </para>
-   </listitem>
+    <listitem>
+     <para>
+      The second HeaderFilter captures (logs) the response.
+     </para>
+    </listitem>
 
-   <listitem>
-    <para>
-     The first "HeaderFilter" deals with requests,
-     so it simply passes the outgoing exchange back to ${projectName}.
-    </para>
-   </listitem>
-  </orderedlist>
+    <listitem>
+     <para>
+      The second HeaderFilter removes the header added to the response.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      The first HeaderFilter is configured to manage requests, not responses,
+      so it simply passes the outgoing exchange back to ${projectName}.
+     </para>
+    </listitem>
+   </itemizedlist>
+  </example>
 
   <para>
-   Suppose this chain configuration is the only route active for the request.
-   In that case, the flow produces the following.
+   <xref linkend="example-chain" /> explained how a chain
+   processes an exchange when it receives a request.
+   <xref linkend="example-chain-exchange" /> illustrates
+   the HTTP requests and responses captured
+   as the exchange flows through the chain.
   </para>
 
-  <programlisting language="http"><![CDATA[
+  <example xml:id="example-chain-exchange">
+   <title>Requests and Responses in a Chain</title>
+
+   <programlisting language="http"><![CDATA[
 ### Original request from user-agent
 GET / HTTP/1.1
 Host: www.example.com:8080
@@ -693,39 +711,36 @@ Content-Length: 33
 
 <html><p>Hello, World!</p></html>
   ]]></programlisting>
+  </example>
  </section>
 
  <section xml:id="config-comments">
-  <title>Comments in ${projectName} Configuration Files</title>
+  <title>Using Comments in ${projectName} Configuration Files</title>
 
   <para>
-   JSON does not specify a notation for comments.
-  </para>
-
-  <para>
-   However, when ${projectName} does not recognize a JSON field name,
+   The JSON format does not specify a notation for comments.
+   If ${projectName} does not recognize a JSON field name,
    it ignores the field.
-   This makes it possible to use comments in configuration files.
+   As a result, it is possible to use comments in configuration files.
   </para>
 
-  <variablelist>
+  <itemizedlist>
    <para>
-    To make your configuration files easier to read,
-    use the following conventions when commenting.
+    Use the following conventions when commenting
+    to ensure your configuration files are easier to read:
    </para>
 
-   <varlistentry>
-    <term>"comment"</term>
-    <listitem>
-     <para>
-      Use the "comment" fields to add text comments.
-     </para>
+   <listitem>
+    <para>
+     Use <literal>comment</literal> fields to add text comments.
+     <xref linkend="figure-comment-field" /> illustrates
+     a CaptureDecorator configuration that includes a text comment:
+    </para>
 
-     <para>
-      The following "CaptureDecorator" configuration includes a text comment.
-     </para>
+    <figure xml:id="figure-comment-field">
+     <title>Using a Comment Field</title>
 
-     <programlisting language="javascript">
+    <programlisting language="javascript">
 {
     "name": "capture",
     "type": "CaptureDecorator",
@@ -735,24 +750,22 @@ Content-Length: 33
     }
 }
      </programlisting>
-    </listitem>
-   </varlistentry>
+    </figure>
+   </listitem>
 
-   <varlistentry>
-    <term>"_<replaceable>field-name</replaceable>"</term>
-    <listitem>
-     <para>
-      Use an underscore (<literal>_</literal>) to comment a field temporarily.
-     </para>
+   <listitem>
+    <para>
+     Use an underscore (<literal>_</literal>) to comment a field temporarily.
+     <xref linkend="figure-comment-underscore" /> illustrates a CaptureDecorator
+     that has <literal>"captureEntity": true</literal> commented out.
+     As a result, it uses the default setting
+     (<literal>"captureEntity": false</literal>).
+    </para>
 
-     <para>
-      The following "CaptureDecorator" configuration has
-      <literal>"captureEntity": true</literal> commented out.
-      As a result, it uses the default setting
-      (<literal>"captureEntity": false</literal>).
-     </para>
+    <figure xml:id="figure-comment-underscore">
+     <title>Using an Underscore</title>
 
-     <programlisting language="javascript">
+    <programlisting language="javascript">
 {
     "name": "capture",
     "type": "CaptureDecorator",
@@ -761,13 +774,13 @@ Content-Length: 33
     }
 }
      </programlisting>
-    </listitem>
-   </varlistentry>
-  </variablelist>
+    </figure>
+   </listitem>
+  </itemizedlist>
  </section>
 
- <section xml:id="where-to-go-from-here">
-  <title>Where To Go From Here</title>
+ <section xml:id="next-steps">
+  <title>Next Steps</title>
 
   <para>
    Now that you understand the essential concepts,
@@ -913,15 +926,5 @@ Content-Length: 33
     </listitem>
    </varlistentry>
   </variablelist>
-
-  <para>
-   ForgeRock can also help you succeed in your projects involving ${projectName}.
-   You can purchase ${projectName} support subscriptions and training courses
-   from ForgeRock and from consulting partners around the world and in your area.
-   To contact ForgeRock, send mail to
-   <link xlink:href="mailto:info@forgerock.com">info@forgerock.com</link>.
-   To find a partner in your area, see
-   <link xlink:show="new" xlink:href="http://forgerock.com/partners/" />.
-  </para>
  </section>
 </chapter>

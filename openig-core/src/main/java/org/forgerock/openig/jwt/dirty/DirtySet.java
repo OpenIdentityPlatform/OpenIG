@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.forgerock.openig.util.SetDecorator;
+import org.forgerock.http.util.SetDecorator;
 
 /**
  * A {@link Set} decorator that notifies the provided {@link DirtyListener} when one ore more elements are removed.

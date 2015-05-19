@@ -23,7 +23,6 @@ import static org.forgerock.openig.util.JsonValues.*;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Heaplet;
 
 /**
  * A ConditionalAuditEventListener is conditionally invoked {@link AuditEventListener}.
@@ -32,7 +31,7 @@ import org.forgerock.openig.heap.Heaplet;
  * If the condition evaluates to anything else ({@code false}, {@code null}, ...), the result is considered
  * as a {@code false}, and the delegate listener will not be invoked.
  * <p>
- * This class is not intended to be sub-classed, although its associated {@link Heaplet} is.
+ * This class is not intended to be sub-classed, although its associated {@link org.forgerock.openig.heap.Heaplet} is.
  */
 public class ConditionalAuditEventListener implements AuditEventListener {
 
@@ -81,7 +80,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
      * to forward the event notification to the real listener. It defaults to {@code ${true}} (will always invoke the
      * delegate).
      */
-    public static abstract class ConditionalListenerHeaplet extends GenericHeaplet {
+    public abstract static class ConditionalListenerHeaplet extends GenericHeaplet {
 
         private AuditSystem auditSystem;
         private ConditionalAuditEventListener conditional;

@@ -17,33 +17,35 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
+import org.forgerock.http.util.CaseInsensitiveMap;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpUtil;
-import org.forgerock.openig.http.Response;
-import org.forgerock.openig.util.CaseInsensitiveMap;
-import org.forgerock.openig.util.MultiValueMap;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a static response in an HTTP exchange.
  */
-public class StaticResponseHandler extends GenericHandler {
+public class StaticResponseHandler extends GenericHeapObject implements Handler {
 
-    /** The response status code (e.g. 200). */
-    private final Integer status;
-
-    /** The response status reason (e.g. "OK"). */
-    private final String reason;
+    /** The status (code + reason). */
+    private final Status status;
 
     /** Protocol version (e.g. {@code "HTTP/1.1"}. */
     private final String version;
@@ -60,11 +62,9 @@ public class StaticResponseHandler extends GenericHandler {
      *
      * @param status
      *            The response status to set.
-     * @param reason
-     *            The response status reason to set.
      */
-    public StaticResponseHandler(final Integer status, final String reason) {
-        this(status, reason, null, null);
+    public StaticResponseHandler(final Status status) {
+        this(status, null, null);
     }
 
     /**
@@ -72,18 +72,15 @@ public class StaticResponseHandler extends GenericHandler {
      *
      * @param status
      *            The response status to set.
-     * @param reason
-     *            The response status reason to set.
      * @param version
      *            The protocol version.
      * @param entity
      *            The message entity expression.
      */
-    public StaticResponseHandler(final Integer status, final String reason, final String version,
-            final Expression<String> entity) {
-        super();
+    public StaticResponseHandler(final Status status,
+                                 final String version,
+                                 final Expression<String> entity) {
         this.status = status;
-        this.reason = reason;
         this.version = version;
         this.entity = entity;
     }
@@ -103,18 +100,11 @@ public class StaticResponseHandler extends GenericHandler {
     }
 
     @Override
-    public void handle(Exchange exchange) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        // TODO Remove that when Expression will no more use an Exchange
+        Exchange exchange = context.asContext(Exchange.class);
         Response response = new Response();
         response.setStatus(this.status);
-        response.setReason(this.reason);
-        if (response.getReason() == null) {
-            // not explicit, derive from status
-            response.setReason(HttpUtil.getReason(response.getStatus()));
-        }
-        if (response.getReason() == null) {
-            // couldn't derive from status; say something
-            response.setReason("Uncertain");
-        }
         if (this.version != null) { // default in Message class
             response.setVersion(this.version);
         }
@@ -130,9 +120,7 @@ public class StaticResponseHandler extends GenericHandler {
             // use content-type charset (or default)
             response.setEntity(entity.eval(exchange));
         }
-        // finally replace response in the exchange
-        closeSilently(exchange.response);
-        exchange.response = response;
+        return Promises.newResultPromise(response);
     }
 
     /**
@@ -141,12 +129,13 @@ public class StaticResponseHandler extends GenericHandler {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final int status = config.get("status").required().asInteger();
+            final int code = config.get("status").required().asInteger();
             final String reason = config.get("reason").asString();
+            Status status = Status.valueOf(code, reason);
             final String version = config.get("version").asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
             final Expression<String> entity = asExpression(config.get("entity"), String.class);
-            final StaticResponseHandler handler = new StaticResponseHandler(status, reason, version, entity);
+            final StaticResponseHandler handler = new StaticResponseHandler(status, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {

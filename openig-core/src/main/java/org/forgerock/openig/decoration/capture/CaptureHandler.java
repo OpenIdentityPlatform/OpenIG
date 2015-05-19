@@ -11,19 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
 
-import static org.forgerock.openig.decoration.capture.CapturePoint.*;
+import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
 
-import java.io.IOException;
 import java.util.Set;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Capture both requests and responses, delegating to a given encapsulated {@link Handler} instance.
@@ -51,17 +56,19 @@ class CaptureHandler implements Handler {
     }
 
     @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-
-        try {
-            if (points.contains(REQUEST)) {
-                capture.capture(exchange, REQUEST);
-            }
-            delegate.handle(exchange);
-        } finally {
-            if (points.contains(RESPONSE)) {
-                capture.capture(exchange, RESPONSE);
-            }
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        final Exchange exchange = context.asContext(Exchange.class);
+        if (points.contains(REQUEST)) {
+            capture.capture(exchange, request, REQUEST);
         }
+        return delegate.handle(context, request)
+                .thenOnResult(new ResultHandler<Response>() {
+                    @Override
+                    public void handleResult(final Response response) {
+                        if (points.contains(RESPONSE)) {
+                            capture.capture(exchange, response, RESPONSE);
+                        }
+                    }
+                });
     }
 }

@@ -11,21 +11,24 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -56,28 +59,14 @@ public class TimerHandlerTest {
         TimerHandler time = new TimerHandler(delegate, logger);
 
         Exchange exchange = new Exchange();
-        time.handle(exchange);
+        when(delegate.handle(exchange, null))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+        time.handle(exchange, null).get();
 
         InOrder inOrder = inOrder(timer, delegate);
         inOrder.verify(timer).start();
-        inOrder.verify(delegate).handle(exchange);
+        inOrder.verify(delegate).handle(exchange, null);
         inOrder.verify(timer).stop();
     }
 
-    @Test
-    public void shouldLogStartedAndElapsedMessagesWhenDelegateHandlerIsFailing() throws Exception {
-        TimerHandler time = new TimerHandler(delegate, logger);
-        Exchange exchange = new Exchange();
-
-        doThrow(HandlerException.class).when(delegate).handle(exchange);
-
-        try {
-            time.handle(exchange);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (Exception e) {
-            InOrder inOrder = inOrder(timer);
-            inOrder.verify(timer).start();
-            inOrder.verify(timer).stop();
-        }
-    }
 }

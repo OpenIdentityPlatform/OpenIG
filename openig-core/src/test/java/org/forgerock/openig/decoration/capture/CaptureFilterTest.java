@@ -11,28 +11,35 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
 
-import static java.util.Arrays.*;
-import static org.forgerock.openig.decoration.capture.CapturePoint.*;
-import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_RESPONSE;
+import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
+import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.heap.Name;
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.log.Logger;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -42,20 +49,26 @@ public class CaptureFilterTest {
 
     private Filter delegate = new Filter() {
         @Override
-        public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
-            next.handle(exchange);
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
+            return next.handle(context, request);
         }
     };
 
     @Mock
     private Handler terminal;
 
-    @Spy
-    private MessageCapture capture = new MessageCapture(new Logger(null, Name.of("Test")), false);
+    @Mock
+    private MessageCapture capture;
+    private Response response;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        response = new Response();
+        when(terminal.handle(any(org.forgerock.http.Context.class), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
     }
 
     @DataProvider
@@ -89,11 +102,20 @@ public class CaptureFilterTest {
         CaptureFilter filter = new CaptureFilter(delegate, capture, new TreeSet<CapturePoint>(points));
 
         Exchange exchange = new Exchange();
-        filter.filter(exchange, terminal);
+        filter.filter(exchange, null, terminal).get();
 
-        verify(terminal).handle(exchange);
         for (CapturePoint capturePoint : points) {
-            verify(capture).capture(exchange, capturePoint);
+            switch (capturePoint) {
+            case REQUEST:
+            case FILTERED_REQUEST:
+                verify(capture).capture(exchange, (Request) null, capturePoint);
+                break;
+            case RESPONSE:
+            case FILTERED_RESPONSE:
+                verify(capture).capture(exchange, response, capturePoint);
+                break;
+            }
+
         }
         verifyNoMoreInteractions(capture);
     }

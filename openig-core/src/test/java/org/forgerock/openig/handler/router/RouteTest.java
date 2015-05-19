@@ -16,18 +16,24 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.HttpContext;
+import org.forgerock.http.RootContext;
+import org.forgerock.http.Session;
+import org.forgerock.http.SessionManager;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Session;
-import org.forgerock.openig.http.SessionFactory;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -48,12 +54,16 @@ public class RouteTest {
     private Session scoped;
 
     @Mock
-    private SessionFactory sessionFactory;
+    private SessionManager sessionManager;
+
+    private PromiseImpl<Response, NeverThrowsException> promise = PromiseImpl.create();
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(sessionFactory.build(any(Exchange.class))).thenReturn(scoped);
+        when(sessionManager.load(any(Request.class))).thenReturn(scoped);
+        when(handler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(promise);
     }
 
     @Test
@@ -71,65 +81,37 @@ public class RouteTest {
     @Test
     public void testRouteIsDelegatingTheExchange() throws Exception {
         Route route = createRoute(null, null);
-
-        Exchange exchange = new Exchange();
-        route.handle(exchange);
-
-        verify(handler).handle(exchange);
+        assertThat(route.handle(new Exchange(), new Request())).isSameAs(promise);
     }
 
     @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
-        Route route = createRoute(sessionFactory, null);
+        Route route = createRoute(sessionManager, null);
         Exchange exchange = new Exchange();
-        exchange.session = original;
+        exchange.parent = new HttpContext(new RootContext(), original);
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(final InvocationOnMock invocation) throws Throwable {
-                Exchange item = (Exchange) invocation.getArguments()[0];
-                assertThat(item.session).isSameAs(scoped);
-                return null;
-            }
-        }).when(handler).handle(exchange);
+        when(handler.handle(exchange, new Request()))
+                .then(new Answer<Void>() {
+                    @Override
+                    public Void answer(final InvocationOnMock invocation) throws Throwable {
+                        Context context = (Context) invocation.getArguments()[0];
+                        assertThat(context.asContext(HttpContext.class).getSession()).isSameAs(scoped);
+                        return null;
+                    }
+                });
 
-        route.handle(exchange);
+        route.handle(exchange, new Request());
+        promise.handleResult(new Response());
 
-        verify(handler).handle(exchange);
-        assertThat(exchange.session).isSameAs(original);
+        assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
     }
 
-    @Test
-    public void shouldReplaceBackTheOriginalSessionForUpStreamHandlersWhenExceptionsAreThrown() throws Exception {
-
-        Route route = createRoute(sessionFactory, null);
-        Exchange exchange = new Exchange();
-        exchange.session = original;
-
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(final InvocationOnMock invocation) throws Throwable {
-                Exchange item = (Exchange) invocation.getArguments()[0];
-                assertThat(item.session).isSameAs(scoped);
-                throw new HandlerException();
-            }
-        }).when(handler).handle(exchange);
-
-        try {
-            route.handle(exchange);
-            failBecauseExceptionWasNotThrown(HandlerException.class);
-        } catch (Exception e) {
-            assertThat(exchange.session).isSameAs(original);
-        }
-
-    }
-
-    private Route createRoute(final SessionFactory sessionFactory,
+    private Route createRoute(final SessionManager sessionManager,
                               final Expression<Boolean> condition) {
         return new Route(new HeapImpl(Name.of("anonymous")),
                          handler,
-                         sessionFactory,
+                         sessionManager,
                          "router",
                          condition);
     }

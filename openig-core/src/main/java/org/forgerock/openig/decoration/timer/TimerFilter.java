@@ -11,19 +11,21 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
-import java.io.IOException;
-
-import org.forgerock.openig.filter.Filter;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Log a {@literal started} message when an {@link Exchange} is flowing into this Filter and both a {@literal
@@ -40,25 +42,29 @@ class TimerFilter implements Filter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
         final LogTimer timer = logger.getTimer().start();
-        try {
-            // Wraps the next handler to mark when the flow exits/re-enter the delegated filter
-            // Used to pause/resume the timer
-            delegate.filter(exchange, new Handler() {
-                @Override
-                public void handle(final Exchange exchange) throws HandlerException, IOException {
-                    try {
-                        timer.pause();
-                        next.handle(exchange);
-                    } finally {
-                        timer.resume();
-                    }
-                }
-            });
-        } finally {
-            timer.stop();
-        }
+        // Wraps the next handler to mark when the flow exits/re-enter the delegated filter
+        // Used to pause/resume the timer
+        return delegate.filter(context, request, new Handler() {
+            @Override
+            public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+                timer.pause();
+                return next.handle(context, request)
+                        .thenAlways(new Runnable() {
+                            @Override
+                            public void run() {
+                                timer.resume();
+                            }
+                        });
+            }
+        }).thenAlways(new Runnable() {
+            @Override
+            public void run() {
+                timer.stop();
+            }
+        });
     }
-
 }

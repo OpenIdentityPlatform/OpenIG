@@ -15,33 +15,37 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.*;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.*;
-import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.closeSilently;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
+import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
+import org.forgerock.openig.http.Responses;
+import org.forgerock.util.Function;
 import org.forgerock.util.encode.Base64;
+import org.forgerock.util.promise.NeverThrowsException;
 
 /**
  * A configuration for an OAuth 2.0 authorization server or OpenID Connect Provider.
@@ -200,25 +204,39 @@ public class OAuth2Provider {
      *             from the given URI.
      */
     public OAuth2Provider setWellKnownConfiguration(final URI uri) throws HeapException {
-        final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("GET");
-        exchange.request.setUri(uri);
-        try {
-            providerHandler.handle(exchange);
-            if (exchange.response.getStatus() != 200) {
-                throw new HeapException("Unable to read well-known OpenID Configuration from '"
-                        + exchange.request.getUri() + "'");
+        Request request = new Request();
+        request.setMethod("GET");
+        request.setUri(uri);
+
+        // Extracted for more readability
+        Function<Response, Response, NeverThrowsException> loadConfiguration =
+                new Function<Response, Response, NeverThrowsException>() {
+            @Override
+            public Response apply(final Response response) throws NeverThrowsException {
+                if (!Status.OK.equals(response.getStatus())) {
+                    return Responses.newInternalServerError(format("Unable to read well-known OpenID " +
+                                                                           "Configuration from '%s'",
+                                                                   uri));
+                }
+                try {
+                    final JsonValue config = getJsonContent(response);
+                    setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint").required(),
+                                                      String.class));
+                    setTokenEndpoint(asExpression(config.get("token_endpoint").required(),
+                                                  String.class));
+                    setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"), String.class));
+                } catch (OAuth2ErrorException e) {
+                    return Responses.newInternalServerError("Cannot read JSON", e);
+                }
+                return response;
             }
-            final JsonValue config = getJsonContent(exchange.response);
-            setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint").required(), String.class));
-            setTokenEndpoint(asExpression(config.get("token_endpoint").required(), String.class));
-            setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"), String.class));
-        } catch (final Exception e) {
-            throw new HeapException("Unable to read well-known OpenID Configuration from '" + exchange.request.getUri()
-                    + "'", e);
-        } finally {
-            closeSilently(exchange.response);
+        };
+
+        Response response = providerHandler.handle(new Exchange(), request)
+                                           .then(loadConfiguration)
+                                           .getOrThrowUninterruptibly();
+        if (!Status.OK.equals(response.getStatus())) {
+            throw new HeapException("Unable to read well-known OpenID Configuration from '" + uri + "'");
         }
         return this;
     }
@@ -236,7 +254,7 @@ public class OAuth2Provider {
     }
 
     private Request createRequestForAccessToken(final Exchange exchange, final String code,
-            final String callbackUri) throws HandlerException {
+                                                final String callbackUri) throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(buildUri(exchange, tokenEndpoint));
@@ -249,8 +267,8 @@ public class OAuth2Provider {
         return request;
     }
 
-    private Request createRequestForTokenRefresh(final Exchange exchange, final OAuth2Session session)
-            throws HandlerException {
+    Request createRequestForTokenRefresh(final Exchange exchange, final OAuth2Session session)
+            throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(buildUri(exchange, tokenEndpoint));
@@ -263,7 +281,7 @@ public class OAuth2Provider {
     }
 
     private Request createRequestForUserInfo(final Exchange exchange, final String accessToken)
-            throws HandlerException {
+            throws ResponseException {
         final Request request = new Request();
         request.setMethod("GET");
         request.setUri(buildUri(exchange, userInfoEndpoint));
@@ -272,34 +290,25 @@ public class OAuth2Provider {
     }
 
     private Response httpRequestToAuthorizationServer(final Exchange exchange, final Request request)
-            throws OAuth2ErrorException, HandlerException {
-        final Request savedRequest = exchange.request;
-        final Response savedResponse = exchange.response;
-        exchange.request = request;
-        // The providerHandler will create a new Response by itself
-        // This prevents some previously created Response to be emptied by HttpClient
-        exchange.response = null;
+            throws OAuth2ErrorException, ResponseException {
         try {
-            providerHandler.handle(exchange);
-            return exchange.response;
-        } catch (final IOException e) {
+            return providerHandler.handle(exchange, request).getOrThrow();
+        } catch (final InterruptedException e) {
+            // FIXME Changed IOException to InterruptedException, not very sure about that
             throw new OAuth2ErrorException(E_SERVER_ERROR,
-                    "Authorization failed because an error occurred while trying "
-                            + "to contact the authorization server");
-        } finally {
-            exchange.request = savedRequest;
-            exchange.response = savedResponse;
+                                           "Authorization failed because an error occurred while trying "
+                                                   + "to contact the authorization server");
         }
     }
 
-    URI getAuthorizeEndpoint(final Exchange exchange) throws HandlerException {
+    URI getAuthorizeEndpoint(final Exchange exchange) throws ResponseException {
         return buildUri(exchange, authorizeEndpoint);
     }
 
-    String getClientId(final Exchange exchange) throws HandlerException {
+    String getClientId(final Exchange exchange) throws ResponseException {
         final String result = clientId.eval(exchange);
         if (result == null) {
-            throw new HandlerException(
+            throw new ResponseException(
                     format("The clientId expression '%s' could not be resolved", clientId.toString()));
         }
         return result;
@@ -309,7 +318,7 @@ public class OAuth2Provider {
         return name;
     }
 
-    List<String> getScopes(final Exchange exchange) throws HandlerException {
+    List<String> getScopes(final Exchange exchange) throws ResponseException {
         return OAuth2Utils.getScopes(exchange, scopes);
     }
 
@@ -329,7 +338,7 @@ public class OAuth2Provider {
      *            The callback URI.
      * @return The json content of the response if status return code of the
      *         response is 200 OK. Otherwise, throw an OAuth2ErrorException.
-     * @throws HandlerException
+     * @throws ResponseException
      *             If an exception occurs that prevents handling of the request
      *             or if the creation of the request for an access token fails.
      * @throws OAuth2ErrorException
@@ -339,7 +348,7 @@ public class OAuth2Provider {
      */
     JsonValue getAccessToken(final Exchange exchange,
                              final String code,
-                             final String callbackUri) throws HandlerException, OAuth2ErrorException {
+                             final String callbackUri) throws ResponseException, OAuth2ErrorException {
         final Request request = createRequestForAccessToken(exchange, code, callbackUri);
         final Response response = httpRequestToAuthorizationServer(exchange, request);
         checkResponseStatus(response, false);
@@ -355,7 +364,7 @@ public class OAuth2Provider {
      *            The current session.
      * @return The json content of the response if status return code of the
      *         response is 200 OK. Otherwise, throw an OAuth2ErrorException.
-     * @throws HandlerException
+     * @throws ResponseException
      *             If an exception occurs that prevents handling of the request
      *             or if the creation of the request for a refresh token fails.
      * @throws OAuth2ErrorException
@@ -364,7 +373,7 @@ public class OAuth2Provider {
      *             OK.
      */
     JsonValue getRefreshToken(final Exchange exchange,
-                              final OAuth2Session session) throws HandlerException, OAuth2ErrorException {
+                              final OAuth2Session session) throws ResponseException, OAuth2ErrorException {
 
         final Request request = createRequestForTokenRefresh(exchange, session);
         final Response response = httpRequestToAuthorizationServer(exchange, request);
@@ -374,14 +383,15 @@ public class OAuth2Provider {
 
     private void checkResponseStatus(final Response response,
                                      final boolean isRefreshToken) throws OAuth2ErrorException {
-        if (response.getStatus() != 200) {
-            if (response.getStatus() == 400 || response.getStatus() == 401) {
+        final Status status = response.getStatus();
+        if (!Status.OK.equals(status)) {
+            if (Status.BAD_REQUEST.equals(status) || Status.UNAUTHORIZED.equals(status)) {
                 final JsonValue errorJson = getJsonContent(response);
                 throw new OAuth2ErrorException(OAuth2Error.valueOfJsonContent(errorJson.asMap()));
             } else {
-                final String errorMessage =
-                        format("Unable to %s access token [status=%d]", isRefreshToken ? "refresh" : "exchange",
-                                response.getStatus());
+                final String errorMessage = format("Unable to %s access token [status=%d]",
+                                                   isRefreshToken ? "refresh" : "exchange",
+                                                   status.getCode());
                 throw new OAuth2ErrorException(E_SERVER_ERROR, errorMessage);
             }
         }
@@ -398,7 +408,7 @@ public class OAuth2Provider {
      * @param session
      *            The current session to use.
      * @return A JsonValue containing the requested user info.
-     * @throws HandlerException
+     * @throws ResponseException
      *             If an exception occurs that prevents handling of the request
      *             or if the creation of the request for getting user info
      *             fails.
@@ -408,15 +418,15 @@ public class OAuth2Provider {
      *             OK. May signify that the access token has expired.
      */
     JsonValue getUserInfo(final Exchange exchange,
-                          final OAuth2Session session) throws HandlerException, OAuth2ErrorException  {
+                          final OAuth2Session session) throws ResponseException, OAuth2ErrorException  {
         final Request request = createRequestForUserInfo(exchange, session.getAccessToken());
         final Response response = httpRequestToAuthorizationServer(exchange, request);
-        if (response.getStatus() != 200) {
+        if (!Status.OK.equals(response.getStatus())) {
             /*
              * The access token may have expired. Trigger an exception,
              * catch it and react later.
              */
-            final OAuth2BearerWWWAuthenticateHeader header = new OAuth2BearerWWWAuthenticateHeader(response);
+            final OAuth2BearerWWWAuthenticateHeader header = OAuth2BearerWWWAuthenticateHeader.valueOf(response);
             final OAuth2Error error = header.getOAuth2Error();
             final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
             throw new OAuth2ErrorException(bestEffort);
@@ -425,7 +435,7 @@ public class OAuth2Provider {
     }
 
     private void addClientIdAndSecret(final Exchange exchange, final Request request,
-            final Form form) throws HandlerException {
+            final Form form) throws ResponseException {
         final String user = getClientId(exchange);
         final String pass = getClientSecret(exchange);
         if (!tokenEndpointUseBasicAuth) {
@@ -438,10 +448,10 @@ public class OAuth2Provider {
         }
     }
 
-    private String getClientSecret(final Exchange exchange) throws HandlerException {
+    private String getClientSecret(final Exchange exchange) throws ResponseException {
         final String result = clientSecret.eval(exchange);
         if (result == null) {
-            throw new HandlerException(
+            throw new ResponseException(
                     format("The clientSecret expression '%s' could not be resolved", clientSecret.toString()));
         }
         return result;

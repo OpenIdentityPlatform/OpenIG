@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
@@ -25,7 +25,6 @@ import java.util.Set;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 
 /**
@@ -51,7 +50,7 @@ abstract class AuditBaseObject {
         this.failedResponseTags = tags(additionalTags, response.name(), exception.name());
     }
 
-    protected void fireAuditEvent(final Exchange exchange, final Set<String> tags) throws HandlerException {
+    protected void fireAuditEvent(final Exchange exchange, final Set<String> tags) {
         AuditEvent event = new AuditEvent(source, System.currentTimeMillis(), exchange, tags);
         auditSystem.onAuditEvent(event);
     }

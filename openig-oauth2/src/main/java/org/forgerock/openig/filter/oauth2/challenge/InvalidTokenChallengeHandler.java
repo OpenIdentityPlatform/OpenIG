@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.challenge;
 
-import org.forgerock.openig.http.Response;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 
 /**
  * Builds an error {@link Response} when the token extracted from the request is invalid (expired, revoked, ...).
@@ -76,8 +77,7 @@ public class InvalidTokenChallengeHandler extends AuthenticateChallengeHandler {
     @Override
     protected Response createResponse() {
         Response response = new Response();
-        response.setStatus(401);
-        response.setReason("Unauthorized");
+        response.setStatus(Status.UNAUTHORIZED);
         return response;
     }
 }

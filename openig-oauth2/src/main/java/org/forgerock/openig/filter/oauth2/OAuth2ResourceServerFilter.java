@@ -16,11 +16,13 @@
 
 package org.forgerock.openig.filter.oauth2;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.util.Duration.*;
-import static org.forgerock.openig.util.JsonValues.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.ofExpression;
+import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.duration;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +30,15 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
 import org.forgerock.openig.filter.oauth2.challenge.InsufficientScopeChallengeHandler;
@@ -38,14 +46,13 @@ import org.forgerock.openig.filter.oauth2.challenge.InvalidRequestChallengeHandl
 import org.forgerock.openig.filter.oauth2.challenge.InvalidTokenChallengeHandler;
 import org.forgerock.openig.filter.oauth2.challenge.NoAuthenticationChallengeHandler;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.util.Duration;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -103,7 +110,7 @@ import org.forgerock.util.time.TimeService;
  *
  * @see Duration
  */
-public class OAuth2ResourceServerFilter extends GenericFilter {
+public class OAuth2ResourceServerFilter extends GenericHeapObject implements Filter {
 
     /**
      * The key under which downstream handlers will find the access token in the {@link Exchange}.
@@ -124,7 +131,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private final Handler noAuthentication;
     private final Handler invalidToken;
     private final Handler invalidRequest;
-    private final Expression target;
+    private final Expression<?> target;
 
     /**
      * Creates a new {@code OAuth2Filter}.
@@ -142,7 +149,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
                                       final TimeService time,
-                                      final Expression target) {
+                                      final Expression<?> target) {
         this(resolver, extractor, time, Collections.<Expression<String>> emptySet(), DEFAULT_REALM_NAME, target);
     }
 
@@ -168,7 +175,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
                                       final TimeService time,
                                       final Set<Expression<String>> scopes,
                                       final String realm,
-                                      final Expression target) {
+                                      final Expression<?> target) {
         this.resolver = resolver;
         this.extractor = extractor;
         this.time = time;
@@ -181,20 +188,21 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     }
 
     @Override
-    public void filter(final Exchange exchange, final Handler next) throws HandlerException, IOException {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        Exchange exchange = context.asContext(Exchange.class);
         String token = null;
         try {
-            token = getAccessToken(exchange.request);
+            token = getAccessToken(request);
             if (token == null) {
                 logger.debug("Missing OAuth 2.0 Bearer Token in the Authorization header");
-                noAuthentication.handle(exchange);
-                return;
+                return noAuthentication.handle(context, request);
             }
         } catch (OAuth2TokenException e) {
             logger.debug("Multiple 'Authorization' headers in the request");
             logger.debug(e);
-            invalidRequest.handle(exchange);
-            return;
+            return invalidRequest.handle(context, request);
         }
 
         // Resolve the token
@@ -204,46 +212,46 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
         } catch (OAuth2TokenException e) {
             logger.debug(format("Access Token '%s' cannot be resolved", token));
             logger.debug(e);
-            invalidToken.handle(exchange);
-            return;
+            return invalidToken.handle(context, request);
         }
 
         // Validate the token (expiration + scopes)
         if (isExpired(accessToken)) {
             logger.debug(format("Access Token '%s' is expired", token));
-            invalidToken.handle(exchange);
-            return;
+            return invalidToken.handle(context, request);
         }
 
-        final Set<String> setOfScopes = getScopes(exchange);
-        if (areRequiredScopesMissing(accessToken, setOfScopes)) {
-            logger.debug(format("Access Token '%s' is missing required scopes", token));
-            new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(exchange);
-            return;
+        try {
+            final Set<String> setOfScopes = getScopes(exchange);
+            if (areRequiredScopesMissing(accessToken, setOfScopes)) {
+                logger.debug(format("Access Token '%s' is missing required scopes", token));
+                return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
+            }
+        } catch (ResponseException e) {
+            return newResultPromise(e.getResponse());
         }
 
         // Store the AccessToken in the exchange for downstream handlers
         target.set(exchange, accessToken);
 
         // Call the rest of the chain
-        next.handle(exchange);
+        return next.handle(context, request);
     }
 
     private boolean isExpired(final AccessToken accessToken) {
         return time.now() > accessToken.getExpiresAt();
     }
 
-    private boolean areRequiredScopesMissing(final AccessToken accessToken, final Set<String> scopes)
-            throws HandlerException {
+    private boolean areRequiredScopesMissing(final AccessToken accessToken, final Set<String> scopes) {
         return !accessToken.getScopes().containsAll(scopes);
     }
 
-    private Set<String> getScopes(final Exchange exchange) throws HandlerException {
+    private Set<String> getScopes(final Exchange exchange) throws ResponseException {
         final Set<String> scopeValues = new HashSet<String>(this.scopes.size());
         for (final Expression<String> scope : this.scopes) {
             final String result = scope.eval(exchange);
             if (result == null) {
-                throw new HandlerException(format(
+                throw new ResponseException(format(
                         "The OAuth 2.0 resource server filter scope expression '%s' could not be resolved",
                         scope.toString()));
             }
@@ -264,7 +272,7 @@ public class OAuth2ResourceServerFilter extends GenericFilter {
     private String getAccessToken(final Request request) throws OAuth2TokenException {
         Headers headers = request.getHeaders();
         List<String> authorizations = headers.get("Authorization");
-        if ((authorizations != null) && (authorizations.size() >= 2)) {
+        if (authorizations != null && authorizations.size() >= 2) {
             throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
                                                    + " the OAuth2 AccessToken");
         }

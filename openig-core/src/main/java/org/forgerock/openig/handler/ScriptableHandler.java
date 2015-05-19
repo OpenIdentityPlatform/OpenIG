@@ -11,16 +11,20 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.handler;
 
-import java.io.IOException;
-
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 
 /**
  * A scriptable handler. This handler acts as a simple wrapper around the
@@ -40,6 +44,12 @@ import org.forgerock.openig.script.Script;
  */
 public class ScriptableHandler extends AbstractScriptableHeapObject implements Handler {
 
+    @Override
+    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        Exchange exchange = context.asContext(Exchange.class);
+        return runScript(exchange, request, null);
+    }
+
     /**
      * Creates and initializes a scriptable handler in a heap environment.
      */
@@ -52,10 +62,5 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
 
     ScriptableHandler(final Script compiledScript) {
         super(compiledScript);
-    }
-
-    @Override
-    public void handle(final Exchange exchange) throws HandlerException, IOException {
-        runScript(exchange, null);
     }
 }

@@ -23,12 +23,9 @@ import static org.forgerock.util.Utils.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +37,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.el.FunctionMapper;
 
+import org.forgerock.http.URIUtil;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
 
@@ -99,7 +97,7 @@ public class Functions extends FunctionMapper {
         if (object == null || value == null) {
             return false;
         } else if (object instanceof CharSequence && value instanceof CharSequence) {
-            return (object.toString().contains(value.toString()));
+            return object.toString().contains(value.toString());
         } else if (object instanceof Collection) {
             return ((Collection<?>) object).contains(value);
         } else if (object instanceof Object[]) {
@@ -132,7 +130,7 @@ public class Functions extends FunctionMapper {
      * not found.
      */
     public static int indexOf(String value, String substring) {
-        return (value != null && substring != null ? value.indexOf(substring) : null);
+        return value != null && substring != null ? value.indexOf(substring) : null;
     }
 
     /**
@@ -143,7 +141,7 @@ public class Functions extends FunctionMapper {
      * @return the string containing the joined strings.
      */
     public static String join(String[] values, String separator) {
-        return (values != null ? StringUtil.join(separator, (Object[]) values) : null);
+        return values != null ? StringUtil.join(separator, (Object[]) values) : null;
     }
 
     /**
@@ -166,10 +164,8 @@ public class Functions extends FunctionMapper {
                 return null;
             }
             for (Object key : ((Map<?, ?>) map).keySet()) {
-                if (key instanceof String) {
-                    if (p.matcher((String) key).matches()) {
-                        return (String) key;
-                    }
+                if (key instanceof String && p.matcher((String) key).matches()) {
+                    return (String) key;
                 }
             }
         }
@@ -267,7 +263,7 @@ public class Functions extends FunctionMapper {
      * @return the resulting array of split substrings.
      */
     public static String[] split(String value, String regex) {
-        return (value != null ? value.split(regex) : null);
+        return value != null ? value.split(regex) : null;
     }
 
     /**
@@ -277,7 +273,7 @@ public class Functions extends FunctionMapper {
      * @return the string with characters converted to lower case.
      */
     public static String toLowerCase(String value) {
-        return (value != null ? value.toLowerCase() : null);
+        return value != null ? value.toLowerCase() : null;
     }
 
     /**
@@ -288,7 +284,7 @@ public class Functions extends FunctionMapper {
      * @return the string value of the object.
      */
     public static String toString(Object value) {
-        return (value != null ? value.toString() : null);
+        return value != null ? value.toString() : null;
     }
 
     /**
@@ -298,7 +294,7 @@ public class Functions extends FunctionMapper {
      * @return the string with characters converted to upper case.
      */
     public static String toUpperCase(String value) {
-        return (value != null ? value.toUpperCase() : null);
+        return value != null ? value.toUpperCase() : null;
     }
 
     /**
@@ -308,7 +304,7 @@ public class Functions extends FunctionMapper {
      * @return the string with leading and trailing white space omitted.
      */
     public static String trim(String value) {
-        return (value != null ? value.trim() : null);
+        return value != null ? value.trim() : null;
     }
 
     /**
@@ -320,11 +316,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlEncode(String value) {
-        try {
-            return value != null ? URLEncoder.encode(value, "UTF-8") : null;
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
+        return URIUtil.urlEncode(value);
     }
 
     /**
@@ -336,11 +328,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlDecode(String value) {
-        try {
-            return value != null ? URLDecoder.decode(value, "UTF-8") : null;
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
+        return URIUtil.urlDecode(value);
     }
 
     /**
@@ -352,10 +340,10 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String encodeBase64(final String value) {
-        if (value == null) {
-            return null;
+        if (value != null) {
+            return Base64.encode(value.getBytes());
         }
-        return Base64.encode(value.getBytes());
+        return null;
     }
 
     /**
@@ -367,10 +355,10 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null} or if the input was not a Base64 valid input.
      */
     public static String decodeBase64(final String value) {
-        if (value == null) {
-            return null;
+        if (value != null) {
+            return new String(Base64.decode(value));
         }
-        return new String(Base64.decode(value));
+        return null;
     }
 
     /**
