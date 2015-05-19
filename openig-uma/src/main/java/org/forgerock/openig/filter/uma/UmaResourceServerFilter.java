@@ -17,10 +17,12 @@
 package org.forgerock.openig.filter.uma;
 
 import static java.lang.String.format;
+import static org.forgerock.json.fluent.JsonValue.array;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.json;
 import static org.forgerock.json.fluent.JsonValue.object;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +34,7 @@ import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.oauth2.BearerTokenExtractor;
@@ -41,6 +44,7 @@ import org.forgerock.openig.filter.oauth2.challenge.InvalidRequestChallengeHandl
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -192,12 +196,22 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             //For demo
             String resourceSetId;
             try {
-                resourceSetId = new ResourceSetRegistrar(httpHandler,
-                                                         config.get("resourceServerEndpoint").required().asURI())
-                        .getResourceSetId();
+                if (config.get("register_demo_resources").defaultTo(Boolean.TRUE).asBoolean()) {
+                    resourceSetId = doResourceSetRegistration(httpHandler,
+                                                              config.get("resourceSetRegistrationEndpoint")
+                                                                    .required()
+                                                                    .asURI(),
+                                                              patGetter);
+                } else {
+                    resourceSetId = new ResourceSetRegistrar(httpHandler,
+                                                             config.get("resourceServerEndpoint").required().asURI())
+                            .getResourceSetId();
+
+                }
             } catch (OAuth2TokenException e) {
                 throw new HeapException("Failed to get/register resource set", e);
             }
+
             Set<String> requiredScopes = config.get("requiredScopes").required().asSet(String.class);
 
             UmaResourceServerFilter filter = new UmaResourceServerFilter(new BearerTokenExtractor(),
@@ -219,6 +233,40 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             }
 
             return filter;
+        }
+
+        private String doResourceSetRegistration(final Handler handler,
+                                                 final URI endpoint,
+                                                 final DemoPatGetter patGetter) throws OAuth2TokenException {
+            JsonValue createResourceSetRequest =
+                    json(object(field("name", "Demo Resources Set"),
+                                field("icon_uri", "http://localhost:9001/images/box-15.png"),
+                                field("scopes", array("http://rs.uma.com:9001/data/scopes/view",
+                                                      "http://rs.uma.com:9001/data/scopes/edit",
+                                                      "http://rs.uma.com:9001/data/scopes/import")),
+                                field("type", "http://rs.uma.com:9001/rsets/W-2")));
+
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(endpoint);
+            request.setEntity(createResourceSetRequest.asMap());
+            request.getHeaders().putSingle("Authorization", format("Bearer %s", patGetter.getPAT()));
+
+            Response response = handler.handle(new Exchange(), request).getOrThrowUninterruptibly();
+
+            JsonValue content = UmaUtils.asJson(response.getEntity());
+            if (Status.OK == response.getStatus()) {
+                return content.get("resourceSetId").asString();
+            }
+
+            if (content.isDefined("error")) {
+                String error = content.get("error").asString();
+                String description = content.get("error_description").asString();
+                throw new OAuth2TokenException(format("Authorization Server returned an error "
+                                                              + "(error: %s, description: %s)", error, description));
+            }
+
+            throw new OAuth2TokenException("Unexpected response from the authorization server");
         }
     }
 }
