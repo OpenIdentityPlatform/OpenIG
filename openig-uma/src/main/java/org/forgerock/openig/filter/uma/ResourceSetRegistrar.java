@@ -17,23 +17,20 @@
 package org.forgerock.openig.filter.uma;
 
 import static java.lang.String.format;
-import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.Set;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 
 public class ResourceSetRegistrar {
 
@@ -47,19 +44,18 @@ public class ResourceSetRegistrar {
 
     public String getResourceSetId() throws OAuth2TokenException {
         try {
-            Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("GET");
-            exchange.request.setUri(new URI(resourceServerEndpoint));
+            Request request = new Request();
+            request.setMethod("GET");
+            request.setUri(new URI(resourceServerEndpoint));
 
-            client.handle(exchange);
+            Response response = client.handle(new Exchange(), request).getOrThrowUninterruptibly();
 
-            if (isResponseEmpty(exchange)) {
+            if (isResponseEmpty(response)) {
                 throw new OAuth2TokenException("Authorization Server did not return any Resource Sets");
             }
 
-            JsonValue content = asJson(exchange.response.getEntity());
-            if (isOk(exchange.response)) {
+            JsonValue content = asJson(response.getEntity());
+            if (isOk(response)) {
                 return content.get("resourceSetId").asString();
             }
 
@@ -76,21 +72,15 @@ public class ResourceSetRegistrar {
             throw new OAuth2TokenException(
                     format("The resource server rsid endpoint %s could not be accessed because it is a malformed URI",
                             resourceServerEndpoint), e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot get Resource Set Idfrom %s",
-                    resourceServerEndpoint), e);
-        } catch (HandlerException e) {
-            throw new OAuth2TokenException(format("Could not handle call to resource server rsid endpoint %s",
-                    resourceServerEndpoint), e);
         }
     }
 
-    private boolean isResponseEmpty(final Exchange exchange) {
-        return (exchange.response == null) || (exchange.response.getEntity() == null);
+    private boolean isResponseEmpty(final Response response) {
+        return (response == null) || (response.getEntity() == null);
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus() == 200;
+        return Status.OK.equals(response.getStatus());
     }
 
     /**

@@ -17,32 +17,36 @@
 package org.forgerock.openig.filter.uma;
 
 import static java.lang.String.format;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.forgerock.json.fluent.JsonValue.object;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.http.Context;
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.filter.GenericFilter;
 import org.forgerock.openig.filter.oauth2.BearerTokenExtractor;
 import org.forgerock.openig.filter.oauth2.EnforcerFilter;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.filter.oauth2.challenge.InvalidRequestChallengeHandler;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Headers;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
-public class UmaResourceServerFilter extends GenericFilter {
+public class UmaResourceServerFilter extends GenericHeapObject implements Filter {
 
     /**
      * Name of the realm when none is specified in the heaplet.
@@ -61,13 +65,9 @@ public class UmaResourceServerFilter extends GenericFilter {
     private final String resourceSetId;
     private final Set<String> requiredScopes;
 
-
-    //For Test
-    private final Timer timer;
-
     public UmaResourceServerFilter(BearerTokenExtractor extractor, PermissionTicketCreator permissionTicketCreator,
-            RptIntrospector introspector, String realm, String asUri, String resourceSetId,
-            Set<String> requiredScopes, Timer timer) {
+                                   RptIntrospector introspector, String realm, String asUri, String resourceSetId,
+                                   Set<String> requiredScopes) {
         this.extractor = extractor;
         this.permissionTicketCreator = permissionTicketCreator;
         this.introspector = introspector;
@@ -78,71 +78,6 @@ public class UmaResourceServerFilter extends GenericFilter {
         //For demo
         this.resourceSetId = resourceSetId;
         this.requiredScopes = requiredScopes;
-
-        this.timer = timer;
-    }
-
-    @Override
-    public void filter(Exchange exchange, Handler next) throws HandlerException, IOException {
-        try {
-            timer.clear();
-            timer.start("TOTAL");
-            String rpt;
-            try {
-                timer.start("getRPT");
-                rpt = getRPT(exchange.request);
-            } catch (OAuth2TokenException e) {
-                logger.debug("Multiple 'Authorization' headers in the request");
-                logger.debug(e);
-                invalidRequest.handle(exchange);
-                timer.stop("TOTAL");
-                return;
-            } finally {
-                timer.stop("getRPT");
-            }
-
-            // Check if request has RPT
-            if (rpt == null || rpt.isEmpty()) {
-                // If RPT not present - create permission request at AS
-                timer.start("createPermissionRequest-NoRPT");
-                createPermissionRequest(exchange);
-                timer.stop("createPermissionRequest-NoRPT");
-                timer.stop("TOTAL");
-                return;
-            }
-
-            // If RPT present - introspect token at AS
-            boolean introspect;
-            try {
-                timer.start("introspectingRPT");
-                introspect = introspector.introspect(rpt);
-            } catch (OAuth2TokenException e) {
-                logger.debug(format("RPT could not be introspected"));
-                logger.debug(e);
-                invalidRequest.handle(exchange); //TODO not really correct
-                timer.stop("TOTAL");
-                return;
-            } finally {
-                timer.stop("introspectingRPT");
-            }
-            if (!introspect) {
-                // If RPT invalid - create permission request at AS
-                timer.start("createPermissionRequest-InvalidRPT");
-                createPermissionRequest(exchange);
-                timer.stop("createPermissionRequest-InvalidRPT");
-                timer.stop("TOTAL");
-                return;
-            }
-            // If RPT valid - allow through
-            timer.start("next.handle");
-            next.handle(exchange);
-            timer.stop("next.handle");
-            timer.stop("TOTAL");
-        } finally {
-            Map<String, Long> times = timer.getTimes();
-
-            int a = 1;
-        }
     }
 
     private String getRPT(Request request) throws OAuth2TokenException {
@@ -156,23 +91,63 @@ public class UmaResourceServerFilter extends GenericFilter {
         return extractor.getAccessToken(header);
     }
 
-    private void createPermissionRequest(Exchange exchange) throws IOException, HandlerException {
+    private Promise<Response, NeverThrowsException> createPermissionRequest(Context context, Request request) {
         String permissionTicket;
         try {
             permissionTicket = permissionTicketCreator.create(resourceSetId, requiredScopes);
         } catch (OAuth2TokenException e) {
             logger.debug(format("Permission Ticket could not be created"));
             logger.debug(e);
-            invalidRequest.handle(exchange); //TODO not really correct
-            return;
+            return invalidRequest.handle(context, request); //TODO not really correct
         }
 
-        exchange.response = new Response();
-        exchange.response.setStatus(403);
-        exchange.response.getHeaders().put("WWW-Authenticate",
-                Arrays.asList("UMA realm=\"" + realm + "\"", "as_uri=\"" + asUri + "\""));
-        exchange.response.getHeaders().add("Content-Type", "application/json");
-        exchange.response.setEntity(json(object(field("ticket", permissionTicket))).asMap());
+        Response response = new Response();
+        response.setStatus(Status.FORBIDDEN);
+        response.getHeaders().put("WWW-Authenticate",
+                                  Arrays.asList("UMA realm=\"" + realm + "\"", "as_uri=\"" + asUri + "\""));
+        response.getHeaders().add("Content-Type", "application/json");
+        response.setEntity(json(object(field("ticket", permissionTicket))).asMap());
+        return Promises.newResultPromise(response);
+    }
+
+    @Override
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        String rpt;
+        try {
+            rpt = getRPT(request);
+        } catch (OAuth2TokenException e) {
+            logger.debug("Multiple 'Authorization' headers in the request");
+            logger.debug(e);
+            return invalidRequest.handle(context, request);
+        }
+
+        // Check if request has RPT
+        if (rpt == null || rpt.isEmpty()) {
+            // If RPT not present - create permission request at AS
+            logger.debug("createPermissionRequest-NoRPT");
+            return createPermissionRequest(context, request);
+        }
+
+        // If RPT present - introspect token at AS
+        boolean introspect;
+        try {
+            logger.debug("introspectingRPT");
+            introspect = introspector.introspect(rpt);
+        } catch (OAuth2TokenException e) {
+            logger.debug(format("RPT could not be introspected"));
+            logger.debug(e);
+            return invalidRequest.handle(context, request); //TODO not really correct
+        }
+        if (!introspect) {
+            // If RPT invalid - create permission request at AS
+            logger.debug("createPermissionRequest-InvalidRPT");
+            return createPermissionRequest(context, request);
+        }
+        // If RPT valid - allow through
+        logger.debug("next.handle");
+        return next.handle(context, request);
     }
 
     public static class Heaplet extends GenericHeaplet {
@@ -217,7 +192,7 @@ public class UmaResourceServerFilter extends GenericFilter {
             Set<String> requiredScopes = config.get("requiredScopes").required().asSet(String.class);
 
             UmaResourceServerFilter filter = new UmaResourceServerFilter(new BearerTokenExtractor(),
-                    permissionTicketCreator, introspector, realm, asUri, resourceSetId, requiredScopes, timer);
+                    permissionTicketCreator, introspector, realm, asUri, resourceSetId, requiredScopes);
 
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {

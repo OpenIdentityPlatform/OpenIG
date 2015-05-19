@@ -23,15 +23,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Form;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Form;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 
 public class OpenAMRptIntrospector implements RptIntrospector {
 
@@ -43,7 +43,7 @@ public class OpenAMRptIntrospector implements RptIntrospector {
     private final String clientSecret;
 
     public OpenAMRptIntrospector(Handler client, String tokenIntrospectionEndpoint,
-            String clientId, String clientSecret) {
+                                 String clientId, String clientSecret) {
         this.client = client;
         this.tokenIntrospectionEndpoint = tokenIntrospectionEndpoint;
         this.clientId = clientId;
@@ -54,27 +54,26 @@ public class OpenAMRptIntrospector implements RptIntrospector {
     public boolean introspect(String rpt) throws OAuth2TokenException {
 
         try {
-            Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("POST");
-            exchange.request.setUri(new URI(tokenIntrospectionEndpoint));
-            exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(new URI(tokenIntrospectionEndpoint));
+            request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
 
             // Append the access_token as a query parameter (automatically performs encoding)
             Form form = new Form();
             form.add("token", rpt);
             form.add("client_id", clientId);
             form.add("client_secret", clientSecret);
-            form.toRequestEntity(exchange.request);
+            form.toRequestEntity(request);
 
-            client.handle(exchange);
+            Response response = client.handle(new Exchange(), request).getOrThrowUninterruptibly();
 
-            if (isResponseEmpty(exchange)) {
+            if (isResponseEmpty(response)) {
                 throw new OAuth2TokenException("Authorization Server did not return any RPT");
             }
 
-            JsonValue content = asJson(exchange.response.getEntity());
-            if (isOk(exchange.response)) {
+            JsonValue content = asJson(response.getEntity());
+            if (isOk(response)) {
                 return content.get("active").asBoolean();
             }
 
@@ -91,21 +90,15 @@ public class OpenAMRptIntrospector implements RptIntrospector {
             throw new OAuth2TokenException(
                     format("The introspection endpoint %s could not be accessed because it is a malformed URI",
                             tokenIntrospectionEndpoint), e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot introspect RPT from %s",
-                    tokenIntrospectionEndpoint), e);
-        } catch (HandlerException e) {
-            throw new OAuth2TokenException(format("Could not handle call to introspection endpoint %s",
-                    tokenIntrospectionEndpoint), e);
         }
     }
 
-    private boolean isResponseEmpty(final Exchange exchange) {
-        return (exchange.response == null) || (exchange.response.getEntity() == null);
+    private boolean isResponseEmpty(final Response response) {
+        return (response == null) || (response.getEntity() == null);
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus() == 200;
+        return Status.OK.equals(response.getStatus());
     }
 
     /**

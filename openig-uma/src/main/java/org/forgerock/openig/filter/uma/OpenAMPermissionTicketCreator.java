@@ -27,14 +27,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 
 public class OpenAMPermissionTicketCreator implements PermissionTicketCreator {
 
@@ -58,28 +58,27 @@ public class OpenAMPermissionTicketCreator implements PermissionTicketCreator {
     @Override
     public String create(String resourceSetId, Collection<String> requiredScopes) throws OAuth2TokenException {
         try {
-            Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("POST");
-            exchange.request.setUri(new URI(permissionRequestEndpoint));
-            exchange.request.setEntity(json(object(
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(new URI(permissionRequestEndpoint));
+            request.setEntity(json(object(
                     field("resource_set_id", resourceSetId),
                     field("scopes", requiredScopes))).asMap());
 
             timer.start("PermissionTicketCreator: get PAT");
-            exchange.request.getHeaders().add("Authorization", "Bearer " + patGetter.getPAT());
+            request.getHeaders().add("Authorization", "Bearer " + patGetter.getPAT());
             timer.stop("PermissionTicketCreator: get PAT");
 
             timer.start("PermissionTicketCreator: get permission ticket");
-            client.handle(exchange);
+            Response response = client.handle(new Exchange(), request).getOrThrowUninterruptibly();
             timer.stop("PermissionTicketCreator: get permission ticket");
 
-            if (isResponseEmpty(exchange)) {
+            if (isResponseEmpty(response)) {
                 throw new OAuth2TokenException("Authorization Server did not return any AccessToken");
             }
 
-            JsonValue content = asJson(exchange.response.getEntity());
-            if (isCreated(exchange.response)) {
+            JsonValue content = asJson(response.getEntity());
+            if (isCreated(response)) {
                 return content.get("ticket").asString();
             }
 
@@ -96,21 +95,15 @@ public class OpenAMPermissionTicketCreator implements PermissionTicketCreator {
             throw new OAuth2TokenException(
                     format("The permission_request endpoint %s could not be accessed because it is a malformed URI",
                             permissionRequestEndpoint), e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot create Permission Ticket from %s",
-                    permissionRequestEndpoint), e);
-        } catch (HandlerException e) {
-            throw new OAuth2TokenException(format("Could not handle call to permission_request endpoint %s",
-                    permissionRequestEndpoint), e);
         }
     }
 
-    private boolean isResponseEmpty(final Exchange exchange) {
-        return (exchange.response == null) || (exchange.response.getEntity() == null);
+    private boolean isResponseEmpty(final Response response) {
+        return (response == null) || (response.getEntity() == null);
     }
 
     private boolean isCreated(final Response response) {
-        return response.getStatus() == 201;
+        return Status.CREATED.equals(response.getStatus());
     }
 
     /**

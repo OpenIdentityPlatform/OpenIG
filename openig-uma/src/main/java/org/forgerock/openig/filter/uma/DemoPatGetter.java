@@ -17,23 +17,20 @@
 package org.forgerock.openig.filter.uma;
 
 import static java.lang.String.format;
-import static org.forgerock.json.fluent.JsonValue.field;
-import static org.forgerock.json.fluent.JsonValue.json;
-import static org.forgerock.json.fluent.JsonValue.object;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
-import org.forgerock.openig.http.Entity;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.Request;
-import org.forgerock.openig.http.Response;
 
 public class DemoPatGetter {
 
@@ -56,18 +53,17 @@ public class DemoPatGetter {
 
     public String getPAT() throws OAuth2TokenException {
         try {
-            Exchange exchange = new Exchange();
-            exchange.request = new Request();
-            exchange.request.setMethod("POST");
-            exchange.request.setUri(new URI(accessTokenEndpoint));
-            exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-            exchange.request.setEntity("client_id=" + clientId + "&client_secret=" + clientSecret
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(new URI(accessTokenEndpoint));
+            request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+            request.setEntity("client_id=" + clientId + "&client_secret=" + clientSecret
                     + "&grant_type=password&scope=uma_protection&username=" + username  + "&password=" + password);
 
-            client.handle(exchange);
+            Response response = client.handle(new Exchange(), request).getOrThrowUninterruptibly();
 
-            JsonValue content = asJson(exchange.response.getEntity());
-            if (isOk(exchange.response)) {
+            JsonValue content = asJson(response.getEntity());
+            if (isOk(response)) {
                 return content.get("access_token").asString();
             }
 
@@ -84,17 +80,11 @@ public class DemoPatGetter {
             throw new OAuth2TokenException(
                     format("The access_token endpoint %s could not be accessed because it is a malformed URI",
                             accessTokenEndpoint), e);
-        } catch (IOException e) {
-            throw new OAuth2TokenException(format("Cannot get PAT from %s",
-                    accessTokenEndpoint), e);
-        } catch (HandlerException e) {
-            throw new OAuth2TokenException(format("Could not handle call to access_token endpoint %s",
-                    accessTokenEndpoint), e);
         }
     }
 
     private boolean isOk(final Response response) {
-        return response.getStatus() == 200;
+        return Status.OK.equals(response.getStatus());
     }
 
     /**
