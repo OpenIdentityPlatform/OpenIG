@@ -255,7 +255,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             Response response = handler.handle(new Exchange(), request).getOrThrowUninterruptibly();
 
             JsonValue content = UmaUtils.asJson(response.getEntity());
-            if (Status.OK == response.getStatus()) {
+            if (Status.CREATED == response.getStatus()) {
                 return content.get("resourceSetId").asString();
             }
 
