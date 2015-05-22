@@ -24,6 +24,7 @@ import static org.forgerock.json.fluent.JsonValue.object;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -239,7 +240,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                                                  final URI endpoint,
                                                  final DemoPatGetter patGetter) throws OAuth2TokenException {
             JsonValue createResourceSetRequest =
-                    json(object(field("name", "Demo Resources Set"),
+                    json(object(field("name", format("Demo Resources Set [%s]", new Date().getTime())),
                                 field("icon_uri", "http://localhost:9001/images/box-15.png"),
                                 field("scopes", array("http://rs.uma.com:9001/data/scopes/view",
                                                       "http://rs.uma.com:9001/data/scopes/edit",
