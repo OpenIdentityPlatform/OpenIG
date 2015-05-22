@@ -86,7 +86,8 @@ public class OpenAMPermissionTicketCreator implements PermissionTicketCreator {
                             + "(error: %s, description: %s)", error, description));
         }
 
-        return null;
+        throw new OAuth2TokenException(format("Authorization Server failed to return any ticket (%s)",
+                                              response.getStatus()));
     }
 
     private boolean isResponseEmpty(final Response response) {

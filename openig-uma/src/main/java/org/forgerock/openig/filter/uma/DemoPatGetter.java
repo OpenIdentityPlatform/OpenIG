@@ -73,7 +73,8 @@ public class DemoPatGetter {
                     + "(error: %s, description: %s)", error, description));
         }
 
-        return null;
+        throw new OAuth2TokenException(format("Can't obtain PAT from Authorization Server (%s)",
+                                              response.getStatus()));
     }
 
     private boolean isOk(final Response response) {
