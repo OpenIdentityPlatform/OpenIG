@@ -61,14 +61,12 @@ public class BaseUriHandlerTest {
     }
 
     @Test(expectedExceptions = NullPointerException.class)
-    public void shouldFailWithNullUri() throws Exception {
+    public void shouldFailWithNullExpression() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
                                                           null);
 
         final Request request = createRequest();
         handler.handle(exchange, request);
-
-        verify(delegate).handle(exchange, request);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
