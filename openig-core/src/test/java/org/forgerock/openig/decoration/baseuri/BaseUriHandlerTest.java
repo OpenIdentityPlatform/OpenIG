@@ -71,17 +71,14 @@ public class BaseUriHandlerTest {
         verify(delegate).handle(exchange, request);
     }
 
-    @Test
-    public void shouldNotRebaseWithEmptyUri() throws Exception {
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldFailWhenRebasingFail() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
-                                                          Expression.valueOf("", String.class));
+                                                          Expression.valueOf("http://<<servername>>:8080",
+                                                                  String.class));
 
         final Request request = createRequest();
         handler.handle(exchange, request);
-
-        verify(delegate).handle(exchange, request);
-
-        assertThat(request.getUri().toString()).isEqualTo("http://www.forgerock.org/key_path");
     }
 
     private Request createRequest() throws URISyntaxException {
