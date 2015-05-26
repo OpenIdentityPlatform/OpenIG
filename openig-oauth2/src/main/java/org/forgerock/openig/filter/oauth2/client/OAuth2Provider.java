@@ -212,7 +212,7 @@ public class OAuth2Provider {
         Function<Response, Response, NeverThrowsException> loadConfiguration =
                 new Function<Response, Response, NeverThrowsException>() {
                     @Override
-                    public Response apply(final Response response) throws NeverThrowsException {
+                    public Response apply(final Response response) {
                         if (!Status.OK.equals(response.getStatus())) {
                             return Responses.newInternalServerError(format("Unable to read well-known OpenID "
                                                                             + "Configuration from '%s'",

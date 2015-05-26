@@ -274,7 +274,7 @@ public class DecoratorSystemTest {
                     return handler.handle(context, request)
                             .then(new Function<Response, Response, NeverThrowsException>() {
                                 @Override
-                                public Response apply(final Response response) throws NeverThrowsException {
+                                public Response apply(final Response response) {
                                     try {
                                         String content = format("<%s>%s</%s>",
                                                                 header,
