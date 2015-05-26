@@ -65,7 +65,8 @@ public class EnforcerFilterTest {
     }
 
     @Test(dataProvider = "conditionsEvaluatingToFalse")
-    public void shouldReturnAnInternalServerErrorForInvalidOrEvaluatedToFalseConditions(String condition) throws Exception {
+    public void shouldReturnAnInternalServerErrorForInvalidOrEvaluatedToFalseConditions(String condition)
+            throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf(condition, Boolean.class), delegate);
         Response response = enforcer.filter(new Exchange(), null, handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
