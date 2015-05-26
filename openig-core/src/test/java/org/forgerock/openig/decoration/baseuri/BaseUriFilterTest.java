@@ -69,7 +69,7 @@ public class BaseUriFilterTest {
     }
 
     @Test(expectedExceptions = NullPointerException.class)
-    public void shouldFailWithNullUri() throws Exception {
+    public void shouldFailWithNullExpression() throws Exception {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
                                                               null);
 
