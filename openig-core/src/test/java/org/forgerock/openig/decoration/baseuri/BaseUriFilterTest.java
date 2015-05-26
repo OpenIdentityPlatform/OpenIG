@@ -77,17 +77,14 @@ public class BaseUriFilterTest {
         baseUriFilter.filter(exchange, request, terminal);
     }
 
-    @Test
-    public void shouldNotRebaseWithEmptyUri() throws Exception {
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldFailWhenRebasingFail() throws Exception {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf("", String.class));
+                                                              Expression.valueOf(
+                                                                      "http://<<servername>>:8080",  String.class));
 
         final Request request = createRequest();
         baseUriFilter.filter(exchange, request, terminal);
-
-        verify(terminal).handle(exchange, request);
-
-        assertThat(request.getUri().toString()).isEqualTo(REQUEST_URI);
     }
 
     private Request createRequest() throws URISyntaxException {
