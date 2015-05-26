@@ -541,7 +541,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             return httpRedirectGoto(exchange, gotoUri, defaultLoginGoto)
                     .then(new Function<Response, Response, NeverThrowsException>() {
                         @Override
-                        public Response apply(final Response response) throws NeverThrowsException {
+                        public Response apply(final Response response) {
                             try {
                                 saveSession(exchange, authorizedSession);
                             } catch (ResponseException e) {
@@ -609,8 +609,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             return next.handle(exchange, request)
                     .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                         @Override
-                        public Promise<Response, NeverThrowsException> apply(final Response response)
-                                throws NeverThrowsException {
+                        public Promise<Response, NeverThrowsException> apply(final Response response) {
                             if (Status.UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
                                 return sendRedirectForAuthorization(exchange, request);
@@ -657,7 +656,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return httpRedirectGoto(exchange, gotoUri, defaultLogoutGoto)
                 .then(new Function<Response, Response, NeverThrowsException>() {
                     @Override
-                    public Response apply(final Response response) throws NeverThrowsException {
+                    public Response apply(final Response response) {
                         try {
                             removeSession(exchange);
                         } catch (ResponseException e) {
@@ -749,7 +748,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             return completion(httpRedirect(redirect))
                     .then(new Function<Response, Response, NeverThrowsException>() {
                         @Override
-                        public Response apply(final Response response) throws NeverThrowsException {
+                        public Response apply(final Response response) {
                             /*
                              * Finally create and save the session. This may involve updating
                              * response cookies, so it is important to do it after creating the
