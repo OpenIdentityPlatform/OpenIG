@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>org.forgerock.http</groupId>
-      <artifactId>chf-apache-httpclient</artifactId>
+      <artifactId>chf-client-apache-async</artifactId>
       <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
