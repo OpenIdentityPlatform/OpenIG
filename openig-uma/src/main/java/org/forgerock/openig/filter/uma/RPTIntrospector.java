@@ -18,7 +18,7 @@ package org.forgerock.openig.filter.uma;
 
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 
-public interface RptIntrospector {
+public interface RPTIntrospector {
 
     boolean introspect(String rpt) throws OAuth2TokenException;
 }

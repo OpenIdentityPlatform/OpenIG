@@ -29,7 +29,7 @@ import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.http.Exchange;
 
-public class OpenAMRptIntrospector implements RptIntrospector {
+public class OpenAMRPTIntrospector implements RPTIntrospector {
 
     private final Handler client;
     private final URI tokenIntrospectionEndpoint;
@@ -38,7 +38,7 @@ public class OpenAMRptIntrospector implements RptIntrospector {
     private final String clientId;
     private final String clientSecret;
 
-    public OpenAMRptIntrospector(Handler client,
+    public OpenAMRPTIntrospector(Handler client,
                                  URI tokenIntrospectionEndpoint,
                                  String clientId,
                                  String clientSecret) {

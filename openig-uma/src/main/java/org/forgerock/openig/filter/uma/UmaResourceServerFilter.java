@@ -59,7 +59,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
 
     private final BearerTokenExtractor extractor;
     private final PermissionTicketCreator permissionTicketCreator;
-    private final RptIntrospector introspector;
+    private final RPTIntrospector introspector;
     private final Handler invalidRequest;
     private final String realm;
     private final String asUri;
@@ -71,7 +71,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
 
     public UmaResourceServerFilter(BearerTokenExtractor extractor,
                                    PermissionTicketCreator permissionTicketCreator,
-                                   RptIntrospector introspector,
+                                   RPTIntrospector introspector,
                                    String realm,
                                    String asUri,
                                    String resourceSetId,
@@ -183,7 +183,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                                                       patGetter,
                                                       timer);
 
-            RptIntrospector introspector = new OpenAMRptIntrospector(httpHandler,
+            RPTIntrospector introspector = new OpenAMRPTIntrospector(httpHandler,
                                                                      config.get("tokenIntrospectionEndpoint")
                                                                            .required()
                                                                            .asURI(),
