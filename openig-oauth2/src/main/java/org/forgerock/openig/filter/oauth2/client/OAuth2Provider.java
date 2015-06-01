@@ -211,26 +211,27 @@ public class OAuth2Provider {
         // Extracted for more readability
         Function<Response, Response, NeverThrowsException> loadConfiguration =
                 new Function<Response, Response, NeverThrowsException>() {
-            @Override
-            public Response apply(final Response response) throws NeverThrowsException {
-                if (!Status.OK.equals(response.getStatus())) {
-                    return Responses.newInternalServerError(format("Unable to read well-known OpenID " +
-                                                                           "Configuration from '%s'",
-                                                                   uri));
-                }
-                try {
-                    final JsonValue config = getJsonContent(response);
-                    setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint").required(),
-                                                      String.class));
-                    setTokenEndpoint(asExpression(config.get("token_endpoint").required(),
-                                                  String.class));
-                    setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"), String.class));
-                } catch (OAuth2ErrorException e) {
-                    return Responses.newInternalServerError("Cannot read JSON", e);
-                }
-                return response;
-            }
-        };
+                    @Override
+                    public Response apply(final Response response) {
+                        if (!Status.OK.equals(response.getStatus())) {
+                            return Responses.newInternalServerError(format("Unable to read well-known OpenID "
+                                                                            + "Configuration from '%s'",
+                                                                            uri));
+                        }
+                        try {
+                            final JsonValue config = getJsonContent(response);
+                            setAuthorizeEndpoint(asExpression(config.get("authorization_endpoint").required(),
+                                                              String.class));
+                            setTokenEndpoint(asExpression(config.get("token_endpoint").required(),
+                                                          String.class));
+                            setUserInfoEndpoint(asExpression(config.get("userinfo_endpoint"),
+                                                             String.class));
+                        } catch (OAuth2ErrorException e) {
+                            return Responses.newInternalServerError("Cannot read JSON", e);
+                        }
+                        return response;
+                    }
+                };
 
         Response response = providerHandler.handle(new Exchange(), request)
                                            .then(loadConfiguration)
