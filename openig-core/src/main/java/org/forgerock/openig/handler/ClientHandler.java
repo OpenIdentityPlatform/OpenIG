@@ -30,7 +30,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched through the {@link
@@ -63,8 +62,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        // TODO Maybe this could be done asynchronously
-        return Promises.newResultPromise(client.execute(request));
+        return client.executeAsync(request);
     }
 
     /** Creates and initializes a client handler in a heap environment. */

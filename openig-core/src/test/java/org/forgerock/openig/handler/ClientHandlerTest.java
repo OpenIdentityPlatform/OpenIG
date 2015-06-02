@@ -24,6 +24,8 @@ import static com.xebialabs.restito.semantics.Condition.method;
 import static com.xebialabs.restito.semantics.Condition.uri;
 import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,12 +57,14 @@ public class ClientHandlerTest {
             json.put("k2", "v2");
             request.setEntity(json);
 
-            final ClientHandler handler = new ClientHandler(new HttpClient());
+            HttpClient client = spy(new HttpClient());
+            final ClientHandler handler = new ClientHandler(client);
             Response response = handler.handle(null, request).get();
 
             assertThat(response.getStatus()).isEqualTo(Status.OK);
             verifyHttp(server).once(method(Method.POST), uri("/example"),
                                     withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
+            verify(client).executeAsync(request);
         } finally {
             server.stop();
         }
