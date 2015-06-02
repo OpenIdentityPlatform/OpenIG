@@ -47,6 +47,8 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Options;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 
 /**
@@ -351,6 +353,18 @@ public class HttpClient extends GenericHeapObject {
      */
     public Response execute(final Request request) {
         return client.send(request);
+    }
+
+    /**
+     * Submits asynchronously the request to the remote server. Creates and populates the
+     * response from that provided by the remote server.
+     *
+     * @param request
+     *            The HTTP request to send.
+     * @return The promise of the HTTP response.
+     */
+    public Promise<Response, NeverThrowsException> executeAsync(final Request request) {
+        return client.sendAsync(request);
     }
 
     /**
