@@ -70,11 +70,6 @@ import org.forgerock.openig.heap.HeapException;
  */
 public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
 
-    /**
-     * Key to retrieve a {@link AuditDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String AUDIT_HEAP_KEY = "audit";
-
     private final AuditSystem auditSystem;
 
     /**

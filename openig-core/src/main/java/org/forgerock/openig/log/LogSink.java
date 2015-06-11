@@ -25,11 +25,6 @@ import org.forgerock.openig.heap.Name;
 public interface LogSink {
 
     /**
-     * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    String LOGSINK_HEAP_KEY = "LogSink";
-
-    /**
      * Logs an entry.
      *
      * @param entry the entry to be logged.

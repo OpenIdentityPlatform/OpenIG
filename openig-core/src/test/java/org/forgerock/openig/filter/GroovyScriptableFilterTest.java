@@ -23,9 +23,10 @@ import static com.xebialabs.restito.semantics.Condition.get;
 import static com.xebialabs.restito.semantics.Condition.method;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.io.TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.log.LogSink.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -784,7 +785,7 @@ public class GroovyScriptableFilterTest {
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
-        heap.put(HttpClient.HTTP_CLIENT_HEAP_KEY, new HttpClient());
+        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient());
         return heap;
     }
 

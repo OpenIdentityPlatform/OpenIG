@@ -15,9 +15,8 @@
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.http.HttpClient.HTTP_CLIENT_HEAP_KEY;
-
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +32,7 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;

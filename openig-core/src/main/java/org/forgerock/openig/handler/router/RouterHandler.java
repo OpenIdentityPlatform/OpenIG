@@ -17,7 +17,6 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
-import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.*;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 

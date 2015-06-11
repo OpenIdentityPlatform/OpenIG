@@ -19,7 +19,7 @@ package org.forgerock.openig.decoration.timer;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;

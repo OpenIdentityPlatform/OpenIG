@@ -16,6 +16,7 @@
 package org.forgerock.openig.handler.saml;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 
 import java.io.File;
 import java.io.IOException;
@@ -603,7 +604,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
              * Get the gateway configuration directory and set it as a system property to override the default openFed
              * location. Federation config files will reside in the SAML directory.
              */
-            Environment environment = heap.get(Environment.ENVIRONMENT_HEAP_KEY, Environment.class);
+            Environment environment = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
             String samlDirectory = new File(environment.getBaseDirectory(), "SAML").getPath();
             logger.info(format("FederationServlet init directory: %s", samlDirectory));
             Properties p = System.getProperties();

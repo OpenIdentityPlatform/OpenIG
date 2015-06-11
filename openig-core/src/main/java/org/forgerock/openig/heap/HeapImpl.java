@@ -24,7 +24,7 @@ import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.forgerock.util.Reject.*;
 

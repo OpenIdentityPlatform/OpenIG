@@ -25,7 +25,6 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
-import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 
 /**
@@ -56,11 +55,6 @@ import org.forgerock.openig.heap.HeapException;
  * N.B: The Gateway Servlet creates a default BaseUriDecorator named "baseURI" at startup time.
  */
 public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
-
-    /**
-     * Key to retrieve a {@link BaseUriDecorator} instance from the {@link Heap}.
-     */
-    public static final String BASEURI_HEAP_KEY = "baseURI";
 
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)

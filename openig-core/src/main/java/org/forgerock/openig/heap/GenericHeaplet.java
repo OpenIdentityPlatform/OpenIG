@@ -12,14 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
 
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
-
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
