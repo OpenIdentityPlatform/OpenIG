@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.ldap;
 
@@ -53,7 +53,7 @@ public final class LdapClient {
     }
 
     private final ConcurrentHashMap<String, ConnectionFactory> factories =
-            new ConcurrentHashMap<String, ConnectionFactory>();
+            new ConcurrentHashMap<>();
 
     /**
      * A map containing the LDAP scopes making it easier to specify scopes
@@ -63,7 +63,7 @@ public final class LdapClient {
     private final Map<String, SearchScope> scope;
 
     private LdapClient() {
-        final Map<String, SearchScope> map = new HashMap<String, SearchScope>(4);
+        final Map<String, SearchScope> map = new HashMap<>(4);
         for (final SearchScope scope : SearchScope.values()) {
             map.put(scope.toString(), scope);
         }

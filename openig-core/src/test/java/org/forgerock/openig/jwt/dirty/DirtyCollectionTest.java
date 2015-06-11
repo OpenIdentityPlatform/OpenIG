@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt.dirty;
@@ -42,7 +42,7 @@ public class DirtyCollectionTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        collection = new DirtyCollection<String>(new HashSet<String>(asList("one", "two", "three")), listener);
+        collection = new DirtyCollection<>(new HashSet<>(asList("one", "two", "three")), listener);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class DirtyCollectionTest {
 
     @Test
     public void shouldDelegateAllMethodsToDelegatee() throws Exception {
-        DirtyCollection<String> collection = new DirtyCollection<String>(delegate, listener);
+        DirtyCollection<String> collection = new DirtyCollection<>(delegate, listener);
 
         collection.clear();
         collection.isEmpty();

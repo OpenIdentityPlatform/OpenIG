@@ -176,7 +176,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Handler failureHandler;
     private Handler loginHandler;
     private final Map<String, OAuth2Provider> providers =
-            new LinkedHashMap<String, OAuth2Provider>();
+            new LinkedHashMap<>();
     private boolean requireHttps = true;
     private boolean requireLogin = true;
     private List<Expression<String>> scopes;
@@ -555,7 +555,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             // Assume all other errors are more serious operational errors.
             logger.warning(e.getMessage());
         }
-        final Map<String, Object> info = new LinkedHashMap<String, Object>();
+        final Map<String, Object> info = new LinkedHashMap<>();
         try {
             final OAuth2Session session = loadOrCreateSession(exchange);
             info.putAll(session.getAccessTokenResponse());
@@ -567,7 +567,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             info.put("scope", session.getScopes());
             final SignedJwt idToken = session.getIdToken();
             if (idToken != null) {
-                final Map<String, Object> idTokenClaims = new LinkedHashMap<String, Object>();
+                final Map<String, Object> idTokenClaims = new LinkedHashMap<>();
                 for (final String claim : idToken.getClaimsSet().keys()) {
                     idTokenClaims.put(claim, idToken.getClaimsSet().getClaim(claim));
                 }
@@ -779,7 +779,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private void tryPrepareExchange(final Exchange exchange, final OAuth2Session session)
             throws ResponseException, OAuth2ErrorException {
         final Map<String, Object> info =
-                new LinkedHashMap<String, Object>(session.getAccessTokenResponse());
+                new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.
         info.put("provider", session.getProviderName());
         info.put("client_endpoint", session.getClientEndpoint());
@@ -787,7 +787,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         info.put("scope", session.getScopes());
         final SignedJwt idToken = session.getIdToken();
         if (idToken != null) {
-            final Map<String, Object> idTokenClaims = new LinkedHashMap<String, Object>();
+            final Map<String, Object> idTokenClaims = new LinkedHashMap<>();
             for (final String claim : idToken.getClaimsSet().keys()) {
                 idTokenClaims.put(claim, idToken.getClaimsSet().getClaim(claim));
             }
@@ -799,9 +799,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 && provider.hasUserInfoEndpoint()
                 && session.getScopes().contains("openid")) {
             // Load the user_info resources lazily (when requested)
-            info.put("user_info", new LazyMap<String, Object>(new UserInfoFactory(session,
-                                                                                  provider,
-                                                                                  exchange)));
+            info.put("user_info", new LazyMap<>(new UserInfoFactory(session,
+                                                                    provider,
+                                                                    exchange)));
         }
         target.set(exchange, info);
     }
@@ -860,7 +860,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
             if (!expiration.isZero()) {
                 executor = Executors.newSingleThreadScheduledExecutor();
-                cache = new ThreadSafeCache<String, Map<String, Object>>(executor);
+                cache = new ThreadSafeCache<>(executor);
                 cache.setTimeout(expiration);
                 filter.setUserInfoCache(cache);
             }

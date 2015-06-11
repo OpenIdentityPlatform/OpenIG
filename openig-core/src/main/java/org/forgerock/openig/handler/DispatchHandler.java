@@ -51,7 +51,7 @@ import org.forgerock.util.promise.Promises;
 public class DispatchHandler extends GenericHeapObject implements Handler {
 
     /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
-    private final List<Binding> bindings = new ArrayList<Binding>();
+    private final List<Binding> bindings = new ArrayList<>();
 
     /**
      * Binds an expression to the current handler to dispatch to.

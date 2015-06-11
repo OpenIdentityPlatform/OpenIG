@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 // --- JCite ---
@@ -31,7 +31,7 @@ import java.util.Map;
 public class SampleClassAliasResolver implements ClassAliasResolver {
 
     private static final Map<String, Class<?>> ALIASES =
-            new HashMap<String, Class<?>>();
+            new HashMap<>();
 
     static {
         ALIASES.put("SampleFilter", SampleFilter.class);

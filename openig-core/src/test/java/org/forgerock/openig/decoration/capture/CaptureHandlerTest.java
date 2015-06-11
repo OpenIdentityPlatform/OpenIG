@@ -87,7 +87,7 @@ public class CaptureHandlerTest {
 
     @Test(dataProvider = "capturePointSets")
     public void shouldCaptureAllMessages(List<CapturePoint> points) throws Exception {
-        CaptureHandler handler = new CaptureHandler(delegate, capture, new TreeSet<CapturePoint>(points));
+        CaptureHandler handler = new CaptureHandler(delegate, capture, new TreeSet<>(points));
 
         Exchange exchange = new Exchange();
         handler.handle(exchange, null).get();

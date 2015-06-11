@@ -115,17 +115,14 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
     }
 
     private void process(Exchange exchange, Message message) {
-        HashMap<String, String> map = new HashMap<String, String>();
+        HashMap<String, String> map = new HashMap<>();
         if (message != null) {
             try {
-                Reader reader = message.getEntity().newDecodedContentReader(charset);
-                try {
+                try (Reader reader = message.getEntity().newDecodedContentReader(charset)) {
                     // get 'em all now
                     for (Map.Entry<String, String> match : extractor.extract(reader)) {
                         map.put(match.getKey(), match.getValue());
                     }
-                } finally {
-                    reader.close();
                 }
             } catch (IOException ioe) {
                 // may yield partial or unresolved attributes

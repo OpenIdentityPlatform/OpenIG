@@ -80,8 +80,7 @@ public final class StringUtil {
      *             If an I/O error occurs.
      */
     public static String asString(final InputStream is, Charset charset) throws IOException {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset))) {
             final String firstLine = reader.readLine();
             if (firstLine == null) {
                 return "";
@@ -92,8 +91,6 @@ public final class StringUtil {
                 builder.append(line);
             }
             return builder.toString();
-        } finally {
-            reader.close();
         }
     }
 

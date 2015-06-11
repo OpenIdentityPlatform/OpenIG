@@ -69,7 +69,7 @@ public class DesKeyGenHandler extends GenericHeapObject implements Handler {
      *          On failure, a Map with key "error" whose value is an error message.
      */
     private Map<String, String> getSharedKey() {
-        Map<String, String> sharedKey = new HashMap<String, String>();
+        Map<String, String> sharedKey = new HashMap<>();
         try {
             KeyGenerator generator = KeyGenerator.getInstance("DES");
             SecretKey key = generator.generateKey();

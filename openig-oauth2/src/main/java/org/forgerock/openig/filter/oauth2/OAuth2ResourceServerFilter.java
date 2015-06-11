@@ -248,7 +248,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     }
 
     private Set<String> getScopes(final Exchange exchange) throws ResponseException {
-        final Set<String> scopeValues = new HashSet<String>(this.scopes.size());
+        final Set<String> scopeValues = new HashSet<>(this.scopes.size());
         for (final Expression<String> scope : this.scopes) {
             final String result = scope.eval(exchange);
             if (result == null) {
@@ -303,7 +303,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
             if (!expiration.isZero()) {
                 executorService = Executors.newSingleThreadScheduledExecutor();
-                cache = new ThreadSafeCache<String, AccessToken>(executorService);
+                cache = new ThreadSafeCache<>(executorService);
                 cache.setTimeout(expiration);
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }

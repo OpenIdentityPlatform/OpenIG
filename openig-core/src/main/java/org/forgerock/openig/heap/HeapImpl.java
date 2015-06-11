@@ -71,20 +71,20 @@ public class HeapImpl implements Heap {
     private final Name name;
 
     /** Heaplets mapped to heaplet identifiers in the heap configuration. */
-    private Map<String, Heaplet> heaplets = new HashMap<String, Heaplet>();
+    private Map<String, Heaplet> heaplets = new HashMap<>();
 
     /** Configuration objects for heaplets. */
-    private Map<String, JsonValue> configs = new HashMap<String, JsonValue>();
+    private Map<String, JsonValue> configs = new HashMap<>();
 
     /** Objects allocated in the heap mapped to heaplet names. */
-    private Map<String, Object> objects = new HashMap<String, Object>();
+    private Map<String, Object> objects = new HashMap<>();
 
     /** Per-heaplet decoration contexts mapped to heaplet names. */
-    private Map<String, Context> contexts = new HashMap<String, Context>();
+    private Map<String, Context> contexts = new HashMap<>();
 
     /** Per-heaplet decoration(s) mapped to heaplet names. */
     private MultiValueMap<String, JsonValue> decorations =
-            new MultiValueMap<String, JsonValue>(new LinkedHashMap<String, List<JsonValue>>());
+            new MultiValueMap<>(new LinkedHashMap<String, List<JsonValue>>());
 
     /**
      * Decorator for the 'main handler' reference.
@@ -104,12 +104,12 @@ public class HeapImpl implements Heap {
     /**
      * Keep track of objects being resolved, used to avoid recursive issues.
      */
-    private Deque<String> resolving = new ArrayDeque<String>();
+    private Deque<String> resolving = new ArrayDeque<>();
 
     /**
      * List of default object declarations to be inserted in this heap if no user-provided objects were found.
      */
-    private List<JsonValue> defaults = new ArrayList<JsonValue>();
+    private List<JsonValue> defaults = new ArrayList<>();
 
     /**
      * Builds an anonymous root heap (will be referenced by children but has no parent itself).
@@ -210,7 +210,7 @@ public class HeapImpl implements Heap {
         }
 
         // instantiate all objects, recursively allocating dependencies
-        for (String name : new ArrayList<String>(heaplets.keySet())) {
+        for (String name : new ArrayList<>(heaplets.keySet())) {
             get(name, Object.class);
         }
 
@@ -516,7 +516,7 @@ public class HeapImpl implements Heap {
         // save the heaplets locally to send destroy notifications
         Map<String, Heaplet> h = heaplets;
         // prevent any further (inadvertent) object allocations
-        heaplets = new HashMap<String, Heaplet>();
+        heaplets = new HashMap<>();
         // all allocated objects are no longer in this heap
         objects.clear();
         // iterate through saved heaplets, notifying about destruction

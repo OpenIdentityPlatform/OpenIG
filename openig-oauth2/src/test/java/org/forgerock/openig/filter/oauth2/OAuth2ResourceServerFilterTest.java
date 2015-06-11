@@ -76,7 +76,7 @@ public class OAuth2ResourceServerFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(resolver.resolve(TOKEN_ID)).thenReturn(token);
-        when(token.getScopes()).thenReturn(new HashSet<String>(asList("a", "b", "c")));
+        when(token.getScopes()).thenReturn(new HashSet<>(asList("a", "b", "c")));
 
         // By default consider all token as valid since their expiration time is greater than now
         when(token.getExpiresAt()).thenReturn(100L);
@@ -226,7 +226,7 @@ public class OAuth2ResourceServerFilterTest {
     }
 
     private static Set<Expression<String>> getScopes(final String... scopes) throws ExpressionException {
-        final Set<Expression<String>> expScopes = new HashSet<Expression<String>>(scopes.length);
+        final Set<Expression<String>> expScopes = new HashSet<>(scopes.length);
         for (final String scope : scopes) {
             expScopes.add(Expression.valueOf(scope, String.class));
         }

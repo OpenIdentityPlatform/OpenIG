@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt.dirty;
@@ -41,8 +41,8 @@ public class DirtyIteratorTest {
 
     @Test
     public void shouldNotifyListenerWhenRemoveIsCalled() throws Exception {
-        List<String> base = new ArrayList<String>(asList("one", "two", "three"));
-        DirtyIterator<String> iterator = new DirtyIterator<String>(base.iterator(), listener);
+        List<String> base = new ArrayList<>(asList("one", "two", "three"));
+        DirtyIterator<String> iterator = new DirtyIterator<>(base.iterator(), listener);
 
         iterator.next();
         iterator.remove();
@@ -52,8 +52,8 @@ public class DirtyIteratorTest {
 
     @Test
     public void shouldDelegateToWrappedIterator() throws Exception {
-        List<String> base = new ArrayList<String>(asList("one", "two", "three"));
-        DirtyIterator<String> iterator = new DirtyIterator<String>(base.iterator(), listener);
+        List<String> base = new ArrayList<>(asList("one", "two", "three"));
+        DirtyIterator<String> iterator = new DirtyIterator<>(base.iterator(), listener);
 
         assertThat(iterator.next()).isEqualTo("one");
         assertThat(iterator.hasNext()).isTrue();

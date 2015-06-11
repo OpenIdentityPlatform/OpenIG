@@ -52,7 +52,7 @@ public class ClientHandlerTest {
             request.setMethod("POST");
             request.setUri("http://0.0.0.0:" + port + "/example");
 
-            final Map<String, Object> json = new LinkedHashMap<String, Object>();
+            final Map<String, Object> json = new LinkedHashMap<>();
             json.put("k1", "v1");
             json.put("k2", "v2");
             request.setEntity(json);

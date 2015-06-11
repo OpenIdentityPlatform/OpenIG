@@ -161,7 +161,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
         for (String s : this.headers) {
             List<String> in = message.getHeaders().get(s);
             if (in != null) {
-                List<String> out = new ArrayList<String>();
+                List<String> out = new ArrayList<>();
                 message.getHeaders().remove(s);
                 for (String value : in) {
                     out.add(operation == Operation.ENCRYPT ? encrypt(value) : decrypt(value));

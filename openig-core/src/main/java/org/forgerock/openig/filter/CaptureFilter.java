@@ -121,10 +121,10 @@ public class CaptureFilter extends GenericHeapObject implements Filter {
     }
 
     /** Set of common textual content with non-text content-types to capture. */
-    private static final Set<String> TEXT_TYPES = new HashSet<String>(
+    private static final Set<String> TEXT_TYPES = new HashSet<>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
-                    "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
-                    "application/x-www-form-urlencoded")
+                          "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
+                          "application/x-www-form-urlencoded")
     ); // make all entries lower case
 
     private Expression<Boolean> condition = null;

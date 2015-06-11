@@ -81,7 +81,7 @@ final class OAuth2Utils {
 
     static List<String> getScopes(final Exchange exchange, final List<Expression<String>> scopeExpressions)
             throws ResponseException {
-        final List<String> scopeValues = new ArrayList<String>(scopeExpressions.size());
+        final List<String> scopeValues = new ArrayList<>(scopeExpressions.size());
         for (final Expression<String> scope : scopeExpressions) {
             final String result = scope.eval(exchange);
             if (result == null) {

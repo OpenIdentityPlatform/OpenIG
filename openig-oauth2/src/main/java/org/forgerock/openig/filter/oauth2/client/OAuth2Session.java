@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -95,7 +95,7 @@ final class OAuth2Session {
 
     JsonValue toJson() {
         // Use short field names to save on space - cookies have a 4KB limit.
-        final Map<String, Object> json = new LinkedHashMap<String, Object>();
+        final Map<String, Object> json = new LinkedHashMap<>();
         putIfNotNullOrEmpty(json, "pn", providerName);
         putIfNotNullOrEmpty(json, "ce", clientEndpoint);
         putIfNotNullOrEmpty(json, "s", scopes);
@@ -180,7 +180,7 @@ final class OAuth2Session {
             throws OAuth2ErrorException {
         // Merge old token response with new.
         final Map<String, Object> mergedAccessTokenResponse =
-                new LinkedHashMap<String, Object>(accessTokenResponse.asMap());
+                new LinkedHashMap<>(accessTokenResponse.asMap());
         mergedAccessTokenResponse.putAll(newAccessTokenResponse.asMap());
         JsonValue accessTokenResponse =
                 new JsonValue(Collections.unmodifiableMap(mergedAccessTokenResponse));

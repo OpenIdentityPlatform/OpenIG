@@ -139,7 +139,7 @@ public class CaptureDecoratorTest {
         return new Object[][] {
                 {"a string"},
                 {42},
-                {new ArrayList<Object>()}
+                {new ArrayList<>()}
         };
         // @Checkstyle:on
     }

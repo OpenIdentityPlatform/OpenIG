@@ -67,10 +67,10 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
     }
 
     /** Switch cases to test before the exchange is handled. */
-    private final List<Case> requestCases = new ArrayList<Case>();
+    private final List<Case> requestCases = new ArrayList<>();
 
     /** Switch cases to test after the exchange is handled. */
-    private final List<Case> responseCases = new ArrayList<Case>();
+    private final List<Case> responseCases = new ArrayList<>();
 
     /**
      * Add a request switch case with a condition and the handler to execute if condition yields.
@@ -149,7 +149,7 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         }
 
         private List<Case> asCases(String name) throws HeapException {
-            ArrayList<Case> result = new ArrayList<Case>();
+            ArrayList<Case> result = new ArrayList<>();
             JsonValue cases = config.get(name).expect(List.class);
             for (JsonValue value : cases) {
                 result.add(asCase(value.required().expect(Map.class)));

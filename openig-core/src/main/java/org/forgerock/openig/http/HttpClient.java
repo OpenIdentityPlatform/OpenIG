@@ -242,7 +242,7 @@ public class HttpClient extends GenericHeapObject {
                             + "will use configuration from 'keyManager' attribute");
                 }
                 final JsonValue keyManagerConfig = config.get("keyManager");
-                final List<KeyManager> managers = new ArrayList<KeyManager>();
+                final List<KeyManager> managers = new ArrayList<>();
                 if (keyManagerConfig.isList()) {
                     managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap,
                             KeyManager.class)));
@@ -287,7 +287,7 @@ public class HttpClient extends GenericHeapObject {
                             + "will use configuration from 'trustManager' attribute");
                 }
                 final JsonValue trustManagerConfig = config.get("trustManager");
-                final List<TrustManager> managers = new ArrayList<TrustManager>();
+                final List<TrustManager> managers = new ArrayList<>();
                 if (trustManagerConfig.isList()) {
                     managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap,
                             TrustManager.class)));

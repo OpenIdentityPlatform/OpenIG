@@ -49,7 +49,7 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
 
     private static final Set<String> STANDARD_TAG_NAMES = EnumUtil.names(Tag.class);
 
-    private ConcurrentHashMap<String, TagMetric> metrics = new ConcurrentHashMap<String, TagMetric>();
+    private ConcurrentHashMap<String, TagMetric> metrics = new ConcurrentHashMap<>();
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {

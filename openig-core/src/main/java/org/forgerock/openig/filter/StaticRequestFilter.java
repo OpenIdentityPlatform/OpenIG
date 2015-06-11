@@ -62,11 +62,11 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression<String>> headers =
-            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
+            new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /** A form to include in the request, whose values are exchange-scoped expressions that are evaluated. */
     private final MultiValueMap<String, Expression<String>> form =
-            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
+            new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /**
      * Builds a new {@link StaticRequestFilter} that will uses the given HTTP method on the resource.

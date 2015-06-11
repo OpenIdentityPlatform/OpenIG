@@ -60,10 +60,10 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
     }
 
     /** Assignment bindings to apply before the request is handled. */
-    private final List<Binding> onRequest = new ArrayList<Binding>();
+    private final List<Binding> onRequest = new ArrayList<>();
 
     /** Assignment bindings to apply after the request is handled. */
-    private final List<Binding> onResponse = new ArrayList<Binding>();
+    private final List<Binding> onResponse = new ArrayList<>();
 
     /**
      * Registers an unconditional (always executed) binding on the request flow. The value stored in the target will be

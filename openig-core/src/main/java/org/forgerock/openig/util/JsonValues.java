@@ -140,12 +140,8 @@ public final class JsonValues {
         }
         try {
             return (T) c.newInstance();
-        } catch (ExceptionInInitializerError eiie) {
-            throw new JsonValueException(value, eiie);
-        } catch (IllegalAccessException iae) {
-            throw new JsonValueException(value, iae);
-        } catch (InstantiationException ie) {
-            throw new JsonValueException(value, ie);
+        } catch (ExceptionInInitializerError | InstantiationException | IllegalAccessException e) {
+            throw new JsonValueException(value, e);
         }
     }
 

@@ -97,7 +97,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
-        target.set(exchange, new LazyMap<String, String>(new Factory<Map<String, String>>() {
+        target.set(exchange, new LazyMap<>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {
                 try {

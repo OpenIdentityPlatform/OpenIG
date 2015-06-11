@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.cache;
@@ -70,7 +70,7 @@ public class ThreadSafeCacheTest {
         // At the end of the test, the number of time we created a value should be equal to the number of slots in
         // the cache.
 
-        final ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<Integer, Integer>(executorService);
+        final ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<>(executorService);
         final Random random = new Random();
         final AtomicInteger count = new AtomicInteger();
 
@@ -113,7 +113,7 @@ public class ThreadSafeCacheTest {
     @SuppressWarnings("unchecked")
     public void shouldRegisterAnExpirationCallbackWithAppropriateDuration() throws Exception {
 
-        ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<Integer, Integer>(executorService);
+        ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<>(executorService);
         cache.setTimeout(duration("30 seconds"));
 
         cache.getValue(42, new Callable<Integer>() {

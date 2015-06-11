@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.regex;
@@ -38,9 +38,9 @@ import java.util.regex.Pattern;
  */
 public class StreamPatternExtractor {
 
-    private final Map<String, Pattern> patterns = new LinkedHashMap<String, Pattern>();
+    private final Map<String, Pattern> patterns = new LinkedHashMap<>();
 
-    private final Map<String, PatternTemplate> templates = new HashMap<String, PatternTemplate>();
+    private final Map<String, PatternTemplate> templates = new HashMap<>();
 
     /**
      * Mapping of names to regular expression patterns to extract from the stream.
@@ -77,7 +77,7 @@ public class StreamPatternExtractor {
      */
     public Iterable<Map.Entry<String, String>> extract(final Reader reader) {
         return new Iterable<Map.Entry<String, String>>() {
-            private final Map<String, String> values = new HashMap<String, String>();
+            private final Map<String, String> values = new HashMap<>();
             @SuppressWarnings("rawtypes")
             private Map.Entry[] entries = patterns.entrySet().toArray(
                     new Map.Entry[patterns.size()]);
@@ -126,7 +126,7 @@ public class StreamPatternExtractor {
                         } catch (IOException ioe) {
                             // any failure to read stream yields null value in mapping
                         }
-                        return new AbstractMap.SimpleImmutableEntry<String, String>(key, value);
+                        return new AbstractMap.SimpleImmutableEntry<>(key, value);
                     }
 
                     @Override

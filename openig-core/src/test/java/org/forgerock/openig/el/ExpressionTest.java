@@ -93,7 +93,7 @@ public class ExpressionTest {
 
     @Test
     public void backslash() throws ExpressionException {
-        HashMap<String, String> scope = new HashMap<String, String>();
+        HashMap<String, String> scope = new HashMap<>();
         scope.put("a", "bar");
         scope.put("b", "bas");
         Expression<String> expr = Expression.valueOf("foo${'\\\\'}${a} ${a}${b} foo${'\\\\'}${b}", String.class);
@@ -110,7 +110,7 @@ public class ExpressionTest {
 
     @Test
     public void scope() throws ExpressionException {
-        HashMap<String, String> scope = new HashMap<String, String>();
+        HashMap<String, String> scope = new HashMap<>();
         scope.put("a", "foo");
         Expression<String> expr = Expression.valueOf("${a}bar", String.class);
         String o = expr.eval(scope);
@@ -139,7 +139,7 @@ public class ExpressionTest {
     @Test
     public void exchangeSetAttribute() throws ExpressionException {
         Exchange exchange = new Exchange();
-        HashMap<String, String> map = new HashMap<String, String>();
+        HashMap<String, String> map = new HashMap<>();
         map.put("foo", "bar");
         @SuppressWarnings("rawtypes")
         Expression<Map> expr = Expression.valueOf("${exchange.testmap}", Map.class);

@@ -82,12 +82,12 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     /**
      * Keep track of managed routes.
      */
-    private final Map<File, Route> routes = new HashMap<File, Route>();
+    private final Map<File, Route> routes = new HashMap<>();
 
     /**
      * Ordered set of managed routes.
      */
-    private SortedSet<Route> sorted = new TreeSet<Route>(new LexicographicalRouteComparator());
+    private SortedSet<Route> sorted = new TreeSet<>(new LexicographicalRouteComparator());
 
     /**
      * Protect routes access.
@@ -125,7 +125,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     public void setRouteComparator(final Comparator<Route> comparator) {
         write.lock();
         try {
-            SortedSet<Route> newSet = new TreeSet<Route>(comparator);
+            SortedSet<Route> newSet = new TreeSet<>(comparator);
             newSet.addAll(sorted);
             sorted = newSet;
         } finally {

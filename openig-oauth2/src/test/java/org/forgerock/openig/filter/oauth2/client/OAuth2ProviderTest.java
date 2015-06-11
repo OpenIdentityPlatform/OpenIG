@@ -242,7 +242,7 @@ public class OAuth2ProviderTest {
         final OAuth2Provider provider = new OAuth2Provider("openam");
         provider.setClientId(valueOf("OpenIG", String.class));
         provider.setClientSecret(valueOf("password", String.class));
-        final List<Expression<String>> myScopes = new ArrayList<Expression<String>>();
+        final List<Expression<String>> myScopes = new ArrayList<>();
         myScopes.add(valueOf("OpenIG", String.class));
         provider.setScopes(myScopes);
         provider.setAuthorizeEndpoint(valueOf(SAMPLE_URI + AUTHORIZE_ENDPOINT, String.class));
