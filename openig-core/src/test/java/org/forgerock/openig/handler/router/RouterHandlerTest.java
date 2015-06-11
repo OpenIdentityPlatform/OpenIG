@@ -219,7 +219,7 @@ public class RouterHandlerTest {
 
         // Register both routes
         router.onChanges(new FileChangeSet(null,
-                                           new HashSet<File>(asList(first, second)),
+                                           new HashSet<>(asList(first, second)),
                                            Collections.<File>emptySet(),
                                            Collections.<File>emptySet()));
 

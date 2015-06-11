@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.saml;
@@ -25,7 +25,7 @@ import org.forgerock.openig.alias.ClassAliasResolver;
  * Register all the aliases supported by the {@literal openig-saml} module.
  */
 public class SamlClassAliasResolver implements ClassAliasResolver {
-    private static final Map<String, Class<?>> ALIASES = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
         ALIASES.put("SamlFederationHandler", SamlFederationHandler.class);

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.helper;
@@ -50,7 +50,7 @@ public final class LazyReference<T> {
                                                     final JsonValue reference,
                                                     final Class<R> type,
                                                     final boolean optional) {
-        return new LazyReference<R>(checkNotNull(heap), checkNotNull(reference), type, optional);
+        return new LazyReference<>(checkNotNull(heap), checkNotNull(reference), type, optional);
     }
 
     private final Heap heap;

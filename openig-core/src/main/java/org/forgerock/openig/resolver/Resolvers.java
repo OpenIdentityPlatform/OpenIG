@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
@@ -162,7 +162,7 @@ public final class Resolvers {
         if (level == 0) {
             interfaces = Arrays.asList(c.getInterfaces());
         } else {
-            interfaces = new ArrayList<Class<?>>();
+            interfaces = new ArrayList<>();
             for (Class<?> iface : c.getInterfaces()) {
                 // recursion
                 interfaces.addAll(getInterfaces(iface, level - 1));

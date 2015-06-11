@@ -99,7 +99,7 @@ public class CaptureFilterTest {
 
     @Test(dataProvider = "capturePointSets")
     public void shouldCaptureAllMessages(List<CapturePoint> points) throws Exception {
-        CaptureFilter filter = new CaptureFilter(delegate, capture, new TreeSet<CapturePoint>(points));
+        CaptureFilter filter = new CaptureFilter(delegate, capture, new TreeSet<>(points));
 
         Exchange exchange = new Exchange();
         filter.filter(exchange, null, terminal).get();

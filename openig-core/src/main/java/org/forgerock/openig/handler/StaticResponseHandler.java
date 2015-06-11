@@ -52,7 +52,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
 
     /** Message header fields whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression<String>> headers =
-            new MultiValueMap<String, Expression<String>>(new CaseInsensitiveMap<List<Expression<String>>>());
+            new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /** The message entity expression. */
     private final Expression<String> entity;

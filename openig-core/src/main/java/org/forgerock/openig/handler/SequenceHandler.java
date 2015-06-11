@@ -47,7 +47,7 @@ import org.forgerock.util.promise.ResultHandler;
 public class SequenceHandler extends GenericHeapObject implements Handler {
 
     /** Handlers and associated sequence processing postconditions. */
-    private final List<Binding> bindings = new ArrayList<Binding>();
+    private final List<Binding> bindings = new ArrayList<>();
 
     /**
      * Binds sequenced handlers with sequence processing postconditions.
@@ -69,7 +69,7 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
         final PromiseImpl<Response, NeverThrowsException> composite = PromiseImpl.create();
 
         final Exchange exchange = context.asContext(Exchange.class);
-        final Deque<Binding> theBindings = new ArrayDeque<Binding>(bindings);
+        final Deque<Binding> theBindings = new ArrayDeque<>(bindings);
 
         Binding binding = theBindings.peekFirst();
         Promise<Response, NeverThrowsException> promise = binding.handler.handle(context, request);

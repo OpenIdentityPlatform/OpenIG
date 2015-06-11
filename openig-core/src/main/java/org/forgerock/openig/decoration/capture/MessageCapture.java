@@ -44,7 +44,7 @@ import org.forgerock.openig.log.Logger;
 public class MessageCapture {
 
     /** Set of common textual content with non-text content-types to capture. */
-    private static final Set<String> TEXT_TYPES = new HashSet<String>(
+    private static final Set<String> TEXT_TYPES = new HashSet<>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
                           "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
                           "application/x-www-form-urlencoded")
@@ -136,7 +136,7 @@ public class MessageCapture {
     }
 
     private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
-        Map<String, Object> map = new LinkedHashMap<String, Object>(exchange);
+        Map<String, Object> map = new LinkedHashMap<>(exchange);
         map.remove("exchange");
         map.remove("request");
         map.remove("response");

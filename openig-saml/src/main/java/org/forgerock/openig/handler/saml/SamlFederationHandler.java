@@ -314,7 +314,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         }
         String idpEntityID = form.getFirst(SAML2Constants.IDPENTITYID);
         Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(servletRequest);
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
         // next line testing to see if we can change the name format
@@ -323,7 +323,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         // TODO: add option to specify artifact
         if (paramsMap.get(SAML2Constants.BINDING) == null) {
             // use POST binding
-            list = new ArrayList<String>();
+            list = new ArrayList<>();
             list.add(SAML2Constants.HTTP_POST);
             paramsMap.put(SAML2Constants.BINDING, list);
         }
@@ -423,7 +423,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
 
         logger.debug(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
 
-        HashMap<String, String> paramsMap = new HashMap<String, String>(7);
+        HashMap<String, String> paramsMap = new HashMap<>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
         paramsMap.put(SAML2Constants.SESSION_INDEX, sessionIndex);
         paramsMap.put(SAML2Constants.METAALIAS, metaAlias);
@@ -574,7 +574,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final Map<String, String> attributeMapping = new HashMap<String, String>();
+            final Map<String, String> attributeMapping = new HashMap<>();
             JsonValue mappings = config.get("assertionMapping").expect(Map.class);
             if (mappings != null) {
                 for (String key : mappings.keys()) {

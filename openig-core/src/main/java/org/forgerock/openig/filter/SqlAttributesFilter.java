@@ -80,7 +80,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
     private final String preparedStatement;
 
     /** The list of parameters to evaluate and include in the execution of the prepared statement. */
-    private final List<Expression<?>> parameters = new ArrayList<Expression<?>>();
+    private final List<Expression<?>> parameters = new ArrayList<>();
 
     /**
      * Builds a new SqlAttributesFilter that will execute the given SQL statement on the given {@link DataSource},
@@ -116,10 +116,10 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
 
         final Exchange exchange = context.asContext(Exchange.class);
 
-        target.set(exchange, new LazyMap<String, Object>(new Factory<Map<String, Object>>() {
+        target.set(exchange, new LazyMap<>(new Factory<Map<String, Object>>() {
             @Override
             public Map<String, Object> newInstance() {
-                HashMap<String, Object> result = new HashMap<String, Object>();
+                HashMap<String, Object> result = new HashMap<>();
                 Connection c = null;
                 try {
                     c = dataSource.getConnection();
@@ -183,7 +183,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 // of parameters/placeholders in the prepared statement
                 if (expressions.hasNext()) {
                     logger.warning(format(" All parameters with index >= %d are ignored because there are "
-                                          + "no placeholders for them in the configured prepared statement (%s)",
+                                                  + "no placeholders for them in the configured prepared statement (%s)",
                                           count,
                                           preparedStatement));
                 }

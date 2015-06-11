@@ -39,7 +39,7 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /** Heap objects to avoid dependency injection (prevents circular dependencies). */
     private static final Set<String> SPECIAL_OBJECTS =
-            new HashSet<String>(Arrays.asList(LOGSINK_HEAP_KEY, TEMPORARY_STORAGE_HEAP_KEY));
+            new HashSet<>(Arrays.asList(LOGSINK_HEAP_KEY, TEMPORARY_STORAGE_HEAP_KEY));
 
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;

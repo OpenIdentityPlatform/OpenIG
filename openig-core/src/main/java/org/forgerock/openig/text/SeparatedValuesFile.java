@@ -54,7 +54,7 @@ public class SeparatedValuesFile {
      * Explicit field keys in the order they appear in a record, overriding any existing field header,
      * or empty to use field header.
      */
-    private final List<String> fields = new ArrayList<String>();
+    private final List<String> fields = new ArrayList<>();
 
     /**
      * Builds a new SeparatedValuesFile reading the given {@code file} using a the {@link Separators#COMMA}
@@ -169,7 +169,7 @@ public class SeparatedValuesFile {
                     List<String> record;
                     while ((record = reader.next()) != null) {
                         if (record.get(index).equals(value)) {
-                            map = new HashMap<String, String>(fields.size());
+                            map = new HashMap<>(fields.size());
                             Iterator<String> fi = fields.iterator();
                             Iterator<String> ri = record.iterator();
                             while (fi.hasNext() && ri.hasNext()) {

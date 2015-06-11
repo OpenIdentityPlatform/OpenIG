@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.saml;
@@ -50,7 +50,7 @@ class RequestAdapter extends HttpServletRequestWrapper {
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        Map<String, String[]> parameters = new HashMap<String, String[]>();
+        Map<String, String[]> parameters = new HashMap<>();
         for (Map.Entry<String, List<String>> entry : exchange.request.getForm().entrySet()) {
             List<String> values = entry.getValue();
             parameters.put(entry.getKey(), values.toArray(new String[values.size()]));

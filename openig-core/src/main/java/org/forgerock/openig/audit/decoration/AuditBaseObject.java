@@ -57,7 +57,7 @@ abstract class AuditBaseObject {
 
     private static Set<String> tags(final Set<String> tags,
                                     final String... others) {
-        Set<String> all = new LinkedHashSet<String>(tags);
+        Set<String> all = new LinkedHashSet<>(tags);
         all.addAll(asList(others));
         return all;
     }

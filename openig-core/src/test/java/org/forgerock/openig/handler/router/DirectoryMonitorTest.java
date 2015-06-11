@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -45,7 +45,7 @@ public class DirectoryMonitorTest {
     @Test
     public void testAddedFilesAreDetectedAndStoredInSnapshot() throws Exception {
         final File directory = getTestResourceDirectory("added");
-        final HashMap<File, Long> snapshot = new HashMap<File, Long>();
+        final HashMap<File, Long> snapshot = new HashMap<>();
         DirectoryMonitor observer = new DirectoryMonitor(directory, snapshot);
         observer.scan(listener);
 
@@ -57,7 +57,7 @@ public class DirectoryMonitorTest {
     @Test
     public void testNonJsonFilesAreIgnored() throws Exception {
         final File directory = getTestResourceDirectory("empty");
-        final HashMap<File, Long> snapshot = new HashMap<File, Long>();
+        final HashMap<File, Long> snapshot = new HashMap<>();
         DirectoryMonitor observer = new DirectoryMonitor(directory, snapshot);
         observer.scan(listener);
 
@@ -68,7 +68,7 @@ public class DirectoryMonitorTest {
     @Test
     public void testRemovedFilesAreDetectedAndRemovedFromSnapshot() throws Exception {
         final File directory = getTestResourceDirectory("empty");
-        final HashMap<File, Long> snapshot = new HashMap<File, Long>();
+        final HashMap<File, Long> snapshot = new HashMap<>();
         // Mimic a file that was previously detected (so it appears in the snapshot map)
         File jsonFile = new File(directory, "new-file.json");
         snapshot.put(jsonFile, 0L);
@@ -83,7 +83,7 @@ public class DirectoryMonitorTest {
     @Test
     public void testModifiedFilesAreDetected() throws Exception {
         final File directory = getTestResourceDirectory("modified");
-        final HashMap<File, Long> snapshot = new HashMap<File, Long>();
+        final HashMap<File, Long> snapshot = new HashMap<>();
         // Mimic a file that was previously detected (so it appears in the snapshot map)
         File jsonFile = new File(directory, "new-file.json");
         snapshot.put(jsonFile, 0L);

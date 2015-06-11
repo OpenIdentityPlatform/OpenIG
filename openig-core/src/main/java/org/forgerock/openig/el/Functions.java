@@ -50,7 +50,7 @@ public class Functions extends FunctionMapper {
     /** A mapping of function names with methods to return. */
     private static final Map<String, Method> METHODS;
     static {
-        METHODS = new HashMap<String, Method>();
+        METHODS = new HashMap<>();
         for (Method method : Functions.class.getMethods()) {
             if (Modifier.isStatic(method.getModifiers())) {
                 METHODS.put(method.getName(), method);

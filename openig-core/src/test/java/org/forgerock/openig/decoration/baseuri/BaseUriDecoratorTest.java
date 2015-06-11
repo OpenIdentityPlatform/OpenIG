@@ -52,7 +52,7 @@ public class BaseUriDecoratorTest {
         return new Object[][] {
             { "a string" },
             { 42 },
-            { new ArrayList<Object>() }
+            {new ArrayList<>() }
         };
     }
 

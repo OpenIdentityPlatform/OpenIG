@@ -99,7 +99,7 @@ public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
     }
 
     private static Set<String> getAdditionalTags(final JsonValue config) {
-        Set<String> tags = new TreeSet<String>();
+        Set<String> tags = new TreeSet<>();
         if (config.isString()) {
             tags.add(config.asString());
         } else if (config.isList()) {

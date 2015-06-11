@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -39,14 +39,14 @@ final class FieldMap extends AbstractMap<String, Object> implements Map<String, 
      * reflection.
      */
     private static final Map<Class<?>, Map<String, Field>> MAPPINGS =
-            new HashMap<Class<?>, Map<String, Field>>();
+            new HashMap<>();
 
     private static Map<String, Field> getFields(final Object o) {
         final Class<?> c = o.getClass();
         Map<String, Field> fields = MAPPINGS.get(c);
         if (fields == null) {
             // lazy initialization
-            fields = new HashMap<String, Field>();
+            fields = new HashMap<>();
             for (final Field f : c.getFields()) {
                 final int modifiers = f.getModifiers();
                 if (!f.isSynthetic() && !Modifier.isStatic(modifiers) && !f.isEnumConstant()

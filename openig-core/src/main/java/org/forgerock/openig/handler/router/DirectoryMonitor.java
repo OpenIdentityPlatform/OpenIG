@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -88,13 +88,13 @@ class DirectoryMonitor implements DirectoryScanner {
         // Take a snapshot of the current directory
         List<File> latest = Collections.emptyList();
         if (directory.isDirectory()) {
-            latest = new ArrayList<File>(asList(directory.listFiles(jsonFiles())));
+            latest = new ArrayList<>(asList(directory.listFiles(jsonFiles())));
         }
 
         // Detect added files
         // (in latest but not in known)
-        Set<File> added = new HashSet<File>();
-        for (File candidate : new ArrayList<File>(latest)) {
+        Set<File> added = new HashSet<>();
+        for (File candidate : new ArrayList<>(latest)) {
             if (!snapshot.containsKey(candidate)) {
                 added.add(candidate);
                 latest.remove(candidate);
@@ -103,8 +103,8 @@ class DirectoryMonitor implements DirectoryScanner {
 
         // Detect removed files
         // (in known but not in latest)
-        Set<File> removed = new HashSet<File>();
-        for (File candidate : new ArrayList<File>(snapshot.keySet())) {
+        Set<File> removed = new HashSet<>();
+        for (File candidate : new ArrayList<>(snapshot.keySet())) {
             if (!latest.contains(candidate)) {
                 removed.add(candidate);
                 snapshot.remove(candidate);
@@ -113,7 +113,7 @@ class DirectoryMonitor implements DirectoryScanner {
 
         // Detect modified files
         // Now, latest and known list should have the same Files inside
-        Set<File> modified = new HashSet<File>();
+        Set<File> modified = new HashSet<>();
         for (File candidate : latest) {
             long lastModified = snapshot.get(candidate);
             if (lastModified < candidate.lastModified()) {

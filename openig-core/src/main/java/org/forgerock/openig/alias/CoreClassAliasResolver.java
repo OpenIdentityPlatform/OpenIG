@@ -60,7 +60,7 @@ import org.forgerock.openig.log.NullLogSink;
  * Register all the aliases supported by the {@literal openig-core} module.
  */
 public class CoreClassAliasResolver implements ClassAliasResolver {
-    private static final Map<String, Class<?>> ALIASES = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);

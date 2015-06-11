@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -36,7 +36,7 @@ public class ExtensibleFieldMap extends AbstractMap<String, Object> implements M
     private final FieldMap fields;
 
     /** Map to store extended keys. */
-    private final Map<String, Object> extension = new HashMap<String, Object>();
+    private final Map<String, Object> extension = new HashMap<>();
 
     /**
      * Constructs a new extensible field map, using this object's field members

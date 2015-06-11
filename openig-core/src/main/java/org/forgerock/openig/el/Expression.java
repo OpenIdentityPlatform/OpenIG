@@ -68,7 +68,7 @@ public final class Expression<T> {
      *             if the expression was not syntactically correct.
      */
     public static final <T> Expression<T> valueOf(String expression, Class<T> expectedType) throws ExpressionException {
-        return new Expression<T>(expression, expectedType);
+        return new Expression<>(expression, expectedType);
     }
 
     /**

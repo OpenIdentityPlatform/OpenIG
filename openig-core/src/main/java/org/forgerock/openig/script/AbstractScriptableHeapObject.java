@@ -144,7 +144,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     private final Script compiledScript;
     private HttpClient httpClient;
     private final LdapClient ldapClient = LdapClient.getInstance();
-    private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<>();
     private Map<String, Object> args;
 
     /**
@@ -199,7 +199,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     private Map<String, Object> createBindings(final Exchange exchange, final Handler next) {
         // Set engine bindings.
-        final Map<String, Object> bindings = new HashMap<String, Object>();
+        final Map<String, Object> bindings = new HashMap<>();
         bindings.put("exchange", exchange);
         bindings.put("logger", logger);
         bindings.put("globals", scriptGlobals);

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
@@ -135,7 +135,7 @@ public class OpenAmAccessToken implements AccessToken {
         public OpenAmAccessToken build(final JsonValue raw) throws OAuth2TokenException {
             try {
                 long expiresIn = raw.get("expires_in").required().asLong();
-                Set<String> scopes = new HashSet<String>(raw.get("scope").required().asList(String.class));
+                Set<String> scopes = new HashSet<>(raw.get("scope").required().asList(String.class));
                 String token = raw.get("access_token").required().asString();
                 return new OpenAmAccessToken(raw,
                                              token,

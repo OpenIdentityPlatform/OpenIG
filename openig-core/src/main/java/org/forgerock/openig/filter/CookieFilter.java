@@ -201,7 +201,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
     private void addRequestCookies(CookieManager manager, MutableUri resolved, Request request) throws IOException {
         List<String> cookies = request.getHeaders().get("Cookie");
         if (cookies == null) {
-            cookies = new ArrayList<String>();
+            cookies = new ArrayList<>();
         }
         List<String> managed = manager.get(resolved.asURI(), request.getHeaders()).get("Cookie");
         if (managed != null) {
@@ -308,7 +308,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         if (headers != null) {
             for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                 String header = hi.next();
-                ArrayList<String> parts = new ArrayList<String>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
+                ArrayList<String> parts = new ArrayList<>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
                 int originalSize = parts.size();
                 boolean remove = false;
                 int intact = 0;
@@ -355,10 +355,10 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                     ArrayList<String> parts;
                     if ("Set-Cookie2".equals(name)) {
                         // RFC 2965 cookie
-                        parts = new ArrayList<String>(Arrays.asList(DELIM_COMMA.split(header, 0)));
+                        parts = new ArrayList<>(Arrays.asList(DELIM_COMMA.split(header, 0)));
                     } else {
                         // Netscape cookie
-                        parts = new ArrayList<String>();
+                        parts = new ArrayList<>();
                         parts.add(header);
                     }
                     int originalSize = parts.size();

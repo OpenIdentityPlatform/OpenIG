@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.regex;
@@ -52,7 +52,7 @@ public class StreamPatternExtractorTest {
     }
 
     public static <K, V> Map<K, V> asMap(Iterable<Map.Entry<K, V>> iterable) {
-        Map<K, V> map = new HashMap<K, V>();
+        Map<K, V> map = new HashMap<>();
         for (Map.Entry<K, V> item : iterable) {
             map.put(item.getKey(), item.getValue());
         }

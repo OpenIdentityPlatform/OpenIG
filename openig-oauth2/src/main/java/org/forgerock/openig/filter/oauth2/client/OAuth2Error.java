@@ -567,7 +567,7 @@ public final class OAuth2Error {
      *         token error response.
      */
     public Map<String, Object> toJsonContent() {
-        final Map<String, Object> json = new LinkedHashMap<String, Object>(3);
+        final Map<String, Object> json = new LinkedHashMap<>(3);
         if (error != null) {
             json.put(F_ERROR, error);
         }

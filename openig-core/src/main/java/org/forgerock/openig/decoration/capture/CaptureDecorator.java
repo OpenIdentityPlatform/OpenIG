@@ -141,7 +141,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     }
 
     private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig) throws HeapException {
-        Set<CapturePoint> modes = new TreeSet<CapturePoint>();
+        Set<CapturePoint> modes = new TreeSet<>();
         if (decoratorConfig.isString()) {
             // Single value
             modes.add(decoratorConfig.asEnum(CapturePoint.class));

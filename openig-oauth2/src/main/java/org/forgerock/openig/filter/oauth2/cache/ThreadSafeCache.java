@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.cache;
@@ -43,7 +43,7 @@ import org.forgerock.util.time.Duration;
 public class ThreadSafeCache<K, V> {
 
     private final ScheduledExecutorService executorService;
-    private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<K, Future<V>>();
+    private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
     private volatile Duration timeout = new Duration(1L, TimeUnit.MINUTES);
 
     /**
@@ -68,7 +68,7 @@ public class ThreadSafeCache<K, V> {
     private Future<V> createIfAbsent(final K key, final Callable<V> callable) {
         Future<V> future = cache.get(key);
         if (future == null) {
-            final FutureTask<V> futureTask = new FutureTask<V>(callable);
+            final FutureTask<V> futureTask = new FutureTask<>(callable);
             future = cache.putIfAbsent(key, futureTask);
             if (future == null) {
                 future = futureTask;
@@ -102,13 +102,7 @@ public class ThreadSafeCache<K, V> {
     public V getValue(final K key, final Callable<V> callable) throws InterruptedException, ExecutionException {
         try {
             return createIfAbsent(key, callable).get();
-        } catch (InterruptedException e) {
-            cache.remove(key);
-            throw e;
-        } catch (ExecutionException e) {
-            cache.remove(key);
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (InterruptedException | RuntimeException | ExecutionException e) {
             cache.remove(key);
             throw e;
         }

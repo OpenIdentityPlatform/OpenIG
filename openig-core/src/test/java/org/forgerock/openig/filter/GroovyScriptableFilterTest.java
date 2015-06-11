@@ -215,7 +215,7 @@ public class GroovyScriptableFilterTest {
     public void testConstructFromString() throws Exception {
         final String script =
                 "import org.forgerock.http.protocol.Response;exchange.response = new Response()";
-        final Map<String, Object> config = new HashMap<String, Object>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
         final ScriptableFilter filter =
@@ -465,7 +465,7 @@ public class GroovyScriptableFilterTest {
             exchange.session = new SimpleMapSession();
             filter.filter(exchange, request, mock(Handler.class));
 
-            Set<String> cnValues = new HashSet<String>();
+            Set<String> cnValues = new HashSet<>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
             assertThat(exchange.get("cn")).isEqualTo(cnValues);
@@ -815,7 +815,7 @@ public class GroovyScriptableFilterTest {
     }
 
     private static Map<String, Object> newFileConfig(final String groovyClass) {
-        final Map<String, Object> config = new HashMap<String, Object>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
         return config;
@@ -840,11 +840,11 @@ public class GroovyScriptableFilterTest {
      * </pre>
      */
     private static Map<String, Object> newFileConfigWithCredentials(final String groovyClass) {
-        final Map<String, Object> config = new HashMap<String, Object>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
 
-        final Map<String, Object> args = new LinkedHashMap<String, Object>();
+        final Map<String, Object> args = new LinkedHashMap<>();
         args.put("username", "bjensen");
         args.put("password", "hifalutin");
         config.put("args", args);
@@ -880,14 +880,14 @@ public class GroovyScriptableFilterTest {
      * </pre>
      */
     private static Map<String, Object> newFileConfigWithArgs(final String groovyClass) {
-        final Map<String, Object> config = new HashMap<String, Object>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("file", groovyClass);
-        final Map<String, Object> args = new LinkedHashMap<String, Object>();
+        final Map<String, Object> args = new LinkedHashMap<>();
         args.put("title", "Coffee time");
         args.put("status", "418");
         args.put("reason", new String[] { "Not Acceptable", "I'm a teapot", "Acceptable" });
-        final Map<String, Object> coffeeNames = new LinkedHashMap<String, Object>();
+        final Map<String, Object> coffeeNames = new LinkedHashMap<>();
         coffeeNames.put("1", "koffie");
         coffeeNames.put("2", "kafe");
         coffeeNames.put("3", "cafe");

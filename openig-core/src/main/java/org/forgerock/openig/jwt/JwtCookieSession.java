@@ -187,17 +187,17 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
 
     @Override
     public Set<String> keySet() {
-        return new DirtySet<String>(super.keySet(), this);
+        return new DirtySet<>(super.keySet(), this);
     }
 
     @Override
     public Collection<Object> values() {
-        return new DirtyCollection<Object>(super.values(), this);
+        return new DirtyCollection<>(super.values(), this);
     }
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        return new DirtySet<Entry<String, Object>>(super.entrySet(), this);
+        return new DirtySet<>(super.entrySet(), this);
     }
 
     @Override
