@@ -11,14 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.heap.Name.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 
 import org.forgerock.openig.heap.domain.Author;
 import org.forgerock.openig.heap.domain.AuthorHeaplet;
@@ -30,7 +31,6 @@ import org.forgerock.openig.heap.domain.Editor;
 import org.forgerock.openig.heap.domain.EditorHeapletFactory;
 import org.forgerock.openig.heap.domain.Publisher;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.NullLogSink;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -43,8 +43,8 @@ public class HeapletsTest {
     @BeforeMethod
     public void setUp() throws Exception {
         heap = new HeapImpl();
-        heap.put(LogSink.LOGSINK_HEAP_KEY, new NullLogSink());
-        heap.put(TemporaryStorage.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
     }
 
     @Test

@@ -17,7 +17,7 @@
 package org.forgerock.openig.audit;
 
 import static java.lang.Boolean.*;
-import static org.forgerock.openig.audit.AuditSystem.*;
+import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.*;
 
 import org.forgerock.openig.el.Expression;

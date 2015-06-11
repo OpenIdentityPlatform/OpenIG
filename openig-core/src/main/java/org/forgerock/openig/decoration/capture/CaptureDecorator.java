@@ -19,6 +19,7 @@ package org.forgerock.openig.decoration.capture;
 import static java.lang.String.*;
 import static java.util.Arrays.*;
 import static org.forgerock.openig.decoration.helper.LazyReference.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.*;
 
 import java.util.Set;
@@ -90,11 +91,6 @@ import org.forgerock.openig.log.Logger;
  * in the configuration files if default values are not satisfying.
  */
 public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
-
-    /**
-     * Key to retrieve a {@link CaptureDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String CAPTURE_HEAP_KEY = "capture";
 
     private final LazyReference<LogSink> reference;
     private final boolean captureEntity;
@@ -180,7 +176,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         if (sink == null) {
             // Use the sink of the decorated component
             Heap heap = context.getHeap();
-            sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LogSink.LOGSINK_HEAP_KEY), LogSink.class);
+            sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
         }
         Name name = context.getName();
         return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureExchange);

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.config;
@@ -30,11 +30,6 @@ import java.io.File;
  * This interface provides an abstraction over the directory layout to protect against changes of naming, ...
  */
 public interface Environment {
-
-    /**
-     * Key to retrieve an {@link Environment} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String ENVIRONMENT_HEAP_KEY = "Environment";
 
     /**
      * Returns the base directory of the OpenIG file system.

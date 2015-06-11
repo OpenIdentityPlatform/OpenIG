@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -62,11 +62,6 @@ import org.forgerock.openig.log.Logger;
  * A default {@literal timer} decorator is automatically created when OpenIG starts.
  */
 public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
-
-    /**
-     * Key to retrieve a {@link TimerDecorator} instance from the {@link Heap}.
-     */
-    public static final String TIMER_HEAP_KEY = "timer";
 
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)

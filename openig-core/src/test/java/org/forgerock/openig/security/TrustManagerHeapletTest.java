@@ -11,13 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -27,7 +28,6 @@ import javax.net.ssl.TrustManager;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.LogSink;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -37,7 +37,7 @@ public class TrustManagerHeapletTest {
      * Use a special heap object name to avoid the heaplet complaining about missing LogSink and TemporaryStorage heap
      * objects.
      */
-    public static final String OBJECT_NAME = LogSink.LOGSINK_HEAP_KEY;
+    public static final String OBJECT_NAME = LOGSINK_HEAP_KEY;
 
     @Test
     public void shouldLoadTrustManagerWithDefaultAlgorithm() throws Exception {

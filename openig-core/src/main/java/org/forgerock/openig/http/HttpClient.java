@@ -300,12 +300,6 @@ public class HttpClient extends GenericHeapObject {
         }
     }
 
-    /**
-     * Key to retrieve an {@link HttpClient} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
-
     private final Client client;
 
     /**

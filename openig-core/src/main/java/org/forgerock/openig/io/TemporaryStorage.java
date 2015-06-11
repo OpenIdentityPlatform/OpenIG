@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
@@ -28,11 +28,6 @@ import org.forgerock.util.Factory;
  * within a heaplet environment.
  */
 public class TemporaryStorage implements Factory<Buffer> {
-    /**
-     * Key to retrieve a {@link TemporaryStorage} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";
 
     private final Factory<Buffer> factory;
 

@@ -15,9 +15,9 @@
  */
 package org.forgerock.openig.heap;
 
-import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
+import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.io.TemporaryStorage;

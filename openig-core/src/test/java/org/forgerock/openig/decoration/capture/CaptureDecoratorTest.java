@@ -20,6 +20,7 @@ import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.decoration.helper.LazyReference.*;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class CaptureDecoratorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         HeapImpl heap = new HeapImpl(Name.of("anonymous"));
-        heap.put(LogSink.LOGSINK_HEAP_KEY, new NullLogSink());
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         when(context.getHeap()).thenReturn(heap);
         when(context.getConfig()).thenReturn(json(emptyMap()));
         when(context.getName()).thenReturn(Name.of("config.json", "Router"));

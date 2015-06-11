@@ -21,16 +21,8 @@ import static java.lang.String.*;
 import static org.forgerock.http.Http.*;
 import static org.forgerock.http.util.Json.*;
 import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.audit.AuditSystem.*;
-import static org.forgerock.openig.audit.decoration.AuditDecorator.*;
-import static org.forgerock.openig.config.Environment.*;
-import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
-import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
-import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
-import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.*;
 import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.openig.io.TemporaryStorage.*;
-import static org.forgerock.openig.log.LogSink.*;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
