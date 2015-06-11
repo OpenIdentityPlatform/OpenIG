@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
@@ -292,7 +293,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
                     heap.resolve(getWithDeprecation(config, logger, "providerHandler",
                             "httpHandler").required(), Handler.class);
 
-            TimeService time = TimeService.SYSTEM;
+            TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             AccessTokenResolver resolver = new OpenAmAccessTokenResolver(
                     httpHandler,
                     time,

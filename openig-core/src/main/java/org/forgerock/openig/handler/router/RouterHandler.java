@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.config.Environment.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.*;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.io.File;
@@ -286,9 +287,9 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
             int period = config.get("scanInterval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
             if (period > 0) {
+                TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
                 // Wrap the scanner in another scanner that will trigger scan at given interval
-                PeriodicDirectoryScanner periodic =
-                        new PeriodicDirectoryScanner(scanner, TimeService.SYSTEM);
+                PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(scanner, time);
 
                 // configuration values is expressed in seconds, needs to convert it to milliseconds
                 periodic.setScanInterval(period * 1000);
