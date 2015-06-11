@@ -27,6 +27,7 @@ import static org.forgerock.openig.config.Environment.*;
 import static org.forgerock.openig.decoration.baseuri.BaseUriDecorator.*;
 import static org.forgerock.openig.decoration.capture.CaptureDecorator.*;
 import static org.forgerock.openig.decoration.timer.TimerDecorator.*;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.http.HttpClient.*;
 import static org.forgerock.openig.io.TemporaryStorage.*;
 import static org.forgerock.openig.log.LogSink.*;
@@ -58,6 +59,7 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Factory;
+import org.forgerock.util.time.TimeService;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -107,11 +109,13 @@ public final class GatewayHttpApplication implements HttpApplication {
             final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
                     .getResource("default-config.json");
             final JsonValue config = readJson(configurationURL);
+            TimeService timeService = TimeService.SYSTEM;
 
             // Create and configure the heap
             heap = new HeapImpl(Name.of(configurationURL.toString()));
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
+            heap.put(TIME_SERVICE_HEAP_KEY, timeService);
 
             AuditSystem auditSystem = new ForwardingAuditSystem();
 

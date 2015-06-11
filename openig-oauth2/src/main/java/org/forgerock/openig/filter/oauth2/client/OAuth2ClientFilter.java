@@ -28,6 +28,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpResponse;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
 import static org.forgerock.util.Utils.closeSilently;
@@ -180,8 +181,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private boolean requireLogin = true;
     private List<Expression<String>> scopes;
     private Expression<?> target;
-    private TimeService time = TimeService.SYSTEM;
+    private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
+
+    public OAuth2ClientFilter(TimeService time) {
+        this.time = time;
+    }
 
     /**
      * Adds an authorization provider. At least one provider must be specified,
@@ -404,21 +409,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      */
     public OAuth2ClientFilter setTarget(final Expression<?> target) {
         this.target = target;
-        return this;
-    }
-
-    /**
-     * Sets the time service which will be used for determining a token's
-     * expiration time. By default {@link TimeService#SYSTEM} will be used. This
-     * method is intended for unit testing.
-     *
-     * @param time
-     *            The time service which will be used for determining a token's
-     *            expiration time.
-     * @return This filter.
-     */
-    OAuth2ClientFilter setTime(final TimeService time) {
-        this.time = time;
         return this;
     }
 
@@ -836,7 +826,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         @Override
         public Object create() throws HeapException {
 
-            final OAuth2ClientFilter filter = new OAuth2ClientFilter();
+            TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.%s}", DEFAULT_TOKEN_KEY)), Object.class));
