@@ -33,8 +33,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forgerock.http.Client;
 import org.forgerock.http.Handler;
+import org.forgerock.http.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -256,7 +256,7 @@ public class OAuth2ProviderTest {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new Client()));
+        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient(new HttpClientHandler()));
         return heap;
     }
 

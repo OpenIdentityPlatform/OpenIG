@@ -19,6 +19,7 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.format;
+import static org.forgerock.http.HttpClientHandler.*;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
 import static org.forgerock.openig.util.JsonValues.warnForDeprecation;
@@ -37,11 +38,14 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.forgerock.http.Client;
-import org.forgerock.http.Client.HostnameVerifier;
+import org.forgerock.http.Context;
+import org.forgerock.http.HttpClientHandler;
+import org.forgerock.http.HttpClientHandler.HostnameVerifier;
 import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -134,39 +138,37 @@ public class HttpClient extends GenericHeapObject {
             final Options options = Options.defaultOptions();
 
             if (config.isDefined("connections")) {
-                options.set(Client.OPTION_MAX_CONNECTIONS, config.get("connections").asInteger());
+                options.set(OPTION_MAX_CONNECTIONS, config.get("connections").asInteger());
             }
 
             if (config.isDefined("disableReuseConnection")) {
-                options.set(Client.OPTION_REUSE_CONNECTIONS, !config.get("disableReuseConnection")
-                        .asBoolean());
+                options.set(OPTION_REUSE_CONNECTIONS, !config.get("disableReuseConnection").asBoolean());
             }
 
             if (config.isDefined("disableRetries")) {
-                options.set(Client.OPTION_RETRY_REQUESTS, !config.get("disableRetries").asBoolean());
+                options.set(OPTION_RETRY_REQUESTS, !config.get("disableRetries").asBoolean());
             }
 
             if (config.isDefined("hostnameVerifier")) {
-                options.set(Client.OPTION_HOSTNAME_VERIFIER, config.get("hostnameVerifier").asEnum(
-                        HostnameVerifier.class));
+                options.set(OPTION_HOSTNAME_VERIFIER, config.get("hostnameVerifier")
+                        .asEnum(HostnameVerifier.class));
             }
 
             if (config.isDefined("soTimeout")) {
-                options.set(Client.OPTION_SO_TIMEOUT, duration(config.get("soTimeout").asString()));
+                options.set(OPTION_SO_TIMEOUT, duration(config.get("soTimeout").asString()));
             }
 
             if (config.isDefined("connectionTimeout")) {
-                options.set(Client.OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout")
-                        .asString()));
+                options.set(OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout").asString()));
             }
 
-            options.set(Client.OPTION_TEMPORARY_STORAGE, storage);
-            options.set(Client.OPTION_KEY_MANAGERS, getKeyManagers());
-            options.set(Client.OPTION_TRUST_MANAGERS, getTrustManagers());
+            options.set(OPTION_TEMPORARY_STORAGE, storage);
+            options.set(OPTION_KEY_MANAGERS, getKeyManagers());
+            options.set(OPTION_TRUST_MANAGERS, getTrustManagers());
 
             // Create the HttpClient instance
             try {
-                return new HttpClient(new Client(options));
+                return new HttpClient(new HttpClientHandler(options));
             } catch (final HttpApplicationException e) {
                 throw new HeapException(format("Cannot build HttpClient named '%s'", name), e);
             }
@@ -300,27 +302,32 @@ public class HttpClient extends GenericHeapObject {
         }
     }
 
-    private final Client client;
+    /** The HTTP client handler to which requests will be delegated. */
+    private final HttpClientHandler client;
+
+    /** Dummy root context to send with each request. */
+    private final Context context = new RootContext();
 
     /**
-     * Creates a new {@code HttpClient} using the provided commons HTTP client.
+     * Creates a new {@code HttpClient} using the provided commons HTTP client
+     * handler.
      *
      * @param client
-     *            The commons HTTP client.
+     *            The commons HTTP client handler.
      */
-    public HttpClient(final Client client) {
+    public HttpClient(final HttpClientHandler client) {
         this.client = client;
     }
 
     /**
-     * Creates a new {@code HttpClient} using a commons HTTP client with default
-     * settings.
+     * Creates a new {@code HttpClient} using a commons HTTP client handler with
+     * default settings.
      *
      * @throws HttpApplicationException
-     *             If no client provider could be found.
+     *             If no HTTP client provider could be found.
      */
     public HttpClient() throws HttpApplicationException {
-        this(new Client());
+        this(new HttpClientHandler());
     }
 
     /**
@@ -346,7 +353,12 @@ public class HttpClient extends GenericHeapObject {
      * @return The HTTP response.
      */
     public Response execute(final Request request) {
-        return client.send(request);
+        try {
+            return executeAsync(request).getOrThrow();
+        } catch (final InterruptedException e) {
+            // FIXME: is a 408 time out the best status code?
+            return new Response().setStatus(Status.REQUEST_TIMEOUT);
+        }
     }
 
     /**
@@ -358,7 +370,7 @@ public class HttpClient extends GenericHeapObject {
      * @return The promise of the HTTP response.
      */
     public Promise<Response, NeverThrowsException> executeAsync(final Request request) {
-        return client.sendAsync(request);
+        return client.handle(context, request);
     }
 
     /**
