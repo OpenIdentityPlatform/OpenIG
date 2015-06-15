@@ -183,7 +183,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 // of parameters/placeholders in the prepared statement
                 if (expressions.hasNext()) {
                     logger.warning(format(" All parameters with index >= %d are ignored because there are "
-                                                  + "no placeholders for them in the configured prepared statement (%s)",
+                                          + "no placeholders for them in the configured prepared statement (%s)",
                                           count,
                                           preparedStatement));
                 }
