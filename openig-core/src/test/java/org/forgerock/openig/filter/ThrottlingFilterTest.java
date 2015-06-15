@@ -1,0 +1,131 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2015 ForgeRock AS.
+ */
+package org.forgerock.openig.filter;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.util.time.Duration.duration;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.forgerock.http.Context;
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
+import org.testng.annotations.Test;
+
+@SuppressWarnings("javadoc")
+public class ThrottlingFilterTest {
+
+    @Test
+    public void testSample() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+
+        // This one has to call the handler as there are enough tokens in the bucket.
+        Handler handler1 = mock(Handler.class, "handler1");
+        filter.filter(mock(Context.class), new Request(), handler1);
+        verify(handler1).handle(any(Context.class), any(Request.class));
+
+        time.advance(duration("2 seconds"));
+        // This one does not have to be called as there is no token anymore in the bucket.
+        Handler handler2 = mock(Handler.class, "handler2");
+        Promise<Response, NeverThrowsException> promise2 = filter.filter(mock(Context.class),
+                                                                         new Request(),
+                                                                         handler2);
+        verifyZeroInteractions(handler2);
+        assertThat(promise2.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+
+        time.advance(duration("4 seconds"));
+        // This one has to call the handler as the bucket has been refilled.
+        Handler handler3 = mock(Handler.class, "handler3");
+        filter.filter(mock(Context.class), new Request(), handler3);
+        verify(handler3).handle(any(Context.class), any(Request.class));
+    }
+
+    @Test
+    public void testConcurrency() throws Exception {
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+
+        FakeTimeService time = new FakeTimeService(0);
+        final ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+
+        // This one has to be called as there are enough tokens in the bucket.
+        final Handler handler1 = new LatchHandler(latch1, latch2);
+
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                filter.filter(mock(Context.class), new Request(), handler1);
+            }
+        };
+        Thread t1 = new Thread(r);
+        t1.setName("Filter for request #1");
+        t1.start();
+        latch2.await();
+
+        time.advance(duration("2 seconds"));
+        try {
+            // This one does not have to be called as there no token anymore in the bucket.
+            Handler handler2 = mock(Handler.class, "handler2");
+            Promise<Response, NeverThrowsException> promise2 = filter.filter(mock(Context.class),
+                                                                             new Request(),
+                                                                             handler2);
+
+            verifyZeroInteractions(handler2);
+
+            Response response = promise2.get(20, TimeUnit.SECONDS);
+            assertThat(response.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+            assertThat(response.getHeaders().getFirst("Retry-After")).isEqualTo("1");
+        } finally {
+            latch1.countDown();
+            t1.join();
+        }
+    }
+
+    private static class LatchHandler implements Handler {
+
+        private CountDownLatch latch1;
+        private CountDownLatch latch2;
+
+        public LatchHandler(CountDownLatch latch1, CountDownLatch latch2) {
+            this.latch1 = latch1;
+            this.latch2 = latch2;
+        }
+
+        @Override
+        public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
+            try {
+                latch2.countDown();
+                latch1.await();
+                return null;
+            } catch (InterruptedException e) {
+                return Promises.newResultPromise(new Response(Status.INTERNAL_SERVER_ERROR));
+            }
+        }
+
+    }
+
+}

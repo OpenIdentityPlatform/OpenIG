@@ -41,6 +41,7 @@ import org.forgerock.openig.filter.ScriptableFilter;
 import org.forgerock.openig.filter.SqlAttributesFilter;
 import org.forgerock.openig.filter.StaticRequestFilter;
 import org.forgerock.openig.filter.SwitchFilter;
+import org.forgerock.openig.filter.ThrottlingFilter;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.handler.DesKeyGenHandler;
 import org.forgerock.openig.handler.DispatchHandler;
@@ -98,6 +99,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
         ALIASES.put("TemporaryStorage", TemporaryStorage.class);
+        ALIASES.put("ThrottlingFilter", ThrottlingFilter.class);
         ALIASES.put("TimerDecorator", TimerDecorator.class);
         ALIASES.put("TrustManager", TrustManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
