@@ -26,7 +26,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;

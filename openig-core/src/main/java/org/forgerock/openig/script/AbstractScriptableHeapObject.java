@@ -32,7 +32,6 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
