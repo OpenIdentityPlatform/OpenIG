@@ -40,7 +40,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.http.Responses;
