@@ -55,7 +55,8 @@ public final class Adapters {
         exchange.principal = requestContext.getPrincipal();
         exchange.session = requestContext.getSession();
         exchange.request = request;
-        // FIXME To be removed
+        // TODO We will need to find a more robust solution when Exchange will be removed
+        exchange.putAll(requestContext.getAttributes());
         requestContext.getAttributes().clear();
         return exchange;
     }
