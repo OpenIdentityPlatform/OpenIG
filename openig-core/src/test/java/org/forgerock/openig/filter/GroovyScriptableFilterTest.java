@@ -562,9 +562,9 @@ public class GroovyScriptableFilterTest {
     public void testLogging() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("logger.error('test')");
         final Exchange exchange = new Exchange();
-        filter.logger = mock(Logger.class);
+        filter.setLogger(mock(Logger.class));
         filter.filter(exchange, new Request(), mock(Handler.class));
-        verify(filter.logger).error("test");
+        verify(filter.getLogger()).error("test");
     }
 
     @Test

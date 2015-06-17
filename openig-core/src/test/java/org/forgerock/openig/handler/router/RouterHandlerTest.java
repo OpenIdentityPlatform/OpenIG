@@ -212,7 +212,7 @@ public class RouterHandlerTest {
     @Test
     public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
         RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
-        router.logger = logger;
+        router.setLogger(logger);
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
         File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
@@ -232,7 +232,7 @@ public class RouterHandlerTest {
     public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
         RouteBuilder builder = spy(new RouteBuilder(heap, Name.of("anonymous")));
         RouterHandler router = new RouterHandler(builder, scanner);
-        router.logger = logger;
+        router.setLogger(logger);
 
         doThrow(new NullPointerException()).when(builder).build(any(File.class));
 
