@@ -105,7 +105,7 @@ public class BucketMain {
         threadPool.awaitTermination(10, TimeUnit.SECONDS);
 
         Meter outputMeter = METRICS.meter("output");
-        System.out.printf("Final output mean rate is %2d %f", outputMeter.getMeanRate());
+        System.out.printf("Final output mean rate is %f %n", outputMeter.getMeanRate());
     }
 
     static void startReport() {
