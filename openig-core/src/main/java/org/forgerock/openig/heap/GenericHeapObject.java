@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -29,11 +29,43 @@ import org.forgerock.openig.log.NullLogSink;
 public class GenericHeapObject {
 
     /** Provides methods for various logging activities. */
-    public Logger logger = new Logger(new NullLogSink(), Name.of(getClass()));
+    protected Logger logger = new Logger(new NullLogSink(), Name.of(getClass()));
 
     /**
      * Allocates temporary buffers for caching streamed content during
      * processing.
      */
-    public TemporaryStorage storage = new TemporaryStorage();
+    protected TemporaryStorage storage = new TemporaryStorage();
+
+    /**
+     * Return the logger.
+     * @return the logger
+     */
+    public Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * Sets the logger.
+     * @param logger the logger to set.
+     */
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
+    /**
+     * Returns the storage.
+     * @return the storage
+     */
+    public TemporaryStorage getStorage() {
+        return storage;
+    }
+
+    /**
+     * Sets the storage.
+     * @param storage the storage to set.
+     */
+    public void setStorage(TemporaryStorage storage) {
+        this.storage = storage;
+    }
 }

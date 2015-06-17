@@ -220,7 +220,7 @@ public class CryptoHeaderFilterTest {
 
         filter.setKey(buildKey(algorithm));
         filter.getHeaders().add(HEADER_NAME);
-        filter.logger = logger;
+        filter.setLogger(logger);
 
         Request request = new Request();
         request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
@@ -252,7 +252,7 @@ public class CryptoHeaderFilterTest {
         filter.getHeaders().add(HEADER_NAME);
         filter.setKey(buildKey(DEFAULT_ALGORITHM));
         filter.setCharset(UTF_8);
-        filter.logger = logger;
+        filter.setLogger(logger);
         return filter;
     }
 

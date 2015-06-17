@@ -47,7 +47,7 @@ public class WelcomeHandler extends GenericHeapObject implements Handler {
         response.setStatus(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
         response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
-                "welcome.html"), storage));
+                "welcome.html"), getStorage()));
         return Promises.newResultPromise(response);
     }
 
