@@ -32,6 +32,7 @@ public class FieldMapTest {
         public Boolean booleanField;
         @SuppressWarnings("unused")
         private String privateField;
+        public final String finalField = "Booo";
     }
 
     private Fields fields = new Fields();
@@ -87,5 +88,15 @@ public class FieldMapTest {
     @Test
     public void stringFieldValue() {
         assertThat(map.get("stringField")).isEqualTo(fields.stringField);
+    }
+
+    @Test
+    public void finalStringFieldValue() {
+        assertThat(map.get("finalField")).isEqualTo("Booo");
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void finalStringFieldValueUnmodifiable() {
+        map.put("finalField", "Blah");
     }
 }
