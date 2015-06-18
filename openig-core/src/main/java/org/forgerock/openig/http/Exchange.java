@@ -62,7 +62,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
      * is immutable.
      */
-    public final URI originalUri;
+    private final URI originalUri;
 
     /**
      * TODO this is only for having test unmodified and still working.
@@ -181,5 +181,15 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public void setClientInfo(ClientInfo clientInfo) {
         put("clientInfo", clientInfo);
+    }
+
+    /**
+     * The original message's URI, as received by the web container. This value is set by the receiving servlet and
+     * is immutable.
+     *
+     * @return the originalUri
+     */
+    public URI getOriginalUri() {
+        return originalUri;
     }
 }

@@ -62,7 +62,7 @@ final class OAuth2Utils {
                 }
             }
             // Resolve the computed Uri against the original Exchange URI
-            return exchange.originalUri.resolve(new URI(uriString));
+            return exchange.getOriginalUri().resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
             throw new ResponseException(format("Cannot build URI from %s", uriString), e);
         }
@@ -107,7 +107,7 @@ final class OAuth2Utils {
 
     static boolean matchesUri(final Exchange exchange, final URI uri) {
         final URI pathOnly = withoutQueryAndFragment(uri);
-        final URI requestPathOnly = withoutQueryAndFragment(exchange.originalUri);
+        final URI requestPathOnly = withoutQueryAndFragment(exchange.getOriginalUri());
         return pathOnly.equals(requestPathOnly);
     }
 
