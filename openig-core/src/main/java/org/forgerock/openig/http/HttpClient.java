@@ -332,7 +332,7 @@ public class HttpClient extends GenericHeapObject {
 
     /**
      * Submits the exchange request to the remote server. Creates and populates
-     * the exchange response from that provided by the remote server.
+     * the exchange.response from that provided by the remote server.
      *
      * @param exchange
      *            The HTTP exchange containing the request to send and where the
@@ -340,8 +340,8 @@ public class HttpClient extends GenericHeapObject {
      */
     public void execute(final Exchange exchange) {
         // recover any previous response connection, if present
-        closeSilently(exchange.response);
-        exchange.response = execute(exchange.getRequest());
+        closeSilently(exchange.getResponse());
+        exchange.setResponse(execute(exchange.getRequest()));
     }
 
     /**

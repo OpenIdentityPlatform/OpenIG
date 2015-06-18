@@ -84,7 +84,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.response = new Response();
+        exchange.setResponse(new Response());
         capture.capture(exchange, CapturePoint.RESPONSE);
 
         verify(logger).info(anyString());
@@ -95,7 +95,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.response = new Response();
+        exchange.setResponse(new Response());
         capture.capture(exchange, CapturePoint.FILTERED_RESPONSE);
 
         verify(logger).info(anyString());

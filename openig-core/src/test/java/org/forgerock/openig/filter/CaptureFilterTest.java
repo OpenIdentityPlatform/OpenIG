@@ -106,7 +106,7 @@ public class CaptureFilterTest {
         exchange.getRequest().getHeaders().add("Multi", "First");
         exchange.getRequest().getHeaders().add("Multi", "Second");
         exchange.getRequest().getHeaders().add("Multi", "Third");
-        exchange.response = new Response();
+        exchange.setResponse(new Response());
 
         filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
@@ -197,7 +197,7 @@ public class CaptureFilterTest {
         exchange.setRequest(new Request());
         exchange.getRequest().setEntity(entity);
         exchange.getRequest().getHeaders().putSingle("Content-type", mimeType);
-        exchange.response = new Response();
+        exchange.setResponse(new Response());
         return exchange;
     }
 

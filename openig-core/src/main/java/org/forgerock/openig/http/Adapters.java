@@ -81,7 +81,7 @@ public final class Adapters {
         @Override
         public void handle(final Exchange exchange) throws HandlerException, IOException {
             try {
-                exchange.response = handler.handle(exchange, exchange.getRequest()).getOrThrow();
+                exchange.setResponse(handler.handle(exchange, exchange.getRequest()).getOrThrow());
             } catch (InterruptedException e) {
                 throw new HandlerException(e);
             }

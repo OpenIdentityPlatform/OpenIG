@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -34,7 +34,7 @@ public interface Filter {
      * Filters the request and/or response of an exchange. Initially, {@code exchange.request}
      * contains the request to be filtered. To pass the request to the next filter or handler
      * in the chain, the filter calls {@code next.handle(exchange)}. After this call,
-     * {@code exchange.response} contains the response that can be filtered.
+     * {@code exchange.getResponse()} contains the response that can be filtered.
      * <p>
      * This method may elect not to pass the request to the next filter or handler, and instead
      * handle the request itself. It can achieve this by merely avoiding a call to

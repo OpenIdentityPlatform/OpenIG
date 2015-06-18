@@ -46,9 +46,6 @@ import org.forgerock.util.Reject;
  */
 public class Exchange extends ExtensibleFieldMap implements Context {
 
-    /** The response portion of the HTTP exchange. */
-    public Response response;
-
     /**
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
      * is immutable.
@@ -163,6 +160,24 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public void setRequest(Request request) {
         put("request", request);
+    }
+
+    /**
+     * Returns the response portion of the HTTP exchange.
+     *
+     * @return the response
+     */
+    public Response getResponse() {
+        return (Response) get("response");
+    }
+
+    /**
+     * Sets the response portion of the HTTP exchange.
+     *
+     * @param response the response to set
+     */
+    public void setResponse(Response response) {
+        put("response", response);
     }
 
     /**
