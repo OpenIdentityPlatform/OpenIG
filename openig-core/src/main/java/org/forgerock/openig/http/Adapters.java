@@ -51,7 +51,6 @@ public final class Adapters {
         final Exchange exchange = new Exchange(request.getUri().asURI());
         exchange.parent = context;
         exchange.clientInfo = context.asContext(ClientInfoContext.class);
-        exchange.exchange = exchange;
         exchange.principal = requestContext.getPrincipal();
         exchange.session = requestContext.getSession();
         exchange.request = request;
