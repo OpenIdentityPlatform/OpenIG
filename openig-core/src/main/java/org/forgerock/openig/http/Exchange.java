@@ -52,9 +52,6 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     /** The response portion of the HTTP exchange. */
     public Response response;
 
-    /** The principal associated with the request, or {@code null} if unknown. */
-    public Principal principal;
-
     /** Session context associated with the remote client. */
     public Session session;
 
@@ -154,6 +151,24 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     @Override
     public boolean isRootContext() {
         return false;
+    }
+
+    /**
+     * The principal associated with the request, or {@code null} if unknown.
+     *
+     * @return the principal
+     */
+    public Principal getPrincipal() {
+        return (Principal) get("principal");
+    }
+
+    /**
+     * Sets the principal associated with the request.
+     *
+     * @param principal the principal to set
+     */
+    public void setPrincipal(Principal principal) {
+        put("principal",  principal);
     }
 
     /**
