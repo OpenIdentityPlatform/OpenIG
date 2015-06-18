@@ -143,29 +143,6 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
 
     <tbody>
      <row>
-      <entry>
-       <link
-        xlink:show="new"
-        xlink:href="reference#CaptureFilter"
-        xlink:role="http://docbook.org/xlink/role/olink"
-        >CaptureFilter</link>
-      </entry>
-
-      <entry>
-       Entire object
-      </entry>
-
-      <entry>
-       Use a
-       <link
-        xlink:show="new"
-        xlink:href="reference#CaptureDecorator"
-        xlink:role="http://docbook.org/xlink/role/olink"
-        >CaptureDecorator</link> instead
-      </entry>
-     </row>
-
-     <row>
       <entry morerows="1">
        <link
         xlink:show="new"
@@ -320,15 +297,6 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
    <listitem>
     <para>
      <link
-      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/CaptureFilter.html"
-      xlink:show="new"
-     >org.forgerock.openig.filter.CaptureFilter</link>
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     <link
       xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/NestedHeaplet.html"
       xlink:show="new"
      >org.forgerock.openig.heap.NestedHeaplet</link>
@@ -351,7 +319,13 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
   </para>
 
   <para>
-   No functionality has been removed in this release.
+   The CaptureFilter implementation has been removed.
+   Use a
+   <link
+    xlink:show="new"
+    xlink:href="reference#CaptureDecorator"
+    xlink:role="http://docbook.org/xlink/role/olink"
+   >CaptureDecorator</link> instead.
   </para>
  </section>
 </chapter>
