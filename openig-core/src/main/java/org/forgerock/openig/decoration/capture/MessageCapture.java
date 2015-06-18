@@ -98,10 +98,10 @@ public class MessageCapture {
         int exchangeId = System.identityHashCode(exchange);
         switch (mode) {
         case REQUEST:
-            captureRequest(writer, exchange.request, exchangeId);
+            captureRequest(writer, exchange.getRequest(), exchangeId);
             break;
         case FILTERED_REQUEST:
-            captureFilteredRequest(writer, exchange.request, exchangeId);
+            captureFilteredRequest(writer, exchange.getRequest(), exchangeId);
             break;
         case RESPONSE:
             captureResponse(writer, exchange.response, exchangeId);
@@ -125,7 +125,7 @@ public class MessageCapture {
 
     void capture(final Exchange exchange, Request request, final CapturePoint mode) {
         // FIXME Compat
-        exchange.request = request;
+        exchange.setRequest(request);
         capture(exchange, mode);
     }
 

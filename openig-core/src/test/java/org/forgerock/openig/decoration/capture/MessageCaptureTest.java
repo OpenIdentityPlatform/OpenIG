@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
@@ -50,7 +50,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         capture.capture(exchange, CapturePoint.REQUEST);
 
         verify(logger).info(anyString());
@@ -73,7 +73,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         capture.capture(exchange, CapturePoint.FILTERED_REQUEST);
 
         verify(logger).info(anyString());

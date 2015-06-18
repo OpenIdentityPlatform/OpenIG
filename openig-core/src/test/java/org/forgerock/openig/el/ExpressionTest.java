@@ -120,8 +120,8 @@ public class ExpressionTest {
     @Test
     public void exchangeRequestHeader() throws ExpressionException {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.getHeaders().putSingle("Host", "www.example.com");
+        exchange.setRequest(new Request());
+        exchange.getRequest().getHeaders().putSingle("Host", "www.example.com");
         Expression<String> expr = Expression.valueOf("${exchange.request.headers['Host'][0]}", String.class);
         String host = expr.eval(exchange);
         assertThat(host).isEqualTo("www.example.com");
@@ -130,8 +130,8 @@ public class ExpressionTest {
     @Test
     public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://test.com:123/path/to/resource.html");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
         String o = Expression.valueOf("${exchange.request.uri.path}", String.class).eval(exchange);
         assertThat(o).isEqualTo("/path/to/resource.html");
     }
@@ -162,7 +162,7 @@ public class ExpressionTest {
         response.getHeaders().putSingle("Set-Cookie", "MyCookie=example; path=/");
 
         Exchange exchange = new Exchange();
-        exchange.request = request;
+        exchange.setRequest(request);
         exchange.response = response;
 
         Expression<Boolean> boolExpr = Expression.valueOf("${exchange.request.uri.path == '/wordpress/wp-login.php' "
@@ -265,7 +265,7 @@ public class ExpressionTest {
     @Test
     public void getNullExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         String o = Expression.valueOf("${exchange.request.entity.string}", String.class).eval(exchange);
         assertThat(o).isEqualTo("");
     }
@@ -273,7 +273,7 @@ public class ExpressionTest {
     @Test
     public void getNullExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         Map<?, ?> o = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
         assertThat(o).isNull();
     }
@@ -281,8 +281,8 @@ public class ExpressionTest {
     @Test
     public void getExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity("old mcdonald had a farm");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setEntity("old mcdonald had a farm");
         String o = Expression.valueOf("${exchange.request.entity.string}", String.class).eval(exchange);
         assertThat(o).isEqualTo("old mcdonald had a farm");
     }
@@ -290,8 +290,8 @@ public class ExpressionTest {
     @Test
     public void getExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
         Map<?, ?> map = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
         assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345));
 
@@ -303,22 +303,22 @@ public class ExpressionTest {
     @Test
     public void setExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         Expression.valueOf("${exchange.request.entity.json}", Map.class).set(exchange, object(field("k1", "v1"),
                                                                                               field("k2", 123)));
-        assertThat(exchange.request.getEntity()).isNotNull();
-        assertThat(exchange.request.getEntity().getString())
+        assertThat(exchange.getRequest().getEntity()).isNotNull();
+        assertThat(exchange.getRequest().getEntity().getString())
                 .isEqualTo("{\"k1\":\"v1\",\"k2\":123}");
     }
 
     @Test
     public void setExchangeRequestEntityAsString() throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         Expression.valueOf("${exchange.request.entity.string}", String.class).set(exchange,
                 "mary mary quite contrary");
-        assertThat(exchange.request.getEntity()).isNotNull();
-        assertThat(exchange.request.getEntity().getString()).isEqualTo("mary mary quite contrary");
+        assertThat(exchange.getRequest().getEntity()).isNotNull();
+        assertThat(exchange.getRequest().getEntity().getString()).isEqualTo("mary mary quite contrary");
     }
 
     @Test
@@ -327,11 +327,11 @@ public class ExpressionTest {
                 String.class);
         Expression<String> password = Expression.valueOf("${exchange.request.headers['password'][0]}", String.class);
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("GET");
-        exchange.request.setUri("http://test.com:123/path/to/resource.html");
-        exchange.request.getHeaders().add("username", "Myname");
-        exchange.request.getHeaders().add("password", "Mypass");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setMethod("GET");
+        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
+        exchange.getRequest().getHeaders().add("username", "Myname");
+        exchange.getRequest().getHeaders().add("password", "Mypass");
 
         String user = username.eval(exchange);
         String pass = password.eval(exchange);

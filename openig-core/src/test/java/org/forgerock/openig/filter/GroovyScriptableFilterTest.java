@@ -156,25 +156,25 @@ public class GroovyScriptableFilterTest {
 
         // Try with valid credentials
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://test/login"));
-        exchange.request.getHeaders().add("Username", "bjensen");
-        exchange.request.getHeaders().add("Password", "hifalutin");
-        Promise<Response, NeverThrowsException> promise1 = handler.handle(exchange, exchange.request);
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri(new URI("http://test/login"));
+        exchange.getRequest().getHeaders().add("Username", "bjensen");
+        exchange.getRequest().getHeaders().add("Password", "hifalutin");
+        Promise<Response, NeverThrowsException> promise1 = handler.handle(exchange, exchange.getRequest());
         assertThat(promise1.get().getStatus()).isEqualTo(Status.OK);
 
         // Try with invalid credentials
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://test/login"));
-        exchange.request.getHeaders().add("Username", "bob");
-        exchange.request.getHeaders().add("Password", "dobbs");
-        Promise<Response, NeverThrowsException> promise2 = handler.handle(exchange, exchange.request);
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri(new URI("http://test/login"));
+        exchange.getRequest().getHeaders().add("Username", "bob");
+        exchange.getRequest().getHeaders().add("Password", "dobbs");
+        Promise<Response, NeverThrowsException> promise2 = handler.handle(exchange, exchange.getRequest());
         assertThat(promise2.get().getStatus()).isEqualTo(Status.FORBIDDEN);
 
         // Try with different path
-        exchange.request = new Request();
-        exchange.request.setUri(new URI("http://test/index.html"));
-        Promise<Response, NeverThrowsException> promise3 = handler.handle(exchange, exchange.request);
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri(new URI("http://test/index.html"));
+        Promise<Response, NeverThrowsException> promise3 = handler.handle(exchange, exchange.getRequest());
         assertThat(promise3.get().getStatus()).isEqualTo(Status.UNAUTHORIZED);
     }
 
@@ -263,7 +263,7 @@ public class GroovyScriptableFilterTest {
 
             // @formatter:on
             final Exchange exchange = new Exchange();
-            exchange.request = new Request();
+            exchange.setRequest(new Request());
             Response response = filter.filter(exchange, null, null).get();
 
             verifyHttp(server).once(method(Method.GET), Condition.uri("/example"));

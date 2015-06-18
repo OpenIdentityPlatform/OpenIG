@@ -46,9 +46,6 @@ import org.forgerock.util.Reject;
  */
 public class Exchange extends ExtensibleFieldMap implements Context {
 
-    /** The request portion of the HTTP exchange. */
-    public Request request;
-
     /** The response portion of the HTTP exchange. */
     public Response response;
 
@@ -148,6 +145,24 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     @Override
     public boolean isRootContext() {
         return false;
+    }
+
+    /**
+     * Returns the request portion of the HTTP exchange.
+     *
+     * @return the request
+     */
+    public Request getRequest() {
+        return (Request) get("request");
+    }
+
+    /**
+     * Sets the request portion of the HTTP exchange.
+     *
+     * @param request the request to set
+     */
+    public void setRequest(Request request) {
+        put("request", request);
     }
 
     /**

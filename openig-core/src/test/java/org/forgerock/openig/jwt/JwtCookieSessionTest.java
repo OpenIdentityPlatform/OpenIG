@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt;
@@ -207,7 +207,7 @@ public class JwtCookieSessionTest {
     public void shouldWarnTheUserAboutGettingCloseToTheThreshold() throws Exception {
         Exchange exchange = createExchange();
         Logger spied = spy(logger);
-        JwtCookieSession session = new JwtCookieSession(exchange.request, keyPair, "Test", spied);
+        JwtCookieSession session = new JwtCookieSession(exchange.getRequest(), keyPair, "Test", spied);
         session.put("in-between-3KB-and-4KB", generateMessageOf(2500));
         session.save(exchange.response);
 
@@ -224,17 +224,17 @@ public class JwtCookieSessionTest {
 
     private static Exchange createExchange() {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         exchange.response = new Response();
         return exchange;
     }
 
     private JwtCookieSession newJwtSession(final Exchange exchange)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return new JwtCookieSession(exchange.request, keyPair, OPENIG_JWT_SESSION, logger);
+        return new JwtCookieSession(exchange.getRequest(), keyPair, OPENIG_JWT_SESSION, logger);
     }
 
     private static void setRequestCookie(final Exchange exchange, final String cookie) {
-        exchange.request.getHeaders().putSingle("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
+        exchange.getRequest().getHeaders().putSingle("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
     }
 }
