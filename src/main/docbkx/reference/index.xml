@@ -128,7 +128,6 @@
   </partintro>
 
   <xinclude:include href="man-AssignmentFilter.xml" />
-  <xinclude:include href="man-CaptureFilter.xml" />
   <xinclude:include href="man-CookieFilter.xml" />
   <xinclude:include href="man-CryptoHeaderFilter.xml" />
   <xinclude:include href="man-EntityExtractFilter.xml" />
