@@ -46,9 +46,6 @@ import org.forgerock.util.Reject;
  */
 public class Exchange extends ExtensibleFieldMap implements Context {
 
-    /** Self-referential value to make this the root object in the exchange object model. */
-    public Exchange exchange = this;
-
     /** The request portion of the HTTP exchange. */
     public Request request;
 
@@ -162,4 +159,12 @@ public class Exchange extends ExtensibleFieldMap implements Context {
         return false;
     }
 
+    /**
+     * Self-referential value to make this the root object in the exchange object model.
+     *
+     * @return the exchange
+     */
+    public Exchange getExchange() {
+        return this;
+    }
 }
