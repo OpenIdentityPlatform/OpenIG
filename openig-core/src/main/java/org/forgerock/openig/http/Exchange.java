@@ -58,9 +58,6 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     /** Session context associated with the remote client. */
     public Session session;
 
-    /** The info we can obtain from the client from this request. */
-    public ClientInfo clientInfo;
-
     /**
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
      * is immutable.
@@ -166,5 +163,23 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public Exchange getExchange() {
         return this;
+    }
+
+    /**
+     * The info we can obtain from the client from this request.
+     *
+     * @return the clientInfo
+     */
+    public ClientInfo getClientInfo() {
+        return (ClientInfo) get("clientInfo");
+    }
+
+    /**
+     * Sets the clientInfo.
+     *
+     * @param clientInfo the clientInfo to set
+     */
+    public void setClientInfo(ClientInfo clientInfo) {
+        put("clientInfo", clientInfo);
     }
 }
