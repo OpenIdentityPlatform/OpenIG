@@ -125,8 +125,8 @@ public class RouteBuilderTest {
 
         Exchange exchange = new Exchange();
         exchange.request = new Request();
-        exchange.session = new SimpleMapSession();
-        HttpContext httpContext = new HttpContext(new RootContext(), exchange.session);
+        exchange.setSession(new SimpleMapSession());
+        HttpContext httpContext = new HttpContext(new RootContext(), exchange.getSession());
         exchange.parent = httpContext;
 
 

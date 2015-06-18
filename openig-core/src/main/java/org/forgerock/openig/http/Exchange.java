@@ -52,9 +52,6 @@ public class Exchange extends ExtensibleFieldMap implements Context {
     /** The response portion of the HTTP exchange. */
     public Response response;
 
-    /** Session context associated with the remote client. */
-    public Session session;
-
     /**
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
      * is immutable.
@@ -178,6 +175,24 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public Exchange getExchange() {
         return this;
+    }
+
+    /**
+     * Session context associated with the remote client.
+     *
+     * @return the session
+     */
+    public Session getSession() {
+        return (Session) get("session");
+    }
+
+    /**
+     * Sets the session context associated with the remote client.
+     *
+     * @param session the session to set
+     */
+    public void setSession(Session session) {
+        put("session", session);
     }
 
     /**

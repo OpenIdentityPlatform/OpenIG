@@ -877,7 +877,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     private OAuth2Session loadOrCreateSession(final Exchange exchange) throws OAuth2ErrorException,
                                                                               ResponseException {
-        final Object sessionJson = exchange.session.get(sessionKey(exchange));
+        final Object sessionJson = exchange.getSession().get(sessionKey(exchange));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
         }
@@ -885,11 +885,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private void removeSession(Exchange exchange) throws ResponseException {
-        exchange.session.remove(sessionKey(exchange));
+        exchange.getSession().remove(sessionKey(exchange));
     }
 
     private void saveSession(Exchange exchange, OAuth2Session session) throws ResponseException {
-        exchange.session.put(sessionKey(exchange), session.toJson().getObject());
+        exchange.getSession().put(sessionKey(exchange), session.toJson().getObject());
     }
 
     /**
