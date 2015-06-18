@@ -163,7 +163,7 @@ public class ExpressionTest {
 
         Exchange exchange = new Exchange();
         exchange.setRequest(request);
-        exchange.response = response;
+        exchange.setResponse(response);
 
         Expression<Boolean> boolExpr = Expression.valueOf("${exchange.request.uri.path == '/wordpress/wp-login.php' "
                         + "and exchange.request.form['action'][0] != 'logout'}", Boolean.class);

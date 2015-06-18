@@ -64,7 +64,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
      * @param exchange the exchange containing the response message containing the Location header
      */
     private Response processResponse(Exchange exchange) {
-        Response response = exchange.response;
+        Response response = exchange.getResponse();
         LocationHeader header = LocationHeader.valueOf(response);
         if (header.toString() != null) {
             try {
@@ -104,7 +104,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                        @Override
                        public Response apply(final Response value) {
                            Exchange exchange = context.asContext(Exchange.class);
-                           exchange.response = value;
+                           exchange.setResponse(value);
                            return processResponse(exchange);
                        }
                    });

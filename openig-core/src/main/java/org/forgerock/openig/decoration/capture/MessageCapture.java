@@ -104,10 +104,10 @@ public class MessageCapture {
             captureFilteredRequest(writer, exchange.getRequest(), exchangeId);
             break;
         case RESPONSE:
-            captureResponse(writer, exchange.response, exchangeId);
+            captureResponse(writer, exchange.getResponse(), exchangeId);
             break;
         case FILTERED_RESPONSE:
-            captureFilteredResponse(writer, exchange.response, exchangeId);
+            captureFilteredResponse(writer, exchange.getResponse(), exchangeId);
             break;
         default:
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
@@ -131,7 +131,7 @@ public class MessageCapture {
 
     void capture(final Exchange exchange, Response response, final CapturePoint mode) {
         // FIXME Compat
-        exchange.response = response;
+        exchange.setResponse(response);
         capture(exchange, mode);
     }
 

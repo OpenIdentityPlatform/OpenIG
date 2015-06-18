@@ -190,7 +190,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             // TODO Do we need to force update exchange.request ?
             exchange.setRequest(request);
             compiledScript.run(createBindings(exchange, next));
-            return Promises.newResultPromise(exchange.response);
+            return Promises.newResultPromise(exchange.getResponse());
         } catch (final ScriptException e) {
             return Promises.newResultPromise(Responses.newInternalServerError("Cannot execute script", e));
         }

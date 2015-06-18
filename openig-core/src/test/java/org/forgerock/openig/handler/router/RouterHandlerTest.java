@@ -146,7 +146,7 @@ public class RouterHandlerTest {
 
         // Should returns a 404 since no routes match and there is no default handler.
         Exchange exchange = handle(handler, "OpenAM");
-        assertThat(exchange.response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        assertThat(exchange.getResponse().getStatus()).isEqualTo(Status.NOT_FOUND);
 
         Handler defaultHandler = mockDefaultHandler();
         handler.setDefaultHandler(defaultHandler);
@@ -248,14 +248,14 @@ public class RouterHandlerTest {
                                          final String value,
                                          final Status expected) throws Exception {
         Exchange exchange = handle(handler, value);
-        assertThat(exchange.response.getStatus()).isEqualTo(expected);
+        assertThat(exchange.getResponse().getStatus()).isEqualTo(expected);
     }
 
     private Exchange handle(final RouterHandler handler, final String value)
             throws Exception {
         Exchange exchange = new Exchange();
         exchange.put("name", value);
-        exchange.response = handler.handle(exchange, new Request()).getOrThrow();
+        exchange.setResponse(handler.handle(exchange, new Request()).getOrThrow());
         return exchange;
     }
 }

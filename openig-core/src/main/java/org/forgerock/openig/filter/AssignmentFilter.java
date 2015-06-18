@@ -177,7 +177,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             @Override
             public void handleResult(final Response result) {
                 // Needed because expressions can rely on exchange.response to be set
-                exchange.response = result;
+                exchange.setResponse(result);
                 for (Binding binding : onResponse) {
                     eval(binding, exchange);
                 }

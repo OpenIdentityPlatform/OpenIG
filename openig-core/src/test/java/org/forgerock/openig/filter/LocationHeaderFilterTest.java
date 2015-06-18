@@ -117,11 +117,11 @@ public class LocationHeaderFilterTest {
         exchange.put("host", "app.example.com");
 
         // Prepare a response
-        exchange.response = new Response();
-        exchange.response.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
-        exchange.response.setStatus(Status.FOUND);
+        exchange.setResponse(new Response());
+        exchange.getResponse().getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
+        exchange.getResponse().setStatus(Status.FOUND);
 
-        ResponseHandler next = new ResponseHandler(exchange.response);
+        ResponseHandler next = new ResponseHandler(exchange.getResponse());
 
         Response response = filter.filter(exchange, null, next).get();
 
@@ -145,11 +145,11 @@ public class LocationHeaderFilterTest {
             throws Exception {
 
         Exchange exchange = new Exchange();
-        exchange.response = new Response();
-        exchange.response.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
-        exchange.response.setStatus(Status.FOUND);
+        exchange.setResponse(new Response());
+        exchange.getResponse().getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
+        exchange.getResponse().setStatus(Status.FOUND);
 
-        ResponseHandler next = new ResponseHandler(exchange.response);
+        ResponseHandler next = new ResponseHandler(exchange.getResponse());
 
         Response response = filter.filter(exchange, null, next).get();
 
