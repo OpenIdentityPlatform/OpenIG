@@ -83,7 +83,7 @@ public class OAuth2ProviderTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        exchange = new Exchange(new URI("path"));
+        exchange = new Exchange(null, new URI("path"));
         session = OAuth2Session.stateNew(time);
     }
 

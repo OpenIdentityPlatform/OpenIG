@@ -58,26 +58,26 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     private final URI originalUri;
 
-    /**
-     * TODO this is only for having test unmodified and still working.
-     */
-    public Context parent;
+    private final Context parent;
 
     /**
-     * Builds a new Exchange without any originalUri value (will be {@code null}).
+     * Builds a new Exchange without any originalUri value (will be {@code null}) and no parent context.
      */
     public Exchange() {
-        this(null);
+        this(null, null);
     }
 
     /**
      * Builds a new Exchange with the given originalUri value (can be {@code null}).
      *
      * @param originalUri
-     *         original message's URI, as received by the web container
+     *            original message's URI, as received by the web container
+     * @param parent
+     *            the parent context, can be null.
      */
-    public Exchange(final URI originalUri) {
+    public Exchange(final Context parent, final URI originalUri) {
         this.originalUri = originalUri;
+        this.parent = parent;
     }
 
     @Override

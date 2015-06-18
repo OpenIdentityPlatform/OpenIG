@@ -65,7 +65,7 @@ public class OAuth2UtilsTest {
     }
 
     private Exchange buildExchange() throws URISyntaxException {
-        Exchange exchange = new Exchange(new URI("http://www.example.com"));
+        Exchange exchange = new Exchange(null, new URI("http://www.example.com"));
         exchange.request = new Request();
         exchange.request.setUri("http://internal.company.com");
         return exchange;

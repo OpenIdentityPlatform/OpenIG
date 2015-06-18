@@ -285,8 +285,7 @@ public class HttpBasicAuthFilterTest {
     }
 
     private Exchange newExchange() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.parent = new HttpContext(null, session);
+        Exchange exchange = new Exchange(new HttpContext(null, session), null);
         return exchange;
     }
 

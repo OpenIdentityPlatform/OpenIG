@@ -88,8 +88,7 @@ public class RouteTest {
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
         Route route = createRoute(sessionManager, null);
-        Exchange exchange = new Exchange();
-        exchange.parent = new HttpContext(new RootContext(), original);
+        Exchange exchange = new Exchange(new HttpContext(new RootContext(), original), null);
 
         when(handler.handle(exchange, new Request()))
                 .then(new Answer<Void>() {
