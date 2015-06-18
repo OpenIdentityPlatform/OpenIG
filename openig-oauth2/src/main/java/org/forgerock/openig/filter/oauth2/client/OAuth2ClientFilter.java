@@ -184,6 +184,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
 
+    /**
+     * Constructs an {@link OAuth2ClientFilter}.
+     * @param time the TimeService to use
+     */
     public OAuth2ClientFilter(TimeService time) {
         this.time = time;
     }

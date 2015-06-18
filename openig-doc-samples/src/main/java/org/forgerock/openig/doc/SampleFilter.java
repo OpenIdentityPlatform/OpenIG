@@ -58,6 +58,7 @@ public class SampleFilter extends GenericHeapObject implements Filter {
      * @param context           Execution context.
      * @param request           HTTP Request.
      * @param next              Next filter or handler in the chain.
+     * @return A {@code Promise} representing the response to be returned to the client.
      */
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
