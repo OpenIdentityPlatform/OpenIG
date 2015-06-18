@@ -341,7 +341,7 @@ public class HttpClient extends GenericHeapObject {
     public void execute(final Exchange exchange) {
         // recover any previous response connection, if present
         closeSilently(exchange.response);
-        exchange.response = execute(exchange.request);
+        exchange.response = execute(exchange.getRequest());
     }
 
     /**

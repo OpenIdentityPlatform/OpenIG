@@ -110,12 +110,12 @@ public class RouteBuilderTest {
         Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://openig.forgerock.org/demo");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://openig.forgerock.org/demo");
 
-        route.handle(exchange, exchange.request);
+        route.handle(exchange, exchange.getRequest());
 
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }
 
     @Test
@@ -126,11 +126,11 @@ public class RouteBuilderTest {
         SimpleMapSession simpleSession = new SimpleMapSession();
         HttpContext httpContext = new HttpContext(new RootContext(), simpleSession);
         Exchange exchange = new Exchange(httpContext, null);
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
         exchange.setSession(simpleSession);
 
 
-        assertThat(route.handle(exchange, exchange.request)
+        assertThat(route.handle(exchange, exchange.getRequest())
                         .get()
                         .getHeaders()
                         .getFirst("Set-Cookie")).isNotNull();

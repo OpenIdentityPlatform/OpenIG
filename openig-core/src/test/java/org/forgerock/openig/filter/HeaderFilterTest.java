@@ -37,7 +37,7 @@ public class HeaderFilterTest {
     @BeforeMethod
     public void beforeMethod() {
         exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
     }
 
     @Test
@@ -46,11 +46,11 @@ public class HeaderFilterTest {
         filter.getRemovedHeaders().add("Location");
         filter.getAddedHeaders().add("Location", "http://newtest.com:321${exchange.request.uri.path}");
 
-        exchange.request.setMethod("DELETE");
-        exchange.request.setUri("http://test.com:123/path/to/resource.html");
+        exchange.getRequest().setMethod("DELETE");
+        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((Filter) filter));
-        Response response = chain.handle(exchange, exchange.request).get();
+        Response response = chain.handle(exchange, exchange.getRequest()).get();
 
         assertThat(response.getHeaders().get("Location"))
                 .containsOnly("http://newtest.com:321/path/to/resource.html");

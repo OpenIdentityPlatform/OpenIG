@@ -71,13 +71,13 @@ public class DispatchHandlerTest {
                 nextHandler, new URI("http://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.example.com/key_path");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.example.com/key_path");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
-        assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.hostA.domain.com/key_path"));
+        verify(nextHandler).handle(exchange, exchange.getRequest());
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("http://www.hostA.domain.com/key_path"));
     }
 
     @Test
@@ -89,13 +89,13 @@ public class DispatchHandlerTest {
                                     new URI("http://www.hostA.domain.com:443"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://user.0:password@www.example.com/key_path");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://user.0:password@www.example.com/key_path");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
-        assertThat(exchange.request.getUri()).isEqualTo(uri(
+        verify(nextHandler).handle(exchange, exchange.getRequest());
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri(
                 "http://user.0:password@www.hostA.domain.com:443/key_path"));
     }
 
@@ -107,13 +107,13 @@ public class DispatchHandlerTest {
                 new URI("https://www.hostA.domain.com"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.example.com:40/key_path?query=true&name=b%20jensen#20");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.example.com:40/key_path?query=true&name=b%20jensen#20");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
-        assertThat(exchange.request.getUri()).isEqualTo(uri(
+        verify(nextHandler).handle(exchange, exchange.getRequest());
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri(
                 "https://www.hostA.domain.com/key_path?query=true&name=b%20jensen#20"));
     }
 
@@ -124,13 +124,13 @@ public class DispatchHandlerTest {
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.example.com:40/key_path/path");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.example.com:40/key_path/path");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/key_path/path"));
+        verify(nextHandler).handle(exchange, exchange.getRequest());
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("https://www.hostB.domain.com/key_path/path"));
     }
 
     @Test
@@ -142,14 +142,14 @@ public class DispatchHandlerTest {
         dispatchHandler.addBinding(expression, nextHandler, new URI("https://www.secure.domain.com"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.this.domain.com/data/user.0");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
+        verify(nextHandler).handle(exchange, exchange.getRequest());
 
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.secure.domain.com/data/user.0"));
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("https://www.secure.domain.com/data/user.0"));
     }
 
     @Test
@@ -161,14 +161,14 @@ public class DispatchHandlerTest {
         dispatchHandler.addBinding(expression, nextHandler, null);
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.this.domain.com/data/user.0");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
+        verify(nextHandler).handle(exchange, exchange.getRequest());
 
-        assertThat(exchange.request.getUri()).isEqualTo(uri("http://www.this.domain.com/data/user.0"));
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("http://www.this.domain.com/data/user.0"));
     }
 
     @Test
@@ -180,20 +180,20 @@ public class DispatchHandlerTest {
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
         final Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("http://www.example.com/");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("http://www.example.com/");
 
-        dispatchHandler.handle(exchange, exchange.request);
+        dispatchHandler.handle(exchange, exchange.getRequest());
 
-        verify(nextHandler).handle(exchange, exchange.request);
+        verify(nextHandler).handle(exchange, exchange.getRequest());
         // Only the first verified binding applies.
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/"));
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("https://www.hostB.domain.com/"));
 
         // Now with an URI which verifies the first condition
-        exchange.request.setUri("http://www.example.com/key_path");
-        dispatchHandler.handle(exchange, exchange.request);
-        verify(nextHandler, times(2)).handle(exchange, exchange.request);
-        assertThat(exchange.request.getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
+        exchange.getRequest().setUri("http://www.example.com/key_path");
+        dispatchHandler.handle(exchange, exchange.getRequest());
+        verify(nextHandler, times(2)).handle(exchange, exchange.getRequest());
+        assertThat(exchange.getRequest().getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
 
     }
 

@@ -39,12 +39,12 @@ public class AssignmentFilterTest {
                                  Expression.valueOf("${exchange.request.method}", String.class));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setMethod("DELETE");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange, exchange.request).get();
+        chain.handle(exchange, exchange.getRequest()).get();
         assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
     }
 
@@ -55,13 +55,13 @@ public class AssignmentFilterTest {
                                  Expression.valueOf("www.forgerock.com", String.class));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setUri("www.example.com");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri("www.example.com");
 
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
-        chain.handle(exchange, exchange.request).get();
-        assertThat(exchange.request.getUri().toString()).isEqualTo("www.forgerock.com");
+        chain.handle(exchange, exchange.getRequest()).get();
+        assertThat(exchange.getRequest().getUri().toString()).isEqualTo("www.forgerock.com");
     }
 
     @Test
@@ -74,7 +74,7 @@ public class AssignmentFilterTest {
         Exchange exchange = new Exchange();
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange, exchange.request).get();
+        chain.handle(exchange, exchange.getRequest()).get();
         assertThat(exchange.get("newAttr")).isEqualTo(200);
     }
 }

@@ -52,7 +52,7 @@ public final class Adapters {
         exchange.setClientInfo(context.asContext(ClientInfoContext.class));
         exchange.setPrincipal(requestContext.getPrincipal());
         exchange.setSession(requestContext.getSession());
-        exchange.request = request;
+        exchange.setRequest(request);
         // TODO We will need to find a more robust solution when Exchange will be removed
         exchange.putAll(requestContext.getAttributes());
         requestContext.getAttributes().clear();
@@ -81,7 +81,7 @@ public final class Adapters {
         @Override
         public void handle(final Exchange exchange) throws HandlerException, IOException {
             try {
-                exchange.response = handler.handle(exchange, exchange.request).getOrThrow();
+                exchange.response = handler.handle(exchange, exchange.getRequest()).getOrThrow();
             } catch (InterruptedException e) {
                 throw new HandlerException(e);
             }

@@ -56,7 +56,7 @@ public class StaticRequestFilterTest {
         filter.filter(exchange, null, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
         assertThat(terminalHandler.request).isNotNull();
         assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
         assertThat(terminalHandler.request.getMethod()).isEqualTo("GET");
@@ -75,12 +75,12 @@ public class StaticRequestFilterTest {
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
-        exchange.request = original;
+        exchange.setRequest(original);
 
         filter.filter(exchange, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
         // Check that headers have been properly populated
         assertThat(terminalHandler.request.getHeaders().get("Mono-Valued"))
                 .hasSize(1)
@@ -100,13 +100,13 @@ public class StaticRequestFilterTest {
 
         Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
-        exchange.request = new Request();
-        exchange.request.setVersion("2");
+        exchange.setRequest(new Request());
+        exchange.getRequest().setVersion("2");
 
-        filter.filter(exchange, exchange.request, terminalHandler);
+        filter.filter(exchange, exchange.getRequest(), terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
         // Verify that the new request URI contains the form's fields
         assertThat(terminalHandler.request.getUri().toString())
                 .startsWith(URI)
@@ -128,12 +128,12 @@ public class StaticRequestFilterTest {
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
-        exchange.request = original;
+        exchange.setRequest(original);
 
         filter.filter(exchange, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.request);
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
         // Verify that the new request entity contains the form's fields
         assertThat(terminalHandler.request.getMethod()).isEqualTo("POST");
         assertThat(terminalHandler.request.getHeaders().getFirst("Content-Type")).isEqualTo(

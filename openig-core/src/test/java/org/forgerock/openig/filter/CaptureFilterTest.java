@@ -70,9 +70,9 @@ public class CaptureFilterTest {
         when(provider.getWriter()).thenReturn(requestWriter, responseWriter);
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         assertThat(req.toString()).contains("--- REQUEST 1 --->");
         assertThat(resp.toString()).contains("<--- RESPONSE 1 ---");
@@ -85,9 +85,9 @@ public class CaptureFilterTest {
         filter.setCondition(Expression.valueOf("${false}", Boolean.class));
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         verifyZeroInteractions(provider);
     }
@@ -101,14 +101,14 @@ public class CaptureFilterTest {
         StringWriter req = setupProviderForRequestWriter();
 
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.getHeaders().putSingle("Host", "openig.forgerock.org");
-        exchange.request.getHeaders().add("Multi", "First");
-        exchange.request.getHeaders().add("Multi", "Second");
-        exchange.request.getHeaders().add("Multi", "Third");
+        exchange.setRequest(new Request());
+        exchange.getRequest().getHeaders().putSingle("Host", "openig.forgerock.org");
+        exchange.getRequest().getHeaders().add("Multi", "First");
+        exchange.getRequest().getHeaders().add("Multi", "Second");
+        exchange.getRequest().getHeaders().add("Multi", "Third");
         exchange.response = new Response();
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         assertThat(req.toString())
                 .contains("Host: openig.forgerock.org")
@@ -128,7 +128,7 @@ public class CaptureFilterTest {
 
         Exchange exchange = buildRequestOnlyExchange("this is an entity", "text/plain");
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         assertThat(req.toString())
                 .contains("[entity]")
@@ -147,7 +147,7 @@ public class CaptureFilterTest {
         String entity = "this is a binary entity";
         Exchange exchange = buildRequestOnlyExchange(entity, mimeType);
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         assertThat(req.toString())
                 .contains("[binary entity]")
@@ -166,7 +166,7 @@ public class CaptureFilterTest {
         String entity = "this is an entity";
         Exchange exchange = buildRequestOnlyExchange(entity, mimeType);
 
-        filter.filter(exchange, exchange.request, terminalHandler).get();
+        filter.filter(exchange, exchange.getRequest(), terminalHandler).get();
 
         assertThat(req.toString())
                 .contains(entity);
@@ -194,9 +194,9 @@ public class CaptureFilterTest {
      */
     private Exchange buildRequestOnlyExchange(final String entity, final String mimeType) throws Exception {
         Exchange exchange = new Exchange();
-        exchange.request = new Request();
-        exchange.request.setEntity(entity);
-        exchange.request.getHeaders().putSingle("Content-type", mimeType);
+        exchange.setRequest(new Request());
+        exchange.getRequest().setEntity(entity);
+        exchange.getRequest().getHeaders().putSingle("Content-type", mimeType);
         exchange.response = new Response();
         return exchange;
     }

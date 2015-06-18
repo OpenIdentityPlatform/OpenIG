@@ -38,20 +38,20 @@ public class FunctionsTest {
     @BeforeMethod
     public void beforeMethod() {
         exchange = new Exchange();
-        exchange.request = new Request();
+        exchange.setRequest(new Request());
     }
 
     @Test
     public void toStringTest() throws Exception {
-        exchange.request.setUri("http://www.forgerock.org/");
+        exchange.getRequest().setUri("http://www.forgerock.org/");
         String o = Expression.valueOf("${toString(exchange.request.uri)}", String.class).eval(exchange);
-        assertThat(o).isEqualTo(exchange.request.getUri().toString());
+        assertThat(o).isEqualTo(exchange.getRequest().getUri().toString());
     }
 
     @Test
     public void keyMatch() throws ExpressionException {
         Request o = Expression.valueOf("${exchange[keyMatch(exchange, '^requ.*')]}", Request.class).eval(exchange);
-        assertThat(o).isSameAs(exchange.request);
+        assertThat(o).isSameAs(exchange.getRequest());
     }
 
     @Test

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.saml;
@@ -62,8 +62,8 @@ public class RequestAdapterTest {
 
     private Exchange buildExchangeWithParametersInQuery() throws Exception {
         final Exchange exchange = buildExchange("params-in-query");
-        exchange.request = new Request();
-        exchange.request.setUri(new URI(BASE_URI.concat("?")
+        exchange.setRequest(new Request());
+        exchange.getRequest().setUri(new URI(BASE_URI.concat("?")
                                                .concat(HELLO_WORLD_PARAM)
                                                .concat("&")
                                                .concat(FIRST_MULTI_VALUED_PARAM)
@@ -74,20 +74,20 @@ public class RequestAdapterTest {
 
     private Exchange buildExchangeWithParametersInPayload() throws Exception {
         final Exchange exchange = buildExchange("params-in-payload");
-        exchange.request = new Request();
-        exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.request.setUri(new URI(BASE_URI));
-        exchange.request.setEntity(HELLO_WORLD_PARAM + "&" + FIRST_MULTI_VALUED_PARAM + "&"
+        exchange.setRequest(new Request());
+        exchange.getRequest().getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        exchange.getRequest().setUri(new URI(BASE_URI));
+        exchange.getRequest().setEntity(HELLO_WORLD_PARAM + "&" + FIRST_MULTI_VALUED_PARAM + "&"
                 + SECOND_MULTI_VALUED_PARAM);
         return exchange;
     }
 
     private Exchange buildExchangeWithParametersInBothPayloadAndQuery() throws Exception {
         final Exchange exchange = buildExchange("params-in-payload-and-query");
-        exchange.request = new Request();
-        exchange.request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.request.setUri(new URI(BASE_URI.concat("?").concat(HELLO_WORLD_PARAM)));
-        exchange.request.setEntity(FIRST_MULTI_VALUED_PARAM + "&" + SECOND_MULTI_VALUED_PARAM);
+        exchange.setRequest(new Request());
+        exchange.getRequest().getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        exchange.getRequest().setUri(new URI(BASE_URI.concat("?").concat(HELLO_WORLD_PARAM)));
+        exchange.getRequest().setEntity(FIRST_MULTI_VALUED_PARAM + "&" + SECOND_MULTI_VALUED_PARAM);
         return exchange;
     }
 
