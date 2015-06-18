@@ -123,11 +123,11 @@ public class RouteBuilderTest {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
-        Exchange exchange = new Exchange();
+        SimpleMapSession simpleSession = new SimpleMapSession();
+        HttpContext httpContext = new HttpContext(new RootContext(), simpleSession);
+        Exchange exchange = new Exchange(httpContext, null);
         exchange.request = new Request();
-        exchange.setSession(new SimpleMapSession());
-        HttpContext httpContext = new HttpContext(new RootContext(), exchange.getSession());
-        exchange.parent = httpContext;
+        exchange.setSession(simpleSession);
 
 
         assertThat(route.handle(exchange, exchange.request)
