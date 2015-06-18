@@ -52,7 +52,7 @@ public final class Adapters {
         exchange.parent = context;
         exchange.setClientInfo(context.asContext(ClientInfoContext.class));
         exchange.setPrincipal(requestContext.getPrincipal());
-        exchange.session = requestContext.getSession();
+        exchange.setSession(requestContext.getSession());
         exchange.request = request;
         // TODO We will need to find a more robust solution when Exchange will be removed
         exchange.putAll(requestContext.getAttributes());

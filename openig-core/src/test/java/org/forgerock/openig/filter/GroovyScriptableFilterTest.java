@@ -462,7 +462,7 @@ public class GroovyScriptableFilterTest {
             // FixMe: Passing the LDAP host and port as headers is wrong.
             exchange.put("ldapHost", "localhost");
             exchange.put("ldapPort", String.valueOf(port));
-            exchange.session = new SimpleMapSession();
+            exchange.setSession(new SimpleMapSession());
             filter.filter(exchange, request, mock(Handler.class));
 
             Set<String> cnValues = new HashSet<>();
@@ -719,14 +719,14 @@ public class GroovyScriptableFilterTest {
                 "assert exchange.session.remove('inKey')");
         // @formatter:on
         final Exchange exchange = new Exchange();
-        exchange.session = mock(Session.class);
-        when(exchange.session.get("inKey")).thenReturn("inValue");
-        when(exchange.session.remove("inKey")).thenReturn(true);
+        exchange.setSession(mock(Session.class));
+        when(exchange.getSession().get("inKey")).thenReturn("inValue");
+        when(exchange.getSession().remove("inKey")).thenReturn(true);
         filter.filter(exchange, null, null);
-        verify(exchange.session).get("inKey");
-        verify(exchange.session).put("outKey", "outValue");
-        verify(exchange.session).remove("inKey");
-        verifyNoMoreInteractions(exchange.session);
+        verify(exchange.getSession()).get("inKey");
+        verify(exchange.getSession()).put("outKey", "outValue");
+        verify(exchange.getSession()).remove("inKey");
+        verifyNoMoreInteractions(exchange.getSession());
     }
 
     @Test
