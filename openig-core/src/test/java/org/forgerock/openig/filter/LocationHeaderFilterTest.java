@@ -117,11 +117,11 @@ public class LocationHeaderFilterTest {
         exchange.put("host", "app.example.com");
 
         // Prepare a response
-        exchange.setResponse(new Response());
-        exchange.getResponse().getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
-        exchange.getResponse().setStatus(Status.FOUND);
+        Response expectedResponse = new Response();
+        expectedResponse.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
+        expectedResponse.setStatus(Status.FOUND);
 
-        ResponseHandler next = new ResponseHandler(exchange.getResponse());
+        ResponseHandler next = new ResponseHandler(expectedResponse);
 
         Response response = filter.filter(exchange, null, next).get();
 
@@ -144,14 +144,13 @@ public class LocationHeaderFilterTest {
     private void callFilter(LocationHeaderFilter filter, URI testRedirectionURI, String expectedResult)
             throws Exception {
 
-        Exchange exchange = new Exchange();
-        exchange.setResponse(new Response());
-        exchange.getResponse().getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
-        exchange.getResponse().setStatus(Status.FOUND);
+        Response expectedResponse = new Response();
+        expectedResponse.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
+        expectedResponse.setStatus(Status.FOUND);
 
-        ResponseHandler next = new ResponseHandler(exchange.getResponse());
+        ResponseHandler next = new ResponseHandler(expectedResponse);
 
-        Response response = filter.filter(exchange, null, next).get();
+        Response response = filter.filter(new Exchange(), null, next).get();
 
         LocationHeader header = LocationHeader.valueOf(response);
         assertThat(header.toString()).isNotNull();
