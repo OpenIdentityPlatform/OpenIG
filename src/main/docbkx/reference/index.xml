@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -92,7 +91,7 @@
    </para>
   </partintro>
 
-  <xinclude:include href="man-gateway-servlet.xml" />
+  <xinclude:include href="man-GatewayHttpApplication.xml" />
   <xinclude:include href="man-heap-objects.xml" />
  </reference>
 
@@ -282,9 +281,9 @@
     For details see the reference section,
     <link
      xlink:show="new"
-     xlink:href="reference#gateway-servlet"
+     xlink:href="reference#GatewayHttpApplication"
      xlink:role="http://docbook.org/xlink/role/olink"
-    ><citetitle>Gateway Servlet</citetitle></link>.
+    ><citetitle>GatewayHttpApplication</citetitle></link>.
    </para>
 
    <para>

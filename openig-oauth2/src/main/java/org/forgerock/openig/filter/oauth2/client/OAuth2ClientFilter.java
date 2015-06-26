@@ -78,11 +78,11 @@ import org.forgerock.util.time.TimeService;
  * delegated authorization. The filter does the following depending on the
  * incoming request URI:
  * <ul>
- * <li><code>{clientEndpoint}/login/{provider}?goto=&lt;url></code> - redirects
+ * <li>{@code {clientEndpoint}/login/{provider}?goto=<url>} - redirects
  * the user for authorization against the specified provider
- * <li><code>{clientEndpoint}/logout?goto=&lt;url></code> - removes
+ * <li>{@code {clientEndpoint}/logout?goto=<url>} - removes
  * authorization state for the end-user
- * <li><code>{clientEndpoint}/callback</code> - OAuth 2.0 authorization
+ * <li>{@code {clientEndpoint}/callback} - OAuth 2.0 authorization
  * call-back end-point (state encodes nonce, goto, and provider)
  * <li>all other requests - restores authorization state and places it in the
  * target location.
@@ -244,7 +244,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * <ul>
      * <li><tt>{endpoint}/callback</tt> - called by the authorization server
      * once authorization has completed
-     * <li><tt>{endpoint}/login?provider={name}[&goto={url}]</tt> - user
+     * <li>{@code {endpoint}/login?provider={name}[&goto={url}]} - user
      * end-point for performing user initiated authentication, such as from a
      * "login" link or "NASCAR" login page. Supports a "goto" URL parameter
      * which will be invoked once the login completes, e.g. to take the user to
@@ -310,8 +310,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * the {@code exchange} target will be populated with the following OAuth
      * 2.0 error information:
      *
-     * <pre>
-     * &lt;target> : {
+     * <pre>{@code
+     * <target> : {
      *     "provider"           : "google",
      *     "error"              : {
      *         "realm"              : string,          [OPTIONAL]
@@ -329,7 +329,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *     "scope"              : [ "openid", "profile", "email" ],
      *     "client_endpoint"    : "http://www.example.com:8081/openid",
      * }
-     * </pre>
+     * }</pre>
      *
      * See {@link OAuth2Error} for a detailed description of the various error
      * fields and their possible values.

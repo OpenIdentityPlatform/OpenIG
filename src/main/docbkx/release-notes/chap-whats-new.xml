@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -73,7 +72,7 @@
    <para>
     ${projectName} now provides a BaseUriDecorator
     with a default "baseURI" decorator that replaces the configuration field
-    of the same name in Route and gateway servlet definitions
+    of the same name in Route and GatewayHttpApplication definitions
     (<link
      xlink:show="new"
      xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-180"

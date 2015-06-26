@@ -12,7 +12,7 @@
   Header, with the fields enclosed by brackets [] replaced by your own identifying
   information: "Portions Copyright [year] [name of copyright owner]".
 
-  Copyright 2014 ForgeRock AS.
+  Copyright 2014-2015 ForgeRock AS.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -23,12 +23,11 @@
    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>openig-doc-samples</artifactId>
+  <artifactId>openig-doc</artifactId>
 
-  <name>OpenIG doc sample server</name>
+  <name>OpenIG doc</name>
   <description>
-   Simple server for use when getting started,
-   intended for those following along with the product documentation
+   Documentation samples and aggregated Javadoc
   </description>
 
   <packaging>jar</packaging>
@@ -54,6 +53,23 @@
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
       <version>${httpFrameworkVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-oauth2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-saml</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-servlet_2.5_spec</artifactId>
     </dependency>
 
     <dependency>
@@ -170,4 +186,96 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>forgerock-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>javadoc-jar</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+              <execution>
+                <id>javadoc-javadoc</id>
+                <goals>
+                  <goal>javadoc</goal>
+                </goals>
+                <phase>pre-site</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <!-- The content of site/apidocs gets squashed during reporting. -->
+              <outputDirectory>${project.build.directory}/site/javadoc</outputDirectory>
+
+              <!-- Aggregates javadocs from dependencies -->
+              <includeDependencySources>true</includeDependencySources>
+              <dependencySourceIncludes>
+                <dependencySourceInclude>org.forgerock.openig:*</dependencySourceInclude>
+                <dependencySourceInclude>org.forgerock.http:*</dependencySourceInclude>
+                <dependencySourceInclude>org.forgerock.commons:forgerock-util</dependencySourceInclude>
+                <dependencySourceInclude>org.forgerock.commons:json-fluent</dependencySourceInclude>
+              </dependencySourceIncludes>
+
+              <author>false</author>
+              <doctitle>OpenIG ${project.version} API</doctitle>
+              <header>OpenIG ${project.version} API</header>
+              <footer>OpenIG ${project.version} API</footer>
+              <bottom>Copyright 2011-2015 ForgeRock AS.</bottom>
+              <links>
+                <link>http://docs.oracle.com/javase/7/docs/api/</link>
+              </links>
+
+              <!-- Defines groups of packages for the overview page -->
+              <groups>
+                <group>
+                  <title>ForgeRock OpenIG</title>
+                  <packages>org.forgerock.openig*</packages>
+                </group>
+                <group>
+                  <title>ForgeRock Http Framework</title>
+                  <packages>org.forgerock.http*</packages>
+                </group>
+                <group>
+                  <title>ForgeRock Utilities</title>
+                  <packages>org.forgerock.util*:org.forgerock.json.fluent</packages>
+                </group>
+              </groups>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/openig-doc-${project.version}-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>javadoc</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

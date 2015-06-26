@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -20,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2014 ForgeRock AS
+  !      Copyright 2011-2015 ForgeRock AS.
   !    
 -->
 <chapter xml:id='chap-install'
@@ -836,8 +835,9 @@ etc/jetty-ssl.xml
       <programlisting language="xml">
 <![CDATA[
  <servlet>
-   <servlet-name>GatewayServlet</servlet-name>
-   <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
+   <servlet-name>HttpFrameworkServlet</servlet-name>
+   <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
+   <load-on-startup>1</load-on-startup>
    <init-param>
      <param-name>openig-base</param-name>
      <param-value>/path/to/openig</param-value>
@@ -1421,7 +1421,7 @@ $ <userinput>keytool \
 
   <para>
    The following HttpClient configuration references "MyTrustManager"
-   and sets browser-compatible host name verification.
+   and sets strict host name verification.
   </para>
 
   <programlisting language="javascript">
@@ -1429,7 +1429,7 @@ $ <userinput>keytool \
     "name": "HttpClient",
     "type": "HttpClient",
     "config": {
-        "hostnameVerifier": "BROWSER_COMPATIBLE",
+        "hostnameVerifier": "STRICT",
         "trustManager": "MyTrustManager"
     }
 }

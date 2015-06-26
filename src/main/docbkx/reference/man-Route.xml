@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -24,12 +23,12 @@
   !
 -->
 <refentry xml:id='Route'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Route</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -68,7 +67,7 @@
    is responsible for reloading the route configuration.
    Use a Router to call route handlers,
    rather than calling a route directly
-   as the "handler" of the gateway servlet.
+   as the "handler" of the top-level configuration.
    By default the Router rereads the configurations periodically,
    so that configuration changes to routes apply without restarting ${projectName}.
   </para>
@@ -189,7 +188,7 @@
       Session storage implementation used by this route, such as a
       <link
        xlink:show="new"
-       xlink:href="reference#JwtSesssion"
+       xlink:href="reference#JwtSession"
        xlink:role="http://docbook.org/xlink/role/olink"
       >JwtSession</link>.
      </para>

@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -20,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2014 ForgeRock AS
+  !      Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id="TimerDecorator"
@@ -65,13 +64,11 @@
   <para>
    The TimerDecorator is not applicable to the
    <link
-    xlink:href="reference#gateway-servlet"
+    xlink:href="reference#GatewayHttpApplication"
     xlink:show="new"
     xlink:role="http://docbook.org/xlink/role/olink"
-   ><citetitle>Gateway Servlet</citetitle></link>,
-   as the Gateway Servlet is not declared in the heap.
-   Instead, ${projectName} always records Gateway Servlet times
-   at log level <literal>STAT</literal>.
+   ><citetitle>GatewayHttpApplication</citetitle></link>,
+   as the GatewayHttpApplication is not declared in the heap.
   </para>
  </refsect1>
 
@@ -90,10 +87,9 @@
   </para>
 
   <para>
-   The Gateway Servlet creates a default TimerDecorator named "timer"
-   at startup time in the top-level heap,
-   so you can use "timer" as the decorator name
-   without adding the decorator declaration explicitly.
+   ${projectName} configures a default TimerDecorator named "timer".
+   You can use "timer" as the decorator name
+   without explicitly declaring a decorator named "timer".
   </para>
 </refsect1>
 
@@ -126,7 +122,7 @@
       The class name of the decorated object, which must be either a
       <link
        xlink:show="new"
-       xlink:href="reference#filter-conf"
+       xlink:href="reference#filters-conf"
        xlink:role="http://docbook.org/xlink/role/olink"
       >Filter</link> or a
       <link
@@ -229,9 +225,6 @@ Elapsed time: 40 ms
 
   <informalexample><?dbfo pgwide="1"?>
    <programlisting language="none">
-THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[top-level-handler]
-Started
-------------------------------
 THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
 Started
 ------------------------------
@@ -258,9 +251,6 @@ Elapsed time: 211 ms
 ------------------------------
 THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
 Elapsed time (within the object): 81 ms
-------------------------------
-THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[top-level-handler]
-Elapsed time: 212 ms
    </programlisting>
   </informalexample>
 

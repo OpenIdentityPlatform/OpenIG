@@ -42,7 +42,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 
 /**
- * A JwtSessionFactory is responsible to configure and create a {@link JwtCookieSession}.
+ * A JwtSessionManager is responsible to configure and create a {@link JwtCookieSession}.
  *
  * <pre>
  *     {
@@ -89,7 +89,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
     private final String cookieName;
 
     /**
-     * Builds a new JwtSessionFactory using the given KeyPair for session encryption, storing the opaque result in a
+     * Builds a new JwtSessionManager using the given KeyPair for session encryption, storing the opaque result in a
      * cookie with the given name.
      *
      * @param keyPair

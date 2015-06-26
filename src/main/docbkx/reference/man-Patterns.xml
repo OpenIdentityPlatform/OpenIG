@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -21,16 +20,16 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010-2011 ApexIdentity Inc.
-  !      Portions Copyright 2012 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='Patterns'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'
- xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
   <refentrytitle>Patterns</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
@@ -46,10 +45,10 @@
   </indexterm>
   <para>Patterns in configuration parameters and expressions use the standard
   Java regular expression <link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
   >Pattern</link> class. For more information on regular expressions, see
   Oracle's <link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  xlink:href="http://docs.oracle.com/javase/tutorial/essential/regex/index.html"
   >tutorial on Regular Expressions</link>.</para>
  </refsect1>
  <refsect1>
@@ -57,7 +56,7 @@
   <para>A regular expression pattern template expresses a transformation to be
   applied for a matching regular expression pattern. It may contain references
   to <link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg"
+  xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#cg"
   >capturing groups</link> within the match result. Each occurrence of
   <literal>$g</literal> (where <replaceable>g</replaceable> is an integer value)
   is substituted by the indexed capturing group in a match result. Capturing
@@ -70,10 +69,10 @@
  <refsect1>
   <title>See Also</title>
   <para>Java <link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  xlink:href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
   >Pattern</link> class</para>
   <para><link xlink:show="new"
-  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  xlink:href="http://docs.oracle.com/javase/tutorial/essential/regex/index.html"
   >Regular Expressions tutorial</link></para>
  </refsect1>
 </refentry>

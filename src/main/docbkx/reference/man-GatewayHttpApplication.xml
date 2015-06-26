@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -24,20 +23,20 @@
   !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
-<refentry xml:id='gateway-servlet'
- xmlns='http://docbook.org/ns/docbook'
- version='5.0' xml:lang='en'
- xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
- xsi:schemaLocation='http://docbook.org/ns/docbook
-                     http://docbook.org/xml/5.0/xsd/docbook.xsd'
- xmlns:xlink='http://www.w3.org/1999/xlink'>
+<refentry xml:id='GatewayHttpApplication'
+          xmlns='http://docbook.org/ns/docbook'
+          version='5.0' xml:lang='en'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='http://docbook.org/ns/docbook
+                              http://docbook.org/xml/5.0/xsd/docbook.xsd'
+          xmlns:xlink='http://www.w3.org/1999/xlink'>
  <refmeta>
-  <refentrytitle>Gateway Servlet</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>GatewayHttpApplication</refentrytitle><manvolnum>5</manvolnum>
  </refmeta>
 
  <refnamediv>
-  <refname>Gateway Servlet</refname>
-  <refpurpose>entry point for all incoming requests</refpurpose>
+  <refname>GatewayHttpApplication</refname>
+  <refpurpose>configure ${projectName}</refpurpose>
  </refnamediv>
 
  <refsect1>
@@ -45,26 +44,24 @@
 
   <indexterm>
    <primary>Required configuration</primary>
-   <secondary>Gateway servlet</secondary>
   </indexterm>
 
   <para>
-   The gateway servlet is the entry point for all incoming requests.
+   The GatewayHttpApplication is the entry point for all incoming requests.
    It is responsible for initializing a
    <link
     xlink:show="new"
     xlink:href="reference#heap-objects"
     xlink:role="http://docbook.org/xlink/role/olink"
    >heap of objects</link>,
-   and dispatching all requests to a configured handler.
-   The configuration of the gateway servlet is loaded
-   from a JSON-encoded configuration file,
+   and providing the main Handler that receives all the incoming requests.
+   The configuration is loaded from a JSON-encoded configuration file,
    expected by default at <filename>${warConfigDir}/config.json</filename>.
   </para>
 
   <itemizedlist>
    <para>
-    The gateway servlet creates the following objects by default.
+    The GatewayHttpApplication creates the following objects by default.
    </para>
 
    <listitem>
@@ -122,7 +119,7 @@
   </itemizedlist>
 
   <para>
-   The gateway servlet also looks for an object named "Session" in the heap.
+   The GatewayHttpApplication also looks for an object named "Session" in the heap.
    If it finds such an object,
    it uses that object as the default session producer.
    For example, to store session information
@@ -253,7 +250,7 @@
   <para>
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/servlet/GatewayServlet.html"
-   >org.forgerock.openig.servlet.GatewayServlet</link></para>
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/GatewayHttpApplication.html"
+   >org.forgerock.openig.http.GatewayHttpApplication</link></para>
  </refsect1>
 </refentry>

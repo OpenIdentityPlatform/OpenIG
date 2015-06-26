@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -52,7 +51,7 @@
   <itemizedlist>
    <listitem>
     <para>
-     The Route and gateway servlet configurations now use "baseURI" decorators
+     The Route and GatewayHttpApplication configurations now use "baseURI" decorators
      instead of "baseURI" configuration fields.
     </para>
    </listitem>
@@ -83,7 +82,97 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
  Expecting a value
     </programlisting>
    </listitem>
+
+   <listitem>
+    <para>
+     The classes mentioned in <xref linkend="changed-classnames" />
+     have changed names or changed packages.
+    </para>
+   </listitem>
   </itemizedlist>
+
+  <table xml:id="changed-classnames">
+   <title>Class Changes</title>
+
+   <tgroup cols="2">
+    <colspec colnum="1" colwidth="1*"/>
+    <colspec colnum="2" colwidth="1*"/>
+
+    <thead>
+     <row>
+      <entry>
+       Former Name
+      </entry>
+
+      <entry>
+       Current Name
+      </entry>
+     </row>
+    </thead>
+
+    <tbody>
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.jwt.JwtSessionFactory</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.openig.jwt.JwtSessionManager</literal>
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.http.ClientInfo</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.http.ClientInfo</literal>
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.http.Request</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.http.protocol.Request</literal>
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.http.Response</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.http.protocol.Response</literal>
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.servlet.GatewayServlet</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.openig.http.GatewayHttpApplication</literal>
+      </entry>
+     </row>
+
+     <row>
+      <entry>
+       <literal>org.forgerock.openig.util.MutableUri</literal>
+      </entry>
+
+      <entry>
+       <literal>org.forgerock.http.MutableUri</literal>
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
  </section>
 
  <section xml:id="deprecated">
@@ -108,7 +197,7 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
    ><citetitle>ForgeRock Product Interface Stability</citetitle></link>.
   </para>
 
-  <table>
+  <table xml:id="deprecated-configuration">
    <title>Configuration settings</title>
 
    <tgroup cols="3">
@@ -146,9 +235,9 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
       <entry morerows="1">
        <link
         xlink:show="new"
-        xlink:href="reference#gateway-servlet"
+        xlink:href="reference#GatewayHttpApplication"
         xlink:role="http://docbook.org/xlink/role/olink"
-       >gateway servlet</link>
+       >GatewayHttpApplication</link>
       </entry>
 
       <entry>
@@ -291,8 +380,43 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
 
   <itemizedlist>
    <para>
-    The following API classes are likely to be removed in a future release.
+    The following API interfaces and classes
+    are likely to be removed in a future release.
    </para>
+
+   <listitem>
+    <para>
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html"
+      xlink:show="new"
+     >org.forgerock.openig.filter.Filter</link>
+    </para>
+
+    <para>
+     The new interface to implement is
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/http/Filter.html"
+      xlink:show="new"
+     >org.forgerock.http.Filter</link>.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html"
+      xlink:show="new"
+     >org.forgerock.openig.handler.Handler</link>
+    </para>
+
+    <para>
+     The new interface to implement is
+     <link
+      xlink:href="${javadocBase}/index.html?org/forgerock/http/Handler.html"
+      xlink:show="new"
+     >org.forgerock.http.Handler</link>.
+    </para>
+   </listitem>
 
    <listitem>
     <para>
@@ -318,14 +442,36 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
    TODO: Update for the next release
   </para>
 
-  <para>
-   The CaptureFilter implementation has been removed.
-   Use a
-   <link
-    xlink:show="new"
-    xlink:href="reference#CaptureDecorator"
-    xlink:role="http://docbook.org/xlink/role/olink"
-   >CaptureDecorator</link> instead.
-  </para>
+  <itemizedlist>
+   <listitem>
+    <para>
+     The CaptureFilter implementation has been removed.
+     Use a
+     <link
+      xlink:show="new"
+      xlink:href="reference#CaptureDecorator"
+      xlink:role="http://docbook.org/xlink/role/olink"
+      >CaptureDecorator</link> instead.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The GatewayServlet implementation has been replaced
+     with <literal>org.forgerock.http.servlet.HttpFrameworkServlet</literal>,
+     which wraps an HttpApplication that is provided by
+     <literal>org.forgerock.openig.http.GatewayHttpApplication</literal>.
+     The GatewayHttpApplication creates the heap and builds the configuration.
+    </para>
+   </listitem>
+
+   <listitem>
+    <para>
+     The HttpClient hostnameVerifier configuration value
+     <literal>BROWSER_COMPATIBLE</literal> has been removed.
+     Consider using <literal>STRICT</literal> instead.
+    </para>
+   </listitem>
+  </itemizedlist>
  </section>
 </chapter>
