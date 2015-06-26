@@ -32,19 +32,21 @@ import java.io.File;
  */
 public class GatewayEnvironment extends EnvironmentDelegate {
 
+    // @Checkstyle:off
     /**
      * Servlet's {@literal init-param} name.
      * <pre>{@code
-     * &lt;servlet>
-     *   &lt;servlet-name>GatewayServlet&lt;/servlet-name>
-     *   &lt;servlet-class>org.forgerock.openig.servlet.GatewayServlet&lt;/servlet-class>
-     *   &lt;init-param>
-     *     &lt;param-name>openig-base&lt;/param-name>
-     *     &lt;param-value>/my/openig/path&lt;/param-value>
-     *   &lt;/init-param>
-     * &lt;/servlet>
+     * <servlet>
+     *   <servlet-name>GatewayServlet</servlet-name>
+     *   <servlet-class>org.forgerock.openig.servlet.GatewayServlet</servlet-class>
+     *   <init-param>
+     *     <param-name>openig-base</param-name>
+     *     <param-value>/my/openig/path</param-value>
+     *   </init-param>
+     * </servlet>
      * }</pre>
      */
+    // @Checkstyle:on
     public static final String BASE_INIT_PARAM = "openig-base";
 
     /**
