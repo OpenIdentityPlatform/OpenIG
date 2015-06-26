@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -720,7 +719,7 @@
  <refsect1 xml:id="functions-javadoc">
   <title>Javadoc</title>
   <para><link xlink:show="new"
-  xlink:href="${javadocBase}/org/forgerock/openig/el/Functions.html"
+  xlink:href="${javadocBase}/index.html?org/forgerock/openig/el/Functions.html"
   >org.forgerock.openig.el.Functions</link></para>
  </refsect1>
 </refentry>

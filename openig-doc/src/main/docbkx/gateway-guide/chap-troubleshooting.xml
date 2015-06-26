@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -20,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2014 ForgeRock AS
+  !      Copyright 2011-2015 ForgeRock AS.
   !    
 -->
 <chapter xml:id='chap-troubleshooting'
@@ -264,14 +263,21 @@ java.lang.ClassCastException: java.lang.String cannot be cast to java.util.List
 
   <informalexample>
    <programlisting language="none">
+/handler/config/filters/0/config/dataSource: javax.naming.NameNotFoundException;
+    remaining name 'jdbc/forgerock'
+[       JsonValueException] > /handler/config/filters/0/config/dataSource:
+    javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
+[    NameNotFoundException] > null
+
 org.forgerock.json.fluent.JsonValueException:
- /handler/config/filters/0/config/dataSource:
- javax.naming.NameNotFoundException;
- remaining name 'jdbc/forgerock'
-  at org.forgerock.openig.servlet.GatewayServlet.init(GatewayServlet.java:222)
-  at org.eclipse.jetty.servlet.ServletHolder.initServlet(ServletHolder.java:595)
-  at org.eclipse.jetty.servlet.ServletHolder.getServlet(ServletHolder.java:458)
-  at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:724)
+    /handler/config/filters/0/config/dataSource:
+    javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
+ at org.forgerock.openig.filter.SqlAttributesFilter$Heaplet.create(
+    SqlAttributesFilter.java:211)
+ at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:81)
+ at org.forgerock.openig.heap.HeapImpl.extract(HeapImpl.java:316)
+ at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:281)
+...
    </programlisting>
   </informalexample>
 

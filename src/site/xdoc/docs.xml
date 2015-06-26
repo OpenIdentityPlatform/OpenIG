@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -55,7 +54,7 @@
 
         <dt>API Specification (Javadoc)</dt>
         <dd>
-          <a href="./apidocs/index.html">HTML</a>
+          <a href="./openig-doc/javadoc/index.html">HTML</a>
         </dd>
 
       </dl>

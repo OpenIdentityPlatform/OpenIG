@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -21,7 +20,7 @@
   ! CCPL HEADER END
   !
   !      Copyright 2010-2011 ApexIdentity Inc.
-  !      Portions Copyright 2012-2014 ForgeRock AS
+  !      Portions Copyright 2012-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='Exchange'
@@ -91,7 +90,7 @@
      <para>
       The original target
       <link
-       xlink:href="https://docs.oracle.com/javase/6/docs/api/index.html?java/net/URI.html"
+       xlink:href="https://docs.oracle.com/javase/7/docs/api/index.html?java/net/URI.html"
        xlink:show="new"
       >URI</link> for the request, as received by the web container.
      </para>

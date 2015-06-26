@@ -59,7 +59,7 @@ import org.forgerock.util.time.Duration;
  * Submits requests to remote servers. In this implementation, requests are
  * dispatched through the <a href="http://hc.apache.org/">Apache
  * HttpComponents</a> client.
- * <p>
+ *
  *
  * <pre>
  *   {
@@ -85,21 +85,20 @@ import org.forgerock.util.time.Duration;
  *     }
  *   }
  * </pre>
- * <p>
+ *
  * <strong>Note:</strong> This implementation does not verify hostnames for
  * outgoing SSL connections by default. This is because the gateway will usually access the
  * SSL endpoint using a raw IP address rather than a fully-qualified hostname.
- * <p>
+ * <br>
  * It's possible to override that behavior using the {@literal hostnameVerifier} attribute (case is not important,
  * but unknown values will produce an error).
- * <p>
+ * <br>
  * Accepted values are:
  * <ul>
  *     <li>{@literal ALLOW_ALL} (the default)</li>
- *     <li>{@literal BROWSER_COMPATIBLE}</li>
  *     <li>{@literal STRICT}</li>
  * </ul>
- * <p>
+ * <br>
  * The <strong>deprecated</strong> {@literal keystore} and {@literal truststore} optional attributes are both
  * supporting the following attributes:
  * <ul>
@@ -109,7 +108,7 @@ import org.forgerock.util.time.Duration;
  *     <li>{@literal password}: mandatory for key store, optional for trust store, defined as an
  *     {@link org.forgerock.openig.el.Expression}</li>
  * </ul>
- * <p>
+ * <br>
  * The new (since OpenIG 3.1) {@literal keyManager} and {@literal trustManager} optional attributes are referencing a
  * list of {@link KeyManager} (and {@link TrustManager} respectively). They support singleton value (use a single
  * reference) as well as multi-valued references (a list):
@@ -117,10 +116,10 @@ import org.forgerock.util.time.Duration;
  *     "keyManager": "SingleKeyManagerReference",
  *     "trustManager": [ "RefOne", "RefTwo" ]
  * </pre>
- * <p>
+ *
  * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection
  * will live before being considered a stalled and automatically destroyed). It defaults to {@literal 10 seconds}.
- * <p>
+ * <br>
  * The {@literal connectionTimeout} optional attribute specifies a connection timeout (the given amount of time to
  * wait until the connection is established). It defaults to {@literal 10 seconds}.
  *

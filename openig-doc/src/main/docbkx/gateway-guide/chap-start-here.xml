@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -351,8 +350,7 @@
    that ${projectName} uses to connect to servers.
    The following HttpClient configuration uses defaults for all settings,
    except <firstterm>hostnameVerifier</firstterm>,
-   which it configures to verify host names in SSL certificates
-   in the same way as most browsers:
+   which it configures to verify host names in SSL certificates:
   </para>
 
   <programlisting language="javascript">
@@ -360,7 +358,7 @@
     "name": "HttpClient",
     "type": "HttpClient",
     "config": {
-        "hostnameVerifier": "BROWSER_COMPATIBLE"
+        "hostnameVerifier": "STRICT"
     }
 }
   </programlisting>

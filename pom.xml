@@ -39,8 +39,8 @@
     <module>openig-core</module>
     <module>openig-war</module>
     <module>openig-saml</module>
-    <module>openig-doc-samples</module>
     <module>openig-oauth2</module>
+    <module>openig-doc</module>
   </modules>
 
   <build>
@@ -84,8 +84,20 @@
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
 
           <jCiteSourcePaths>
-            <sourcePath>${basedir}/openig-doc-samples/src/main/java</sourcePath>
+            <sourcePath>${basedir}/openig-doc/src/main/java</sourcePath>
           </jCiteSourcePaths>
+<!-- Pending OPENIG-567
+          <artifactItems>
+            <artifactItem>
+              <groupId>org.forgerock.openig</groupId>
+              <artifactId>openig-doc</artifactId>
+              <version>${project.version}</version>
+              <classifier>javadoc</classifier>
+              <outputDirectory>apidocs</outputDirectory>
+              <title>OpenIG ${project.version} API Javadoc</title>
+            </artifactItem>
+          </artifactItems>
+-->
         </configuration>
         <!-- Boilerplate executions are needed pending a fix for DOCS-222. -->
         <executions>
@@ -102,7 +114,7 @@
            <phase>site</phase>
            <goals>
             <goal>site</goal>
-            <goal>release</goal>
+            <!-- Pending OPENIG-567 <goal>backstage</goal>-->
            </goals>
           </execution>
         </executions>
@@ -192,7 +204,7 @@
 
     <httpFrameworkVersion>0.0.1-SNAPSHOT</httpFrameworkVersion>
 
-    <!-- For a release build, update this to http://docs.forgerock.org/en/openig/${project.version}/ -->
+    <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
 
     <!-- Start documentation properties -->
@@ -200,15 +212,15 @@
 
     <!-- Reset these to build docs for the final publication: -->
     <docTargetVersion>${project.version}</docTargetVersion>
-    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- http://docs.forgerock.org/en/openig/${project.version}/javadoc -->
+    <javadocBase>http://openig.forgerock.org/openig-doc/javadoc</javadocBase><!-- https://backstage.forgerock.com/static/docs/openig/${project.version}/apidocs -->
     <downloadUrl>http://forgerock.org/downloads/openig-builds/</downloadUrl><!-- http://forgerock.com/download-stack/ -->
 
     <openigFinalName>OpenIG-${project.version}</openigFinalName>
     <openigWar>${openigFinalName}.war</openigWar>
 
-    <sampleServerJar>openig-doc-samples-${project.version}-jar-with-dependencies.jar</sampleServerJar>
-    <sampleServerDownloadUrl>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/${sampleServerJar}</sampleServerDownloadUrl>
-    <sampleServerDownloadDirectory>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc-samples/${project.version}/</sampleServerDownloadDirectory>
+    <sampleServerJar>openig-doc-${project.version}-jar-with-dependencies.jar</sampleServerJar>
+    <sampleServerDownloadUrl>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc/${project.version}/${sampleServerJar}</sampleServerDownloadUrl>
+    <sampleServerDownloadDirectory>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc/${project.version}/</sampleServerDownloadDirectory>
     <!-- Empty this property to link to a release version: -->
     <sampleServerSnapshot>-snapshot</sampleServerSnapshot>
     <sampleServerDownloadDoc>../shared/para-download-doc-samples${sampleServerSnapshot}.xml</sampleServerDownloadDoc>
@@ -317,31 +329,6 @@
       <url>scp://community.internal.forgerock.com/var/www/vhosts/openig.forgerock.org/httpdocs</url>
     </site>
   </distributionManagement>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${javadocPluginVersion}</version>
-        <configuration>
-          <author>false</author>
-          <bottom>Copyright 2011-2015 ForgeRock AS.</bottom>
-          <links>
-            <link>http://docs.oracle.com/javase/6/docs/api/</link>
-          </links>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <id>aggregate</id>
-            <reports>
-              <report>aggregate</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-    </plugins>
-  </reporting>
 
   <profiles>
     <profile>

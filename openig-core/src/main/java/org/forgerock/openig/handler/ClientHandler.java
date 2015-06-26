@@ -34,7 +34,7 @@ import org.forgerock.util.promise.Promise;
  * Submits exchange requests to remote servers. In this implementation, requests are dispatched through the {@link
  * HttpClient} this handler is configured to use (defaults to system's HttpClient provided under the {@literal
  * HttpClient} name).
- * <p>
+ *
  * <pre>
  *   {
  *     "name": "Client",

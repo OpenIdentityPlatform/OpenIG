@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -20,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Portions Copyright 2014 ForgeRock AS
+  !      Portions Copyright 2014-2015 ForgeRock AS.
   !
 -->
 <refentry xml:id='HttpClient'
@@ -162,21 +161,6 @@
 
       <listitem>
        <para>
-        <literal>BROWSER_COMPATIBLE</literal>:
-        match the hostname either as the value of the the first CN,
-        or any of the subject-alt names.
-       </para>
-
-       <para>
-        A wildcard can occur in the CN, and in any of the subject-alt names.
-        Wildcards match all subdomains, so <literal>*.example.com</literal>
-        matches <literal>www.example.com</literal>
-        and <literal>some.host.example.com</literal>.
-       </para>
-      </listitem>
-
-      <listitem>
-       <para>
         <literal>STRICT</literal>:
         match the hostname either as the value of the the first CN,
         or any of the subject-alt names.
@@ -306,7 +290,7 @@
         "connections": 64,
         "disableReuseConnection": true,
         "disableRetries": true,
-        "hostnameVerifier": "BROWSER_COMPATIBLE",
+        "hostnameVerifier": "STRICT",
         "soTimeout": "10 seconds",
         "connectionTimeout": "10 seconds",
         "keyManager": {

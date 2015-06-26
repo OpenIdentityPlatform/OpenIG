@@ -69,7 +69,7 @@
       <item name="Release Notes" href="./doc/bootstrap/release-notes/index.html" />
       <item name="Guide to OpenIG" href="./doc/bootstrap/gateway-guide/index.html" />
       <item name="Config Reference" href="./doc/bootstrap/reference/index.html" />
-      <item name="Javadoc" href="./apidocs/index.html" />
+      <item name="Javadoc" href="./openig-doc/javadoc/index.html" />
     </menu>
 
     <menu name="OpenIG Development">

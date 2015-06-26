@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -616,7 +615,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
       add one fully qualified class name per line.
       For details, see the reference documentation for the Java class
       <link
-       xlink:href="https://docs.oracle.com/javase/6/docs/api/index.html?java/util/ServiceLoader.html"
+       xlink:href="https://docs.oracle.com/javase/7/docs/api/index.html?java/util/ServiceLoader.html"
        xlink:show="new"
       >ServiceLoader</link>.
       If you build your project using Maven, then you can add this
@@ -636,7 +635,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
 
    <varlistentry>
     <term><link
-      xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html"
+      xlink:href="${javadocBase}/index.html?org/forgerock/http/Filter.html"
       xlink:show="new"
      >Filter</link></term>
     <listitem>
@@ -648,7 +647,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
 
    <varlistentry>
     <term><link
-     xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html"
+     xlink:href="${javadocBase}/index.html?org/forgerock/http/Handler.html"
      xlink:show="new"
     >Handler</link></term>
     <listitem>
@@ -663,16 +662,12 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
    These Filter and Handler interfaces are similar to Java Enterprise Edition
    <literal>Filter</literal> and <literal>Servlet</literal> interfaces,
    with some differences in the semantics of messages.
-   While you can simply implement these interfaces,
-   ${projectName} also provides convenience classes:
+   ${projectName} also provides the convenience class
    <link
-    xlink:href="${javadocBase}/org/forgerock/openig/filter/GenericFilter.html"
+    xlink:href="${javadocBase}/index.html?org/forgerock/openig/heap/GenericHeapObject.html"
     xlink:show="new"
-    >GenericFilter</link> and
-   <link
-    xlink:href="${javadocBase}/org/forgerock/openig/handler/GenericHandler.html"
-    xlink:show="new"
-    >GenericHandler</link>.
+   >GenericHeapObject</link>
+   to help with configuration.
   </para>
  </section>
 
@@ -685,66 +680,46 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
  </indexterm>
 
   <para>
-   The <literal>Filter</literal> interface exposes a
+   The <literal>Filter</literal> interface exposes a <literal>filter()</literal> method,
+   which takes a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Filter.html#filter(org.forgerock.openig.http.Exchange,%20org.forgerock.openig.handler.Handler)"
-   >filter()</link> method,
-   which takes an
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/Context.html"
+   >Context</link>, a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html"
-   >Exchange</link> object
-   and the
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/protocol/Request.html"
+   >Request</link>, and the
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html"
-   >Chain</link> of remaining filters and handler to dispatch to.
-   Initially,
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/Handler.html"
+   >Handler</link>, which is the next filter or handler to dispatch to.
+   The <literal>filter()</literal> method returns a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
-   >exchange.request</link> contains the request to be filtered.
-   To pass the request to the next filter or handler in the chain,
-   the filter calls
+    xlink:href="${javadocBase}/index.html?org/forgerock/util/Promise.html"
+   >Promise</link> that provides access to the
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/filter/Chain.html#handle(org.forgerock.openig.http.Exchange)"
-   >next.handle(exchange)</link>.
-   After this call,
-   <link
-    xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
-   >exchange.response</link> contains the response that can be filtered.
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/protocol/Response.html"
+   >Response</link>
+   with methods for dealing with both success and failure conditions.
   </para>
 
   <para>
    A filter might elect not to pass the request to the next filter or handler,
    and instead handle the request itself.
    It can achieve this by merely avoiding a call
-   to <literal>next.handle(exchange)</literal>
-   and creating its own response object in the exchange.
+   to <literal>next.handle(context, request)</literal>,
+   creating its own response object and returning that in the Promise.
    The filter is also at liberty to replace a response with another of its own.
    A filter can exist in more than one chain,
    therefore should make no assumptions or correlations
    using the chain it is supplied.
    The only valid use of a chain by a filter is to call its
-   <literal>handle()</literal> method to dispatch the exchange
+   <literal>handle()</literal> method to dispatch the request
    to the rest of the chain.
   </para>
-
-  <note>
-   <para>
-    If an existing response exists in the exchange object
-    and the filter intends to replace it with its own,
-    it must call the
-    <link
-     xlink:show="new"
-     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
-    >response.close()</link> method in order to signal
-    that the processing of the response from a remote server is complete.
-   </para>
-  </note>
  </section>
 
  <section xml:id="custom-handler">
@@ -756,41 +731,28 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
  </indexterm>
 
   <para>
-   The <literal>Handler</literal> interface exposes a
+   The <literal>Handler</literal> interface exposes a <literal>handle()</literal> method,
+   which takes a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/handler/Handler.html#handle(org.forgerock.openig.http.Exchange)"
-   >handle()</link> method,
-   which takes an
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/Context.html"
+   >Context</link>, and a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
-   >Exchange</link> object.
-   It processes the request in
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/protocol/Request.html"
+   >Request</link>.
+   It processes the request and returns a
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#request"
-    >exchange.request</link> and produces a response in
+    xlink:href="${javadocBase}/index.html?org/forgerock/util/Promise.html"
+   >Promise</link> that provides access to the
    <link
     xlink:show="new"
-    xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Exchange.html#response"
-   >exchange.response</link>.
+    xlink:href="${javadocBase}/index.html?org/forgerock/http/protocol/Response.html"
+   >Response</link>
+   with methods for dealing with both success and failure conditions.
    A handler can elect to dispatch the exchange to another handler or chain.
   </para>
-
-  <note>
-   <para>
-    If an existing response exists in the exchange object
-    and the filter intends to replace it with its own,
-    it must first check to see if the
-    it must call the
-    <link
-     xlink:show="new"
-     xlink:href="${javadocBase}/index.html?org/forgerock/openig/http/Message.html#close()"
-    >response.close()</link> method in order to signal
-    that the processing of the response from a remote server is complete.
-   </para>
-  </note>
  </section>
 
  <section xml:id="custom-heap-config">
@@ -819,11 +781,11 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
    <link
     xlink:show="new"
     xlink:href="${javadocBase}/org/forgerock/openig/heap/GenericHeaplet.html#create()"
-   >create</link> method.
+   >create()</link> method.
   </para>
 
   <para>
-   Within the <literal>create</literal> method,
+   Within the <literal>create()</literal> method,
    you can access the object's configuration through the
    <link
     xlink:show="new"
