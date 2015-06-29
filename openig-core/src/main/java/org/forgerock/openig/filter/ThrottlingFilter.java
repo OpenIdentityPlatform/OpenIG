@@ -54,7 +54,7 @@ import org.forgerock.util.time.TimeService;
 public class ThrottlingFilter extends GenericHeapObject implements Filter {
 
     private final LoadingCache<String, TokenBucket> buckets;
-    private Expression<String> partitionKey;
+    private final Expression<String> partitionKey;
 
     /**
      * Constructs a ThrottlingFilter.
@@ -88,7 +88,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
     public ThrottlingFilter(final TimeService time,
                             final int numberOfRequests,
                             final Duration duration,
-                            Expression<String> partitionKey) {
+                            final Expression<String> partitionKey) {
         this.buckets = setupBuckets(time, numberOfRequests, duration);
         this.partitionKey = partitionKey;
     }
