@@ -80,12 +80,20 @@ public final class GatewayHttpApplication implements HttpApplication {
     private HeapImpl heap;
     private TemporaryStorage storage;
     private volatile Handler httpHandler;
+    private Environment environment;
 
     /**
      * Default constructor called by the HTTP Framework.
      */
     public GatewayHttpApplication() {
-        // Nothing to do.
+        this(new GatewayEnvironment());
+    }
+
+    /**
+     * Constructor for tests.
+     */
+    GatewayHttpApplication(final Environment environment) {
+        this.environment = environment;
     }
 
     @Override
@@ -96,7 +104,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
         try {
             // Load the configuration
-            final Environment environment = new GatewayEnvironment();
+
             final File configuration = new File(environment.getConfigDirectory(), "config.json");
             final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
                     .getResource("default-config.json");
@@ -154,7 +162,8 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     @Override
     public void stop() {
-        if (httpHandler != null) {
+        if (heap != null) {
+            // Try to release Heaplet(s) resources
             heap.destroy();
             httpHandler = null;
         }
