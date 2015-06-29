@@ -57,7 +57,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
     private final Expression<String> partitionKey;
 
     /**
-     * Constructs a ThrottlingFilter.
+     * Constructs a ThrottlingFilter with no partition key.
      *
      * @param time
      *            the time service.
