@@ -17,11 +17,23 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.*;
-import static org.forgerock.http.Http.*;
-import static org.forgerock.http.util.Json.*;
-import static org.forgerock.json.fluent.JsonValue.*;
-import static org.forgerock.openig.heap.Keys.*;
+import static java.lang.String.format;
+import static org.forgerock.http.Http.chainOf;
+import static org.forgerock.http.Http.newSessionFilter;
+import static org.forgerock.http.util.Json.readJsonLenient;
+import static org.forgerock.json.fluent.JsonValue.field;
+import static org.forgerock.json.fluent.JsonValue.json;
+import static org.forgerock.json.fluent.JsonValue.object;
+import static org.forgerock.openig.heap.Keys.AUDIT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 
 import java.io.File;
 import java.io.FileNotFoundException;
