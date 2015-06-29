@@ -1,0 +1,9 @@
+{
+  "comment" : "this configuration is invalid for OpenIG, that will trigger a failure at startup",
+  "heap": [
+    {
+      "name": "Detection",
+      "type": "org.forgerock.openig.handler.router.DestroyDetectHandler"
+    }
+  ]
+}

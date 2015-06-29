@@ -1,0 +1,12 @@
+{
+  "comment": "error in handler",
+  "heap": [
+    {
+      "name": "Detection",
+      "type": "org.forgerock.openig.handler.router.DestroyDetectHandler"
+    }
+  ],
+  "handler": {
+    "type": "unexisting_type_due_to_typo"
+  }
+}

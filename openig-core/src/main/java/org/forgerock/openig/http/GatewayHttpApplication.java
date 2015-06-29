@@ -146,6 +146,8 @@ public final class GatewayHttpApplication implements HttpApplication {
             return rootHandler;
         } catch (Exception e) {
             LOG.error("Failed to initialise Http Application", e);
+            // Release resources
+            stop();
             throw new HttpApplicationException("Unable to start OpenIG", e);
         }
     }
