@@ -29,6 +29,8 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -36,6 +38,95 @@ import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class ThrottlingFilterTest {
+
+    @Test
+    public void testPartitioningWithNoExpression() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        // Without an Expression, all incoming requests goes to the same TokenBucket
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+
+        Handler handler = new ResponseHandler(Status.OK);
+
+        // The time does not need to advance
+        Exchange exchange = new Exchange();
+        Promise<Response, NeverThrowsException> promise;
+
+        exchange.put("foo", "bar-00");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
+
+        exchange.put("foo", "bar-00");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+
+        exchange.put("foo", "bar-01");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+    }
+
+    @Test
+    public void testPartitioningWithExpression() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        Expression<String> expr = Expression.valueOf("${matches(exchange.foo, 'bar-00') ?'bucket-00' :''}",
+                                                     String.class);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
+
+        Handler handler = new ResponseHandler(Status.OK);
+
+        // The time does not need to advance
+        Exchange exchange = new Exchange();
+        Promise<Response, NeverThrowsException> promise;
+
+        exchange.put("foo", "bar-00");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
+
+        exchange.put("foo", "bar-00");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+
+        exchange.put("foo", "bar-01");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
+    }
+
+    @Test
+    public void testPartitioningWithNullExpression() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), null);
+
+        Handler handler = new ResponseHandler(Status.OK);
+
+        // The time does not need to advance
+        Exchange exchange = new Exchange();
+        Promise<Response, NeverThrowsException> promise;
+
+        exchange.put("foo", "bar-00");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
+
+        // A null expression falls into the default bucket
+        exchange.put("foo", "bar-01");
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+    }
+
+    @Test
+    public void testPartitioningWithExpressionEvaluatingNull() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        Expression<String> expr = Expression.valueOf("${exchange.bar}",
+                                                     String.class);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
+
+        Handler handler = new ResponseHandler(Status.OK);
+
+        // The time does not need to advance
+        Exchange exchange = new Exchange();
+        Promise<Response, NeverThrowsException> promise;
+
+        promise = filter.filter(exchange, new Request(), handler);
+        assertThat(promise.get().getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+    }
 
     @Test
     public void testSample() throws Exception {
