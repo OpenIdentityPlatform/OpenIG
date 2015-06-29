@@ -85,6 +85,11 @@
       <artifactId>json-web-token</artifactId>
     </dependency>
     <dependency>
+        <groupId>org.forgerock.commons.guava</groupId>
+        <artifactId>forgerock-guava-cache</artifactId>
+        <version>18.0.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <version>2.3.4</version>

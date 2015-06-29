@@ -20,6 +20,7 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -30,6 +31,10 @@ public class ResponseHandler implements Handler {
 
     public ResponseHandler(final Response response) {
         this.response = response;
+    }
+
+    public ResponseHandler(final Status status) {
+        this(new Response(status));
     }
 
     @Override
