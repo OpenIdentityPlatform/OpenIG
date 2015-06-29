@@ -79,7 +79,6 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     private HeapImpl heap;
     private TemporaryStorage storage;
-    private volatile Handler httpHandler;
     private Environment environment;
 
     /**
@@ -98,7 +97,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     @Override
     public Handler start() throws HttpApplicationException {
-        if (httpHandler != null) {
+        if (heap != null) {
             throw new HttpApplicationException("Gateway already started.");
         }
 
@@ -147,8 +146,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                 rootHandler = chainOf(rootHandler, newSessionFilter(sessionManager));
             }
 
-            httpHandler = rootHandler;
-            return httpHandler;
+            return rootHandler;
         } catch (Exception e) {
             LOG.error("Failed to initialise Http Application", e);
             throw new HttpApplicationException("Unable to start OpenIG", e);
@@ -165,7 +163,7 @@ public final class GatewayHttpApplication implements HttpApplication {
         if (heap != null) {
             // Try to release Heaplet(s) resources
             heap.destroy();
-            httpHandler = null;
+            heap = null;
         }
     }
 
