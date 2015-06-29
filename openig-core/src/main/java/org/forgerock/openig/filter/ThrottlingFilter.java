@@ -23,10 +23,10 @@ import static org.forgerock.util.time.Duration.duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.guava.common.cache.CacheBuilder;
 import org.forgerock.guava.common.cache.CacheLoader;
 import org.forgerock.guava.common.cache.LoadingCache;
-
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -104,9 +104,18 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
             }
         };
 
+        Ticker ticker = new Ticker() {
+
+            @Override
+            public long read() {
+                // We need to return now in nanoseconds.
+                return time.now() * 1000;
+            }
+        };
         // Let's give some delay for the eviction
         long expire = duration.to(TimeUnit.MILLISECONDS) + 3;
         return CacheBuilder.newBuilder()
+                           .ticker(ticker)
                            .expireAfterAccess(expire, TimeUnit.MILLISECONDS)
                            .recordStats()
                            .build(loader);
