@@ -41,6 +41,7 @@
     <module>openig-saml</module>
     <module>openig-oauth2</module>
     <module>openig-doc</module>
+    <module>openig-uma</module>
   </modules>
 
   <build>

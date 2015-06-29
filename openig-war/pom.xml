@@ -53,6 +53,11 @@
       <artifactId>openig-oauth2</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-uma</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>${openigFinalName}</finalName>
