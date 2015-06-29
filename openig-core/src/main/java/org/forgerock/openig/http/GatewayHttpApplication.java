@@ -103,7 +103,6 @@ public final class GatewayHttpApplication implements HttpApplication {
 
         try {
             // Load the configuration
-
             final File configuration = new File(environment.getConfigDirectory(), "config.json");
             final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
                     .getResource("default-config.json");
