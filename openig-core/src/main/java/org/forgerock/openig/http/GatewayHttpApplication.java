@@ -22,8 +22,6 @@ import static org.forgerock.http.Http.*;
 import static org.forgerock.http.util.Json.*;
 import static org.forgerock.json.fluent.JsonValue.*;
 import static org.forgerock.openig.heap.Keys.*;
-import static org.forgerock.openig.http.HttpClient.*;
-import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -167,14 +165,10 @@ public final class GatewayHttpApplication implements HttpApplication {
     }
 
     private static JsonValue readJson(URL resource) throws IOException {
-        InputStream in = null;
-        try {
-            in = resource.openStream();
+        try (InputStream in = resource.openStream()) {
             return new JsonValue(readJsonLenient(in));
         } catch (FileNotFoundException e) {
-            throw new IOException(format("File %s does not exists", resource), e);
-        } finally {
-            closeSilently(in);
+            throw new IOException(format("File %s does not exist", resource), e);
         }
     }
 }
