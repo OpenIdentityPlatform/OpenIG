@@ -154,7 +154,7 @@ public class CaptureDecoratorTest {
     public void shouldSupportNullLogSinkReference() throws Exception {
         // This case reproduce NPE when the CaptureDecorator is created in the
         // GatewayServlet (default capture decorator) with no LazyReference<LogSink>
-        // provided (meaning t will output messages in each component's LogSink)
+        // provided (meaning it will output messages in each component's LogSink)
         CaptureDecorator decorator = new CaptureDecorator(null, false, false);
         decorator.decorate(filter, json("all"), context);
     }
