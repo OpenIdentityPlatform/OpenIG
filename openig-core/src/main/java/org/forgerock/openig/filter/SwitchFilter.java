@@ -113,6 +113,8 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
                 .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(final Response value) {
+                        // Needed because expressions can rely on exchange.response to be set
+                        exchange.setResponse(value);
                         Promise<Response, NeverThrowsException> promise = doSwitch(exchange,
                                                                                    request,
                                                                                    responseCases);
