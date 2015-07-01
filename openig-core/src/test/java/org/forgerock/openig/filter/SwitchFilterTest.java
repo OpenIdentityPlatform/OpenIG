@@ -26,12 +26,14 @@ import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -87,6 +89,25 @@ public class SwitchFilterTest {
     public void testSwitchOnResponseOnly() throws Exception {
         SwitchFilter filter = new SwitchFilter();
         filter.addResponseCase(Expression.valueOf("${true}", Boolean.class), handler1);
+
+        filter.filter(exchange, null, terminalHandler);
+
+        // No request conditions were met (there was none), so the responses cases are tried
+        // and the case's handler that evaluated to true is being executed
+        InOrder inOrder = inOrder(terminalHandler, handler1);
+        inOrder.verify(terminalHandler).handle(exchange, null);
+        inOrder.verify(handler1).handle(exchange, null);
+    }
+
+    @Test
+    public void testSwitchWithConditionOnResponseStatus() throws Exception {
+        SwitchFilter filter = new SwitchFilter();
+        filter.addResponseCase(Expression.valueOf("${exchange.response.status.code == 418}", Boolean.class), handler1);
+
+        // Reset the terminalHandler as we want another result here.
+        Mockito.reset(terminalHandler);
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.TEAPOT)));
 
         filter.filter(exchange, null, terminalHandler);
 
