@@ -62,8 +62,9 @@ import org.forgerock.util.promise.NeverThrowsException;
  *   "userInfoEndpoint"             : uriExpression,   [OPTIONAL - if no well-known configuration,
  *                                                                 default is no user info]
  *   "scopes"                       : [ expressions ], [OPTIONAL - overrides global scopes]
- *   "providerHandler"              : handler          [OPTIONAL - default is using a new ClientHandler
+ *   "providerHandler"              : handler,         [OPTIONAL - default is using a new ClientHandler
  *                                                                 wrapping the default HttpClient.]
+ *   "tokenEndpointUseBasicAuth"    : boolean          [OPTIONAL - default is true, use Basic Authentication]
  * }
  * </pre>
  *
@@ -91,7 +92,7 @@ public class OAuth2Provider {
     private Expression<String> authorizeEndpoint;
     private Expression<String> tokenEndpoint;
     private Expression<String> userInfoEndpoint;
-    private final boolean tokenEndpointUseBasicAuth = false; // Do we want to make this configurable?
+    private boolean tokenEndpointUseBasicAuth;
     private Handler providerHandler;
 
     /**
@@ -174,6 +175,23 @@ public class OAuth2Provider {
      */
     public OAuth2Provider setTokenEndpoint(final Expression<String> endpoint) {
         this.tokenEndpoint = endpoint;
+        return this;
+    }
+
+    /**
+     * Sets the authentication method the token end-point should use.
+     * {@code true} for 'client_secret_basic', {@code false} for
+     * 'client_secret_post' (not recommended).
+     *
+     * @param useBasicAuth
+     *            {@code true} if the token end-point should use Basic
+     *            authentication, {@code false} if it should use client secret
+     *            POST.
+     * @return This provider.
+     * @see https://tools.ietf.org/html/rfc6749#section-2.3.1
+     */
+    public OAuth2Provider setTokenEndpointUseBasicAuth(final boolean useBasicAuth) {
+        this.tokenEndpointUseBasicAuth = useBasicAuth;
         return this;
     }
 
@@ -470,6 +488,7 @@ public class OAuth2Provider {
             provider.setClientId(asExpression(config.get("clientId").required(), String.class));
             provider.setClientSecret(asExpression(config.get("clientSecret").required(), String.class));
             provider.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
+            provider.setTokenEndpointUseBasicAuth(config.get("tokenEndpointUseBasicAuth").defaultTo(true).asBoolean());
             Handler providerHandler = null;
             if (config.isDefined("providerHandler")) {
                 providerHandler = heap.resolve(config.get("providerHandler"), Handler.class);
