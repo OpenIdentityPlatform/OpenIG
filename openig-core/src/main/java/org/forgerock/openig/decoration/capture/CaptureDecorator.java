@@ -142,15 +142,22 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
     private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig) throws HeapException {
         Set<CapturePoint> modes = new TreeSet<>();
+        if (decoratorConfig.isNull()) {
+            throw new HeapException("Capture's decorator cannot be null");
+        }
         if (decoratorConfig.isString()) {
             // Single value
             modes.add(decoratorConfig.asEnum(CapturePoint.class));
         } else if (decoratorConfig.isList()) {
             // Array values
-            modes.addAll(decoratorConfig.asList(ofEnum(CapturePoint.class)));
+            if (!decoratorConfig.asList(ofEnum(CapturePoint.class)).contains(null)) {
+                modes.addAll(decoratorConfig.asList(ofEnum(CapturePoint.class)));
+            } else {
+                throw new HeapException("Capture's decorator cannot contain null value");
+            }
         } else {
-            throw new HeapException(format("JSON element at %s should either be a simple String or an array of String",
-                                           decoratorConfig.getPointer()));
+            throw new HeapException(format("Invalid JSON configuration in '%s'. It should either be a simple String "
+                                           + " or an array of String", decoratorConfig.toString()));
         }
 
         // Sanity check

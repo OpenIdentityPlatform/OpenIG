@@ -29,6 +29,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.helper.LazyReference;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
@@ -98,11 +99,29 @@ public class CaptureDecoratorTest {
         // @Checkstyle:on
     }
 
+    @Test(expectedExceptions = HeapException.class)
+    public void shouldFailWithNullCapturePointsConfiguration() throws Exception {
+        final CaptureDecorator decorator = new CaptureDecorator(reference, false, false);
+        decorator.decorate(filter, json(null), context);
+    }
+
     @Test(dataProvider = "invalidModeNames",
           expectedExceptions = IllegalArgumentException.class)
     public void shouldFailForInvalidModes(String name) throws Exception {
         CaptureDecorator decorator = new CaptureDecorator(reference, false, false);
         decorator.decorate(filter, json(name), context);
+    }
+
+    @Test(expectedExceptions = HeapException.class)
+    public void shouldFailWithInvalidJsonObjectCapturePointsConfiguration() throws Exception {
+        final CaptureDecorator decorator = new CaptureDecorator(reference, false, false);
+        decorator.decorate(filter, json(object(field("Should NOT be", "an object"))), context);
+    }
+
+    @Test(expectedExceptions = HeapException.class)
+    public void shouldFailWithJsonArrayCapturePointsConfigurationContainingNull() throws Exception {
+        final CaptureDecorator decorator = new CaptureDecorator(reference, false, false);
+        decorator.decorate(filter, json(array(null, "response")), context);
     }
 
     @Test
