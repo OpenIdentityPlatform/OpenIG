@@ -18,6 +18,7 @@ package org.forgerock.openig.decoration.capture;
 
 import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
 import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
+import static org.forgerock.util.Reject.checkNotNull;
 
 import java.util.Set;
 
@@ -45,14 +46,14 @@ class CaptureHandler implements Handler {
      * @param capture
      *         specifies where the messages are going to be captured
      * @param points
-     *         Specifies the points where message should be captured
+     *         Specifies the points where message should be captured, not null.
      */
     public CaptureHandler(final Handler delegate,
                           final MessageCapture capture,
                           final Set<CapturePoint> points) {
         this.delegate = delegate;
         this.capture = capture;
-        this.points = points;
+        this.points = checkNotNull(points);
     }
 
     @Override
