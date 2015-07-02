@@ -94,7 +94,7 @@
               <version>${project.version}</version>
               <classifier>javadoc</classifier>
               <outputDirectory>apidocs</outputDirectory>
-              <title>OpenIG ${project.version} API Javadoc</title>
+              <title>OpenIG API Javadoc</title>
             </artifactItem>
           </artifactItems>
 -->
