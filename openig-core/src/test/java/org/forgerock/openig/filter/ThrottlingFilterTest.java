@@ -21,6 +21,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,20 +31,44 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.Duration;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class ThrottlingFilterTest {
 
+    private static final Expression<String> DEFAULT_PARTITION_EXPR;
+
+    static {
+        try {
+            DEFAULT_PARTITION_EXPR = Expression.valueOf(ThrottlingFilter.DEFAULT_PARTITION_KEY, String.class);
+        } catch (ExpressionException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    @Test(expectedExceptions = { org.forgerock.guava.common.util.concurrent.UncheckedExecutionException.class })
+    public void testWithIncorrectNumberOfRequests() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        new ThrottlingFilter(time, -1, mock(Duration.class), DEFAULT_PARTITION_EXPR);
+    }
+
+    @Test(expectedExceptions = { IllegalArgumentException.class })
+    public void testWithIncorrectDuration() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        new ThrottlingFilter(time, 1, duration("unlimited"), DEFAULT_PARTITION_EXPR);
+    }
+
     @Test
     public void testPartitioningWithNoExpression() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        // Without an Expression, all incoming requests goes to the same TokenBucket
-        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+        // Without an Expression, all incoming requests go to the same TokenBucket
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
 
         Handler handler = new ResponseHandler(Status.OK);
 
@@ -131,7 +156,7 @@ public class ThrottlingFilterTest {
     @Test
     public void testSample() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
 
         // This one has to call the handler as there are enough tokens in the bucket.
         Handler handler1 = mock(Handler.class, "handler1");
@@ -160,7 +185,7 @@ public class ThrottlingFilterTest {
         CountDownLatch latch2 = new CountDownLatch(1);
 
         FakeTimeService time = new FakeTimeService(0);
-        final ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"));
+        final ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
 
         // This one has to be called as there are enough tokens in the bucket.
         final Handler handler1 = new LatchHandler(latch1, latch2);
