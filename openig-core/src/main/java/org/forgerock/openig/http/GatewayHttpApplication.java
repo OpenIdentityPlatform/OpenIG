@@ -20,6 +20,8 @@ package org.forgerock.openig.http;
 import static java.lang.String.format;
 import static org.forgerock.http.Http.chainOf;
 import static org.forgerock.http.Http.newSessionFilter;
+import static org.forgerock.http.RoutingMode.STARTS_WITH;
+import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.json;
@@ -41,11 +43,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.io.Buffer;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.Router;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
@@ -61,6 +68,9 @@ import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Factory;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.LoggerFactory;
 
@@ -149,13 +159,24 @@ public final class GatewayHttpApplication implements HttpApplication {
             Handler rootHandler = new HttpHandler(heap.getHandler());
 
             // Let the user override the container's session.
-            final SessionManager sessionManager =
-                    heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
+            final SessionManager sessionManager = heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
             if (sessionManager != null) {
                 rootHandler = chainOf(rootHandler, newSessionFilter(sessionManager));
             }
 
-            return rootHandler;
+            Router router = new Router();
+            router.setDefaultRoute(rootHandler);
+            // I can't use the StaticResponseHandler as it mandates the Context to have an Exchange.
+            Handler openigHandler = new Handler() {
+                @Override
+                public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
+                    return Promises.newResultPromise(new Response(Status.NOT_IMPLEMENTED));
+                }
+            };
+            // TODO see OPENIG-571
+            router.addRoute(requestUriMatcher(STARTS_WITH, "/openig"), openigHandler);
+
+            return router;
         } catch (Exception e) {
             LOG.error("Failed to initialise Http Application", e);
             // Release resources
