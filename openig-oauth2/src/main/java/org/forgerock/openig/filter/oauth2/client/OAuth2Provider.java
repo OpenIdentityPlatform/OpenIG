@@ -188,7 +188,7 @@ public class OAuth2Provider {
      *            authentication, {@code false} if it should use client secret
      *            POST.
      * @return This provider.
-     * @see https://tools.ietf.org/html/rfc6749#section-2.3.1
+     * @see <a href="https://tools.ietf.org/html/rfc6749#section-2.3.1">RFC 6749, Section 2.3.1</a>
      */
     public OAuth2Provider setTokenEndpointUseBasicAuth(final boolean useBasicAuth) {
         this.tokenEndpointUseBasicAuth = useBasicAuth;
