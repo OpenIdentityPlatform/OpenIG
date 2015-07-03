@@ -70,7 +70,7 @@ public class GatewayHttpApplicationTest {
         GatewayHttpApplication application = new GatewayHttpApplication(env);
         Handler start = application.start();
 
-        Promise<Response,NeverThrowsException> promise;
+        Promise<Response, NeverThrowsException> promise;
         Request request;
 
         // This request must not be handled by the root handler
