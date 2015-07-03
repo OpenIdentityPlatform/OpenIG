@@ -137,9 +137,17 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
             // http://tools.ietf.org/html/rfc6585#section-4
             Response result = new Response(Status.TOO_MANY_REQUESTS);
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.37
-            result.getHeaders().add("Retry-After", Long.toString(SECONDS.convert(delay, MILLISECONDS)));
+            result.getHeaders().add("Retry-After", computeRetryAfter(delay));
             return Promises.newResultPromise(result);
         }
+    }
+
+    private String computeRetryAfter(final long delay) {
+        // According to the Javadoc of TimeUnit.convert : 999 ms => 0 sec, but we want to answer 1 sec.
+        //  999 + 999 = 1998 => 1 second
+        // 1000 + 999 = 1999 => 1 second
+        // 1001 + 999 = 2000 => 2 seconds
+        return Long.toString(SECONDS.convert(delay + 999L, MILLISECONDS));
     }
 
     /**
