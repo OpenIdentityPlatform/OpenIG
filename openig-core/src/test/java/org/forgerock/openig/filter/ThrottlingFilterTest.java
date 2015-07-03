@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.forgerock.guava.common.util.concurrent.UncheckedExecutionException;
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -52,20 +53,20 @@ public class ThrottlingFilterTest {
         }
     }
 
-    @Test(expectedExceptions = { org.forgerock.guava.common.util.concurrent.UncheckedExecutionException.class })
-    public void testWithIncorrectNumberOfRequests() throws Exception {
+    @Test(expectedExceptions = { UncheckedExecutionException.class })
+    public void shouldFailWithIncorrectNumberOfRequests() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         new ThrottlingFilter(time, -1, mock(Duration.class), DEFAULT_PARTITION_EXPR);
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
-    public void testWithIncorrectDuration() throws Exception {
+    public void shouldFailWithIncorrectDuration() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         new ThrottlingFilter(time, 1, duration("unlimited"), DEFAULT_PARTITION_EXPR);
     }
 
     @Test
-    public void testPartitioningWithExpression() throws Exception {
+    public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         Expression<String> expr = Expression.valueOf("${matches(exchange.foo, 'bar-00') ?'bucket-00' :''}",
                                                      String.class);
@@ -91,13 +92,13 @@ public class ThrottlingFilterTest {
     }
 
     @Test(expectedExceptions = { NullPointerException.class })
-    public void testPartitioningWithNullExpression() throws Exception {
+    public void shouldFailBecauseNullExpressionIsInvalid() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         new ThrottlingFilter(time, 1, duration("3 seconds"), null);
     }
 
     @Test
-    public void testPartitioningWithExpressionEvaluatingNull() throws Exception {
+    public void shouldUseDefaultValueWithExpressionEvaluatingNull() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         Expression<String> expr = Expression.valueOf("${exchange.bar}",
                                                      String.class);
@@ -114,7 +115,7 @@ public class ThrottlingFilterTest {
     }
 
     @Test
-    public void testSample() throws Exception {
+    public void shouldThrottleRequests() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
 
