@@ -65,31 +65,6 @@ public class ThrottlingFilterTest {
     }
 
     @Test
-    public void testPartitioningWithNoExpression() throws Exception {
-        FakeTimeService time = new FakeTimeService(0);
-        // Without an Expression, all incoming requests go to the same TokenBucket
-        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
-
-        Handler handler = new ResponseHandler(Status.OK);
-
-        // The time does not need to advance
-        Exchange exchange = new Exchange();
-        Promise<Response, NeverThrowsException> promise;
-
-        exchange.put("foo", "bar-00");
-        promise = filter.filter(exchange, new Request(), handler);
-        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
-
-        exchange.put("foo", "bar-00");
-        promise = filter.filter(exchange, new Request(), handler);
-        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
-
-        exchange.put("foo", "bar-01");
-        promise = filter.filter(exchange, new Request(), handler);
-        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
-    }
-
-    @Test
     public void testPartitioningWithExpression() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         Expression<String> expr = Expression.valueOf("${matches(exchange.foo, 'bar-00') ?'bucket-00' :''}",
@@ -115,25 +90,10 @@ public class ThrottlingFilterTest {
         assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
     }
 
-    @Test
+    @Test(expectedExceptions = { NullPointerException.class })
     public void testPartitioningWithNullExpression() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), null);
-
-        Handler handler = new ResponseHandler(Status.OK);
-
-        // The time does not need to advance
-        Exchange exchange = new Exchange();
-        Promise<Response, NeverThrowsException> promise;
-
-        exchange.put("foo", "bar-00");
-        promise = filter.filter(exchange, new Request(), handler);
-        assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
-
-        // A null expression falls into the default bucket
-        exchange.put("foo", "bar-01");
-        promise = filter.filter(exchange, new Request(), handler);
-        assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+        new ThrottlingFilter(time, 1, duration("3 seconds"), null);
     }
 
     @Test

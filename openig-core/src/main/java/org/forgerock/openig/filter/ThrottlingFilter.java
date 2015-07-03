@@ -40,6 +40,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
+import org.forgerock.util.Reject;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -58,22 +59,6 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
     private final Expression<String> partitionKey;
 
     /**
-     * Constructs a ThrottlingFilter with no partition key.
-     *
-     * @param time
-     *            the time service.
-     * @param numberOfRequests
-     *            the maximum of requests that can be filtered out during the duration.
-     * @param duration
-     *            the duration of the sliding window.
-     */
-    public ThrottlingFilter(final TimeService time,
-                            final int numberOfRequests,
-                            final Duration duration) {
-        this(time, numberOfRequests, duration, null);
-    }
-
-    /**
      * Constructs a ThrottlingFilter.
      *
      * @param time
@@ -90,6 +75,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
                             final int numberOfRequests,
                             final Duration duration,
                             final Expression<String> partitionKey) {
+        Reject.ifNull(partitionKey);
         this.buckets = setupBuckets(time, numberOfRequests, duration);
         this.partitionKey = partitionKey;
 
@@ -130,8 +116,10 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
 
-        final String key = partitionKey == null ? "" : partitionKey.eval(exchange);
+        final String key = partitionKey.eval(exchange);
         if (key == null) {
+            logger.error("Did not expect a null value for the partitionKey after evaluated the expression : "
+                    + partitionKey);
             return Promises.newResultPromise(Responses.newInternalServerError());
         }
 
@@ -166,7 +154,8 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
 
             Integer numberOfRequests = rate.get("numberOfRequests").required().asInteger();
             Duration duration = duration(rate.get("duration").required().asString());
-            Expression<String> partitionKey = asExpression(config.get("partitionKey").defaultTo(""), String.class);
+            Expression<String> partitionKey = asExpression(config.get("partitionKey").defaultTo(DEFAULT_PARTITION_KEY),
+                                                           String.class);
 
             return new ThrottlingFilter(time, numberOfRequests, duration, partitionKey);
         }
