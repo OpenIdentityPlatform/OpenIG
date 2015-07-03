@@ -20,7 +20,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.time.Duration.duration;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.guava.common.base.Ticker;
@@ -52,6 +51,8 @@ import org.forgerock.util.time.TimeService;
  * with status 429 (Too Many Requests) is sent.
  */
 public class ThrottlingFilter extends GenericHeapObject implements Filter {
+
+    static final String DEFAULT_PARTITION_KEY = "";
 
     private final LoadingCache<String, TokenBucket> buckets;
     private final Expression<String> partitionKey;
@@ -91,6 +92,10 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
                             final Expression<String> partitionKey) {
         this.buckets = setupBuckets(time, numberOfRequests, duration);
         this.partitionKey = partitionKey;
+
+        // Force to load the TokenBucket of the DEFAULT_PARTITION_KEY in order to validate the input parameters.
+        // If the parameters are not valid that will throw some unchecked exceptions.
+        buckets.getUnchecked(DEFAULT_PARTITION_KEY);
     }
 
     private LoadingCache<String, TokenBucket> setupBuckets(final TimeService time,
@@ -130,14 +135,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
             return Promises.newResultPromise(Responses.newInternalServerError());
         }
 
-        TokenBucket bucket;
-        try {
-            bucket = buckets.get(key);
-
-            return filter(bucket, context, request, next);
-        } catch (ExecutionException e) {
-            return Promises.newResultPromise(Responses.newInternalServerError());
-        }
+        return filter(buckets.getUnchecked(key), context, request, next);
     }
 
     private Promise<Response, NeverThrowsException> filter(TokenBucket bucket,
@@ -168,7 +166,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
 
             Integer numberOfRequests = rate.get("numberOfRequests").required().asInteger();
             Duration duration = duration(rate.get("duration").required().asString());
-            Expression<String> partitionKey = asExpression(config.get("partitionKey"), String.class);
+            Expression<String> partitionKey = asExpression(config.get("partitionKey").defaultTo(""), String.class);
 
             return new ThrottlingFilter(time, numberOfRequests, duration, partitionKey);
         }
