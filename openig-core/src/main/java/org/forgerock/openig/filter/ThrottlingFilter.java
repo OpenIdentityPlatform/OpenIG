@@ -16,15 +16,15 @@
 package org.forgerock.openig.filter;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.time.Duration.duration;
 
-import java.util.concurrent.TimeUnit;
-
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.guava.common.cache.CacheBuilder;
 import org.forgerock.guava.common.cache.CacheLoader;
+import org.forgerock.guava.common.cache.CacheStats;
 import org.forgerock.guava.common.cache.LoadingCache;
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
@@ -84,6 +84,15 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
         buckets.getUnchecked(DEFAULT_PARTITION_KEY);
     }
 
+    /**
+     * Returns the statistics of the underlying cache. This method must only be used for unit testing.
+     *
+     * @return the cache statistics
+     */
+    CacheStats getBucketsStats() {
+        return buckets.stats();
+    }
+
     private LoadingCache<String, TokenBucket> setupBuckets(final TimeService time,
                                                            final int numberOfRequests,
                                                            final Duration duration) {
@@ -95,19 +104,19 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
             }
         };
 
+        // Wrap our TimeService so we can play with the time in our tests
         Ticker ticker = new Ticker() {
 
             @Override
             public long read() {
-                // We need to return now in nanoseconds.
-                return time.now() * 1000;
+                return NANOSECONDS.convert(time.now(), MILLISECONDS);
             }
         };
-        // Let's give some delay for the eviction
-        long expire = duration.to(TimeUnit.MILLISECONDS) + 3;
+        // Let's give some arbitrary delay for the eviction
+        long expire = duration.to(MILLISECONDS) + 3;
         return CacheBuilder.newBuilder()
                            .ticker(ticker)
-                           .expireAfterAccess(expire, TimeUnit.MILLISECONDS)
+                           .expireAfterAccess(expire, MILLISECONDS)
                            .recordStats()
                            .build(loader);
     }

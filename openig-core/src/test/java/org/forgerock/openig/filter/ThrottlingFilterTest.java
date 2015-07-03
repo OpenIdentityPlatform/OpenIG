@@ -140,7 +140,58 @@ public class ThrottlingFilterTest {
     }
 
     @Test
-    public void testConcurrency() throws Exception {
+    public void shouldEvictObsoleteBucket() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
+        Context context = mock(Context.class);
+
+        // Call the filter in order to trigger the bucket creation
+        Handler handler1 = mock(Handler.class, "handler1");
+        filter.filter(context, new Request(), handler1);
+        verify(handler1).handle(any(Exchange.class), any(Request.class));
+
+        time.advance(duration("4 seconds"));
+
+        // After 3 seconds, the previously bucket should be discarded, force a new call so that the cache will clean its
+        // internal structure
+        Handler handler2 = mock(Handler.class, "handler2");
+        filter.filter(context, new Request(), handler2);
+        verify(handler2).handle(any(Exchange.class), any(Request.class));
+
+        assertThat(filter.getBucketsStats().evictionCount()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldNotEvictAccessedBucket() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        ThrottlingFilter filter = new ThrottlingFilter(time, 2, duration("3 seconds"), DEFAULT_PARTITION_EXPR);
+        Context context = mock(Context.class);
+        Request request;
+
+        // Here we access the same bucket every 2 seconds : enough time to add a refilled token but not enough for the
+        // bucket to be evicted.
+        Handler handler1 = mock(Handler.class, "handler1");
+        request = new Request();
+        filter.filter(context, request, handler1);
+        verify(handler1).handle(context, request);
+
+        time.advance(duration("2 seconds"));
+        Handler handler2 = mock(Handler.class, "handler2");
+        request = new Request();
+        filter.filter(context, request, handler2);
+        verify(handler2).handle(context, request);
+        assertThat(filter.getBucketsStats().evictionCount()).isEqualTo(0);
+
+        time.advance(duration("2 seconds"));
+        Handler handler3 = mock(Handler.class, "handler3");
+        request = new Request();
+        filter.filter(context, request, handler3);
+        verify(handler3).handle(context, request);
+        assertThat(filter.getBucketsStats().evictionCount()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldThrottleConcurrentRequests() throws Exception {
         CountDownLatch latch1 = new CountDownLatch(1);
         CountDownLatch latch2 = new CountDownLatch(1);
 
