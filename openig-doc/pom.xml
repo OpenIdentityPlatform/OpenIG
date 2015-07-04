@@ -30,8 +30,6 @@
    Documentation samples and aggregated Javadoc
   </description>
 
-  <packaging>jar</packaging>
-
   <dependencies>
     <dependency>
       <groupId>org.forgerock.commons</groupId>
@@ -96,7 +94,7 @@
     <dependency>
        <groupId>org.testng</groupId>
        <artifactId>testng</artifactId>
-      <scope>test</scope>
+       <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -105,15 +103,15 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>org.forgerock.openig.doc.SampleServer</mainClass>
             </manifest>
           </archive>
+          <descriptors>
+            <descriptor>src/main/assembly/jar-with-dependencies-assembly.xml</descriptor>
+          </descriptors>
         </configuration>
         <executions>
           <execution>
