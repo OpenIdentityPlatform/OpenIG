@@ -241,6 +241,9 @@
                   <packages>org.forgerock.util*:org.forgerock.json.fluent</packages>
                 </group>
               </groups>
+
+              <!-- Excludes internal packages from the javadoc generation -->
+              <excludePackageNames>com.*:*.internal</excludePackageNames>
             </configuration>
           </plugin>
 
