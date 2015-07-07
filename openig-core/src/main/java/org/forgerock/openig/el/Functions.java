@@ -37,7 +37,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.el.FunctionMapper;
 
-import org.forgerock.http.URIUtil;
+import org.forgerock.http.util.Uris;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
 
@@ -316,7 +316,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlEncode(String value) {
-        return URIUtil.urlEncode(value);
+        return Uris.urlEncode(value);
     }
 
     /**
@@ -328,7 +328,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlDecode(String value) {
-        return URIUtil.urlDecode(value);
+        return Uris.urlDecode(value);
     }
 
     /**

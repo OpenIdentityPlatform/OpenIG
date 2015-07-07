@@ -26,7 +26,7 @@ import java.net.HttpCookie;
 import java.util.HashMap;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.HttpContext;
+import org.forgerock.http.context.HttpContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.header.CookieHeader;
 import org.forgerock.http.protocol.Cookie;

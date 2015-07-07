@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.HttpClientHandler;
+import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

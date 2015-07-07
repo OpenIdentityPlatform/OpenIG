@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.HttpContext;
+import org.forgerock.http.context.HttpContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.protocol.Request;

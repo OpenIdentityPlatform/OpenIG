@@ -25,7 +25,7 @@ import java.net.URISyntaxException;
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.URIUtil;
+import org.forgerock.http.util.Uris;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -69,7 +69,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
         if (header.toString() != null) {
             try {
                 URI currentURI = new URI(header.toString());
-                URI rebasedURI = URIUtil.rebase(currentURI, evaluateBaseUri(exchange));
+                URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(exchange));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
                     response.getHeaders().remove(LocationHeader.NAME);
