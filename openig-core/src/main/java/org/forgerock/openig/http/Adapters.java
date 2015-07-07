@@ -18,9 +18,9 @@ package org.forgerock.openig.http;
 
 import java.io.IOException;
 
-import org.forgerock.http.ClientInfoContext;
+import org.forgerock.http.context.ClientInfoContext;
 import org.forgerock.http.Context;
-import org.forgerock.http.HttpContext;
+import org.forgerock.http.context.HttpContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

@@ -19,7 +19,7 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.format;
-import static org.forgerock.http.HttpClientHandler.*;
+import static org.forgerock.http.handler.HttpClientHandler.*;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
 import static org.forgerock.openig.util.JsonValues.warnForDeprecation;
@@ -39,10 +39,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.forgerock.http.Context;
-import org.forgerock.http.HttpClientHandler;
-import org.forgerock.http.HttpClientHandler.HostnameVerifier;
+import org.forgerock.http.handler.HttpClientHandler;
+import org.forgerock.http.handler.HttpClientHandler.HostnameVerifier;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.RootContext;
+import org.forgerock.http.context.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

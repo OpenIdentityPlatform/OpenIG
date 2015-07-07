@@ -21,12 +21,12 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.forgerock.http.ClientInfoContext;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.HttpContext;
-import org.forgerock.http.RootContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.ClientInfoContext;
+import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

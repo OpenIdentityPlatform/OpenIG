@@ -21,7 +21,7 @@ package org.forgerock.openig.http;
 import java.net.URI;
 import java.security.Principal;
 
-import org.forgerock.http.ClientInfo;
+import org.forgerock.http.context.ClientInfo;
 import org.forgerock.http.Context;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;

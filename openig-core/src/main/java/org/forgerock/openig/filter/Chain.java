@@ -24,7 +24,7 @@ import java.util.List;
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.Http;
+import org.forgerock.http.handler.Handlers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.fluent.JsonValue;
@@ -61,7 +61,7 @@ public class Chain extends GenericHeapObject implements Handler {
      * @param filters list of {@link Filter}s
      */
     public Chain(final Handler handler, final List<Filter> filters) {
-        delegate = Http.chainOf(handler, filters);
+        delegate = Handlers.chainOf(handler, filters);
     }
 
     @Override

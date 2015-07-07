@@ -18,10 +18,10 @@
 package org.forgerock.openig.http;
 
 import static java.lang.String.format;
-import static org.forgerock.http.Http.chainOf;
-import static org.forgerock.http.Http.newSessionFilter;
-import static org.forgerock.http.RoutingMode.STARTS_WITH;
+import static org.forgerock.http.filter.Filters.newSessionFilter;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.fluent.JsonValue.field;
 import static org.forgerock.json.fluent.JsonValue.json;
