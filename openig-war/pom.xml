@@ -55,12 +55,6 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
-    <dependency>
-      <groupId>org.forgerock.commons</groupId>
-      <artifactId>forgerock-guice-core</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
   <build>
     <finalName>${openigFinalName}</finalName>
