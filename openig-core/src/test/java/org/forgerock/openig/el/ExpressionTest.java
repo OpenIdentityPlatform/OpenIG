@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.el;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.fluent.JsonValue.field;
@@ -110,10 +111,8 @@ public class ExpressionTest {
 
     @Test
     public void scope() throws ExpressionException {
-        HashMap<String, String> scope = new HashMap<>();
-        scope.put("a", "foo");
         Expression<String> expr = Expression.valueOf("${a}bar", String.class);
-        String o = expr.eval(scope);
+        String o = expr.eval(singletonMap("a", "foo"));
         assertThat(o).isEqualTo("foobar");
     }
 
@@ -139,11 +138,9 @@ public class ExpressionTest {
     @Test
     public void exchangeSetAttribute() throws ExpressionException {
         Exchange exchange = new Exchange();
-        HashMap<String, String> map = new HashMap<>();
-        map.put("foo", "bar");
         @SuppressWarnings("rawtypes")
         Expression<Map> expr = Expression.valueOf("${exchange.testmap}", Map.class);
-        expr.set(exchange, map);
+        expr.set(exchange, singletonMap("foo", "bar"));
         Expression<String> foo = Expression.valueOf("${exchange.testmap.foo}", String.class);
         assertThat(foo.eval(exchange)).isEqualTo("bar");
     }
@@ -340,6 +337,49 @@ public class ExpressionTest {
         assertThat(pass).isEqualTo("Mypass");
     }
 
+    @Test
+    public void shouldCallStringMethod() throws Exception {
+        Expression<String> expression = Expression.valueOf("${a.concat(' World')}", String.class);
+        assertThat(expression.eval(singletonMap("a", "Hello")))
+                .isEqualTo("Hello World");
+    }
+
+    @Test
+    public void shouldChainMethodCalls() throws Exception {
+        Expression<String> expression = Expression.valueOf("${a.concat(' World').concat(' !')}", String.class);
+        assertThat(expression.eval(singletonMap("a", "Hello")))
+                .isEqualTo("Hello World !");
+    }
+
+    @Test
+    public void shouldCallBeanMethod() throws Exception {
+        Expression<String> expression = Expression.valueOf("${bean.concat(' World')}", String.class);
+        assertThat(expression.eval(singletonMap("bean", new ConcatBean("Hello"))))
+                .isEqualTo("Hello World");
+    }
+
+    @Test
+    public void shouldCallIntegerMethod() throws Exception {
+        Expression<String> expression = Expression.valueOf("${integer.toString()}", String.class);
+        assertThat(expression.eval(singletonMap("integer", 42)))
+                .isEqualTo("42");
+    }
+
+    @Test
+    public void shouldCallStaticMethod() throws Exception {
+        // I agree this one is a bit weird because we need an instance to base our computation onto
+        Expression<Integer> expression = Expression.valueOf("${integer.valueOf(42)}", Integer.class);
+        assertThat(expression.eval(singletonMap("integer", 37)))
+                .isEqualTo(42);
+    }
+
+    @Test
+    public void shouldReturnNullWhenTryingToCallNonDefinedMethod() throws Exception {
+        Expression<String> expression = Expression.valueOf("${item.thereIsNoSuchMethod()}", String.class);
+        assertThat(expression.eval(singletonMap("item", "Hello")))
+                .isNull();
+    }
+
     public static class BeanFieldMap extends ExtensibleFieldMap {
         public String legacy;
 
@@ -394,6 +434,27 @@ public class ExpressionTest {
         @SuppressWarnings("unused")
         public void setValue(final String value) {
             this.value = value;
+        }
+    }
+
+    private static class ConcatBean {
+        private String value;
+
+        private ConcatBean(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @SuppressWarnings("unused")
+        public void setValue(final String value) {
+            this.value = value;
+        }
+
+        public String concat(String append) {
+            return this.value + append;
         }
     }
 }

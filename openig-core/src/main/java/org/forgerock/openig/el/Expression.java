@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
@@ -167,6 +168,7 @@ public final class Expression<T> {
     }
 
     private static class XLResolver extends ELResolver {
+        private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
 
         public XLResolver(final Object scope) {
@@ -219,6 +221,14 @@ public final class Expression<T> {
             return (base == null ? String.class : Object.class);
         }
 
+        @Override
+        public Object invoke(final ELContext context,
+                             final Object base,
+                             final Object method,
+                             final Class<?>[] paramTypes,
+                             final Object[] params) {
+            return RESOLVER.invoke(context, base, method, paramTypes, params);
+        }
     }
 
     /**
