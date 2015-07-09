@@ -81,6 +81,17 @@ WED MAR 11 08:38:32 CET 2015 (ERROR) {Router}/handler
 [       JsonValueException] > /handler/config/filters/0/config/providers/0/type:
  Expecting a value
     </programlisting>
+
+    <para>
+     The new "OAuth2Provider" configuration object calls for
+     HTTP Basic authentication by default
+     when connecting to the provider's OAuth 2.0 token endpoint.
+     The previous implementation called for client credentials to be sent
+     as HTTP POST form data.
+     If necessary you can set "tokenEndpointUseBasicAuth" to false
+     in the provider configuration to send client credentials
+     as HTTP POST form data.
+    </para>
    </listitem>
 
    <listitem>
