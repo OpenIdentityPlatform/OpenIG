@@ -9,8 +9,7 @@
   ! or send a letter to Creative Commons, 444 Castro Street,
   ! Suite 900, Mountain View, California, 94041, USA.
   !
-  ! You can also obtain a copy of the license at
-  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
   ! See the License for the specific language governing permissions
   ! and limitations under the License.
   !
@@ -77,6 +76,7 @@
     "wellKnownConfiguration": URL string,
     "authorizeEndpoint": URI expression,
     "tokenEndpoint": URI expression,
+    "tokenEndpointUseBasicAuth": boolean,
     "userInfoEndpoint": URI expression,
     "scopes": [ expression, ... ]
     "providerHandler": Handler reference
@@ -169,6 +169,81 @@
     <listitem>
      <para>
       The URL to the provider's OAuth 2.0 token endpoint.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><code>"tokenEndpointUseBasicAuth"</code>: <emphasis>boolean, optional</emphasis></term>
+    <listitem>
+     <para>
+      Whether to perform client authentication to the provider
+      using HTTP Basic authentication when sending a request
+      to the provider's OAuth 2.0 token endpoint.
+     </para>
+
+     <para>
+      When set to <literal>true</literal>,
+      the client credentials are sent using HTTP Basic authentication
+      as in the following example request:
+     </para>
+
+     <programlisting language="http">
+POST /oauth2/token HTTP/1.1
+Host: as.example.com
+Authorization: Basic ....
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&amp;code=...
+     </programlisting>
+
+     <para>
+      When set to <literal>false</literal>,
+      the client credentials are sent in HTTP POST form data
+      as in the following example request:
+     </para>
+
+     <programlisting language="http">
+POST /oauth2/token HTTP/1.1
+Host: as.example.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&amp;client_id=.....&amp;client_secret=.....&amp;code=...
+     </programlisting>
+
+     <para>
+      Some providers accept both authentication methods.
+      For providers that strictly enforce how the client must authenticate,
+      such as recent versions of OpenAM,
+      you must align the configuration with that of the provider.
+     </para>
+
+     <para>
+      If the provider does not support the configured authentication method,
+      then according to RFC 6749
+      <link
+       xlink:href="https://tools.ietf.org/html/rfc6749#section-5.2"
+       xlink:show="new"
+      ><citetitle>The OAuth 2.0 Authorization Framework</citetitle>,
+      section 5.2</link>
+      the provider sends an HTTP 400 Bad Request response
+      with an <literal>invalid_client</literal> error message
+      as in the following example response:
+     </para>
+
+     <programlisting language="http">
+HTTP/1.1 400 Bad Request
+Content-Type: application/json;charset=UTF-8
+Cache-Control: no-store
+Pragma: no-cache
+
+{
+  "error":"invalid_client"
+}
+     </programlisting>
+
+     <para>
+      Default: <literal>true</literal>
      </para>
     </listitem>
    </varlistentry>
