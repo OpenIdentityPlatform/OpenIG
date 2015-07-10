@@ -206,7 +206,7 @@
 
     <!-- Reset these to build docs for the final publication: -->
     <docTargetVersion>${project.version}</docTargetVersion>
-    <javadocBase>http://openig.forgerock.org/openig-doc/javadoc</javadocBase><!-- https://backstage.forgerock.com/static/docs/openig/${project.version}/apidocs -->
+    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- https://backstage.forgerock.com/static/docs/openig/${project.version}/apidocs -->
     <downloadUrl>http://forgerock.org/downloads/openig-builds/</downloadUrl><!-- http://forgerock.com/download-stack/ -->
 
     <openigFinalName>OpenIG-${project.version}</openigFinalName>
