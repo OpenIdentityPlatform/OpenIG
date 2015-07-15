@@ -18,8 +18,6 @@ package org.forgerock.openig.audit.decoration;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Map;
-
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
@@ -48,6 +46,6 @@ public abstract class AbstractAuditTest {
     protected void assertThatEventIncludes(final AuditEvent event, final Exchange exchange, final String... tags) {
         assertThat(event.getTags()).containsOnly(tags);
         assertThat(event.getSource()).isSameAs(source);
-        assertThat((Map<String, Object>) event.getExchange()).isSameAs(exchange);
+        assertThat(event.getExchange()).isSameAs(exchange);
     }
 }
