@@ -13,7 +13,6 @@
  *
  * Copyright 2014-2015 ForgeRock AS.
  */
-
 package org.forgerock.openig.audit.decoration;
 
 import static java.util.Arrays.*;
@@ -21,7 +20,6 @@ import static org.forgerock.openig.audit.Tag.*;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
@@ -57,8 +55,10 @@ abstract class AuditBaseObject {
 
     private static Set<String> tags(final Set<String> tags,
                                     final String... others) {
-        Set<String> all = new LinkedHashSet<>(tags);
+        final Set<String> all = new LinkedHashSet<>(tags);
         all.addAll(asList(others));
+        all.remove("");
+        all.remove(null);
         return all;
     }
 }

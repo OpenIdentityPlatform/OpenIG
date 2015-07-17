@@ -21,6 +21,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
+
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
@@ -38,6 +40,21 @@ public class AuditFilterTest extends AbstractAuditTest {
 
     @Mock
     private Handler handler;
+
+    @Test(dataProvider = "nullOrEmpty")
+    public void shouldEmitAuditEventsWithAdditionalTagsContainingNullOrEmpty(final Set<String> additionalTags)
+            throws Exception {
+        AuditFilter audit = new AuditFilter(auditSystem, source, delegate, additionalTags);
+        Exchange exchange = new Exchange();
+        when(delegate.filter(exchange, null, handler))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+
+        audit.filter(exchange, null, handler).getOrThrow();
+
+        verify(auditSystem, times(2)).onAuditEvent(captor.capture());
+        assertThatEventIncludes(captor.getAllValues().get(0), exchange, "request");
+        assertThatEventIncludes(captor.getAllValues().get(1), exchange, "response", "completed");
+    }
 
     @Test
     public void shouldEmitAuditEventsWhenCompleted() throws Exception {

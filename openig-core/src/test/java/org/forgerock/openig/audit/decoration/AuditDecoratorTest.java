@@ -28,8 +28,10 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -71,13 +73,47 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     }
 
     @Test
-    public void shouldExtractAdditionalTags() throws Exception {
-        AuditDecorator decorator = new AuditDecorator(auditSystem);
-        Handler decorated = decorator.decorateHandler(handler, json(array("tag-1", "tag-2")), context);
+    public void shouldContainsDefaultTagsOnly() throws Exception {
+        final Handler decorated = buildDecoratedHandler(json(""));
         decorated.handle(new Exchange(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
-        AuditEvent event = captor.getValue();
-        assertThat(event.getTags()).contains("tag-1", "tag-2");
+        final AuditEvent event = captor.getValue();
+        assertThat(event.getTags()).containsExactly("response", "completed");
+    }
+
+    @Test
+    public void shouldExtractAdditionalSingleTag() throws Exception {
+        final Handler decorated = buildDecoratedHandler(json("tag-1"));
+        decorated.handle(new Exchange(), new Request());
+
+        verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
+        final AuditEvent event = captor.getValue();
+        assertThat(event.getTags()).containsExactly("tag-1", "response", "completed");
+    }
+
+    @Test
+    public void shouldExtractMultipleAdditionalTags() throws Exception {
+        final Handler decorated = buildDecoratedHandler(json(array("tag-1", "tag-2")));
+        decorated.handle(new Exchange(), new Request());
+
+        verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
+        final AuditEvent event = captor.getValue();
+        assertThat(event.getTags()).containsExactly("tag-1", "tag-2", "response", "completed");
+    }
+
+    @Test
+    public void shouldExtractAdditionalTagsButNotduplicateIfTheyAreIdentical() throws Exception {
+        final Handler decorated = buildDecoratedHandler(json(array("tag-1", "tag-1")));
+        decorated.handle(new Exchange(), new Request());
+
+        verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
+        final AuditEvent event = captor.getValue();
+        assertThat(event.getTags()).containsExactly("tag-1", "response", "completed");
+    }
+
+    private Handler buildDecoratedHandler(final JsonValue decoratorConfig) throws HeapException {
+        final AuditDecorator decorator = new AuditDecorator(auditSystem);
+        return decorator.decorateHandler(handler, decoratorConfig, context);
     }
 }
