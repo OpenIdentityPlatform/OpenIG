@@ -16,7 +16,9 @@
 
 package org.forgerock.openig.audit.decoration;
 
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Sets.newLinkedHashSet;
 
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
@@ -28,6 +30,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 
 @SuppressWarnings("javadoc")
 public abstract class AbstractAuditTest {
@@ -36,6 +39,14 @@ public abstract class AbstractAuditTest {
     @Mock
     protected AuditSystem auditSystem;
     protected AuditSource source;
+
+    @DataProvider
+    public static Object[][] nullOrEmpty() {
+        return new Object[][] {
+            { singleton("") },
+            { singleton(null) },
+            { newLinkedHashSet(null, "") } };
+    }
 
     @BeforeMethod
     public void setUp() throws Exception {
