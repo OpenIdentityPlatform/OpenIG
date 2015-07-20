@@ -70,6 +70,7 @@ import org.forgerock.util.time.Duration;
  *       "disableReuseConnection": true,
  *       "disableRetries": true,
  *       "hostnameVerifier": "ALLOW_ALL",
+ *       "sslContextAlgorithm": "TLS",
  *       "soTimeout": "10 seconds",
  *       "connectionTimeout": "10 seconds",
  *       "keystore": {
@@ -98,6 +99,10 @@ import org.forgerock.util.time.Duration;
  *     <li>{@literal ALLOW_ALL} (the default)</li>
  *     <li>{@literal STRICT}</li>
  * </ul>
+ * <br>
+ * The {@literal sslContextAlgorithm} optional attribute used to set the SSL Context Algorithm for SSL/TLS
+ * connections, it defaults to {@literal TLS}. See the JavaSE docs for the full list of supported
+ * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SSLContext">values.</a>
  * <br>
  * The <strong>deprecated</strong> {@literal keystore} and {@literal truststore} optional attributes are both
  * supporting the following attributes:
@@ -151,6 +156,10 @@ public class HttpClient extends GenericHeapObject {
             if (config.isDefined("hostnameVerifier")) {
                 options.set(OPTION_HOSTNAME_VERIFIER, config.get("hostnameVerifier")
                         .asEnum(HostnameVerifier.class));
+            }
+
+            if (config.isDefined("sslContextAlgorithm")) {
+                options.set(OPTION_SSLCONTEXT_ALGORITHM, config.get("sslContextAlgorithm").asString());
             }
 
             if (config.isDefined("soTimeout")) {
