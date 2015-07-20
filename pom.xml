@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.forgerock</groupId>
     <artifactId>forgerock-parent</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.0.2</version>
   </parent>
 
   <groupId>org.forgerock.openig</groupId>
@@ -293,10 +293,11 @@
     </license>
   </licenses>
 
+
   <scm>
-    <connection>scm:svn:https://svn.forgerock.org/openig/trunk</connection>
-    <developerConnection>scm:svn:https://svn.forgerock.org/openig/trunk</developerConnection>
-    <url>http://sources.forgerock.org/browse/openig/trunk</url>
+     <connection>scm:git:ssh://git@stash.forgerock.org:7999/openig/openig.git</connection>
+     <developerConnection>scm:git:ssh://git@stash.forgerock.org:7999/openig/openig.git</developerConnection>
+     <url>http://stash.forgerock.org/projects/COMMONS/repos/openig/browse</url>
   </scm>
 
   <mailingLists>
