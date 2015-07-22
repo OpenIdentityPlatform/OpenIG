@@ -31,6 +31,7 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * Represents a loaded Java {@link KeyStore}.
  * <pre>
+ *     {@code
  *     {
  *         "name": "LocalKeyStore",
  *         "type": "KeyStore",
@@ -39,6 +40,7 @@ import org.forgerock.openig.heap.HeapException;
  *             "password": "secret",
  *             "type": "JKS"
  *         }
+ *     }
  *     }
  * </pre>
  * <ul>

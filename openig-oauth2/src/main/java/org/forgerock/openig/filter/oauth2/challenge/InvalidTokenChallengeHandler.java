@@ -24,10 +24,12 @@ import org.forgerock.http.protocol.Status;
  * <p>
  * Example:
  * <pre>
+ *     {@code
  *     HTTP/1.1 401 Unauthorized
  *     WWW-Authenticate: Bearer realm="example",
  *                              error="invalid_token",
  *                              error_description="...."
+ *     }
  * </pre>
  */
 public class InvalidTokenChallengeHandler extends AuthenticateChallengeHandler {

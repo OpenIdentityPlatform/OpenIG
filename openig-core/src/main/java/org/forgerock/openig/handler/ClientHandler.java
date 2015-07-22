@@ -36,12 +36,14 @@ import org.forgerock.util.promise.Promise;
  * HttpClient} name).
  *
  * <pre>
+ *   {@code
  *   {
  *     "name": "Client",
  *     "type": "ClientHandler",
  *     "config": {
  *       "httpClient": "MyHttpClient"
  *     }
+ *   }
  *   }
  * </pre>
  */

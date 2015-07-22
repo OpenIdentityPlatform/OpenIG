@@ -71,8 +71,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * AddRequest request = new AddRequest(entry);
      * connection.add(request);
+     * }
      * </pre>
      *
      * @param entry
@@ -99,8 +101,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * AddRequest request = new AddRequest(ldifLines);
      * connection.add(request);
+     * }
      * </pre>
      *
      * @param ldifLines
@@ -148,8 +152,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * BindRequest request = new SimpleBindRequest(name, password);
      * connection.bind(request);
+     * }
      * </pre>
      *
      * @param name
@@ -190,8 +196,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * UnbindRequest request = new UnbindRequest();
      * connection.close(request);
+     * }
      * </pre>
      * <p>
      * Calling {@code close} on a connection that is already closed has no
@@ -228,8 +236,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * CompareRequest request = new CompareRequest(name, attributeDescription, assertionValue);
      * connection.compare(request);
+     * }
      * </pre>
      *
      * @param name
@@ -282,8 +292,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * DeleteRequest request = new DeleteRequest(name);
      * connection.delete(request);
+     * }
      * </pre>
      *
      * @param name
@@ -314,8 +326,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * DeleteRequest request = new DeleteRequest(name).addControl(
      * connection.delete(request);
+     * }
      * </pre>
      *
      * @param name
@@ -364,8 +378,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * ModifyRequest request = new ModifyRequest(name, ldifChanges);
      * connection.modify(request);
+     * }
      * </pre>
      *
      * @param ldifLines
@@ -414,8 +430,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * ModifyDNRequest request = new ModifyDNRequest(name, newRDN);
      * connection.modifyDN(request);
+     * }
      * </pre>
      *
      * @param name
@@ -451,9 +469,11 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * SearchRequest request =
      *         new SearchRequest(name, SearchScope.BASE_OBJECT, &quot;(objectClass=*)&quot;, attributeDescriptions);
      * connection.searchSingleEntry(request);
+     * }
      * </pre>
      *
      * @param name
@@ -489,9 +509,11 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * SearchRequest request =
      *         new SearchRequest(name, SearchScope.BASE_OBJECT, &quot;(objectClass=*)&quot;, attributeDescriptions);
      * connection.searchSingleEntry(request);
+     * }
      * </pre>
      *
      * @param name
@@ -526,7 +548,9 @@ public final class LdapConnection implements Closeable {
      * Unless otherwise specified, calling this method is equivalent to:
      *
      * <pre>
+     * {@code
      * ConnectionEntryReader reader = new ConnectionEntryReader(this, request);
+     * }
      * </pre>
      *
      * @param request
@@ -558,7 +582,9 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * connection.search(request, entries, null);
+     * }
      * </pre>
      *
      * @param request
@@ -630,8 +656,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * SearchRequest request = new SearchRequest(baseDN, scope, filter, attributeDescriptions);
      * connection.search(request, new LinkedBlockingQueue&lt;Response&gt;());
+     * }
      * </pre>
      *
      * @param baseObject
@@ -700,8 +728,10 @@ public final class LdapConnection implements Closeable {
      * This method is equivalent to the following code:
      *
      * <pre>
+     * {@code
      * SearchRequest request = new SearchRequest(baseObject, scope, filter, attributeDescriptions);
      * connection.searchSingleEntry(request);
+     * }
      * </pre>
      *
      * @param baseObject

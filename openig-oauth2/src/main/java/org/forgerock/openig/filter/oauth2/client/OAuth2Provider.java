@@ -53,6 +53,7 @@ import org.forgerock.util.promise.NeverThrowsException;
  * Options:
  *
  * <pre>
+ * {@code
  * {
  *   "clientId"                     : expression,      [REQUIRED]
  *   "clientSecret"                 : expression,      [REQUIRED]
@@ -66,11 +67,13 @@ import org.forgerock.util.promise.NeverThrowsException;
  *                                                                 wrapping the default HttpClient.]
  *   "tokenEndpointUseBasicAuth"    : boolean          [OPTIONAL - default is true, use Basic Authentication]
  * }
+ * }
  * </pre>
  *
  * For example:
  *
  * <pre>
+ * {@code
  * {
  *     "name": "openam",
  *     "type": "OAuth2Provider",
@@ -81,6 +84,7 @@ import org.forgerock.util.promise.NeverThrowsException;
  *          "tokenEndpoint": "http://www.example.com:8081/openam/oauth2/access_token",
  *          "userInfoEndpoint": "http://www.example.com:8081/openam/oauth2/userinfo"
  *     }
+ * }
  * }
  * </pre>
  */

@@ -65,6 +65,7 @@ import org.forgerock.util.time.TimeService;
  * It extracts the token and validate it against the {@literal token-info-endpoint} URL provided in the configuration.
  *
  * <pre>
+ * {@code
  * {
  *         "name": "ProtectedResourceFilter",
  *         "type": "org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter",
@@ -78,6 +79,7 @@ import org.forgerock.util.time.TimeService;
  *           "target": "${exchange.oauth2AccessToken}"
  *         }
  * }
+ * }
  * </pre>
  *
  * {@literal scopes}, {@literal tokenInfoEndpoint} and {@literal providerHandler} are the 3 only mandatory
@@ -87,12 +89,14 @@ import org.forgerock.util.time.TimeService;
  * {@literal cacheExpiration} is expressed using natural language (use {@literal zero} or {@literal none}
  * to deactivate caching, any 0 valued duration will also deactivate it):
  * <pre>
+ *     {@code
  *     "cacheExpiration": "2 minutes"
  *     "cacheExpiration": "3 days and 6 hours"
  *     "cacheExpiration": "5m" // 5 minutes
  *     "cacheExpiration": "10 min, 30 sec"
  *     "cacheExpiration": "zero" // no cache
  *     "cacheExpiration": "0 s" // no cache
+ *     }
  * </pre>
  * <p>
  * {@literal providerHandler} is a name reference to another handler available in the heap. It will be used to perform

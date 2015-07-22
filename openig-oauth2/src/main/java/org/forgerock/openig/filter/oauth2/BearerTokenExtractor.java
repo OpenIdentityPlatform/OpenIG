@@ -21,8 +21,10 @@ package org.forgerock.openig.filter.oauth2;
  * <p>
  * Expected ABNF format (as per RFC 6750):
  * <pre>
+ *     {@code
  *     b64token    = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
  *     credentials = "Bearer" 1*SP b64token
+ *     }
  * </pre>
  */
 public class BearerTokenExtractor {

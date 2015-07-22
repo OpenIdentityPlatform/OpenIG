@@ -96,6 +96,7 @@ import org.forgerock.util.time.TimeService;
  * Configuration options:
  *
  * <pre>
+ * {@code
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
  * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
@@ -109,11 +110,13 @@ import org.forgerock.util.time.TimeService;
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
  * "providers"                    : [ strings ]         [REQUIRED]
+ * }
  * </pre>
  *
  * For example:
  *
  * <pre>
+ * {@code
  * {
  *     "name": "OpenIDConnect",
  *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
@@ -131,12 +134,14 @@ import org.forgerock.util.time.TimeService;
  *         "providers"             : [ "openam", "google" ]
  *     }
  * }
+ * }
  * </pre>
  *
  * Once authorization, this filter will inject the following information into
  * the target location:
  *
  * <pre>
+ * {@code
  * "openid" : {
  *         "provider"           : "google",
  *         "access_token"       : "xxx",
@@ -170,6 +175,7 @@ import org.forgerock.util.time.TimeService;
  *             "email"              : "micky.mouse@gmail.com"
  *         }
  *     }
+ * }
  * }
  * </pre>
  */
@@ -331,7 +337,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * the {@code exchange} target will be populated with the following OAuth
      * 2.0 error information:
      *
-     * <pre>{@code
+     * <pre>
+     * {@code
      * <target> : {
      *     "provider"           : "google",
      *     "error"              : {
@@ -350,7 +357,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *     "scope"              : [ "openid", "profile", "email" ],
      *     "client_endpoint"    : "http://www.example.com:8081/openid",
      * }
-     * }</pre>
+     * }
+     * </pre>
      *
      * See {@link OAuth2Error} for a detailed description of the various error
      * fields and their possible values.

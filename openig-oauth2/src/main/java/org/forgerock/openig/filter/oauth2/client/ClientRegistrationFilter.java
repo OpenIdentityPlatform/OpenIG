@@ -52,10 +52,12 @@ import org.forgerock.util.promise.Promise;
  * </p>
  *
  * <pre>
+ * {@code
  * {
  *   "redirect_uris"                : [ expressions ],  [REQUIRED]
  *   "registrationHandler"          : handler           [OPTIONAL - default is using a new ClientHandler
  *                                                                 wrapping the default HttpClient.]
+ * }
  * }
  * </pre>
  *
@@ -64,6 +66,7 @@ import org.forgerock.util.promise.Promise;
  * token_endpoint_auth_method, etc. needed to create this client registration.
  *
  * <pre>
+ * {@code
  * {
  *   "type": "DynamicRegistrationFilter",
  *   "config": {
@@ -78,6 +81,7 @@ import org.forgerock.util.promise.Promise;
  *       ],
  *       "token_endpoint_auth_method": "client_secret_basic"
  *   }
+ * }
  * }
  * </pre>
  *

@@ -34,9 +34,12 @@ public class UnixEnvironment extends EnvironmentDelegate {
 
     /**
      * Builds a new UNIX environment that will be located in the user's directory.
+     *
      * <pre>
-     *     $HOME/.openig/
+     *       {@code
+     *       $HOME/.openig/
      *       conf/**.json
+     *       }
      * </pre>
      */
     public UnixEnvironment() {

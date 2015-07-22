@@ -30,6 +30,7 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * Represents an SSL Java {@link TrustManager}.
  * <pre>
+ *     {@code
  *     {
  *         "name": "MyTrustManager",
  *         "type": "TrustManager",
@@ -37,6 +38,7 @@ import org.forgerock.openig.heap.HeapException;
  *             "keystore": "MyKeyStore",
  *             "alg": "SunX509"
  *         }
+ *     }
  *     }
  * </pre>
  * <ul>

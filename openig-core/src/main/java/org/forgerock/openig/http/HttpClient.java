@@ -62,6 +62,7 @@ import org.forgerock.util.time.Duration;
  *
  *
  * <pre>
+ *   {@code
  *   {
  *     "name": "HttpClient",
  *     "type": "HttpClient",
@@ -84,6 +85,7 @@ import org.forgerock.util.time.Duration;
  *       "keyManager": [ "RefToKeyManager", ... ]
  *       "trustManager": [ "RefToTrustManager", ... ]
  *     }
+ *   }
  *   }
  * </pre>
  *
@@ -118,8 +120,10 @@ import org.forgerock.util.time.Duration;
  * list of {@link KeyManager} (and {@link TrustManager} respectively). They support singleton value (use a single
  * reference) as well as multi-valued references (a list):
  * <pre>
+ * {@code
  *     "keyManager": "SingleKeyManagerReference",
  *     "trustManager": [ "RefOne", "RefTwo" ]
+ * }
  * </pre>
  *
  * The {@literal soTimeout} optional attribute specifies a socket timeout (the given amount of time a connection

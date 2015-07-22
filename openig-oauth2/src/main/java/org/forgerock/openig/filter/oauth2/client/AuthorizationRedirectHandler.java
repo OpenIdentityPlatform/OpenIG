@@ -50,6 +50,7 @@ import org.forgerock.util.time.TimeService;
  * ClientRegistration info:
  *
  * <pre>
+ * {@code
  * HTTP/1.1 302 Found
  * Location: https://server.example.com/authorize?           // from Issuer
  *     response_type=code
@@ -57,6 +58,7 @@ import org.forgerock.util.time.TimeService;
  *     &client_id=s6BhdRkqt3                                 // from ClientRegistration
  *     &state=af0ifjsldkj
  *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb   // from Client Registration
+ * }
  * </pre>
  */
 public class AuthorizationRedirectHandler implements Handler {

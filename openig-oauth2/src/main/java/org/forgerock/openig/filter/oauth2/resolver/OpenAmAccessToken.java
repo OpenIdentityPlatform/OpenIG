@@ -32,11 +32,14 @@ import org.forgerock.util.time.TimeService;
 /**
  * Models an {@link AccessToken} as returned by the OpenAM {@literal tokeninfo} endpoint.
  * <pre>
+ *     {@code
  *     curl https://openam.example.com:8443/openam/oauth2/tokeninfo?access_token=70e5776c-b0fa-4c70-9962-defb0e9c3cd6
+ *     }
  * </pre>
  *
  * Example of OpenAM returned Json value (for the previous request):
  * <pre>
+ *     {@code
  *     {
  *         "scope": [
  *             "email",
@@ -49,6 +52,7 @@ import org.forgerock.util.time.TimeService;
  *         "access_token": "70e5776c-b0fa-4c70-9962-defb0e9c3cd6",
  *         "email": "",
  *         "profile": ""
+ *     }
  *     }
  * </pre>
  */

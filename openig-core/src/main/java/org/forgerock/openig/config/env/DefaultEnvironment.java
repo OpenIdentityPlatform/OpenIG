@@ -23,9 +23,11 @@ import org.forgerock.openig.config.Environment;
 /**
  * Reify the normal environment structure with pre-configured shortcuts.
  * <pre>
+ *     {@code
  *     conf/**.json
  *     scripts/groovy/**.groovy
  *     tmp/
+ *     }
  * </pre>
  *
  * @since 2.2

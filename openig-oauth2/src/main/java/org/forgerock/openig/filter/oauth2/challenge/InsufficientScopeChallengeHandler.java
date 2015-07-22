@@ -29,11 +29,13 @@ import org.forgerock.http.protocol.Status;
  * <p>
  * Example:
  * <pre>
+ *     {@code
  *     HTTP/1.1 403 Forbidden
  *     WWW-Authenticate: Bearer realm="example",
  *                              error="insufficient_scope",
  *                              error_description="....",
  *                              scope="openid profile email"
+ *     }
  * </pre>
  */
 public class InsufficientScopeChallengeHandler extends AuthenticateChallengeHandler {
