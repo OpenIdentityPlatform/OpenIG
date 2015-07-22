@@ -45,12 +45,47 @@ public class JsonValuesTest {
     @Mock
     private Handler handler;
 
+    @Mock
+    private Logger logger;
+
     @Captor
     private ArgumentCaptor<JsonValue> captor;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void shouldEvaluateObject() throws Exception {
+        final JsonValue value = json(object(
+                                        field("string", "${decodeBase64('VGhpcyBtZXRob2Q=')}"),
+                                        field("array", array("${decodeBase64('ZXZhbHVhdGVz')}")),
+                                        field("map", object(field("mapField",
+                                                "${decodeBase64('YWxsIHN0cmluZyBleHByZXNzaW9ucw==')}"))),
+                                        field("set", set("${decodeBase64('aW4gdGhlIGdpdmVuIG9iamVjdA==')}"))));
+        final JsonValue transformed = evaluate(value, logger);
+        assertThat(transformed.get("string").asString()).isEqualTo("This method");
+        assertThat(transformed.get("array").get(0).asString()).isEqualTo("evaluates");
+        assertThat(transformed.get("map").get("mapField").asString()).isEqualTo("all string expressions");
+        assertThat(transformed.get("set").iterator().next().asString()).isEqualTo("in the given object");
+        verifyZeroInteractions(logger);
+    }
+
+    @Test
+    public void shouldEvaluateObjectWhenAttributeEvaluationFails() throws Exception {
+        final JsonValue value = json(object(field("string", "${decodeBase64('notBase64')}")));
+        final JsonValue transformed = evaluate(value, logger);
+        assertThat(transformed.get("string").asString()).isNull();
+        verify(logger).warning(anyString());
+    }
+
+    @Test
+    public void shouldEvaluateObjectWhenAttributeIsNotAnExpression() throws Exception {
+        final JsonValue value = json(object(field("string", "$$$${{")));
+        final JsonValue transformed = evaluate(value, logger);
+        assertThat(transformed.get("string").asString()).isEqualTo("$$$${{");
+        verify(logger).warning(anyString());
     }
 
     @Test
@@ -121,7 +156,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsNonDeprecatedValue() {
         JsonValue config = json(object(field("new", "value")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "new", "old").asString()).isEqualTo("value");
         verifyZeroInteractions(logger);
     }
@@ -129,7 +163,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsNullValue() {
         JsonValue config = json(object(field("new", "value")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "missing", "old").asString()).isNull();
         verifyZeroInteractions(logger);
     }
@@ -137,7 +170,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsDeprecatedValue1() {
         JsonValue config = json(object(field("old", "value")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "new", "old").asString()).isEqualTo("value");
         verify(logger).warning(anyString());
     }
@@ -145,7 +177,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsDeprecatedValue2() {
         JsonValue config = json(object(field("older", "value")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
                 "value");
         verify(logger).warning(anyString());
@@ -154,7 +185,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsMostRecentValue1() {
         JsonValue config = json(object(field("new", "value1"), field("old", "value2")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
                 "value1");
         verify(logger).warning(anyString());
@@ -163,7 +193,6 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsMostRecentValue2() {
         JsonValue config = json(object(field("old", "value1"), field("older", "value2")));
-        Logger logger = mock(Logger.class);
         assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
                 "value1");
         verify(logger, times(2)).warning(anyString());
