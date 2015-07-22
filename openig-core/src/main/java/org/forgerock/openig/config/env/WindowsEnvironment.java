@@ -35,8 +35,10 @@ public class WindowsEnvironment extends EnvironmentDelegate {
     /**
      * Builds a new Windows environment that will be located in the {@literal $AppData$} directory.
      * <pre>
+     *     {@code
      *     $AppData$/OpenIG/
-     *       conf/**.json
+     *     conf/**.json
+     *     }
      * </pre>
      */
     public WindowsEnvironment() {

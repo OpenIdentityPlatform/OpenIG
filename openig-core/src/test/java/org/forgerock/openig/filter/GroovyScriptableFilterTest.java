@@ -825,6 +825,7 @@ public class GroovyScriptableFilterTest {
      * Equivalent to :
      * <p>
      * <pre>
+     * {@code
      * {
      *     "name": "BasicAuth",
      *     "type": "ScriptableFilter",
@@ -836,6 +837,7 @@ public class GroovyScriptableFilterTest {
      *             "password": "hifalutin"
      *             }
      *         }
+     * }
      * }
      * </pre>
      */
@@ -855,6 +857,7 @@ public class GroovyScriptableFilterTest {
      * Equivalent to :
      * <p>
      * <pre>
+     * {@code
      * {
      *     "name": "groovyFilter",
      *     "type": "ScriptableFilter",
@@ -876,6 +879,7 @@ public class GroovyScriptableFilterTest {
      *             }
      *         }
      *     }
+     * }
      * }
      * </pre>
      */

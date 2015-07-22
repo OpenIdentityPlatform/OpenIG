@@ -22,9 +22,11 @@ import java.io.File;
  * Encapsulate logic to access configuration files and other directories of the OpenIG base directory.
  * A typical structure may looks like the following:
  * <pre>
+ *     {@code
  *     config/config.json
  *     scripts/groovy/**.groovy
  *     tmp/
+ *     }
  * </pre>
  *
  * This interface provides an abstraction over the directory layout to protect against changes of naming, ...

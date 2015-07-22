@@ -45,6 +45,7 @@ import org.forgerock.http.protocol.Response;
  * A JwtSessionManager is responsible to configure and create a {@link JwtCookieSession}.
  *
  * <pre>
+ *     {@code
  *     {
  *         "name": "JwtSession",
  *         "type": "JwtSession",
@@ -54,6 +55,7 @@ import org.forgerock.http.protocol.Response;
  *             "password": "KeyStore/Key Password",
  *             "cookieName": "OpenIG"
  *         }
+ *     }
  *     }
  * </pre>
  *

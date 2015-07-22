@@ -51,7 +51,9 @@ public interface Heap {
      * <p>
      * Equivalent to:
      * <pre>
+     *     {@code
      *     heap.resolve(reference, type, false);
+     *     }
      * </pre>
      *
      * @param reference

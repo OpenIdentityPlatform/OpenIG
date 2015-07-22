@@ -31,6 +31,7 @@ import org.forgerock.openig.heap.HeapException;
 /**
  * Represents an SSL Java {@link KeyManager}.
  * <pre>
+ *     {@code
  *     {
  *         "name": "MyKeyManager",
  *         "type": "KeyManager",
@@ -39,6 +40,7 @@ import org.forgerock.openig.heap.HeapException;
  *             "password": "secret",
  *             "alg": "SunX509"
  *         }
+ *     }
  *     }
  * </pre>
  * <ul>

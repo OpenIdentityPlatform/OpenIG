@@ -51,6 +51,7 @@ import org.forgerock.util.time.TimeService;
  * It looks for route configuration files (very similar to the usual general config file)
  * in a defined directory (by default it looks in {@literal config/routes/}).
  * <pre>
+ *   {@code
  *   {
  *     "name": "Router",
  *     "type": "Router",
@@ -59,6 +60,7 @@ import org.forgerock.util.time.TimeService;
  *       "defaultHandler": "404NotFound",
  *       "scanInterval": 2
  *     }
+ *   }
  *   }
  * </pre>
  *

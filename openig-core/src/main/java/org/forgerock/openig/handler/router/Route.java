@@ -43,6 +43,7 @@ import org.forgerock.util.promise.ResultHandler;
  * global heap (it is possible to make reference to objects defined in the global scope from the route's heap).
  *
  * <pre>
+ * {@code
  * {
  *   "heap": [
  *     {
@@ -68,6 +69,7 @@ import org.forgerock.util.promise.ResultHandler;
  *   "condition": "${exchange.request.headers['X-Forward'] == '/endpoint'}",
  *   "session": "MyJwtSession",
  *   "name": "my-route"
+ * }
  * }
  * </pre>
  *

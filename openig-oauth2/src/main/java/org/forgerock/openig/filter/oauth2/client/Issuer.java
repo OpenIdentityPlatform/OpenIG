@@ -43,20 +43,24 @@ import org.forgerock.util.Reject;
  * </p>
  *
  * <pre>
+ * {@code
  * {
  *   "wellKnownEndpoint"            : uriExpression,   [REQUIRED]
  *   "issuerHandler"                : handler          [OPTIONAL - default is using a new ClientHandler
  *                                                                 wrapping the default HttpClient.]
  * }
+ * }
  * </pre>
  * For example, use this kind of configuration if the end-points are not known:
  * <pre>
+ * {@code
  * {
  *     "name": "openam",
  *     "type": "Issuer",
  *     "config": {
  *          "wellKnownEndpoint": "http://www.example.com:8081/openam/oauth2/.well-known/openid-configuration"
  *     }
+ * }
  * }
  * </pre>
  * <br>
@@ -65,6 +69,7 @@ import org.forgerock.util.Reject;
  * </p>
  *
  * <pre>
+ * {@code
  * {
  *   "authorizeEndpoint"            : uriExpression,   [REQUIRED]
  *   "tokenEndpoint"                : uriExpression,   [REQUIRED]
@@ -72,11 +77,13 @@ import org.forgerock.util.Reject;
  *   "userInfoEndpoint"             : uriExpression    [OPTIONAL - default is no user info]
  *   "wellKnownEndpoint"            : uriExpression    [OPTIONAL]
  * }
+ * }
  * </pre>
  *
  * For example:
  *
  * <pre>
+ * {@code
  * {
  *     "name": "openam",
  *     "type": "Issuer",
@@ -86,6 +93,7 @@ import org.forgerock.util.Reject;
  *          "userInfoEndpoint": "http://www.example.com:8081/openam/oauth2/userinfo"
  *          "wellKnownEndpoint": "http://www.example.com:8081/openam/oauth2/.well-known/openid-configuration"
  *     }
+ * }
  * }
  * </pre>
  */

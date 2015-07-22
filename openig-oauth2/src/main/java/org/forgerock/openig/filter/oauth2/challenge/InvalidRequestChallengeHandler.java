@@ -24,10 +24,12 @@ import org.forgerock.http.protocol.Status;
  * <p>
  * Example:
  * <pre>
+ *     {@code
  *     HTTP/1.1 400 Bad Request
  *     WWW-Authenticate: Bearer realm="example",
  *                              error="invalid_request",
  *                              error_description="...."
+ *     }
  * </pre>
  */
 public class InvalidRequestChallengeHandler extends AuthenticateChallengeHandler {

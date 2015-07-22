@@ -44,21 +44,23 @@ import org.forgerock.util.promise.Promises;
  * This handler takes no configuration settings.
  *
  * <pre>
+ * {@code
  * {
  *   "name": "KeyGenerator",
  *   "type": "DesKeyGenHandler"
+ * }
  * }
  * </pre>
  *
  * When called, it generates a base64-encoded DES key,
  * and returns the "key" value in a JSON response:
  *
- * <pre>{"key":"/R/9khUxnaQ="}</pre>
+ * <pre>{@code {"key":"/R/9khUxnaQ="}}</pre>
  *
  * If the handler fails to find a key generator for DES keys,
  * then it does not return a "key", but instead returns an "error":
  *
- * <pre>{"error":"Failed to generate a key: ..."}</pre>
+ * <pre>{@code {"error":"Failed to generate a key: ..."}}</pre>
  */
 public class DesKeyGenHandler extends GenericHeapObject implements Handler {
 

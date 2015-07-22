@@ -73,9 +73,11 @@ import org.forgerock.util.promise.Promise;
  * </p>
  *
  * <pre>
+ * {@code
  * {
  *   "discoveryHandler" : handler          [OPTIONAL - default is using a new ClientHandler
  *                                                     wrapping the default HttpClient.]
+ * }
  * }
  * </pre>
  *

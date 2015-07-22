@@ -45,6 +45,7 @@ import org.forgerock.util.encode.Base64;
  * A configuration for an OpenID Connect Provider. Options:
  *
  * <pre>
+ * {@code
  * {
  *   "clientId"                     : expression,       [REQUIRED]
  *   "clientSecret"                 : expression,       [REQUIRED]
@@ -56,11 +57,13 @@ import org.forgerock.util.encode.Base64;
  *                                                                  wrapping the default HttpClient.]
  *   "tokenEndpointUseBasicAuth"    : boolean           [OPTIONAL - default is true, use Basic Authentication]
  * }
+ * }
  * </pre>
  *
  * Example of use:
  *
  * <pre>
+ * {@code
  * {
  *     "name": "MyClientRegistration",
  *     "type": "ClientRegistration",
@@ -76,6 +79,7 @@ import org.forgerock.util.encode.Base64;
  *         ],
  *         "issuer": "OpenAM"
  *     }
+ * }
  * }
  * </pre>
  *

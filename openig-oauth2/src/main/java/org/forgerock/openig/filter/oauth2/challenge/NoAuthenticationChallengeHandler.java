@@ -24,8 +24,10 @@ import org.forgerock.http.protocol.Status;
  * <p>
  * Example:
  * <pre>
+ *     {@code
  *     HTTP/1.1 401 Unauthorized
  *     WWW-Authenticate: Bearer realm="example"
+ *     }
  * </pre>
  */
 public class NoAuthenticationChallengeHandler extends AuthenticateChallengeHandler {
