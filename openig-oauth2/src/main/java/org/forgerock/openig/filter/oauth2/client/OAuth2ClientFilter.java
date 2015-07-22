@@ -23,6 +23,7 @@ import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
@@ -62,6 +63,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.AsyncFunction;
@@ -80,7 +82,10 @@ import org.forgerock.util.time.TimeService;
  * <ul>
  * <li>{@code {clientEndpoint}/login/{provider}?goto=<url>} - redirects
  * the user for authorization against the specified provider
- * <li>{@code {clientEndpoint}/logout?goto=<url>} - removes
+<li><code>{clientEndpoint}/login?{*}discovery={input}&lt;goto=url></code> -
+ * performs issuer discovery and dynamic client registration if possible on
+ * the given user input and redirects the user to the client endpoint.
+ * <li><code>{clientEndpoint}/logout?goto=&lt;url></code> - removes
  * authorization state for the end-user
  * <li>{@code {clientEndpoint}/callback} - OAuth 2.0 authorization
  * call-back end-point (state encodes nonce, goto, and provider)
@@ -94,6 +99,8 @@ import org.forgerock.util.time.TimeService;
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
  * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
+ * "loginEndpoint"                : handler,            [OPTIONAL - for issuer discovery
+ *                                                                  and dynamic client registration]
  * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
  * "failureHandler"               : handler,            [REQUIRED]
  * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
@@ -114,6 +121,7 @@ import org.forgerock.util.time.TimeService;
  *         "target"                : "${exchange.openid}",
  *         "scopes"                : ["openid","profile","email"],
  *         "clientEndpoint"        : "/openid",
+ *         "loginEndpoint"         : "myLoginEndpointHandler"
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
  *         "defaultLoginGoto"      : "/homepage",
@@ -175,6 +183,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Expression<String> defaultLogoutGoto;
     private Handler failureHandler;
     private Handler loginHandler;
+    private Handler loginEndpoint;
     private final Map<String, OAuth2Provider> providers =
             new LinkedHashMap<>();
     private boolean requireHttps = true;
@@ -183,13 +192,19 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Expression<?> target;
     private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
+    private final Heap heap;
 
     /**
      * Constructs an {@link OAuth2ClientFilter}.
-     * @param time the TimeService to use
+     *
+     * @param time
+     *            The TimeService to use.
+     * @param heap
+     *            The current heap.
      */
-    public OAuth2ClientFilter(TimeService time) {
+    public OAuth2ClientFilter(TimeService time, Heap heap) {
         this.time = time;
+        this.heap = heap;
     }
 
     /**
@@ -212,10 +227,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                           final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         try {
-            // Login: {clientEndpoint}/login?provider={name}[&goto={url}]
+            // Login: {clientEndpoint}/login
             if (matchesUri(exchange, buildLoginUri(exchange))) {
-                checkRequestIsSufficientlySecure(exchange);
-                return handleUserInitiatedLogin(exchange, request);
+                if (request.getForm().containsKey("discovery")) {
+                    // User input: {clientEndpoint}/login?discovery={input}[&goto={url}]
+                    return handleUserInitiatedDiscovery(request, context);
+                } else {
+                    // Login: {clientEndpoint}/login?provider={name}[&goto={url}]
+                    checkRequestIsSufficientlySecure(exchange);
+                    return handleUserInitiatedLogin(exchange, request);
+                }
             }
 
             // Authorize call-back: {clientEndpoint}/callback?...
@@ -340,6 +361,21 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      */
     public OAuth2ClientFilter setFailureHandler(final Handler handler) {
         this.failureHandler = handler;
+        return this;
+    }
+
+    /**
+     * Sets the handler which will be invoked when discovery is activated. This
+     * configuration parameter is required if discovery and dynamic registration
+     * are needed.
+     *
+     * @param loginEndpoint
+     *            The handler which will be invoked when the discovery is
+     *            initiated.
+     * @return This filter.
+     */
+    public OAuth2ClientFilter setLoginEndpoint(final Handler loginEndpoint) {
+        this.loginEndpoint = loginEndpoint;
         return this;
     }
 
@@ -510,20 +546,23 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                 + "an unexpected value");
             }
 
-            final OAuth2Provider provider = getProvider(session);
-            if (provider == null) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                        "Authorization call-back failed because the provider name was unrecognized");
-            }
-
             final String code = request.getForm().getFirst("code");
             if (code == null) {
                 throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
             }
 
-            final JsonValue accessTokenResponse = provider.getAccessToken(exchange,
-                                                                          code,
-                                                                          buildCallbackUri(exchange).toString());
+            JsonValue accessTokenResponse = null;
+            final OAuth2Provider provider = getProvider(session);
+            if (provider == null) {
+                final ClientRegistration cr = heap.get(session.getProviderName(), ClientRegistration.class);
+                if (cr == null) {
+                    throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                            "Authorization call-back failed because the provider name was unrecognized");
+                }
+                accessTokenResponse = cr.getAccessToken(exchange, code, buildCallbackUri(exchange).toString());
+            } else {
+                accessTokenResponse = provider.getAccessToken(exchange, code, buildCallbackUri(exchange).toString());
+            }
 
             /*
              * Finally complete the authorization request by redirecting to the
@@ -546,6 +585,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     });
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
+        } catch (HeapException e) {
+            throw new OAuth2ErrorException(E_SERVER_ERROR,
+                    "Cannot retrieve the appropriate Client Registration from the heap");
         }
     }
 
@@ -624,6 +666,15 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }
+    }
+
+    private Promise<Response, NeverThrowsException> handleUserInitiatedDiscovery(final Request request,
+                                                                                 final Context context)
+            throws OAuth2ErrorException, ResponseException {
+
+        final Exchange exchange = context.asContext(Exchange.class);
+        exchange.put("clientEndpoint", buildUri(exchange, clientEndpoint));
+        return loginEndpoint.handle(context, request);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Exchange exchange,
@@ -831,12 +882,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         public Object create() throws HeapException {
 
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time);
+            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time, heap);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
+            final Handler loginEndpoint = heap.resolve(config.get("loginEndpoint"), Handler.class, true);
+            filter.setLoginEndpoint(loginEndpoint);
             final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
             filter.setLoginHandler(loginHandler);
             filter.setFailureHandler(heap.resolve(config.get("failureHandler"),

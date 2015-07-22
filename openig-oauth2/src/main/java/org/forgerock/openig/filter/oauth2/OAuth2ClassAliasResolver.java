@@ -20,6 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.openig.alias.ClassAliasResolver;
+import org.forgerock.openig.filter.oauth2.client.AuthorizationRedirectHandler;
+import org.forgerock.openig.filter.oauth2.client.ClientRegistration;
+import org.forgerock.openig.filter.oauth2.client.DiscoveryFilter;
+import org.forgerock.openig.filter.oauth2.client.ClientRegistrationFilter;
+import org.forgerock.openig.filter.oauth2.client.Issuer;
 import org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter;
 import org.forgerock.openig.filter.oauth2.client.OAuth2Provider;
 
@@ -30,10 +35,15 @@ public class OAuth2ClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
+        ALIASES.put("ClientRegistration", ClientRegistration.class);
+        ALIASES.put("DiscoveryFilter", DiscoveryFilter.class);
+        ALIASES.put("ClientRegistrationFilter", ClientRegistrationFilter.class);
+        ALIASES.put("Issuer", Issuer.class);
         ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
         ALIASES.put("OAuth2Provider", OAuth2Provider.class);
         ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilter.class);
         ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilter.class);
+        ALIASES.put("AuthorizationRedirectHandler", AuthorizationRedirectHandler.class);
     }
 
     @Override
