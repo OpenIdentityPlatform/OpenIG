@@ -181,6 +181,51 @@ public final class JsonValues {
     }
 
     /**
+     * Evaluates the given JSON value object, applying a {@link JsonTransformer}
+     * that will evaluate all String nodes. Transformation is applied
+     * recursively. <p>Malformed expressions are ignored e.g: {@literal "$$$${{" }
+     * and their values are not changed. <p>When an error occurs during the
+     * evaluation of an expression, the value is set to {@code null} because we
+     * cannot differentiate successful evaluations or failed ones.
+     *
+     * @param value
+     *            The JSON value object to evaluate.
+     * @param logger
+     *            The logger which should be used for warnings.
+     * @return A JSON value object which all expressions string are evaluated.
+     * @throws JsonException
+     *             If the value not a valid expression.
+     */
+    public static JsonValue evaluate(final JsonValue value, final Logger logger) {
+        return new JsonValue(value.getObject(), singleton(new JsonTransformer() {
+            @Override
+            public void transform(final JsonValue value) {
+                if (value.isString()) {
+                    try {
+                        // Malformed expressions are ignored
+                        final Expression<String> expression = asExpression(value, String.class);
+                        if (expression != null) {
+                            final String evaluated = expression.eval();
+                            // Errors during evaluation are represented with a null result
+                            if (evaluated == null) {
+                                logger.warning(format("The expression '%s' (in %s) cannot be evaluated",
+                                                      expression, value.getPointer()));
+                            }
+                            // We should only replace the value for successful evaluations,
+                            // but we cannot differentiate successful evaluations or failed ones
+                            value.setObject(evaluated);
+
+                        }
+                    } catch (JsonValueException jve) {
+                        logger.warning(format("The value %s (in %s) is a malformed expression",
+                                              value.asString(), value.getPointer()));
+                    }
+                }
+            }
+        }));
+    }
+
+    /**
      * Evaluates the given JSON value using an Expression and wraps the returned value as a new JsonValue. This only
      * change value of String types JsonValues, other types are ignored. This mechanism only perform change on the given
      * JsonValue object (child nodes are left unchanged).
