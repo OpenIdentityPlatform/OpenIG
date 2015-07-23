@@ -171,7 +171,7 @@
       <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>json-fluent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>${forgerock-rest.version}</version>
       </dependency>
       <dependency>
         <groupId>org.forgerock.commons</groupId>
@@ -188,6 +188,16 @@
         <artifactId>slf4j-api</artifactId>
         <version>1.7.12</version>
       </dependency>
+      <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>json-resource</artifactId>
+        <version>${forgerock-rest.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>json-resource-http</artifactId>
+        <version>${forgerock-rest.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -197,6 +207,7 @@
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
 
     <httpFrameworkVersion>0.0.1-SNAPSHOT</httpFrameworkVersion>
+    <forgerock-rest.version>3.0.0-SNAPSHOT</forgerock-rest.version>
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
