@@ -26,6 +26,7 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 
 /** Utility class for tests usage. */
+@SuppressWarnings("javadoc")
 public final class HeapUtilsTest {
     /** Static methods only. */
     private HeapUtilsTest() {
