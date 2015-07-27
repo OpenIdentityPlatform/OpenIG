@@ -273,6 +273,35 @@
  </refsect1>
 
  <refsect1>
+  <title>Embedding Expressions</title>
+
+  <para>
+   Although an expression cannot be embedded
+   as <literal>${<replaceable>expression</replaceable>}</literal>
+   inside another expression,
+   embedding system property, environment variable, and function expressions
+   within each other is fine.
+   Do not enclose the embedded elements in <literal>${}</literal>.
+  </para>
+
+  <para>
+   The following single line example embeds
+   an <literal>env</literal> environment variable expression
+   and the Java <literal>String.concat()</literal> method
+   in the argument to a <literal>read()</literal> function:
+  </para>
+
+  <programlisting language="javascript">
+"entity" : "${read(env['OPENIG_BASE'].concat('/html/defaultResponse.html'))}"
+  </programlisting>
+
+  <para>
+   In the example the entity property value is set to the contents of the file
+   <filename>$OPENIG_BASE/html/defaultResponse.html</filename>.
+  </para>
+ </refsect1>
+
+ <refsect1>
   <title>Extensions</title>
 
   <para>
