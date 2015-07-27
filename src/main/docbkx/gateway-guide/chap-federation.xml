@@ -426,7 +426,7 @@
   <programlisting language="javascript">
 {
     "name": "SamlFederationHandler",
-    "type": "org.forgerock.openig.saml.SamlFederationHandler",
+    "type": "SamlFederationHandler",
     "config": {
         "assertionMapping": {
             "username": "mail",
@@ -764,6 +764,34 @@ sp.xml</computeroutput>
        and the "SamlFederationHandler" has injected credentials into the exchange,
        the user-agent ends up redirected to this same route.
       </para>
+
+      <para>
+       If more dynamic control is needed for
+       the URL where the user agent is redirected,
+       then use the <literal>RelayState</literal> query string parameter
+       in the URL of the redirect Location header.
+       The <literal>RelayState</literal> query string parameter specifies
+       where to redirect the user
+       when the SAML 2.0 web browser SSO process is complete.
+       The <literal>RelayState</literal> overrides the "redirectURI"
+       set in the "SamlFederationHandler".
+       The <literal>RelayState</literal> value must be URL encoded.
+       When using an expression, use the <literal>urlEncode()</literal> function
+       to encode the value.
+       For example: <literal>${urlEncode(exchange.originalUri)}</literal>.
+       In the following example, the user is finally redirected
+       to the original URI from the request:
+      </para>
+
+      <informalexample><?dbfo pgwide="1"?>
+       <programlisting language="javascript">
+"headers": {
+    "Location": [
+        "http://www.example.com:8080/saml/SPInitiatedSSO?RelayState=${urlEncode(exchange.originalUri)}"
+    ]
+}
+       </programlisting>
+      </informalexample>
      </listitem>
 
      <listitem>
