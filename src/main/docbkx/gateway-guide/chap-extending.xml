@@ -184,7 +184,7 @@
   </para>
 
   <programlisting language="java">
-<xinclude:include href="../shared/DispatchHandler.groovy" parse="text">
+<xinclude:include href="${scriptsDirectory}/DispatchHandler.groovy" parse="text">
  <xinclude:fallback>
    <!-- The file does not exist in this location until build time. -->
    Failed to include script
@@ -254,7 +254,7 @@
   </para>
 
   <programlisting language="java">
-<xinclude:include href="../shared/BasicAuthFilter.groovy" parse="text">
+<xinclude:include href="${scriptsDirectory}/BasicAuthFilter.groovy" parse="text">
  <xinclude:fallback>
   <!-- The file does not exist in this location until build time. -->
   Failed to include script
@@ -327,7 +327,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include href="../shared/LdapAuthFilter.groovy" parse="text">
+<xinclude:include href="${scriptsDirectory}/LdapAuthFilter.groovy" parse="text">
  <xinclude:fallback>
    <!-- The file does not exist in this location until build time. -->
    Failed to include script
@@ -414,7 +414,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include href="../shared/SqlAccessFilter.groovy" parse="text">
+<xinclude:include href="${scriptsDirectory}/SqlAccessFilter.groovy" parse="text">
  <xinclude:fallback>
    <!-- The file does not exist in this location until build time. -->
    Failed to include script
@@ -429,7 +429,7 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
   </para>
 
   <programlisting language="java">
-<xinclude:include href="../shared/SqlClient.groovy" parse="text">
+<xinclude:include href="${scriptsDirectory}/SqlClient.groovy" parse="text">
  <xinclude:fallback>
   <!-- The file does not exist in this location until build time. -->
   Failed to include script

@@ -102,23 +102,24 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>org.forgerock.openig.doc.SampleServer</mainClass>
-            </manifest>
-          </archive>
-          <descriptors>
-            <descriptor>src/main/assembly/jar-with-dependencies-assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
+            <id>sample-server</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/jar-with-dependencies-assembly.xml</descriptor>
+              </descriptors>
+              <archive>
+                <manifest>
+                  <addClasspath>true</addClasspath>
+                  <mainClass>org.forgerock.openig.doc.SampleServer</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
           </execution>
         </executions>
       </plugin>
