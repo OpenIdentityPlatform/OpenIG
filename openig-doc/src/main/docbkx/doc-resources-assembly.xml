@@ -12,7 +12,7 @@
   Header, with the fields enclosed by brackets [] replaced by your own identifying
   information: "Portions Copyright [year] [name of copyright owner]".
 
-  Copyright 2014 ForgeRock AS
+  Copyright 2014-2015 ForgeRock AS.
 
 -->
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
@@ -23,7 +23,7 @@
   <fileSets>
     <fileSet>
       <directory>src/main/docbkx/gateway-guide/resources</directory>
-      <outputDirectory></outputDirectory>
+      <outputDirectory />
     </fileSet>
   </fileSets>
   <formats>

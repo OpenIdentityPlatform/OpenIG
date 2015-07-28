@@ -46,28 +46,56 @@
 
   <build>
     <plugins>
-      <!--
-        Copy Groovy test scripts referenced in documentation
-        to avoid absolute paths in pre-processed DocBook XML artifact.
-      -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
+        <artifactId>maven-assembly-plugin</artifactId>
         <inherited>false</inherited>
         <executions>
           <execution>
-            <id>copy-documented-groovy-scripts</id>
+            <id>doc-resources</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/docbkx/doc-resources-assembly.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+          <execution>
+            <id>project-sources</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>project</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-doc-dependencies</id>
             <phase>pre-site</phase>
             <goals>
-              <goal>copy-resources</goal>
+              <goal>unpack</goal>
             </goals>
             <configuration>
-              <outputDirectory>${docbkxCopiedSourceDirectory}/shared</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/openig-core/src/test/resources/scripts/groovy</directory>
-                </resource>
-              </resources>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.forgerock.openig</groupId>
+                  <artifactId>openig-project</artifactId>
+                  <version>${project.version}</version>
+                  <type>zip</type>
+                  <classifier>project</classifier>
+                </artifactItem>
+              </artifactItems>
             </configuration>
           </execution>
         </executions>
@@ -85,7 +113,7 @@
           <googleAnalyticsId>${gaId}</googleAnalyticsId>
 
           <jCiteSourcePaths>
-            <sourcePath>${basedir}/openig-doc/src/main/java</sourcePath>
+            <sourcePath>${javaSourceDirectory}</sourcePath>
           </jCiteSourcePaths>
 <!-- Pending OPENIG-567
           <artifactItems>
@@ -120,26 +148,6 @@
           </execution>
         </executions>
       </plugin>
-
-      <!-- Provide separate package of configuration used in the documentation -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <inherited>false</inherited>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/docbkx/doc-resources-assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-          </execution>
-        </executions>
-      </plugin>
-
     </plugins>
   </build>
 
@@ -214,7 +222,9 @@
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
 
     <!-- Start documentation properties -->
-    <docbkxCopiedSourceDirectory>${project.build.directory}/docbkx-sources</docbkxCopiedSourceDirectory>
+    <projectUnpackDirectory>${project.build.directory}/dependency/openig-project-${project.version}</projectUnpackDirectory>
+    <scriptsDirectory>${projectUnpackDirectory}/openig-core/src/test/resources/scripts/groovy</scriptsDirectory>
+    <javaSourceDirectory>${projectUnpackDirectory}/openig-doc/src/main/java</javaSourceDirectory>
 
     <!-- Reset these to build docs for the final publication: -->
     <docTargetVersion>${project.version}</docTargetVersion>
