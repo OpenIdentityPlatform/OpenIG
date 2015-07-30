@@ -51,6 +51,28 @@
 
   <listitem>
    <para>
+    ${projectName} now supports configuration
+    of the <literal>SSLContext</literal> algorithm
+    to any algorithm supported by the Java virtual machine
+    (<link
+     xlink:show="new"
+     xlink:href="https://bugster.forgerock.org/jira/browse/OPENIG-590"
+    >OPENIG-590</link>).
+   </para>
+
+   <para>
+    For more information see the <literal>sslContextAlgorithm</literal> setting
+    described in the reference for
+    <link
+     xlink:href="reference#HttpClient"
+     xlink:role="http://docbook.org/xlink/role/olink"
+     xlink:show="new"
+    >HttpClient</link>.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
     ${projectName} now supports plugins that extend configuration expressions
     (<link
      xlink:show="new"
