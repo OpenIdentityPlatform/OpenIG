@@ -74,6 +74,7 @@
     "disableReuseConnection": boolean,
     "disableRetries": boolean,
     "hostnameVerifier": string,
+    "sslContextAlgorithm": string,
     "soTimeout": duration string,
     "connectionTimeout": duration string,
     "keyManager": KeyManager reference(s),
@@ -236,6 +237,24 @@
    </varlistentry>
 
    <varlistentry>
+    <term><code>"sslContextAlgorithm"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>
+      The <literal>SSLContext</literal> algorithm name, as listed in the table of
+      <link
+       xlink:href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SSLContext"
+       xlink:show="new"
+      ><citetitle><literal>SSLContext</literal> Algorithms</citetitle></link>
+      for the Java Virtual Machine used by the container where ${projectName} runs.
+     </para>
+
+     <para>
+      Default: <literal>TLS</literal>
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term><code>"trustManager"</code>: <emphasis><link
       xlink:show="new"
       xlink:href="reference#TrustManager"
@@ -291,6 +310,7 @@
         "disableReuseConnection": true,
         "disableRetries": true,
         "hostnameVerifier": "STRICT",
+        "sslContextAlgorithm": "TLSv1.2",
         "soTimeout": "10 seconds",
         "connectionTimeout": "10 seconds",
         "keyManager": {
