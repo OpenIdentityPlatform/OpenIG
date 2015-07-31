@@ -124,7 +124,7 @@
      </para>
 
      <para>
-      Default: <literal>true</literal>
+      Default: <literal>false</literal>
      </para>
     </listitem>
    </varlistentry>
@@ -137,7 +137,7 @@
      </para>
 
      <para>
-      Default: <literal>true</literal>
+      Default: <literal>false</literal>
      </para>
     </listitem>
    </varlistentry>
