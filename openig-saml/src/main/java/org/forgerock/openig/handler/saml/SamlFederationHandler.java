@@ -189,7 +189,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
             } else if (path.indexOf(singleLogoutEndpoint) > 0) {
                 return complete(serviceIDPInitiatedSLO(request, session, servletRequest, servletResponse));
             } else {
-                logger.warning(format("FederationServlet warning: URI not in service %s", request.getUri()));
+                logger.warning(format("SamlFederationHandler.handle: URI not in service %s", request.getUri()));
                 return complete(RESPONSE_ALREADY_COMPLETED);
             }
         } catch (IOException ioe) {
@@ -219,7 +219,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                                                                                    ServletException,
                                                                                    SAML2Exception,
                                                                                    SessionException {
-        Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response);
+        Map<?, ?> map = SPACSUtils.processResponseForFedlet(request, response, response.getWriter());
         addAttributesToSession(session, map);
         /*
          * Redirect back to the original target application's login page and let the filters take over. If the relayURI
@@ -255,25 +255,26 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                     String sessionValue = (String) t.iterator().next();
                     session.put(key, sessionValue);
                 } else {
-                    logger.warning(format("FederationServlet: Warning no assertion attribute found for : %s",
-                                          attributeMapping.get(key)));
+                    logger.warning(format("SamlFederationHandler.addAttributesToSession: " +
+                            "Warning no assertion attribute found for : %s", attributeMapping.get(key)));
                 }
             }
         } else {
-            logger.warning("FederationServlet attribute statement was not present in assertion");
+            logger.warning("SamlFederationHandler.addAttributesToSession: " +
+                    "Attribute statement was not present in assertion");
         }
         if (subjectMapping != null) {
             String subjectValue = ((Subject) assertion.get(SAML2Constants.SUBJECT)).getNameID().getValue();
             session.put(subjectMapping, subjectValue);
-            logger.debug(format("FederationServlet adding subject to session: %s = %s", subjectMapping,
-                                subjectValue));
+            logger.debug(format("SamlFederationHandler.addAttributesToSession: " +
+                    "Adding subject to session: %s = %s", subjectMapping, subjectValue));
         }
 
         if (sessionIndexMapping != null) {
             String sessionIndexValue = (String) assertion.get(SAML2Constants.SESSION_INDEX);
             session.put(sessionIndexMapping, sessionIndexValue);
-            logger.debug(format("FederationServlet adding session index: %s = %s", sessionIndexMapping,
-                                sessionIndexValue));
+            logger.debug(format("SamlFederationHandler.addAttributesToSession: Adding session index: %s = %s",
+                    sessionIndexMapping, sessionIndexValue));
         }
 
         if (authnContext != null) {
@@ -292,8 +293,8 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                 // remove the last delimiter as it is redundant
                 authnContextValues.deleteCharAt(authnContextValues.length() - 1);
                 session.put(authnContext, authnContextValues.toString());
-                logger.debug(format("FederationServlet adding authentication contexts to session: %s = %s",
-                                    authnContext, authnContextValues));
+                logger.debug(format("SamlFederationHandler.addAttributesToSession: " +
+                        "Adding authentication contexts to session: %s = %s", authnContext, authnContextValues));
             }
         }
     }
@@ -313,7 +314,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
             }
         }
         String idpEntityID = form.getFirst(SAML2Constants.IDPENTITYID);
-        Map<String, List<?>> paramsMap = SAML2Utils.getParamsMap(servletRequest);
+        Map<String, List<String>> paramsMap = SAML2Utils.getParamsMap(servletRequest);
         List<String> list = new ArrayList<>();
         list.add(SAML2Constants.NAMEID_TRANSIENT_FORMAT);
 
@@ -337,7 +338,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         if (metaAlias == null || idpEntityID == null) {
             throw new SAML2Exception("No metadata for SP or IDP");
         }
-        SPSSOFederate.initiateAuthnRequest(servletRequest, servletResponse, metaAlias, idpEntityID, paramsMap);
+        SPSSOFederate.initiateAuthnRequest(servletRequest, servletResponse, metaAlias, idpEntityID, paramsMap, null);
         return RESPONSE_ALREADY_COMPLETED;
     }
 
@@ -360,7 +361,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                                            HttpServletRequest servletRequest,
                                            HttpServletResponse servletResponse)
             throws IOException, SAML2Exception {
-        logger.debug("FederationServlet.serviceSPInitiatedSLO entering");
+        logger.debug("SamlFederationHandler.serviceSPInitiatedSLO entering");
 
         // Retrieve these values from the session, if they do not exist then the session has expired
         // or this is being called before we have authenticated to the IDP
@@ -385,7 +386,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                 idpEntityID = idpEntities.get(0);
             }
         }
-        logger.debug(format("FederationServlet.serviceSPInitiatedSLO idpEntityID: %s", idpEntityID));
+        logger.debug(format("SamlFederationHandler.serviceSPInitiatedSLO idpEntityID: %s", idpEntityID));
 
 
         String metaAlias = null;
@@ -403,8 +404,8 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                 metaAlias = spConfig.getMetaAlias();
             }
         }
-        logger.debug(format("FederationServlet.serviceSPInitiatedSLO metaAlias: %s", metaAlias));
-        logger.debug(format("FederationServlet.serviceSPInitiatedSLO spEntityID: %s", spEntityID));
+        logger.debug(format("SamlFederationHandler.serviceSPInitiatedSLO metaAlias: %s", metaAlias));
+        logger.debug(format("SamlFederationHandler.serviceSPInitiatedSLO spEntityID: %s", spEntityID));
 
 
         if (metaAlias == null || idpEntityID == null) {
@@ -417,11 +418,11 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         }
 
         if (!SAML2Utils.isSPProfileBindingSupported(DEFAULT_REALM, spEntityID, SAML2Constants.SLO_SERVICE, binding)) {
-            logger.error(format("FederationServlet.serviceSPInitiatedSLO unsupported binding: %s", binding));
+            logger.error(format("SamlFederationHandler.serviceSPInitiatedSLO unsupported binding: %s", binding));
             throw new SAML2Exception(SAML2Utils.bundle.getString("unsupportedBinding"));
         }
 
-        logger.debug(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
+        logger.debug(format("SamlFederationHandler.serviceSPInitiatedSLO binding: %s", binding));
 
         Map<String, String> paramsMap = new HashMap<>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
@@ -443,9 +444,14 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
             paramsMap.put(SAML2Constants.RELAY_STATE, relayState);
         }
 
-        logger.debug(format("FederationServlet.serviceSPInitiatedSLO relayState: %s", relayState));
+        logger.debug(format("SamlFederationHandler.serviceSPInitiatedSLO relayState: %s", relayState));
 
-        SPSingleLogout.initiateLogoutRequest(servletRequest, servletResponse, binding, paramsMap);
+        SPSingleLogout.initiateLogoutRequest(servletRequest,
+                                             servletResponse,
+                                             servletResponse.getWriter(),
+                                             binding,
+                                             paramsMap,
+                                             null);
 
         if (SAML2Constants.SOAP.equalsIgnoreCase(binding)) {
             return sendRedirect(relayState);
@@ -459,23 +465,27 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
                                             HttpServletRequest servletRequest,
                                             HttpServletResponse servletResponse)
             throws SAML2Exception, SessionException, IOException {
-        logger.debug("FederationServlet.serviceIDPInitiatedSLO entering");
+        logger.debug("SamlFederationHandler.serviceIDPInitiatedSLO entering");
 
         String relayState = getLogoutRelayState(request);
-        logger.debug(format("FederationServlet.serviceIDPInitiatedSLO relayState : %s", relayState));
+        logger.debug(format("SamlFederationHandler.serviceIDPInitiatedSLO relayState : %s", relayState));
 
         Form form = request.getForm();
         // Check if this is a request as part of an IDP initiated SLO
         String samlRequest = form.getFirst(SAML2Constants.SAML_REQUEST);
         Response response = RESPONSE_ALREADY_COMPLETED;
         if (samlRequest != null) {
-            logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP request");
-            SPSingleLogout.processLogoutRequest(servletRequest, servletResponse, samlRequest, relayState);
+            logger.debug("SamlFederationHandler.serviceIDPInitiatedSLO processing IDP request");
+            SPSingleLogout.processLogoutRequest(servletRequest,
+                                                servletResponse,
+                                                servletResponse.getWriter(),
+                                                samlRequest,
+                                                relayState);
         } else {
             // Otherwise it might be a response from the IDP as part of a SP initiated SLO
             String samlResponse = form.getFirst(SAML2Constants.SAML_RESPONSE);
             if (samlResponse != null) {
-                logger.debug("FederationServlet.serviceIDPInitiatedSLO processing IDP response");
+                logger.debug("SamlFederationHandler.serviceIDPInitiatedSLO processing IDP response");
                 SPSingleLogout.processLogoutResponse(servletRequest, servletResponse, samlResponse, relayState);
                 if (relayState != null) {
                     response = sendRedirect(relayState);
@@ -490,7 +500,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     private Response serviceIDPInitiatedSLOSOAP(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        logger.debug("FederationServlet.serviceIDPInitiatedSLOSOAP entering");
+        logger.debug("SamlFederationHandler.serviceIDPInitiatedSLOSOAP entering");
 
         SPSingleLogoutServiceSOAP spSingleLogoutServiceSOAP = new SPSingleLogoutServiceSOAP();
         spSingleLogoutServiceSOAP.doPost(request, response);
@@ -539,7 +549,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         if (!response.isCommitted()) {
             return sendError(Status.INTERNAL_SERVER_ERROR, msg);
         }
-        return null;
+        return RESPONSE_ALREADY_COMPLETED;
     }
 
     private static Response sendError(Status status, String message) {
@@ -609,7 +619,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
              */
             Environment environment = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
             String samlDirectory = new File(environment.getBaseDirectory(), "SAML").getPath();
-            logger.info(format("FederationServlet init directory: %s", samlDirectory));
+            logger.info(format("SamlFederationHandler init directory: %s", samlDirectory));
             Properties p = System.getProperties();
             p.setProperty("com.sun.identity.fedlet.home", samlDirectory);
             System.setProperties(p);
@@ -631,14 +641,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         @Override
         public void destroy() {
             // Automatically shutdown the fedlet
-            ShutdownManager manager = ShutdownManager.getInstance();
-            if (manager.acquireValidLock()) {
-                try {
-                    manager.shutdown();
-                } finally {
-                    manager.releaseLockAndNotify();
-                }
-            }
+            ShutdownManager.getInstance().shutdown();
             super.destroy();
         }
     }
