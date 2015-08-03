@@ -51,18 +51,6 @@
         <inherited>false</inherited>
         <executions>
           <execution>
-            <id>doc-resources</id>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/docbkx/doc-resources-assembly.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
             <id>project-sources</id>
             <goals>
               <goal>single</goal>
@@ -73,78 +61,6 @@
                 <descriptorRef>project</descriptorRef>
               </descriptorRefs>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>unpack-doc-dependencies</id>
-            <phase>pre-site</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.forgerock.openig</groupId>
-                  <artifactId>openig-project</artifactId>
-                  <version>${project.version}</version>
-                  <type>zip</type>
-                  <classifier>project</classifier>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-doc-maven-plugin</artifactId>
-        <version>${frDocPluginVersion}</version>
-        <inherited>false</inherited>
-        <configuration>
-          <projectName>${projectName}</projectName>
-          <projectVersion>${docTargetVersion}</projectVersion>
-          <releaseVersion>${docTargetVersion}</releaseVersion>
-          <googleAnalyticsId>${gaId}</googleAnalyticsId>
-
-          <jCiteSourcePaths>
-            <sourcePath>${javaSourceDirectory}</sourcePath>
-          </jCiteSourcePaths>
-<!-- Pending OPENIG-567
-          <artifactItems>
-            <artifactItem>
-              <groupId>org.forgerock.openig</groupId>
-              <artifactId>openig-doc</artifactId>
-              <version>${project.version}</version>
-              <classifier>javadoc</classifier>
-              <outputDirectory>apidocs</outputDirectory>
-              <title>OpenIG API Javadoc</title>
-            </artifactItem>
-          </artifactItems>
--->
-        </configuration>
-        <!-- Boilerplate executions are needed pending a fix for DOCS-222. -->
-        <executions>
-          <execution>
-           <id>prepare-doc</id>
-           <phase>pre-site</phase>
-           <goals>
-            <goal>process</goal>
-            <goal>build</goal>
-           </goals>
-          </execution>
-          <execution>
-           <id>layout-docs</id>
-           <phase>site</phase>
-           <goals>
-            <goal>site</goal>
-            <!-- Pending OPENIG-567 <goal>backstage</goal>-->
-           </goals>
           </execution>
         </executions>
       </plugin>
@@ -220,53 +136,6 @@
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
-
-    <!-- Start documentation properties -->
-    <projectUnpackDirectory>${project.build.directory}/dependency/openig-project-${project.version}</projectUnpackDirectory>
-    <scriptsDirectory>${projectUnpackDirectory}/openig-core/src/test/resources/scripts/groovy</scriptsDirectory>
-    <javaSourceDirectory>${projectUnpackDirectory}/openig-doc/src/main/java</javaSourceDirectory>
-
-    <!-- Reset these to build docs for the final publication: -->
-    <docTargetVersion>${project.version}</docTargetVersion>
-    <javadocBase>http://openig.forgerock.org/apidocs</javadocBase><!-- https://backstage.forgerock.com/static/docs/openig/${project.version}/apidocs -->
-    <downloadUrl>http://forgerock.org/downloads/openig-builds/</downloadUrl><!-- http://forgerock.com/download-stack/ -->
-
-    <openigFinalName>OpenIG-${project.version}</openigFinalName>
-    <openigWar>${openigFinalName}.war</openigWar>
-
-    <sampleServerJar>openig-doc-${project.version}-jar-with-dependencies.jar</sampleServerJar>
-    <sampleServerDownloadUrl>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc/${project.version}/${sampleServerJar}</sampleServerDownloadUrl>
-    <sampleServerDownloadDirectory>http://maven.forgerock.org/repo/snapshots/org/forgerock/openig/openig-doc/${project.version}/</sampleServerDownloadDirectory>
-    <!-- Empty this property to link to a release version: -->
-    <sampleServerSnapshot>-snapshot</sampleServerSnapshot>
-    <sampleServerDownloadDoc>../shared/para-download-doc-samples${sampleServerSnapshot}.xml</sampleServerDownloadDoc>
-
-    <projectName>OpenIG</projectName>
-
-    <warBase>$HOME/.openig</warBase>
-    <warConfigDir>${warBase}/config</warConfigDir>
-    <warRoutesDir>${warConfigDir}/routes</warRoutesDir>
-    <warGroovyDir>${warBase}/scripts/groovy</warGroovyDir>
-    <warSamlDir>${warBase}/SAML</warSamlDir>
-    <warTmpDir>${warBase}/tmp</warTmpDir>
-
-    <windowsWarBase>%appdata%\OpenIG</windowsWarBase>
-    <windowsWarConfigDir>${windowsWarBase}\config</windowsWarConfigDir>
-    <windowsWarRoutesDir>${windowsWarConfigDir}\routes</windowsWarRoutesDir>
-    <windowsWarGroovyDir>${windowsWarBase}\scripts\groovy</windowsWarGroovyDir>
-    <windowsWarSamlDir>${windowsWarBase}\SAML</windowsWarSamlDir>
-    <windowsWarTmpDir>${windowsWarBase}\tmp</windowsWarTmpDir>
-
-    <frDocPluginVersion>3.0.0</frDocPluginVersion>
-    <gaId>UA-23412190-11</gaId>
-    <!-- Release date and publication date are set at release build time.
-      -D"releaseDate=Software release date: January 1, 1970" -D"pubDate=Publication
-      date: December 31, 1969" At all other times, the dates should be empty. -->
-    <releaseDate />
-    <softwareReleaseDate>${releaseDate}</softwareReleaseDate>
-    <pubDate />
-    <publicationDate>${pubDate}</publicationDate>
-    <!-- End documentation properties -->
   </properties>
 
   <repositories>
@@ -305,14 +174,6 @@
             source code.</comments>
       <distribution>repo</distribution>
     </license>
-    <license>
-      <name>CC BY-NC-ND 3.0</name>
-      <url>http://creativecommons.org/licenses/by-nc-nd/3.0/</url>
-      <comments>Creative Commons Attribution-NonCommercial-NoDerivs 3.0
-            Unported. This license applies to the site content, and to the
-            documentation as indicated in the documentation source code.</comments>
-      <distribution>repo</distribution>
-    </license>
   </licenses>
 
 
@@ -346,35 +207,4 @@
       <url>scp://community.internal.forgerock.com/var/www/vhosts/openig.forgerock.org/httpdocs</url>
     </site>
   </distributionManagement>
-
-  <profiles>
-    <profile>
-      <id>predocs</id>
-      <build>
-        <plugins>
-          <!-- Fail doc build if doc includes literal OpenIG values -->
-         <plugin>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <id>check-docs-for-literal-project-name</id>
-                <phase>pre-site</phase>
-                <goals>
-                  <goal>checkstyle</goal>
-                </goals>
-                <configuration>
-                  <configLocation>src/main/resources/org/forgerock/checkstyle/check-docs.xml</configLocation>
-                  <sourceDirectory>src/main/docbkx</sourceDirectory>
-                  <includes>**/*</includes>
-                  <consoleOutput>true</consoleOutput>
-                  <failsOnError>true</failsOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
