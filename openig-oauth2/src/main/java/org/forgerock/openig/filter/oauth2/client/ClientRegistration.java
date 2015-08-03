@@ -52,7 +52,8 @@ import org.forgerock.util.encode.Base64;
  *   "clientId"                     : expression,       [REQUIRED]
  *   "clientSecret"                 : expression,       [REQUIRED]
  *   "scopes"                       : [ expressions ],  [REQUIRED]
- *   "issuer"                       : String            [REQUIRED - the issuer name linked to this registration.]
+ *   "issuer"                       : String / Issuer   [REQUIRED - the issuer name, or its inlined declaration,
+ *                                                                  linked to this registration.]
  *   "redirectUris"                 : [ uriExpressions ][OPTIONAL - but required for dynamic client
  *                                                                  registration. ]
  *   "registrationHandler"          : handler           [OPTIONAL - default is using a new ClientHandler.]
@@ -85,7 +86,35 @@ import org.forgerock.util.encode.Base64;
  * }
  * </pre>
  *
- * @see <a href="https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata">
+ * or, with inlined Issuer declaration:
+ *
+ * <pre>
+ * {@code
+ * {
+ *     "name": "MyClientRegistration",
+ *     "type": "ClientRegistration",
+ *     "config": {
+ *         "clientId": "OpenIG",
+ *         "clientSecret": "password",
+ *         "scopes": [
+ *             "openid",
+ *             "profile"
+ *         ],
+           "tokenEndpointUseBasicAuth": true,
+ *         "issuer": {
+ *             "name": "myIssuer",
+ *             "type": "Issuer",
+ *             "config": {
+ *                 "wellKnownEndpoint": "http://server.com:8090/openam/oauth2/.well-known/openid-configuration"
+ *             }
+ *         }
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * @see <a
+ *      href="https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata">
  *      OpenID Connect Dynamic Client Registration 1.0 </a>
  */
 public final class ClientRegistration {
