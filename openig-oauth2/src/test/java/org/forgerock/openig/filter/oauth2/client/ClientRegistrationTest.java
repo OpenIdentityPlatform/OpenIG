@@ -205,7 +205,7 @@ public class ClientRegistrationTest {
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
         // when
-        clientRegistration.getRefreshToken(exchange, session);
+        clientRegistration.refreshAccessToken(exchange, session);
 
         // then
         verify(handler).handle(eq(exchange), captor.capture());
@@ -224,7 +224,7 @@ public class ClientRegistrationTest {
         when(handler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
-        buildClientRegistration().getRefreshToken(exchange, session);
+        buildClientRegistration().refreshAccessToken(exchange, session);
     }
 
     @Test
