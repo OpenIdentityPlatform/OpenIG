@@ -764,7 +764,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final ClientRegistration clientRegistration = getClientRegistration(session);
             if (error.is(E_INVALID_TOKEN) && clientRegistration != null && session.getRefreshToken() != null) {
                 // The session is updated with new access token.
-                final JsonValue accessTokenResponse = clientRegistration.getRefreshToken(exchange, session);
+                final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(exchange, session);
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
                 tryPrepareExchange(exchange, refreshedSession);
                 return refreshedSession;

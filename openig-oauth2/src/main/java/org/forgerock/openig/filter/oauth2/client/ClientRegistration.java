@@ -199,13 +199,14 @@ public final class ClientRegistration {
     }
 
     /**
-     * Returns the refresh token from the authorization server.
+     * Refreshes the actual access token, making a refresh request to the token
+     * end-point.
      *
      * @param exchange
      *            The current exchange.
      * @param session
      *            The current session.
-     * @return The json content of the response if status return code of the
+     * @return The JSON content of the response if status return code of the
      *         response is 200 OK. Otherwise, throw an OAuth2ErrorException.
      * @throws ResponseException
      *             If an exception occurs that prevents handling of the request
@@ -215,8 +216,8 @@ public final class ClientRegistration {
      *             or if the returned response status code is different than 200
      *             OK.
      */
-    public JsonValue getRefreshToken(final Exchange exchange,
-                                     final OAuth2Session session) throws ResponseException, OAuth2ErrorException {
+    public JsonValue refreshAccessToken(final Exchange exchange,
+                                        final OAuth2Session session) throws ResponseException, OAuth2ErrorException {
 
         final Request request = createRequestForTokenRefresh(exchange, session);
         final Response response = httpRequestToAuthorizationServer(exchange, request);
