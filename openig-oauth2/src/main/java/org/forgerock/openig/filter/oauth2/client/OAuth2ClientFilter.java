@@ -82,10 +82,10 @@ import org.forgerock.util.time.TimeService;
  * <ul>
  * <li>{@code {clientEndpoint}/login/{provider}?goto=<url>} - redirects
  * the user for authorization against the specified provider
-<li><code>{clientEndpoint}/login?{*}discovery={input}&lt;goto=url></code> -
+ * <li>{@code {clientEndpoint}/login?{*}discovery={input}&goto=<url>} -
  * performs issuer discovery and dynamic client registration if possible on
  * the given user input and redirects the user to the client endpoint.
- * <li><code>{clientEndpoint}/logout?goto=&lt;url></code> - removes
+ * <li>{@code {clientEndpoint}/logout?goto=<url>} - removes
  * authorization state for the end-user
  * <li>{@code {clientEndpoint}/callback} - OAuth 2.0 authorization
  * call-back end-point (state encodes nonce, goto, and provider)

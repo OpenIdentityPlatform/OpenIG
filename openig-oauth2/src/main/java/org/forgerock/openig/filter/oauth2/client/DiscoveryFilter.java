@@ -60,7 +60,7 @@ import org.forgerock.util.promise.Promise;
  * address or a URL Syntax or even a HostName and Port Syntax.
  * </p>
  * <p>
- * The user input is given from the query parameters '?discovery=<userInput>'.
+ * The user input is given from the query parameters {@code '?discovery=<userInput>'}.
  * <br>
  * Several info are extracted from the input to retrieve the OpenID Issuer.
  * <br>

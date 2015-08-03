@@ -183,7 +183,7 @@ public final class JsonValues {
     /**
      * Evaluates the given JSON value object, applying a {@link JsonTransformer}
      * that will evaluate all String nodes. Transformation is applied
-     * recursively. <p>Malformed expressions are ignored e.g: {@literal "$$$${{" }
+     * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
      * and their values are not changed. <p>When an error occurs during the
      * evaluation of an expression, the value is set to {@code null} because we
      * cannot differentiate successful evaluations or failed ones.
