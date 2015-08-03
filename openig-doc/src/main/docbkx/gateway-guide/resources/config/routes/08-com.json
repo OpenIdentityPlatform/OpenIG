@@ -1,6 +1,0 @@
-{
-    "handler": "ClientHandler",
-    "condition": "${matches(exchange.request.uri.query, 'site=com')}",
-    "baseURI": "http://forgerock.com:80/",
-    "audit": "ForgeRock.com route"
-}

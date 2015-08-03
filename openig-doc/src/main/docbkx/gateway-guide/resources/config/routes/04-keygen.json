@@ -1,8 +1,0 @@
-{
-  "handler": {
-    "type": "DesKeyGenHandler"
-  },
-  "condition": "${matches(exchange.request.uri.path, '^/openig/keygen')
-                  and (matches(exchange.clientInfo.remoteAddress, ':1')
-                  or matches(exchange.clientInfo.remoteAddress, '127.0.0.1'))}"
-}
