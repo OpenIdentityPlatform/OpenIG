@@ -51,7 +51,9 @@ import org.forgerock.util.Reject;
  * }
  * }
  * </pre>
+ *
  * For example, use this kind of configuration if the end-points are not known:
+ *
  * <pre>
  * {@code
  * {
@@ -63,9 +65,12 @@ import org.forgerock.util.Reject;
  * }
  * }
  * </pre>
+ *
  * <br>
  * <p>
- * If the end-points are known, even the well-known end-point.
+ * Use this configuration if the end-points are known. The well-known end-point
+ * is optional as the value will be saved but no request will be performed on
+ * this end-point.
  * </p>
  *
  * <pre>
@@ -91,7 +96,6 @@ import org.forgerock.util.Reject;
  *          "authorizeEndpoint": "http://www.example.com:8081/openam/oauth2/authorize",
  *          "tokenEndpoint": "http://www.example.com:8081/openam/oauth2/access_token",
  *          "userInfoEndpoint": "http://www.example.com:8081/openam/oauth2/userinfo"
- *          "wellKnownEndpoint": "http://www.example.com:8081/openam/oauth2/.well-known/openid-configuration"
  *     }
  * }
  * }
