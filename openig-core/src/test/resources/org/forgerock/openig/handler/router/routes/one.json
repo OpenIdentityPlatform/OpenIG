@@ -9,5 +9,5 @@
         }
     ],
     "handler": "StatusHandler",
-    "condition": "${exchange.name == 'OpenIG'}"
+    "condition": "${exchange.attributes.name == 'OpenIG'}"
 }

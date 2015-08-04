@@ -112,7 +112,7 @@ public class RouterHandlerTest {
 
         // Verify that the second route is inactive
         Exchange fifth = new Exchange();
-        fifth.put("name", "OpenAM");
+        fifth.getAttributes().put("name", "OpenAM");
         Response response = handler.handle(fifth, new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.getEntity().getString()).isEqualTo("no handler to dispatch to");
@@ -254,7 +254,7 @@ public class RouterHandlerTest {
     private Exchange handle(final RouterHandler handler, final String value)
             throws Exception {
         Exchange exchange = new Exchange();
-        exchange.put("name", value);
+        exchange.getAttributes().put("name", value);
         exchange.setResponse(handler.handle(exchange, new Request()).getOrThrow());
         return exchange;
     }

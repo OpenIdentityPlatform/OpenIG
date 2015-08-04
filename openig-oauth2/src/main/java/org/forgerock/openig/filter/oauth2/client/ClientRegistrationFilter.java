@@ -115,7 +115,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
         try {
             final Exchange exchange = context.asContext(Exchange.class);
-            final Issuer issuer = (Issuer) exchange.get(ISSUER_KEY);
+            final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);
             if (issuer != null && issuer.getRegistrationEndpoint() != null) {
                 // TODO check from heap if the client registration exists.
                 final JsonValue registeredClientConfiguration =
@@ -124,7 +124,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
                         heap.resolve(createClientRegistrationDeclaration(registeredClientConfiguration,
                                                                          issuer.getName()), ClientRegistration.class);
 
-                exchange.put(CLIENT_REG_KEY, cr);
+                exchange.getAttributes().put(CLIENT_REG_KEY, cr);
             } else {
                 throw new RegistrationException("Do not support dynamic client registration");
             }

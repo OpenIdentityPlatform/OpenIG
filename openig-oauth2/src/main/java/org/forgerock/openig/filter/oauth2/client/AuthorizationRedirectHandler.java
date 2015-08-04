@@ -65,9 +65,9 @@ public class AuthorizationRedirectHandler implements Handler {
     @Override
     public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
-        final URI clientEndpoint = (URI) exchange.get("clientEndpoint");
+        final URI clientEndpoint = (URI) exchange.getAttributes().get("clientEndpoint");
         final String gotoUri = request.getForm().getFirst("goto");
-        final ClientRegistration cr = (ClientRegistration) exchange.get(CLIENT_REG_KEY);
+        final ClientRegistration cr = (ClientRegistration) exchange.getAttributes().get(CLIENT_REG_KEY);
         if (cr != null && cr.getIssuer() != null) {
             final Issuer issuer = cr.getIssuer();
             final List<String> requestedScopes = cr.getScopes();

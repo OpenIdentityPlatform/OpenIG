@@ -61,7 +61,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false, true);
 
         Exchange exchange = new Exchange();
-        exchange.put("a", "b");
+        exchange.getAttributes().put("a", "b");
         capture.capture(exchange, CapturePoint.REQUEST);
 
         verify(logger).info(captor.capture());

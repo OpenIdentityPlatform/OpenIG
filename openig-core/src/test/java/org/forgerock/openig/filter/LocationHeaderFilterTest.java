@@ -159,10 +159,10 @@ public class LocationHeaderFilterTest {
     @Test
     public void caseBaseUriAsExpression() throws Exception {
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(Expression.valueOf("http://${exchange.host}:8080", String.class));
+        filter.setBaseURI(Expression.valueOf("http://${exchange.attributes.host}:8080", String.class));
 
         Exchange exchange = new Exchange();
-        exchange.put("host", "app.example.com");
+        exchange.getAttributes().put("host", "app.example.com");
 
         // Prepare a response
         Response expectedResponse = new Response();

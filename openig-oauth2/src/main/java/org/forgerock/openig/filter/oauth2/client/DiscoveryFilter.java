@@ -122,7 +122,7 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
                                                                             wellKnowIssuerUri);
                 issuer = heap.resolve(issuerDeclaration, Issuer.class);
             }
-            exchange.put(ISSUER_KEY, issuer);
+            exchange.getAttributes().put(ISSUER_KEY, issuer);
         } catch (URISyntaxException | DiscoveryException e) {
             return newResultPromise(newInternalServerError("Discovery cannot be performed", e));
         } catch (HeapException e) {

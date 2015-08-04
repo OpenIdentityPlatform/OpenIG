@@ -80,7 +80,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSqlResultRowIsStoredInAMapAndInAnExchangeProperty() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${exchange.result}", Map.class), null);
+                Expression.valueOf("${exchange.attributes.result}", Map.class), null);
 
         mockDatabaseInteractions();
 
@@ -89,14 +89,14 @@ public class SqlAttributesFilterTest {
 
         // The expression has stored the Map result as an entry in the Exchange's backing map
         @SuppressWarnings("unchecked")
-        Map<String, Object> result = (Map<String, Object>) exchange.get("result");
+        Map<String, Object> result = (Map<String, Object>) exchange.getAttributes().get("result");
         assertThat(result).containsOnly(entry("password", "secret"));
     }
 
     @Test
     public void testParametersAreAssignedToTheRightPlaceholders() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${exchange.result}", Map.class), null);
+                Expression.valueOf("${exchange.attributes.result}", Map.class), null);
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -108,7 +108,7 @@ public class SqlAttributesFilterTest {
         filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
-        exchange.get("result").hashCode();
+        exchange.getAttributes().get("result").hashCode();
 
         // Check the placeholders have been replaced by the appropriate values
         InOrder inOrder = inOrder(statement);
@@ -119,7 +119,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${exchange.result}", Map.class), null);
+                Expression.valueOf("${exchange.attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         // Generate an SQLException when getConnection() is called
@@ -131,7 +131,7 @@ public class SqlAttributesFilterTest {
         // There should be a 'result' entry that is an empty map
         // And the logger should have been invoked with the caught exception
         @SuppressWarnings("unchecked")
-        Map<String, String> result = (Map<String, String>) exchange.get("result");
+        Map<String, String> result = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(result).isEmpty();
         verify(filter.getLogger()).error(any(SQLException.class));
     }
@@ -139,7 +139,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testTooMuchParametersProvided() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${exchange.result}", Map.class), null);
+                Expression.valueOf("${exchange.attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
@@ -152,14 +152,14 @@ public class SqlAttributesFilterTest {
         filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
-        exchange.get("result").hashCode();
+        exchange.getAttributes().get("result").hashCode();
         verify(filter.getLogger()).warning(matches(" All parameters with index >= 0 are ignored.*"));
     }
 
     @Test
     public void testNotEnoughParameters() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${exchange.result}", Map.class), null);
+                Expression.valueOf("${exchange.attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
@@ -172,7 +172,7 @@ public class SqlAttributesFilterTest {
         filter.filter(exchange, null, terminalHandler);
 
         // Trigger the lazy map instantiation
-        exchange.get("result").hashCode();
+        exchange.getAttributes().get("result").hashCode();
         verify(filter.getLogger()).warning(matches(" Placeholder 3 has no provided value as parameter"));
     }
 

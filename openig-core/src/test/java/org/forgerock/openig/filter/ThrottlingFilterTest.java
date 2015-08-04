@@ -68,7 +68,7 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        Expression<String> expr = Expression.valueOf("${matches(exchange.foo, 'bar-00') ?'bucket-00' :''}",
+        Expression<String> expr = Expression.valueOf("${matches(exchange.attributes.foo, 'bar-00') ?'bucket-00' :''}",
                                                      String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 
@@ -78,15 +78,15 @@ public class ThrottlingFilterTest {
         Exchange exchange = new Exchange();
         Promise<Response, NeverThrowsException> promise;
 
-        exchange.put("foo", "bar-00");
+        exchange.getAttributes().put("foo", "bar-00");
         promise = filter.filter(exchange, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
 
-        exchange.put("foo", "bar-00");
+        exchange.getAttributes().put("foo", "bar-00");
         promise = filter.filter(exchange, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
 
-        exchange.put("foo", "bar-01");
+        exchange.getAttributes().put("foo", "bar-01");
         promise = filter.filter(exchange, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
     }
@@ -100,7 +100,7 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldUseDefaultValueWithExpressionEvaluatingNull() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        Expression<String> expr = Expression.valueOf("${exchange.bar}",
+        Expression<String> expr = Expression.valueOf("${exchange.attributes.bar}",
                                                      String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 

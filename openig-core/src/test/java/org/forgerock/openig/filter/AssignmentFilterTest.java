@@ -34,7 +34,7 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${exchange.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
         filter.addRequestBinding(target,
                                  Expression.valueOf("${exchange.request.method}", String.class));
 
@@ -45,7 +45,7 @@ public class AssignmentFilterTest {
         Chain chain = new Chain(handler, singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.getRequest()).get();
-        assertThat(exchange.get("newAttr")).isEqualTo("DELETE");
+        assertThat(exchange.getAttributes().get("newAttr")).isEqualTo("DELETE");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${exchange.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
         filter.addResponseBinding(target,
                                   Expression.valueOf("${exchange.response.status.code}", Integer.class));
 
@@ -75,6 +75,6 @@ public class AssignmentFilterTest {
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.getRequest()).get();
-        assertThat(exchange.get("newAttr")).isEqualTo(200);
+        assertThat(exchange.getAttributes().get("newAttr")).isEqualTo(200);
     }
 }

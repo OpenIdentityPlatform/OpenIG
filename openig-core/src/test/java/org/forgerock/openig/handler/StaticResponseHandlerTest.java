@@ -45,9 +45,9 @@ public class StaticResponseHandlerTest {
                         Status.OK,
                         null,
                         Expression.valueOf(
-                        "<a href='/login?goto=${urlEncode(exchange.goto)}'>GOTO</a>", String.class));
+                        "<a href='/login?goto=${urlEncode(exchange.attributes.goto)}'>GOTO</a>", String.class));
         final Exchange exchange = new Exchange();
-        exchange.put("goto", "http://goto.url");
+        exchange.getAttributes().put("goto", "http://goto.url");
         Response response = handler.handle(exchange, null).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
         assertThat(response.getEntity().getString()).isEqualTo(

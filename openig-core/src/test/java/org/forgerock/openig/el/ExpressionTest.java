@@ -29,7 +29,6 @@ import java.util.Map;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -139,9 +138,9 @@ public class ExpressionTest {
     public void exchangeSetAttribute() throws ExpressionException {
         Exchange exchange = new Exchange();
         @SuppressWarnings("rawtypes")
-        Expression<Map> expr = Expression.valueOf("${exchange.testmap}", Map.class);
+        Expression<Map> expr = Expression.valueOf("${exchange.attributes.testmap}", Map.class);
         expr.set(exchange, singletonMap("foo", "bar"));
-        Expression<String> foo = Expression.valueOf("${exchange.testmap.foo}", String.class);
+        Expression<String> foo = Expression.valueOf("${exchange.attributes.testmap.foo}", String.class);
         assertThat(foo.eval(exchange)).isEqualTo("bar");
     }
 
@@ -199,39 +198,6 @@ public class ExpressionTest {
 
         stringExpr = Expression.valueOf("${exchange.response.headers['Set-Cookie'][0]}", String.class);
         assertThat(stringExpr.eval(exchange)).isEqualTo("MyCookie=example; path=/");
-    }
-
-    @Test
-    public void testAccessingBeanProperties() throws Exception {
-        BeanFieldMap bfm = new BeanFieldMap("hello");
-        bfm.legacy = "OpenIG";
-        bfm.setNumber(42);
-        bfm.put("attribute", "hello");
-
-        assertThat(Expression.valueOf("${legacy}", String.class).eval(bfm)).isEqualTo("OpenIG");
-        assertThat(Expression.valueOf("${number}", Integer.class).eval(bfm)).isEqualTo(42);
-        assertThat(Expression.valueOf("${readOnly}", String.class).eval(bfm)).isEqualTo("hello");
-        assertThat(Expression.valueOf("${attribute}", String.class).eval(bfm)).isEqualTo("hello");
-        assertThat(Expression.valueOf("${missing}", Integer.class).eval(bfm)).isNull();
-    }
-
-    @Test
-    public void testSettingBeanProperties() throws Exception {
-        BeanFieldMap bfm = new BeanFieldMap("hello");
-        bfm.legacy = "OpenIG";
-        bfm.setNumber(42);
-
-        Expression.valueOf("${legacy}", String.class).set(bfm, "ForgeRock");
-        assertThat(bfm.legacy).isEqualTo("ForgeRock");
-
-        Expression.valueOf("${number}", Integer.class).set(bfm, 404);
-        assertThat(bfm.getNumber()).isEqualTo(404);
-
-        Expression.valueOf("${readOnly}", String.class).set(bfm, "will-be-ignored");
-        assertThat(bfm.getReadOnly()).isEqualTo("hello");
-
-        Expression.valueOf("${attribute}", String.class).set(bfm, "a-value");
-        assertThat(bfm.get("attribute")).isEqualTo("a-value");
     }
 
     @Test
@@ -378,30 +344,6 @@ public class ExpressionTest {
         Expression<String> expression = Expression.valueOf("${item.thereIsNoSuchMethod()}", String.class);
         assertThat(expression.eval(singletonMap("item", "Hello")))
                 .isNull();
-    }
-
-    public static class BeanFieldMap extends ExtensibleFieldMap {
-        public String legacy;
-
-        private int number;
-        private String readOnly;
-
-        private BeanFieldMap(final String readOnly) {
-            this.readOnly = readOnly;
-        }
-
-        public int getNumber() {
-            return number;
-        }
-
-        public void setNumber(final int number) {
-            this.number = number;
-        }
-
-        public String getReadOnly() {
-            return readOnly;
-        }
-
     }
 
     public static class ExternalBean {

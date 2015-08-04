@@ -91,9 +91,9 @@ public class RouteBuilderTest {
         Route route = builder.build(getTestResourceFile("conditional-route.json"));
 
         Exchange exchange = new Exchange();
-        exchange.put("value", 42);
+        exchange.getAttributes().put("value", 42);
         assertThat(route.accept(exchange)).isTrue();
-        exchange.put("value", 44);
+        exchange.getAttributes().put("value", 44);
         assertThat(route.accept(exchange)).isFalse();
     }
 

@@ -54,7 +54,7 @@ public final class Adapters {
         exchange.setSession(requestContext.getSession());
         exchange.setRequest(request);
         // TODO We will need to find a more robust solution when Exchange will be removed
-        exchange.putAll(requestContext.getAttributes());
+        exchange.getAttributes().putAll(requestContext.getAttributes());
         requestContext.getAttributes().clear();
         return exchange;
     }

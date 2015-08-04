@@ -560,11 +560,12 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     }
 
     private static HttpServletResponse adaptResponse(Exchange exchange) {
-        return (HttpServletResponse) exchange.get(HttpServletResponse.class.getName());
+        return (HttpServletResponse) exchange.getAttributes().get(HttpServletResponse.class.getName());
     }
 
     private static HttpServletRequest adaptRequest(Exchange exchange) {
-        HttpServletRequest request = (HttpServletRequest) exchange.get(HttpServletRequest.class.getName());
+        HttpServletRequest request = (HttpServletRequest) exchange.getAttributes()
+                                                                  .get(HttpServletRequest.class.getName());
         return new RequestAdapter(request, exchange);
     }
 

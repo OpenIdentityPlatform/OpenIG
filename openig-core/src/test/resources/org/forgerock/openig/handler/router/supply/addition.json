@@ -9,5 +9,5 @@
         }
     ],
     "handler": "StatusHandler",
-    "condition": "${exchange.name == 'OpenAM'}"
+    "condition": "${exchange.attributes.name == 'OpenAM'}"
 }

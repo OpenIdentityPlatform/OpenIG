@@ -59,7 +59,7 @@ public class EnforcerFilterTest {
         return new Object[][] {
                 { "${false}" },
                 { "not a condition" },
-                { "exchange.missing" }
+                { "exchange.attributes.missing" }
         };
         // @Checkstyle:on
     }

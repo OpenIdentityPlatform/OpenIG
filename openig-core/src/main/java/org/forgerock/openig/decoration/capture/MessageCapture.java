@@ -136,7 +136,7 @@ public class MessageCapture {
     }
 
     private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
-        Map<String, Object> map = new LinkedHashMap<>(exchange);
+        Map<String, Object> map = new LinkedHashMap<>(exchange.getAttributes());
         map.remove("exchange");
         map.remove("request");
         map.remove("response");
