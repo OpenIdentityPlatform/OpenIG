@@ -318,7 +318,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
             final Expression<?> target = asExpression(config.get("target").defaultTo(
-                    format("${exchange.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
+                    format("${exchange.attributes.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
 
             final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                                                            new BearerTokenExtractor(),

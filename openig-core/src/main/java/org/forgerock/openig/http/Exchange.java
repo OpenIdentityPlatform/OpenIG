@@ -23,6 +23,8 @@ import static org.forgerock.json.JsonValue.object;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Session;
@@ -30,14 +32,13 @@ import org.forgerock.http.context.ClientInfo;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.forgerock.util.Reject;
 
 /**
  * An HTTP exchange of request and response, and the root object for the exchange object model.
  * The exchange object model parallels the document object model, exposing elements of the
  * exchange. It supports this by exposing its fixed attributes and allowing arbitrary
- * attributes via its {@code ExtensibleFieldMap} superclass.
+ * attributes via its {@code attributes} field.
  * <p>
  * The contract of an exchange is such that it is the responsibility of the caller of a
  * {@link org.forgerock.http.Handler} object to create and populate the request object,
@@ -48,15 +49,22 @@ import org.forgerock.util.Reject;
  * object has an entity, and if it does, must call its {@code close} method in order to signal
  * that the processing of the response from a remote server is complete.
  */
-public class Exchange extends ExtensibleFieldMap implements Context {
+public class Exchange implements Context {
+
+    private final Map<String, Object> attributes = new HashMap<>();
 
     /**
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
      * is immutable.
      */
     private final URI originalUri;
-
     private final Context parent;
+
+    private ClientInfo clientInfo;
+    private Principal principal;
+    private Request request;
+    private Response response;
+    private Session session;
 
     /**
      * Builds a new Exchange without any originalUri value (will be {@code null}) and no parent context.
@@ -154,7 +162,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @return the request
      */
     public Request getRequest() {
-        return (Request) get("request");
+        return request;
     }
 
     /**
@@ -163,7 +171,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @param request the request to set
      */
     public void setRequest(Request request) {
-        put("request", request);
+        this.request = request;
     }
 
     /**
@@ -172,7 +180,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @return the response
      */
     public Response getResponse() {
-        return (Response) get("response");
+        return response;
     }
 
     /**
@@ -181,7 +189,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @param response the response to set
      */
     public void setResponse(Response response) {
-        put("response", response);
+        this.response = response;
     }
 
     /**
@@ -190,7 +198,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @return the principal
      */
     public Principal getPrincipal() {
-        return (Principal) get("principal");
+        return principal;
     }
 
     /**
@@ -199,7 +207,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @param principal the principal to set
      */
     public void setPrincipal(Principal principal) {
-        put("principal",  principal);
+        this.principal = principal;
     }
 
     /**
@@ -217,7 +225,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @return the session
      */
     public Session getSession() {
-        return (Session) get("session");
+        return session;
     }
 
     /**
@@ -226,7 +234,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @param session the session to set
      */
     public void setSession(Session session) {
-        put("session", session);
+        this.session = session;
     }
 
     /**
@@ -235,7 +243,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @return the clientInfo
      */
     public ClientInfo getClientInfo() {
-        return (ClientInfo) get("clientInfo");
+        return clientInfo;
     }
 
     /**
@@ -244,7 +252,7 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      * @param clientInfo the clientInfo to set
      */
     public void setClientInfo(ClientInfo clientInfo) {
-        put("clientInfo", clientInfo);
+        this.clientInfo = clientInfo;
     }
 
     /**
@@ -255,6 +263,15 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public URI getOriginalUri() {
         return originalUri;
+    }
+
+    /**
+     * Returns the attributes associated with this exchange.
+     *
+     * @return The exchange's attributes.
+     */
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     @Override

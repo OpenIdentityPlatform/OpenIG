@@ -691,7 +691,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             throws OAuth2ErrorException, ResponseException {
 
         final Exchange exchange = context.asContext(Exchange.class);
-        exchange.put("clientEndpoint", buildUri(exchange, clientEndpoint));
+        exchange.getAttributes().put("clientEndpoint", buildUri(exchange, clientEndpoint));
         return loginEndpoint.handle(context, request);
     }
 
@@ -916,7 +916,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final OAuth2ClientFilter filter = new OAuth2ClientFilter(time, heap);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
-                    format("${exchange.%s}", DEFAULT_TOKEN_KEY)), Object.class));
+                    format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
             final Handler loginEndpoint = heap.resolve(config.get("loginEndpoint"), Handler.class, true);

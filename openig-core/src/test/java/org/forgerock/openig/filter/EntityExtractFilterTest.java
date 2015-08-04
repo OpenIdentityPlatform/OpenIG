@@ -52,7 +52,8 @@ public class EntityExtractFilterTest {
     @Test
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
         EntityExtractFilter filter =
-                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}", Map.class));
+                new EntityExtractFilter(MessageType.REQUEST,
+                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
@@ -64,7 +65,7 @@ public class EntityExtractFilterTest {
         filter.filter(exchange, request, terminalHandler);
 
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.get("result");
+        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", " OpenIG"),
                 entry("none", null));
@@ -74,7 +75,8 @@ public class EntityExtractFilterTest {
     @Test
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
         EntityExtractFilter filter =
-                new EntityExtractFilter(MessageType.REQUEST, Expression.valueOf("${exchange.result}", Map.class));
+                new EntityExtractFilter(MessageType.REQUEST,
+                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
@@ -86,7 +88,7 @@ public class EntityExtractFilterTest {
 
         // The entry has a non-null value if it matches or a null value if it does not match
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.get("result");
+        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", "Hello OpenIG"),
                 entry("none", null));
@@ -95,8 +97,9 @@ public class EntityExtractFilterTest {
 
     @Test
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
-        EntityExtractFilter filter = new EntityExtractFilter(MessageType.RESPONSE,
-                                                             Expression.valueOf("${exchange.result}", Map.class));
+        EntityExtractFilter filter =
+                new EntityExtractFilter(MessageType.RESPONSE,
+                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         Exchange exchange = new Exchange();
@@ -109,7 +112,7 @@ public class EntityExtractFilterTest {
         filter.filter(exchange, null, terminalHandler);
 
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.get("result");
+        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(results).containsOnly(entry("hello", null));
     }
 }

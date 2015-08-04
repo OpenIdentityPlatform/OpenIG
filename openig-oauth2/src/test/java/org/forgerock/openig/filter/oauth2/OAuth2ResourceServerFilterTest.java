@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -169,7 +168,7 @@ public class OAuth2ResourceServerFilterTest {
         Request request = buildAuthorizedRequest();
         filter.filter(exchange, request, nextHandler);
 
-        assertThat((Map<String, Object>) exchange).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
+        assertThat(exchange.getAttributes()).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
         verify(nextHandler).handle(exchange, request);
     }
 
@@ -178,26 +177,26 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                Expression.valueOf("${exchange.myToken}", String.class));
+                Expression.valueOf("${exchange.attributes.myToken}", String.class));
 
         final Exchange exchange = new Exchange();
         Request request = buildAuthorizedRequest();
         filter.filter(exchange, request, nextHandler);
 
-        assertThat((Map<String, Object>) exchange).containsKey("myToken");
-        assertThat(exchange.get("myToken")).isInstanceOf(AccessToken.class);
+        assertThat(exchange.getAttributes()).containsKey("myToken");
+        assertThat(exchange.getAttributes().get("myToken")).isInstanceOf(AccessToken.class);
         verify(nextHandler).handle(exchange, request);
     }
 
     @Test
     public void shouldEvaluateScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter =
-                buildResourceServerFilter("${exchange.attribute}",
+                buildResourceServerFilter("${exchange.attributes.attribute}",
                                           "${split('to,b,or,not,to', ',')[1]}",
                                           "c");
 
         final Exchange exchange = new Exchange();
-        exchange.put("attribute", "a");
+        exchange.getAttributes().put("attribute", "a");
         Request request = buildAuthorizedRequest();
         filter.filter(exchange, request, nextHandler);
 
@@ -221,7 +220,7 @@ public class OAuth2ResourceServerFilterTest {
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
                                               Expression.valueOf(
-                                                      format("${exchange.%s}",
+                                                      format("${exchange.attributes.%s}",
                                                       DEFAULT_ACCESS_TOKEN_KEY), String.class));
     }
 

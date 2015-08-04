@@ -203,9 +203,10 @@ public class HttpBasicAuthFilterTest {
     @Test
     public void testRefreshAuthenticationHeader() throws Exception {
 
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
-                                                             Expression.valueOf("${exchange.password}", String.class),
-                                                             failureHandler);
+        HttpBasicAuthFilter filter =
+                new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
+                                        Expression.valueOf("${exchange.attributes.password}", String.class),
+                                        failureHandler);
         filter.setCacheHeader(true);
 
         // Mock cache content for credentials
@@ -229,7 +230,7 @@ public class HttpBasicAuthFilterTest {
 
         // Initial round-trip
         Exchange first = newExchange();
-        first.put("password", "hifalutin");
+        first.getAttributes().put("password", "hifalutin");
         Response firstResponse = filter.filter(first, newRequest(), terminalHandler).getOrThrow();
 
         // Usage of cached value
@@ -238,7 +239,7 @@ public class HttpBasicAuthFilterTest {
 
         // Cached value is no longer valid, trigger a user/pass refresh
         Exchange third = newExchange();
-        third.put("password", "hifalutin2");
+        third.getAttributes().put("password", "hifalutin2");
         Response thirdResponse = filter.filter(third, newRequest(), terminalHandler).getOrThrow();
 
         // Terminal handler should be called 5 times, not 6

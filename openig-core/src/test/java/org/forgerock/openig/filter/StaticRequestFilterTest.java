@@ -59,7 +59,8 @@ public class StaticRequestFilterTest {
             { "${decodeBase64('RG9uJ3QgcGFuaWMu')}", "Don't panic." },
             /* See OPENIG-65 */
             { "{\"auth\":{\"passwordCredentials\":{"
-                    + "\"username\":\"${exchange.username}\",\"password\":\"${exchange.password}\"}}}",
+                    + "\"username\":\"${exchange.attributes.username}\""
+                    + ",\"password\":\"${exchange.attributes.password}\"}}}",
               "{\"auth\":{\"passwordCredentials\":{"
                     + "\"username\":\"bjensen\",\"password\":\"password\"}}}" },
             {"OpenIG", "OpenIG"}
@@ -235,8 +236,8 @@ public class StaticRequestFilterTest {
 
     @Test(dataProvider = "entityContentAndExpected")
     public void shouldAddRequestEntity(final String value, final String result) throws Exception {
-        exchange.putAll(singletonMap("username", "bjensen"));
-        exchange.putAll(singletonMap("password", "password"));
+        exchange.getAttributes().putAll(singletonMap("username", "bjensen"));
+        exchange.getAttributes().putAll(singletonMap("password", "password"));
 
         final StaticRequestFilter filter = new StaticRequestFilter("POST");
         filter.setUri(Expression.valueOf(URI, String.class));

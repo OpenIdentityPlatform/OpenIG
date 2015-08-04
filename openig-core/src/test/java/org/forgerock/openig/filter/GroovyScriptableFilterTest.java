@@ -102,16 +102,16 @@ public class GroovyScriptableFilterTest {
     public void testAssignment() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "exchange.test = false",
+                "exchange.attributes.test = false",
                 "next.handle(exchange)",
-                "exchange.test = exchange.response.status.code == 302");
+                "exchange.attributes.test = exchange.response.status.code == 302");
         // @formatter:on
         final Response response = new Response();
         response.setStatus(Status.FOUND);
         final Handler handler = new ResponseHandler(response);
         Exchange exchange = new Exchange();
         filter.filter(exchange, null, handler);
-        assertThat((Boolean) exchange.get("test")).isTrue();
+        assertThat((Boolean) exchange.getAttributes().get("test")).isTrue();
     }
 
     @Test
@@ -460,16 +460,16 @@ public class GroovyScriptableFilterTest {
             Request request = new Request();
             request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
-            exchange.put("ldapHost", "localhost");
-            exchange.put("ldapPort", String.valueOf(port));
+            exchange.getAttributes().put("ldapHost", "localhost");
+            exchange.getAttributes().put("ldapPort", String.valueOf(port));
             exchange.setSession(new SimpleMapSession());
             filter.filter(exchange, request, mock(Handler.class));
 
             Set<String> cnValues = new HashSet<>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
-            assertThat(exchange.get("cn")).isEqualTo(cnValues);
-            assertThat(exchange.get("description"))
+            assertThat(exchange.getAttributes().get("cn")).isEqualTo(cnValues);
+            assertThat(exchange.getAttributes().get("description"))
                     .isEqualTo("New description set by my script");
             assertThat(request.getHeaders().get("Ldap-User-Dn").toString())
                     .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
