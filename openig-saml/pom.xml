@@ -37,25 +37,21 @@
       <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-core</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.forgerock.openam</groupId>
       <artifactId>openam-shared</artifactId>
       <version>${openam.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.forgerock.openam</groupId>
       <artifactId>openam-federation-library</artifactId>
       <version>${openam.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>webservices-rt</artifactId>
       <version>1.5</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
