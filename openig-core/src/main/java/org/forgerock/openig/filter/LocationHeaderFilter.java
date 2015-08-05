@@ -13,7 +13,6 @@
  *
  * Copyright 2012-2015 ForgeRock AS.
  */
-
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
@@ -43,7 +42,30 @@ import org.forgerock.util.promise.Promise;
 /**
  * Rewrites Location headers on responses that generate a redirect that would
  * take the user directly to the application being proxied rather than taking
- * the user through OpenIG.
+ * the user through OpenIG. Options:
+ *
+ * <pre>
+ * {@code
+ * {
+ *   "baseURI"                     : expression        [OPTIONAL - default to the original URI
+ *                                                                 of the request ]
+ * }
+ * }
+ * </pre>
+ *
+ * Example:
+ *
+ * <pre>
+ * {@code
+ * {
+ *      "name": "LocationRewriter",
+ *      "type": "LocationHeaderFilter",
+ *      "config": {
+ *          "baseURI": "https://proxy.example.com:443/"
+ *       }
+ * }
+ * }
+ * </pre>
  */
 public class LocationHeaderFilter extends GenericHeapObject implements Filter {
 
@@ -85,13 +107,17 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
     }
 
     private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, ResponseException {
-        String uri = baseURI.eval(exchange);
+        if (baseURI != null) {
+            String uri = baseURI.eval(exchange);
 
-        if (uri == null) {
-            throw logger.debug(new ResponseException(format(
-                    "The baseURI expression '%s' could not be resolved", baseURI.toString())));
+            if (uri == null) {
+                throw logger.debug(new ResponseException(format("The baseURI expression '%s' could not be resolved",
+                        baseURI.toString())));
+            }
+            return new URI(uri);
+        } else {
+            return exchange.getOriginalUri();
         }
-        return new URI(uri);
     }
 
     @Override
@@ -116,7 +142,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
 
             LocationHeaderFilter filter = new LocationHeaderFilter();
-            filter.baseURI = asExpression(config.get("baseURI").required(), String.class);
+            filter.baseURI = asExpression(config.get("baseURI"), String.class);
 
             return filter;
         }
