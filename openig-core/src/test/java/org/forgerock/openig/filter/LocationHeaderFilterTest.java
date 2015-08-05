@@ -17,6 +17,10 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.net.URI;
 
@@ -26,11 +30,16 @@ import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -38,6 +47,45 @@ import org.testng.annotations.Test;
  */
 @SuppressWarnings("javadoc")
 public class LocationHeaderFilterTest {
+    @DataProvider
+    private Object[][] validConfigurations() {
+        return new Object[][] {
+            { json(object(
+                    field("baseURI", "https://client.example.org/callback"))) },
+            { json(object(
+                    field("baseURI", "${exchange.uri}"))) } };
+    }
+
+    @DataProvider
+    private Object[][] invalidConfigurations() {
+        return new Object[][] {
+            /* Not a String. */
+            { json(object(
+                    field("baseURI", 42))) } };
+    }
+
+    @Test(dataProvider = "invalidConfigurations", expectedExceptions = JsonValueException.class)
+    public void shouldFailToCreateHeapletWhenRequiredAttributeIsMissing(final JsonValue config) throws Exception {
+        final LocationHeaderFilter.Heaplet heaplet = new LocationHeaderFilter.Heaplet();
+        heaplet.create(Name.of("LocationRewriter"), config, buildDefaultHeap());
+    }
+
+    @Test(dataProvider = "validConfigurations")
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
+        final LocationHeaderFilter.Heaplet heaplet = new LocationHeaderFilter.Heaplet();
+        final LocationHeaderFilter lhf = (LocationHeaderFilter) heaplet.create(Name.of("LocationRewriter"),
+                                                                                       config,
+                                                                                       buildDefaultHeap());
+        assertThat(lhf).isNotNull();
+    }
+
+    @Test
+    public void shouldRebaseToOriginalUriIfNotSet() throws Exception {
+        final String expectedResult = "http://www.origin.com:443/path/to/redirected?a=1&b=2";
+
+        final URI testRedirectionURI = new URI("http://app.example.com:8080/path/to/redirected?a=1&b=2");
+        callFilter(new LocationHeaderFilter(), testRedirectionURI, expectedResult);
+    }
 
     @Test
     public void caseChangeSchemeHostAndPort() throws Exception {
@@ -144,13 +192,15 @@ public class LocationHeaderFilterTest {
     private void callFilter(LocationHeaderFilter filter, URI testRedirectionURI, String expectedResult)
             throws Exception {
 
+        final Exchange exchange = new Exchange(null, new URI("http://www.origin.com:443"));
+
         Response expectedResponse = new Response();
         expectedResponse.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
         expectedResponse.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
 
-        Response response = filter.filter(new Exchange(), null, next).get();
+        Response response = filter.filter(exchange, null, next).get();
 
         LocationHeader header = LocationHeader.valueOf(response);
         assertThat(header.toString()).isNotNull();
