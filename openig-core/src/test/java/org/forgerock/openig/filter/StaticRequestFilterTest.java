@@ -36,10 +36,12 @@ public class StaticRequestFilterTest {
 
     public static final String URI = "http://openig.forgerock.org";
     private TerminalHandler terminalHandler;
+    private Exchange exchange;
 
     @BeforeMethod
     public void setUp() throws Exception {
         terminalHandler = new TerminalHandler();
+        exchange = new Exchange();
     }
 
     /**
@@ -52,7 +54,6 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.setVersion("1.1");
 
-        Exchange exchange = new Exchange();
         filter.filter(exchange, null, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
@@ -71,7 +72,6 @@ public class StaticRequestFilterTest {
         filter.addHeaderValue("Multi-Valued", Expression.valueOf("One (1)", String.class));
         filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${exchange.request.version})", String.class));
 
-        Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
@@ -98,7 +98,6 @@ public class StaticRequestFilterTest {
         filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
         filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
 
-        Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         exchange.setRequest(new Request());
         exchange.getRequest().setVersion("2");
@@ -124,7 +123,6 @@ public class StaticRequestFilterTest {
         filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
         filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
 
-        Exchange exchange = new Exchange();
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
