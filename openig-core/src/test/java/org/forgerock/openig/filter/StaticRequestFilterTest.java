@@ -13,27 +13,36 @@
  *
  * Copyright 2014-2015 ForgeRock AS.
  */
-
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.MutableUri.uri;
+import static org.forgerock.json.JsonValue.array;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class StaticRequestFilterTest {
-
     public static final String URI = "http://openig.forgerock.org";
     private TerminalHandler terminalHandler;
     private Exchange exchange;
@@ -42,6 +51,88 @@ public class StaticRequestFilterTest {
     public void setUp() throws Exception {
         terminalHandler = new TerminalHandler();
         exchange = new Exchange();
+    }
+
+    @DataProvider
+    private static Object[][] entityContentAndExpected() {
+        return new Object[][] {
+            { "${decodeBase64('RG9uJ3QgcGFuaWMu')}", "Don't panic." },
+            /* See OPENIG-65 */
+            { "{\"auth\":{\"passwordCredentials\":{"
+                    + "\"username\":\"${exchange.username}\",\"password\":\"${exchange.password}\"}}}",
+              "{\"auth\":{\"passwordCredentials\":{"
+                    + "\"username\":\"bjensen\",\"password\":\"password\"}}}" },
+            {"OpenIG", "OpenIG"}
+        };
+    }
+
+    @DataProvider
+    private Object[][] validConfigurations() {
+        return new Object[][] {
+            { json(object(
+                    field("method", "GET"),
+                    field("uri", URI),
+                    field("entity", "a message"),
+                    field("version", "2"))) },
+            { json(object(
+                    field("method", "GET"),
+                    field("uri", URI),
+                    field("entity", "${decodeBase64('YW4gZXhwcmVzc2lvbg==')}"),
+                    field("version", "2"))) },
+            { json(object(
+                    field("method", "POST"),
+                    field("uri", URI),
+                    field("headers", object(field("Warning", array("418 I'm a teapot")))))) },
+            { json(object(
+                    field("method", "POST"),
+                    field("uri", URI),
+                    field("form", object(field("log", array("george")))))) } };
+    }
+
+    @DataProvider
+    private Object[][] invalidConfigurations() {
+        return new Object[][] {
+            { json(object(
+                    /* Missing method (required) */
+                    field("uri", URI),
+                    field("entity", "a message"),
+                    field("version", "2"))) },
+            { json(object(
+                    /* Missing URI (required) */
+                    field("method", "GET"),
+                    field("entity", "${decodeBase64('RG9uJ3QgcGFuaWMu')}"),
+                    field("version", "2"))) },
+            { json(object(
+                    /* Invalid entity type */
+                    field("method", "GET"),
+                    field("uri", URI),
+                    field("entity", true),
+                    field("version", "2"))) },
+            { json(object(
+                    /* Cannot have both entity && POST form set in heaplet */
+                    field("method", "POST"),
+                    field("uri", URI),
+                    field("entity", json(object(field("field", "a message")))),
+                    field("form", object(field("log", array("george")))),
+                    field("version", "2"))) }};
+    }
+
+    @Test(dataProvider = "invalidConfigurations",
+          expectedExceptions = { JsonValueException.class, HeapException.class })
+    public void shouldFailToCreateHeaplet(final JsonValue config) throws Exception {
+        final StaticRequestFilter.Heaplet heaplet = new StaticRequestFilter.Heaplet();
+        heaplet.create(Name.of("myStaticRequestFilter"), config, buildDefaultHeap());
+    }
+
+    @Test(dataProvider = "validConfigurations")
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
+        final StaticRequestFilter.Heaplet heaplet = new StaticRequestFilter.Heaplet();
+        final StaticRequestFilter filter = (StaticRequestFilter) heaplet.create(Name.of("myStaticRequestFilter"),
+                                                                                config,
+                                                                                buildDefaultHeap());
+        filter.filter(exchange, null, terminalHandler);
+        assertThat(terminalHandler.request).isNotNull();
+        assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
     }
 
     /**
@@ -140,6 +231,53 @@ public class StaticRequestFilterTest {
                 .contains("mono=one")
                 .contains("multi=one1")
                 .contains("multi=two2");
+    }
+
+    @Test(dataProvider = "entityContentAndExpected")
+    public void shouldAddRequestEntity(final String value, final String result) throws Exception {
+        exchange.putAll(singletonMap("username", "bjensen"));
+        exchange.putAll(singletonMap("password", "password"));
+
+        final StaticRequestFilter filter = new StaticRequestFilter("POST");
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.setEntity(Expression.valueOf(value, String.class));
+
+        filter.filter(exchange, null, terminalHandler);
+
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
+        assertThat(terminalHandler.request.getMethod()).isEqualTo("POST");
+        assertThat(terminalHandler.request.getEntity().getString()).isEqualTo(result);
+    }
+
+    @Test
+    public void shouldPostFormOverrideRequestEntity() throws Exception {
+        final StaticRequestFilter filter = new StaticRequestFilter("POST");
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.setEntity(Expression.valueOf("${decodeBase64('RG9uJ3QgcGFuaWMu')}", String.class));
+        filter.addFormParameter("mono", Expression.valueOf("one", String.class));
+
+        filter.filter(exchange, null, terminalHandler);
+
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        // The form combined with the POST method uses the Form#toRequestEntity
+        // which overwrites any entity that may already be in the request.
+        assertThat(terminalHandler.request.getEntity().getString()).isEqualTo("mono=one");
+    }
+
+    @Test
+    public void shouldGetFormDoNotOverrideRequestEntity() throws Exception {
+        final StaticRequestFilter filter = new StaticRequestFilter("GET");
+        filter.setUri(Expression.valueOf(URI, String.class));
+        filter.setEntity(Expression.valueOf("${decodeBase64('RG9uJ3QgcGFuaWMu')}", String.class));
+        filter.addFormParameter("mono", Expression.valueOf("one", String.class));
+
+        filter.filter(exchange, null, terminalHandler);
+
+        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        assertThat(terminalHandler.request.getUri().toString()).startsWith(URI)
+                                                               .contains("mono=one");
+        assertThat(terminalHandler.request.getEntity().getString()).isEqualTo("Don't panic.");
     }
 
     private static class TerminalHandler implements Handler {

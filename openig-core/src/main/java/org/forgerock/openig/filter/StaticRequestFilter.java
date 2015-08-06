@@ -55,12 +55,20 @@ import org.forgerock.util.promise.Promises;
  * {
  *      "method"                     : string            [REQUIRED]
  *      "uri"                        : expression        [REQUIRED]
+ *      "entity"                     : expression        [OPTIONAL - cannot be used simultaneously
+ *                                                                   with a form in POST mode* ]
  *      "form"                       : object            [OPTIONAL]
  *      "headers"                    : object            [OPTIONAL]
  *      "version"                    : string            [OPTIONAL]
  * }
  * }
  * </pre>
+ * <p>
+ * *Nota: When method is set to POST, the entity and the form CANNOT be used
+ * together in the heaplet because they both determine the request entity. They
+ * still can used programmatically together but the form will override any
+ * entity content.
+ * <p>
  *
  * Example of use:
  *
@@ -72,6 +80,8 @@ import org.forgerock.util.promise.Promises;
  *      "config": {
  *          "method": "POST",
  *          "uri": "http://10.10.0.2:8080/wp-login.php",
+ *          "entity": "{\"auth\":{\"passwordCredentials\":
+ *                     {\"username\":\"${exchange.username}\",\"password\":\"${exchange.password}\"}}}"
  *          "headers": {
  *              "Warning": [ "199 Miscellaneous warning" ]
  *          }
@@ -81,6 +91,9 @@ import org.forgerock.util.promise.Promises;
  * </pre>
  */
 public class StaticRequestFilter extends GenericHeapObject implements Filter {
+
+    /** The message entity expression. */
+    private Expression<String> entity;
 
     /** The HTTP method to be performed on the resource. */
     private final String method;
@@ -107,6 +120,16 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
      */
     public StaticRequestFilter(final String method) {
         this.method = method;
+    }
+
+    /**
+     * Sets the message entity expression.
+     *
+     * @param entity
+     *            The message entity expression.
+     */
+    public void setEntity(final Expression<String> entity) {
+        this.entity = entity;
     }
 
     /**
@@ -180,6 +203,11 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
             logger.debug(message);
             return Promises.newResultPromise(Responses.newInternalServerError(message));
         }
+
+        if (entity != null) {
+            newRequest.setEntity(entity.eval(exchange));
+        }
+
         if (this.version != null) {
             // default in Message class
             newRequest.setVersion(version);
@@ -216,9 +244,17 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            StaticRequestFilter filter = new StaticRequestFilter(config.get("method").required().asString());
+            final String method = config.get("method").required().asString();
+            StaticRequestFilter filter = new StaticRequestFilter(method);
             filter.setUri(asExpression(config.get("uri").required(), String.class));
             filter.setVersion(config.get("version").asString());
+            if (config.isDefined("entity")
+                    && config.isDefined("form")
+                    && "POST".equals(method)) {
+                throw new HeapException("Invalid configuration. When \"method\": \"POST\", \"form\" and \"entity\" "
+                        + "settings are mutually exclusive because they both determine the request entity.");
+            }
+            filter.setEntity(asExpression(config.get("entity"), String.class));
 
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
