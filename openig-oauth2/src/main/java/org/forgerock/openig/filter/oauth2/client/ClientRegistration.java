@@ -33,11 +33,13 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.fluent.JsonValue;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.encode.Base64;
 
@@ -197,12 +199,75 @@ public final class ClientRegistration {
     }
 
     /**
+     * Returns the refresh token from the authorization server.
+     *
+     * @param exchange
+     *            The current exchange.
+     * @param session
+     *            The current session.
+     * @return The json content of the response if status return code of the
+     *         response is 200 OK. Otherwise, throw an OAuth2ErrorException.
+     * @throws ResponseException
+     *             If an exception occurs that prevents handling of the request
+     *             or if the creation of the request for a refresh token fails.
+     * @throws OAuth2ErrorException
+     *             If an error occurs when contacting the authorization server
+     *             or if the returned response status code is different than 200
+     *             OK.
+     */
+    public JsonValue getRefreshToken(final Exchange exchange,
+                                     final OAuth2Session session) throws ResponseException, OAuth2ErrorException {
+
+        final Request request = createRequestForTokenRefresh(exchange, session);
+        final Response response = httpRequestToAuthorizationServer(exchange, request);
+        checkResponseStatus(response, true);
+        return getJsonContent(response);
+    }
+
+    /**
      * Returns the list of scopes of this client registration.
      *
      * @return the the list of scopes of this client registration.
      */
     public List<String> getScopes() {
         return scopes;
+    }
+
+    /**
+     * Returns the json value of the user info obtained from the authorization
+     * server if the response from the authorization server has a status code of
+     * 200. Otherwise, it throws an exception, meaning the access token may have
+     * expired.
+     *
+     * @param exchange
+     *            The current exchange.
+     * @param session
+     *            The current session to use.
+     * @return A JsonValue containing the requested user info.
+     * @throws ResponseException
+     *             If an exception occurs that prevents handling of the request
+     *             or if the creation of the request for getting user info
+     *             fails.
+     * @throws OAuth2ErrorException
+     *             If an error occurs when contacting the authorization server
+     *             or if the returned response status code is different than 200
+     *             OK. May signify that the access token has expired.
+     */
+    public JsonValue getUserInfo(final Exchange exchange,
+                                 final OAuth2Session session) throws ResponseException, OAuth2ErrorException  {
+        final Request request = createRequestForUserInfo(exchange, session.getAccessToken());
+        final Response response = httpRequestToAuthorizationServer(exchange, request);
+        if (!Status.OK.equals(response.getStatus())) {
+            /*
+             * The access token may have expired. Trigger an exception,
+             * catch it and react later.
+             */
+            final OAuth2BearerWWWAuthenticateHeader header = OAuth2BearerWWWAuthenticateHeader.valueOf(response);
+            final OAuth2Error error = header.getOAuth2Error();
+            final OAuth2Error bestEffort = OAuth2Error.bestEffortResourceServerError(response.getStatus(), error);
+            throw new OAuth2ErrorException(bestEffort);
+        }
+        return getJsonContent(response);
     }
 
     /**
@@ -214,7 +279,7 @@ public final class ClientRegistration {
      *            {@code true} if the token end-point should use Basic
      *            authentication, {@code false} if it should use client secret
      *            POST.
-     * @return This provider.
+     * @return This client registration.
      * @see <a href="https://tools.ietf.org/html/rfc6749#section-2.3.1">RFC 6749, Section 2.3.1</a>
      */
     public ClientRegistration setTokenEndpointUseBasicAuth(final boolean useBasicAuth) {
@@ -233,6 +298,28 @@ public final class ClientRegistration {
         form.add("code", code);
         addClientIdAndSecret(request, form);
         form.toRequestEntity(request);
+        return request;
+    }
+
+    private Request createRequestForTokenRefresh(final Exchange exchange,
+                                                 final OAuth2Session session) throws ResponseException {
+        final Request request = new Request();
+        request.setMethod("POST");
+        request.setUri(issuer.getTokenEndpoint());
+        final Form form = new Form();
+        form.add("grant_type", "refresh_token");
+        form.add("refresh_token", session.getRefreshToken());
+        addClientIdAndSecret(request, form);
+        form.toRequestEntity(request);
+        return request;
+    }
+
+    private Request createRequestForUserInfo(final Exchange exchange,
+                                             final String accessToken) throws ResponseException {
+        final Request request = new Request();
+        request.setMethod("GET");
+        request.setUri(issuer.getUserInfoEndpoint());
+        request.getHeaders().add("Authorization", "Bearer " + accessToken);
         return request;
     }
 

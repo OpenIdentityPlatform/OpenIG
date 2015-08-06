@@ -185,6 +185,15 @@ public final class Issuer {
     }
 
     /**
+     * Returns {@code true} if this issuer has a user info end-point.
+     *
+     * @return {@code true} if this issuer has a user info end-point.
+     */
+    public boolean hasUserInfoEndpoint() {
+        return userInfoEndpoint != null;
+    }
+
+    /**
      * Builds a new Issuer based on the given well-known URI.
      *
      * @param name

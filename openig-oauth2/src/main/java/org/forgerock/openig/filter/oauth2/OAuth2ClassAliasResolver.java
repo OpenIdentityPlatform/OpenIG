@@ -26,7 +26,6 @@ import org.forgerock.openig.filter.oauth2.client.DiscoveryFilter;
 import org.forgerock.openig.filter.oauth2.client.ClientRegistrationFilter;
 import org.forgerock.openig.filter.oauth2.client.Issuer;
 import org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter;
-import org.forgerock.openig.filter.oauth2.client.OAuth2Provider;
 
 /**
  * Register all the aliases supported by the {@literal openig-oauth2} module.
@@ -40,7 +39,6 @@ public class OAuth2ClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ClientRegistrationFilter", ClientRegistrationFilter.class);
         ALIASES.put("Issuer", Issuer.class);
         ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
-        ALIASES.put("OAuth2Provider", OAuth2Provider.class);
         ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilter.class);
         ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilter.class);
         ALIASES.put("AuthorizationRedirectHandler", AuthorizationRedirectHandler.class);

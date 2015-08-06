@@ -25,6 +25,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.net.URI;
 
 import org.forgerock.http.Handler;
@@ -37,6 +38,9 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.TimeService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -56,6 +60,7 @@ public class ClientRegistrationTest {
     private static final String SAMPLE_URI = "http://www.example.com:8089";
 
     private Exchange exchange;
+    private OAuth2Session session;
 
     @Captor
     private ArgumentCaptor<Request> captor;
@@ -63,10 +68,14 @@ public class ClientRegistrationTest {
     @Mock
     private Handler handler;
 
+    @Mock
+    private TimeService time;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         exchange = new Exchange(null, new URI("path"));
+        session = OAuth2Session.stateNew(time);
     }
 
     @DataProvider
@@ -186,6 +195,71 @@ public class ClientRegistrationTest {
         buildClientRegistration().getAccessToken(exchange, "code", "callbackUri");
     }
 
+    @Test
+    public void shouldGetRefreshToken() throws Exception {
+        // given
+        final ClientRegistration clientRegistration = buildClientRegistration();
+        Response response = new Response();
+        response.setStatus(Status.OK);
+        when(handler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
+        // when
+        clientRegistration.getRefreshToken(exchange, session);
+
+        // then
+        verify(handler).handle(eq(exchange), captor.capture());
+        Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(request.getEntity().getString()).contains("grant_type=refresh_token");
+    }
+
+    @Test(dataProvider = "errorResponseStatus", expectedExceptions = OAuth2ErrorException.class)
+    public void shouldFailToGetRefreshTokenWhenReceiveErrorResponse(final Status errorResponseStatus) throws Exception {
+
+        Response response = new Response();
+        response.setStatus(errorResponseStatus);
+        response.setEntity(setErrorEntity());
+        when(handler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
+        buildClientRegistration().getRefreshToken(exchange, session);
+    }
+
+    @Test
+    public void shouldGetUserInfo() throws Exception {
+        // given
+        final ClientRegistration clientRegistration = buildClientRegistration();
+        Response response = new Response();
+        response.setStatus(Status.OK);
+        when(handler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
+        // when
+        clientRegistration.getUserInfo(exchange, session);
+
+        // then
+        verify(handler).handle(eq(exchange), captor.capture());
+        Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + USER_INFO_ENDPOINT);
+        assertThat(request.getHeaders().get("Authorization")).isNotEmpty();
+    }
+
+    @Test(expectedExceptions = OAuth2ErrorException.class,
+            expectedExceptionsMessageRegExp = "error=\"server_error\"")
+    public void shouldFailToGetUserInfoWhenReceiveErrorResponse() throws Exception {
+
+        Response response = new Response();
+        response.setStatus(Status.TEAPOT);
+        response.setEntity(setErrorEntity());
+        when(handler.handle(eq(exchange), any(Request.class)))
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
+
+        buildClientRegistration().getUserInfo(exchange, session);
+    }
+
     private ClientRegistration buildClientRegistration() throws Exception {
         final JsonValue config = json(object(field("clientId", "OpenIG"),
                                              field("clientSecret", "password"),
@@ -210,5 +284,9 @@ public class ClientRegistrationTest {
                 field("tokenEndpoint", SAMPLE_URI + TOKEN_ENDPOINT),
                 field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT)));
         return new Issuer("myIssuer", configuration);
+    }
+
+    private JsonValue setErrorEntity() {
+        return json(object(field("error", "Generated by tests")));
     }
 }

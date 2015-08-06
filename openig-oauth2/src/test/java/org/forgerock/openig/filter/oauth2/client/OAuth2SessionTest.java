@@ -66,7 +66,7 @@ public class OAuth2SessionTest {
         assertThat(session.getClientEndpoint()).isNull();
         assertThat(session.getExpiresIn()).isNull();
         assertThat(session.getIdToken()).isNull();
-        assertThat(session.getProviderName()).isNull();
+        assertThat(session.getClientRegistrationName()).isNull();
         assertThat(session.getRefreshToken()).isNull();
         assertThat(session.getScopes()).isEmpty();
         assertThat(session.getTokenType()).isNull();
@@ -79,7 +79,7 @@ public class OAuth2SessionTest {
     public void testStateAuthorizing() throws Exception {
         // @formatter:off
         OAuth2Session session = OAuth2Session.stateNew(time)
-                                             .stateAuthorizing("provider",
+                                             .stateAuthorizing("clientRegistration",
                                                                "endpoint",
                                                                "nonce",
                                                                asList("scope1", "scope2"));
@@ -96,7 +96,7 @@ public class OAuth2SessionTest {
         assertThat(session.getClientEndpoint()).isEqualTo("endpoint");
         assertThat(session.getExpiresIn()).isNull();
         assertThat(session.getIdToken()).isNull();
-        assertThat(session.getProviderName()).isEqualTo("provider");
+        assertThat(session.getClientRegistrationName()).isEqualTo("clientRegistration");
         assertThat(session.getRefreshToken()).isNull();
         assertThat(session.getScopes()).containsExactly("scope1", "scope2");
         assertThat(session.getTokenType()).isNull();
@@ -104,7 +104,7 @@ public class OAuth2SessionTest {
         assertThat(session.isAuthorizing()).isTrue();
         // @formatter:off
         assertThat(session.toJson().asMap()).containsOnly(
-                entry("pn", "provider"),
+                entry("crn", "clientRegistration"),
                 entry("ce", "endpoint"),
                 entry("arn", "nonce"),
                 entry("s", asList("scope1", "scope2")));
@@ -124,7 +124,7 @@ public class OAuth2SessionTest {
                 field("id_token", idToken)
         ));
         OAuth2Session session = OAuth2Session.stateNew(time)
-                                             .stateAuthorizing("provider",
+                                             .stateAuthorizing("clientRegistration",
                                                                "endpoint",
                                                                "nonce",
                                                                asList("scope1", "scope2"))
@@ -144,7 +144,7 @@ public class OAuth2SessionTest {
         assertThat(session.getClientEndpoint()).isEqualTo("endpoint");
         assertThat(session.getExpiresIn()).isEqualTo(3599);
         assertThat(session.getIdToken()).isNotNull();
-        assertThat(session.getProviderName()).isEqualTo("provider");
+        assertThat(session.getClientRegistrationName()).isEqualTo("clientRegistration");
         assertThat(session.getRefreshToken()).isEqualTo("rt");
         assertThat(session.getScopes()).containsExactly("scope1", "scope2");
         assertThat(session.getTokenType()).isEqualTo("tt");
@@ -152,7 +152,7 @@ public class OAuth2SessionTest {
         assertThat(session.isAuthorizing()).isFalse();
         // @formatter:off
         assertThat(session.toJson().asMap()).containsOnly(
-                entry("pn", "provider"),
+                entry("crn", "clientRegistration"),
                 entry("ce", "endpoint"),
                 entry("atr", accessTokenResponse.asMap()),
                 entry("ea", 3601L),
@@ -194,7 +194,7 @@ public class OAuth2SessionTest {
                 field("id_token", idToken)
         ));
         OAuth2Session session = OAuth2Session.stateNew(time)
-                                             .stateAuthorizing("provider",
+                                             .stateAuthorizing("clientRegistration",
                                                                "endpoint",
                                                                "nonce",
                                                                asList("scope1", "scope2"))
@@ -214,7 +214,7 @@ public class OAuth2SessionTest {
         assertThat(session.getClientEndpoint()).isEqualTo("endpoint");
         assertThat(session.getExpiresIn()).isEqualTo(3599);
         assertThat(session.getIdToken()).isNotNull();
-        assertThat(session.getProviderName()).isEqualTo("provider");
+        assertThat(session.getClientRegistrationName()).isEqualTo("clientRegistration");
         assertThat(session.getRefreshToken()).isEqualTo("rt");
         assertThat(session.getScopes()).containsExactly("one", "two", "three");
         assertThat(session.getTokenType()).isEqualTo("tt");
@@ -222,7 +222,7 @@ public class OAuth2SessionTest {
         assertThat(session.isAuthorizing()).isFalse();
         // @formatter:off
         assertThat(session.toJson().asMap()).containsOnly(
-                entry("pn", "provider"),
+                entry("crn", "clientRegistration"),
                 entry("ce", "endpoint"),
                 entry("atr", accessTokenResponse.asMap()),
                 entry("ea", 3601L),
@@ -251,7 +251,7 @@ public class OAuth2SessionTest {
                 field("id_token", idToken)
         ));
         OAuth2Session session = OAuth2Session.stateNew(time)
-                                             .stateAuthorizing("provider",
+                                             .stateAuthorizing("clientRegistration",
                                                                "endpoint",
                                                                "nonce",
                                                                asList("scope1", "scope2"))
@@ -271,7 +271,7 @@ public class OAuth2SessionTest {
         assertThat(session.getClientEndpoint()).isEqualTo("endpoint");
         assertThat(session.getExpiresIn()).isEqualTo(999);
         assertThat(session.getIdToken()).isNotNull();
-        assertThat(session.getProviderName()).isEqualTo("provider");
+        assertThat(session.getClientRegistrationName()).isEqualTo("clientRegistration");
         assertThat(session.getRefreshToken()).isEqualTo("rt2");
         assertThat(session.getScopes()).containsExactly("one", "two", "three");
         assertThat(session.getTokenType()).isEqualTo("tt");
@@ -279,7 +279,7 @@ public class OAuth2SessionTest {
         assertThat(session.isAuthorizing()).isFalse();
         // @formatter:off
         assertThat(session.toJson().asMap()).containsOnly(
-                entry("pn", "provider"),
+                entry("crn", "clientRegistration"),
                 entry("ce", "endpoint"),
                 entry("atr", accessTokenResponse.asMap()),
                 entry("ea", 1002L),
