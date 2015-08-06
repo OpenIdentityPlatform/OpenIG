@@ -44,10 +44,11 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * Creates a new request with in the exchange object. It will replace any request that may already be present in the
- * exchange. The request can include a form, specified in the {@code form} field, which is included in an entity encoded
- * in {@code application/x-www-form-urlencoded} format if request method is {@code POST}, or otherwise as (additional)
- * query parameters in the URI.
+ * Creates a new request with in the exchange object. It will replace any
+ * request that may already be present in the exchange. The request can include
+ * a form, specified in the {@code form} field, which is included in an entity
+ * encoded in {@code application/x-www-form-urlencoded} format if request method
+ * is {@code POST}, or otherwise as (additional) query parameters in the URI.
  */
 public class StaticRequestFilter extends GenericHeapObject implements Filter {
 
