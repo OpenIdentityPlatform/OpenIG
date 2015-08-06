@@ -49,6 +49,36 @@ import org.forgerock.util.promise.Promises;
  * a form, specified in the {@code form} field, which is included in an entity
  * encoded in {@code application/x-www-form-urlencoded} format if request method
  * is {@code POST}, or otherwise as (additional) query parameters in the URI.
+ *
+ * <pre>
+ * {@code
+ * {
+ *      "method"                     : string            [REQUIRED]
+ *      "uri"                        : expression        [REQUIRED]
+ *      "form"                       : object            [OPTIONAL]
+ *      "headers"                    : object            [OPTIONAL]
+ *      "version"                    : string            [OPTIONAL]
+ * }
+ * }
+ * </pre>
+ *
+ * Example of use:
+ *
+ * <pre>
+ * {@code
+ * {
+ *      "name": "customRequestFilter",
+ *      "type": "StaticRequestFilter",
+ *      "config": {
+ *          "method": "POST",
+ *          "uri": "http://10.10.0.2:8080/wp-login.php",
+ *          "headers": {
+ *              "Warning": [ "199 Miscellaneous warning" ]
+ *          }
+ *      }
+ * }
+ * }
+ * </pre>
  */
 public class StaticRequestFilter extends GenericHeapObject implements Filter {
 
