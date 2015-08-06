@@ -76,14 +76,14 @@ final class OAuth2Session {
 
     static OAuth2Session fromJson(TimeService time, JsonValue json) throws OAuth2ErrorException {
         try {
-            final String providerName = json.get("pn").asString();
+            final String clientRegistrationName = json.get("crn").asString();
             final String clientEndpoint = json.get("ce").asString();
             final List<String> scopes = json.get("s").defaultTo(emptyList()).asList(String.class);
             final String authorizationRequestNonce = json.get("arn").asString();
             final JsonValue accessTokenResponse = json.get("atr").defaultTo(emptyMap());
             final Long expiresAt = json.get("ea").asLong();
             final SignedJwt idToken = extractIdToken(accessTokenResponse);
-            return new OAuth2Session(time, providerName, clientEndpoint, authorizationRequestNonce,
+            return new OAuth2Session(time, clientRegistrationName, clientEndpoint, authorizationRequestNonce,
                     scopes, accessTokenResponse, idToken, expiresAt);
         } catch (Exception e) {
             throw new OAuth2ErrorException(
@@ -96,7 +96,7 @@ final class OAuth2Session {
     JsonValue toJson() {
         // Use short field names to save on space - cookies have a 4KB limit.
         final Map<String, Object> json = new LinkedHashMap<>();
-        putIfNotNullOrEmpty(json, "pn", providerName);
+        putIfNotNullOrEmpty(json, "crn", clientRegistrationName);
         putIfNotNullOrEmpty(json, "ce", clientEndpoint);
         putIfNotNullOrEmpty(json, "s", scopes);
         putIfNotNullOrEmpty(json, "arn", authorizationRequestNonce);
@@ -111,15 +111,15 @@ final class OAuth2Session {
     private final String clientEndpoint;
     private final Long expiresAt;
     private final SignedJwt idToken;
-    private final String providerName;
+    private final String clientRegistrationName;
     private final TimeService time;
 
-    private OAuth2Session(final TimeService time, final String providerName,
+    private OAuth2Session(final TimeService time, final String clientRegistrationName,
             final String clientEndpoint, final String authorizationRequestNonce,
             final List<String> scopes, final JsonValue accessTokenResponse,
             final SignedJwt idToken, final Long expiresAt) {
         this.time = time;
-        this.providerName = providerName;
+        this.clientRegistrationName = clientRegistrationName;
         this.clientEndpoint = clientEndpoint;
         this.scopes = scopes;
         this.authorizationRequestNonce = authorizationRequestNonce;
@@ -152,8 +152,8 @@ final class OAuth2Session {
         return idToken;
     }
 
-    String getProviderName() {
-        return providerName;
+    String getClientRegistrationName() {
+        return clientRegistrationName;
     }
 
     String getRefreshToken() {
@@ -210,13 +210,15 @@ final class OAuth2Session {
         // Decode the ID token for OpenID Connect interactions.
         final SignedJwt idToken = extractIdToken(accessTokenResponse);
 
-        return new OAuth2Session(time, providerName, clientEndpoint, null, actualScopes,
+        return new OAuth2Session(time, clientRegistrationName, clientEndpoint, null, actualScopes,
                 accessTokenResponse, idToken, expiresAt);
     }
 
-    OAuth2Session stateAuthorizing(final String providerName, final String clientEndpoint,
-            final String authorizationRequestNonce, final List<String> requestedScopes) {
-        return new OAuth2Session(time, providerName, clientEndpoint, authorizationRequestNonce,
+    OAuth2Session stateAuthorizing(final String clientRegistrationName,
+                                   final String clientEndpoint,
+                                   final String authorizationRequestNonce,
+                                   final List<String> requestedScopes) {
+        return new OAuth2Session(time, clientRegistrationName, clientEndpoint, authorizationRequestNonce,
                 requestedScopes, accessTokenResponse, idToken, expiresAt);
     }
 

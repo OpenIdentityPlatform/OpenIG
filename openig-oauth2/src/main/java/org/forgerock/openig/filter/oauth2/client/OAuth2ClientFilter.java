@@ -23,7 +23,6 @@ import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
@@ -81,14 +80,15 @@ import org.forgerock.util.time.TimeService;
  * incoming request URI:
  * <ul>
  * <li>{@code {clientEndpoint}/login/{provider}?goto=<url>} - redirects
- * the user for authorization against the specified provider
+ * the user for authorization against the specified client
+ * registration
  * <li>{@code {clientEndpoint}/login?{*}discovery={input}&goto=<url>} -
  * performs issuer discovery and dynamic client registration if possible on
  * the given user input and redirects the user to the client endpoint.
  * <li>{@code {clientEndpoint}/logout?goto=<url>} - removes
  * authorization state for the end-user
  * <li>{@code {clientEndpoint}/callback} - OAuth 2.0 authorization
- * call-back end-point (state encodes nonce, goto, and provider)
+ * call-back end-point (state encodes nonce, goto, and client registration)
  * <li>all other requests - restores authorization state and places it in the
  * target location.
  * </ul>
@@ -102,18 +102,21 @@ import org.forgerock.util.time.TimeService;
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginEndpoint"                : handler,            [OPTIONAL - for issuer discovery
  *                                                                  and dynamic client registration]
- * "loginHandler"                 : handler,            [REQUIRED - if more than one provider]
+ * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
+ * OR
+ * "clientRegistrationName"       : string,             [REQUIRED - if you want to use a single client
+ *                                                                  registration]
  * "failureHandler"               : handler,            [REQUIRED]
  * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
- * "providers"                    : [ strings ]         [REQUIRED]
  * }
  * </pre>
  *
- * For example:
+ * For example, if you want to use a nascar page (multiple client
+ * registrations):
  *
  * <pre>
  * {@code
@@ -130,8 +133,25 @@ import org.forgerock.util.time.TimeService;
  *         "defaultLoginGoto"      : "/homepage",
  *         "defaultLogoutGoto"     : "/loggedOut",
  *         "requireHttps"          : false,
- *         "requireLogin"          : true,
- *         "providers"             : [ "openam", "google" ]
+ *         "requireLogin"          : true
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * Or this one, with a single client registration.
+ *
+ * <pre>
+ * {@code
+ * {
+ *     "name": "OpenIDConnect",
+ *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
+ *     "config": {
+ *         "target"                : "${exchange.openid}",
+ *         "clientEndpoint"        : "/openid",
+ *         "loginEndpoint"         : "myLoginEndpointHandler",
+ *         "clientRegistrationName": "openam",
+ *         "failureHandler"        : "LoginFailed"
  *     }
  * }
  * }
@@ -143,7 +163,7 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  * {@code
  * "openid" : {
- *         "provider"           : "google",
+ *         "client_registration" : "google",
  *         "access_token"       : "xxx",
  *         "id_token"           : "xxx",
  *         "token_type"         : "Bearer",
@@ -190,8 +210,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Handler failureHandler;
     private Handler loginHandler;
     private Handler loginEndpoint;
-    private final Map<String, OAuth2Provider> providers =
-            new LinkedHashMap<>();
+    private String clientRegistrationName;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
     private List<Expression<String>> scopes;
@@ -213,20 +232,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         this.heap = heap;
     }
 
-    /**
-     * Adds an authorization provider. At least one provider must be specified,
-     * and if there are more than one then a login handler must also be
-     * specified.
-     *
-     * @param provider
-     *            The authorization provider.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter addProvider(final OAuth2Provider provider) {
-        this.providers.put(provider.getName(), provider);
-        return this;
-    }
-
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
@@ -239,7 +244,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     // User input: {clientEndpoint}/login?discovery={input}[&goto={url}]
                     return handleUserInitiatedDiscovery(request, context);
                 } else {
-                    // Login: {clientEndpoint}/login?provider={name}[&goto={url}]
+                    // Login: {clientEndpoint}/login?clientRegistration={name}[&goto={url}]
                     checkRequestIsSufficientlySecure(exchange);
                     return handleUserInitiatedLogin(exchange, request);
                 }
@@ -271,7 +276,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * <ul>
      * <li><tt>{endpoint}/callback</tt> - called by the authorization server
      * once authorization has completed
-     * <li>{@code {endpoint}/login?provider={name}[&goto={url}]} - user
+     * <li>{@code {endpoint}/login?clientRegistration={name}[&goto={url}]} - user
      * end-point for performing user initiated authentication, such as from a
      * "login" link or "NASCAR" login page. Supports a "goto" URL parameter
      * which will be invoked once the login completes, e.g. to take the user to
@@ -340,8 +345,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * <pre>
      * {@code
      * <target> : {
-     *     "provider"           : "google",
-     *     "error"              : {
+     *     "client_registration" : "google",
+     *     "error"               : {
      *         "realm"              : string,          [OPTIONAL]
      *         "scope"              : array of string, [OPTIONAL list of required scopes]
      *         "error"              : string,          [OPTIONAL]
@@ -390,7 +395,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     /**
      * Sets the handler which will be invoked when the user needs to
      * authenticate. This configuration parameter is required if there are more
-     * than one providers configured.
+     * than one client registration configured.
      *
      * @param handler
      *            The handler which will be invoked when the user needs to
@@ -402,6 +407,17 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return this;
     }
 
+    /**
+     * You can avoid a nascar page by setting a client registration name.
+     *
+     * @param clientRegistrationName
+     *            The name of the client registration to use.
+     * @return This filter.
+     */
+    public OAuth2ClientFilter setClientRegistrationName(final String clientRegistrationName) {
+        this.clientRegistrationName = clientRegistrationName;
+        return this;
+    }
     /**
      * Specifies whether all incoming requests must use TLS. This configuration
      * parameter is optional and set to {@code true} by default.
@@ -505,16 +521,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return gotoUri == null || gotoUri.isEmpty() ? hash : hash + ":" + gotoUri;
     }
 
-    private OAuth2Provider getProvider(final OAuth2Session session) {
-        final String providerName = session.getProviderName();
-        return providerName != null ? providers.get(providerName) : null;
+    private ClientRegistration getClientRegistration(final OAuth2Session session) {
+        final String name = session.getClientRegistrationName();
+        return name != null ? getClientRegistrationFromHeap(name) : null;
     }
 
-    private List<String> getScopes(final Exchange exchange, final OAuth2Provider provider)
+    private List<String> getScopes(final Exchange exchange, final ClientRegistration clientRegistration)
             throws ResponseException {
-        final List<String> providerScopes = provider.getScopes(exchange);
-        if (!providerScopes.isEmpty()) {
-            return providerScopes;
+        final List<String> clientScopes = clientRegistration.getScopes();
+        if (!clientScopes.isEmpty()) {
+            return clientScopes;
         }
         return OAuth2Utils.getScopes(exchange, scopes);
     }
@@ -559,18 +575,15 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
             }
 
-            JsonValue accessTokenResponse = null;
-            final OAuth2Provider provider = getProvider(session);
-            if (provider == null) {
-                final ClientRegistration cr = heap.get(session.getProviderName(), ClientRegistration.class);
-                if (cr == null) {
-                    throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                            "Authorization call-back failed because the provider name was unrecognized");
-                }
-                accessTokenResponse = cr.getAccessToken(exchange, code, buildCallbackUri(exchange).toString());
-            } else {
-                accessTokenResponse = provider.getAccessToken(exchange, code, buildCallbackUri(exchange).toString());
+            final ClientRegistration client = getClientRegistrationFromHeap(session.getClientRegistrationName());
+            if (client == null) {
+                throw new OAuth2ErrorException(E_INVALID_REQUEST, format(
+                        "Authorization call-back failed because the client registration %s was unrecognized",
+                        session.getClientRegistrationName()));
             }
+            final JsonValue accessTokenResponse = client.getAccessToken(exchange,
+                                                                        code,
+                                                                        buildCallbackUri(exchange).toString());
 
             /*
              * Finally complete the authorization request by redirecting to the
@@ -593,9 +606,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     });
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
-        } catch (HeapException e) {
-            throw new OAuth2ErrorException(E_SERVER_ERROR,
-                    "Cannot retrieve the appropriate Client Registration from the heap");
         }
     }
 
@@ -615,7 +625,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             info.putAll(session.getAccessTokenResponse());
 
             // Override these with effective values.
-            info.put("provider", session.getProviderName());
+            info.put("clientRegistration", session.getClientRegistrationName());
             info.put("client_endpoint", session.getClientEndpoint());
             info.put("expires_in", session.getExpiresIn());
             info.put("scope", session.getScopes());
@@ -688,18 +698,18 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Exchange exchange,
                                                                              final Request request)
             throws OAuth2ErrorException {
-        final String providerName = request.getForm().getFirst("provider");
+        final String clientRegistrationName = request.getForm().getFirst("clientRegistration");
         final String gotoUri = request.getForm().getFirst("goto");
-        if (providerName == null) {
+        if (clientRegistrationName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                    "Authorization provider must be specified");
+                    "Authorization OpenID Connect Provider must be specified");
         }
-        final OAuth2Provider provider = providers.get(providerName);
-        if (provider == null) {
-            throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization provider '"
-                    + providerName + "' was not recognized");
+        final ClientRegistration clientRegistration = getClientRegistrationFromHeap(clientRegistrationName);
+        if (clientRegistration == null) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization OpenID Connect Provider '"
+                    + clientRegistrationName + "' was not recognized");
         }
-        return sendAuthorizationRedirect(exchange, request, provider, gotoUri);
+        return sendAuthorizationRedirect(exchange, request, clientRegistration, gotoUri);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogout(final Exchange exchange,
@@ -751,10 +761,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              * be refreshed.
              */
             final OAuth2Error error = e.getOAuth2Error();
-            final OAuth2Provider provider = getProvider(session);
-            if (error.is(E_INVALID_TOKEN) && provider != null && session.getRefreshToken() != null) {
+            final ClientRegistration clientRegistration = getClientRegistration(session);
+            if (error.is(E_INVALID_TOKEN) && clientRegistration != null && session.getRefreshToken() != null) {
                 // The session is updated with new access token.
-                final JsonValue accessTokenResponse = provider.getRefreshToken(exchange, session);
+                final JsonValue accessTokenResponse = clientRegistration.getRefreshToken(exchange, session);
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
                 tryPrepareExchange(exchange, refreshedSession);
                 return refreshedSession;
@@ -769,19 +779,20 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Exchange exchange,
-                                                                              final Request request,
-                                                                              final OAuth2Provider provider,
-                                                                              final String gotoUri) {
+    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(
+                                                                        final Exchange exchange,
+                                                                        final Request request,
+                                                                        final ClientRegistration clientRegistration,
+                                                                        final String gotoUri) {
         try {
-            final URI uri = provider.getAuthorizeEndpoint(exchange);
-            final List<String> requestedScopes = getScopes(exchange, provider);
+            final URI uri = clientRegistration.getIssuer().getAuthorizeEndpoint();
+            final List<String> requestedScopes = getScopes(exchange, clientRegistration);
             final Form query = new Form();
             if (uri.getRawQuery() != null) {
                 query.fromString(uri.getRawQuery());
             }
             query.add("response_type", "code");
-            query.add("client_id", provider.getClientId(exchange));
+            query.add("client_id", clientRegistration.getClientId());
             query.add("redirect_uri", buildCallbackUri(exchange).toString());
             query.add("scope", joinAsString(" ", requestedScopes));
 
@@ -810,7 +821,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                             try {
                                 final String clientUri = buildUri(exchange, clientEndpoint).toString();
                                 final OAuth2Session session =
-                                        stateNew(time).stateAuthorizing(provider.getName(), clientUri, nonce,
+                                        stateNew(time).stateAuthorizing(clientRegistration.getName(), clientUri, nonce,
                                                                         requestedScopes);
                                 saveSession(exchange, session);
                                 return response;
@@ -830,9 +841,21 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         if (loginHandler != null) {
             return loginHandler.handle(exchange, request);
         } else {
-            final OAuth2Provider provider = providers.values().iterator().next();
-            return sendAuthorizationRedirect(exchange, request, provider, exchange.getOriginalUri().toString());
+            return sendAuthorizationRedirect(exchange,
+                                             request,
+                                             getClientRegistrationFromHeap(clientRegistrationName),
+                                             exchange.getOriginalUri().toString());
         }
+    }
+
+    private ClientRegistration getClientRegistrationFromHeap(final String name) {
+        ClientRegistration clientRegistration = null;
+        try {
+            clientRegistration = heap.get(name, ClientRegistration.class);
+        } catch (HeapException e) {
+            logger.error(format("Cannot retrieve the client registration '%s' from the heap", name));
+        }
+        return clientRegistration;
     }
 
     private String sessionKey(final Exchange exchange) throws ResponseException {
@@ -844,7 +867,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         final Map<String, Object> info =
                 new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.
-        info.put("provider", session.getProviderName());
+        info.put("client_registration", session.getClientRegistrationName());
         info.put("client_endpoint", session.getClientEndpoint());
         info.put("expires_in", session.getExpiresIn());
         info.put("scope", session.getScopes());
@@ -857,13 +880,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             info.put("id_token_claims", idTokenClaims);
         }
 
-        final OAuth2Provider provider = getProvider(session);
-        if (provider != null
-                && provider.hasUserInfoEndpoint()
+        final ClientRegistration clientRegistration = getClientRegistration(session);
+        if (clientRegistration != null
+                && clientRegistration.getIssuer().hasUserInfoEndpoint()
                 && session.getScopes().contains("openid")) {
             // Load the user_info resources lazily (when requested)
             info.put("user_info", new LazyMap<>(new UserInfoFactory(session,
-                                                                    provider,
+                                                                    clientRegistration,
                                                                     exchange)));
         }
         target.set(exchange, info);
@@ -898,29 +921,18 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
             final Handler loginEndpoint = heap.resolve(config.get("loginEndpoint"), Handler.class, true);
             filter.setLoginEndpoint(loginEndpoint);
-            final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
-            filter.setLoginHandler(loginHandler);
+            if (config.isDefined("clientRegistrationName")) {
+                filter.setClientRegistrationName(config.get("clientRegistrationName").required().asString());
+            } else {
+                final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
+                filter.setLoginHandler(loginHandler);
+            }
             filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
                     Handler.class));
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto"), String.class));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto"), String.class));
             filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
             filter.setRequireLogin(config.get("requireLogin").defaultTo(true).asBoolean());
-
-            int providerCount = 0;
-            for (final JsonValue jv : config.get("providers").expect(List.class)) {
-                final OAuth2Provider oauth2Provider = heap.resolve(jv, OAuth2Provider.class);
-                filter.addProvider(oauth2Provider);
-                providerCount++;
-            }
-            if (providerCount == 0) {
-                throw new HeapException("At least one authorization provider must be specified");
-            }
-            if (loginHandler == null && providerCount > 1) {
-                throw new HeapException(
-                        "A login handler must be specified when there are multiple providers");
-            }
-
             // Build the cache of user-info
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
             if (!expiration.isZero()) {
@@ -959,7 +971,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     /**
      * UserInfoFactory is responsible to load the profile of the authenticated user
-     * from the provider's user_info endpoint when the lazy map is accessed for the first time.
+     * from the OpenID Connect Provider's user_info endpoint when the lazy map is accessed for the first time.
      * If a cache has been configured
      */
     private class UserInfoFactory implements Factory<Map<String, Object>> {
@@ -967,9 +979,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         private final LoadUserInfoCallable callable;
 
         public UserInfoFactory(final OAuth2Session session,
-                               final OAuth2Provider provider,
+                               final ClientRegistration clientRegistration,
                                final Exchange exchange) {
-            this.callable = new LoadUserInfoCallable(session, provider, exchange);
+            this.callable = new LoadUserInfoCallable(session, clientRegistration, exchange);
         }
 
         @Override
@@ -986,8 +998,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 try {
                     return callable.call();
                 } catch (Exception e) {
-                    logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
-                                          callable.getProvider().getName()));
+                    logger.warning(format("Unable to call UserInfo Endpoint from client registration '%s'",
+                                          callable.getClientRegistration().getName()));
                     logger.warning(e);
                 }
             } else {
@@ -996,12 +1008,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     return userInfoCache.getValue(callable.getSession().getAccessToken(),
                                                   callable);
                 } catch (InterruptedException e) {
-                    logger.warning(format("Interrupted when calling UserInfo Endpoint from provider '%s'",
-                                          callable.getProvider().getName()));
+                    logger.warning(format("Interrupted when calling UserInfo Endpoint from lient registration '%s'",
+                                          callable.getClientRegistration().getName()));
                     logger.warning(e);
                 } catch (ExecutionException e) {
-                    logger.warning(format("Unable to call UserInfo Endpoint from provider '%s'",
-                                          callable.getProvider().getName()));
+                    logger.warning(format("Unable to call UserInfo Endpoint from lient registration '%s'",
+                                          callable.getClientRegistration().getName()));
                     logger.warning(e);
                 }
             }
@@ -1016,28 +1028,28 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      */
     private class LoadUserInfoCallable implements Callable<Map<String, Object>> {
         private final OAuth2Session session;
-        private final OAuth2Provider provider;
+        private final ClientRegistration clientRegistration;
         private final Exchange exchange;
 
         public LoadUserInfoCallable(final OAuth2Session session,
-                                    final OAuth2Provider provider,
+                                    final ClientRegistration clientRegistration,
                                     final Exchange exchange) {
             this.session = session;
-            this.provider = provider;
+            this.clientRegistration = clientRegistration;
             this.exchange = exchange;
         }
 
         @Override
         public Map<String, Object> call() throws Exception {
-            return provider.getUserInfo(exchange, session).asMap();
+            return clientRegistration.getUserInfo(exchange, session).asMap();
         }
 
         public OAuth2Session getSession() {
             return session;
         }
 
-        public OAuth2Provider getProvider() {
-            return provider;
+        public ClientRegistration getClientRegistration() {
+            return clientRegistration;
         }
     }
 }
