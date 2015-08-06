@@ -137,7 +137,7 @@ import org.forgerock.util.time.TimeService;
  * }
  * </pre>
  *
- * Once authorization, this filter will inject the following information into
+ * Once authorized, this filter will inject the following information into
  * the target location:
  *
  * <pre>
