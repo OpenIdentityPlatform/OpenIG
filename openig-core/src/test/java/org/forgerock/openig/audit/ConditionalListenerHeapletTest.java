@@ -17,7 +17,7 @@
 package org.forgerock.openig.audit;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.mockito.Mockito.*;
 

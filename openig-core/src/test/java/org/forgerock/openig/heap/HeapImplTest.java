@@ -18,14 +18,14 @@ package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.http.util.Json.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.heap.HeapUtilsTest.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.heap.domain.Book;

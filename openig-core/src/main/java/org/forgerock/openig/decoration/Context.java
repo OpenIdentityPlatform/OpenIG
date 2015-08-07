@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.decoration;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.helper.LazyReference;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.Name;

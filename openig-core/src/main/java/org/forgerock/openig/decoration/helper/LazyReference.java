@@ -18,7 +18,7 @@ package org.forgerock.openig.decoration.helper;
 
 import static org.forgerock.util.Reject.*;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 

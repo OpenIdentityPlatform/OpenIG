@@ -33,7 +33,7 @@ import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
 import org.forgerock.http.Session;
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;

@@ -19,7 +19,7 @@ package org.forgerock.openig.uma;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 
 /**
  * A {@link Share} is the data structure that maintains the mapping between the path of a shared resource

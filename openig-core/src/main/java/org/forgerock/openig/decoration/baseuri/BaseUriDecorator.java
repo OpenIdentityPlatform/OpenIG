@@ -20,7 +20,7 @@ import static org.forgerock.openig.util.JsonValues.*;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;

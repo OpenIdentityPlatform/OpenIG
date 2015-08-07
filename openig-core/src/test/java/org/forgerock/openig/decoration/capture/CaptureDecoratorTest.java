@@ -18,7 +18,7 @@ package org.forgerock.openig.decoration.capture;
 
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.decoration.helper.LazyReference.*;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.mockito.Mockito.*;

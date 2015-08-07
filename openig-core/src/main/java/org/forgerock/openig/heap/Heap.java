@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.heap;
 
-import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 
 /**
  * Manages a collection of associated objects created and initialized by {@link Heaplet}
@@ -39,7 +39,7 @@ public interface Heap {
      * @return the requested object from the heap, or {@code null} if no such object exists.
      * @throws HeapException
      *         if an exception occurred during creation of the heap object or any of its dependencies.
-     * @throws org.forgerock.json.fluent.JsonValueException
+     * @throws org.forgerock.json.JsonValueException
      *         if a heaplet (or one of its dependencies) has a malformed configuration object.
      */
     <T> T get(String name, Class<T> type) throws HeapException;

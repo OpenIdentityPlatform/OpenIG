@@ -17,13 +17,13 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.http.Handler;
-import org.forgerock.json.fluent.JsonException;
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonException;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.log.Logger;
 import org.hamcrest.BaseMatcher;

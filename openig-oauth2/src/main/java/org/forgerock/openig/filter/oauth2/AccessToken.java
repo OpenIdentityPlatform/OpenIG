@@ -19,7 +19,7 @@ package org.forgerock.openig.filter.oauth2;
 import java.util.Map;
 import java.util.Set;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 
 /**
  * Represents an <a href="http://tools.ietf.org/html/rfc6749#section-1.4">OAuth2 Access Token</a>.

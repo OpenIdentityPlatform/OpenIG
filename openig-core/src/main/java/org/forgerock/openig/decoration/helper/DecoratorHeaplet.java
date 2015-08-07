@@ -18,7 +18,7 @@ package org.forgerock.openig.decoration.helper;
 
 import java.util.Map;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
@@ -74,7 +74,7 @@ public abstract class DecoratorHeaplet implements Heaplet {
      * @throws HeapException
      *             if an exception occurred during creation of the heap object
      *             or any of its dependencies.
-     * @throws org.forgerock.json.fluent.JsonValueException
+     * @throws org.forgerock.json.JsonValueException
      *             if the heaplet (or one of its dependencies) has a malformed
      *             configuration.
      */

@@ -37,11 +37,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
-      <artifactId>json-fluent</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-core</artifactId>
       <version>${project.version}</version>
@@ -215,7 +210,6 @@
                 <dependencySourceInclude>org.forgerock.openig:*</dependencySourceInclude>
                 <dependencySourceInclude>org.forgerock.http:*</dependencySourceInclude>
                 <dependencySourceInclude>org.forgerock.commons:forgerock-util</dependencySourceInclude>
-                <dependencySourceInclude>org.forgerock.commons:json-fluent</dependencySourceInclude>
               </dependencySourceIncludes>
 
               <author>false</author>
@@ -239,7 +233,7 @@
                 </group>
                 <group>
                   <title>ForgeRock Utilities</title>
-                  <packages>org.forgerock.util*:org.forgerock.json.fluent</packages>
+                  <packages>org.forgerock.util*:org.forgerock.json</packages>
                 </group>
               </groups>
 
