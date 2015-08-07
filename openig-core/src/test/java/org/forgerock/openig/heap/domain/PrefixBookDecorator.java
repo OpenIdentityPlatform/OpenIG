@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.heap.domain;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;

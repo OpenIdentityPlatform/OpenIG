@@ -102,7 +102,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
          * @return a new {@link AuditEventListener} that will be invoked if condition yields.
          * @throws HeapException
          *             if an exception occurred during creation of the heap object or any of its dependencies.
-         * @throws org.forgerock.json.fluent.JsonValueException
+         * @throws org.forgerock.json.JsonValueException
          *             if the heaplet (or one of its dependencies) has a malformed configuration.
          */
         protected abstract AuditEventListener createListener() throws HeapException;

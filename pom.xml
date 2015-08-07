@@ -95,11 +95,6 @@
       </dependency>
       <dependency>
         <groupId>org.forgerock.commons</groupId>
-        <artifactId>json-fluent</artifactId>
-        <version>${forgerock-rest.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
         <artifactId>json-web-token</artifactId>
         <version>2.4.1</version>
       </dependency>

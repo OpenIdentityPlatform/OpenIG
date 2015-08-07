@@ -16,11 +16,11 @@
 
 package org.forgerock.openig.decoration.helper;
 
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.decoration.helper.LazyReference.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.mockito.Mock;

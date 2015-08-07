@@ -22,10 +22,10 @@ import static org.forgerock.http.util.Loader.*;
 
 import java.util.List;
 
-import org.forgerock.json.fluent.JsonException;
-import org.forgerock.json.fluent.JsonTransformer;
-import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.json.JsonException;
+import org.forgerock.json.JsonTransformer;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;

@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.heap;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 
 /**
  * Creates and initializes an object that is stored in a {@link Heap}. A heaplet can retrieve
@@ -37,7 +37,7 @@ public interface Heaplet {
      * @return the object created by the heaplet.
      * @throws HeapException
      *             if an exception occurred during creation of the object or any of its dependencies.
-     * @throws org.forgerock.json.fluent.JsonValueException
+     * @throws org.forgerock.json.JsonValueException
      *             if the heaplet (or one of its dependencies) has a malformed configuration object.
      */
     Object create(Name name, JsonValue config, Heap heap) throws HeapException;

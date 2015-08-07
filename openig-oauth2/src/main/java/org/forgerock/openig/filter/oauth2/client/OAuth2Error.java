@@ -29,8 +29,8 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.json.fluent.JsonValue;
-import org.forgerock.json.fluent.JsonValueException;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.util.Reject;
 
 /**

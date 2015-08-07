@@ -17,7 +17,7 @@
 package org.forgerock.openig.security;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.security.KeyStore;
 
 import javax.net.ssl.TrustManager;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.testng.annotations.Test;

@@ -17,7 +17,7 @@
 package org.forgerock.openig.decoration.baseuri;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.fluent.JsonValue.*;
+import static org.forgerock.json.JsonValue.*;
 
 import java.util.ArrayList;
 

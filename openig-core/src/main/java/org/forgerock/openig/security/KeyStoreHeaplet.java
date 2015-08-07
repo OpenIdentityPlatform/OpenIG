@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
 
-import org.forgerock.json.fluent.JsonValue;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 
