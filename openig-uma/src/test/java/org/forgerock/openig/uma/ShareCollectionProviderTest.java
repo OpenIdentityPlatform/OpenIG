@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.regex.Pattern;
 
+import org.forgerock.http.Context;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.Connection;
@@ -58,6 +59,9 @@ public class ShareCollectionProviderTest {
     private static final String SHARE_ID = SHARE.getId();
 
     @Mock
+    private Context context;
+
+    @Mock
     private UmaSharingService service;
 
     @Mock
@@ -79,16 +83,16 @@ public class ShareCollectionProviderTest {
         when(service.createShare("/alice/allergies", PAT))
                 .thenReturn(Promises.<Share, UmaException>newResultPromise(SHARE));
 
-        Resource resource = connection.create(null, newCreateRequest("",
-                                                                     json(object(field("path", "/alice/allergies"),
-                                                                                 field("pat", PAT)))));
+        Resource resource = connection.create(context, newCreateRequest("",
+                                                                        json(object(field("path", "/alice/allergies"),
+                                                                                    field("pat", PAT)))));
 
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
     }
 
     @Test(expectedExceptions = NotSupportedException.class)
     public void shouldFailShareCreationWhenResourceIdIsProvidedCreateShare() throws Exception {
-        connection.create(null, newCreateRequest("", "user-provided-resource-id", new JsonValue(null)));
+        connection.create(context, newCreateRequest("", "user-provided-resource-id", new JsonValue(null)));
     }
 
     @Test(expectedExceptions = ResourceException.class)
@@ -96,16 +100,16 @@ public class ShareCollectionProviderTest {
         when(service.createShare("/alice/allergies", PAT))
                 .thenReturn(Promises.<Share, UmaException>newExceptionPromise(new UmaException("Boom")));
 
-        connection.create(null, newCreateRequest("",
-                                                 json(object(field("path", "/alice/allergies"),
-                                                             field("pat", PAT)))));
+        connection.create(context, newCreateRequest("",
+                                                    json(object(field("path", "/alice/allergies"),
+                                                                field("pat", PAT)))));
     }
 
     @Test
     public void shouldReadShare() throws Exception {
         when(service.getShare(SHARE_ID)).thenReturn(SHARE);
 
-        Resource resource = connection.read(null, newReadRequest(SHARE_ID));
+        Resource resource = connection.read(context, newReadRequest(SHARE_ID));
 
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
     }
@@ -113,7 +117,7 @@ public class ShareCollectionProviderTest {
     @Test
     public void shouldDeleteShare() throws Exception {
         when(service.removeShare(SHARE_ID)).thenReturn(SHARE);
-        Resource resource = connection.delete(null, newDeleteRequest(SHARE_ID));
+        Resource resource = connection.delete(context, newDeleteRequest(SHARE_ID));
 
         assertThat(resource.getId()).isEqualTo(SHARE_ID);
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
@@ -121,13 +125,13 @@ public class ShareCollectionProviderTest {
 
     @Test(expectedExceptions = NotFoundException.class)
     public void shouldFailWhenDeletedShareIsUnknown() throws Exception {
-        connection.delete(null, newDeleteRequest("share-id"));
+        connection.delete(context, newDeleteRequest("share-id"));
     }
 
     @Test
     public void shouldListShares() throws Exception {
         when(service.listShares()).thenReturn(singleton(SHARE));
-        QueryResult result = connection.query(null,
+        QueryResult result = connection.query(context,
                                               newQueryRequest("").setQueryFilter(QueryFilter.<JsonPointer>alwaysTrue()),
                                               queryResourceHandler);
 
@@ -139,21 +143,21 @@ public class ShareCollectionProviderTest {
 
     @Test(expectedExceptions = NotSupportedException.class)
     public void shouldFailBecauseQueryExpressionIsProvided() throws Exception {
-        connection.query(null,
+        connection.query(context,
                          newQueryRequest("").setQueryExpression(""),
                          queryResourceHandler);
     }
 
     @Test(expectedExceptions = NotSupportedException.class)
     public void shouldFailBecauseQueryFilterIsNotTrue() throws Exception {
-        connection.query(null,
+        connection.query(context,
                          newQueryRequest("").setQueryFilter(QueryFilter.<JsonPointer>alwaysFalse()),
                          queryResourceHandler);
     }
 
     @Test(expectedExceptions = NotSupportedException.class)
     public void shouldFailBecauseQueryIdIsProvided() throws Exception {
-        connection.query(null,
+        connection.query(context,
                          newQueryRequest("").setQueryId("a-query-id"),
                          queryResourceHandler);
     }

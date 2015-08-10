@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.forgerock.http.context.ClientInfoContext;
 import org.forgerock.http.Context;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -47,7 +47,7 @@ public final class Adapters {
      * @return An HTTP exchange of request which can be used in legacy OpenIG.
      */
     public static Exchange asExchange(Context context, Request request) {
-        HttpContext requestContext = context.asContext(HttpContext.class);
+        HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
         final Exchange exchange = new Exchange(context, request.getUri().asURI());
         exchange.setClientInfo(context.asContext(ClientInfoContext.class));
         exchange.setPrincipal(requestContext.getPrincipal());

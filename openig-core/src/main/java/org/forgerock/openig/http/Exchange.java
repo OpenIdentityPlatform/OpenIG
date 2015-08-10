@@ -18,14 +18,18 @@
 
 package org.forgerock.openig.http;
 
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+
 import java.net.URI;
 import java.security.Principal;
 
-import org.forgerock.http.context.ClientInfo;
 import org.forgerock.http.Context;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.ClientInfo;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.util.ExtensibleFieldMap;
 import org.forgerock.util.Reject;
 
@@ -251,5 +255,10 @@ public class Exchange extends ExtensibleFieldMap implements Context {
      */
     public URI getOriginalUri() {
         return originalUri;
+    }
+
+    @Override
+    public JsonValue toJsonValue() {
+        return json(object());
     }
 }
