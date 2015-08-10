@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.MutableUri;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
@@ -224,7 +224,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        HttpContext httpContext = context.asContext(HttpContext.class);
+        HttpRequestContext httpContext = context.asContext(HttpRequestContext.class);
 
         // resolve to client-supplied host header
         final MutableUri resolved = resolveHostURI(request);

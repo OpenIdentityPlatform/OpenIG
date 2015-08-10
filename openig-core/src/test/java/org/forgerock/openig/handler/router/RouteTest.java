@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.context.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
@@ -88,14 +88,14 @@ public class RouteTest {
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
         Route route = createRoute(sessionManager, null);
-        Exchange exchange = new Exchange(new HttpContext(new RootContext(), original), null);
+        Exchange exchange = new Exchange(new HttpRequestContext(new RootContext(), original), null);
 
         when(handler.handle(exchange, new Request()))
                 .then(new Answer<Void>() {
                     @Override
                     public Void answer(final InvocationOnMock invocation) throws Throwable {
                         Context context = (Context) invocation.getArguments()[0];
-                        assertThat(context.asContext(HttpContext.class).getSession()).isSameAs(scoped);
+                        assertThat(context.asContext(HttpRequestContext.class).getSession()).isSameAs(scoped);
                         return null;
                     }
                 });
@@ -103,7 +103,7 @@ public class RouteTest {
         route.handle(exchange, new Request());
         promise.handleResult(new Response());
 
-        assertThat(exchange.asContext(HttpContext.class).getSession()).isSameAs(original);
+        assertThat(exchange.asContext(HttpRequestContext.class).getSession()).isSameAs(original);
     }
 
     private Route createRoute(final SessionManager sessionManager,

@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
 import org.forgerock.http.protocol.Request;
@@ -188,7 +188,7 @@ class Route implements Handler {
             return handler.handle(context, request);
         } else {
             // Swap the session instance
-            final HttpContext httpContext = context.asContext(HttpContext.class);
+            final HttpRequestContext httpContext = context.asContext(HttpRequestContext.class);
             final Session session = httpContext.getSession();
             httpContext.setSession(sessionManager.load(request));
             return handler.handle(context, request)

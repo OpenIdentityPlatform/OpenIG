@@ -25,7 +25,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.Session;
 import org.forgerock.http.context.ClientInfoContext;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.context.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -86,9 +86,9 @@ public class GatewayHttpApplicationTest {
         assertThat(promise.get().getStatus()).isEqualTo(Status.TEAPOT);
     }
 
-    private HttpContext buildContext() {
+    private HttpRequestContext buildContext() {
         ClientInfoContext clientInfoContext = ClientInfoContext.builder(new RootContext()).certificates().build();
-        HttpContext context = new HttpContext(clientInfoContext, new SimpleMapSession());
+        HttpRequestContext context = new HttpRequestContext(clientInfoContext, new SimpleMapSession());
         return context;
     }
 

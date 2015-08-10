@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.context.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.protocol.Request;
@@ -124,7 +124,7 @@ public class RouteBuilderTest {
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
         SimpleMapSession simpleSession = new SimpleMapSession();
-        HttpContext httpContext = new HttpContext(new RootContext(), simpleSession);
+        HttpRequestContext httpContext = new HttpRequestContext(new RootContext(), simpleSession);
         Exchange exchange = new Exchange(httpContext, null);
         exchange.setRequest(new Request());
         exchange.setSession(simpleSession);
@@ -149,7 +149,7 @@ public class RouteBuilderTest {
 
         @Override
         public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-            Session session = context.asContext(HttpContext.class).getSession();
+            Session session = context.asContext(HttpRequestContext.class).getSession();
             session.put("ForgeRock", "OpenIG");
             return Promises.newResultPromise(new Response());
         }

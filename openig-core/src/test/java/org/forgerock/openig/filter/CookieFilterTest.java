@@ -26,7 +26,7 @@ import java.net.HttpCookie;
 import java.util.HashMap;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpContext;
+import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.header.CookieHeader;
 import org.forgerock.http.protocol.Cookie;
@@ -48,7 +48,7 @@ public class CookieFilterTest {
     @Mock
     private Handler terminalHandler;
 
-    private HttpContext context;
+    private HttpRequestContext context;
     private Session session;
     private Request request;
 
@@ -60,7 +60,7 @@ public class CookieFilterTest {
         request.setUri("http://openig.example.org");
 
         session = new SimpleMapSession();
-        context = new HttpContext(null, session);
+        context = new HttpRequestContext(null, session);
     }
 
 
@@ -303,7 +303,7 @@ public class CookieFilterTest {
         // Second call in the same session
 
         // Prepare the mock objects
-        final HttpContext context2 = new HttpContext(null, session);
+        final HttpRequestContext context2 = new HttpRequestContext(null, session);
         final Request request2 = new Request();
         request2.setUri("http://openig.example.org");
 
