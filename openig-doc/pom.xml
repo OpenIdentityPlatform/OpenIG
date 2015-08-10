@@ -192,13 +192,6 @@
                 </goals>
                 <phase>package</phase>
               </execution>
-              <execution>
-                <id>javadoc-javadoc</id>
-                <goals>
-                  <goal>javadoc</goal>
-                </goals>
-                <phase>pre-site</phase>
-              </execution>
             </executions>
             <configuration>
               <!-- The content of site/apidocs gets squashed during reporting. -->
