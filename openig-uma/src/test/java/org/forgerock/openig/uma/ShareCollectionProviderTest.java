@@ -39,9 +39,9 @@ import org.forgerock.json.resource.Connection;
 import org.forgerock.json.resource.NotFoundException;
 import org.forgerock.json.resource.NotSupportedException;
 import org.forgerock.json.resource.QueryResourceHandler;
-import org.forgerock.json.resource.QueryResult;
-import org.forgerock.json.resource.Resource;
+import org.forgerock.json.resource.QueryResponse;
 import org.forgerock.json.resource.ResourceException;
+import org.forgerock.json.resource.ResourceResponse;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.query.QueryFilter;
 import org.mockito.ArgumentCaptor;
@@ -68,7 +68,7 @@ public class ShareCollectionProviderTest {
     private QueryResourceHandler queryResourceHandler;
 
     @Captor
-    private ArgumentCaptor<Resource> captor;
+    private ArgumentCaptor<ResourceResponse> captor;
 
     private Connection connection;
 
@@ -83,9 +83,10 @@ public class ShareCollectionProviderTest {
         when(service.createShare("/alice/allergies", PAT))
                 .thenReturn(Promises.<Share, UmaException>newResultPromise(SHARE));
 
-        Resource resource = connection.create(context, newCreateRequest("",
-                                                                        json(object(field("path", "/alice/allergies"),
-                                                                                    field("pat", PAT)))));
+        ResourceResponse resource = connection.create(context,
+                                                      newCreateRequest("",
+                                                                       json(object(field("path", "/alice/allergies"),
+                                                                                   field("pat", PAT)))));
 
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
     }
@@ -109,7 +110,7 @@ public class ShareCollectionProviderTest {
     public void shouldReadShare() throws Exception {
         when(service.getShare(SHARE_ID)).thenReturn(SHARE);
 
-        Resource resource = connection.read(context, newReadRequest(SHARE_ID));
+        ResourceResponse resource = connection.read(context, newReadRequest(SHARE_ID));
 
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
     }
@@ -117,7 +118,7 @@ public class ShareCollectionProviderTest {
     @Test
     public void shouldDeleteShare() throws Exception {
         when(service.removeShare(SHARE_ID)).thenReturn(SHARE);
-        Resource resource = connection.delete(context, newDeleteRequest(SHARE_ID));
+        ResourceResponse resource = connection.delete(context, newDeleteRequest(SHARE_ID));
 
         assertThat(resource.getId()).isEqualTo(SHARE_ID);
         assertThat(resource.getContent().get("id").asString()).isEqualTo(SHARE_ID);
@@ -131,7 +132,7 @@ public class ShareCollectionProviderTest {
     @Test
     public void shouldListShares() throws Exception {
         when(service.listShares()).thenReturn(singleton(SHARE));
-        QueryResult result = connection.query(context,
+        QueryResponse result = connection.query(context,
                                               newQueryRequest("").setQueryFilter(QueryFilter.<JsonPointer>alwaysTrue()),
                                               queryResourceHandler);
 

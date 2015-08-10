@@ -25,6 +25,8 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.resource.ResourceException.newBadRequestException;
 import static org.forgerock.json.resource.ResourceException.newNotFoundException;
 import static org.forgerock.json.resource.ResourceException.newNotSupportedException;
+import static org.forgerock.json.resource.Responses.newQueryResponse;
+import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
@@ -34,17 +36,18 @@ import org.forgerock.http.context.ServerContext;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
+import org.forgerock.json.resource.ActionResponse;
 import org.forgerock.json.resource.CollectionResourceProvider;
 import org.forgerock.json.resource.CreateRequest;
 import org.forgerock.json.resource.DeleteRequest;
 import org.forgerock.json.resource.PatchRequest;
 import org.forgerock.json.resource.QueryRequest;
 import org.forgerock.json.resource.QueryResourceHandler;
-import org.forgerock.json.resource.QueryResult;
+import org.forgerock.json.resource.QueryResponse;
 import org.forgerock.json.resource.ReadRequest;
 import org.forgerock.json.resource.RequestHandler;
-import org.forgerock.json.resource.Resource;
 import org.forgerock.json.resource.ResourceException;
+import org.forgerock.json.resource.ResourceResponse;
 import org.forgerock.json.resource.Resources;
 import org.forgerock.json.resource.UpdateRequest;
 import org.forgerock.json.resource.http.CrestHttp;
@@ -85,22 +88,22 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<Resource, ResourceException> createInstance(final ServerContext context,
-                                                               final CreateRequest request) {
+    public Promise<ResourceResponse, ResourceException> createInstance(final ServerContext context,
+                                                                       final CreateRequest request) {
         if (request.getNewResourceId() != null) {
             return newExceptionPromise(newNotSupportedException("Only POST-style of instance creation are supported"));
         }
         String path = request.getContent().get("path").asString();
         String pat = request.getContent().get("pat").asString();
         return service.createShare(path, pat)
-                      .then(new Function<Share, Resource, ResourceException>() {
+                      .then(new Function<Share, ResourceResponse, ResourceException>() {
                           @Override
-                          public Resource apply(final Share share) throws ResourceException {
-                              return new Resource(share.getId(), null, asJson(share));
+                          public ResourceResponse apply(final Share share) throws ResourceException {
+                              return newResourceResponse(share.getId(), null, asJson(share));
                           }
-                      }, new Function<UmaException, Resource, ResourceException>() {
+                      }, new Function<UmaException, ResourceResponse, ResourceException>() {
                           @Override
-                          public Resource apply(final UmaException exception) throws ResourceException {
+                          public ResourceResponse apply(final UmaException exception) throws ResourceException {
                               throw newBadRequestException("Failed to create a share", exception);
                           }
                       });
@@ -115,27 +118,27 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<Resource, ResourceException> deleteInstance(final ServerContext context,
-                                                               final String resourceId,
-                                                               final DeleteRequest request) {
+    public Promise<ResourceResponse, ResourceException> deleteInstance(final ServerContext context,
+                                                                       final String resourceId,
+                                                                       final DeleteRequest request) {
         Share share = service.removeShare(resourceId);
         if (share == null) {
             return newExceptionPromise(newNotFoundException(format("Share %s is unknown", resourceId)));
         }
-        return newResultPromise(new Resource(resourceId, null, asJson(share)));
+        return newResultPromise(newResourceResponse(resourceId, null, asJson(share)));
     }
 
     @Override
-    public Promise<Resource, ResourceException> patchInstance(final ServerContext context,
-                                                              final String resourceId,
-                                                              final PatchRequest request) {
+    public Promise<ResourceResponse, ResourceException> patchInstance(final ServerContext context,
+                                                                      final String resourceId,
+                                                                      final PatchRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<QueryResult, ResourceException> queryCollection(final ServerContext context,
-                                                                   final QueryRequest request,
-                                                                   final QueryResourceHandler handler) {
+    public Promise<QueryResponse, ResourceException> queryCollection(final ServerContext context,
+                                                                     final QueryRequest request,
+                                                                     final QueryResourceHandler handler) {
 
         // Reject queries with query ID, provided expressions and non "true" filter
         if (request.getQueryId() != null
@@ -145,37 +148,37 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
         }
 
         for (Share share : service.listShares()) {
-            handler.handleResource(new Resource(share.getId(), null, asJson(share)));
+            handler.handleResource(newResourceResponse(share.getId(), null, asJson(share)));
         }
 
-        return newResultPromise(new QueryResult());
+        return newResultPromise(newQueryResponse());
     }
 
     @Override
-    public Promise<Resource, ResourceException> readInstance(final ServerContext context,
-                                                             final String resourceId,
-                                                             final ReadRequest request) {
+    public Promise<ResourceResponse, ResourceException> readInstance(final ServerContext context,
+                                                                     final String resourceId,
+                                                                     final ReadRequest request) {
         Share share = service.getShare(resourceId);
-        return newResultPromise(new Resource(resourceId, null, asJson(share)));
+        return newResultPromise(newResourceResponse(resourceId, null, asJson(share)));
     }
 
     @Override
-    public Promise<Resource, ResourceException> updateInstance(final ServerContext context,
-                                                               final String resourceId,
-                                                               final UpdateRequest request) {
+    public Promise<ResourceResponse, ResourceException> updateInstance(final ServerContext context,
+                                                                       final String resourceId,
+                                                                       final UpdateRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<JsonValue, ResourceException> actionCollection(final ServerContext context,
-                                                                  final ActionRequest request) {
+    public Promise<ActionResponse, ResourceException> actionCollection(final ServerContext context,
+                                                                       final ActionRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<JsonValue, ResourceException> actionInstance(final ServerContext context,
-                                                                final String resourceId,
-                                                                final ActionRequest request) {
+    public Promise<ActionResponse, ResourceException> actionInstance(final ServerContext context,
+                                                                     final String resourceId,
+                                                                     final ActionRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
