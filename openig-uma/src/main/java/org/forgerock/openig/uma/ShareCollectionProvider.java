@@ -32,7 +32,7 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.ServerContext;
+import org.forgerock.http.Context;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
@@ -88,7 +88,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<ResourceResponse, ResourceException> createInstance(final ServerContext context,
+    public Promise<ResourceResponse, ResourceException> createInstance(final Context context,
                                                                        final CreateRequest request) {
         if (request.getNewResourceId() != null) {
             return newExceptionPromise(newNotSupportedException("Only POST-style of instance creation are supported"));
@@ -118,7 +118,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<ResourceResponse, ResourceException> deleteInstance(final ServerContext context,
+    public Promise<ResourceResponse, ResourceException> deleteInstance(final Context context,
                                                                        final String resourceId,
                                                                        final DeleteRequest request) {
         Share share = service.removeShare(resourceId);
@@ -129,14 +129,14 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<ResourceResponse, ResourceException> patchInstance(final ServerContext context,
+    public Promise<ResourceResponse, ResourceException> patchInstance(final Context context,
                                                                       final String resourceId,
                                                                       final PatchRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<QueryResponse, ResourceException> queryCollection(final ServerContext context,
+    public Promise<QueryResponse, ResourceException> queryCollection(final Context context,
                                                                      final QueryRequest request,
                                                                      final QueryResourceHandler handler) {
 
@@ -155,7 +155,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<ResourceResponse, ResourceException> readInstance(final ServerContext context,
+    public Promise<ResourceResponse, ResourceException> readInstance(final Context context,
                                                                      final String resourceId,
                                                                      final ReadRequest request) {
         Share share = service.getShare(resourceId);
@@ -163,20 +163,20 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
-    public Promise<ResourceResponse, ResourceException> updateInstance(final ServerContext context,
+    public Promise<ResourceResponse, ResourceException> updateInstance(final Context context,
                                                                        final String resourceId,
                                                                        final UpdateRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<ActionResponse, ResourceException> actionCollection(final ServerContext context,
+    public Promise<ActionResponse, ResourceException> actionCollection(final Context context,
                                                                        final ActionRequest request) {
         return newExceptionPromise(newNotSupportedException());
     }
 
     @Override
-    public Promise<ActionResponse, ResourceException> actionInstance(final ServerContext context,
+    public Promise<ActionResponse, ResourceException> actionInstance(final Context context,
                                                                      final String resourceId,
                                                                      final ActionRequest request) {
         return newExceptionPromise(newNotSupportedException());
