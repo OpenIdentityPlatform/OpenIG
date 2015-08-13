@@ -46,7 +46,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-/** Unit tests for the dynamic registration filter class. */
+/** Unit tests for the client registration filter class. */
 @SuppressWarnings("javadoc")
 public class ClientRegistrationFilterTest {
     private Exchange exchange;
@@ -85,10 +85,10 @@ public class ClientRegistrationFilterTest {
     @DataProvider
     private Object[][] invalidConfigurations() {
         return new Object[][] {
-            /* Missing clientId. */
+            /* Missing redirect uris. */
             { json(object(
                     field("redirectUriz", array("https://client.example.org/callback")))) },
-            /* Redirect uri is not a list. */
+            /* Redirect uris is not a list. */
             { json(object(
                     field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
                     field("scopes", array("openid")),

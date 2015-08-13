@@ -45,7 +45,7 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * The dynamic registration filter is the way to dynamically register an OpenID
+ * The client registration filter is the way to dynamically register an OpenID
  * Connect Relying Party with the End-User's OpenID Provider.
  * <p>
  * Options:
@@ -68,7 +68,7 @@ import org.forgerock.util.promise.Promise;
  * <pre>
  * {@code
  * {
- *   "type": "DynamicRegistrationFilter",
+ *   "type": "ClientRegistrationFilter",
  *   "config": {
  *       "contacts": ["ve7jtb@example.org", "mary@example.org"],
  *       "redirect_uris": [
@@ -158,14 +158,14 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
         final Response response = registrationHandler.handle(context, request)
                                                      .getOrThrowUninterruptibly();
         if (!CREATED.equals(response.getStatus())) {
-            throw new RegistrationException("Cannot perform dynamic registration : this can be caused "
+            throw new RegistrationException("Cannot perform dynamic registration: this can be caused "
                                             + "by the distant server(busy, offline...) "
                                             + "or a malformed registration response.");
         }
         try {
             return getJsonContent(response);
         } catch (OAuth2ErrorException e) {
-            throw new RegistrationException("Cannot perform dynamic registration : invalid response JSON content.");
+            throw new RegistrationException("Cannot perform dynamic registration: invalid response JSON content.");
         }
     }
 
