@@ -58,8 +58,13 @@ import org.forgerock.util.time.TimeService;
  *     &client_id=s6BhdRkqt3                                 // from ClientRegistration
  *     &state=af0ifjsldkj
  *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb   // from Client Registration
+ *     &login_hint=<input if available>                      // login_hint from OPENID RFC.
  * }
  * </pre>
+ *
+ * @see <a
+ *      href="http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest">
+ *      OpenID Connect Core 1.0 </a>
  */
 public class AuthorizationRedirectHandler implements Handler {
     @Override
@@ -68,6 +73,8 @@ public class AuthorizationRedirectHandler implements Handler {
         final URI clientEndpoint = (URI) exchange.getAttributes().get("clientEndpoint");
         final String gotoUri = request.getForm().getFirst("goto");
         final ClientRegistration cr = (ClientRegistration) exchange.getAttributes().get(CLIENT_REG_KEY);
+        final String loginHint = request.getForm().getFirst("discovery");
+
         if (cr != null && cr.getIssuer() != null) {
             final Issuer issuer = cr.getIssuer();
             final List<String> requestedScopes = cr.getScopes();
@@ -78,6 +85,9 @@ public class AuthorizationRedirectHandler implements Handler {
                 query.add("redirect_uri", redirect);
             }
             query.add("scope", joinAsString(" ", requestedScopes));
+            if (loginHint != null && !loginHint.isEmpty()) {
+                query.add("login_hint", loginHint);
+            }
 
             /*
              * Construct the state parameter whose purpose is to prevent CSRF
