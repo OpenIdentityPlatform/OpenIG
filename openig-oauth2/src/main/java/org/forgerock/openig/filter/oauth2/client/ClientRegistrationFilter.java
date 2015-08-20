@@ -112,7 +112,20 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
     }
 
     @Override
-    public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
+    public Promise<Response, NeverThrowsException> filter(Context context,
+                                                          Request request,
+                                                          Handler next) {
+        if (!config.isDefined("redirect_uris")) {
+            return newResultPromise(
+                    newInternalServerError("Cannot perform dynamic registration: 'redirect_uris' should be defined"));
+        }
+        return callFilterWithRedirectUris(context, request, next);
+
+    }
+
+    private Promise<Response, NeverThrowsException> callFilterWithRedirectUris(final Context context,
+                                                                               final Request request,
+                                                                               final Handler next) {
         try {
             final Exchange exchange = context.asContext(Exchange.class);
             final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);

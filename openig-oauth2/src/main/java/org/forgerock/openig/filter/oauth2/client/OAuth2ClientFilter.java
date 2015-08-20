@@ -19,6 +19,7 @@ package org.forgerock.openig.filter.oauth2.client;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
@@ -28,6 +29,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpResponse;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
+import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
@@ -60,11 +62,13 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
+import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
@@ -100,12 +104,12 @@ import org.forgerock.util.time.TimeService;
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
  * "scopes"                       : [ expressions ],    [OPTIONAL]
  * "clientEndpoint"               : expression,         [REQUIRED]
- * "loginEndpoint"                : handler,            [OPTIONAL - for issuer discovery
- *                                                                  and dynamic client registration]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR
  * "clientRegistrationName"       : string,             [REQUIRED - if you want to use a single client
  *                                                                  registration]
+ * "discoveryHandler"             : handler,            [OPTIONAL - default is using a new ClientHandler
+ *                                                                  wrapping the default HttpClient.]
  * "failureHandler"               : handler,            [REQUIRED]
  * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
@@ -127,7 +131,6 @@ import org.forgerock.util.time.TimeService;
  *         "target"                : "${exchange.openid}",
  *         "scopes"                : ["openid","profile","email"],
  *         "clientEndpoint"        : "/openid",
- *         "loginEndpoint"         : "myLoginEndpointHandler"
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
  *         "defaultLoginGoto"      : "/homepage",
@@ -149,7 +152,6 @@ import org.forgerock.util.time.TimeService;
  *     "config": {
  *         "target"                : "${exchange.openid}",
  *         "clientEndpoint"        : "/openid",
- *         "loginEndpoint"         : "myLoginEndpointHandler",
  *         "clientRegistrationName": "openam",
  *         "failureHandler"        : "LoginFailed"
  *     }
@@ -207,9 +209,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Expression<String> clientEndpoint;
     private Expression<String> defaultLoginGoto;
     private Expression<String> defaultLogoutGoto;
+    private final Handler discoveryHandler;
     private Handler failureHandler;
     private Handler loginHandler;
-    private Handler loginEndpoint;
     private String clientRegistrationName;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
@@ -218,6 +220,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
     private final Heap heap;
+    private final Handler discoveryAndDynamicRegistrationChain;
 
     /**
      * Constructs an {@link OAuth2ClientFilter}.
@@ -226,10 +229,27 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *            The TimeService to use.
      * @param heap
      *            The current heap.
+     * @param config
+     *            The json configuration of this filter.
+     * @param name
+     *            The name of this filter.
+     * @param discoveryHandler
+     *            The handler used for discovery and dynamic client
+     *            registration.
      */
-    public OAuth2ClientFilter(TimeService time, Heap heap) {
+    public OAuth2ClientFilter(TimeService time, Heap heap, JsonValue config, String name, Handler discoveryHandler) {
         this.time = time;
         this.heap = heap;
+        this.discoveryHandler = discoveryHandler;
+        discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap, config, name);
+    }
+
+    private final Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
+                                                                    final JsonValue config,
+                                                                    final String name) {
+        return chainOf(new AuthorizationRedirectHandler(),
+                       new DiscoveryFilter(discoveryHandler, heap),
+                       new ClientRegistrationFilter(discoveryHandler, config, heap));
     }
 
     @Override
@@ -374,21 +394,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      */
     public OAuth2ClientFilter setFailureHandler(final Handler handler) {
         this.failureHandler = handler;
-        return this;
-    }
-
-    /**
-     * Sets the handler which will be invoked when discovery is activated. This
-     * configuration parameter is required if discovery and dynamic registration
-     * are needed.
-     *
-     * @param loginEndpoint
-     *            The handler which will be invoked when the discovery is
-     *            initiated.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setLoginEndpoint(final Handler loginEndpoint) {
-        this.loginEndpoint = loginEndpoint;
         return this;
     }
 
@@ -692,7 +697,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         final Exchange exchange = context.asContext(Exchange.class);
         exchange.getAttributes().put("clientEndpoint", buildUri(exchange, clientEndpoint));
-        return loginEndpoint.handle(context, request);
+        return discoveryAndDynamicRegistrationChain.handle(context, request);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Exchange exchange,
@@ -912,15 +917,19 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         @Override
         public Object create() throws HeapException {
 
+            final Handler discoveryHandler;
+            if (config.isDefined("discoveryHandler")) {
+                discoveryHandler = heap.resolve(config.get("discoveryHandler"), Handler.class);
+            } else {
+                discoveryHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
+            }
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time, heap);
+            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time, heap, config, this.name, discoveryHandler);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
             filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
-            final Handler loginEndpoint = heap.resolve(config.get("loginEndpoint"), Handler.class, true);
-            filter.setLoginEndpoint(loginEndpoint);
             if (config.isDefined("clientRegistrationName")) {
                 filter.setClientRegistrationName(config.get("clientRegistrationName").required().asString());
             } else {
