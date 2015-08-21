@@ -41,6 +41,9 @@ Copyright: Copyright 2006-2009 Odysseus Software GmbH
 Version: groovy-all-2.3.1.jar
 Copyright: Copyright 2003-2013 The Codehaus. All rights reserved.
 
+Version: ivy-2.4.0.jar
+Copyright: Copyright 2007-2014 The Apache Software Foundation
+
 ==================
 Full license text:
 ==================
