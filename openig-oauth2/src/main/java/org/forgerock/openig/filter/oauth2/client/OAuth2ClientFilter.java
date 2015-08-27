@@ -249,7 +249,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                     final String name) {
         return chainOf(new AuthorizationRedirectHandler(),
                        new DiscoveryFilter(discoveryHandler, heap),
-                       new ClientRegistrationFilter(discoveryHandler, config, heap));
+                       new ClientRegistrationFilter(discoveryHandler, config, heap, name));
     }
 
     @Override
