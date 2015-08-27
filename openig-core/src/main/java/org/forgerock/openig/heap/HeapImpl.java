@@ -34,8 +34,10 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.util.MultiValueMap;
@@ -273,6 +275,27 @@ public class HeapImpl implements Heap {
             if (!EXCLUDED_ATTRIBUTES.contains(candidate.getPointer().leaf())) {
                 decorations.add(name, candidate);
             }
+        }
+    }
+
+    @Override
+    public <T> List<T> getAll(final Class<T> type) throws HeapException {
+        final Map<String, T> result = new HashMap<>();
+        getAll(type, result);
+        return new LinkedList<>(result.values());
+    }
+
+    private <T> void getAll(final Class<T> type,
+                            final Map<String, T> result) throws HeapException {
+        if (objects != null) {
+            for (final Entry<String, Object> entry : objects.entrySet()) {
+                if (type.isInstance(entry.getValue()) && !result.containsKey(entry.getKey())) {
+                    result.put(entry.getKey(), get(entry.getKey(), type));
+                }
+            }
+        }
+        if (parent != null) {
+            parent.getAll(type, result);
         }
     }
 

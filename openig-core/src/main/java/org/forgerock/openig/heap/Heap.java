@@ -12,10 +12,12 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
+
+import java.util.List;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
@@ -43,6 +45,27 @@ public interface Heap {
      *         if a heaplet (or one of its dependencies) has a malformed configuration object.
      */
     <T> T get(String name, Class<T> type) throws HeapException;
+
+    /**
+     * Returns all objects from the heap or its parent (if any), with the
+     * specified type or an empty list if no such object exists. Existing
+     * objects in the heap are not overridden by its parents if such exist.
+     *
+     * @param type
+     *            expected type to search for in the heap or its parent (if
+     *            any).
+     * @param <T>
+     *            expected type of the heap object
+     * @return the requested object from the heap, or from its parent (if any),
+     *         or an empty list if no such object exists.
+     * @throws HeapException
+     *             if an exception occurred during the creation of a heap object
+     *             or any of its dependencies.
+     * @throws JsonValueException
+     *             if a heaplet (or one of its dependencies) has a malformed
+     *             configuration object.
+     */
+    <T> List<T> getAll(Class<T> type) throws HeapException;
 
     /**
      * Resolves a mandatory object with the specified reference. If the object does not exist or the inline

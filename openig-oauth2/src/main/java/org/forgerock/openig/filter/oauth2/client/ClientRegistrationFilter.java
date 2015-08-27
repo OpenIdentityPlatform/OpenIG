@@ -15,6 +15,7 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.format;
 import static org.forgerock.http.protocol.Status.CREATED;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -28,7 +29,6 @@ import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
-
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -144,9 +144,13 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
         try {
             final Exchange exchange = context.asContext(Exchange.class);
             final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);
-            if (issuer != null && issuer.getRegistrationEndpoint() != null) {
+            if (issuer != null) {
                 ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
                 if (cr == null) {
+                    if (issuer.getRegistrationEndpoint() == null) {
+                        throw new RegistrationException(format("Registration is not supported by the issuer '%s'",
+                                issuer));
+                    }
                     final JsonValue registeredClientConfiguration = performDynamicClientRegistration(context, config,
                             issuer.getRegistrationEndpoint());
                     cr = heap.resolve(
@@ -155,7 +159,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
                 }
                 exchange.getAttributes().put(CLIENT_REG_KEY, cr);
             } else {
-                throw new RegistrationException("Do not support dynamic client registration");
+                throw new RegistrationException("Cannot retrieve issuer from the exchange");
             }
         } catch (RegistrationException e) {
             return newResultPromise(

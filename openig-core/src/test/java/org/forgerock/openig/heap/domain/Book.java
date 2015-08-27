@@ -23,6 +23,7 @@ import org.forgerock.openig.heap.HeapException;
 public class Book {
 
     private final String title;
+    private String edition;
 
     public Book(final String title) {
         this.title = title;
@@ -30,6 +31,14 @@ public class Book {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getEdition() {
+        return edition;
+    }
+
+    public void setEdition(String edition) {
+        this.edition = edition;
     }
 
     public static class Heaplet extends GenericHeaplet {

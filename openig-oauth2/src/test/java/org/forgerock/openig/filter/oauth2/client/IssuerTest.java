@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.net.URI.create;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.field;
@@ -123,17 +124,13 @@ public class IssuerTest {
         // given
         final Response response = new Response();
         response.setStatus(Status.OK);
-        response.setEntity(
-                json(object(
-                        field("authorizeEndpoint", SAMPLE_URI + AUTHORIZE_ENDPOINT),
-                        field("registrationEndpoint", SAMPLE_URI + REGISTRATION_ENDPOINT),
-                        field("tokenEndpoint", SAMPLE_URI + TOKEN_ENDPOINT),
-                        field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT))));
+        response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
+
         final URI wellKnownUri = new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT);
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final Issuer issuer = Issuer.build("myIssuer", wellKnownUri, handler);
+        final Issuer issuer = Issuer.build("myIssuer", wellKnownUri, null, handler);
 
         // then
         verify(handler).handle(any(Context.class), captor.capture());
@@ -145,6 +142,35 @@ public class IssuerTest {
         assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
         assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(SAMPLE_URI + TOKEN_ENDPOINT));
         assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(SAMPLE_URI + USER_INFO_ENDPOINT));
+        assertThat(issuer.getSupportedDomains()).isEmpty();
+    }
+
+    @Test
+    public void shouldPerformBuildWithWellKnownUriProvidedAndContainSupportedDomains() throws Exception {
+        // given
+        final Response response = new Response();
+        response.setStatus(Status.OK);
+        response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
+        when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
+        final URI wellKnownUri = new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT);
+
+        // when
+        final Issuer issuer = Issuer.build("myIssuer",
+                                           wellKnownUri,
+                                           asList("openam.com", "openam.example.com"),
+                                           handler);
+
+        // then
+        verify(handler).handle(any(Context.class), captor.capture());
+        final Request request = captor.getValue();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getUri().toString()).isEqualTo(wellKnownUri.toString());
+        assertThat(issuer.getName()).isEqualTo("myIssuer");
+        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(new URI(SAMPLE_URI + AUTHORIZE_ENDPOINT));
+        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+        assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(SAMPLE_URI + TOKEN_ENDPOINT));
+        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(SAMPLE_URI + USER_INFO_ENDPOINT));
+        assertThat(issuer.getSupportedDomains()).hasSize(2);
     }
 
     @Test(expectedExceptions = JsonValueException.class)
@@ -155,7 +181,7 @@ public class IssuerTest {
         response.setEntity(json(object(field("invalid", "response"))));
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
-        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), handler);
+        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler);
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
@@ -163,15 +189,18 @@ public class IssuerTest {
         // given
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
-        response.setEntity(
-                json(object(
+        response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
+        when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
+
+        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler);
+    }
+
+    private final JsonValue getValidWellKnownOpenIdConfigurationResponse() {
+        return json(object(
                         field("authorizeEndpoint", SAMPLE_URI + AUTHORIZE_ENDPOINT),
                         field("registrationEndpoint", SAMPLE_URI + REGISTRATION_ENDPOINT),
                         field("tokenEndpoint", SAMPLE_URI + TOKEN_ENDPOINT),
-                        field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT))));
-        when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
-
-        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), handler);
+                        field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT)));
     }
 
     private final JsonValue buildJsonConfig() {
