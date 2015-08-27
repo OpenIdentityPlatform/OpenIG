@@ -30,6 +30,7 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
@@ -114,12 +115,17 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
 
         try {
             final AccountIdentifier account = extractFromInput(urlDecode(request.getForm().getFirst("discovery")));
-
-            Issuer issuer = heap.get(account.getHostBase().toString(), Issuer.class);
+            final String hostString = account.getHostBase().toASCIIString();
+            /* Auto-created Issuer heap objects are named according to the discovered host base. */
+            Issuer issuer = heap.get(hostString, Issuer.class);
+            /* Checks if this domain name should be supported by an existing issuer. */
+            if (issuer == null) {
+                issuer = fromSupportedDomainNames(hostString);
+            }
+            /* Performs discovery otherwise. */
             if (issuer == null) {
                 final URI wellKnowIssuerUri = performOpenIdIssuerDiscovery(context, account);
-                final JsonValue issuerDeclaration = createIssuerDeclaration(account.getHostBase().toString(),
-                                                                            wellKnowIssuerUri);
+                final JsonValue issuerDeclaration = createIssuerDeclaration(hostString, wellKnowIssuerUri);
                 issuer = heap.resolve(issuerDeclaration, Issuer.class);
             }
             exchange.getAttributes().put(ISSUER_KEY, issuer);
@@ -130,6 +136,24 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
         }
 
         return next.handle(context, request);
+    }
+
+    /**
+     * The given domain name can match one or none domain names supported by
+     * Issuers declared in this route. If the given domain name matches the
+     * patterns given by an Issuer 'supportedDomains' attributes, then the
+     * corresponding Issuer is returned to be used.
+     */
+    private Issuer fromSupportedDomainNames(final String givenDomainName) throws HeapException {
+        for (final Issuer definedIssuer : heap.getAll(Issuer.class)) {
+            final List<Pattern> domainNames = definedIssuer.getSupportedDomains();
+            for (final Pattern domainName : domainNames) {
+                if (domainName.matcher(givenDomainName).matches()) {
+                    return definedIssuer;
+                }
+            }
+        }
+        return null;
     }
 
     private JsonValue createIssuerDeclaration(final String issuerName, final URI wellKnowIssuerUri) {

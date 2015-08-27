@@ -23,11 +23,13 @@ import static org.forgerock.openig.heap.HeapUtilsTest.*;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
+import org.forgerock.openig.heap.domain.Architect;
 import org.forgerock.openig.heap.domain.Book;
 import org.forgerock.openig.heap.domain.DecoratorDecorator;
 import org.forgerock.openig.heap.domain.ReferencedObject;
@@ -366,6 +368,57 @@ public class HeapImplTest {
 
         heap.init(json(object(field("heap", array(matrix, matrix2)))));
     }
+
+    @Test
+    public void shouldGetAllSucceed() throws Exception {
+        final HeapImpl grandParent = new HeapImpl();
+        final Book book = new Book("OpenIG-101");
+        grandParent.put("book", book);
+
+        final HeapImpl parent = new HeapImpl(grandParent);
+        final Book book1 = new Book("OpenIG-Reference");
+        final Book book2 = new Book("OpenIG-Guide");
+        parent.put("book1", book1);
+        parent.put("architect", new Architect());
+
+        final HeapImpl child = new HeapImpl(parent);
+        child.put("book2", book2);
+
+        final List<Book> books = child.getAll(Book.class);
+        assertThat(books).hasSize(3)
+                         .contains(book, book1, book2);
+    }
+
+    @Test
+    public void shouldGetAllNotOverrideChildItems() throws Exception {
+        final Book book = new Book("OpenIG-Reference");
+        book.setEdition("Basic ForgeRock AS");
+
+        final HeapImpl parent = new HeapImpl();
+        parent.put("architect", new Architect());
+        parent.put("myBook", book);
+
+        final HeapImpl child = new HeapImpl(parent);
+        book.setEdition("Collector");
+        child.put("myBook", book);
+
+        final List<Book> books = child.getAll(Book.class);
+        assertThat(books).hasSize(1).containsOnly(book);
+        assertThat(books.get(0).getEdition()).isEqualTo("Collector");
+    }
+
+    @Test
+    public void shouldGetAllReturnsEmptyListIfNoItem() throws Exception {
+
+        final HeapImpl parent = new HeapImpl();
+        parent.put("book1", new Book("OpenIG-Reference"));
+
+        final HeapImpl child = new HeapImpl(parent);
+        parent.put("book2", new Book("OpenIG-Guide"));
+
+        assertThat(child.getAll(Architect.class)).isEmpty();
+    }
+
 
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));

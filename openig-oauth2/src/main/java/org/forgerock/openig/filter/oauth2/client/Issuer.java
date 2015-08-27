@@ -22,6 +22,11 @@ import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -48,10 +53,23 @@ import org.forgerock.util.Reject;
  *   "wellKnownEndpoint"            : uriExpression,   [REQUIRED]
  *   "issuerHandler"                : handler          [OPTIONAL - default is using a new ClientHandler
  *                                                                 wrapping the default HttpClient.]
+ *   "supportedDomains"             : [ patterns ]     [OPTIONAL - if this issuer supports other domain names]
  * }
  * }
  * </pre>
  *
+ * The 'supportedDomains' are the other domain names supported by this issuer,
+ * their format can include use of regular-expression patterns.
+ * Nota: Declaring these domains in the configuration should be as simple as
+ * possible, without any schemes or end slash i.e.:
+ *
+ * <pre>{@code
+ * GOOD: [ "openam.com", "openam.com:8092", "register.server.com", "allopenamdomains.*" ]
+ * BAD : [ "http://openam.com", "openam.com:8092/", "http://openam.com/" ]
+ * }
+ * </pre>
+ *
+ * <br/>
  * For example, use this kind of configuration if the end-points are not known:
  *
  * <pre>
@@ -61,6 +79,7 @@ import org.forgerock.util.Reject;
  *     "type": "Issuer",
  *     "config": {
  *          "wellKnownEndpoint": "http://www.example.com:8081/openam/oauth2/.well-known/openid-configuration"
+ *          "supportedDomains" : [ "openam.com", "openam.com:8092", "register.server.com" ]
  *     }
  * }
  * }
@@ -81,6 +100,7 @@ import org.forgerock.util.Reject;
  *   "registrationEndpoint"         : uriExpression,   [OPTIONAL - allows dynamic client registration]
  *   "userInfoEndpoint"             : uriExpression    [OPTIONAL - default is no user info]
  *   "wellKnownEndpoint"            : uriExpression    [OPTIONAL]
+ *   "supportedDomains"             : [ patterns ]     [OPTIONAL - if this issuer supports other domain names]
  * }
  * }
  * </pre>
@@ -111,6 +131,7 @@ public final class Issuer {
     private final URI registrationEndpoint;
     private final URI userInfoEndpoint;
     private URI wellKnownEndpoint;
+    private final List<Pattern> supportedDomains;
 
     /**
      * Creates an issuer with the specified name and configuration.
@@ -132,6 +153,7 @@ public final class Issuer {
                 config.get("registrationEndpoint").defaultTo(config.get("registration_endpoint")).asURI();
         this.userInfoEndpoint = config.get("userInfoEndpoint").defaultTo(config.get("userinfo_endpoint")).asURI();
         this.wellKnownEndpoint = config.get("wellKnownEndpoint").asURI();
+        this.supportedDomains = extractPatterns(config.get("supportedDomains").expect(List.class).asList(String.class));
     }
 
     /**
@@ -198,6 +220,15 @@ public final class Issuer {
     }
 
     /**
+     * Returns the unmodifiable list of the supported domain names.
+     *
+     * @return A unmodifiable list of the supported domain names.
+     */
+    public List<Pattern> getSupportedDomains() {
+        return Collections.unmodifiableList(supportedDomains);
+    }
+
+    /**
      * Builds a new Issuer based on the given well-known URI.
      *
      * @param name
@@ -205,6 +236,8 @@ public final class Issuer {
      *            given name.
      * @param wellKnownUri
      *            The well-known URI of this issuer.
+     * @param supportedDomains
+     *            List of the supported domains for this issuer.
      * @param handler
      *            The issuer handler that does the call to the given well-known
      *            URI.
@@ -215,6 +248,7 @@ public final class Issuer {
      */
     public static Issuer build(final String name,
                                final URI wellKnownUri,
+                               final List<String> supportedDomains,
                                final Handler handler) throws DiscoveryException {
         final Request request = new Request();
         request.setMethod("GET");
@@ -232,7 +266,22 @@ public final class Issuer {
         } catch (OAuth2ErrorException | JsonValueException e) {
             throw new DiscoveryException(e.getMessage());
         }
-        return new Issuer(name, config);
+        return new Issuer(name, config.put("supportedDomains", supportedDomains));
+    }
+
+    private static List<Pattern> extractPatterns(final List<String> from) {
+        final List<Pattern> patterns = new LinkedList<Pattern>();
+        if (from != null) {
+            for (String s : from) {
+                try {
+                    s = new StringBuilder("(http|https)://").append(s).append("/$").toString();
+                    patterns.add(Pattern.compile(s));
+                } catch (final PatternSyntaxException ex) {
+                    // Ignore
+                }
+            }
+        }
+        return patterns;
     }
 
     /** Creates and initializes an Issuer object in a heap environment. */
@@ -245,13 +294,13 @@ public final class Issuer {
             } else {
                 issuerHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
             }
-
+            final List<String> supportedDomains = config.get("supportedDomains").asList(String.class);
             if (config.isDefined("wellKnownEndpoint")
                     && !config.isDefined("authorizeEndpoint")
                     && !config.isDefined("tokenEndpoint")) {
                 try {
                     final URI wellKnownEndpoint = new URI(evaluate(config.get("wellKnownEndpoint")));
-                    return build(this.name, wellKnownEndpoint, issuerHandler);
+                    return build(this.name, wellKnownEndpoint, supportedDomains, issuerHandler);
                 } catch (DiscoveryException | URISyntaxException e) {
                     throw new HeapException(e);
                 }
