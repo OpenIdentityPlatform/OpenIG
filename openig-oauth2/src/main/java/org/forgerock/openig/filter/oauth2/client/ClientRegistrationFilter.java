@@ -24,6 +24,7 @@ import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
@@ -85,6 +86,13 @@ import org.forgerock.util.promise.Promise;
  * }
  * </pre>
  *
+ * <br>
+ * Note for developers: The suffix is added to the issuer name to compose the
+ * client registration name in the current heap. When automatically called by
+ * the OAuth2Client filter, this name is <IssuerName> + <OAuth2ClientFilterName>
+ * This is required in order to retrieve the Client Registration when performing
+ * dynamic client registration.
+ *
  * @see <a href="https://openid.net/specs/openid-connect-registration-1_0.html">
  *      OpenID Connect Dynamic Client Registration 1.0</a>
  */
@@ -92,6 +100,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
     private final Handler registrationHandler;
     private final Heap heap;
     private final JsonValue config;
+    private final String suffix;
 
     /**
      * Creates a new dynamic registration filter.
@@ -101,14 +110,20 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
      * @param config
      *            The configuration of this filter. Must contains the
      *            'redirect_uris' attributes.
-     * @param heap A reference to the current heap.
+     * @param heap
+     *            A reference to the current heap.
+     * @param suffix
+     *            The name of the client registration in the heap will be
+     *            <IssuerName> + <suffix>. Must not be {@code null}.
      */
     public ClientRegistrationFilter(final Handler registrationHandler,
                                     final JsonValue config,
-                                    final Heap heap) {
+                                    final Heap heap,
+                                    final String suffix) {
         this.registrationHandler = registrationHandler;
         this.config = config;
         this.heap = heap;
+        this.suffix = checkNotNull(suffix);
     }
 
     @Override
@@ -130,13 +145,14 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
             final Exchange exchange = context.asContext(Exchange.class);
             final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);
             if (issuer != null && issuer.getRegistrationEndpoint() != null) {
-                // TODO check from heap if the client registration exists.
-                final JsonValue registeredClientConfiguration =
-                        performDynamicClientRegistration(context, config, issuer.getRegistrationEndpoint());
-                final ClientRegistration cr =
-                        heap.resolve(createClientRegistrationDeclaration(registeredClientConfiguration,
-                                                                         issuer.getName()), ClientRegistration.class);
-
+                ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
+                if (cr == null) {
+                    final JsonValue registeredClientConfiguration = performDynamicClientRegistration(context, config,
+                            issuer.getRegistrationEndpoint());
+                    cr = heap.resolve(
+                            createClientRegistrationDeclaration(registeredClientConfiguration, issuer.getName()),
+                            ClientRegistration.class);
+                }
                 exchange.getAttributes().put(CLIENT_REG_KEY, cr);
             } else {
                 throw new RegistrationException("Do not support dynamic client registration");
@@ -154,8 +170,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
     private JsonValue createClientRegistrationDeclaration(final JsonValue configuration, final String issuerName) {
         configuration.put("issuer", issuerName);
         return json(object(
-                        // TODO then name of the client registration should be issuerName + OAuth2ClientFilter name.
-                        field("name", configuration.get("client_name").defaultTo(config.get("client_id")).asString()),
+                        field("name", issuerName + suffix),
                         field("type", "ClientRegistration"),
                         field("config", configuration)));
     }
@@ -193,7 +208,8 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
                 handler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
             }
             config.get("redirectUris").defaultTo(config.get("redirect_uris")).required().asList(String.class);
-            return new ClientRegistrationFilter(handler, config, heap);
+            final String suffix = config.get("suffix").defaultTo(this.name).asString();
+            return new ClientRegistrationFilter(handler, config, heap, suffix);
         }
     }
 }

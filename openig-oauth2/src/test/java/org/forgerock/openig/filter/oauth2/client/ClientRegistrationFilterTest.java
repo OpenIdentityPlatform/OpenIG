@@ -151,7 +151,7 @@ public class ClientRegistrationFilterTest {
     }
 
     private ClientRegistrationFilter buildFilter() throws HeapException, Exception {
-        return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap());
+        return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap(), "ForMyApp");
     }
 
     private JsonValue getFilterConfig() {
