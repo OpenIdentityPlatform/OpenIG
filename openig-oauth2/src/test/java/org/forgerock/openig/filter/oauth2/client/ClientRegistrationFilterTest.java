@@ -35,15 +35,12 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
-import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /** Unit tests for the client registration filter class. */
@@ -65,52 +62,6 @@ public class ClientRegistrationFilterTest {
         exchange = new Exchange(null, new URI("path"));
     }
 
-    @DataProvider
-    private Object[][] validConfigurations() {
-        return new Object[][] {
-            { json(object(
-                    field("redirectUris", array("https://client.example.org/callback",
-                                                "https://client.example.org/callback")))) },
-            { json(object(
-                    field("redirectUris", array("https://client.example.org/callback")),
-                    field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
-                    field("scopes", array("openid")))) },
-            { json(object(
-                    field("redirect_uris", array("https://client.example.org/callback")),
-                    field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
-                    field("token_endpoint_auth_method", "client_secret_basic"),
-                    field("scopes", array("openid")))) }};
-    }
-
-    @DataProvider
-    private Object[][] invalidConfigurations() {
-        return new Object[][] {
-            /* Missing redirect uris. */
-            { json(object(
-                    field("redirectUriz", array("https://client.example.org/callback")))) },
-            /* Redirect uris is not a list. */
-            { json(object(
-                    field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
-                    field("scopes", array("openid")),
-                    field("redirect_uris", "https://client.example.org/callback"))) } };
-    }
-
-    @Test(dataProvider = "invalidConfigurations", expectedExceptions = JsonValueException.class)
-    public void shouldFailToCreateHeapletWhenRequiredAttributeIsMissing(final JsonValue config) throws Exception {
-        final ClientRegistrationFilter.Heaplet heaplet = new ClientRegistrationFilter.Heaplet();
-        heaplet.create(Name.of("myDynamicRegistrationFilter"), config, buildDefaultHeap());
-    }
-
-    @Test(dataProvider = "validConfigurations")
-    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
-        final ClientRegistrationFilter.Heaplet heaplet = new ClientRegistrationFilter.Heaplet();
-        final ClientRegistrationFilter drf = (ClientRegistrationFilter)
-                heaplet.create(Name.of("myClientRegistration"),
-                              config,
-                              buildDefaultHeap());
-        assertThat(drf).isNotNull();
-    }
-
     @Test
     public void shouldPerformDynamicRegistration() throws Exception {
         // given
@@ -124,7 +75,7 @@ public class ClientRegistrationFilterTest {
         verify(handler).handle(eq(exchange), captor.capture());
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
-        assertThat(request.getEntity().toString()).containsSequence("redirectUris", "contact", "scopes");
+        assertThat(request.getEntity().toString()).containsSequence("redirect_uris", "contact", "scopes");
     }
 
     @Test(expectedExceptions = RegistrationException.class)
@@ -156,7 +107,7 @@ public class ClientRegistrationFilterTest {
 
     private JsonValue getFilterConfig() {
         return json(object(
-                        field("redirectUris", array("https://client.example.org/callback")),
+                        field("redirect_uris", array("https://client.example.org/callback")),
                         field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
                         field("scopes", array("openid"))));
     }

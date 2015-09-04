@@ -24,6 +24,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERR
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.firstOf;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -51,14 +52,15 @@ import org.forgerock.util.encode.Base64;
  * {
  *   "clientId"                     : expression,       [REQUIRED]
  *   "clientSecret"                 : expression,       [REQUIRED]
- *   "scopes"                       : [ expressions ],  [REQUIRED]
  *   "issuer"                       : String / Issuer   [REQUIRED - the issuer name, or its inlined declaration,
+ *   "scopes"                       : [ expressions ],  [OPTIONAL - specific scopes to use for this client
+ *                                                                  registration. ]
  *                                                                  linked to this registration.]
- *   "redirectUris"                 : [ uriExpressions ][OPTIONAL - but required for dynamic client
+ *   "redirect_uris"                : [ uriExpressions ][OPTIONAL - but required for dynamic client
  *                                                                  registration. ]
  *   "registrationHandler"          : handler           [OPTIONAL - default is using a new ClientHandler.]
  *                                                                  wrapping the default HttpClient.]
- *   "tokenEndpointUseBasicAuth"    : boolean           [OPTIONAL - default is true, use Basic Authentication]
+ *   "tokenEndpointUseBasicAuth"    : boolean           [OPTIONAL - default is true, use Basic Authentication.]
  * }
  * }
  * </pre>
@@ -77,7 +79,7 @@ import org.forgerock.util.encode.Base64;
  *             "openid",
  *             "profile"
  *         ],
- *         "redirectUris": [
+ *         "redirect_uris": [
  *             "https://client.example.org/callback"
  *         ],
  *         "issuer": "OpenAM"
@@ -150,11 +152,11 @@ public final class ClientRegistration {
                               final Handler registrationHandler) {
         this.name = name != null
                     ? name
-                    : config.get("client_name").defaultTo(config.get("client_id")).asString();
-        this.clientId = config.get("clientId").defaultTo(config.get("client_id")).required().asString();
-        this.clientSecret = config.get("clientSecret").defaultTo(config.get("client_secret")).required().asString();
+                    : firstOf(config, "client_name", "client_id").asString();
+        this.clientId = firstOf(config, "clientId", "client_id").required().asString();
+        this.clientSecret = firstOf(config, "clientSecret", "client_secret").required().asString();
         this.scopes = config.get("scopes").defaultTo(emptyList()).required().asList(String.class);
-        this.redirectUris = config.get("redirectUris").defaultTo(config.get("redirect_uris")).asList(String.class);
+        this.redirectUris = config.get("redirect_uris").asList(String.class);
         if (config.isDefined("token_endpoint_auth_method")
                 && config.get("token_endpoint_auth_method").asString().equals("client_secret_post")) {
             this.tokenEndpointUseBasicAuth = false;
@@ -403,7 +405,7 @@ public final class ClientRegistration {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Handler registrationHandler = null;
+            final Handler registrationHandler;
             if (config.isDefined("registrationHandler")) {
                 registrationHandler = heap.resolve(config.get("registrationHandler"), Handler.class);
             } else {

@@ -102,7 +102,9 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  * {@code
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
- * "scopes"                       : [ expressions ],    [OPTIONAL]
+ * "scopes"                       : [ expressions ],    [OPTIONAL - default common scopes to use if none declared
+ *                                                                  in client registration - default scopes to use
+ *                                                                  for dynamic client registration ]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR

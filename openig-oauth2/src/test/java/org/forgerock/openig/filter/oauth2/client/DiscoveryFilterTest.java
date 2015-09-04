@@ -159,8 +159,8 @@ public class DiscoveryFilterTest {
     public void shouldPerformOpenIdIssuerDiscovery() throws Exception {
         // given
         final String givenWebFingerUri = "http://openam.example.com/.well-known/webfinger"
-                                    + "?resource=http%3A%2F%2Fopenam.example.com%2Fjackson"
-                                    + "&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer";
+                                         + "?resource=http%3A%2F%2Fopenam.example.com%2Fjackson"
+                                         + "&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer";
 
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
 

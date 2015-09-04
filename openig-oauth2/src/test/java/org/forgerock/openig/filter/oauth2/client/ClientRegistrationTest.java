@@ -111,20 +111,20 @@ public class ClientRegistrationTest {
                     field("clientSecret", "password"),
                     field("scopes", array("openid")),
                     field("issuer", "myIssuer"),
-                    field("redirectUris", array("https://client.example.org/callback")))) },
+                    field("redirect_uris", array("https://client.example.org/callback")))) },
             /* Missing clientSecret. */
             { json(object(
                     field("clientId", "OpenIG"),
                     field("scopes", array("openid")),
                     field("issuer", "myIssuer"),
-                    field("redirectUris", array("https://client.example.org/callback2")))) },
+                    field("redirect_uris", array("https://client.example.org/callback2")))) },
             /* Missing issuer. */
             { json(object(
                     field("clientId", "OpenIG"),
                     field("clientSecret", "password"),
                     field("scopes", array("openid")),
                     field("issuer", "notDeclaredIssuer"),
-                    field("redirectUris", array("https://client.example.org/callback4")))) }};
+                    field("redirect_uris", array("https://client.example.org/callback4")))) }};
     }
 
     @DataProvider
