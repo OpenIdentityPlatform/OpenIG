@@ -191,6 +191,43 @@ public class JsonValuesTest {
     }
 
     @Test
+    public void shouldFirstOfReturnsNullWithNullNamesParameter() {
+        JsonValue config = json(object(
+                                    field("syn3", "plethora"),
+                                    field("syn2", "overabundance"),
+                                    field("syn1", "excess")));
+        assertThat(firstOf(config, (String[]) null).isNull()).isTrue();
+    }
+
+    @Test
+    public void shouldFirstOfSucceed() {
+        JsonValue config = json(object(
+                                    field("syn3", "plethora"),
+                                    field("syn2", "overabundance"),
+                                    field("syn1", "excess")));
+        assertThat(firstOf(config, "syn1", "syn3").asString()).isEqualTo("excess");
+        assertThat(firstOf(config, "syn3", "syn1").asString()).isEqualTo("plethora");
+    }
+
+    @Test
+    public void shouldFirstOfSucceedWhenNullFieldInConfig() {
+        JsonValue config = json(object(
+                                    field("syn3", null),
+                                    field("syn2", "overabundance"),
+                                    field("syn1", "excess")));
+        assertThat(firstOf(config, "syn3", "syn1").isNull()).isTrue();
+    }
+
+    @Test
+    public void shouldFirstOfReturnsNullWhenNoMatch() {
+        JsonValue config = json(object(
+                                    field("syn3", "plethora"),
+                                    field("syn2", "overabundance"),
+                                    field("syn1", "excess")));
+        assertThat(firstOf(config, "old", "ancient").isNull()).isTrue();
+    }
+
+    @Test
     public void getWithDeprecationReturnsMostRecentValue2() {
         JsonValue config = json(object(field("old", "value1"), field("older", "value2")));
         assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
