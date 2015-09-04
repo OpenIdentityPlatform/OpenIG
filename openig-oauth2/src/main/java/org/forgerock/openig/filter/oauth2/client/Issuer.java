@@ -19,6 +19,7 @@ import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.firstOf;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -146,12 +147,10 @@ public final class Issuer {
     public Issuer(final String name, final JsonValue config) {
         Reject.ifNull(name, config);
         this.name = name;
-        this.authorizeEndpoint =
-                config.get("authorizeEndpoint").defaultTo(config.get("authorization_endpoint")).required().asURI();
-        this.tokenEndpoint = config.get("tokenEndpoint").defaultTo(config.get("token_endpoint")).required().asURI();
-        this.registrationEndpoint =
-                config.get("registrationEndpoint").defaultTo(config.get("registration_endpoint")).asURI();
-        this.userInfoEndpoint = config.get("userInfoEndpoint").defaultTo(config.get("userinfo_endpoint")).asURI();
+        this.authorizeEndpoint = firstOf(config, "authorizeEndpoint", "authorization_endpoint").required().asURI();
+        this.tokenEndpoint = firstOf(config, "tokenEndpoint", "token_endpoint").required().asURI();
+        this.registrationEndpoint = firstOf(config, "registrationEndpoint", "registration_endpoint").asURI();
+        this.userInfoEndpoint = firstOf(config, "userInfoEndpoint", "userinfo_endpoint").asURI();
         this.wellKnownEndpoint = config.get("wellKnownEndpoint").asURI();
         this.supportedDomains = extractPatterns(config.get("supportedDomains").expect(List.class).asList(String.class));
     }
@@ -288,7 +287,7 @@ public final class Issuer {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Handler issuerHandler = null;
+            final Handler issuerHandler;
             if (config.isDefined("issuerHandler")) {
                 issuerHandler = heap.resolve(config.get("issuerHandler"), Handler.class);
             } else {

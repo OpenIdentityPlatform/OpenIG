@@ -23,25 +23,21 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
+
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.handler.ClientHandler;
-import org.forgerock.openig.heap.GenericHeapObject;
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -49,40 +45,33 @@ import org.forgerock.util.promise.Promise;
  * The client registration filter is the way to dynamically register an OpenID
  * Connect Relying Party with the End-User's OpenID Provider.
  * <p>
- * Options:
+ * All meta data must be included in the OAuth2ClientFilter configuration.
+ * Dynamic client registration requires the "redirect_uris" attributes.
  * </p>
  *
  * <pre>
  * {@code
  * {
- *   "redirect_uris"                : [ expressions ],  [REQUIRED]
- *   "registrationHandler"          : handler           [OPTIONAL - default is using a new ClientHandler
- *                                                                 wrapping the default HttpClient.]
- * }
- * }
- * </pre>
- *
- * This configuration allows the user to add every attributes that are supported
- * by the specification, like application_type, logo_uri,
- * token_endpoint_auth_method, etc. needed to create this client registration.
- *
- * <pre>
- * {@code
- * {
- *   "type": "ClientRegistrationFilter",
- *   "config": {
- *       "contacts": ["ve7jtb@example.org", "mary@example.org"],
- *       "redirect_uris": [
- *           "http://localhost:8082/openid/callback"
- *       ],
- *       "application_type": "web",
- *       "logo_uri": "https://client.example.org/logo.png",
- *       "scopes": [
- *           "openid", "profile"
- *       ],
- *       "token_endpoint_auth_method": "client_secret_basic"
- *   }
- * }
+ *  "name": "Portal",
+ *     "type": "OAuth2ClientFilter",
+ *     "config": {
+ *         "clientEndpoint": "/openid",
+ *         "requireHttps": false,
+ *         "requireLogin": true,
+ *         "loginHandler": "NascarPage",
+ *         "scopes": [
+ *             "openid",
+ *             "profile",
+ *             "email"
+ *         ],
+ *         "target": "${exchange.attributes.openid}",
+ *         "failureHandler": ...,
+ *         "redirect_uris": [
+ *             "http://localhost:8082/openid/callback",
+ *             "http://localhost:8082/openid/callback2"
+ *         ],
+ *         "client_name": "My App",
+ *         "contacts": ["ve7jtb@example.org", "mary@example.org"]
  * }
  * </pre>
  *
@@ -96,7 +85,7 @@ import org.forgerock.util.promise.Promise;
  * @see <a href="https://openid.net/specs/openid-connect-registration-1_0.html">
  *      OpenID Connect Dynamic Client Registration 1.0</a>
  */
-public class ClientRegistrationFilter extends GenericHeapObject implements Filter {
+public class ClientRegistrationFilter implements Filter {
     private final Handler registrationHandler;
     private final Heap heap;
     private final JsonValue config;
@@ -130,23 +119,16 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
     public Promise<Response, NeverThrowsException> filter(Context context,
                                                           Request request,
                                                           Handler next) {
-        if (!config.isDefined("redirect_uris")) {
-            return newResultPromise(
-                    newInternalServerError("Cannot perform dynamic registration: 'redirect_uris' should be defined"));
-        }
-        return callFilterWithRedirectUris(context, request, next);
-
-    }
-
-    private Promise<Response, NeverThrowsException> callFilterWithRedirectUris(final Context context,
-                                                                               final Request request,
-                                                                               final Handler next) {
         try {
             final Exchange exchange = context.asContext(Exchange.class);
             final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);
             if (issuer != null) {
                 ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
                 if (cr == null) {
+                    if (!config.isDefined("redirect_uris")) {
+                        throw new RegistrationException(
+                                "Cannot perform dynamic registration: 'redirect_uris' should be defined");
+                    }
                     if (issuer.getRegistrationEndpoint() == null) {
                         throw new RegistrationException(format("Registration is not supported by the issuer '%s'",
                                 issuer));
@@ -162,8 +144,7 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
                 throw new RegistrationException("Cannot retrieve issuer from the exchange");
             }
         } catch (RegistrationException e) {
-            return newResultPromise(
-                    newInternalServerError("An error occured during dynamic registration process", e));
+            return newResultPromise(newInternalServerError(e));
         } catch (HeapException e) {
             return newResultPromise(
                     newInternalServerError("Cannot inject inlined Client Registration declaration to heap", e));
@@ -198,22 +179,6 @@ public class ClientRegistrationFilter extends GenericHeapObject implements Filte
             return getJsonContent(response);
         } catch (OAuth2ErrorException e) {
             throw new RegistrationException("Cannot perform dynamic registration: invalid response JSON content.");
-        }
-    }
-
-    /** Creates and initializes the dynamic registration filter in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
-        @Override
-        public Object create() throws HeapException {
-            Handler handler = null;
-            if (config.isDefined("registrationHandler")) {
-                handler = heap.resolve(config.get("registrationHandler"), Handler.class);
-            } else {
-                handler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
-            config.get("redirectUris").defaultTo(config.get("redirect_uris")).required().asList(String.class);
-            final String suffix = config.get("suffix").defaultTo(this.name).asString();
-            return new ClientRegistrationFilter(handler, config, heap, suffix);
         }
     }
 }

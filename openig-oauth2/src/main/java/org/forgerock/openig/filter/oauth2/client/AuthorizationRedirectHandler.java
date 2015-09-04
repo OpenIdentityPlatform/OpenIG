@@ -27,6 +27,7 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 
 import java.math.BigInteger;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.List;
 
@@ -36,8 +37,6 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -57,7 +56,8 @@ import org.forgerock.util.time.TimeService;
  *     &scope=openid%20profile%20email                       // from ClientRegistration
  *     &client_id=s6BhdRkqt3                                 // from ClientRegistration
  *     &state=af0ifjsldkj
- *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb   // from Client Registration
+ *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb   // from Client Registration or if none,
+ *                                                              default to loginEndpoint callback URI.
  *     &login_hint=<input if available>                      // login_hint from OPENID RFC.
  * }
  * </pre>
@@ -66,7 +66,7 @@ import org.forgerock.util.time.TimeService;
  *      href="http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest">
  *      OpenID Connect Core 1.0 </a>
  */
-public class AuthorizationRedirectHandler implements Handler {
+class AuthorizationRedirectHandler implements Handler {
     @Override
     public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
@@ -81,8 +81,10 @@ public class AuthorizationRedirectHandler implements Handler {
             final Form query = new Form();
             query.add("response_type", "code");
             query.add("client_id", cr.getClientId());
-            for (final String redirect : cr.getRedirectUris()) {
-                query.add("redirect_uri", redirect);
+            if (cr.getRedirectUris() != null) {
+                query.addAll("redirect_uri", cr.getRedirectUris());
+            } else {
+                query.putSingle("redirect_uri",  buildDefaultCallbackUri(clientEndpoint));
             }
             query.add("scope", joinAsString(" ", requestedScopes));
             if (loginHint != null && !loginHint.isEmpty()) {
@@ -130,6 +132,15 @@ public class AuthorizationRedirectHandler implements Handler {
         }
     }
 
+    private String buildDefaultCallbackUri(final URI clientEndpoint) {
+        try {
+            return new URI(clientEndpoint + "/callback").toString();
+        } catch (URISyntaxException ex) {
+            // Should never happen
+            return null;
+        }
+    }
+
     private String createAuthorizationNonce() {
         return new BigInteger(160, new SecureRandom()).toString(Character.MAX_RADIX);
     }
@@ -162,13 +173,5 @@ public class AuthorizationRedirectHandler implements Handler {
 
     private String sessionKey(final Exchange exchange, final URI clientEndpoint) {
         return "oauth2:" + clientEndpoint;
-    }
-
-    /** Creates and initializes an authorization redirect in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
-        @Override
-        public Object create() throws HeapException {
-            return new AuthorizationRedirectHandler();
-        }
     }
 }

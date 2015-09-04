@@ -16,14 +16,12 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.protocol.Status.OK;
-import static org.forgerock.http.util.Uris.urlDecode;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -40,13 +38,9 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
-import org.forgerock.openig.handler.ClientHandler;
-import org.forgerock.openig.heap.GenericHeapObject;
-import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -61,32 +55,32 @@ import org.forgerock.util.promise.Promise;
  * address or a URL Syntax or even a HostName and Port Syntax.
  * </p>
  * <p>
- * The user input is given from the query parameters {@code '?discovery=<userInput>'}.
+ * The user input is given
+ * from the query parameters {@code '?discovery=<userInput>'}.
  * <br>
- * Several info are extracted from the input to retrieve the OpenID Issuer.
+ * Discovery is in two part. The first extracts the host name and a normalized
+ * user input from the given input.
  * <br>
- * The WebFinger requests the extracted hostname, to get the corresponding
- * OpenID Issuer location which match the selected type of
- * service ("http://openid.net/specs/connect/1.0/issuer").
+ * Then, IG verifies if an existing {@link Issuer} already exists in the heap
+ * corresponding to the extracted host name. If it exists, reuse it. If not,
+ * IG verifies this host name is not part of an Issuer "supportedDomain".
+ * If the host name belongs to an {@link Issuer} supported Domain, this
+ * {@link Issuer} is used. Otherwise, discovery process continues...
  * <br>
- * Based on the Issuer location, the OpenID well-known end-point is extracted and
- * the filter builds a {@link Issuer} which is placed in the exchange and in the heap.
+ * In the second part, the WebFinger uses the extracted host name,
+ * to get the corresponding OpenID Issuer location which match the selected
+ * type of service ("http://openid.net/specs/connect/1.0/issuer") if it exists.
+ * <br>
+ * Based on the returned OpenID Issuer's location, the OpenID well-known
+ * end-point is extracted and the filter builds a {@link Issuer} which is
+ * placed in the exchange and in the heap to be reused if needed.
  * </p>
- *
- * <pre>
- * {@code
- * {
- *   "discoveryHandler" : handler          [OPTIONAL - default is using a new ClientHandler
- *                                                     wrapping the default HttpClient.]
- * }
- * }
- * </pre>
  *
  * @see <a href="https://openid.net/specs/openid-connect-discovery-1_0.html">
  *      OpenID Connect Dynamic Client Registration 1.0</a>
  * @see <a href="https://tools.ietf.org/html/rfc7033">WebFinger</a>
  */
-public class DiscoveryFilter extends GenericHeapObject implements Filter {
+public class DiscoveryFilter implements Filter {
     static final String OPENID_SERVICE = "http://openid.net/specs/connect/1.0/issuer";
     private static final String WELLKNOWN_WEBFINGER = ".well-known/webfinger";
     private static final String WELLKNOWN_OPENID_CONFIGURATION = ".well-known/openid-configuration";
@@ -114,7 +108,7 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
         final Exchange exchange = context.asContext(Exchange.class);
 
         try {
-            final AccountIdentifier account = extractFromInput(urlDecode(request.getForm().getFirst("discovery")));
+            final AccountIdentifier account = extractFromInput(request.getForm().getFirst("discovery"));
             final String hostString = account.getHostBase().toASCIIString();
             /* Auto-created Issuer heap objects are named according to the discovered host base. */
             Issuer issuer = heap.get(hostString, Issuer.class);
@@ -233,7 +227,7 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
             throw new IllegalArgumentException("Invalid input");
         }
 
-        URI uri = null;
+        final URI uri;
         String normalizedIdentifier = decodedUserInput;
         if (decodedUserInput.startsWith("acct:") || decodedUserInput.contains("@")) {
             /* email case */
@@ -263,21 +257,6 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
                                              null, host, port, "/", null, null));
     }
 
-    /** Creates and initializes the discovery filter in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            Handler discoveryHandler = null;
-            if (config.isDefined("discoveryHandler")) {
-                discoveryHandler = heap.resolve(config.get("discoveryHandler"), Handler.class);
-            } else {
-                discoveryHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
-            return new DiscoveryFilter(discoveryHandler, heap);
-        }
-    }
-
     final class AccountIdentifier {
         private final URI normalizedIdentifier;
         private final URI hostBase;
@@ -298,11 +277,11 @@ public class DiscoveryFilter extends GenericHeapObject implements Filter {
         }
 
         /**
-         * Returns the host base of this account where a WebFinger service is
-         * hosted.
+         * Returns the host base of this account which could belong to an
+         * {@link Issuer} supported domains or should be the host location where
+         * is hosted the WebFinger service.
          *
-         * @return The host base of this account where a WebFinger service is
-         *         hosted.
+         * @return The host base of this account.
          */
         URI getHostBase() {
             return hostBase;
