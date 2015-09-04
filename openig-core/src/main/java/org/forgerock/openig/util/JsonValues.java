@@ -243,6 +243,35 @@ public final class JsonValues {
     }
 
     /**
+     * Returns, if the given JSON value contains one of the names, the first
+     * defined JSON value, otherwise if the given JSON value does not match any
+     * of the names, then a JsonValue encapsulating null is returned. <br />
+     * Example of use:
+     *
+     * <pre>{@code
+     * Uri uri = firstOf(config, "authorizeEndpoint", "authorize_endpoint").required().asURI();
+     * }</pre>
+     *
+     * @param config
+     *            The JSON value where one of the selected names can be found.
+     *            Usually in a heaplet configuration for example.
+     * @param names
+     *            Names of the attributes that you are looking for.
+     * @return the specified item JSON value or JsonValue encapsulating null if
+     *         none were found.
+     */
+    public static JsonValue firstOf(final JsonValue config, final String... names) {
+        if (names != null) {
+            for (final String name : names) {
+                if (config.isDefined(name)) {
+                    return config.get(name);
+                }
+            }
+        }
+        return new JsonValue(null);
+    }
+
+    /**
      * Returns a function for transforming JsonValues to expressions.
      *
      * @return A function for transforming JsonValues to expressions.
