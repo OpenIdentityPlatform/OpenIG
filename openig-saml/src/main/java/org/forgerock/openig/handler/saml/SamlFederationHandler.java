@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
@@ -175,7 +175,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         HttpServletRequest servletRequest = adaptRequest(exchange);
         HttpServletResponse servletResponse = adaptResponse(exchange);
 
-        Session session = context.asContext(HttpRequestContext.class).getSession();
+        Session session = context.asContext(SessionContext.class).getSession();
         try {
             String path = request.getUri().getPath();
             if (path.indexOf(assertionConsumerEndpoint) > 0) {

@@ -18,15 +18,19 @@ package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.forgerock.http.context.ClientContext.buildExternalClientContext;
+
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.Session;
-import org.forgerock.http.context.ClientInfoContext;
-import org.forgerock.http.context.HttpRequestContext;
+import org.forgerock.http.context.AttributesContext;
+import org.forgerock.http.context.ClientContext;
 import org.forgerock.http.context.RootContext;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -86,10 +90,9 @@ public class GatewayHttpApplicationTest {
         assertThat(promise.get().getStatus()).isEqualTo(Status.TEAPOT);
     }
 
-    private HttpRequestContext buildContext() {
-        ClientInfoContext clientInfoContext = ClientInfoContext.builder(new RootContext()).certificates().build();
-        HttpRequestContext context = new HttpRequestContext(clientInfoContext, new SimpleMapSession());
-        return context;
+    private Context buildContext() {
+        ClientContext clientInfoContext = buildExternalClientContext(new RootContext()).certificates().build();
+        return new AttributesContext(new SessionContext(clientInfoContext, new SimpleMapSession()));
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

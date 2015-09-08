@@ -18,9 +18,10 @@ package org.forgerock.openig.http;
 
 import java.io.IOException;
 
-import org.forgerock.http.context.ClientInfoContext;
+import org.forgerock.http.context.AttributesContext;
+import org.forgerock.http.context.ClientContext;
 import org.forgerock.http.Context;
-import org.forgerock.http.context.HttpRequestContext;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;
@@ -47,15 +48,14 @@ public final class Adapters {
      * @return An HTTP exchange of request which can be used in legacy OpenIG.
      */
     public static Exchange asExchange(Context context, Request request) {
-        HttpRequestContext requestContext = context.asContext(HttpRequestContext.class);
         final Exchange exchange = new Exchange(context, request.getUri().asURI());
-        exchange.setClientInfo(context.asContext(ClientInfoContext.class));
-        exchange.setPrincipal(requestContext.getPrincipal());
-        exchange.setSession(requestContext.getSession());
+        exchange.setClientContext(context.asContext(ClientContext.class));
+        exchange.setSession(context.asContext(SessionContext.class).getSession());
         exchange.setRequest(request);
         // TODO We will need to find a more robust solution when Exchange will be removed
-        exchange.getAttributes().putAll(requestContext.getAttributes());
-        requestContext.getAttributes().clear();
+        final AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        exchange.getAttributes().putAll(attributesContext.getAttributes());
+        attributesContext.getAttributes().clear();
         return exchange;
     }
 

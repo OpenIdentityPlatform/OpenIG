@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
@@ -188,20 +188,20 @@ class Route implements Handler {
             return handler.handle(context, request);
         } else {
             // Swap the session instance
-            final HttpRequestContext httpContext = context.asContext(HttpRequestContext.class);
-            final Session session = httpContext.getSession();
-            httpContext.setSession(sessionManager.load(request));
+            final SessionContext sessionContext = context.asContext(SessionContext.class);
+            final Session session = sessionContext.getSession();
+            sessionContext.setSession(sessionManager.load(request));
             return handler.handle(context, request)
                           .thenOnResult(new ResultHandler<Response>() {
                               @Override
                               public void handleResult(Response response) {
-                                  save(httpContext.getSession(), response);
+                                  save(sessionContext.getSession(), response);
                               }
                           })
                           .thenAlways(new Runnable() {
                               @Override
                               public void run() {
-                                  httpContext.setSession(session);
+                                  sessionContext.setSession(session);
                               }
                           });
         }

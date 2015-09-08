@@ -26,9 +26,9 @@ import java.util.HashMap;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.context.RootContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -124,8 +124,8 @@ public class RouteBuilderTest {
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
         SimpleMapSession simpleSession = new SimpleMapSession();
-        HttpRequestContext httpContext = new HttpRequestContext(new RootContext(), simpleSession);
-        Exchange exchange = new Exchange(httpContext, null);
+        SessionContext sessionContext = new SessionContext(new RootContext(), simpleSession);
+        Exchange exchange = new Exchange(sessionContext, null);
         exchange.setRequest(new Request());
         exchange.setSession(simpleSession);
 
@@ -134,7 +134,7 @@ public class RouteBuilderTest {
                         .get()
                         .getHeaders()
                         .getFirst("Set-Cookie")).isNotNull();
-        assertThat(httpContext.getSession()).isEmpty();
+        assertThat(sessionContext.getSession()).isEmpty();
 
     }
 
@@ -149,7 +149,7 @@ public class RouteBuilderTest {
 
         @Override
         public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-            Session session = context.asContext(HttpRequestContext.class).getSession();
+            Session session = context.asContext(SessionContext.class).getSession();
             session.put("ForgeRock", "OpenIG");
             return Promises.newResultPromise(new Response());
         }
