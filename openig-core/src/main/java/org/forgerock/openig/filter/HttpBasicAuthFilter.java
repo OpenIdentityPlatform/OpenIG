@@ -30,8 +30,8 @@ import java.util.Arrays;
 import org.forgerock.http.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -125,7 +125,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                                                           final Handler next) {
 
         Exchange exchange = context.asContext(Exchange.class);
-        Session session = context.asContext(HttpRequestContext.class).getSession();
+        Session session = context.asContext(SessionContext.class).getSession();
 
         // Remove existing headers from incoming message
         for (String header : SUPPRESS_REQUEST_HEADERS) {

@@ -27,8 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.HttpRequestContext;
 import org.forgerock.http.Session;
+import org.forgerock.http.context.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -286,7 +286,7 @@ public class HttpBasicAuthFilterTest {
     }
 
     private Exchange newExchange() throws Exception {
-        Exchange exchange = new Exchange(new HttpRequestContext(null, session), null);
+        Exchange exchange = new Exchange(new SessionContext(null, session), null);
         return exchange;
     }
 

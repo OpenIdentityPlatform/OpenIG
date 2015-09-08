@@ -22,13 +22,12 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.Context;
 import org.forgerock.http.Session;
-import org.forgerock.http.context.ClientInfo;
+import org.forgerock.http.context.ClientContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
@@ -60,8 +59,7 @@ public class Exchange implements Context {
     private final URI originalUri;
     private final Context parent;
 
-    private ClientInfo clientInfo;
-    private Principal principal;
+    private ClientContext clientContext;
     private Request request;
     private Response response;
     private Session session;
@@ -193,24 +191,6 @@ public class Exchange implements Context {
     }
 
     /**
-     * The principal associated with the request, or {@code null} if unknown.
-     *
-     * @return the principal
-     */
-    public Principal getPrincipal() {
-        return principal;
-    }
-
-    /**
-     * Sets the principal associated with the request.
-     *
-     * @param principal the principal to set
-     */
-    public void setPrincipal(Principal principal) {
-        this.principal = principal;
-    }
-
-    /**
      * Self-referential value to make this the root object in the exchange object model.
      *
      * @return the exchange
@@ -240,19 +220,19 @@ public class Exchange implements Context {
     /**
      * The info we can obtain from the client from this request.
      *
-     * @return the clientInfo
+     * @return the client info
      */
-    public ClientInfo getClientInfo() {
-        return clientInfo;
+    public ClientContext getClientContext() {
+        return clientContext;
     }
 
     /**
      * Sets the clientInfo.
      *
-     * @param clientInfo the clientInfo to set
+     * @param clientContext the clientInfo to set
      */
-    public void setClientInfo(ClientInfo clientInfo) {
-        this.clientInfo = clientInfo;
+    public void setClientContext(ClientContext clientContext) {
+        this.clientContext = clientContext;
     }
 
     /**
