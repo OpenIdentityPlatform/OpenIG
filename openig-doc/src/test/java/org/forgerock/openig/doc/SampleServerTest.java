@@ -16,51 +16,49 @@
 
 package org.forgerock.openig.doc;
 
-
 import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 @SuppressWarnings("javadoc")
-public class ITSampleServerTest {
+public class SampleServerTest {
 
-    private WebClient webClient;
-    private URL serverUrl;
-    private URL httpsServerUrl;
-    private static final Logger logger =
-            Logger.getLogger(ITSampleServerTest.class.getName());
+    private static WebClient webClient;
+    private static URL serverUrl;
+    private static URL httpsServerUrl;
+    private static final Logger logger = Logger.getLogger(SampleServerTest.class.getName());
     private static String port;
     private static String sslPort;
     private static HttpServer httpServer;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeTest
+    public static void setUp() throws Exception {
         port = System.getProperty("serverPort");
         sslPort = System.getProperty("serverSslPort");
+        logger.info("Port: " +  port + ", SSL Port: " + sslPort);
         httpServer = SampleServer.start(Integer.parseInt(port), Integer.parseInt(sslPort));
-    }
 
-    @Before
-    public void setUp() throws Exception {
         webClient = new WebClient();
         webClient.setUseInsecureSSL(true);
         serverUrl = new URL("http://localhost:" + port);
         httpsServerUrl = new URL("https://localhost:" + sslPort);
     }
 
-    @After
+    @AfterTest
     public void tearDown() throws Exception {
         webClient.closeAllWindows();
     }
@@ -77,7 +75,6 @@ public class ITSampleServerTest {
         // Check for HTTP 200 OK and the home page in the body of the response
         logger.info("Testing equivalent of "
                 + "curl --verbose http://localhost:" + port);
-
 
         final WebRequest webRequest = new WebRequest(serverUrl, HttpMethod.GET);
         final WebResponse webResponse = webClient.loadWebResponse(webRequest);
@@ -155,5 +152,37 @@ public class ITSampleServerTest {
         final WebResponse webResponse = webClient.loadWebResponse(webRequest);
 
         Assert.assertEquals(webResponse.getStatusCode(), 403);
+    }
+
+    @Test
+    public void testValidWebFingerRequest() throws Exception {
+        logger.info("Testing equivalent of curl http://localhost:" + port
+                + "/.well-known/webfinger?resource=resource");
+        final URL webFingerUrl = new URL("http://localhost:" + port + "/.well-known/webfinger");
+
+        final WebRequest webRequest = new WebRequest(webFingerUrl, HttpMethod.GET);
+        final List<NameValuePair> parameters = new ArrayList<>();
+        parameters.add(new NameValuePair("resource", "resource"));
+        webRequest.setRequestParameters(parameters);
+        final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+        Assert.assertEquals(webResponse.getStatusCode(), 200);
+        Assert.assertEquals(webResponse.getContentAsString(),
+                "{ \"subject\": \"resource\", \"links\": "
+                        + "[ { \"rel\": \"http://openid.net/specs/connect/1.0/issuer\", "
+                        + "\"href\": \"http://openam.example.com:8088/openam/oauth2\" } ] }");
+    }
+
+    @Test
+    public void testBrokenWebFingerRequest() throws Exception {
+        logger.info("Testing equivalent of curl http://localhost:" + port + "/.well-known/webfinger");
+
+        final URL webFingerUrl = new URL("http://localhost:" + port + "/.well-known/webfinger");
+        final WebRequest webRequest = new WebRequest(webFingerUrl, HttpMethod.GET);
+        final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+        Assert.assertEquals(webResponse.getStatusCode(), 400);
+        Assert.assertEquals(webResponse.getContentAsString(),
+                "{ \"error\": \"Request must include a resource parameter.\" }");
     }
 }
