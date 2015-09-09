@@ -67,13 +67,6 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
        <groupId>net.sourceforge.htmlunit</groupId>
        <artifactId>htmlunit</artifactId>
        <version>2.9</version>
@@ -90,6 +83,13 @@
        <groupId>org.testng</groupId>
        <artifactId>testng</artifactId>
        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.5</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -155,18 +155,15 @@
         </executions>
       </plugin>
 
-      <!-- Skip functional tests -->
+      <!-- Run the tests with the Failsafe plugin, not the Surefire plugin. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>**/IT*.java</exclude>
-          </excludes>
+          <skip>true</skip>
         </configuration>
       </plugin>
 
-      <!-- Run functional tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -175,6 +172,9 @@
             <serverPort>${port}</serverPort>
             <serverSslPort>${sslPort}</serverSslPort>
           </systemPropertyVariables>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
         </configuration>
         <executions>
           <execution>

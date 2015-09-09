@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.doc;
 
+import static org.forgerock.guava.common.base.Strings.isNullOrEmpty;
+import org.forgerock.json.JsonValue;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -29,6 +31,9 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -44,32 +49,57 @@ public final class SampleServer {
     private static final Logger LOGGER = Logger.getLogger(SampleServer.class.getName());
     private static final int DEFAULT_PORT = 8081;
     private static final int DEFAULT_SSL_PORT = 8444;
+    /** URL used to contact OpenAM. */
+    private static String openamUrl;
 
     /**
      * Start an HTTP server.
      *
      * @param args Optionally specify a free port number and free SSL port number.
      *             Defaults: 8081 (HTTP), 8444 (HTTPS).
+     *             Also optionally specify a URL used to contact OpenAM.
+     *             Default: http://openam.example.com:8088/openam/oauth2
      */
     public static void main(String[] args) {
-        final String usage = "Optionally specify HTTP and HTTPS port numbers. Defaults: 8081, 8444.";
+        final String usage = "Optionally specify HTTP and HTTPS port numbers. "
+                + "Defaults: " + DEFAULT_PORT + ", " + DEFAULT_SSL_PORT + ".\n"
+                + "Also optionally specify a URL to contact OpenAM. "
+                + "Default: " + getOpenamUrl();
         int port = DEFAULT_PORT;
         int sslPort = DEFAULT_SSL_PORT;
 
-        if (args.length > 2) {
+        if (args.length > 3) {
             System.out.println(usage);
             System.exit(-1);
         }
 
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
-            if (args.length == 2) {
+            if (args.length >= 2) {
                 sslPort = Integer.parseInt(args[1]);
             }
+            if (args.length == 3) {
+                openamUrl = args[2];
+            }
         }
+        // If the OpenAM URL is not set, set it now.
+        openamUrl = getOpenamUrl();
 
         LOGGER.setLevel(Level.INFO);
         runServer(port, sslPort);
+    }
+
+    /**
+     * Returns the URL used to contact OpenAM,
+     * setting it to the default if it is not already set.
+     * @return The URL used to contact OpenAM.
+     */
+    private static String getOpenamUrl() {
+        if (isNullOrEmpty(openamUrl)) {
+            return "http://openam.example.com:8088/openam/oauth2";
+        } else {
+            return openamUrl;
+        }
     }
 
     /**
@@ -121,6 +151,8 @@ public final class SampleServer {
             httpServer.getListener("HTTPS").setSecure(true);
         }
         httpServer.getServerConfiguration().addHttpHandler(new SampleHandler());
+
+        System.out.println("Using OpenAM URL: " + getOpenamUrl() + ".");
 
         if (waitForCtrlC) {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -236,6 +268,39 @@ public final class SampleServer {
         public void service(Request request, Response response) throws Exception {
             if (request.getHttpHandlerPath().equalsIgnoreCase("/login")) {
                 response.addCookie(new Cookie("login-cookie", "chocolate chip"));
+            }
+
+            if (request.getHttpHandlerPath().equalsIgnoreCase("/.well-known/webfinger")) {
+                // See http://tools.ietf.org/html/rfc7033
+                // This is not fully compliant. Just enough for an OIDC discovery example.
+                response.setContentType("application/jrd+json");
+                response.setCharacterEncoding("UTF-8");
+
+                String subject = request.getParameter("resource");
+                if (isNullOrEmpty(subject)) {
+                    JsonValue error = new JsonValue(new LinkedHashMap<String, Object>());
+                    error.put("error", "Request must include a resource parameter.");
+                    response.setStatus(400, "Bad Request");
+                    response.setContentLength(error.toString().length());
+                    response.getWriter().write(error.toString());
+                    return;
+                }
+
+                LinkedHashMap<String, Object> links = new LinkedHashMap<>();
+                // Just enough for an OIDC discovery example.
+                links.put("rel", "http://openid.net/specs/connect/1.0/issuer");
+                links.put("href", getOpenamUrl());
+                List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+                list.add(links);
+                JsonValue json = new JsonValue(new LinkedHashMap<String, Object>());
+                json.put("subject", subject);
+                json.put("links", list);
+
+                response.setStatus(200, "OK");
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                response.setContentLength(json.toString().length());
+                response.getWriter().write(json.toString());
+                return;
             }
 
             if (Method.GET == request.getMethod()) {
