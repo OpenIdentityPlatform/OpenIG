@@ -27,11 +27,11 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.Session;
-import org.forgerock.http.context.SessionContext;
+import org.forgerock.http.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

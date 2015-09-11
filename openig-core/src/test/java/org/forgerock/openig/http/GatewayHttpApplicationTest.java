@@ -18,19 +18,19 @@ package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
-import static org.forgerock.http.context.ClientContext.buildExternalClientContext;
+import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.Session;
-import org.forgerock.http.context.AttributesContext;
-import org.forgerock.http.context.ClientContext;
-import org.forgerock.http.context.RootContext;
-import org.forgerock.http.context.SessionContext;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.ClientContext;
+import org.forgerock.services.context.RootContext;
+import org.forgerock.http.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

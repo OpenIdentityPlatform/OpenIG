@@ -31,7 +31,7 @@ import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;

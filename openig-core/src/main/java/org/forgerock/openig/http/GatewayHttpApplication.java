@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;

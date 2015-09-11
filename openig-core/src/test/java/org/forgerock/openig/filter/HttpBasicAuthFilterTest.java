@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.Session;
-import org.forgerock.http.context.SessionContext;
+import org.forgerock.http.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

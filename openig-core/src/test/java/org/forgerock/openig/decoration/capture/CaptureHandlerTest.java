@@ -33,6 +33,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -55,7 +56,7 @@ public class CaptureHandlerTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         response = new Response();
-        when(delegate.handle(any(org.forgerock.http.Context.class), any(Request.class)))
+        when(delegate.handle(any(Context.class), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
     }
 

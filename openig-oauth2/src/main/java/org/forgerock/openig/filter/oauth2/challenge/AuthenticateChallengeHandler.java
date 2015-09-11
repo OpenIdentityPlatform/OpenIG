@@ -19,7 +19,7 @@ package org.forgerock.openig.filter.oauth2.challenge;
 import static java.lang.String.format;
 import static org.forgerock.util.Reject.checkNotNull;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;

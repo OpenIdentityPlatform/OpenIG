@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -67,7 +67,7 @@ public class CaptureFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         response = new Response();
-        when(terminal.handle(any(org.forgerock.http.Context.class), any(Request.class)))
+        when(terminal.handle(any(Context.class), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
     }
 
