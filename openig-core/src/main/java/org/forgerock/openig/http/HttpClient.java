@@ -38,11 +38,11 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.handler.HttpClientHandler.HostnameVerifier;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.context.RootContext;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;

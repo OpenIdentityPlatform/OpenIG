@@ -269,8 +269,9 @@ public class DecoratorSystemTest {
             final Handler handler = (Handler) delegate;
             return new Handler() {
                 @Override
-                public Promise<Response, NeverThrowsException> handle(final org.forgerock.http.Context context,
-                                                                      final Request request) {
+                public Promise<Response, NeverThrowsException> handle(
+                        final org.forgerock.services.context.Context context,
+                        final Request request) {
                     return handler.handle(context, request)
                             .then(new Function<Response, Response, NeverThrowsException>() {
                                 @Override

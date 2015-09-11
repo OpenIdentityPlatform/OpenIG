@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;

@@ -21,7 +21,7 @@ import static org.forgerock.openig.util.JsonValues.asExpression;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.util.Uris;

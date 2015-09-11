@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.context.RootContext;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.http.Session;
 import org.forgerock.http.SessionManager;
-import org.forgerock.http.context.SessionContext;
+import org.forgerock.http.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;

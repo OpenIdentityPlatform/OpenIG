@@ -24,7 +24,7 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.net.URI;
 
-import org.forgerock.http.Context;
+import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
