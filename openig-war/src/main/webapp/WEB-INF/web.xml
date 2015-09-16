@@ -15,9 +15,11 @@
   Copyright 2010-2011 ApexIdentity Inc.
   Portions Copyright 2011-2015 ForgeRock AS.
 -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
-    <display-name>ForgeRock OpenIG</display-name>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+  <display-name>ForgeRock OpenIG</display-name>
 
   <servlet>
     <servlet-name>HttpFrameworkServlet</servlet-name>
@@ -25,9 +27,9 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
 
-    <servlet-mapping>
-        <servlet-name>HttpFrameworkServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>HttpFrameworkServlet</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
 
 </web-app>
