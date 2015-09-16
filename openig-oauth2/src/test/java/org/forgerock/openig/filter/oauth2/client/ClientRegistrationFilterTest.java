@@ -68,6 +68,7 @@ public class ClientRegistrationFilterTest {
         final ClientRegistrationFilter drf = buildFilter();
         final Response response = new Response();
         response.setStatus(Status.CREATED);
+        response.setEntity(json(object()));
         when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
         // when
         drf.performDynamicClientRegistration(exchange, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
