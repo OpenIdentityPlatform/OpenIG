@@ -170,6 +170,7 @@ public class ClientRegistrationTest {
         final ClientRegistration cr = buildClientRegistration();
         final Response response = new Response();
         response.setStatus(Status.OK);
+        response.setEntity(json(object(field("access_token", "ae32f"))));
         when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
@@ -201,6 +202,7 @@ public class ClientRegistrationTest {
         final ClientRegistration clientRegistration = buildClientRegistration();
         Response response = new Response();
         response.setStatus(Status.OK);
+        response.setEntity(json(object(field("access_token", "ae32f"))));
         when(handler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
@@ -233,6 +235,7 @@ public class ClientRegistrationTest {
         final ClientRegistration clientRegistration = buildClientRegistration();
         Response response = new Response();
         response.setStatus(Status.OK);
+        response.setEntity(json(object(field("name", "bjensen"))));
         when(handler.handle(eq(exchange), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
