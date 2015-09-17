@@ -17,7 +17,7 @@
 
 package org.forgerock.openig.text;
 
-import static org.forgerock.http.util.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.*;
 
 import java.io.File;
 import java.io.FileInputStream;
