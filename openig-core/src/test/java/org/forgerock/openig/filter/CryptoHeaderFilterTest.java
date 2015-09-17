@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.security.KeyPairGenerator.getInstance;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.util.StandardCharsets.UTF_8;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
