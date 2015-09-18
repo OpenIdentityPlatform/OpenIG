@@ -18,7 +18,7 @@
 
 def userPass = username + ":" + password
 def base64UserPass = userPass.getBytes().encodeBase64()
-exchange.request.headers.add("Authorization", "Basic ${base64UserPass}" as String)
+request.headers.add("Authorization", "Basic ${base64UserPass}" as String)
 
 // Credentials are only base64-encoded, not encrypted: Set scheme to HTTPS.
 
@@ -33,7 +33,8 @@ exchange.request.headers.add("Authorization", "Basic ${base64UserPass}" as Strin
  * Either use a server certificate signed by a well-known CA,
  * or set up the gateway to trust the server certificate.
  */
-exchange.request.uri.scheme = "https"
+request.uri.scheme = "https"
 
-// Call the next handler. This returns when the request has been handled.
-next.handle(exchange)
+// Calls the next Handler and returns a Promise of the Response.
+// The Response can be handled with asynchronous Promise callbacks.
+next.handle(context, request)

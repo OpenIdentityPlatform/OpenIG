@@ -26,6 +26,7 @@ import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * A scriptable filter. This filter acts as a simple wrapper around the
@@ -53,9 +54,14 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Exchange exchange = context.asContext(Exchange.class);
+        final Exchange exchange = context.asContext(Exchange.class);
         // Delegates filtering to the script.
-        return runScript(exchange, request, next);
+        return runScript(exchange, request, next).thenOnResult(new ResultHandler<Response>() {
+            @Override
+            public void handleResult(final Response result) {
+                exchange.setResponse(result);
+            }
+        });
     }
 
     /**

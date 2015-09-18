@@ -16,20 +16,16 @@
 
 package org.forgerock.openig.http;
 
-import java.io.IOException;
-
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.protocol.Request;
-import org.forgerock.openig.handler.Handler;
-import org.forgerock.openig.handler.HandlerException;
 
 /**
  * Adapters for converting between HTTP framework and legacy OpenIG APIs.
  *
- * FIXME: Temporary until the IG migrates to using the http framework {@link org.forgerock.http.Handler}.
+ * FIXME: Temporary until OpenIG drops the Exchange.
  */
 public final class Adapters {
 
@@ -58,34 +54,4 @@ public final class Adapters {
         attributesContext.getAttributes().clear();
         return exchange;
     }
-
-    /**
-     * Converts a {@link org.forgerock.http.Handler} to a
-     * {@link org.forgerock.openig.handler.Handler} used in scripts.
-     *
-     * @param handler
-     *            The handler to converts to.
-     * @return A {@link org.forgerock.openig.handler.Handler} used in scripts.
-     */
-    public static Handler asHandler(org.forgerock.http.Handler handler) {
-        return new ChfHandlerDelegate(handler);
-    }
-
-    private static class ChfHandlerDelegate implements Handler {
-        private final org.forgerock.http.Handler handler;
-
-        public ChfHandlerDelegate(final org.forgerock.http.Handler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void handle(final Exchange exchange) throws HandlerException, IOException {
-            try {
-                exchange.setResponse(handler.handle(exchange, exchange.getRequest()).getOrThrow());
-            } catch (InterruptedException e) {
-                throw new HandlerException(e);
-            }
-        }
-    }
-
 }

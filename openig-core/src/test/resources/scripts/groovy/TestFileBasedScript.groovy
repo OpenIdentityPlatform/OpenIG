@@ -1,2 +1,3 @@
-import org.forgerock.http.protocol.Response
-exchange.response = new Response()
+import org.forgerock.http.protocol.*
+// Return the locally created response, no need to wrap it into a Promise
+new Response(Status.OK)

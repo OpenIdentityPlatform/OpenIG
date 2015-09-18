@@ -25,6 +25,7 @@ import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 
 /**
  * A scriptable handler. This handler acts as a simple wrapper around the
@@ -46,8 +47,13 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Exchange exchange = context.asContext(Exchange.class);
-        return runScript(exchange, request, null);
+        final Exchange exchange = context.asContext(Exchange.class);
+        return runScript(exchange, request, null).thenOnResult(new ResultHandler<Response>() {
+            @Override
+            public void handleResult(final Response result) {
+                exchange.setResponse(result);
+            }
+        });
     }
 
     /**

@@ -5,12 +5,13 @@
  */
 
 def client = new SqlClient()
-def credentials = client.getCredentials(exchange.request.form?.mail[0])
-exchange.request.headers.add("Username", credentials.Username)
-exchange.request.headers.add("Password", credentials.Password)
+def credentials = client.getCredentials(request.form?.mail[0])
+request.headers.add("Username", credentials.Username)
+request.headers.add("Password", credentials.Password)
 
 // The credentials are not protected in the headers, so use HTTPS.
-exchange.request.uri.scheme = "https"
+request.uri.scheme = "https"
 
-// Call the next handler. This returns when the request has been handled.
-next.handle(exchange)
+// Calls the next Handler and returns a Promise of the Response.
+// The Response can be handled with asynchronous Promise callbacks.
+next.handle(context, request)

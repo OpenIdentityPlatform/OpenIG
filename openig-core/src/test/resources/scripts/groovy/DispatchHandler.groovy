@@ -8,24 +8,24 @@ import org.forgerock.http.protocol.Status
  * Otherwise it returns HTTP 401 Unauthorized.
  */
 
-// Rather than get the response from an external source,
-// this handler produces the response itself.
-exchange.response = new Response();
+// Rather than return a Promise of a response from an external source,
+// this script returns the response itself.
+response = new Response();
 
-switch (exchange.request.uri.path) {
+switch (request.uri.path) {
 
     case "/login":
 
-        if (exchange.request.headers.Username.values[0] == "bjensen" &&
-                exchange.request.headers.Password.values[0] == "hifalutin") {
+        if (request.headers.Username.values[0] == "bjensen" &&
+                request.headers.Password.values[0] == "hifalutin") {
 
-            exchange.response.status = Status.OK
-            exchange.response.entity = "<html><p>Welcome back, Babs!</p></html>"
+            response.status = Status.OK
+            response.entity = "<html><p>Welcome back, Babs!</p></html>"
 
         } else {
 
-            exchange.response.status = Status.FORBIDDEN
-            exchange.response.entity = "<html><p>Authorization required</p></html>"
+            response.status = Status.FORBIDDEN
+            response.entity = "<html><p>Authorization required</p></html>"
 
         }
 
@@ -33,9 +33,13 @@ switch (exchange.request.uri.path) {
 
     default:
 
-        exchange.response.status = Status.UNAUTHORIZED
-        exchange.response.entity = "<html><p>Please <a href='./mylogin'>log in</a>.</p></html>"
+        response.status = Status.UNAUTHORIZED
+        response.entity = "<html><p>Please <a href='./mylogin'>log in</a>.</p></html>"
 
         break
 
 }
+
+// Return the locally created response, no need to wrap it into a Promise
+return response
+

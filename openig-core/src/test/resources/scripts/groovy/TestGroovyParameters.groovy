@@ -27,11 +27,12 @@ import org.forgerock.http.protocol.Status
  * }
  */
 
-exchange.request.headers.add("title", title)
+request.headers.add("title", title)
 
-exchange.response = new Response()
-exchange.response.status = Status.valueOf("${status}" as Integer)
+response = new Response(Status.valueOf("${status}" as Integer))
 
-//exchange.response.reason = reason[2]
 assert names.size() == 4
-exchange.response.entity = "<html><p>Coffee ==> " + names + "</p></html>"
+response.entity = "<html><p>Coffee ==> " + names + "</p></html>"
+
+// Return the locally created response, no need to wrap it into a Promise
+return response
