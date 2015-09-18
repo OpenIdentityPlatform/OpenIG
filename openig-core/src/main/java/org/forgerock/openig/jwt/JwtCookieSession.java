@@ -19,7 +19,7 @@ package org.forgerock.openig.jwt;
 import static java.lang.String.format;
 import static org.forgerock.http.util.Json.*;
 
-import org.forgerock.http.Session;
+import org.forgerock.http.session.Session;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;

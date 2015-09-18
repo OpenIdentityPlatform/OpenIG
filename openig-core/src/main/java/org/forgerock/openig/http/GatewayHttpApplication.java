@@ -47,7 +47,7 @@ import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.SessionManager;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;

@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.Session;
-import org.forgerock.http.SessionContext;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;

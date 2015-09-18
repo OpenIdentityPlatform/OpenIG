@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.services.context.Context;
-import org.forgerock.http.Session;
+import org.forgerock.http.session.Session;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
