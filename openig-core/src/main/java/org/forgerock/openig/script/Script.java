@@ -41,9 +41,15 @@ public final class Script {
         private final GroovyScriptEngine engine;
         private final String fileName;
 
-        private GroovyImpl(final GroovyScriptEngine engine, final String fileName) {
+        private GroovyImpl(final GroovyScriptEngine engine, final String fileName) throws ScriptException {
             this.engine = engine;
             this.fileName = fileName;
+            // Compile a class for the script, that will trigger a first set of errors for invalid scripts
+            try {
+                engine.loadScriptByName(fileName);
+            } catch (Exception e) {
+                throw new ScriptException(e);
+            }
         }
 
         @Override
