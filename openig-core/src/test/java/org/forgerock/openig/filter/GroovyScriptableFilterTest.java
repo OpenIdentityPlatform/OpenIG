@@ -147,9 +147,22 @@ public class GroovyScriptableFilterTest {
         verifyZeroInteractions(handler);
     }
 
-    @Test(expectedExceptions = ScriptException.class, enabled = false)
-    public void testCompilationFailure() throws Exception {
-        newGroovyFilter("import does.not.Exist");
+    @DataProvider
+    public static Object[][] invalidScripts() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { "import does.not.Exist" },
+                { "import static does.not.Exist" },
+                { "try {" },
+                { "http://www.example.com" },
+                { "as Promise" },
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "invalidScripts", expectedExceptions = ScriptException.class)
+    public void testCompilationFailure(String script) throws Exception {
+        newGroovyFilter(script);
     }
 
     @Test
