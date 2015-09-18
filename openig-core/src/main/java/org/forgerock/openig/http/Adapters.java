@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
-import org.forgerock.http.SessionContext;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.Handler;
 import org.forgerock.openig.handler.HandlerException;

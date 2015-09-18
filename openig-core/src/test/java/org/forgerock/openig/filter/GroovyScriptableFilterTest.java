@@ -51,7 +51,7 @@ import javax.script.ScriptException;
 
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.Session;
+import org.forgerock.http.session.Session;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;

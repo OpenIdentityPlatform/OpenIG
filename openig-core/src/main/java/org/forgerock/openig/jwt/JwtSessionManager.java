@@ -32,12 +32,12 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
-import org.forgerock.http.Session;
+import org.forgerock.http.session.Session;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.http.SessionManager;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 
