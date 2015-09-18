@@ -52,6 +52,8 @@ public final class Script {
                 return engine.run(fileName, new Binding(bindings));
             } catch (final Exception e) {
                 throw new ScriptException(e);
+            } catch (final Throwable e) {
+                throw new ScriptException(new Exception(e));
             }
         }
     }

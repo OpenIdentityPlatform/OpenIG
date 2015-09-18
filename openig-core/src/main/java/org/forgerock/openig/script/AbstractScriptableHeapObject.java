@@ -15,8 +15,11 @@
  */
 package org.forgerock.openig.script;
 
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,14 +35,11 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Adapters;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * An abstract scriptable heap object which should be used as the base class for
@@ -50,6 +50,8 @@ import org.forgerock.util.promise.Promises;
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
+ * <li>{@link org.forgerock.services.context.Context context} - the associated request context
+ * <li>{@link Request request} - the HTTP request
  * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
@@ -60,6 +62,7 @@ import org.forgerock.util.promise.Promises;
  * </ul>
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
+ * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
@@ -183,23 +186,33 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * {@code null}.
      * @return the Promise of a Response produced by the script
      */
+    @SuppressWarnings("unchecked")
     protected final Promise<Response, NeverThrowsException> runScript(final Exchange exchange,
                                                                       final Request request,
                                                                       final Handler next) {
         try {
-            // TODO Do we need to force update exchange.request ?
-            exchange.setRequest(request);
-            compiledScript.run(createBindings(exchange, next));
-            return Promises.newResultPromise(exchange.getResponse());
+            Object o = compiledScript.run(createBindings(exchange, request, next));
+            if (o instanceof Promise) {
+                return ((Promise<Response, NeverThrowsException>) o);
+            } else if (o instanceof Response) {
+                // Allow to return a response directly from script
+                return newResponsePromise((Response) o);
+            } else {
+                String message = "Script did not return a Response or a Promise<Response, NeverThrowsException>";
+                logger.error(message);
+                return newResponsePromise(newInternalServerError(message));
+            }
         } catch (final ScriptException e) {
-            return Promises.newResultPromise(Responses.newInternalServerError("Cannot execute script", e));
+            return newResponsePromise(newInternalServerError("Cannot execute script", e));
         }
     }
 
-    private Map<String, Object> createBindings(final Exchange exchange, final Handler next) {
+    private Map<String, Object> createBindings(final Exchange exchange, final Request request, final Handler next) {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("exchange", exchange);
+        bindings.put("context", exchange);
+        bindings.put("request", request);
         bindings.put("logger", logger);
         bindings.put("globals", scriptGlobals);
         if (httpClient != null) {
@@ -207,8 +220,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
         bindings.put("ldap", ldapClient);
         if (next != null) {
-            // FIXME For compatibity reasons, we still offer IG's Handler to scripts
-            bindings.put("next", Adapters.asHandler(next));
+            bindings.put("next", next);
         }
         if (args != null) {
             for (final Entry<String, Object> entry : args.entrySet()) {

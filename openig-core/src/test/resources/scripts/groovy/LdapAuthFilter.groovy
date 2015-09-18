@@ -5,12 +5,12 @@ import org.forgerock.http.protocol.Status
 /*
  * Perform LDAP authentication based on user credentials from a form.
  *
- * If LDAP authentication succeeds, then call the next handler.
- * If there is a failure, send a response back to the user.
+ * If LDAP authentication succeeds, then return a promise to handle the response.
+ * If there is a failure, produce an error response and return it.
  */
 
-username = exchange.request.form?.username[0]
-password = exchange.request.form?.password[0]
+username = request.form?.username[0]
+password = request.form?.password[0]
 
 // For testing purposes, the LDAP host and port are provided in the exchange.
 // Edit as needed to match your directory service.
@@ -34,7 +34,7 @@ try {
     // Authentication succeeded.
 
     // Set a header (or whatever else you want to do here).
-    exchange.request.headers.add("Ldap-User-Dn", user.name.toString())
+    request.headers.add("Ldap-User-Dn", user.name.toString())
 
     // Most LDAP attributes are multi-valued.
     // When you read multi-valued attributes, use the parse() method,
@@ -49,26 +49,29 @@ try {
     exchange.attributes.description = user.description?.parse().asString()
 
     // Call the next handler. This returns when the request has been handled.
-    next.handle(exchange)
+    return next.handle(context, request)
 
 } catch (AuthenticationException e) {
 
     // LDAP authentication failed, so fail the exchange with
     // HTTP status code 403 Forbidden.
 
-    exchange.response = new Response()
-    exchange.response.status = Status.FORBIDDEN
-    exchange.response.entity = "<html><p>Authentication failed: " + e.message + "</p></html>"
+    response = new Response()
+    response.status = Status.FORBIDDEN
+    response.entity = "<html><p>Authentication failed: " + e.message + "</p></html>"
 
 } catch (Exception e) {
 
     // Something other than authentication failed on the server side,
     // so fail the exchange with HTTP 500 Internal Server Error.
 
-    exchange.response = new Response()
-    exchange.response.status = Status.INTERNAL_SERVER_ERROR
-    exchange.response.entity = "<html><p>Server error: " + e.message + "</p></html>"
+    response = new Response()
+    response.status = Status.INTERNAL_SERVER_ERROR
+    response.entity = "<html><p>Server error: " + e.message + "</p></html>"
 
 } finally {
     client.close()
 }
+
+// Return the locally created response, no need to wrap it into a Promise
+return response

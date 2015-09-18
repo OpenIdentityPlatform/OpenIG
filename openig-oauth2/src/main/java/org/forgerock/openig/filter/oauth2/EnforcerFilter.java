@@ -25,7 +25,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.HandlerException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -33,8 +32,8 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * A {@link EnforcerFilter} makes sure that the handled {@link Exchange} verifies a condition.
- * If the condition is not verified, it simply throws a {@link HandlerException} (that actually stops the chain
- * execution).
+ * If the condition is not verified, it simply returns a {@literal 500} internal server error response
+ * (that actually stops the chain execution).
  */
 public class EnforcerFilter implements Filter {
 

@@ -16,13 +16,13 @@
 
 package org.forgerock.openig.log;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.forgerock.openig.handler.HandlerException;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -141,7 +141,7 @@ public class ConsoleLogSinkTest {
 
     @Test
     public void shouldPrintSyntheticExceptionStack2() throws Exception {
-        Throwable t = new IOException("IO", new HandlerException("Handler", new IncompatibleClassChangeError()));
+        Throwable t = new IOException("IO", new HeapException("Heap", new IncompatibleClassChangeError()));
         ConsoleLogSink sink = new ConsoleLogSink();
         sink.setLevel(LogLevel.INFO);
 
@@ -150,7 +150,7 @@ public class ConsoleLogSinkTest {
         assertThat(baes.toString()).containsSequence("(INFO) Source",
                                                      "Hello OpenIG",
                                                      "[              IOException] > IO",
-                                                     "[         HandlerException] > Handler",
+                                                     "[            HeapException] > Heap",
                                                      "[IncompatibleClassChangeError] > null",
                                                      "-----------------");
     }

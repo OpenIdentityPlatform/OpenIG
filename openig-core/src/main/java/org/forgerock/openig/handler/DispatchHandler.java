@@ -44,7 +44,7 @@ import org.forgerock.util.promise.Promises;
  * condition is evaluated. If a condition expression yields {@code true}, then the exchange
  * is dispatched to the associated handler with no further processing.
  * <p>
- * If no condition yields {@code true} then the handler will throw a {@link HandlerException}.
+ * If no condition yields {@code true} then the handler will return a {@literal 404} not found response.
  * Therefore, it's advisable to have a single "default" handler at the end of the list
  * with no condition (unconditional) to handle otherwise un-dispatched requests.
  */
