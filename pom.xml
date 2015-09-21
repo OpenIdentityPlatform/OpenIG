@@ -57,6 +57,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
+              <tarLongFileMode>gnu</tarLongFileMode>
               <descriptorRefs>
                 <descriptorRef>project</descriptorRef>
               </descriptorRefs>
