@@ -131,12 +131,12 @@ public class Exchange implements Context {
 
     @Override
     public boolean containsContext(final Class<? extends Context> clazz) {
-        return asContext(clazz) != null;
+        return asContext0(clazz) != null;
     }
 
     @Override
     public boolean containsContext(final String contextName) {
-        return getContext(contextName) != null;
+        return getContext0(contextName) != null;
     }
 
     @Override
