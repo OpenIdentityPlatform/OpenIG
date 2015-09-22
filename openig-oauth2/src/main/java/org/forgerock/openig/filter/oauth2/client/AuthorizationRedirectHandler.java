@@ -21,7 +21,9 @@ import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.Utils.joinAsString;
@@ -173,33 +175,7 @@ class AuthorizationRedirectHandler implements Handler {
         return new BigInteger(160, new SecureRandom()).toString(Character.MAX_RADIX);
     }
 
-    private String createAuthorizationNonceHash(final String nonce) {
-        /*
-         * Do we want to use a cryptographic hash of the nonce? The primary goal
-         * is to have something which is difficult to guess. However, if the
-         * nonce is pushed to the user agent in a cookie, rather than stored
-         * server side in a session, then it will be possible to construct a
-         * cookie and state which have the same value and thereby create a fake
-         * call-back from the authorization server. This will not be possible
-         * using a CSRF, but a hacker might snoop the cookie and fake up a
-         * call-back with a matching state. Is this threat possible? Even if it
-         * is then I think the best approach is to secure the cookie, using a
-         * JWT. And that's exactly what is planned.
-         */
-        return nonce;
-    }
-
     private String createAuthorizationState(final String hash, final String gotoUri) {
         return gotoUri == null || gotoUri.isEmpty() ? hash : hash + ":" + gotoUri;
-    }
-
-    private void saveSession(Exchange exchange,
-                             OAuth2Session session,
-                             final URI clientEndpoint) throws ResponseException {
-        exchange.getSession().put(sessionKey(exchange, clientEndpoint), session.toJson().getObject());
-    }
-
-    private String sessionKey(final Exchange exchange, final URI clientEndpoint) {
-        return "oauth2:" + clientEndpoint;
     }
 }

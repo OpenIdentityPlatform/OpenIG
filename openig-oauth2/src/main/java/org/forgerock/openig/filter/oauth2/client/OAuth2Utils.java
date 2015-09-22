@@ -19,6 +19,7 @@ package org.forgerock.openig.filter.oauth2.client;
 import static java.lang.String.format;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.net.URI;
@@ -34,6 +35,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.util.time.TimeService;
 
 /**
  * Utility methods used by classes in this package.
@@ -109,6 +111,48 @@ final class OAuth2Utils {
         final URI pathOnly = withoutQueryAndFragment(uri);
         final URI requestPathOnly = withoutQueryAndFragment(exchange.getOriginalUri());
         return pathOnly.equals(requestPathOnly);
+    }
+
+    static String createAuthorizationNonceHash(final String nonce) {
+        /*
+         * Do we want to use a cryptographic hash of the nonce? The primary goal
+         * is to have something which is difficult to guess. However, if the
+         * nonce is pushed to the user agent in a cookie, rather than stored
+         * server side in a session, then it will be possible to construct a
+         * cookie and state which have the same value and thereby create a fake
+         * call-back from the authorization server. This will not be possible
+         * using a CSRF, but a hacker might snoop the cookie and fake up a
+         * call-back with a matching state. Is this threat possible? Even if it
+         * is then I think the best approach is to secure the cookie, using a
+         * JWT. And that's exactly what is planned.
+         */
+        return nonce;
+    }
+
+    static OAuth2Session loadOrCreateSession(final Exchange exchange,
+                                             final Expression<String> clientEndpoint,
+                                             final TimeService time) throws OAuth2ErrorException,
+                                                                            ResponseException {
+        final Object sessionJson = exchange.getSession().get(sessionKey(exchange, buildUri(exchange, clientEndpoint)));
+        if (sessionJson != null) {
+            return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
+        }
+        return stateNew(time);
+    }
+
+    static void removeSession(final Exchange exchange,
+                              final Expression<String> clientEndpoint) throws ResponseException {
+        exchange.getSession().remove(sessionKey(exchange, buildUri(exchange, clientEndpoint)));
+    }
+
+    static void saveSession(final Exchange exchange,
+                            final OAuth2Session session,
+                            final URI clientEndpoint) throws ResponseException {
+        exchange.getSession().put(sessionKey(exchange, clientEndpoint), session.toJson().getObject());
+    }
+
+    static String sessionKey(final Exchange exchange, final URI clientEndpoint) {
+        return "oauth2:" + clientEndpoint;
     }
 
     private OAuth2Utils() {
