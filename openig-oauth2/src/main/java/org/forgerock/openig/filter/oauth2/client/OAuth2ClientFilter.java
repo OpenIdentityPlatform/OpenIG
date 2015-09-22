@@ -21,11 +21,14 @@ import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpResponse;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.removeSession;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.loadOrCreateSession;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
@@ -457,22 +460,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private String createAuthorizationNonceHash(final String nonce) {
-        /*
-         * Do we want to use a cryptographic hash of the nonce? The primary goal
-         * is to have something which is difficult to guess. However, if the
-         * nonce is pushed to the user agent in a cookie, rather than stored
-         * server side in a session, then it will be possible to construct a
-         * cookie and state which have the same value and thereby create a fake
-         * call-back from the authorization server. This will not be possible
-         * using a CSRF, but a hacker might snoop the cookie and fake up a
-         * call-back with a matching state. Is this threat possible? Even if it
-         * is then I think the best approach is to secure the cookie, using a
-         * JWT. And that's exactly what is planned.
-         */
-        return nonce;
-    }
-
     private ClientRegistration getClientRegistration(final OAuth2Session session) {
         final String name = session.getClientRegistrationName();
         return name != null ? getClientRegistrationFromHeap(name) : null;
@@ -497,7 +484,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new OAuth2ErrorException(E_INVALID_REQUEST,
                         "Authorization call-back failed because there was no state parameter");
             }
-            final OAuth2Session session = loadOrCreateSession(exchange);
+            final OAuth2Session session = loadOrCreateSession(exchange, clientEndpoint, time);
             if (!session.isAuthorizing()) {
                 throw new OAuth2ErrorException(E_INVALID_REQUEST,
                         "Authorization call-back failed because there is no authorization in progress");
@@ -540,7 +527,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         @Override
                         public Response apply(final Response response) {
                             try {
-                                saveSession(exchange, authorizedSession);
+                                saveSession(exchange, authorizedSession, buildUri(exchange, clientEndpoint));
                             } catch (ResponseException e) {
                                 return e.getResponse();
                             }
@@ -564,7 +551,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         final Map<String, Object> info = new LinkedHashMap<>();
         try {
-            final OAuth2Session session = loadOrCreateSession(exchange);
+            final OAuth2Session session = loadOrCreateSession(exchange, clientEndpoint, time);
             info.putAll(session.getAccessTokenResponse());
 
             // Override these with effective values.
@@ -597,7 +584,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                             final Handler next)
             throws OAuth2ErrorException {
         try {
-            final OAuth2Session session = loadOrCreateSession(exchange);
+            final OAuth2Session session = loadOrCreateSession(exchange, clientEndpoint, time);
             if (!session.isAuthorized() && requireLogin) {
                 return sendAuthorizationRedirect(exchange, request, null);
             }
@@ -616,7 +603,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                  * back JWT session cookies with every response.
                                  */
                                 try {
-                                    saveSession(exchange, refreshedSession);
+                                    saveSession(exchange, refreshedSession, buildUri(exchange, clientEndpoint));
                                 } catch (ResponseException e) {
                                     return newResultPromise(e.getResponse());
                                 }
@@ -661,7 +648,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     @Override
                     public Response apply(final Response response) {
                         try {
-                            removeSession(exchange);
+                            removeSession(exchange, clientEndpoint);
                         } catch (ResponseException e) {
                             return e.getResponse();
                         }
@@ -738,10 +725,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             logger.error(format("Cannot retrieve the client registration '%s' from the heap", name));
         }
         return clientRegistration;
-    }
-
-    private String sessionKey(final Exchange exchange) throws ResponseException {
-        return "oauth2:" + buildUri(exchange, clientEndpoint);
     }
 
     private void tryPrepareExchange(final Exchange exchange, final OAuth2Session session)
@@ -841,23 +824,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             executor.shutdownNow();
             cache.clear();
         }
-    }
-
-    private OAuth2Session loadOrCreateSession(final Exchange exchange) throws OAuth2ErrorException,
-                                                                              ResponseException {
-        final Object sessionJson = exchange.getSession().get(sessionKey(exchange));
-        if (sessionJson != null) {
-            return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
-        }
-        return stateNew(time);
-    }
-
-    private void removeSession(Exchange exchange) throws ResponseException {
-        exchange.getSession().remove(sessionKey(exchange));
-    }
-
-    private void saveSession(Exchange exchange, OAuth2Session session) throws ResponseException {
-        exchange.getSession().put(sessionKey(exchange), session.toJson().getObject());
     }
 
     /**
