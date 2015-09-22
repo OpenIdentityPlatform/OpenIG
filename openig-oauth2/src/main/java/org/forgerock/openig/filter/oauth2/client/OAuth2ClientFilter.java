@@ -13,14 +13,11 @@
  *
  * Copyright 2014-2015 ForgeRock AS.
  */
-
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.forgerock.http.handler.Handlers.chainOf;
-import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
@@ -32,28 +29,20 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.ofExpression;
 import static org.forgerock.util.Utils.closeSilently;
-import static org.forgerock.util.Utils.joinAsString;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
-import java.math.BigInteger;
 import java.net.URI;
-import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
@@ -69,6 +58,7 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
@@ -102,8 +92,6 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  * {@code
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
- * "scopes"                       : [ expressions ],    [OPTIONAL - default common scopes to use if none declared
- *                                                                  in client registration - default scopes to use
  *                                                                  for dynamic client registration ]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
@@ -131,7 +119,6 @@ import org.forgerock.util.time.TimeService;
  *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
  *     "config": {
  *         "target"                : "${exchange.openid}",
- *         "scopes"                : ["openid","profile","email"],
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
@@ -217,7 +204,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private String clientRegistrationName;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
-    private List<Expression<String>> scopes;
     private Expression<?> target;
     private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
@@ -238,18 +224,27 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * @param discoveryHandler
      *            The handler used for discovery and dynamic client
      *            registration.
+     * @param clientEndpoint
+     *            The expression which will be used for obtaining the base URI
+     *            for this filter.
      */
-    public OAuth2ClientFilter(TimeService time, Heap heap, JsonValue config, String name, Handler discoveryHandler) {
+    public OAuth2ClientFilter(TimeService time,
+                              Heap heap,
+                              JsonValue config,
+                              String name,
+                              Handler discoveryHandler,
+                              Expression<String> clientEndpoint) {
         this.time = time;
         this.heap = heap;
         this.discoveryHandler = discoveryHandler;
+        this.clientEndpoint = clientEndpoint;
         discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap, config, name);
     }
 
     private final Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
                                                                     final JsonValue config,
                                                                     final String name) {
-        return chainOf(new AuthorizationRedirectHandler(),
+        return chainOf(new AuthorizationRedirectHandler(clientEndpoint),
                        new DiscoveryFilter(discoveryHandler, heap),
                        new ClientRegistrationFilter(discoveryHandler, config, heap, name));
     }
@@ -290,34 +285,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }
-    }
-
-    /**
-     * Sets the expression which will be used for obtaining the base URI for the
-     * following client end-points:
-     * <ul>
-     * <li><tt>{endpoint}/callback</tt> - called by the authorization server
-     * once authorization has completed
-     * <li>{@code {endpoint}/login?clientRegistration={name}[&goto={url}]} - user
-     * end-point for performing user initiated authentication, such as from a
-     * "login" link or "NASCAR" login page. Supports a "goto" URL parameter
-     * which will be invoked once the login completes, e.g. to take the user to
-     * their personal home page
-     * <li><tt>{endpoint}/logout[?goto={url}]</tt> - user end-point for
-     * performing user initiated logout, such as from a "logout" link. Supports
-     * a "goto" URL parameter which will be invoked once the logout completes,
-     * e.g. to take the user to generic home page.
-     * </ul>
-     * This configuration parameter is required.
-     *
-     * @param endpoint
-     *            The expression which will be used for obtaining the base URI
-     *            for the client end-points.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setClientEndpoint(final Expression<String> endpoint) {
-        this.clientEndpoint = endpoint;
-        return this;
     }
 
     /**
@@ -456,20 +423,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     /**
-     * Sets the expressions which will be used for obtaining the OAuth 2 scopes.
-     * This configuration parameter is optional.
-     *
-     * @param scopes
-     *            The expressions which will be used for obtaining the OAuth 2
-     *            scopes.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setScopes(final List<Expression<String>> scopes) {
-        this.scopes = scopes != null ? scopes : Collections.<Expression<String>> emptyList();
-        return this;
-    }
-
-    /**
      * Sets the expression which will be used for storing authorization
      * information in the exchange. This configuration parameter is required.
      *
@@ -504,10 +457,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private String createAuthorizationNonce() {
-        return new BigInteger(160, new SecureRandom()).toString(Character.MAX_RADIX);
-    }
-
     private String createAuthorizationNonceHash(final String nonce) {
         /*
          * Do we want to use a cryptographic hash of the nonce? The primary goal
@@ -524,22 +473,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return nonce;
     }
 
-    private String createAuthorizationState(final String hash, final String gotoUri) {
-        return gotoUri == null || gotoUri.isEmpty() ? hash : hash + ":" + gotoUri;
-    }
-
     private ClientRegistration getClientRegistration(final OAuth2Session session) {
         final String name = session.getClientRegistrationName();
         return name != null ? getClientRegistrationFromHeap(name) : null;
-    }
-
-    private List<String> getScopes(final Exchange exchange, final ClientRegistration clientRegistration)
-            throws ResponseException {
-        final List<String> clientScopes = clientRegistration.getScopes();
-        if (!clientScopes.isEmpty()) {
-            return clientScopes;
-        }
-        return OAuth2Utils.getScopes(exchange, scopes);
     }
 
     private Promise<Response, NeverThrowsException> handleAuthorizationCallback(final Exchange exchange,
@@ -663,7 +599,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         try {
             final OAuth2Session session = loadOrCreateSession(exchange);
             if (!session.isAuthorized() && requireLogin) {
-                return sendRedirectForAuthorization(exchange, request);
+                return sendAuthorizationRedirect(exchange, request, null);
             }
             final OAuth2Session refreshedSession =
                     session.isAuthorized() ? prepareExchange(exchange, session) : session;
@@ -673,7 +609,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         public Promise<Response, NeverThrowsException> apply(final Response response) {
                             if (Status.UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
-                                return sendRedirectForAuthorization(exchange, request);
+                                return sendAuthorizationRedirect(exchange, request, null);
                             } else if (session != refreshedSession) {
                                 /*
                                  * Only update the session if it has changed in order to avoid send
@@ -697,16 +633,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                                  final Context context)
             throws OAuth2ErrorException, ResponseException {
 
-        final Exchange exchange = context.asContext(Exchange.class);
-        exchange.getAttributes().put("clientEndpoint", buildUri(exchange, clientEndpoint));
         return discoveryAndDynamicRegistrationChain.handle(context, request);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Exchange exchange,
                                                                              final Request request)
-            throws OAuth2ErrorException {
+            throws OAuth2ErrorException, ResponseException {
         final String clientRegistrationName = request.getForm().getFirst("clientRegistration");
-        final String gotoUri = request.getForm().getFirst("goto");
         if (clientRegistrationName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization OpenID Connect Provider must be specified");
@@ -716,7 +649,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization OpenID Connect Provider '"
                     + clientRegistrationName + "' was not recognized");
         }
-        return sendAuthorizationRedirect(exchange, request, clientRegistration, gotoUri);
+        return sendAuthorizationRedirect(exchange, request, clientRegistration);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogout(final Exchange exchange,
@@ -786,73 +719,15 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(
-                                                                        final Exchange exchange,
-                                                                        final Request request,
-                                                                        final ClientRegistration clientRegistration,
-                                                                        final String gotoUri) {
-        try {
-            final URI uri = clientRegistration.getIssuer().getAuthorizeEndpoint();
-            final List<String> requestedScopes = getScopes(exchange, clientRegistration);
-            final Form query = new Form();
-            if (uri.getRawQuery() != null) {
-                query.fromString(uri.getRawQuery());
-            }
-            query.add("response_type", "code");
-            query.add("client_id", clientRegistration.getClientId());
-            query.add("redirect_uri", buildCallbackUri(exchange).toString());
-            query.add("scope", joinAsString(" ", requestedScopes));
-
-            /*
-             * Construct the state parameter whose purpose is to prevent CSRF
-             * attacks. The state will be passed back from the authorization server
-             * once authorization has completed and the call-back will verify that
-             * it received the same state that it sent originally by comparing it
-             * with the value stored in the session or cookie (depending on the
-             * persistence strategy).
-             */
-            final String nonce = createAuthorizationNonce();
-            final String hash = createAuthorizationNonceHash(nonce);
-            query.add("state", createAuthorizationState(hash, gotoUri));
-
-            final String redirect = withQuery(uri, query).toString();
-            return completion(httpRedirect(redirect))
-                    .then(new Function<Response, Response, NeverThrowsException>() {
-                        @Override
-                        public Response apply(final Response response) {
-                            /*
-                             * Finally create and save the session. This may involve updating
-                             * response cookies, so it is important to do it after creating the
-                             * response.
-                             */
-                            try {
-                                final String clientUri = buildUri(exchange, clientEndpoint).toString();
-                                final OAuth2Session session =
-                                        stateNew(time).stateAuthorizing(clientRegistration.getName(), clientUri, nonce,
-                                                                        requestedScopes);
-                                saveSession(exchange, session);
-                                return response;
-                            } catch (ResponseException e) {
-                                return e.getResponse();
-                            }
-                        }
-                    });
-
-        } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
-        }
-    }
-
-    private Promise<Response, NeverThrowsException> sendRedirectForAuthorization(final Exchange exchange,
-                                                                                 final Request request) {
-        if (loginHandler != null) {
+    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Exchange exchange,
+                                                                              final Request request,
+                                                                              final ClientRegistration cr) {
+        if (cr == null && loginHandler != null) {
             return loginHandler.handle(exchange, request);
-        } else {
-            return sendAuthorizationRedirect(exchange,
-                                             request,
-                                             getClientRegistrationFromHeap(clientRegistrationName),
-                                             exchange.getOriginalUri().toString());
         }
+        return new AuthorizationRedirectHandler(clientEndpoint,
+                                                cr != null ? cr : getClientRegistrationFromHeap(clientRegistrationName))
+                                    .handle(exchange, request);
     }
 
     private ClientRegistration getClientRegistrationFromHeap(final String name) {
@@ -926,12 +801,17 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 discoveryHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
             }
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time, heap, config, this.name, discoveryHandler);
+            final Expression<String> clientEndpoint = asExpression(config.get("clientEndpoint").required(),
+                                                                   String.class);
+            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time,
+                                                                     heap,
+                                                                     config,
+                                                                     this.name,
+                                                                     discoveryHandler,
+                                                                     clientEndpoint);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
-            filter.setScopes(config.get("scopes").defaultTo(emptyList()).asList(ofExpression()));
-            filter.setClientEndpoint(asExpression(config.get("clientEndpoint").required(), String.class));
             if (config.isDefined("clientRegistrationName")) {
                 filter.setClientRegistrationName(config.get("clientRegistrationName").required().asString());
             } else {
