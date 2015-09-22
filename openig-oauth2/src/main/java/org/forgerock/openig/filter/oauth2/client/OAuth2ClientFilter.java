@@ -1019,11 +1019,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     return userInfoCache.getValue(callable.getSession().getAccessToken(),
                                                   callable);
                 } catch (InterruptedException e) {
-                    logger.warning(format("Interrupted when calling UserInfo Endpoint from lient registration '%s'",
+                    logger.warning(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
                                           callable.getClientRegistration().getName()));
                     logger.warning(e);
                 } catch (ExecutionException e) {
-                    logger.warning(format("Unable to call UserInfo Endpoint from lient registration '%s'",
+                    logger.warning(format("Unable to call UserInfo Endpoint from client registration '%s'",
                                           callable.getClientRegistration().getName()));
                     logger.warning(e);
                 }
