@@ -16,14 +16,16 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.Utils.joinAsString;
 import static org.forgerock.util.promise.Promises.newResultPromise;
-import static org.forgerock.http.protocol.Response.newResponsePromise;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -31,13 +33,14 @@ import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.List;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -67,12 +70,36 @@ import org.forgerock.util.time.TimeService;
  *      OpenID Connect Core 1.0 </a>
  */
 class AuthorizationRedirectHandler implements Handler {
+
+    private final ClientRegistration registration;
+    private final Expression<String> endpoint;
+
+    AuthorizationRedirectHandler(final Expression<String> endpoint) {
+        this(endpoint, null);
+    }
+
+    AuthorizationRedirectHandler(final Expression<String> endpoint,
+                                 final ClientRegistration registration) {
+        this.endpoint = checkNotNull(endpoint);
+        this.registration = registration;
+    }
+
     @Override
     public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
-        final URI clientEndpoint = (URI) exchange.getAttributes().get("clientEndpoint");
-        final String gotoUri = request.getForm().getFirst("goto");
-        final ClientRegistration cr = (ClientRegistration) exchange.getAttributes().get(CLIENT_REG_KEY);
+        final URI clientEndpoint;
+        try {
+            clientEndpoint = buildUri(exchange, endpoint);
+        } catch (ResponseException e) {
+            return newResultPromise(e.getResponse());
+        }
+        String gotoUri = request.getForm().getFirst("goto");
+        if (gotoUri == null) {
+            gotoUri = exchange.getOriginalUri().toString();
+        }
+        final ClientRegistration cr = registration != null
+                                    ? registration
+                                    : (ClientRegistration) exchange.getAttributes().get(CLIENT_REG_KEY);
         final String loginHint = request.getForm().getFirst("discovery");
 
         if (cr != null && cr.getIssuer() != null) {
