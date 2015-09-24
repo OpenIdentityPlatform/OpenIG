@@ -19,17 +19,98 @@ package org.forgerock.openig.filter;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.json.JsonValue.array;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
+import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class AssignmentFilterTest {
+
+    final static String VALUE = "SET";
+
+    @DataProvider
+    private Object[][] validConfigurations() {
+        return new Object[][] {
+            { json(object(field("onRequest", array(
+                    object(
+                        field("target", "${exchange.attributes.target}"),
+                        field("value", VALUE)))))) },
+            { json(object(field("onRequest", array(
+                    object(
+                        field("target", "${exchange.attributes.target}"),
+                        field("value", VALUE),
+                        field("condition", "${1==1}")))))) },
+            { json(object(field("onResponse", array(
+                    object(
+                        field("target", "${exchange.attributes.target}"),
+                        field("value", VALUE)))))) },
+            { json(object(field("onResponse", array(
+                    object(
+                        field("target", "${exchange.attributes.target}"),
+                        field("value", VALUE),
+                        field("condition", "${1==1}")))))) } };
+    }
+
+    @DataProvider
+    private Object[][] invalidConfigurations() {
+        return new Object[][] {
+            /* Missing target. */
+            { json(object(
+                    field("onRequest", array(object(
+                            field("value", VALUE)))))) },
+            /* Missing target (bis). */
+            { json(object(
+                    field("onResponse", array(object(
+                            field("value", VALUE),
+                            field("condition", "${1==1}")))))) } };
+    }
+
+    @Test(dataProvider = "invalidConfigurations", expectedExceptions = JsonValueException.class)
+    public void shouldFailToCreateHeapletWhenRequiredAttributeIsMissing(final JsonValue config) throws Exception {
+        buildAssignmentFilter(config);
+    }
+
+    @Test(dataProvider = "validConfigurations")
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
+        final AssignmentFilter filter = buildAssignmentFilter(config);
+        final Exchange exchange = new Exchange();
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
+        chainOf(handler, filter).handle(exchange, null).get();
+        assertThat(exchange.getAttributes().get("target")).isEqualTo(VALUE);
+    }
+
+    @Test
+    public void shouldSucceedToUnsetVar() throws Exception {
+        final AssignmentFilter filter = new AssignmentFilter();
+        final Expression<String> target = Expression.valueOf("${exchange.attributes.target}", String.class);
+        filter.addRequestBinding(target, null);
+
+        final Exchange exchange = new Exchange();
+        exchange.getAttributes().put("target", "UNSET");
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
+        final Handler chain = chainOf(handler, singletonList((Filter) filter));
+        assertThat(target.eval(exchange)).isEqualTo("UNSET");
+
+        chain.handle(exchange, null).get();
+        assertThat(target.eval(exchange)).isNull();
+    }
 
     @Test
     public void onRequest() throws Exception {
@@ -76,5 +157,12 @@ public class AssignmentFilterTest {
         assertThat(target.eval(exchange)).isNull();
         chain.handle(exchange, exchange.getRequest()).get();
         assertThat(exchange.getAttributes().get("newAttr")).isEqualTo(200);
+    }
+
+    private AssignmentFilter buildAssignmentFilter(final JsonValue config) throws Exception {
+        final AssignmentFilter.Heaplet heaplet = new AssignmentFilter.Heaplet();
+        return (AssignmentFilter) heaplet.create(Name.of("myAssignmentFilter"),
+                                                 config,
+                                                 buildDefaultHeap());
     }
 }
