@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.handler;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -103,6 +105,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         // TODO Remove that when Expression will no more use an Exchange
         Exchange exchange = context.asContext(Exchange.class);
+        Bindings bindings = bindings(exchange, request);
         Response response = new Response();
         response.setStatus(this.status);
         if (this.version != null) { // default in Message class
@@ -110,7 +113,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
         }
         for (String key : this.headers.keySet()) {
             for (Expression<String> expression : this.headers.get(key)) {
-                String eval = expression.eval(exchange);
+                String eval = expression.eval(bindings);
                 if (eval != null) {
                     response.getHeaders().add(key, eval);
                 }
@@ -118,7 +121,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
         }
         if (entity != null) {
             // use content-type charset (or default)
-            response.setEntity(entity.eval(exchange));
+            response.setEntity(entity.eval(bindings));
         }
         return Promises.newResultPromise(response);
     }

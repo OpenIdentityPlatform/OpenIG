@@ -162,12 +162,11 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.addHeaderValue("Mono-Valued", Expression.valueOf("First Value", String.class));
         filter.addHeaderValue("Multi-Valued", Expression.valueOf("One (1)", String.class));
-        filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${exchange.request.version})", String.class));
+        filter.addHeaderValue("Multi-Valued", Expression.valueOf("Two (${request.version})", String.class));
 
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
-        exchange.setRequest(original);
 
         filter.filter(exchange, original, terminalHandler);
 
@@ -188,16 +187,16 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
         filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
-        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("two${request.version}", String.class));
 
         // Needed to verify expression evaluation
-        exchange.setRequest(new Request());
-        exchange.getRequest().setVersion("2");
+        Request request = new Request();
+        request.setVersion("2");
 
-        filter.filter(exchange, exchange.getRequest(), terminalHandler);
+        filter.filter(exchange, request, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
+        assertThat(terminalHandler.request).isNotSameAs(request);
         // Verify that the new request URI contains the form's fields
         assertThat(terminalHandler.request.getUri().toString())
                 .startsWith(URI)
@@ -213,12 +212,11 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
         filter.addFormParameter("multi", Expression.valueOf("one1", String.class));
-        filter.addFormParameter("multi", Expression.valueOf("two${exchange.request.version}", String.class));
+        filter.addFormParameter("multi", Expression.valueOf("two${request.version}", String.class));
 
         // Needed to verify expression evaluation
         Request original = new Request();
         original.setVersion("2");
-        exchange.setRequest(original);
 
         filter.filter(exchange, original, terminalHandler);
 

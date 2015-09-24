@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -101,7 +103,8 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         final Exchange exchange = context.asContext(Exchange.class);
 
         // Switch on the request flow
-        Promise<Response, NeverThrowsException> promise = doSwitch(exchange,
+        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(exchange, request),
+                                                                   context,
                                                                    request,
                                                                    requestCases);
         if (promise != null) {
@@ -113,9 +116,8 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
                 .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(final Response value) {
-                        // Needed because expressions can rely on exchange.response to be set
-                        exchange.setResponse(value);
-                        Promise<Response, NeverThrowsException> promise = doSwitch(exchange,
+                        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(exchange, request, value),
+                                                                                   context,
                                                                                    request,
                                                                                    responseCases);
                         // not intercepted on response, just return the original response
@@ -127,11 +129,14 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
                 });
     }
 
-    private Promise<Response, NeverThrowsException> doSwitch(Exchange exchange, Request request, List<Case> cases) {
+    private Promise<Response, NeverThrowsException> doSwitch(Bindings bindings,
+                                                             Context context,
+                                                             Request request,
+                                                             List<Case> cases) {
         for (Case c : cases) {
-            if (c.condition == null || Boolean.TRUE.equals(c.condition.eval(exchange))) {
+            if (c.condition == null || Boolean.TRUE.equals(c.condition.eval(bindings))) {
                 // switched flow
-                return c.handler.handle(exchange, request);
+                return c.handler.handle(context, request);
             }
         }
         // no interception

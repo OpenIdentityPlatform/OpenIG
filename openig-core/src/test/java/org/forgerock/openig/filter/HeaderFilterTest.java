@@ -27,30 +27,23 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class HeaderFilterTest {
-    private Exchange exchange;
-
-    @BeforeMethod
-    public void beforeMethod() {
-        exchange = new Exchange();
-        exchange.setRequest(new Request());
-    }
 
     @Test
     public void testAddHeaderToTheResponse() throws Exception {
         HeaderFilter filter = new HeaderFilter(MessageType.RESPONSE);
         filter.getRemovedHeaders().add("Location");
-        filter.getAddedHeaders().add("Location", "http://newtest.com:321${exchange.request.uri.path}");
+        filter.getAddedHeaders().add("Location", "http://newtest.com:321${request.uri.path}");
 
-        exchange.getRequest().setMethod("DELETE");
-        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
+        Request request = new Request();
+        request.setMethod("DELETE");
+        request.setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((Filter) filter));
-        Response response = chain.handle(exchange, exchange.getRequest()).get();
+        Response response = chain.handle(new Exchange(), request).get();
 
         assertThat(response.getHeaders().get("Location").getValues())
                 .containsOnly("http://newtest.com:321/path/to/resource.html");
@@ -66,7 +59,7 @@ public class HeaderFilterTest {
         handler.addHeader("Location", Expression.valueOf("http://openig.forgerock.com", String.class));
 
         // Execute the filter
-        Response response = filter.filter(exchange, null, handler).get();
+        Response response = filter.filter(new Exchange(), null, handler).get();
 
         // Verify that the response header has been removed
         assertThat(response.getHeaders().get("Location")).isNull();

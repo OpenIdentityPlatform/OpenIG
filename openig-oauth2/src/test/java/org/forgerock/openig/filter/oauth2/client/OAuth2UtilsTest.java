@@ -32,13 +32,14 @@ public class OAuth2UtilsTest {
 
     @Test
     public void shouldBuildUriUsingOriginalExchangeUri() throws Exception {
-        URI uri = OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("/openid", String.class));
+        URI uri = OAuth2Utils.buildUri(buildExchange(), null, Expression.valueOf("/openid", String.class));
         assertThat(uri).isEqualTo(new URI("http://www.example.com/openid"));
     }
 
     @Test
     public void shouldNotChangeUriWhenExpressionIsAbsoluteUri() throws Exception {
         URI uri = OAuth2Utils.buildUri(buildExchange(),
+                                       null,
                                        Expression.valueOf("http://accounts.google.com/openid/authorize", String.class));
         assertThat(uri).isEqualTo(new URI("http://accounts.google.com/openid/authorize"));
     }
@@ -46,7 +47,7 @@ public class OAuth2UtilsTest {
     @Test(expectedExceptions = ResponseException.class)
     public void shouldFailIfComputedUriIsNotValid() throws Exception {
         // {} are invalid URI characters
-        OAuth2Utils.buildUri(buildExchange(), Expression.valueOf("http://www.example.com/{boom}", String.class));
+        OAuth2Utils.buildUri(buildExchange(), null, Expression.valueOf("http://www.example.com/{boom}", String.class));
     }
 
     @Test

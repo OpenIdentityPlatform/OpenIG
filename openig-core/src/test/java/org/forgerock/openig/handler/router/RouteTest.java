@@ -69,13 +69,13 @@ public class RouteTest {
     @Test
     public void testRouteAcceptingTheExchange() throws Exception {
         Route route = createRoute(null, Expression.valueOf("${true}", Boolean.class));
-        assertThat(route.accept(new Exchange())).isTrue();
+        assertThat(route.accept(null, null)).isTrue();
     }
 
     @Test
     public void testRouteRejectingTheExchange() throws Exception {
         Route route = createRoute(null, Expression.valueOf("${false}", Boolean.class));
-        assertThat(route.accept(new Exchange())).isFalse();
+        assertThat(route.accept(null, null)).isFalse();
     }
 
     @Test

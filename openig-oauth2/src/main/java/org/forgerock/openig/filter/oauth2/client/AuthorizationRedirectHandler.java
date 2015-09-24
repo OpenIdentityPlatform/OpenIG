@@ -94,7 +94,7 @@ class AuthorizationRedirectHandler implements Handler {
         final Exchange exchange = context.asContext(Exchange.class);
         final URI clientEndpoint;
         try {
-            clientEndpoint = buildUri(exchange, endpoint);
+            clientEndpoint = buildUri(exchange, request, endpoint);
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }

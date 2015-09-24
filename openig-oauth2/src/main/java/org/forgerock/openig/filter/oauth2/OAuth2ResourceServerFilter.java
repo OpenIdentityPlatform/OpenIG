@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -31,14 +32,14 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.http.protocol.Header;
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
@@ -52,6 +53,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
@@ -227,8 +229,9 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             return invalidToken.handle(context, request);
         }
 
+        Bindings bindings = bindings(exchange, request);
         try {
-            final Set<String> setOfScopes = getScopes(exchange);
+            final Set<String> setOfScopes = getScopes(bindings);
             if (areRequiredScopesMissing(accessToken, setOfScopes)) {
                 logger.debug(format("Access Token '%s' is missing required scopes", token));
                 return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
@@ -238,7 +241,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
         }
 
         // Store the AccessToken in the exchange for downstream handlers
-        target.set(exchange, accessToken);
+        target.set(bindings, accessToken);
 
         // Call the rest of the chain
         return next.handle(context, request);
@@ -252,10 +255,10 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
         return !accessToken.getScopes().containsAll(scopes);
     }
 
-    private Set<String> getScopes(final Exchange exchange) throws ResponseException {
+    private Set<String> getScopes(final Bindings bindings) throws ResponseException {
         final Set<String> scopeValues = new HashSet<>(this.scopes.size());
         for (final Expression<String> scope : this.scopes) {
-            final String result = scope.eval(exchange);
+            final String result = scope.eval(bindings);
             if (result == null) {
                 throw new ResponseException(format(
                         "The OAuth 2.0 resource server filter scope expression '%s' could not be resolved",
@@ -335,7 +338,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
                     Boolean.TRUE).asBoolean()) {
                 try {
-                    Expression<Boolean> expr = Expression.valueOf("${exchange.request.uri.scheme == 'https'}",
+                    Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}",
                                                                   Boolean.class);
                     return new EnforcerFilter(expr, filter);
                 } catch (ExpressionException e) {

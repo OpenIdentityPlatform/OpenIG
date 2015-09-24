@@ -18,6 +18,7 @@ package org.forgerock.openig.filter;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.time.Duration.duration;
 
@@ -125,7 +126,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
 
-        final String key = partitionKey.eval(exchange);
+        final String key = partitionKey.eval(bindings(exchange, request));
         if (key == null) {
             logger.error("Did not expect a null value for the partitionKey after evaluated the expression : "
                     + partitionKey);

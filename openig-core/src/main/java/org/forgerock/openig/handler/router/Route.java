@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ import org.forgerock.util.promise.ResultHandler;
  *     }
  *   ],
  *   "handler": "ClientHandler",
- *   "condition": "${exchange.request.headers['X-Forward'] == '/endpoint'}",
+ *   "condition": "${request.headers['X-Forward'] == '/endpoint'}",
  *   "session": "MyJwtSession",
  *   "name": "my-route"
  * }
@@ -171,8 +172,8 @@ class Route implements Handler {
      * @param exchange used to evaluate the condition against
      * @return {@literal true} if the exchange matches the condition of this route.
      */
-    public boolean accept(final Exchange exchange) {
-        return (condition == null) || Boolean.TRUE.equals(condition.eval(exchange));
+    public boolean accept(final Exchange exchange, Request request) {
+        return (condition == null) || Boolean.TRUE.equals(condition.eval(bindings(exchange, request)));
     }
 
     /**

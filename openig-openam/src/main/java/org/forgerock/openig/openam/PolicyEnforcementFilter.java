@@ -26,6 +26,7 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
@@ -47,6 +48,7 @@ import org.forgerock.json.resource.Requests;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ResourcePath;
 import org.forgerock.json.resource.http.CrestHttp;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -217,10 +219,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
+        Bindings bindings = bindings(exchange, request);
         final Map<?, ?> subject =
                 json(object(
-                          fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(exchange) : null),
-                          fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(exchange) : null))).asMap();
+                          fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),
+                          fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(bindings) : null))).asMap();
 
         if (subject.isEmpty()) {
             logger.error(SUBJECT_ERROR);

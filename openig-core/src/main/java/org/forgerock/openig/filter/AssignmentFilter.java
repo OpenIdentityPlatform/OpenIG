@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -157,9 +159,9 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
         return this;
     }
 
-    private void eval(Binding binding, Exchange exchange) {
-        if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
-            binding.target.set(exchange, binding.value != null ? binding.value.eval(exchange) : null);
+    private void eval(Binding binding, final Bindings bindings) {
+        if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(bindings))) {
+            binding.target.set(bindings, binding.value != null ? binding.value.eval(bindings) : null);
         }
     }
 
@@ -170,7 +172,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
         final Exchange exchange = context.asContext(Exchange.class);
 
         for (Binding binding : onRequest) {
-            eval(binding, exchange);
+            eval(binding, bindings(exchange, request));
         }
         Promise<Response, NeverThrowsException> nextOne = next.handle(context, request);
         return nextOne.thenOnResult(new ResultHandler<Response>() {
@@ -179,7 +181,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
                 // Needed because expressions can rely on exchange.response to be set
                 exchange.setResponse(result);
                 for (Binding binding : onResponse) {
-                    eval(binding, exchange);
+                    eval(binding, bindings(exchange, request, result));
                 }
             }
         });

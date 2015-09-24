@@ -9,13 +9,13 @@
                     "config": {
                         "bindings": [
                             {
-                                "condition": "${exchange.request.method == 'GET' and exchange.request.uri.path == '/'}",
+                                "condition": "${request.method == 'GET' and request.uri.path == '/'}",
                                 "handler": {
                                     "type": "WelcomeHandler"
                                 }
                             },
                             {
-                                "condition": "${exchange.request.uri.path == '/'}",
+                                "condition": "${request.uri.path == '/'}",
                                 "handler": {
                                     "type": "StaticResponseHandler",
                                     "config": {

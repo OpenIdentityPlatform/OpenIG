@@ -17,6 +17,7 @@
 package org.forgerock.openig.audit;
 
 import static java.lang.Boolean.*;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.*;
 
@@ -55,7 +56,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
     @Override
     public void onAuditEvent(final AuditEvent event) {
         // Only process selected events
-        if (TRUE.equals(condition.eval(event))) {
+        if (TRUE.equals(condition.eval(bindings("event", event)))) {
             delegate.onAuditEvent(event);
         }
     }
@@ -70,7 +71,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
      *         "name": "...",
      *         "type": "MySubTypeExtendingConditionalListener",
      *         "config": {
-     *             "condition": "${contains(tags, 'marker')}",
+     *             "condition": "${contains(event.tags, 'marker')}",
      *             "any other": "configuration attributes"
      *         }
      *     }

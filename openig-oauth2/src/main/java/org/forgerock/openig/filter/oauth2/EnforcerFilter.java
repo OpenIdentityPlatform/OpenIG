@@ -17,16 +17,18 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.Boolean.TRUE;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -56,17 +58,17 @@ public class EnforcerFilter implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
+                                                          final Request request,
+                                                          final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
-        if (!isConditionVerified(exchange)) {
+        if (!isConditionVerified(bindings(exchange, request))) {
             return newResultPromise(Responses.newInternalServerError(
                     "Exchange could not satisfy the enforcement expression"));
         }
         return delegate.filter(context, request, next);
     }
 
-    private boolean isConditionVerified(final Exchange exchange) {
-        return TRUE.equals(enforcement.eval(exchange));
+    private boolean isConditionVerified(final Bindings bindings) {
+        return TRUE.equals(enforcement.eval(bindings));
     }
 }

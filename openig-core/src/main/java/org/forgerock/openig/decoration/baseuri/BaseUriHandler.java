@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import java.net.URI;
 
 import org.forgerock.http.Handler;
@@ -54,7 +56,7 @@ class BaseUriHandler implements Handler {
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(exchange)));
+            request.getUri().rebase(URI.create(baseUri.eval(bindings(exchange, request))));
         }
         return delegate.handle(context, request);
     }

@@ -32,7 +32,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
@@ -71,7 +70,7 @@ public class LocationHeaderFilterTest {
     }
 
     @Test(dataProvider = "validConfigurations")
-    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
         final LocationHeaderFilter.Heaplet heaplet = new LocationHeaderFilter.Heaplet();
         final LocationHeaderFilter lhf = (LocationHeaderFilter) heaplet.create(Name.of("LocationRewriter"),
                                                                                        config,

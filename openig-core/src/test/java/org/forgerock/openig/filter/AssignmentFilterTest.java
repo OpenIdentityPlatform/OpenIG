@@ -24,6 +24,7 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import org.forgerock.http.Filter;
@@ -32,6 +33,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.heap.HeapException;
@@ -106,10 +108,11 @@ public class AssignmentFilterTest {
         exchange.getAttributes().put("target", "UNSET");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         final Handler chain = chainOf(handler, singletonList((Filter) filter));
-        assertThat(target.eval(exchange)).isEqualTo("UNSET");
+        Bindings bindings = bindings(exchange, null);
+        assertThat(target.eval(bindings)).isEqualTo("UNSET");
 
         chain.handle(exchange, null).get();
-        assertThat(target.eval(exchange)).isNull();
+        assertThat(target.eval(bindings)).isNull();
     }
 
     @Test
@@ -117,32 +120,31 @@ public class AssignmentFilterTest {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
         filter.addRequestBinding(target,
-                                 Expression.valueOf("${exchange.request.method}", String.class));
+                                 Expression.valueOf("${request.method}", String.class));
 
         Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setMethod("DELETE");
+        Request request = new Request();
+        request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((Filter) filter));
-        assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange, exchange.getRequest()).get();
+        chain.handle(exchange, request).get();
         assertThat(exchange.getAttributes().get("newAttr")).isEqualTo("DELETE");
     }
 
     @Test
     public void shouldChangeUriOnRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        filter.addRequestBinding(Expression.valueOf("${exchange.request.uri}", String.class),
+        filter.addRequestBinding(Expression.valueOf("${request.uri}", String.class),
                                  Expression.valueOf("www.forgerock.com", String.class));
 
         Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setUri("www.example.com");
+        Request request = new Request();
+        request.setUri("www.example.com");
 
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
-        chain.handle(exchange, exchange.getRequest()).get();
-        assertThat(exchange.getRequest().getUri().toString()).isEqualTo("www.forgerock.com");
+        chain.handle(exchange, request).get();
+        assertThat(request.getUri().toString()).isEqualTo("www.forgerock.com");
     }
 
     @Test
@@ -150,12 +152,11 @@ public class AssignmentFilterTest {
         AssignmentFilter filter = new AssignmentFilter();
         final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
         filter.addResponseBinding(target,
-                                  Expression.valueOf("${exchange.response.status.code}", Integer.class));
+                                  Expression.valueOf("${response.status.code}", Integer.class));
 
         Exchange exchange = new Exchange();
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
-        assertThat(target.eval(exchange)).isNull();
-        chain.handle(exchange, exchange.getRequest()).get();
+        chain.handle(exchange, new Request()).get();
         assertThat(exchange.getAttributes().get("newAttr")).isEqualTo(200);
     }
 

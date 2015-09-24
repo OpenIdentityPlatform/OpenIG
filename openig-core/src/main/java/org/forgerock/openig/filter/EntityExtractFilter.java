@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -114,7 +116,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
         return extractor;
     }
 
-    private void process(Exchange exchange, Message message) {
+    private void process(Bindings bindings, Message message) {
         HashMap<String, String> map = new HashMap<>();
         if (message != null) {
             try {
@@ -128,7 +130,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
                 // may yield partial or unresolved attributes
             }
         }
-        target.set(exchange, map);
+        target.set(bindings, map);
     }
 
     @Override
@@ -138,14 +140,14 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
 
         final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
-            process(exchange, request);
+            process(bindings(exchange, request), request);
         }
         Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
             return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
-                    process(exchange, response);
+                    process(bindings(exchange, request, response), response);
                 }
             });
         }

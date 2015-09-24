@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.net.URISyntaxException;
@@ -32,6 +33,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -188,9 +190,11 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
+        Bindings bindings = bindings(exchange, request);
+
         Request newRequest = new Request();
         newRequest.setMethod(this.method);
-        String value = this.uri.eval(exchange);
+        String value = this.uri.eval(bindings);
         if (value != null) {
             try {
                 newRequest.setUri(value);
@@ -206,7 +210,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
         }
 
         if (entity != null) {
-            newRequest.setEntity(entity.eval(exchange));
+            newRequest.setEntity(entity.eval(bindings));
         }
 
         if (this.version != null) {
@@ -215,7 +219,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
         }
         for (String key : this.headers.keySet()) {
             for (Expression<String> expression : this.headers.get(key)) {
-                String eval = expression.eval(exchange);
+                String eval = expression.eval(bindings);
                 if (eval != null) {
                     newRequest.getHeaders().add(key, eval);
                 }
@@ -225,7 +229,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
             Form f = new Form();
             for (String key : this.form.keySet()) {
                 for (Expression<String> expression : this.form.get(key)) {
-                    String eval = expression.eval(exchange);
+                    String eval = expression.eval(bindings);
                     if (eval != null) {
                         f.add(key, eval);
                     }

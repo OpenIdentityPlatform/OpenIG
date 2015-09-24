@@ -19,6 +19,7 @@ package org.forgerock.openig.filter;
 import static java.lang.Boolean.TRUE;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
 
@@ -31,6 +32,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -291,7 +293,7 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Handler next) {
                             // Request targeting the login page ?
                             Exchange exchange = context.asContext(Exchange.class);
-                            if (isLoginPageRequest(exchange)) {
+                            if (isLoginPageRequest(bindings(exchange, request))) {
                                 return createRequestFilter.filter(context, request, next);
                             }
                             // pass through
@@ -309,7 +311,7 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Handler next) {
                             // Request targeting the login page ?
                             final Exchange exchange = context.asContext(Exchange.class);
-                            if (isLoginPageRequest(exchange)) {
+                            if (isLoginPageRequest(bindings(exchange, request))) {
                                 return extractFilter.filter(context, request, next)
                                                     .thenOnResult(markAsLoginPage(exchange))
                                                     .thenAsync(authenticateIfNeeded(context, request, next, false));
@@ -347,8 +349,8 @@ public class PasswordReplayFilter extends GenericHeapObject {
             };
         }
 
-        private boolean isLoginPageRequest(final Exchange exchange) {
-            return TRUE.equals(loginPage.eval(exchange));
+        private boolean isLoginPageRequest(final Bindings bindings) {
+            return TRUE.equals(loginPage.eval(bindings));
         }
 
         private AsyncFunction<Response, Response, NeverThrowsException> authenticateIfNeeded(final Context context,

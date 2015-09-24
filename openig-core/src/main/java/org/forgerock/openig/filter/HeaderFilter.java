@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.util.Collections;
@@ -31,6 +32,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -84,14 +86,14 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
     /**
      * Removes all specified headers, then adds all specified headers.
      */
-    private void process(Message message, Exchange exchange) {
+    private void process(Message message, Bindings bindings) {
         for (String s : this.removedHeaders) {
             message.getHeaders().remove(s);
         }
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key).getValues()) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, asExpression(jsonValue, String.class).eval(exchange));
+                message.getHeaders().add(key, asExpression(jsonValue, String.class).eval(bindings));
             }
         }
     }
@@ -102,14 +104,14 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
                                                           final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
-            process(request, exchange);
+            process(request, bindings(exchange, request));
         }
         Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
             return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
-                    process(response, exchange);
+                    process(response, bindings(exchange, request, response));
                 }
             });
         }

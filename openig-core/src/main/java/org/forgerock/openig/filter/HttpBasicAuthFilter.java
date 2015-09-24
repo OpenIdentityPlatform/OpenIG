@@ -20,6 +20,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -35,6 +36,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -164,8 +166,9 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                 closeSilently(response);
 
                 // credentials might be stale, so fetch them
-                String user = username.eval(exchange);
-                String pass = password.eval(exchange);
+                Bindings bindings = bindings(exchange, request);
+                String user = username.eval(bindings);
+                String pass = password.eval(bindings);
                 // no credentials is equivalent to invalid credentials
                 if (user == null || pass == null) {
                     break;

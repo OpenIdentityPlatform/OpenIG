@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
@@ -93,11 +93,8 @@ public class ExpressionTest {
 
     @Test
     public void backslash() throws ExpressionException {
-        HashMap<String, String> scope = new HashMap<>();
-        scope.put("a", "bar");
-        scope.put("b", "bas");
         Expression<String> expr = Expression.valueOf("foo${'\\\\'}${a} ${a}${b} foo${'\\\\'}${b}", String.class);
-        String o = expr.eval(scope);
+        String o = expr.eval(bindings().bind("a", "bar").bind("b", "bas"));
         assertThat(o).isEqualTo("foo\\bar barbas foo\\bas");
     }
 
@@ -111,37 +108,36 @@ public class ExpressionTest {
     @Test
     public void scope() throws ExpressionException {
         Expression<String> expr = Expression.valueOf("${a}bar", String.class);
-        String o = expr.eval(singletonMap("a", "foo"));
+        String o = expr.eval(bindings("a", "foo"));
         assertThat(o).isEqualTo("foobar");
     }
 
     @Test
     public void exchangeRequestHeader() throws ExpressionException {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().getHeaders().put("Host", "www.example.com");
-        Expression<String> expr = Expression.valueOf("${exchange.request.headers['Host'][0]}", String.class);
-        String host = expr.eval(exchange);
+        Request request = new Request();
+        request.getHeaders().put("Host", "www.example.com");
+        Expression<String> expr = Expression.valueOf("${request.headers['Host'][0]}", String.class);
+        String host = expr.eval(bindings("request", request));
         assertThat(host).isEqualTo("www.example.com");
     }
 
     @Test
     public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
-        String o = Expression.valueOf("${exchange.request.uri.path}", String.class).eval(exchange);
+        Request request = new Request();
+        request.setUri("http://test.com:123/path/to/resource.html");
+        String o = Expression.valueOf("${request.uri.path}", String.class).eval(bindings("request", request));
         assertThat(o).isEqualTo("/path/to/resource.html");
     }
 
     @Test
     public void exchangeSetAttribute() throws ExpressionException {
         Exchange exchange = new Exchange();
+        Bindings bindings = bindings(exchange, null);
         @SuppressWarnings("rawtypes")
         Expression<Map> expr = Expression.valueOf("${exchange.attributes.testmap}", Map.class);
-        expr.set(exchange, singletonMap("foo", "bar"));
+        expr.set(bindings, singletonMap("foo", "bar"));
         Expression<String> foo = Expression.valueOf("${exchange.attributes.testmap.foo}", String.class);
-        assertThat(foo.eval(exchange)).isEqualTo("bar");
+        assertThat(foo.eval(bindings)).isEqualTo("bar");
     }
 
     @Test
@@ -157,65 +153,64 @@ public class ExpressionTest {
         Response response = new Response();
         response.getHeaders().put("Set-Cookie", "MyCookie=example; path=/");
 
-        Exchange exchange = new Exchange();
-        exchange.setRequest(request);
-        exchange.setResponse(response);
+        Bindings bindings = bindings(null, request, response);
 
-        Expression<Boolean> boolExpr = Expression.valueOf("${exchange.request.uri.path == '/wordpress/wp-login.php' "
-                        + "and exchange.request.form['action'][0] != 'logout'}", Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        Expression<Boolean> boolExpr = Expression.valueOf("${request.uri.path == '/wordpress/wp-login.php' "
+                        + "and request.form['action'][0] != 'logout'}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        boolExpr = Expression.valueOf("${exchange.request.uri.host == 'wiki.example.com'}", Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        boolExpr = Expression.valueOf("${request.uri.host == 'wiki.example.com'}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        boolExpr = Expression.valueOf("${exchange.request.method == 'POST' "
-                + "and exchange.request.uri.path == '/wordpress/wp-login.php'}", Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        boolExpr = Expression.valueOf("${request.method == 'POST' "
+                + "and request.uri.path == '/wordpress/wp-login.php'}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        boolExpr = Expression.valueOf("${exchange.request.method != 'GET'}", Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        boolExpr = Expression.valueOf("${request.method != 'GET'}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        boolExpr = Expression.valueOf("${exchange.request.uri.scheme == 'http'}", Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        boolExpr = Expression.valueOf("${request.uri.scheme == 'http'}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        boolExpr = Expression.valueOf("${not (exchange.response.status.code == 302 and "
-                + "not empty exchange.session.gotoURL)}",
+        boolExpr = Expression.valueOf("${not (response.status.code == 302 and "
+                + "not empty session.gotoURL)}",
                 Boolean.class);
-        assertThat(boolExpr.eval(exchange)).isTrue();
+        assertThat(boolExpr.eval(bindings)).isTrue();
 
-        Expression<String> stringExpr = Expression.valueOf("${toString(exchange.request.uri)}", String.class);
-        assertThat(stringExpr.eval(exchange)).isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
+        Expression<String> stringExpr = Expression.valueOf("${toString(request.uri)}", String.class);
+        assertThat(stringExpr.eval(bindings)).isEqualTo("http://wiki.example.com/wordpress/wp-login.php?action=login");
 
-        stringExpr = Expression.valueOf("${exchange.request.headers['host'][0]}", String.class);
-        assertThat(stringExpr.eval(exchange)).isEqualTo("wiki.example.com");
+        stringExpr = Expression.valueOf("${request.headers['host'][0]}", String.class);
+        assertThat(stringExpr.eval(bindings)).isEqualTo("wiki.example.com");
 
-        stringExpr = Expression.valueOf("${exchange.request.cookies[keyMatch(exchange.request.cookies,'^SESS.*')]"
+        stringExpr = Expression.valueOf("${request.cookies[keyMatch(request.cookies,'^SESS.*')]"
                 + "[0].value}", String.class);
-        assertThat(stringExpr.eval(exchange)).isNotNull();
+        assertThat(stringExpr.eval(bindings)).isNotNull();
 
-        stringExpr = Expression.valueOf("${exchange.request.headers['cookie'][0]}", String.class);
-        assertThat(stringExpr.eval(exchange)).isNotNull();
+        stringExpr = Expression.valueOf("${request.headers['cookie'][0]}", String.class);
+        assertThat(stringExpr.eval(bindings)).isNotNull();
 
-        stringExpr = Expression.valueOf("${exchange.response.headers['Set-Cookie'][0]}", String.class);
-        assertThat(stringExpr.eval(exchange)).isEqualTo("MyCookie=example; Path=/");
+        stringExpr = Expression.valueOf("${response.headers['Set-Cookie'][0]}", String.class);
+        assertThat(stringExpr.eval(bindings)).isEqualTo("MyCookie=example; Path=/");
     }
 
     @Test
     public void testUsingIntermediateBean() throws Exception {
         ExternalBean bean = new ExternalBean(new InternalBean("Hello World"));
 
-        assertThat(Expression.valueOf("${internal.value}", String.class)
-                .eval(bean))
+        Bindings bindings = bindings("bean", bean);
+        assertThat(Expression.valueOf("${bean.internal.value}", String.class)
+                             .eval(bindings))
                 .isEqualTo("Hello World");
-        Expression.valueOf("${internal.value}", String.class).set(bean, "ForgeRock OpenIG");
+        Expression.valueOf("${bean.internal.value}", String.class).set(bindings, "ForgeRock OpenIG");
         assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
     }
 
     @Test
     public void testRealBeanProperties() throws Exception {
         InternalBean myBean = new InternalBean("foo");
-        Expression<Integer> expr = Expression.valueOf("${bar}", Integer.class);
-        Integer o = expr.eval(myBean);
+        Expression<Integer> expr = Expression.valueOf("${bean.bar}", Integer.class);
+        Integer o = expr.eval(bindings("bean", myBean));
         assertThat(o).isNull();
     }
 
@@ -227,78 +222,74 @@ public class ExpressionTest {
 
     @Test
     public void getNullExchangeRequestEntityAsString() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        String o = Expression.valueOf("${exchange.request.entity.string}", String.class).eval(exchange);
+        String o = Expression.valueOf("${request.entity.string}", String.class)
+                             .eval(bindings("request", new Request()));
         assertThat(o).isEqualTo("");
     }
 
     @Test
     public void getNullExchangeRequestEntityAsJson() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        Map<?, ?> o = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
+        Map<?, ?> o = Expression.valueOf("${request.entity.json}", Map.class)
+                                .eval(bindings("request", new Request()));
         assertThat(o).isNull();
     }
 
     @Test
     public void getExchangeRequestEntityAsString() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setEntity("old mcdonald had a farm");
-        String o = Expression.valueOf("${exchange.request.entity.string}", String.class).eval(exchange);
+        Request request = new Request();
+        request.setEntity("old mcdonald had a farm");
+        String o = Expression.valueOf("${request.entity.string}", String.class)
+                             .eval(bindings("request", request));
         assertThat(o).isEqualTo("old mcdonald had a farm");
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void getExchangeRequestEntityAsJson() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
-        Map<String, Object> map = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
+        Request request = new Request();
+        request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
+        Map<String, Object> map = Expression.valueOf("${request.entity.json}", Map.class)
+                                  .eval(bindings("request", request));
         assertThat(map).containsOnly(entry("string", "string"), entry("int", 12345));
 
-        Integer i = Expression.valueOf("${exchange.request.entity.json.int}", Integer.class)
-                .eval(exchange);
+        Integer i = Expression.valueOf("${request.entity.json.int}", Integer.class)
+                              .eval(bindings("request", request));
         assertThat(i).isEqualTo(12345);
     }
 
     @Test
     public void setExchangeRequestEntityAsJson() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        Expression.valueOf("${exchange.request.entity.json}", Map.class).set(exchange, object(field("k1", "v1"),
-                                                                                              field("k2", 123)));
-        assertThat(exchange.getRequest().getEntity()).isNotNull();
-        assertThat(exchange.getRequest().getEntity().getString())
+        Request request = new Request();
+        Expression.valueOf("${request.entity.json}", Map.class)
+                  .set(bindings("request", request), object(field("k1", "v1"), field("k2", 123)));
+        assertThat(request.getEntity()).isNotNull();
+        assertThat(request.getEntity().getString())
                 .isEqualTo("{\"k1\":\"v1\",\"k2\":123}");
     }
 
     @Test
     public void setExchangeRequestEntityAsString() throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        Expression.valueOf("${exchange.request.entity.string}", String.class).set(exchange,
-                "mary mary quite contrary");
-        assertThat(exchange.getRequest().getEntity()).isNotNull();
-        assertThat(exchange.getRequest().getEntity().getString()).isEqualTo("mary mary quite contrary");
+        Request request = new Request();
+        Expression.valueOf("${request.entity.string}", String.class)
+                  .set(bindings("request", request), "mary mary quite contrary");
+        assertThat(request.getEntity()).isNotNull();
+        assertThat(request.getEntity().getString()).isEqualTo("mary mary quite contrary");
     }
 
     @Test
     public void testExpressionEvaluation() throws Exception {
-        Expression<String> username = Expression.valueOf("realm${'\\\\'}${exchange.request.headers['username'][0]}",
+        Expression<String> username = Expression.valueOf("realm${'\\\\'}${request.headers['username'][0]}",
                 String.class);
-        Expression<String> password = Expression.valueOf("${exchange.request.headers['password'][0]}", String.class);
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        exchange.getRequest().setMethod("GET");
-        exchange.getRequest().setUri("http://test.com:123/path/to/resource.html");
-        exchange.getRequest().getHeaders().add("username", "Myname");
-        exchange.getRequest().getHeaders().add("password", "Mypass");
+        Expression<String> password = Expression.valueOf("${request.headers['password'][0]}", String.class);
+        Request request = new Request();
+        request.setMethod("GET");
+        request.setUri("http://test.com:123/path/to/resource.html");
+        request.getHeaders().add("username", "Myname");
+        request.getHeaders().add("password", "Mypass");
 
-        String user = username.eval(exchange);
-        String pass = password.eval(exchange);
+        Bindings bindings = bindings("request", request);
+        String user = username.eval(bindings);
+        String pass = password.eval(bindings);
 
         assertThat(user).isEqualTo("realm\\Myname");
         assertThat(pass).isEqualTo("Mypass");
@@ -307,28 +298,28 @@ public class ExpressionTest {
     @Test
     public void shouldCallStringMethod() throws Exception {
         Expression<String> expression = Expression.valueOf("${a.concat(' World')}", String.class);
-        assertThat(expression.eval(singletonMap("a", "Hello")))
+        assertThat(expression.eval(bindings("a", "Hello")))
                 .isEqualTo("Hello World");
     }
 
     @Test
     public void shouldChainMethodCalls() throws Exception {
         Expression<String> expression = Expression.valueOf("${a.concat(' World').concat(' !')}", String.class);
-        assertThat(expression.eval(singletonMap("a", "Hello")))
+        assertThat(expression.eval(bindings("a", "Hello")))
                 .isEqualTo("Hello World !");
     }
 
     @Test
     public void shouldCallBeanMethod() throws Exception {
         Expression<String> expression = Expression.valueOf("${bean.concat(' World')}", String.class);
-        assertThat(expression.eval(singletonMap("bean", new ConcatBean("Hello"))))
+        assertThat(expression.eval(bindings("bean", new ConcatBean("Hello"))))
                 .isEqualTo("Hello World");
     }
 
     @Test
     public void shouldCallIntegerMethod() throws Exception {
         Expression<String> expression = Expression.valueOf("${integer.toString()}", String.class);
-        assertThat(expression.eval(singletonMap("integer", 42)))
+        assertThat(expression.eval(bindings("integer", 42)))
                 .isEqualTo("42");
     }
 
@@ -336,14 +327,14 @@ public class ExpressionTest {
     public void shouldCallStaticMethod() throws Exception {
         // I agree this one is a bit weird because we need an instance to base our computation onto
         Expression<Integer> expression = Expression.valueOf("${integer.valueOf(42)}", Integer.class);
-        assertThat(expression.eval(singletonMap("integer", 37)))
+        assertThat(expression.eval(bindings("integer", 37)))
                 .isEqualTo(42);
     }
 
     @Test
     public void shouldReturnNullWhenTryingToCallNonDefinedMethod() throws Exception {
         Expression<String> expression = Expression.valueOf("${item.thereIsNoSuchMethod()}", String.class);
-        assertThat(expression.eval(singletonMap("item", "Hello")))
+        assertThat(expression.eval(bindings("item", "Hello")))
                 .isNull();
     }
 

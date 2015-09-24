@@ -17,6 +17,8 @@
 
 package org.forgerock.openig.el;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import java.beans.FeatureDescriptor;
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,6 +35,7 @@ import javax.el.VariableMapper;
 import org.forgerock.http.util.Loader;
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
+import org.forgerock.util.Reject;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 
@@ -100,16 +103,16 @@ public final class Expression<T> {
     }
 
     /**
-     * Evaluates the expression within the specified scope and returns the resulting object if it matches the specified
-     * type, or {@code null} if it does not resolve or match.
+     * Evaluates the expression within the specified bindings and returns the resulting object if it matches the
+     * specified type, or {@code null} if it does not resolve or match.
      *
-     * @param scope
-     *            the scope to evaluate the expression within.
+     * @param bindings
+     *            the bindings to evaluate the expression within.
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
-    public T eval(final Object scope) {
+    public T eval(final Bindings bindings) {
         try {
-            Object value = valueExpression.getValue(new XLContext(scope));
+            Object value = valueExpression.getValue(new XLContext(bindings.asMap()));
             return (value != null && expectedType.isInstance(value) ? expectedType.cast(value) : null);
         } catch (ELException ele) {
             // unresolved element yields null value
@@ -123,7 +126,7 @@ public final class Expression<T> {
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
     public T eval() {
-        return eval(null);
+        return eval(bindings());
     }
 
     /**
@@ -132,12 +135,13 @@ public final class Expression<T> {
      * set. If the expression does not resolve to an object or cannot otherwise be written to
      * (e.g. read-only), then this method will have no effect.
      *
-     * @param scope the scope to evaluate the expression within.
+     * @param bindings the bindings to evaluate the expression within.
      * @param value the value to set in the result of the expression evaluation.
      */
-    public void set(Object scope, Object value) {
+    public void set(Bindings bindings, Object value) {
+        Reject.ifNull(bindings);
         try {
-            valueExpression.setValue(new XLContext(scope), value);
+            valueExpression.setValue(new XLContext(bindings.asMap()), value);
         } catch (ELException ele) {
             // unresolved elements are simply ignored
         }

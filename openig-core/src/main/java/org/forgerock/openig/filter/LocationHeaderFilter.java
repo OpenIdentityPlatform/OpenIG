@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.net.URI;
@@ -28,6 +29,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.util.Uris;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -84,14 +86,15 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
      * Rewrite Location header if it would have the user go directly to the application.
      *
      * @param exchange the exchange containing the response message containing the Location header
+     * @param response http message to be updated
+     * @param bindings bindings to use when evaluating the new {@literal Location} value
      */
-    private Response processResponse(Exchange exchange) {
-        Response response = exchange.getResponse();
+    private Response processResponse(Exchange exchange, Response response, Bindings bindings) {
         LocationHeader header = LocationHeader.valueOf(response);
         if (header.getLocationUri() != null) {
             try {
                 URI currentURI = new URI(header.getLocationUri());
-                URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(exchange));
+                URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(exchange, bindings));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
                     response.getHeaders().put(LocationHeader.NAME, rebasedURI.toString());
@@ -105,9 +108,10 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
         return response;
     }
 
-    private URI evaluateBaseUri(final Exchange exchange) throws URISyntaxException, ResponseException {
+    private URI evaluateBaseUri(final Exchange exchange, final Bindings bindings)
+            throws URISyntaxException, ResponseException {
         if (baseURI != null) {
-            String uri = baseURI.eval(exchange);
+            String uri = baseURI.eval(bindings);
 
             if (uri == null) {
                 throw logger.debug(new ResponseException(format("The baseURI expression '%s' could not be resolved",
@@ -130,7 +134,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                        public Response apply(final Response value) {
                            Exchange exchange = context.asContext(Exchange.class);
                            exchange.setResponse(value);
-                           return processResponse(exchange);
+                           return processResponse(exchange, value, bindings(exchange, request, value));
                        }
                    });
     }

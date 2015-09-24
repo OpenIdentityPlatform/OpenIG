@@ -18,6 +18,7 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.util.Utils.closeSilently;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
@@ -42,16 +44,16 @@ import org.forgerock.util.time.TimeService;
  */
 final class OAuth2Utils {
 
-    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression)
+    static URI buildUri(final Exchange exchange, final Request request, final Expression<String> uriExpression)
             throws ResponseException {
-        return buildUri(exchange, uriExpression, null);
+        return buildUri(exchange, request, uriExpression, null);
     }
 
-    static URI buildUri(final Exchange exchange, final Expression<String> uriExpression,
-            final String additionalPath) throws ResponseException {
+    static URI buildUri(final Exchange exchange, final Request request, final Expression<String> uriExpression,
+                        final String additionalPath) throws ResponseException {
         String uriString = null;
         try {
-            uriString = uriExpression.eval(exchange);
+            uriString = uriExpression.eval(bindings(exchange, request));
             if (uriString == null) {
                 throw new ResponseException(
                         format("The URI expression '%s' could not be resolved", uriExpression.toString()));
@@ -81,11 +83,13 @@ final class OAuth2Utils {
         }
     }
 
-    static List<String> getScopes(final Exchange exchange, final List<Expression<String>> scopeExpressions)
+    static List<String> getScopes(final Exchange exchange,
+                                  final Request request,
+                                  final List<Expression<String>> scopeExpressions)
             throws ResponseException {
         final List<String> scopeValues = new ArrayList<>(scopeExpressions.size());
         for (final Expression<String> scope : scopeExpressions) {
-            final String result = scope.eval(exchange);
+            final String result = scope.eval(bindings(exchange, request));
             if (result == null) {
                 throw new ResponseException(format(
                         "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));
@@ -130,10 +134,12 @@ final class OAuth2Utils {
     }
 
     static OAuth2Session loadOrCreateSession(final Exchange exchange,
+                                             final Request request,
                                              final Expression<String> clientEndpoint,
                                              final TimeService time) throws OAuth2ErrorException,
                                                                             ResponseException {
-        final Object sessionJson = exchange.getSession().get(sessionKey(exchange, buildUri(exchange, clientEndpoint)));
+        final Object sessionJson = exchange.getSession().get(sessionKey(exchange,
+                                                                        buildUri(exchange, request, clientEndpoint)));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
         }
@@ -141,8 +147,9 @@ final class OAuth2Utils {
     }
 
     static void removeSession(final Exchange exchange,
+                              final Request request,
                               final Expression<String> clientEndpoint) throws ResponseException {
-        exchange.getSession().remove(sessionKey(exchange, buildUri(exchange, clientEndpoint)));
+        exchange.getSession().remove(sessionKey(exchange, buildUri(exchange, request, clientEndpoint)));
     }
 
     static void saveSession(final Exchange exchange,
