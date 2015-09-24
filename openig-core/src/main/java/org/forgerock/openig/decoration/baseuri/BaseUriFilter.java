@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import java.net.URI;
 
 import org.forgerock.http.Filter;
@@ -57,7 +59,7 @@ class BaseUriFilter implements Filter {
                                                           final Handler next) {
         Exchange exchange = context.asContext(Exchange.class);
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(exchange)));
+            request.getUri().rebase(URI.create(baseUri.eval(bindings(exchange, request))));
         }
         return delegate.filter(context, request, next);
     }

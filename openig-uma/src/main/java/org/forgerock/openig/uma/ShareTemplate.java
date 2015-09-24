@@ -17,7 +17,7 @@
 package org.forgerock.openig.uma;
 
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonMap;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.util.List;
@@ -100,7 +100,7 @@ class ShareTemplate {
         }
 
         public boolean accept(Request request) {
-            return condition.eval(singletonMap("request", request));
+            return condition.eval(bindings("request", request));
         }
     }
 }

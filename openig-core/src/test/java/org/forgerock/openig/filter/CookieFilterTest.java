@@ -88,7 +88,7 @@ public class CookieFilterTest {
 
                         // request.cookies is not in sync with the message's headers' content
                         // Cannot assert on request.cookies due to OPENIG-123
-                        // assertFalse(exchange.request.cookies.containsKey("Test-Managed"));
+                        // assertFalse(request.cookies.containsKey("Test-Managed"));
 
                         return Promises.newResultPromise(new Response());
                     }

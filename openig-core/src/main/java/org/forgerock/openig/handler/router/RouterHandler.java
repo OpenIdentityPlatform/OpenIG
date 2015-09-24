@@ -255,7 +255,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         try {
             Exchange exchange = context.asContext(Exchange.class);
             for (Route route : sorted) {
-                if (route.accept(exchange)) {
+                if (route.accept(exchange, request)) {
                     return route.handle(context, request);
                 }
             }

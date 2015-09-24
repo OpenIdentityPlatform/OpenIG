@@ -102,7 +102,7 @@ public class SwitchFilterTest {
     @Test
     public void testSwitchWithConditionOnResponseStatus() throws Exception {
         SwitchFilter filter = new SwitchFilter();
-        filter.addResponseCase(Expression.valueOf("${exchange.response.status.code == 418}", Boolean.class), handler1);
+        filter.addResponseCase(Expression.valueOf("${response.status.code == 418}", Boolean.class), handler1);
 
         // Reset the terminalHandler as we want another result here.
         Mockito.reset(terminalHandler);

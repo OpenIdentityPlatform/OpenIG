@@ -50,8 +50,8 @@ public class ConditionalAuditEventListenerTest {
         // @Checkstyle:off
         return new Object[][] {
                 {Expression.valueOf("${true}", Boolean.class)},
-                {Expression.valueOf("${contains(tags, 'tag#1')}", Boolean.class)},
-                {Expression.valueOf("${source.name.leaf == 'source'}", Boolean.class)}
+                {Expression.valueOf("${contains(event.tags, 'tag#1')}", Boolean.class)},
+                {Expression.valueOf("${event.source.name.leaf == 'source'}", Boolean.class)}
         };
         // @Checkstyle:on
     }
@@ -69,8 +69,8 @@ public class ConditionalAuditEventListenerTest {
         return new Object[][] {
                 {Expression.valueOf("${false}", Boolean.class)},
                 {Expression.valueOf("a non boolean value", Boolean.class)},
-                {Expression.valueOf("${source.name.leaf == 'not the right name'}", Boolean.class)},
-                {Expression.valueOf("${source.wrongProperty == 'java.lang.Object'}", Boolean.class)}
+                {Expression.valueOf("${event.source.name.leaf == 'not the right name'}", Boolean.class)},
+                {Expression.valueOf("${event.source.wrongProperty == 'java.lang.Object'}", Boolean.class)}
         };
         // @Checkstyle:on
     }

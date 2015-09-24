@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 
@@ -28,6 +29,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -97,12 +99,13 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
-        target.set(exchange, new LazyMap<>(new Factory<Map<String, String>>() {
+        final Bindings bindings = bindings(exchange, request);
+        target.set(bindings, new LazyMap<>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {
                 try {
                     // Force the call to the method toString() to
-                    return file.getRecord(key, value.eval(exchange).toString());
+                    return file.getRecord(key, value.eval(bindings).toString());
                 } catch (IOException ioe) {
                     logger.warning(ioe);
                     // results in an empty map

@@ -29,6 +29,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -78,7 +79,8 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
             @Override
             public void handleResult(final Response result) {
                 Binding binding = theBindings.removeFirst();
-                if ((binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(exchange)))
+                Bindings scope = Bindings.bindings(exchange, request, result);
+                if ((binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(scope)))
                         || theBindings.isEmpty()) {
                     // Do not continue
                     composite.handleResult(result);

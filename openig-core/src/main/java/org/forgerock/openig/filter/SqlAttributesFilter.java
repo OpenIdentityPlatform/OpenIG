@@ -18,6 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.log.LogLevel.DEBUG;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
@@ -43,6 +44,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -115,8 +117,9 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                                                           final Handler next) {
 
         final Exchange exchange = context.asContext(Exchange.class);
+        final Bindings bindings = bindings(exchange, request);
 
-        target.set(exchange, new LazyMap<>(new Factory<Map<String, Object>>() {
+        target.set(bindings, new LazyMap<>(new Factory<Map<String, Object>>() {
             @Override
             public Map<String, Object> newInstance() {
                 HashMap<String, Object> result = new HashMap<>();
@@ -174,7 +177,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                         logger.warning(format(" Placeholder %d has no provided value as parameter", i + 1));
                         continue;
                     }
-                    Object eval = expressions.next().eval(exchange);
+                    Object eval = expressions.next().eval(bindings);
                     ps.setObject(i + 1, eval);
                     logger.debug(format(" Placeholder #%d -> %s", i + 1, eval));
                 }

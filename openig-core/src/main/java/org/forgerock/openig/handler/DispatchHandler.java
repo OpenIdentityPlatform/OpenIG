@@ -28,6 +28,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -90,7 +91,8 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
         for (Binding binding : bindings) {
-            if (binding.condition == null || Boolean.TRUE.equals(binding.condition.eval(exchange))) {
+            if (binding.condition == null
+                    || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(exchange, request)))) {
                 if (binding.baseURI != null) {
                     request.getUri().rebase(binding.baseURI);
                 }

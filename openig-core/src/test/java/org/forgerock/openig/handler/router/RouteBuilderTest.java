@@ -92,9 +92,9 @@ public class RouteBuilderTest {
 
         Exchange exchange = new Exchange();
         exchange.getAttributes().put("value", 42);
-        assertThat(route.accept(exchange)).isTrue();
+        assertThat(route.accept(exchange, null)).isTrue();
         exchange.getAttributes().put("value", 44);
-        assertThat(route.accept(exchange)).isFalse();
+        assertThat(route.accept(exchange, null)).isFalse();
     }
 
     @Test

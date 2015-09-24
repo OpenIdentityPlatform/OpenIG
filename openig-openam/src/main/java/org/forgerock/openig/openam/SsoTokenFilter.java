@@ -20,6 +20,7 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -33,6 +34,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.SessionContext;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.http.Exchange;
@@ -106,30 +108,30 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
                         if (response.getStatus().equals(FORBIDDEN)) {
                             final SessionContext sessionContext = context.asContext(SessionContext.class);
                             sessionContext.getSession().remove(SSO_TOKEN_KEY);
-                            return createSsoToken(context)
+                            return createSsoToken(context, request)
                                     .thenAsync(executeRequestWithToken);
                         }
                         return newResponsePromise(response);
                     }
                 };
 
-        return findSsoToken(context)
+        return findSsoToken(context, request)
                 .thenAsync(executeRequestWithToken)
                 .thenAsync(checkResponse);
     }
 
-    private Promise<String, NeverThrowsException> findSsoToken(final Context context) {
+    private Promise<String, NeverThrowsException> findSsoToken(final Context context, final Request request) {
         final SessionContext sessionContext = context.asContext(SessionContext.class);
         if (sessionContext.getSession().containsKey(SSO_TOKEN_KEY)) {
             return newResultPromise((String) sessionContext.getSession().get(SSO_TOKEN_KEY));
         } else {
-            return createSsoToken(context);
+            return createSsoToken(context, request);
         }
     }
 
-    private Promise<String, NeverThrowsException> createSsoToken(final Context context) {
+    private Promise<String, NeverThrowsException> createSsoToken(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
-        return ssoClientHandler.handle(context, authenticationRequest(exchange))
+        return ssoClientHandler.handle(context, authenticationRequest(bindings(exchange, request)))
                                .then(extractSsoToken(context));
     }
 
@@ -153,13 +155,13 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
     }
 
     @VisibleForTesting
-    Request authenticationRequest(final Exchange exchange) {
+    Request authenticationRequest(final Bindings bindings) {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(openamUrl.resolve(BASE_ENDPOINT + realm + AUTHENTICATION_ENDPOINT));
         request.setEntity(json(object()).asMap());
-        request.getHeaders().put("X-OpenAM-Username", username.eval(exchange));
-        request.getHeaders().put("X-OpenAM-Password", password.eval(exchange));
+        request.getHeaders().put("X-OpenAM-Username", username.eval(bindings));
+        request.getHeaders().put("X-OpenAM-Password", password.eval(bindings));
         return request;
     }
 }

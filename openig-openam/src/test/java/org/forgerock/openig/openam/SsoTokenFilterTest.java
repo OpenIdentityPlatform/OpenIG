@@ -24,6 +24,7 @@ import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.openam.SsoTokenFilter.SSO_TOKEN_KEY;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
@@ -102,7 +103,7 @@ public class SsoTokenFilterTest {
                                                          Expression.valueOf("bjensen", String.class),
                                                          Expression.valueOf("${exchange.attributes.password}",
                                                                             String.class));
-        final Request request = filter.authenticationRequest(exchange);
+        final Request request = filter.authenticationRequest(bindings(exchange, null));
         assertThat(request.getHeaders().get("X-OpenAM-Username").getFirstValue()).isEqualTo("bjensen");
         assertThat(request.getHeaders().get("X-OpenAM-Password").getFirstValue()).isEqualTo("hifalutin");
         assertThat(request.getMethod()).isEqualTo("POST");
