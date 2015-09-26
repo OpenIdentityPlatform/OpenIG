@@ -22,24 +22,22 @@ import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.json.resource.ResourceException.BAD_REQUEST;
-import static org.forgerock.json.resource.ResourceException.NOT_FOUND;
-import static org.forgerock.json.resource.ResourceException.NOT_SUPPORTED;
-import static org.forgerock.json.resource.ResourceException.getException;
 import static org.forgerock.json.resource.Responses.newQueryResponse;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
+import org.forgerock.json.resource.BadRequestException;
 import org.forgerock.json.resource.CollectionResourceProvider;
 import org.forgerock.json.resource.CreateRequest;
 import org.forgerock.json.resource.DeleteRequest;
+import org.forgerock.json.resource.NotFoundException;
+import org.forgerock.json.resource.NotSupportedException;
 import org.forgerock.json.resource.PatchRequest;
 import org.forgerock.json.resource.QueryRequest;
 import org.forgerock.json.resource.QueryResourceHandler;
@@ -53,6 +51,7 @@ import org.forgerock.json.resource.UpdateRequest;
 import org.forgerock.json.resource.http.CrestHttp;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 
@@ -91,8 +90,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     public Promise<ResourceResponse, ResourceException> createInstance(final Context context,
                                                                        final CreateRequest request) {
         if (request.getNewResourceId() != null) {
-            return getException(NOT_SUPPORTED,
-                                "Only POST-style of instance creation are supported").asPromise();
+            return new NotSupportedException("Only POST-style of instance creation are supported").asPromise();
         }
         String path = request.getContent().get("path").asString();
         String pat = request.getContent().get("pat").asString();
@@ -105,7 +103,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
                       }, new Function<UmaException, ResourceResponse, ResourceException>() {
                           @Override
                           public ResourceResponse apply(final UmaException exception) throws ResourceException {
-                              throw getException(BAD_REQUEST, "Failed to create a share", exception);
+                              throw new BadRequestException("Failed to create a share", exception);
                           }
                       });
     }
@@ -124,8 +122,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
                                                                        final DeleteRequest request) {
         Share share = service.removeShare(resourceId);
         if (share == null) {
-            return getException(NOT_FOUND,
-                                format("Share %s is unknown", resourceId)).asPromise();
+            return new NotFoundException(format("Share %s is unknown", resourceId)).asPromise();
         }
         return newResultPromise(newResourceResponse(resourceId, null, asJson(share)));
     }
@@ -134,7 +131,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     public Promise<ResourceResponse, ResourceException> patchInstance(final Context context,
                                                                       final String resourceId,
                                                                       final PatchRequest request) {
-        return getException(NOT_SUPPORTED).asPromise();
+        return new NotSupportedException().asPromise();
     }
 
     @Override
@@ -146,8 +143,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
         if (request.getQueryId() != null
                 || request.getQueryExpression() != null
                 || !alwaysTrue().equals(request.getQueryFilter())) {
-            return getException(NOT_SUPPORTED,
-                                "Only accept queries with filter=true").asPromise();
+            return new NotSupportedException("Only accept queries with filter=true").asPromise();
         }
 
         for (Share share : service.listShares()) {
@@ -169,20 +165,20 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
     public Promise<ResourceResponse, ResourceException> updateInstance(final Context context,
                                                                        final String resourceId,
                                                                        final UpdateRequest request) {
-        return getException(NOT_SUPPORTED).asPromise();
+        return new NotSupportedException().asPromise();
     }
 
     @Override
     public Promise<ActionResponse, ResourceException> actionCollection(final Context context,
                                                                        final ActionRequest request) {
-        return getException(NOT_SUPPORTED).asPromise();
+        return new NotSupportedException().asPromise();
     }
 
     @Override
     public Promise<ActionResponse, ResourceException> actionInstance(final Context context,
                                                                      final String resourceId,
                                                                      final ActionRequest request) {
-        return getException(NOT_SUPPORTED).asPromise();
+        return new NotSupportedException().asPromise();
     }
 
     /**
