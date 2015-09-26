@@ -23,6 +23,8 @@ import org.forgerock.http.protocol.ResponseException;
  */
 public class UmaException extends ResponseException {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Creates a new UmaException with the given {@code message}.
      *

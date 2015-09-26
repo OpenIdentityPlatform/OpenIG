@@ -173,7 +173,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         Set<String> scopes = template.getScopes(request);
 
         return json(object(field("resource_set_id", share.getResourceSetId()),
-                           field("scopes", array(scopes.toArray(new String[scopes.size()])))));
+                           field("scopes", array(scopes.toArray(new Object[scopes.size()])))));
     }
 
     private Promise<Response, NeverThrowsException> introspectToken(final String token, final String pat) {
