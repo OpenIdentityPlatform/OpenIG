@@ -19,10 +19,10 @@ package org.forgerock.openig.filter.oauth2.challenge;
 import static java.lang.String.format;
 import static org.forgerock.util.Reject.checkNotNull;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -70,8 +70,8 @@ public abstract class AuthenticateChallengeHandler implements Handler {
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Response response = createResponse();
-        response.getHeaders().putSingle(WWW_AUTHENTICATE,
-                                        format("Bearer %s", buildChallenge()));
+        response.getHeaders().put(WWW_AUTHENTICATE,
+                                  format("Bearer %s", buildChallenge()));
         return Promises.newResultPromise(response);
     }
 

@@ -247,7 +247,7 @@ public class ClientRegistrationTest {
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + USER_INFO_ENDPOINT);
-        assertThat(request.getHeaders().get("Authorization")).isNotEmpty();
+        assertThat(request.getHeaders().get("Authorization").getValues()).isNotEmpty();
     }
 
     @Test(expectedExceptions = OAuth2ErrorException.class,

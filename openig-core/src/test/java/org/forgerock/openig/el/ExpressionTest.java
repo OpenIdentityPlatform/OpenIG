@@ -119,7 +119,7 @@ public class ExpressionTest {
     public void exchangeRequestHeader() throws ExpressionException {
         Exchange exchange = new Exchange();
         exchange.setRequest(new Request());
-        exchange.getRequest().getHeaders().putSingle("Host", "www.example.com");
+        exchange.getRequest().getHeaders().put("Host", "www.example.com");
         Expression<String> expr = Expression.valueOf("${exchange.request.headers['Host'][0]}", String.class);
         String host = expr.eval(exchange);
         assertThat(host).isEqualTo("www.example.com");
@@ -151,11 +151,11 @@ public class ExpressionTest {
         Request request = new Request();
         request.setUri("http://wiki.example.com/wordpress/wp-login.php?action=login");
         request.setMethod("POST");
-        request.getHeaders().putSingle("host", "wiki.example.com");
-        request.getHeaders().putSingle("cookie", "SESSION=value; path=/");
+        request.getHeaders().put("host", "wiki.example.com");
+        request.getHeaders().put("cookie", "SESSION=value; path=/");
 
         Response response = new Response();
-        response.getHeaders().putSingle("Set-Cookie", "MyCookie=example; path=/");
+        response.getHeaders().put("Set-Cookie", "MyCookie=example; path=/");
 
         Exchange exchange = new Exchange();
         exchange.setRequest(request);
@@ -197,7 +197,7 @@ public class ExpressionTest {
         assertThat(stringExpr.eval(exchange)).isNotNull();
 
         stringExpr = Expression.valueOf("${exchange.response.headers['Set-Cookie'][0]}", String.class);
-        assertThat(stringExpr.eval(exchange)).isEqualTo("MyCookie=example; path=/");
+        assertThat(stringExpr.eval(exchange)).isEqualTo("MyCookie=example; Path=/");
     }
 
     @Test

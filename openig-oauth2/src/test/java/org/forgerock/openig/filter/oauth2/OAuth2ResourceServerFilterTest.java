@@ -99,7 +99,7 @@ public class OAuth2ResourceServerFilterTest {
 
         Request request = buildUnAuthorizedRequest();
         if (authorizationValue != null) {
-            request.getHeaders().putSingle("Authorization", authorizationValue);
+            request.getHeaders().put("Authorization", authorizationValue);
         }
         Response response = filter.filter(new Exchange(), request, null).get();
 

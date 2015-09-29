@@ -50,7 +50,7 @@ public class OAuth2BearerWWWAuthenticateHeaderTest {
     public void testConstructFromMessage(final String header, String realm, List<String> scopes,
             String error, String errorDescription) {
         final Response response = new Response();
-        response.getHeaders().putSingle(NAME, header);
+        response.getHeaders().put(NAME, header);
         OAuth2BearerWWWAuthenticateHeader parsed =
                 OAuth2BearerWWWAuthenticateHeader.valueOf(response);
         assertEquals(parsed, header, realm, scopes, error, errorDescription);
@@ -85,7 +85,7 @@ public class OAuth2BearerWWWAuthenticateHeaderTest {
         assertThat(parsed.getOAuth2Error().getScope()).isEqualTo(scopes);
         assertThat(parsed.getOAuth2Error().getError()).isEqualTo(error);
         assertThat(parsed.getOAuth2Error().getErrorDescription()).isEqualTo(errorDescription);
-        assertThat(parsed.toString()).isEqualTo(header);
+        assertThat(parsed.getValues()).containsOnly(header);
     }
 
 }

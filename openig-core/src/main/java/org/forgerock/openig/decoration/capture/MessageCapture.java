@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -193,9 +194,9 @@ public class MessageCapture {
     }
 
     private void writeHeaders(final PrintWriter writer, Message message) {
-        for (String key : message.getHeaders().keySet()) {
-            for (String value : message.getHeaders().get(key)) {
-                writer.println(key + ": " + value);
+        for (Map.Entry<String, Header> entry : message.getHeaders().asMapOfHeaders().entrySet()) {
+            for (String value : entry.getValue().getValues()) {
+                writer.println(entry.getKey() + ": " + value);
             }
         }
     }

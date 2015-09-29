@@ -18,6 +18,8 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.util.Utils.joinAsString;
+
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -27,10 +29,16 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.forgerock.http.protocol.Header;
+import org.forgerock.http.protocol.Headers;
+import org.forgerock.http.protocol.Message;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -44,7 +52,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Responses;
-import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -199,11 +206,12 @@ public class CookieFilter extends GenericHeapObject implements Filter {
      * a single "Cookie" header in the request.
      */
     private void addRequestCookies(CookieManager manager, MutableUri resolved, Request request) throws IOException {
-        List<String> cookies = request.getHeaders().get("Cookie");
-        if (cookies == null) {
-            cookies = new ArrayList<>();
+        Header cookieHeader = request.getHeaders().get("Cookie");
+        List<String> cookies = new ArrayList<>();
+        if (cookieHeader != null) {
+            cookies.addAll(cookieHeader.getValues());
         }
-        List<String> managed = manager.get(resolved.asURI(), request.getHeaders()).get("Cookie");
+        List<String> managed = manager.get(resolved.asURI(), asStringMultiValueMap(request.getHeaders())).get("Cookie");
         if (managed != null) {
             cookies.addAll(managed);
         }
@@ -216,8 +224,16 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         }
         if (sb.length() > 0) {
             // replace any existing header(s)
-            request.getHeaders().putSingle("Cookie", sb.toString());
+            request.getHeaders().put("Cookie", sb.toString());
         }
+    }
+
+    private Map<String, List<String>> asStringMultiValueMap(final Headers headers) {
+        MultiValueMap<String, String> map = new MultiValueMap<>(new LinkedHashMap<String, List<String>>());
+        for (Map.Entry<String, Header> entry : headers.asMapOfHeaders().entrySet()) {
+            map.put(entry.getKey(), entry.getValue().getValues());
+        }
+        return map;
     }
 
     @Override
@@ -246,7 +262,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                     public Response apply(final Response value) {
                         // manage cookie headers in response
                         try {
-                            manager.put(resolved.asURI(), value.getHeaders());
+                            manager.put(resolved.asURI(), asStringMultiValueMap(value.getHeaders()));
                         } catch (IOException e) {
                             return Responses.newInternalServerError("Can't process managed cookies in response", e);
                         }
@@ -304,41 +320,44 @@ public class CookieFilter extends GenericHeapObject implements Filter {
      * @param request the request to suppress the cookies in.
      */
     private void suppress(Request request) {
-        List<String> headers = request.getHeaders().get("Cookie");
-        if (headers != null) {
-            for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
-                String header = hi.next();
-                ArrayList<String> parts = new ArrayList<>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
-                int originalSize = parts.size();
-                boolean remove = false;
-                int intact = 0;
-                for (ListIterator<String> pi = parts.listIterator(); pi.hasNext();) {
-                    String part = pi.next().trim();
-                    if (part.length() != 0 && part.charAt(0) == '$') {
-                        if (remove) {
-                            pi.remove();
-                        }
+        Header cookieHeader = request.getHeaders().get("Cookie");
+        if (cookieHeader == null) {
+            return;
+        }
+        List<String> headers = new ArrayList<>(cookieHeader.getValues());
+        for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
+            String header = hi.next();
+            ArrayList<String> parts = new ArrayList<>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
+            int originalSize = parts.size();
+            boolean remove = false;
+            int intact = 0;
+            for (ListIterator<String> pi = parts.listIterator(); pi.hasNext();) {
+                String part = pi.next().trim();
+                if (part.length() != 0 && part.charAt(0) == '$') {
+                    if (remove) {
+                        pi.remove();
+                    }
+                } else {
+                    Action action = action((DELIM_EQUALS.split(part, 2))[0].trim());
+                    if (action == Action.SUPPRESS || action == Action.MANAGE) {
+                        pi.remove();
+                        remove = true;
                     } else {
-                        Action action = action((DELIM_EQUALS.split(part, 2))[0].trim());
-                        if (action == Action.SUPPRESS || action == Action.MANAGE) {
-                            pi.remove();
-                            remove = true;
-                        } else {
-                            intact++;
-                            remove = false;
-                        }
+                        intact++;
+                        remove = false;
                     }
                 }
-                if (intact == 0) {
-                    hi.remove();
-                } else if (parts.size() != originalSize) {
-                    hi.set(StringUtil.join(";", parts));
-                }
             }
-            if (headers.isEmpty()) {
-                request.getHeaders().remove("Cookie");
+            if (intact == 0) {
+                hi.remove();
+            } else if (parts.size() != originalSize) {
+                hi.set(joinAsString(";", parts));
             }
         }
+        //if (headers.isEmpty()) {
+        //    request.getHeaders().remove("Cookie");
+        //}
+        commitNewValues(request, "Cookie", headers);
     }
 
     /**
@@ -348,8 +367,9 @@ public class CookieFilter extends GenericHeapObject implements Filter {
      */
     private void suppress(Response response) {
         for (String name : RESPONSE_HEADERS) {
-            List<String> headers = response.getHeaders().get(name);
-            if (headers != null) {
+            Header setCookieHeader = response.getHeaders().get(name);
+            if (setCookieHeader != null) {
+                List<String> headers = new ArrayList<>(setCookieHeader.getValues());
                 for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                     String header = hi.next();
                     ArrayList<String> parts;
@@ -372,10 +392,19 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                     if (parts.size() == 0) {
                         hi.remove();
                     } else if (parts.size() != originalSize) {
-                        hi.set(StringUtil.join(",", parts));
+                        hi.set(joinAsString(",", parts));
                     }
                 }
+                commitNewValues(response, name, headers);
             }
+        }
+    }
+
+    private void commitNewValues(final Message message, final String name, final List<String> values) {
+        if (values.isEmpty()) {
+            message.getHeaders().remove(name);
+        } else {
+            message.getHeaders().put(name, values);
         }
     }
 

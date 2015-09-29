@@ -555,7 +555,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         response.setStatus(Status.FOUND);
         // Web container was rebasing location header against server URL
         // Not useful if relayState is already (and always) an absolute URL
-        response.getHeaders().putSingle(LocationHeader.NAME, redirectUri);
+        response.getHeaders().put(LocationHeader.NAME, redirectUri);
         return response;
     }
 

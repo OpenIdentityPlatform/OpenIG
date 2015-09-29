@@ -154,7 +154,7 @@ public class JwtCookieSessionTest {
         JwtCookieSession session = newJwtSession(exchange);
         session.save(exchange.getResponse());
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNullOrEmpty();
+        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNull();
     }
 
     @Test
@@ -164,7 +164,7 @@ public class JwtCookieSessionTest {
         JwtCookieSession session = newJwtSession(exchange);
         session.save(exchange.getResponse());
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNullOrEmpty();
+        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNull();
     }
 
     @Test
@@ -235,6 +235,6 @@ public class JwtCookieSessionTest {
     }
 
     private static void setRequestCookie(final Exchange exchange, final String cookie) {
-        exchange.getRequest().getHeaders().putSingle("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
+        exchange.getRequest().getHeaders().put("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
     }
 }

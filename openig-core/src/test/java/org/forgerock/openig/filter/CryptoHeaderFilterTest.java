@@ -108,7 +108,7 @@ public class CryptoHeaderFilterTest {
         filter.setKey(new SecretKeySpec(decode("zuul"), "AES"));
 
         Request request = new Request();
-        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
@@ -116,7 +116,7 @@ public class CryptoHeaderFilterTest {
         filter.filter(null, request, terminalHandler);
 
         verify(logger).error(any(GeneralSecurityException.class));
-        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isNull();
+        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isEmpty();
     }
 
     @Test
@@ -126,7 +126,7 @@ public class CryptoHeaderFilterTest {
         filter.setAlgorithm("Unknown");
 
         Request request = new Request();
-        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
@@ -134,7 +134,7 @@ public class CryptoHeaderFilterTest {
         filter.filter(null, request, terminalHandler);
 
         verify(logger).error(any(GeneralSecurityException.class));
-        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isNull();
+        assertThat(request.getHeaders().getFirst(HEADER_NAME)).isEmpty();
     }
 
     @Test
@@ -143,7 +143,7 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(REQUEST);
 
         Request request = new Request();
-        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
@@ -162,7 +162,7 @@ public class CryptoHeaderFilterTest {
         filter.setOperation(DECRYPT);
 
         Request request = new Request();
-        request.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        request.getHeaders().put(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, request))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
@@ -180,7 +180,7 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(RESPONSE);
 
         Response response = new Response();
-        response.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        response.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
@@ -199,7 +199,7 @@ public class CryptoHeaderFilterTest {
         filter.setOperation(CryptoHeaderFilter.Operation.DECRYPT);
 
         Response response = new Response();
-        response.getHeaders().putSingle(HEADER_NAME, ENCRYPTED_VALUE);
+        response.getHeaders().put(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
@@ -223,7 +223,7 @@ public class CryptoHeaderFilterTest {
         filter.setLogger(logger);
 
         Request request = new Request();
-        request.getHeaders().putSingle(HEADER_NAME, CLEAR_TEXT_VALUE);
+        request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         filter.filter(null, request, terminalHandler);
 

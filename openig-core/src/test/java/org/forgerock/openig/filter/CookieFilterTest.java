@@ -24,6 +24,7 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.util.HashMap;
+import java.util.List;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.session.Session;
@@ -82,7 +83,7 @@ public class CookieFilterTest {
                             throws Throwable {
                         // Expecting to find the managed cookie, not the original one
                         // CookieFilter produces a single 'Cookie' value
-                        assertThat(request.getHeaders().getFirst("Cookie"))
+                        assertThat(request.getHeaders().getFirst(CookieHeader.NAME))
                                 .contains("Test-Managed=\"Overridden value\"");
 
                         // request.cookies is not in sync with the message's headers' content
@@ -125,7 +126,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // As the cookie should have been removed, we should not have any Cookie header now
-                        assertThat(request.getHeaders().get("Cookie")).isNull();
+                        assertThat(request.getHeaders().get(CookieHeader.NAME)).isNull();
 
                         return Promises.newResultPromise(new Response());
                     }
@@ -138,7 +139,7 @@ public class CookieFilterTest {
     }
 
     /**
-     * Assume that a request comes with a managed cookie inside.
+     * Assume that a request comes with a suppressed cookie inside.
      * It should be hidden to the next handler in chain.
      */
     @Test
@@ -154,7 +155,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // As the cookie should have been removed, we should not have any Cookie header now
-                        assertThat(request.getHeaders().get("Cookie")).isNull();
+                        assertThat(request.getHeaders().get(CookieHeader.NAME)).isNull();
 
                         return Promises.newResultPromise(new Response());
                     }
@@ -162,6 +163,40 @@ public class CookieFilterTest {
 
         // Prepare the request with an existing cookie
         appendRequestCookie("Will-Be-Deleted", ".example.org");
+
+        filter.filter(context, request, terminalHandler).get();
+    }
+
+    /**
+     * Assume that a request comes with a suppressed cookie inside.
+     * It should be hidden to the next handler in chain.
+     * But the relayed cookie should be kept
+     */
+    @Test
+    public void testOnlySuppressedClientCookiesAreNotTransmittedToTheUserAgent() throws Exception {
+
+        CookieFilter filter = new CookieFilter();
+        filter.getSuppressed().add("Will-Be-Deleted");
+        filter.getRelayed().add("Will-Not-Be-Deleted");
+
+        when(terminalHandler.handle(context, request))
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
+                            throws Throwable {
+
+                        // As the cookie should have been removed, we should have only 1 cookie
+                        List<Cookie> cookies = request.getHeaders().get(CookieHeader.class).getCookies();
+                        assertThat(cookies).hasSize(1);
+                        assertThat(cookies.get(0).getName()).isEqualTo("Will-Not-Be-Deleted");
+
+                        return Promises.newResultPromise(new Response());
+                    }
+                });
+
+        // Prepare the request with existing cookies
+        appendRequestCookie("Will-Be-Deleted", ".example.org");
+        appendRequestCookie("Will-Not-Be-Deleted", ".example.org");
 
         filter.filter(context, request, terminalHandler).get();
     }
@@ -182,7 +217,7 @@ public class CookieFilterTest {
                     public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation)
                             throws Throwable {
 
-                        assertThat(request.getHeaders().getFirst("Cookie"))
+                        assertThat(request.getHeaders().getFirst(CookieHeader.NAME))
                                 .contains("Will-Be-Relayed=\"Default Value\"");
 
                         return Promises.newResultPromise(new Response());
@@ -215,14 +250,14 @@ public class CookieFilterTest {
 
                         // Populate the response with a cookie that should be invisible to client
                         Response response = new Response();
-                        response.getHeaders().putSingle("Set-cookie2", "Hidden-Cookie=value");
+                        response.getHeaders().put("Set-cookie2", "Hidden-Cookie=value");
 
                         return Promises.newResultPromise(response);
                     }
                 });
 
         Response response = filter.filter(context, request, terminalHandler).get();
-        assertThat(response.getHeaders().get("Set-cookie2")).isEmpty();
+        assertThat(response.getHeaders().get("Set-cookie2")).isNull();
     }
 
     @Test
@@ -239,14 +274,14 @@ public class CookieFilterTest {
 
                         // Populate the response with a cookie that should be invisible to client
                         Response response = new Response();
-                        response.getHeaders().putSingle("Set-cookie2", "Suppressed-Cookie=value");
+                        response.getHeaders().put("Set-cookie2", "Suppressed-Cookie=value");
 
                         return Promises.newResultPromise(response);
                     }
                 });
 
         Response response = filter.filter(context, request, terminalHandler).get();
-        assertThat(response.getHeaders().get("Set-cookie2")).isEmpty();
+        assertThat(response.getHeaders().get("Set-cookie2")).isNull();
     }
 
     /**
@@ -291,7 +326,7 @@ public class CookieFilterTest {
 
                         // Populate the response with a cookie that should be invisible to client
                         Response response = new Response();
-                        response.getHeaders().putSingle("Set-cookie2", "Managed=value");
+                        response.getHeaders().put("Set-cookie2", "Managed=value");
 
                         return Promises.newResultPromise(response);
                     }
@@ -314,7 +349,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // Ensure the next handler have the cookie
-                        String cookie = request2.getHeaders().getFirst("Cookie");
+                        String cookie = request2.getHeaders().getFirst(CookieHeader.NAME);
                         assertThat(cookie).isEqualTo("Managed=value");
 
                         return Promises.newResultPromise(new Response());
@@ -323,7 +358,7 @@ public class CookieFilterTest {
 
         // Perform the call
         Response response = filter.filter(context2, request2, terminalHandler).get();
-        assertThat(response.getHeaders().get("Set-cookie2")).isNullOrEmpty();
+        assertThat(response.getHeaders().get("Set-cookie2")).isNull();
     }
 
     private void appendRequestCookie(String name, String domain) {
@@ -336,7 +371,7 @@ public class CookieFilterTest {
         header.getCookies().add(cookie);
 
         // Serialize the newly created Cookie inside the request
-        request.getHeaders().putSingle(header);
+        request.getHeaders().put(header);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

@@ -89,7 +89,7 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
             message.getHeaders().remove(s);
         }
         for (String key : this.addedHeaders.keySet()) {
-            for (String value : this.addedHeaders.get(key)) {
+            for (String value : this.addedHeaders.get(key).getValues()) {
                 JsonValue jsonValue = new JsonValue(value);
                 message.getHeaders().add(key, asExpression(jsonValue, String.class).eval(exchange));
             }
@@ -131,7 +131,7 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
                     .expect(Map.class);
             for (String key : add.keys()) {
                 List<String> values = add.get(key).required().asList(String.class);
-                filter.addedHeaders.addAll(key, values);
+                filter.addedHeaders.put(key, values);
             }
             return filter;
         }

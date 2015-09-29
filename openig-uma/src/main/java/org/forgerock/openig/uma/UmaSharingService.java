@@ -242,8 +242,8 @@ public class UmaSharingService {
         Request request = new Request();
         request.setMethod("POST");
         request.setUri(resourceSetEndpoint);
-        request.getHeaders().putSingle("Authorization", format("Bearer %s", pat));
-        request.getHeaders().putSingle("Accept", "application/json");
+        request.getHeaders().put("Authorization", format("Bearer %s", pat));
+        request.getHeaders().put("Accept", "application/json");
 
         request.setEntity(resourceSet(path, template).asMap());
 

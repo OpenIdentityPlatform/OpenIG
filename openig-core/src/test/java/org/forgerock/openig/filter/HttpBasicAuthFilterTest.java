@@ -76,7 +76,7 @@ public class HttpBasicAuthFilterTest {
 
         Exchange exchange = newExchange();
         Request request = newRequest();
-        request.getHeaders().putSingle(AUTHORIZATION_HEADER, "Basic azerty");
+        request.getHeaders().put(AUTHORIZATION_HEADER, "Basic azerty");
 
         doAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
             @Override
@@ -84,7 +84,7 @@ public class HttpBasicAuthFilterTest {
                 // Produce a valid response with an authentication challenge
                 Response response = new Response();
                 response.setStatus(Status.OK);
-                response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Realm toto");
+                response.getHeaders().put(AUTHENTICATE_HEADER, "Realm toto");
                 return Promises.newResultPromise(response);
 
             }
@@ -302,7 +302,7 @@ public class HttpBasicAuthFilterTest {
         public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) throws Throwable {
             Response response = new Response();
             response.setStatus(Status.UNAUTHORIZED);
-            response.getHeaders().putSingle(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
+            response.getHeaders().put(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
             return Promises.newResultPromise(response);
         }
     }

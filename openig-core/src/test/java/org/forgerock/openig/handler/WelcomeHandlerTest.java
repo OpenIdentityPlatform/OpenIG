@@ -18,8 +18,6 @@ package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -36,7 +34,7 @@ public class WelcomeHandlerTest {
         request.setUri("http://example.com/");
         Response response = handler.handle(null, request).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
-        assertThat(response.getHeaders()).containsEntry("Content-Type", Arrays.asList("text/html"));
+        assertThat(response.getHeaders().getFirst("Content-Type")).isEqualTo("text/html");
         assertThat(response.getEntity().getRawContentInputStream().available()).isGreaterThan(0);
         response.close();
     }

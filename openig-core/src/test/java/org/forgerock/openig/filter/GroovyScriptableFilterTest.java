@@ -190,8 +190,8 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         filter.filter(new Exchange(), request, handler);
         // base64-encode "bjensen:hifalutin" -> "YmplbnNlbjpoaWZhbHV0aW4="
-        assertThat(request.getHeaders().get("Authorization").toString())
-                .isEqualTo("[Basic YmplbnNlbjpoaWZhbHV0aW4=]");
+        assertThat(request.getHeaders().get("Authorization").getValues())
+                .containsOnly("Basic YmplbnNlbjpoaWZhbHV0aW4=");
         assertThat(request.getUri().getScheme()).isEqualTo("https");
     }
 
@@ -206,7 +206,7 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         Response response = filter.filter(new Exchange(), request, handler).get();
         final Headers headers = request.getHeaders();
-        assertThat(headers.get("title").toString()).isEqualTo("[Coffee time]");
+        assertThat(headers.get("title").getValues()).containsOnly("Coffee time");
         assertThat(response.getStatus()).isEqualTo(Status.TEAPOT);
         assertThat(response.getEntity().toString()).contains("1:koffie, 2:kafe, 3:cafe, 4:kafo");
     }
@@ -356,8 +356,8 @@ public class GroovyScriptableFilterTest {
                     "import org.forgerock.http.protocol.Response",
                     "import org.forgerock.http.protocol.Status",
                     "",
-                    "username = exchange.request.headers.Username[0]",
-                    "password = exchange.request.headers.Password[0]",
+                    "username = exchange.request.headers.Username.values[0]",
+                    "password = exchange.request.headers.Password.values[0]",
                     "",
                     "exchange.response = new Response()",
                     "",
@@ -471,8 +471,8 @@ public class GroovyScriptableFilterTest {
             assertThat(exchange.getAttributes().get("cn")).isEqualTo(cnValues);
             assertThat(exchange.getAttributes().get("description"))
                     .isEqualTo("New description set by my script");
-            assertThat(request.getHeaders().get("Ldap-User-Dn").toString())
-                    .isEqualTo("[uid=bjensen,ou=people,dc=example,dc=com]");
+            assertThat(request.getHeaders().get("Ldap-User-Dn").getValues())
+                    .containsOnly("uid=bjensen,ou=people,dc=example,dc=com");
 
             // Authenticate using wrong password.
             Request request2 = new Request();
@@ -536,10 +536,10 @@ public class GroovyScriptableFilterTest {
             Request request = new Request();
             request.setUri(new URI("http://test?mail=bjensen@example.com"));
             filter.filter(exchange, request, mock(Handler.class));
-            assertThat(request.getHeaders().get("Username").toString())
-                    .isEqualTo("[bjensen]");
-            assertThat(request.getHeaders().get("Password").toString())
-                    .isEqualTo("[hifalutin]");
+            assertThat(request.getHeaders().get("Username").getValues())
+                    .containsOnly("bjensen");
+            assertThat(request.getHeaders().get("Password").getValues())
+                    .containsOnly("hifalutin");
             assertThat(request.getUri().getScheme()).isEqualTo("https");
         } finally {
             try {
@@ -642,7 +642,7 @@ public class GroovyScriptableFilterTest {
     public void testRequestHeaders() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "assert exchange.request.headers.Username[0] == 'test'",
+                "assert exchange.request.headers.Username.values[0] == 'test'",
                 "exchange.request.headers.Test = [ 'test' ]",
                 "assert exchange.request.headers.remove('Username')");
         // @formatter:on
@@ -650,7 +650,7 @@ public class GroovyScriptableFilterTest {
         request.getHeaders().add("Username", "test");
         filter.filter(new Exchange(), request, null).getOrThrow();
 
-        assertThat(request.getHeaders().get("Test")).containsOnly("test");
+        assertThat(request.getHeaders().get("Test").getValues()).containsOnly("test");
         assertThat(request.getHeaders().get("Username")).isNull();
     }
 

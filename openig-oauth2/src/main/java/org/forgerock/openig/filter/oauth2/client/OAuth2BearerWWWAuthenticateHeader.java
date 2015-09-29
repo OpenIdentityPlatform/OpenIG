@@ -16,7 +16,11 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.util.Collections.singletonList;
 import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
@@ -26,7 +30,7 @@ import org.forgerock.http.protocol.Message;
  * message header. For more information, see <a
  * href="http://tools.ietf.org/html/rfc6750#section-3">RFC 6750</a>.
  */
-public class OAuth2BearerWWWAuthenticateHeader implements Header {
+public class OAuth2BearerWWWAuthenticateHeader extends Header {
 
     /** The name of the header that this object represents. */
     public static final String NAME = "WWW-Authenticate";
@@ -96,7 +100,7 @@ public class OAuth2BearerWWWAuthenticateHeader implements Header {
     }
 
     @Override
-    public String toString() {
-        return error != null ? error.toWWWAuthenticateHeader() : null;
+    public List<String> getValues() {
+        return error != null ? singletonList(error.toWWWAuthenticateHeader()) : Collections.<String>emptyList();
     }
 }
