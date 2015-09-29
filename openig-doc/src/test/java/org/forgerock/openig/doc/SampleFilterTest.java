@@ -44,9 +44,9 @@ public class SampleFilterTest {
 
         Response response = chain.handle(exchange, request).get();
 
-        assertThat(request.getHeaders().get(filter.name))
+        assertThat(request.getHeaders().get(filter.name).getValues())
                 .containsOnly("Hello world");
-        assertThat(response.getHeaders().get(filter.name))
+        assertThat(response.getHeaders().get(filter.name).getValues())
                 .containsOnly("Hello world");
     }
 }

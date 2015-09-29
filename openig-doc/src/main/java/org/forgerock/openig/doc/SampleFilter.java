@@ -66,7 +66,7 @@ public class SampleFilter extends GenericHeapObject implements Filter {
                                                           final Handler next) {
 
         // Set header in the request.
-        request.getHeaders().putSingle(name, value);
+        request.getHeaders().put(name, value);
 
         // Pass to the next filter or handler in the chain.
         return next.handle(context, request)
@@ -75,7 +75,7 @@ public class SampleFilter extends GenericHeapObject implements Filter {
                     @Override
                     public void handleResult(final Response response) {
                         // Set header in the response.
-                        response.getHeaders().putSingle(name, value);
+                        response.getHeaders().put(name, value);
                     }
                 });
     }

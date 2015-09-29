@@ -34,7 +34,7 @@ try {
     // Authentication succeeded.
 
     // Set a header (or whatever else you want to do here).
-    exchange.request.headers.add("Ldap-User-Dn", user.name)
+    exchange.request.headers.add("Ldap-User-Dn", user.name.toString())
 
     // Most LDAP attributes are multi-valued.
     // When you read multi-valued attributes, use the parse() method,

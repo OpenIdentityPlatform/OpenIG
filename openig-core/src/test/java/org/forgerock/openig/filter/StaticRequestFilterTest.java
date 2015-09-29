@@ -174,10 +174,10 @@ public class StaticRequestFilterTest {
         // Verify the request transmitted to downstream filters is not the original one
         assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
         // Check that headers have been properly populated
-        assertThat(terminalHandler.request.getHeaders().get("Mono-Valued"))
+        assertThat(terminalHandler.request.getHeaders().get("Mono-Valued").getValues())
                 .hasSize(1)
                 .containsOnly("First Value");
-        assertThat(terminalHandler.request.getHeaders().get("Multi-Valued"))
+        assertThat(terminalHandler.request.getHeaders().get("Multi-Valued").getValues())
                 .hasSize(2)
                 .containsOnly("One (1)", "Two (2)");
     }

@@ -149,8 +149,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         Request request = new Request();
         request.setMethod("POST");
         request.setUri(umaService.getTicketEndpoint());
-        request.getHeaders().putSingle("Authorization", format("Bearer %s", share.getPAT()));
-        request.getHeaders().putSingle("Accept", "application/json");
+        request.getHeaders().put("Authorization", format("Bearer %s", share.getPAT()));
+        request.getHeaders().put("Accept", "application/json");
         request.setEntity(createPermissionRequest(share, incoming).asMap());
 
         return protectionApiHandler.handle(newExchange(request), request)
@@ -180,8 +180,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         Request request = new Request();
         request.setUri(umaService.getIntrospectionEndpoint());
         // Should accept a PAT as per the spec (See OPENAM-6320 / OPENAM-5928)
-        //request.getHeaders().putSingle("Authorization", format("Bearer %s", pat));
-        request.getHeaders().putSingle("Accept", "application/json");
+        //request.getHeaders().put("Authorization", format("Bearer %s", pat));
+        request.getHeaders().put("Accept", "application/json");
 
         Form query = new Form();
         query.putSingle("token", token);
@@ -247,7 +247,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                                                                    .getFirst("WWW-Authenticate");
                                     if (authorization != null) {
                                         authorization = authorization.concat(", error=\"insufficient_scope\"");
-                                        response.getHeaders().putSingle("WWW-Authenticate", authorization);
+                                        response.getHeaders().put("WWW-Authenticate", authorization);
                                     }
                                 }
                             });
@@ -277,7 +277,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                     JsonValue value = json(response.getEntity().getJson());
                     Response forbidden = new Response(Status.FORBIDDEN);
                     forbidden.setEntity(singletonMap("ticket", value.get("ticket").asString()));
-                    forbidden.getHeaders().putSingle("WWW-Authenticate",
+                    forbidden.getHeaders().put("WWW-Authenticate",
                                                      format("UMA realm=\"%s\", as_uri=\"%s\"",
                                                             realm,
                                                             umaService.getAuthorizationServer()));

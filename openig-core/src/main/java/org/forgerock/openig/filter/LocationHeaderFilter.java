@@ -88,14 +88,13 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
     private Response processResponse(Exchange exchange) {
         Response response = exchange.getResponse();
         LocationHeader header = LocationHeader.valueOf(response);
-        if (header.toString() != null) {
+        if (header.getLocationUri() != null) {
             try {
-                URI currentURI = new URI(header.toString());
+                URI currentURI = new URI(header.getLocationUri());
                 URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(exchange));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
-                    response.getHeaders().remove(LocationHeader.NAME);
-                    response.getHeaders().add(LocationHeader.NAME, rebasedURI.toString());
+                    response.getHeaders().put(LocationHeader.NAME, rebasedURI.toString());
                 }
             } catch (URISyntaxException | ResponseException ex) {
                 logger.debug(ex);

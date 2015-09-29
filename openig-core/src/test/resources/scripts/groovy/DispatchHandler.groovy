@@ -16,8 +16,8 @@ switch (exchange.request.uri.path) {
 
     case "/login":
 
-        if (exchange.request.headers.Username[0] == "bjensen" &&
-                exchange.request.headers.Password[0] == "hifalutin") {
+        if (exchange.request.headers.Username.values[0] == "bjensen" &&
+                exchange.request.headers.Password.values[0] == "hifalutin") {
 
             exchange.response.status = Status.OK
             exchange.response.entity = "<html><p>Welcome back, Babs!</p></html>"

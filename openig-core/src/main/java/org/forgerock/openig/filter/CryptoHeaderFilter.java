@@ -30,9 +30,9 @@ import java.util.Set;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -42,6 +42,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -159,14 +160,15 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
      */
     private void process(Message message) {
         for (String s : this.headers) {
-            List<String> in = message.getHeaders().get(s);
-            if (in != null) {
+            Header header = message.getHeaders().get(s);
+            if (header != null) {
+                List<String> in = header.getValues();
                 List<String> out = new ArrayList<>();
                 message.getHeaders().remove(s);
                 for (String value : in) {
                     out.add(operation == Operation.ENCRYPT ? encrypt(value) : decrypt(value));
                 }
-                message.getHeaders().addAll(s, out);
+                message.getHeaders().put(s, out);
             }
         }
     }
@@ -178,7 +180,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
      * @return the decrypted value.
      */
     private String decrypt(String in) {
-        String result = null;
+        String result = "";
         try {
             byte[] ciphertext = Base64.decode(in);
             Cipher cipher = Cipher.getInstance(this.algorithm);
@@ -198,7 +200,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
      * @return the encrypted value.
      */
     private String encrypt(String in) {
-        String result = null;
+        String result = "";
         try {
             Cipher cipher = Cipher.getInstance(this.algorithm);
             cipher.init(Cipher.ENCRYPT_MODE, key);

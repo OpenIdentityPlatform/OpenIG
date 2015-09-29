@@ -52,7 +52,7 @@ public class HeaderFilterTest {
         Chain chain = new Chain(handler, singletonList((Filter) filter));
         Response response = chain.handle(exchange, exchange.getRequest()).get();
 
-        assertThat(response.getHeaders().get("Location"))
+        assertThat(response.getHeaders().get("Location").getValues())
                 .containsOnly("http://newtest.com:321/path/to/resource.html");
     }
 

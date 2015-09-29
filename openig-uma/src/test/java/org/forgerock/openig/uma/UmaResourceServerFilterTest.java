@@ -107,7 +107,7 @@ public class UmaResourceServerFilterTest {
 
     @Test
     public void shouldAuthorizeIncomingRequestWithValidRpt() throws Exception {
-        request.getHeaders().putSingle("Authorization", format("Bearer %s", RPT));
+        request.getHeaders().put("Authorization", format("Bearer %s", RPT));
         mockTokenIntrospection(new Response(Status.OK).setEntity(validToken()));
         UmaResourceServerFilter filter = new UmaResourceServerFilter(service, handler, null);
 
@@ -124,7 +124,7 @@ public class UmaResourceServerFilterTest {
 
     @Test
     public void shouldReturnTicketWhenInactiveRpt() throws Exception {
-        request.getHeaders().putSingle("Authorization", format("Bearer %s", RPT));
+        request.getHeaders().put("Authorization", format("Bearer %s", RPT));
         mockTokenIntrospection(new Response(Status.OK).setEntity(inactiveToken()));
         mockTicketCreation();
         UmaResourceServerFilter filter = new UmaResourceServerFilter(service, handler, null);
@@ -141,7 +141,7 @@ public class UmaResourceServerFilterTest {
 
     @Test
     public void shouldReturnTicketWhenRptDoesNotContainsEnoughScopes() throws Exception {
-        request.getHeaders().putSingle("Authorization", format("Bearer %s", RPT));
+        request.getHeaders().put("Authorization", format("Bearer %s", RPT));
         mockTokenIntrospection(new Response(Status.OK).setEntity(insufficientScopesToken()));
         mockTicketCreation();
         UmaResourceServerFilter filter = new UmaResourceServerFilter(service, handler, null);

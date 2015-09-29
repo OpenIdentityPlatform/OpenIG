@@ -195,7 +195,7 @@ public class LocationHeaderFilterTest {
         final Exchange exchange = new Exchange(null, new URI("http://www.origin.com:443"));
 
         Response expectedResponse = new Response();
-        expectedResponse.getHeaders().add(LocationHeader.NAME, testRedirectionURI.toString());
+        expectedResponse.getHeaders().put(LocationHeader.NAME, testRedirectionURI.toString());
         expectedResponse.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
@@ -203,8 +203,7 @@ public class LocationHeaderFilterTest {
         Response response = filter.filter(exchange, null, next).get();
 
         LocationHeader header = LocationHeader.valueOf(response);
-        assertThat(header.toString()).isNotNull();
-        assertThat(expectedResult).isEqualTo(header.toString());
+        assertThat(header.getLocationUri()).isEqualTo(expectedResult);
     }
 
     private static class ResponseHandler implements Handler {

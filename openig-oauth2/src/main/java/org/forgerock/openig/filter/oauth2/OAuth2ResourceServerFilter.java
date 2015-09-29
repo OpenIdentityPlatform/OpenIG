@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.forgerock.http.protocol.Header;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -276,8 +277,12 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
      */
     private String getAccessToken(final Request request) throws OAuth2TokenException {
         Headers headers = request.getHeaders();
-        List<String> authorizations = headers.get("Authorization");
-        if (authorizations != null && authorizations.size() >= 2) {
+        Header authHeader = headers.get("Authorization");
+        if (authHeader == null) {
+            return null;
+        }
+        List<String> authorizations = authHeader.getValues();
+        if (authorizations.size() >= 2) {
             throw new OAuth2TokenException("Can't use more than 1 'Authorization' Header to convey"
                                                    + " the OAuth2 AccessToken");
         }

@@ -34,7 +34,7 @@ public class NoAuthenticationChallengeHandlerTest {
 
         assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
 
-        List<String> authenticates = response.getHeaders().get("WWW-Authenticate");
+        List<String> authenticates = response.getHeaders().get("WWW-Authenticate").getValues();
         assertThat(authenticates).containsOnly("Bearer realm=\"test\"");
 
     }
