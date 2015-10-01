@@ -33,6 +33,7 @@ import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
@@ -84,12 +85,6 @@ public final class GatewayHttpApplication implements HttpApplication {
      * {@link Logger} instance for the openig-war module.
      */
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GatewayHttpApplication.class);
-
-    /**
-     * Key to retrieve the default {@link SessionManager} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
-     */
-    private static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     /**
      * Default HttpClient heap object declaration.

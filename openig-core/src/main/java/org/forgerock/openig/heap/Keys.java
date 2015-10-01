@@ -83,6 +83,12 @@ public final class Keys {
      */
     public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
 
+    /**
+     * Key to retrieve the default {@link SessionManager} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String SESSION_FACTORY_HEAP_KEY = "Session";
+
     private Keys() {
         // Prevents from instantiating.
     }
