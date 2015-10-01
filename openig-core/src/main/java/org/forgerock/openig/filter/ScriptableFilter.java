@@ -35,6 +35,8 @@ import org.forgerock.util.promise.ResultHandler;
  * <li>{@link java.util.Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
+ * <li>{@link org.forgerock.services.context.Context context} - the associated request context
+ * <li>{@link Request request} - the HTTP request
  * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
@@ -47,6 +49,7 @@ import org.forgerock.util.promise.ResultHandler;
  * immediately.
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
+ * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
 public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {
 
