@@ -33,6 +33,8 @@ import org.forgerock.util.promise.ResultHandler;
  * <ul>
  * <li>{@link java.util.Map globals} - the Map of global variables which persist across
  * successive invocations of the script
+ * <li>{@link org.forgerock.services.context.Context context} - the associated request context
+ * <li>{@link Request request} - the HTTP request
  * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
@@ -42,6 +44,7 @@ import org.forgerock.util.promise.ResultHandler;
  * </ul>
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
+ * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
 public class ScriptableHandler extends AbstractScriptableHeapObject implements Handler {
 
