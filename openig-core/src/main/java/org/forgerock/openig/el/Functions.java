@@ -316,7 +316,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlEncode(String value) {
-        return Uris.urlEncode(value);
+        return Uris.formEncodeParameterNameOrValue(value);
     }
 
     /**
@@ -328,7 +328,7 @@ public class Functions extends FunctionMapper {
      *         {@code string} was {@code null}.
      */
     public static String urlDecode(String value) {
-        return Uris.urlDecode(value);
+        return Uris.formDecodeParameterNameOrValue(value);
     }
 
     /**

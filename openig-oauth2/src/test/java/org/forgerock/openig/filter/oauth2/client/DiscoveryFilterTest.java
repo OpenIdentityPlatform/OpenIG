@@ -17,7 +17,7 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.util.Uris.urlDecode;
+import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -49,7 +49,7 @@ import org.testng.annotations.Test;
 /** Unit tests for the discovery filter class. */
 @SuppressWarnings("javadoc")
 public class DiscoveryFilterTest {
-    private static final String REL_OPENID_ISSUER = "&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer";
+    private static final String REL_OPENID_ISSUER = "&rel=http://openid.net/specs/connect/1.0/issuer";
 
     private Exchange exchange;
 
@@ -91,34 +91,34 @@ public class DiscoveryFilterTest {
             // @Checkstyle:off
             {
                 "acct:alice@example.com",
-                "https://example.com/.well-known/webfinger?resource=acct%3Aalice%40example.com" + REL_OPENID_ISSUER },
+                "https://example.com/.well-known/webfinger?resource=acct:alice@example.com" + REL_OPENID_ISSUER },
             {
                 "acct:joe@example.com",
-                "https://example.com/.well-known/webfinger?resource=acct%3Ajoe%40example.com" + REL_OPENID_ISSUER },
+                "https://example.com/.well-known/webfinger?resource=acct:joe@example.com" + REL_OPENID_ISSUER },
             {
                 "https://example.com/joe",
-                "https://example.com/.well-known/webfinger?resource=https%3A%2F%2Fexample.com%2Fjoe" + REL_OPENID_ISSUER },
+                "https://example.com/.well-known/webfinger?resource=https://example.com/joe" + REL_OPENID_ISSUER },
             {
                 "https://example.com:8080/",
-                "https://example.com:8080/.well-known/webfinger?resource=https%3A%2F%2Fexample.com%3A8080%2F"
+                "https://example.com:8080/.well-known/webfinger?resource=https://example.com:8080/"
                         + REL_OPENID_ISSUER },
             {
-                "acct:juliet%40capulet.example@shopping.example.com",
+                "acct:juliet@capulet.example@shopping.example.com",
                 "https://shopping.example.com/.well-known/webfinger?"
-                        + "resource=acct%3Ajuliet%40capulet.example%40shopping.example.com" + REL_OPENID_ISSUER },
+                        + "resource=acct:juliet@capulet.example@shopping.example.com" + REL_OPENID_ISSUER },
             {
                 "alice@example.com:8080",
-                "https://example.com:8080/.well-known/webfinger?resource=acct%3Aalice%40example.com%3A8080"
+                "https://example.com:8080/.well-known/webfinger?resource=acct:alice@example.com:8080"
                 + REL_OPENID_ISSUER },
             {
                 "https://www.example.com",
-                "https://www.example.com/.well-known/webfinger?resource=https%3A%2F%2Fwww.example.com" + REL_OPENID_ISSUER },
+                "https://www.example.com/.well-known/webfinger?resource=https://www.example.com" + REL_OPENID_ISSUER },
             {
                 "http://www.example.com",
-                "http://www.example.com/.well-known/webfinger?resource=http%3A%2F%2Fwww.example.com" + REL_OPENID_ISSUER },
+                "http://www.example.com/.well-known/webfinger?resource=http://www.example.com" + REL_OPENID_ISSUER },
             {
                 "joe@example.com@example.org",
-                "https://example.org/.well-known/webfinger?resource=acct%3Ajoe%40example.com%40example.org"
+                "https://example.org/.well-known/webfinger?resource=acct:joe@example.com@example.org"
                 + REL_OPENID_ISSUER } };
             // @Checkstyle:on
     }
@@ -144,14 +144,14 @@ public class DiscoveryFilterTest {
     @Test(dataProvider = "givenInputAndNormalizedIdentifierExtracted")
     public void shouldExtractParameters(final String input, final String expected) throws Exception {
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(urlDecode(input));
+        final AccountIdentifier account = df.extractFromInput(formDecodeParameterNameOrValue(input));
         assertThat(account.getNormalizedIdentifier().toString()).isEqualTo(expected);
     }
 
     @Test(dataProvider = "inputAndExpectedUri")
     public void shouldReturnWebfingerUri(final String input, final String expected) throws Exception {
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(urlDecode(input));
+        final AccountIdentifier account = df.extractFromInput(formDecodeParameterNameOrValue(input));
         assertThat(df.buildWebFingerRequest(account).getUri().toString()).isEqualTo(expected);
     }
 
@@ -159,12 +159,13 @@ public class DiscoveryFilterTest {
     public void shouldPerformOpenIdIssuerDiscovery() throws Exception {
         // given
         final String givenWebFingerUri = "http://openam.example.com/.well-known/webfinger"
-                                         + "?resource=http%3A%2F%2Fopenam.example.com%2Fjackson"
-                                         + "&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer";
+                                         + "?resource=http://openam.example.com/jackson"
+                                         + "&rel=http://openid.net/specs/connect/1.0/issuer";
 
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
 
-        final AccountIdentifier account = df.extractFromInput(urlDecode("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput(
+                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
 
         final Response response = new Response();
         response.setStatus(Status.OK);
@@ -192,7 +193,8 @@ public class DiscoveryFilterTest {
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseDoNotContainOpenIdLink() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(urlDecode("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput(
+                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -211,7 +213,8 @@ public class DiscoveryFilterTest {
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseContainInvalidJson() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(urlDecode("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput(
+                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -226,7 +229,8 @@ public class DiscoveryFilterTest {
     public void shouldFailWhenTheIssuerHrefIsNull() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(urlDecode("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput(
+                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
 
         final Response response = new Response();
         response.setStatus(Status.OK);
