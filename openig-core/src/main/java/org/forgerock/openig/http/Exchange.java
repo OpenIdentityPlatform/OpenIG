@@ -171,15 +171,6 @@ public class Exchange implements Context {
     }
 
     /**
-     * Self-referential value to make this the root object in the exchange object model.
-     *
-     * @return the exchange
-     */
-    public Exchange getExchange() {
-        return this;
-    }
-
-    /**
      * Session context associated with the remote client.
      *
      * @return the session
