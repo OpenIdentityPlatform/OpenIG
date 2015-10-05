@@ -132,7 +132,6 @@ public class GroovyScriptableFilterTest {
                 "import org.forgerock.http.protocol.*",
                 "assert exchange != null",
                 "assert exchange.request == null",
-                "assert exchange.response == null",
                 "assert logger != null",
                 "assert ldap != null",
                 "assert globals != null",
@@ -812,9 +811,6 @@ public class GroovyScriptableFilterTest {
         Response response = filter.filter(exchange, null, null).getOrThrow();
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
-
-        // compat
-        assertThat(exchange.getResponse()).isNotNull();
     }
 
     @Test(enabled = false)

@@ -84,31 +84,25 @@ public class MessageCapture {
     }
 
     /**
-     * Captures the given exchanges, in the given mode. The provided mode helps to determine if the interesting bits are
-     * in the request or in the response of the exchange.
+     * Captures the given request, in the given mode.
      *
      * @param exchange
-     *         contains the captured messages
+     *         Captured message's {@link org.forgerock.openig.decoration.Context}
+     * @param request
+     *         Captured message
      * @param mode
-     *         one of {@link CapturePoint#REQUEST},  {@link CapturePoint#FILTERED_REQUEST},
-     *         {@link CapturePoint#FILTERED_RESPONSE} or {@link CapturePoint#RESPONSE}
+     *         one of {@link CapturePoint#REQUEST},  {@link CapturePoint#FILTERED_REQUEST}
      */
-    public void capture(final Exchange exchange, final CapturePoint mode) {
+    void capture(final Exchange exchange, final Request request, final CapturePoint mode) {
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
         int exchangeId = System.identityHashCode(exchange);
         switch (mode) {
         case REQUEST:
-            captureRequest(writer, exchange.getRequest(), exchangeId);
+            captureRequest(writer, request, exchangeId);
             break;
         case FILTERED_REQUEST:
-            captureFilteredRequest(writer, exchange.getRequest(), exchangeId);
-            break;
-        case RESPONSE:
-            captureResponse(writer, exchange.getResponse(), exchangeId);
-            break;
-        case FILTERED_RESPONSE:
-            captureFilteredResponse(writer, exchange.getResponse(), exchangeId);
+            captureFilteredRequest(writer, request, exchangeId);
             break;
         default:
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
@@ -124,16 +118,39 @@ public class MessageCapture {
         logger.info(out.toString());
     }
 
-    void capture(final Exchange exchange, Request request, final CapturePoint mode) {
-        // FIXME Compat
-        exchange.setRequest(request);
-        capture(exchange, mode);
-    }
+    /**
+     * Captures the given response, in the given mode.
+     *
+     * @param exchange
+     *         Captured message's {@link org.forgerock.openig.decoration.Context}
+     * @param response
+     *         Captured message
+     * @param mode
+     *         one of {@link CapturePoint#FILTERED_RESPONSE} or {@link CapturePoint#RESPONSE}
+     */
+    void capture(final Exchange exchange, final Response response, final CapturePoint mode) {
+        StringWriter out = new StringWriter();
+        PrintWriter writer = new PrintWriter(out);
+        int exchangeId = System.identityHashCode(exchange);
+        switch (mode) {
+        case RESPONSE:
+            captureResponse(writer, response, exchangeId);
+            break;
+        case FILTERED_RESPONSE:
+            captureFilteredResponse(writer, response, exchangeId);
+            break;
+        default:
+            throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
+        }
 
-    void capture(final Exchange exchange, Response response, final CapturePoint mode) {
-        // FIXME Compat
-        exchange.setResponse(response);
-        capture(exchange, mode);
+        // Prints the exchange if required
+        if (captureExchange) {
+            writer.println("Exchange's content as JSON (without request/response):");
+            captureExchangeAsJson(writer, exchange);
+        }
+
+        // Print the message
+        logger.info(out.toString());
     }
 
     private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
