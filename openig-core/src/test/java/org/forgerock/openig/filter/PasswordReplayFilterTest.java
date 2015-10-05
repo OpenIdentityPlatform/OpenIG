@@ -47,7 +47,6 @@ import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.ResultHandler;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -439,12 +438,7 @@ public class PasswordReplayFilterTest {
                                                                       final Handler next) {
                     final Exchange exchange = context.asContext(Exchange.class);
                     exchange.setRequest(request);
-                    return delegate.filter(context, request, next).thenOnResult(new ResultHandler<Response>() {
-                        @Override
-                        public void handleResult(final Response result) {
-                            exchange.setResponse(result);
-                        }
-                    });
+                    return delegate.filter(context, request, next);
                 }
             };
         }

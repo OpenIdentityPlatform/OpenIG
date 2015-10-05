@@ -23,7 +23,6 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -145,15 +144,15 @@ public class RouterHandlerTest {
         assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Should returns a 404 since no routes match and there is no default handler.
-        Exchange exchange = handle(handler, "OpenAM");
-        assertThat(exchange.getResponse().getStatus()).isEqualTo(Status.NOT_FOUND);
+        Response response = handle(handler, "OpenAM");
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
 
         Handler defaultHandler = mockDefaultHandler();
         handler.setDefaultHandler(defaultHandler);
 
         // Should route to default handler.
-        exchange = handle(handler, "OpenAM");
-        verify(defaultHandler).handle(eq(exchange), any(Request.class));
+        handle(handler, "OpenAM");
+        verify(defaultHandler).handle(any(Context.class), any(Request.class));
     }
 
     private Handler mockDefaultHandler() {
@@ -247,15 +246,14 @@ public class RouterHandlerTest {
     private void assertStatusAfterHandle(final RouterHandler handler,
                                          final String value,
                                          final Status expected) throws Exception {
-        Exchange exchange = handle(handler, value);
-        assertThat(exchange.getResponse().getStatus()).isEqualTo(expected);
+        Response response = handle(handler, value);
+        assertThat(response.getStatus()).isEqualTo(expected);
     }
 
-    private Exchange handle(final RouterHandler handler, final String value)
+    private Response handle(final RouterHandler handler, final String value)
             throws Exception {
         Exchange exchange = new Exchange();
         exchange.getAttributes().put("name", value);
-        exchange.setResponse(handler.handle(exchange, new Request()).getOrThrow());
-        return exchange;
+        return handler.handle(exchange, new Request()).getOrThrow();
     }
 }

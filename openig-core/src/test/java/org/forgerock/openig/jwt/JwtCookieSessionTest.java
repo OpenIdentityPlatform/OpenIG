@@ -105,9 +105,10 @@ public class JwtCookieSessionTest {
         Exchange exchange = createExchange();
         JwtCookieSession session = newJwtSession(exchange);
         session.put("a-value", "ForgeRock OpenIG");
-        session.save(exchange.getResponse());
+        Response response = new Response();
+        session.save(response);
 
-        String cookie = exchange.getResponse().getHeaders().getFirst("Set-Cookie");
+        String cookie = response.getHeaders().getFirst("Set-Cookie");
 
         JwtClaimsSet claimsSet = decryptClaimsSet(cookie);
         assertThat(claimsSet.keys()).containsOnly("a-value");
@@ -132,9 +133,10 @@ public class JwtCookieSessionTest {
         setRequestCookie(exchange, ORIGINAL);
         JwtCookieSession session = newJwtSession(exchange);
         session.clear();
-        session.save(exchange.getResponse());
+        Response response = new Response();
+        session.save(response);
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNotNull();
+        assertThat(response.getHeaders().get("Set-Cookie")).isNotNull();
     }
 
     @Test
@@ -143,18 +145,20 @@ public class JwtCookieSessionTest {
         setRequestCookie(exchange, ORIGINAL);
         JwtCookieSession session = newJwtSession(exchange);
         session.remove("a-value");
-        session.save(exchange.getResponse());
+        Response response = new Response();
+        session.save(response);
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNotNull();
+        assertThat(response.getHeaders().get("Set-Cookie")).isNotNull();
     }
 
     @Test
     public void shouldNotStoreSessionContentInACookieWhenSessionWasNotModified() throws Exception {
         Exchange exchange = createExchange();
         JwtCookieSession session = newJwtSession(exchange);
-        session.save(exchange.getResponse());
+        Response response = new Response();
+        session.save(response);
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNull();
+        assertThat(response.getHeaders().get("Set-Cookie")).isNull();
     }
 
     @Test
@@ -162,9 +166,10 @@ public class JwtCookieSessionTest {
         Exchange exchange = createExchange();
         setRequestCookie(exchange, ORIGINAL);
         JwtCookieSession session = newJwtSession(exchange);
-        session.save(exchange.getResponse());
+        Response response = new Response();
+        session.save(response);
 
-        assertThat(exchange.getResponse().getHeaders().get("Set-Cookie")).isNull();
+        assertThat(response.getHeaders().get("Set-Cookie")).isNull();
     }
 
     @Test
@@ -200,7 +205,7 @@ public class JwtCookieSessionTest {
         Exchange exchange = createExchange();
         JwtCookieSession session = newJwtSession(exchange);
         session.put("more-than-4KB", generateMessageOf(5000));
-        session.save(exchange.getResponse());
+        session.save(new Response());
     }
 
     @Test
@@ -209,7 +214,7 @@ public class JwtCookieSessionTest {
         Logger spied = spy(logger);
         JwtCookieSession session = new JwtCookieSession(exchange.getRequest(), keyPair, "Test", spied);
         session.put("in-between-3KB-and-4KB", generateMessageOf(2500));
-        session.save(exchange.getResponse());
+        session.save(new Response());
 
         verify(spied).warning(matches("Current JWT session's size \\(.* chars\\) is quite close to the 4KB limit.*"));
     }
@@ -225,7 +230,6 @@ public class JwtCookieSessionTest {
     private static Exchange createExchange() {
         Exchange exchange = new Exchange();
         exchange.setRequest(new Request());
-        exchange.setResponse(new Response());
         return exchange;
     }
 

@@ -50,8 +50,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        capture.capture(exchange, CapturePoint.REQUEST);
+        capture.capture(exchange, new Request(), CapturePoint.REQUEST);
 
         verify(logger).info(anyString());
     }
@@ -62,7 +61,7 @@ public class MessageCaptureTest {
 
         Exchange exchange = new Exchange();
         exchange.getAttributes().put("a", "b");
-        capture.capture(exchange, CapturePoint.REQUEST);
+        capture.capture(exchange, new Request(), CapturePoint.REQUEST);
 
         verify(logger).info(captor.capture());
         assertThat(captor.getValue()).contains("\"a\": \"b\"");
@@ -73,8 +72,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        capture.capture(exchange, CapturePoint.FILTERED_REQUEST);
+        capture.capture(exchange, new Request(), CapturePoint.FILTERED_REQUEST);
 
         verify(logger).info(anyString());
     }
@@ -84,8 +82,7 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.setResponse(new Response());
-        capture.capture(exchange, CapturePoint.RESPONSE);
+        capture.capture(exchange, new Response(), CapturePoint.RESPONSE);
 
         verify(logger).info(anyString());
     }
@@ -95,31 +92,8 @@ public class MessageCaptureTest {
         MessageCapture capture = new MessageCapture(logger, false);
 
         Exchange exchange = new Exchange();
-        exchange.setResponse(new Response());
-        capture.capture(exchange, CapturePoint.FILTERED_RESPONSE);
+        capture.capture(exchange, new Response(), CapturePoint.FILTERED_RESPONSE);
 
         verify(logger).info(anyString());
-    }
-
-    @Test
-    public void shouldSupportMissingRequest() throws Exception {
-        MessageCapture capture = new MessageCapture(logger, false);
-
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, CapturePoint.REQUEST);
-        capture.capture(exchange, CapturePoint.FILTERED_REQUEST);
-
-        verify(logger, times(2)).info(anyString());
-    }
-
-    @Test
-    public void shouldSupportMissingResponse() throws Exception {
-        MessageCapture capture = new MessageCapture(logger, false);
-
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, CapturePoint.RESPONSE);
-        capture.capture(exchange, CapturePoint.FILTERED_RESPONSE);
-
-        verify(logger, times(2)).info(anyString());
     }
 }

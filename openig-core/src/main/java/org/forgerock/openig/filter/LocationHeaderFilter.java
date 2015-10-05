@@ -133,7 +133,6 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                        @Override
                        public Response apply(final Response value) {
                            Exchange exchange = context.asContext(Exchange.class);
-                           exchange.setResponse(value);
                            return processResponse(exchange, value, bindings(exchange, request, value));
                        }
                    });
