@@ -16,10 +16,9 @@
 
 package org.forgerock.openig.handler.saml;
 
-import static java.lang.String.format;
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.util.Arrays.*;
+import static java.util.Collections.list;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Arrays.array;
 
 import java.net.URI;
 import java.util.Map;
@@ -27,7 +26,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.forgerock.http.protocol.Request;
-import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -51,68 +49,55 @@ public class RequestAdapterTest {
     }
 
     @DataProvider
-    public Object[][] exchangesWithFormParameters() throws Exception {
+    public Object[][] requestsWithFormParameters() throws Exception {
         return new Object[][] {
-            { buildExchangeWithParametersInQuery() },
-            { buildExchangeWithParametersInPayload() },
-            { buildExchangeWithParametersInBothPayloadAndQuery() }
+            { buildRequestWithParametersInQuery() },
+            { buildRequestWithParametersInPayload() },
+            { buildRequestWithParametersInBothPayloadAndQuery() }
             // TODO add a case(s) where content type is missing ...
         };
     }
 
-    private Exchange buildExchangeWithParametersInQuery() throws Exception {
-        final Exchange exchange = buildExchange("params-in-query");
-        exchange.setRequest(new Request());
-        exchange.getRequest().setUri(new URI(BASE_URI.concat("?")
-                                               .concat(HELLO_WORLD_PARAM)
-                                               .concat("&")
-                                               .concat(FIRST_MULTI_VALUED_PARAM)
-                                               .concat("&")
-                                               .concat(SECOND_MULTI_VALUED_PARAM)));
-        return exchange;
+    private Request buildRequestWithParametersInQuery() throws Exception {
+        Request request = new Request();
+        request.setUri(new URI(BASE_URI.concat("?")
+                                       .concat(HELLO_WORLD_PARAM)
+                                       .concat("&")
+                                       .concat(FIRST_MULTI_VALUED_PARAM)
+                                       .concat("&")
+                                       .concat(SECOND_MULTI_VALUED_PARAM)));
+        return request;
     }
 
-    private Exchange buildExchangeWithParametersInPayload() throws Exception {
-        final Exchange exchange = buildExchange("params-in-payload");
-        exchange.setRequest(new Request());
-        exchange.getRequest().getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.getRequest().setUri(new URI(BASE_URI));
-        exchange.getRequest().setEntity(HELLO_WORLD_PARAM + "&" + FIRST_MULTI_VALUED_PARAM + "&"
+    private Request buildRequestWithParametersInPayload() throws Exception {
+        Request request = new Request();
+        request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        request.setUri(new URI(BASE_URI));
+        request.setEntity(HELLO_WORLD_PARAM + "&" + FIRST_MULTI_VALUED_PARAM + "&"
                 + SECOND_MULTI_VALUED_PARAM);
-        return exchange;
+        return request;
     }
 
-    private Exchange buildExchangeWithParametersInBothPayloadAndQuery() throws Exception {
-        final Exchange exchange = buildExchange("params-in-payload-and-query");
-        exchange.setRequest(new Request());
-        exchange.getRequest().getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
-        exchange.getRequest().setUri(new URI(BASE_URI.concat("?").concat(HELLO_WORLD_PARAM)));
-        exchange.getRequest().setEntity(FIRST_MULTI_VALUED_PARAM + "&" + SECOND_MULTI_VALUED_PARAM);
-        return exchange;
+    private Request buildRequestWithParametersInBothPayloadAndQuery() throws Exception {
+        Request request = new Request();
+        request.getHeaders().add("Content-Type", "application/x-www-form-urlencoded");
+        request.setUri(new URI(BASE_URI.concat("?").concat(HELLO_WORLD_PARAM)));
+        request.setEntity(FIRST_MULTI_VALUED_PARAM + "&" + SECOND_MULTI_VALUED_PARAM);
+        return request;
     }
 
-    private Exchange buildExchange(final String name) {
-        return new Exchange() {
-            @Override
-            public String toString() {
-                // Just make TestNG printed test names more explicit
-                return format("Exchange[%s]", name);
-            }
-        };
-    }
-
-    @Test(dataProvider = "exchangesWithFormParameters")
-    public void testGetParameter(final Exchange exchange) throws Exception {
-        RequestAdapter adapter = new RequestAdapter(delegate, exchange);
+    @Test(dataProvider = "requestsWithFormParameters")
+    public void testGetParameter(final Request request) throws Exception {
+        RequestAdapter adapter = new RequestAdapter(delegate, request);
 
         assertThat(adapter.getParameter("hello")).isEqualTo("world");
         assertThat(adapter.getParameter("multi_valued")).isEqualTo("one");
         assertThat(adapter.getParameter("unknown")).isNull();
     }
 
-    @Test(dataProvider = "exchangesWithFormParameters")
-    public void testGetParameterMap(final Exchange exchange) throws Exception {
-        RequestAdapter adapter = new RequestAdapter(delegate, exchange);
+    @Test(dataProvider = "requestsWithFormParameters")
+    public void testGetParameterMap(final Request request) throws Exception {
+        RequestAdapter adapter = new RequestAdapter(delegate, request);
 
         final Map<String, String[]> params = adapter.getParameterMap();
         assertThat(params)
@@ -121,17 +106,17 @@ public class RequestAdapterTest {
                 .containsEntry("multi_valued", array("one", "two three"));
     }
 
-    @Test(dataProvider = "exchangesWithFormParameters")
-    public void testGetParameterNames(final Exchange exchange) throws Exception {
-        RequestAdapter adapter = new RequestAdapter(delegate, exchange);
+    @Test(dataProvider = "requestsWithFormParameters")
+    public void testGetParameterNames(final Request request) throws Exception {
+        RequestAdapter adapter = new RequestAdapter(delegate, request);
 
         assertThat(list(adapter.getParameterNames()))
                 .contains("hello", "multi_valued");
     }
 
-    @Test(dataProvider = "exchangesWithFormParameters")
-    public void testGetParameterValues(final Exchange exchange) throws Exception {
-        RequestAdapter adapter = new RequestAdapter(delegate, exchange);
+    @Test(dataProvider = "requestsWithFormParameters")
+    public void testGetParameterValues(final Request request) throws Exception {
+        RequestAdapter adapter = new RequestAdapter(delegate, request);
 
         assertThat(adapter.getParameterValues("hello")).contains("world");
         assertThat(adapter.getParameterValues("multi_valued")).contains("one", "two three");

@@ -172,7 +172,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Exchange exchange = context.asContext(Exchange.class);
-        HttpServletRequest servletRequest = adaptRequest(exchange);
+        HttpServletRequest servletRequest = adaptRequest(exchange, request);
         HttpServletResponse servletResponse = adaptResponse(exchange);
 
         Session session = context.asContext(SessionContext.class).getSession();
@@ -563,10 +563,10 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         return (HttpServletResponse) exchange.getAttributes().get(HttpServletResponse.class.getName());
     }
 
-    private static HttpServletRequest adaptRequest(Exchange exchange) {
+    private static HttpServletRequest adaptRequest(Exchange exchange, Request req) {
         HttpServletRequest request = (HttpServletRequest) exchange.getAttributes()
                                                                   .get(HttpServletRequest.class.getName());
-        return new RequestAdapter(request, exchange);
+        return new RequestAdapter(request, req);
     }
 
     /**

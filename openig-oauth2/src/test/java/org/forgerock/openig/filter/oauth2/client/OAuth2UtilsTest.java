@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.http.protocol.Request;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -66,9 +65,6 @@ public class OAuth2UtilsTest {
     }
 
     private Exchange buildExchange() throws URISyntaxException {
-        Exchange exchange = new Exchange(null, new URI("http://www.example.com"));
-        exchange.setRequest(new Request());
-        exchange.getRequest().setUri("http://internal.company.com");
-        return exchange;
+        return new Exchange(null, new URI("http://www.example.com"));
     }
 }

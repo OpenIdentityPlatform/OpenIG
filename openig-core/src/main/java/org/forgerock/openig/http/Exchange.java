@@ -25,7 +25,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.http.protocol.Request;
 import org.forgerock.http.session.Session;
 import org.forgerock.json.JsonValue;
 import org.forgerock.services.context.ClientContext;
@@ -59,7 +58,6 @@ public class Exchange implements Context {
     private final Context parent;
 
     private ClientContext clientContext;
-    private Request request;
     private Session session;
 
     /**
@@ -150,24 +148,6 @@ public class Exchange implements Context {
     @Override
     public boolean isRootContext() {
         return false;
-    }
-
-    /**
-     * Returns the request portion of the HTTP exchange.
-     *
-     * @return the request
-     */
-    public Request getRequest() {
-        return request;
-    }
-
-    /**
-     * Sets the request portion of the HTTP exchange.
-     *
-     * @param request the request to set
-     */
-    public void setRequest(Request request) {
-        this.request = request;
     }
 
     /**
