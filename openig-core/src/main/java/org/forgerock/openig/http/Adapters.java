@@ -47,7 +47,6 @@ public final class Adapters {
         final Exchange exchange = new Exchange(context, request.getUri().asURI());
         exchange.setClientContext(context.asContext(ClientContext.class));
         exchange.setSession(context.asContext(SessionContext.class).getSession());
-        exchange.setRequest(request);
         // TODO We will need to find a more robust solution when Exchange will be removed
         final AttributesContext attributesContext = context.asContext(AttributesContext.class);
         exchange.getAttributes().putAll(attributesContext.getAttributes());

@@ -146,10 +146,11 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.setVersion("1.1");
 
-        filter.filter(exchange, null, terminalHandler);
+        Request request = new Request();
+        filter.filter(exchange, request, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
+        assertThat(terminalHandler.request).isNotSameAs(request);
         assertThat(terminalHandler.request).isNotNull();
         assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
         assertThat(terminalHandler.request.getMethod()).isEqualTo("GET");
@@ -171,7 +172,7 @@ public class StaticRequestFilterTest {
         filter.filter(exchange, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
+        assertThat(terminalHandler.request).isNotSameAs(original);
         // Check that headers have been properly populated
         assertThat(terminalHandler.request.getHeaders().get("Mono-Valued").getValues())
                 .hasSize(1)
@@ -221,7 +222,7 @@ public class StaticRequestFilterTest {
         filter.filter(exchange, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest());
+        assertThat(terminalHandler.request).isNotSameAs(original);
         // Verify that the new request entity contains the form's fields
         assertThat(terminalHandler.request.getMethod()).isEqualTo("POST");
         assertThat(terminalHandler.request.getHeaders().getFirst("Content-Type")).isEqualTo(
@@ -241,9 +242,10 @@ public class StaticRequestFilterTest {
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.setEntity(Expression.valueOf(value, String.class));
 
-        filter.filter(exchange, null, terminalHandler);
+        Request request = new Request();
+        filter.filter(exchange, request, terminalHandler);
 
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
         assertThat(terminalHandler.request.getMethod()).isEqualTo("POST");
         assertThat(terminalHandler.request.getEntity().getString()).isEqualTo(result);
@@ -256,9 +258,10 @@ public class StaticRequestFilterTest {
         filter.setEntity(Expression.valueOf("${decodeBase64('RG9uJ3QgcGFuaWMu')}", String.class));
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
 
-        filter.filter(exchange, null, terminalHandler);
+        Request request = new Request();
+        filter.filter(exchange, request, terminalHandler);
 
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         // The form combined with the POST method uses the Form#toRequestEntity
         // which overwrites any entity that may already be in the request.
         assertThat(terminalHandler.request.getEntity().getString()).isEqualTo("mono=one");
@@ -271,9 +274,10 @@ public class StaticRequestFilterTest {
         filter.setEntity(Expression.valueOf("${decodeBase64('RG9uJ3QgcGFuaWMu')}", String.class));
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
 
-        filter.filter(exchange, null, terminalHandler);
+        Request request = new Request();
+        filter.filter(exchange, request, terminalHandler);
 
-        assertThat(terminalHandler.request).isNotSameAs(exchange.getRequest()).isNotNull();
+        assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         assertThat(terminalHandler.request.getUri().toString()).startsWith(URI)
                                                                .contains("mono=one");
         assertThat(terminalHandler.request.getEntity().getString()).isEqualTo("Don't panic.");

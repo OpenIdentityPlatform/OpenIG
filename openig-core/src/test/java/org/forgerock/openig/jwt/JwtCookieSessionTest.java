@@ -40,7 +40,6 @@ import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.testng.annotations.BeforeMethod;
@@ -102,8 +101,7 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldStoreSessionContentInACookie() throws Exception {
-        Exchange exchange = createExchange();
-        JwtCookieSession session = newJwtSession(exchange);
+        JwtCookieSession session = newJwtSession(new Request());
         session.put("a-value", "ForgeRock OpenIG");
         Response response = new Response();
         session.save(response);
@@ -129,9 +127,9 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldDetectModifiedContentWithSessionClear() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, ORIGINAL);
-        JwtCookieSession session = newJwtSession(exchange);
+        Request request = new Request();
+        setRequestCookie(request, ORIGINAL);
+        JwtCookieSession session = newJwtSession(request);
         session.clear();
         Response response = new Response();
         session.save(response);
@@ -141,9 +139,9 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldDetectModifiedContentWithSessionRemove() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, ORIGINAL);
-        JwtCookieSession session = newJwtSession(exchange);
+        Request request = new Request();
+        setRequestCookie(request, ORIGINAL);
+        JwtCookieSession session = newJwtSession(request);
         session.remove("a-value");
         Response response = new Response();
         session.save(response);
@@ -153,8 +151,7 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldNotStoreSessionContentInACookieWhenSessionWasNotModified() throws Exception {
-        Exchange exchange = createExchange();
-        JwtCookieSession session = newJwtSession(exchange);
+        JwtCookieSession session = newJwtSession(new Request());
         Response response = new Response();
         session.save(response);
 
@@ -163,9 +160,9 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldNotStoreSessionContentInACookieWhenSessionWasNotModifiedButOnlyInitialized() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, ORIGINAL);
-        JwtCookieSession session = newJwtSession(exchange);
+        Request request = new Request();
+        setRequestCookie(request, ORIGINAL);
+        JwtCookieSession session = newJwtSession(request);
         Response response = new Response();
         session.save(response);
 
@@ -174,45 +171,45 @@ public class JwtCookieSessionTest {
 
     @Test
     public void shouldNotLoadUnexpectedSignedJwt() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, ALTERED);
+        Request request = new Request();
+        setRequestCookie(request, ALTERED);
 
-        JwtCookieSession session = newJwtSession(exchange);
+        JwtCookieSession session = newJwtSession(request);
         assertThat(session).isEmpty();
     }
 
     @Test
     public void shouldNotLoadInvalidJwt() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, "Completely-invalid-JWT");
+        Request request = new Request();
+        setRequestCookie(request, "Completely-invalid-JWT");
 
-        JwtCookieSession session = newJwtSession(exchange);
+        JwtCookieSession session = newJwtSession(request);
         assertThat(session).isEmpty();
     }
 
     @Test
     public void shouldLoadVerifiedJwtSession() throws Exception {
-        Exchange exchange = createExchange();
-        setRequestCookie(exchange, ORIGINAL);
+        Request request = new Request();
+        setRequestCookie(request, ORIGINAL);
 
-        JwtCookieSession session = newJwtSession(exchange);
+        JwtCookieSession session = newJwtSession(request);
         assertThat(session).containsOnly(entry("a-value", "ForgeRock OpenIG"));
     }
 
     @Test(expectedExceptions = IOException.class,
           expectedExceptionsMessageRegExp = "JWT session is too large.*")
     public void shouldFailIfSessionIsLargerThanFourThousandsKB() throws Exception {
-        Exchange exchange = createExchange();
-        JwtCookieSession session = newJwtSession(exchange);
+        Request request = new Request();
+        JwtCookieSession session = newJwtSession(request);
         session.put("more-than-4KB", generateMessageOf(5000));
         session.save(new Response());
     }
 
     @Test
     public void shouldWarnTheUserAboutGettingCloseToTheThreshold() throws Exception {
-        Exchange exchange = createExchange();
+        Request request = new Request();
         Logger spied = spy(logger);
-        JwtCookieSession session = new JwtCookieSession(exchange.getRequest(), keyPair, "Test", spied);
+        JwtCookieSession session = new JwtCookieSession(request, keyPair, "Test", spied);
         session.put("in-between-3KB-and-4KB", generateMessageOf(2500));
         session.save(new Response());
 
@@ -227,18 +224,12 @@ public class JwtCookieSessionTest {
         return sb.toString();
     }
 
-    private static Exchange createExchange() {
-        Exchange exchange = new Exchange();
-        exchange.setRequest(new Request());
-        return exchange;
-    }
-
-    private JwtCookieSession newJwtSession(final Exchange exchange)
+    private JwtCookieSession newJwtSession(final Request request)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return new JwtCookieSession(exchange.getRequest(), keyPair, OPENIG_JWT_SESSION, logger);
+        return new JwtCookieSession(request, keyPair, OPENIG_JWT_SESSION, logger);
     }
 
-    private static void setRequestCookie(final Exchange exchange, final String cookie) {
-        exchange.getRequest().getHeaders().put("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
+    private static void setRequestCookie(final Request request, final String cookie) {
+        request.getHeaders().put("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
     }
 }

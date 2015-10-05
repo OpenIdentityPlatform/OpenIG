@@ -82,7 +82,7 @@ import org.forgerock.util.promise.ResultHandler;
  *
  * <pre>
  *     {@code {
- *         "loginPage": "${matches(exchange.request.uri.path, '/login') and (exchange.request.method == 'GET')}",
+ *         "loginPage": "${matches(request.uri.path, '/login') and (request.method == 'GET')}",
  *         "request": {
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",

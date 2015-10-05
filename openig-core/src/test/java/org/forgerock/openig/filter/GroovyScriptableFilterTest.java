@@ -131,7 +131,6 @@ public class GroovyScriptableFilterTest {
         final ScriptableFilter filter = newGroovyFilter(
                 "import org.forgerock.http.protocol.*",
                 "assert exchange != null",
-                "assert exchange.request == null",
                 "assert logger != null",
                 "assert ldap != null",
                 "assert globals != null",

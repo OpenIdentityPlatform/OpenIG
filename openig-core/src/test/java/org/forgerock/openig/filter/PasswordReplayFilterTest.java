@@ -54,8 +54,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class PasswordReplayFilterTest {
 
-    static final String IS_GET_LOGIN_PAGE = "${matches(exchange.request.uri.path, '/login')"
-            + " and (exchange.request.method == 'GET')}";
+    static final String IS_GET_LOGIN_PAGE = "${matches(request.uri.path, '/login') and (request.method == 'GET')}";
     static final String HTTP_WWW_EXAMPLE_COM_LOGIN = "http://www.example.com/login";
     static final String HTTP_WWW_EXAMPLE_COM_HOME = "http://www.example.com/home";
     static final String HTTP_WWW_EXAMPLE_COM_PROTECTED = "http://www.example.com/protected";
@@ -193,8 +192,8 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPageContentMarker("I'm a login page")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.request.headers['X-Username'][0]}")
-                                                  .param("password", "${exchange.request.headers['X-Password'][0]}")
+                                           .form().param("username", "${request.headers['X-Username'][0]}")
+                                                  .param("password", "${request.headers['X-Password'][0]}")
                                                   .build()
                                            .build()
                                  .credentials(new Filter() {
@@ -223,8 +222,8 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPageContentMarker("I'm a login page")
                                  .request().uri("http://internal.example.com/login")
                                  .method("POST")
-                                           .form().param("username", "${exchange.request.headers['X-Username'][0]}")
-                                                  .param("password", "${exchange.request.headers['X-Password'][0]}")
+                                           .form().param("username", "${request.headers['X-Username'][0]}")
+                                                  .param("password", "${request.headers['X-Password'][0]}")
                                                   .build()
                                            .build()
                                  .credentials(new Filter() {
@@ -430,17 +429,7 @@ public class PasswordReplayFilterTest {
 
 
         Filter build() throws Exception {
-            final Filter delegate = (Filter) new PasswordReplayFilter.Heaplet().create(Name.of("this"), config, heap);
-            return new Filter() {
-                @Override
-                public Promise<Response, NeverThrowsException> filter(final Context context,
-                                                                      final Request request,
-                                                                      final Handler next) {
-                    final Exchange exchange = context.asContext(Exchange.class);
-                    exchange.setRequest(request);
-                    return delegate.filter(context, request, next);
-                }
-            };
+            return (Filter) new PasswordReplayFilter.Heaplet().create(Name.of("this"), config, heap);
         }
     }
 

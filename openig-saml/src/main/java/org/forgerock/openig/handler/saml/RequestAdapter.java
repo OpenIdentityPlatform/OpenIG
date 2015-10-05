@@ -25,33 +25,33 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.http.protocol.Request;
 
 /**
- * Adapts a given {@link HttpServletRequest} to make uses of the {@link Exchange} in some places.
+ * Adapts a given {@link HttpServletRequest} to make uses of the {@link Request} in some places.
  */
 class RequestAdapter extends HttpServletRequestWrapper {
 
     /**
      * Provides additional data (parameter values).
      */
-    private final Exchange exchange;
+    private final Request req;
 
-    RequestAdapter(final HttpServletRequest request, final Exchange exchange) {
+    RequestAdapter(final HttpServletRequest request, final Request req) {
         super(request);
-        this.exchange = exchange;
+        this.req = req;
     }
 
     @Override
     public String getParameter(final String name) {
-        final List<String> values = exchange.getRequest().getForm().get(name);
+        final List<String> values = req.getForm().get(name);
         return (values == null || values.isEmpty()) ? null : values.get(0);
     }
 
     @Override
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> parameters = new HashMap<>();
-        for (Map.Entry<String, List<String>> entry : exchange.getRequest().getForm().entrySet()) {
+        for (Map.Entry<String, List<String>> entry : req.getForm().entrySet()) {
             List<String> values = entry.getValue();
             parameters.put(entry.getKey(), values.toArray(new String[values.size()]));
         }
@@ -60,12 +60,12 @@ class RequestAdapter extends HttpServletRequestWrapper {
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return Collections.enumeration(exchange.getRequest().getForm().keySet());
+        return Collections.enumeration(req.getForm().keySet());
     }
 
     @Override
     public String[] getParameterValues(final String name) {
-        final List<String> values = exchange.getRequest().getForm().get(name);
+        final List<String> values = req.getForm().get(name);
         if (values == null) {
             return null;
         }
