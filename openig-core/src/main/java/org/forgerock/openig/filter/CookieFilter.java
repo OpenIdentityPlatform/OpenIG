@@ -211,7 +211,8 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         if (cookieHeader != null) {
             cookies.addAll(cookieHeader.getValues());
         }
-        List<String> managed = manager.get(resolved.asURI(), asStringMultiValueMap(request.getHeaders())).get("Cookie");
+        List<String> managed = manager.get(resolved.asURI(), request.getHeaders().copyAsMultiMapOfStrings())
+                .get("Cookie");
         if (managed != null) {
             cookies.addAll(managed);
         }
@@ -226,14 +227,6 @@ public class CookieFilter extends GenericHeapObject implements Filter {
             // replace any existing header(s)
             request.getHeaders().put("Cookie", sb.toString());
         }
-    }
-
-    private Map<String, List<String>> asStringMultiValueMap(final Headers headers) {
-        MultiValueMap<String, String> map = new MultiValueMap<>(new LinkedHashMap<String, List<String>>());
-        for (Map.Entry<String, Header> entry : headers.asMapOfHeaders().entrySet()) {
-            map.put(entry.getKey(), entry.getValue().getValues());
-        }
-        return map;
     }
 
     @Override
@@ -262,7 +255,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                     public Response apply(final Response value) {
                         // manage cookie headers in response
                         try {
-                            manager.put(resolved.asURI(), asStringMultiValueMap(value.getHeaders()));
+                            manager.put(resolved.asURI(), value.getHeaders().copyAsMultiMapOfStrings());
                         } catch (IOException e) {
                             return Responses.newInternalServerError("Can't process managed cookies in response", e);
                         }
