@@ -55,6 +55,7 @@ import org.forgerock.openig.jwt.JwtSessionManager;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.FileLogSink;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.openig.security.TrustAllManager;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -100,6 +101,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ThrottlingFilter", ThrottlingFilter.class);
         ALIASES.put("TimerDecorator", TimerDecorator.class);
         ALIASES.put("TrustManager", TrustManager.class);
+        ALIASES.put("TrustAllManager", TrustAllManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
     }
 
