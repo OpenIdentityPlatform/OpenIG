@@ -206,7 +206,7 @@ public class ThrottlingFilterTest {
 
             @Override
             public void run() {
-                filter.filter(mock(Context.class), new Request(), handler1);
+                filter.filter(new Exchange(), new Request(), handler1);
             }
         };
         Thread t1 = new Thread(r);
@@ -218,7 +218,7 @@ public class ThrottlingFilterTest {
         try {
             // This one does not have to be called as there no token anymore in the bucket.
             Handler handler2 = mock(Handler.class, "handler2");
-            Promise<Response, NeverThrowsException> promise2 = filter.filter(mock(Context.class),
+            Promise<Response, NeverThrowsException> promise2 = filter.filter(new Exchange(),
                                                                              new Request(),
                                                                              handler2);
 
