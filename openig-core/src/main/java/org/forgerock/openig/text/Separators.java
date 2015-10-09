@@ -40,7 +40,7 @@ public enum Separators {
      * @param separator
      *         specified separator specification
      */
-    private Separators(Separator separator) {
+    Separators(Separator separator) {
         this.separator = separator;
     }
 
