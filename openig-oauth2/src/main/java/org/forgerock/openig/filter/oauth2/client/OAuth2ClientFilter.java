@@ -247,7 +247,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private final Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
                                                                     final JsonValue config,
                                                                     final String name) {
-        return chainOf(new AuthorizationRedirectHandler(clientEndpoint),
+        return chainOf(new AuthorizationRedirectHandler(time, clientEndpoint),
                        new DiscoveryFilter(discoveryHandler, heap),
                        new ClientRegistrationFilter(discoveryHandler, config, heap, name));
     }
@@ -712,7 +712,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         if (cr == null && loginHandler != null) {
             return loginHandler.handle(exchange, request);
         }
-        return new AuthorizationRedirectHandler(clientEndpoint,
+        return new AuthorizationRedirectHandler(time,
+                                                clientEndpoint,
                                                 cr != null ? cr : getClientRegistrationFromHeap(clientRegistrationName))
                                     .handle(exchange, request);
     }

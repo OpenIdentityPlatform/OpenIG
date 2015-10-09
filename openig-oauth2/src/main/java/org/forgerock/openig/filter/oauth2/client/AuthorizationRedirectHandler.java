@@ -75,13 +75,16 @@ class AuthorizationRedirectHandler implements Handler {
 
     private final ClientRegistration registration;
     private final Expression<String> endpoint;
+    private final TimeService timeService;
 
-    AuthorizationRedirectHandler(final Expression<String> endpoint) {
-        this(endpoint, null);
+    AuthorizationRedirectHandler(final TimeService timeService, final Expression<String> endpoint) {
+        this(timeService, endpoint, null);
     }
 
-    AuthorizationRedirectHandler(final Expression<String> endpoint,
+    AuthorizationRedirectHandler(final TimeService timeService,
+                                 final Expression<String> endpoint,
                                  final ClientRegistration registration) {
+        this.timeService = timeService;
         this.endpoint = checkNotNull(endpoint);
         this.registration = registration;
     }
@@ -144,7 +147,7 @@ class AuthorizationRedirectHandler implements Handler {
                              */
                             try {
                                 final String clientUri = clientEndpoint.toString();
-                                final OAuth2Session session = stateNew(TimeService.SYSTEM)
+                                final OAuth2Session session = stateNew(timeService)
                                                                 .stateAuthorizing(cr.getName(),
                                                                                   clientUri,
                                                                                   nonce,
