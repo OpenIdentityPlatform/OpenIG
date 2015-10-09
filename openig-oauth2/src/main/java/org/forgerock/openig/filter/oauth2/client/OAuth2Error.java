@@ -447,7 +447,7 @@ public final class OAuth2Error {
         if (this == obj) {
             return true;
         } else if (obj instanceof OAuth2Error) {
-            return toString().equals(((OAuth2Error) obj).toString());
+            return toString().equals(obj.toString());
         } else {
             return false;
         }
