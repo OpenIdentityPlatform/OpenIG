@@ -269,7 +269,7 @@ public final class Issuer {
     }
 
     private static List<Pattern> extractPatterns(final List<String> from) {
-        final List<Pattern> patterns = new LinkedList<Pattern>();
+        final List<Pattern> patterns = new LinkedList<>();
         if (from != null) {
             for (String s : from) {
                 try {
