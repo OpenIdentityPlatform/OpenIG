@@ -53,29 +53,29 @@ public class BindingsTest {
     @Test
     public void shouldBindExchangeAndRequest() throws Exception {
         assertThat(bindings(new Exchange(), new Request()).asMap())
-                .containsKeys("exchange", "context", "request")
-                .hasSize(3);
+                .containsKeys("exchange", "context", "request", "contexts")
+                .hasSize(4);
     }
 
     @Test
     public void shouldBindExchangeRequestAndResponse() throws Exception {
         assertThat(bindings(new Exchange(), new Request(), new Response()).asMap())
-                .containsKeys("exchange", "context", "request", "response")
-                .hasSize(4);
+                .containsKeys("exchange", "context", "request", "response", "contexts")
+                .hasSize(5);
     }
 
     @Test
     public void shouldBindContextAndRequest() throws Exception {
         assertThat(bindings(new RootContext(), new Request()).asMap())
-                .containsKeys("context", "request")
-                .hasSize(2);
+                .containsKeys("context", "request", "contexts")
+                .hasSize(3);
     }
 
     @Test
     public void shouldBindContextRequestAndResponse() throws Exception {
         assertThat(bindings(new RootContext(), new Request(), new Response()).asMap())
-                .containsKeys("context", "request", "response")
-                .hasSize(3);
+                .containsKeys("context", "request", "response", "contexts")
+                .hasSize(4);
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)

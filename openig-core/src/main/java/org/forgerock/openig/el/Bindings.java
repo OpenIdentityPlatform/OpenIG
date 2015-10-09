@@ -19,6 +19,7 @@ package org.forgerock.openig.el;
 
 import static java.util.Collections.unmodifiableMap;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -81,6 +82,9 @@ public class Bindings {
     /**
      * Returns a {@link Bindings} initialized with the given {@code context} and {@code request}.
      *
+     * <p>The returned bindings also contains a {@code contexts} entry that provides easy access to visible parent
+     * Contexts ({@code contexts.http, contexts.client, ...}).
+     *
      * @param context
      *         The context to expose
      * @param request
@@ -88,9 +92,13 @@ public class Bindings {
      * @return an initialized {@link Bindings} instance.
      */
     public static Bindings bindings(Context context, Request request) {
-        return bindings()
+        Bindings bindings = bindings()
                 .bind("context", context)
                 .bind("request", request);
+        if (context != null) {
+            bindings.bind("contexts", flatten(context));
+        }
+        return bindings;
     }
 
     /**
@@ -147,5 +155,38 @@ public class Bindings {
      */
     public Map<String, Object> asMap() {
         return unmodifiableMap(map);
+    }
+
+    /**
+     * Flatten the current {@code leaf} {@link Context} into a Map keyed by context name.
+     *
+     * <p>
+     * The Context hierarchy is walked from the given {@code leaf} to the root context, parent after parent.
+     *
+     * <p>
+     * If a context's name has already been added into the Map while walking up the chain, the context will be
+     * ignored (shadowed by the previously registered context). That behaviour ensure that we'll return only the
+     * contexts that are close to the leaf.
+     *
+     * @param leaf
+     *         Context used to start the walk-through
+     * @return a Map of context
+     * @see Context#getContextName()
+     */
+    public static Map<String, Context> flatten(Context leaf) {
+        Map<String, Context> contexts = new HashMap<>();
+        contexts.put(leaf.getContextName(), leaf);
+
+        Context context = leaf;
+        while (context.getParent() != null) {
+            context = context.getParent();
+            String name = context.getContextName();
+            if (!contexts.containsKey(name)) {
+                // Ignore already mapped contexts
+                contexts.put(name, context);
+            }
+        }
+
+        return contexts;
     }
 }
