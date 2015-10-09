@@ -24,9 +24,22 @@ import static com.xebialabs.restito.semantics.Condition.withPostBody;
 import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+
+import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.spi.HttpClientProvider;
+import org.forgerock.http.spi.Loader;
+import org.forgerock.openig.log.Logger;
+import org.forgerock.util.Options;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
@@ -115,6 +128,20 @@ public class HttpClientTest {
         client.execute(request);
     }
 
+    @Test
+    public void shouldLogException() throws Exception {
+        Exception cause = new Exception("Boom");
+        HttpClient client = new HttpClient(
+                new HttpClientHandler(Options.defaultOptions()
+                                             .set(HttpClientHandler.OPTION_LOADER, new ExceptionLoader(cause))));
+
+        Logger logger = mock(Logger.class);
+        client.setLogger(logger);
+        client.executeAsync(new Request());
+
+        verify(logger).warning(cause);
+    }
+
     /**
      * Restito doesn't provide any way to express a negative condition yet.
      */
@@ -128,6 +155,34 @@ public class HttpClientTest {
     private static class MyCondition extends Condition {
         protected MyCondition(final Predicate<Call> predicate) {
             super(predicate);
+        }
+    }
+
+    /** Make checkstyle happy. */
+    private static class ExceptionLoader implements Loader {
+        private final Exception cause;
+
+        public ExceptionLoader(final Exception cause) {
+            this.cause = cause;
+        }
+
+        @Override
+        public <S> S load(final Class<S> service, final Options options) {
+            return service.cast(new HttpClientProvider() {
+                @Override
+                public org.forgerock.http.spi.HttpClient newHttpClient(final Options options)
+                        throws HttpApplicationException {
+                    return new org.forgerock.http.spi.HttpClient() {
+                        @Override
+                        public Promise<Response, NeverThrowsException> sendAsync(final Request request) {
+                            return Response.newResponsePromise(new Response().setCause(cause));
+                        }
+
+                        @Override
+                        public void close() throws IOException { }
+                    };
+                }
+            });
         }
     }
 }

@@ -53,6 +53,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.time.Duration;
 
 /**
@@ -382,7 +383,15 @@ public class HttpClient extends GenericHeapObject {
      * @return The promise of the HTTP response.
      */
     public Promise<Response, NeverThrowsException> executeAsync(final Request request) {
-        return client.handle(context, request);
+        return client.handle(context, request)
+                     .thenOnResult(new ResultHandler<Response>() {
+                         @Override
+                         public void handleResult(final Response response) {
+                             if (response.getCause() != null) {
+                                 logger.warning(response.getCause());
+                             }
+                         }
+                     });
     }
 
     /**
