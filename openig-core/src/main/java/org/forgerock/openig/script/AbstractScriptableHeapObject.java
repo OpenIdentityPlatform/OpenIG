@@ -99,7 +99,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         protected abstract AbstractScriptableHeapObject newInstance(final Script script)
                 throws HeapException;
 
-        private final Script compileScript() throws HeapException {
+        private Script compileScript() throws HeapException {
             final Environment environment = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
 
             if (!config.isDefined(CONFIG_OPTION_TYPE)) {

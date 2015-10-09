@@ -244,9 +244,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap, config, name);
     }
 
-    private final Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
-                                                                    final JsonValue config,
-                                                                    final String name) {
+    private Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
+                                                              final JsonValue config,
+                                                              final String name) {
         return chainOf(new AuthorizationRedirectHandler(time, clientEndpoint),
                        new DiscoveryFilter(discoveryHandler, heap),
                        new ClientRegistrationFilter(discoveryHandler, config, heap, name));
