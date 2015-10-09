@@ -30,6 +30,8 @@ import org.forgerock.openig.heap.Name;
  */
 public class ConsoleLogSink implements LogSink {
 
+    private static final Object LOCK = new Object();
+
     /**
      * Where do the user want its log written to ?
      */
@@ -88,7 +90,7 @@ public class ConsoleLogSink implements LogSink {
     @Override
     public void log(LogEntry entry) {
         if (isLoggable(entry.getSource(), entry.getLevel())) {
-            synchronized (this) {
+            synchronized (LOCK) {
                 PrintStream stream = this.stream.getStream(entry);
                 writeEntry(stream, entry);
                 if ("throwable".equals(entry.getType()) && (entry.getData() instanceof Throwable)) {
