@@ -94,7 +94,7 @@ import org.forgerock.util.time.TimeService;
  *
  * <pre>
  * {@code
- * "target"                       : expression,         [OPTIONAL - default is ${exchange.openid}]
+ * "target"                       : expression,         [OPTIONAL - default is ${exchange.attributes.openid}]
  *                                                                  for dynamic client registration ]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
@@ -119,9 +119,9 @@ import org.forgerock.util.time.TimeService;
  * {@code
  * {
  *     "name": "OpenIDConnect",
- *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
+ *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${exchange.openid}",
+ *         "target"                : "${exchange.attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
@@ -140,9 +140,9 @@ import org.forgerock.util.time.TimeService;
  * {@code
  * {
  *     "name": "OpenIDConnect",
- *     "type": "org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter",
+ *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${exchange.openid}",
+ *         "target"                : "${exchange.attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "clientRegistrationName": "openam",
  *         "failureHandler"        : "LoginFailed"

@@ -69,7 +69,7 @@ import org.forgerock.util.time.TimeService;
  * {@code
  * {
  *         "name": "ProtectedResourceFilter",
- *         "type": "org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter",
+ *         "type": "OAuth2ResourceServerFilter",
  *         "config": {
  *           "scopes": [ "email", "profile" ],
  *           "tokenInfoEndpoint": "https://openam.example.com:8443/openam/oauth2/tokeninfo",
@@ -112,7 +112,7 @@ import org.forgerock.util.time.TimeService;
  * returned back to the client in case of errors.
  * <p>
  * The {@literal target} optional attribute specifies the expression which will be used for storing the OAuth 2.0 access
- * token information in the exchange. Defaults to <tt>${exchange.oauth2AccessToken}</tt>.
+ * token information in the exchange. Defaults to <tt>${exchange.attributes.oauth2AccessToken}</tt>.
  *
  * @see Duration
  */
