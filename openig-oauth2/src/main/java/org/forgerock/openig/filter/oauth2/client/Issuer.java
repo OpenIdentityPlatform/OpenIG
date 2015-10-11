@@ -70,8 +70,7 @@ import org.forgerock.util.Reject;
  * }
  * </pre>
  *
- * <br/>
- * For example, use this kind of configuration if the end-points are not known:
+ * <p>For example, use this kind of configuration if the end-points are not known:
  *
  * <pre>
  * {@code

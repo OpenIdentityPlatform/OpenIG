@@ -72,13 +72,15 @@ import org.forgerock.util.promise.Promise;
  *         ],
  *         "client_name": "My App",
  *         "contacts": ["ve7jtb@example.org", "mary@example.org"]
+ *     }
+ * }
  * }
  * </pre>
  *
  * <br>
  * Note for developers: The suffix is added to the issuer name to compose the
  * client registration name in the current heap. When automatically called by
- * the OAuth2Client filter, this name is <IssuerName> + <OAuth2ClientFilterName>
+ * the OAuth2Client filter, this name is {@literal IssuerName} + {@literal OAuth2ClientFilterName}
  * This is required in order to retrieve the Client Registration when performing
  * dynamic client registration.
  *
@@ -103,7 +105,7 @@ public class ClientRegistrationFilter implements Filter {
      *            A reference to the current heap.
      * @param suffix
      *            The name of the client registration in the heap will be
-     *            <IssuerName> + <suffix>. Must not be {@code null}.
+     *            {@literal IssuerName} + {@literal suffix}. Must not be {@code null}.
      */
     public ClientRegistrationFilter(final Handler registrationHandler,
                                     final JsonValue config,

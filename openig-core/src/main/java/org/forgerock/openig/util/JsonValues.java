@@ -245,7 +245,7 @@ public final class JsonValues {
     /**
      * Returns, if the given JSON value contains one of the names, the first
      * defined JSON value, otherwise if the given JSON value does not match any
-     * of the names, then a JsonValue encapsulating null is returned. <br />
+     * of the names, then a JsonValue encapsulating null is returned.
      * Example of use:
      *
      * <pre>{@code
