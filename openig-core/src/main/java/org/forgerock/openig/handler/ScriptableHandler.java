@@ -20,6 +20,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
@@ -58,12 +59,12 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableHandler newInstance(Script script) throws HeapException {
-            return new ScriptableHandler(script);
+        public ScriptableHandler newInstance(Script script, Heap heap) throws HeapException {
+            return new ScriptableHandler(script, heap);
         }
     }
 
-    ScriptableHandler(final Script compiledScript) {
-        super(compiledScript);
+    ScriptableHandler(final Script compiledScript, Heap heap) {
+        super(compiledScript, heap);
     }
 }

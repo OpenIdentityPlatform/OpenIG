@@ -21,6 +21,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
@@ -67,12 +68,12 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableFilter newInstance(Script script) throws HeapException {
-            return new ScriptableFilter(script);
+        public ScriptableFilter newInstance(Script script, Heap heap) throws HeapException {
+            return new ScriptableFilter(script, heap);
         }
     }
 
-    ScriptableFilter(final Script compiledScript) {
-        super(compiledScript);
+    ScriptableFilter(final Script compiledScript, Heap heap) {
+        super(compiledScript, heap);
     }
 }

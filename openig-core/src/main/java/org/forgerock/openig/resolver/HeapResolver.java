@@ -44,6 +44,6 @@ public class HeapResolver implements Resolver {
 
     @Override
     public Object put(Object object, Object element, Object value) {
-        throw new RuntimeException("PUT is not allowed");
+        return Resolver.UNRESOLVED;
     }
 }
