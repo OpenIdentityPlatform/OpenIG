@@ -86,6 +86,7 @@ import org.testng.annotations.Test;
 
 import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
+import org.forgerock.openig.heap.Heap;
 
 /**
  * Tests Groovy integration for the scriptable filter.
@@ -963,7 +964,7 @@ public class GroovyScriptableFilterTest {
         config.put("file", groovyClass);
         final Map<String, Object> args = new LinkedHashMap<>();
         args.put("title", "Coffee time");
-        args.put("status", "418");
+        args.put("status", "${400 + 18}"); // show that the args are evaluated as expressions
         args.put("reason", new String[] { "Not Acceptable", "I'm a teapot", "Acceptable" });
         final Map<String, Object> coffeeNames = new LinkedHashMap<>();
         coffeeNames.put("1", "koffie");
@@ -978,7 +979,8 @@ public class GroovyScriptableFilterTest {
     private ScriptableFilter newGroovyFilter(final String... sourceLines) throws Exception {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
-        return new ScriptableFilter(script);
+        final Heap heap = new HeapImpl(Name.of("heap"));
+        return new ScriptableFilter(script, heap);
     }
 
     private static class TerminalHandler implements Handler {

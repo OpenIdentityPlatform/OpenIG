@@ -16,6 +16,7 @@
 package org.forgerock.openig.script;
 
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
@@ -33,8 +34,11 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.el.Bindings;
+import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
@@ -61,12 +65,22 @@ import org.forgerock.util.promise.Promise;
  * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - if the heap object is a filter then this variable
  * will contain the next handler in the filter chain.
+ * <li>{@link Heap heap} - the heap.
  * </ul>
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
+
+    private void checkBindingNotAlreadyUsed(final Map<String, Object> bindings,
+                                            final String key) throws ScriptException {
+        if (bindings.containsKey(key)) {
+            final String errorMsg = "Can't override the binding named " + key;
+            logger.error(errorMsg);
+            throw new ScriptException(errorMsg);
+        }
+    }
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
@@ -78,7 +92,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         @Override
         public Object create() throws HeapException {
             final Script script = compileScript();
-            final AbstractScriptableHeapObject component = newInstance(script);
+            final AbstractScriptableHeapObject component = newInstance(script, heap);
             HttpClient httpClient = heap.resolve(config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
                                                  HttpClient.class);
             component.setHttpClient(httpClient);
@@ -92,13 +106,14 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
          * Creates the new heap object instance using the provided script.
          *
          * @param script The compiled script.
+         * @param heap The heap to look for bindings
          * @return The new heap object instance using the provided script.
          * @throws HeapException if an exception occurred during creation of the heap
          * object or any of its dependencies.
          * @throws JsonValueException if the heaplet (or one of its dependencies) has a
          * malformed configuration.
          */
-        protected abstract AbstractScriptableHeapObject newInstance(final Script script)
+        protected abstract AbstractScriptableHeapObject newInstance(final Script script, final Heap heap)
                 throws HeapException;
 
         private Script compileScript() throws HeapException {
@@ -146,6 +161,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     // TODO: json/xml/sql/crest bindings.
 
     private final Script compiledScript;
+    private final Heap heap;
     private HttpClient httpClient;
     private final LdapClient ldapClient = LdapClient.getInstance();
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<>();
@@ -155,9 +171,11 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * Creates a new scriptable heap object using the provided compiled script.
      *
      * @param compiledScript The compiled script.
+     * @param heap The heap to look for bindings
      */
-    protected AbstractScriptableHeapObject(final Script compiledScript) {
+    protected AbstractScriptableHeapObject(final Script compiledScript, Heap heap) {
         this.compiledScript = compiledScript;
+        this.heap = heap;
     }
 
     /**
@@ -203,11 +221,11 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 return newResponsePromise(newInternalServerError(message));
             }
         } catch (final ScriptException e) {
-            return newResponsePromise(newInternalServerError("Cannot execute script", e));
+            return newResponsePromise(newInternalServerError("Cannot execute script", logger.warning(e)));
         }
     }
 
-    private Map<String, Object> enrichBindings(final Bindings source, final Handler next) {
+    private Map<String, Object> enrichBindings(final Bindings source, final Handler next) throws ScriptException {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
         bindings.putAll(source.asMap());
@@ -221,8 +239,23 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             bindings.put("next", next);
         }
         if (args != null) {
+            final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
             for (final Entry<String, Object> entry : args.entrySet()) {
-                bindings.put(entry.getKey(), entry.getValue());
+                final String key = entry.getKey();
+                checkBindingNotAlreadyUsed(bindings, key);
+                final Object value = entry.getValue();
+                if (value instanceof String) {
+                    try {
+                        // Process it as an expression
+                        Expression<Object> expr = Expression.valueOf((String) entry.getValue(), Object.class);
+
+                        bindings.put(key, expr.eval(exprEvalBindings));
+                    } catch (ExpressionException ex) {
+                        throw new ScriptException(ex);
+                    }
+                } else {
+                    bindings.put(key, entry.getValue());
+                }
             }
         }
 
