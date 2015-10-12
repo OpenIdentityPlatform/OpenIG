@@ -124,6 +124,7 @@
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
 
     <forgerock-http-framework.version>1.0.1-SNAPSHOT</forgerock-http-framework.version>
+    <caud.version>0.11.0-SNAPSHOT</caud.version>
   </properties>
 
   <repositories>

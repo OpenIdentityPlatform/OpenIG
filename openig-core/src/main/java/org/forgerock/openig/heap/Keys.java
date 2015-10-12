@@ -63,6 +63,12 @@ public final class Keys {
     public static final String ENVIRONMENT_HEAP_KEY = "Environment";
 
     /**
+     * Key to retrieve a default {@link ClientHandler} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String FORGEROCK_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
+
+    /**
      * Key to retrieve an {@link HttpClient} instance from the
      * {@link org.forgerock.openig.heap.Heap}.
      */

@@ -88,6 +88,16 @@
         <artifactId>forgerock-guava-cache</artifactId>
     </dependency>
     <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-core</artifactId>
+        <version>${caud.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-json</artifactId>
+        <version>${caud.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <version>2.3.4</version>
