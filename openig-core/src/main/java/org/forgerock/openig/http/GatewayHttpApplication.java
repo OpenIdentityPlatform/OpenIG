@@ -44,7 +44,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
@@ -62,8 +65,10 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
+import org.forgerock.openig.filter.TransactionIdForwardFilter;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
@@ -159,14 +164,21 @@ public final class GatewayHttpApplication implements HttpApplication {
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
 
+            final ClientHandler clientHandler = heap.get(CLIENT_HANDLER_HEAP_KEY, ClientHandler.class);
+            final Handler handler = chainOf(clientHandler, new TransactionIdForwardFilter(clientHandler.getLogger()));
+            heap.put(Keys.FORGEROCK_HANDLER_HEAP_KEY, handler);
+
             // Create the root handler.
-            Handler rootHandler = heap.getHandler();
+            List<Filter> filters = new ArrayList<>();
 
             // Let the user override the container's session.
             final SessionManager sessionManager = heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
             if (sessionManager != null) {
-                rootHandler = chainOf(rootHandler, newSessionFilter(sessionManager));
+                filters.add(newSessionFilter(sessionManager));
             }
+
+            // Create the root handler.
+            Handler rootHandler = chainOf(heap.getHandler(), filters);
 
             Router router = new Router();
             router.setDefaultRoute(rootHandler);

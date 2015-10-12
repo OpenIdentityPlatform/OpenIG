@@ -61,6 +61,24 @@
       <artifactId>openig-openam</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-handler-csv</artifactId>
+        <version>${caud.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+     <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-handler-syslog</artifactId>
+        <version>${caud.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+     <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-audit-handler-jdbc</artifactId>
+        <version>${caud.version}</version>
+        <scope>runtime</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>OpenIG-${project.version}</finalName>
