@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Message;
@@ -42,6 +41,7 @@ import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;

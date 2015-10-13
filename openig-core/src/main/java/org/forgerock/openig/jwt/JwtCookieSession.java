@@ -19,10 +19,18 @@ package org.forgerock.openig.jwt;
 import static java.lang.String.format;
 import static org.forgerock.http.util.Json.*;
 
-import org.forgerock.http.session.Session;
+import java.io.IOException;
+import java.security.KeyPair;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
 import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
@@ -37,14 +45,6 @@ import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.MapDecorator;
-
-import java.io.IOException;
-import java.security.KeyPair;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Represents an OpenIG {@link Session} that will be stored as an encrypted JSON Web Token in a Cookie.

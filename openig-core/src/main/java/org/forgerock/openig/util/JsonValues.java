@@ -32,8 +32,8 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.util.Utils;
 import org.forgerock.util.Function;
+import org.forgerock.util.Utils;
 
 /**
  * Provides additional functionality to {@link JsonValue}.

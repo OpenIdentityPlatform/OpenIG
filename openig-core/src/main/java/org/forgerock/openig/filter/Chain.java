@@ -21,7 +21,6 @@ import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
 
 import java.util.List;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.handler.Handlers;
@@ -31,6 +30,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 

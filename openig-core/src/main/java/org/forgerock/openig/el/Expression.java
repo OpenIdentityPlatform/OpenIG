@@ -30,9 +30,9 @@ import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
+import org.forgerock.http.util.Loader;
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
-import org.forgerock.http.util.Loader;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 

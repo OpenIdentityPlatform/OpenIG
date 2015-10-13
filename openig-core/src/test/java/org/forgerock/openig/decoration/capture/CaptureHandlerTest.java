@@ -21,7 +21,7 @@ import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_REQU
 import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_RESPONSE;
 import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
 import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;

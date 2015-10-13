@@ -27,12 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.header.CookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;

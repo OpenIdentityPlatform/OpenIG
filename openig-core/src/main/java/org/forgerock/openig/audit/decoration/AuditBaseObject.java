@@ -20,6 +20,7 @@ import static org.forgerock.openig.audit.Tag.*;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;

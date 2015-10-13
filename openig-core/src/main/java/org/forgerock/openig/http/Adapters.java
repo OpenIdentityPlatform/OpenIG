@@ -16,11 +16,11 @@
 
 package org.forgerock.openig.http;
 
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
-import org.forgerock.http.session.SessionContext;
-import org.forgerock.http.protocol.Request;
 
 /**
  * Adapters for converting between HTTP framework and legacy OpenIG APIs.

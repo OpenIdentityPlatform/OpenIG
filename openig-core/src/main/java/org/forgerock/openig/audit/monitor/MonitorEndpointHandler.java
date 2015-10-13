@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -37,6 +36,7 @@ import org.forgerock.openig.audit.ConditionalAuditEventListener;
 import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.util.EnumUtil;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;

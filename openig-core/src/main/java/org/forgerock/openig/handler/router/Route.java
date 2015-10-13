@@ -20,19 +20,19 @@ import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.io.IOException;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionManager;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;

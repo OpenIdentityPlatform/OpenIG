@@ -21,7 +21,7 @@ import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_REQU
 import static org.forgerock.openig.decoration.capture.CapturePoint.FILTERED_RESPONSE;
 import static org.forgerock.openig.decoration.capture.CapturePoint.REQUEST;
 import static org.forgerock.openig.decoration.capture.CapturePoint.RESPONSE;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -29,12 +29,12 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;

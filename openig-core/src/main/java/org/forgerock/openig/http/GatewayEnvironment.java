@@ -16,12 +16,12 @@
 
 package org.forgerock.openig.http;
 
+import java.io.File;
+
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.config.env.EnvironmentDelegate;
 import org.forgerock.openig.config.env.PlatformEnvironment;
-
-import java.io.File;
 
 /**
  * Represents an {@link Environment} built from a webapp.
