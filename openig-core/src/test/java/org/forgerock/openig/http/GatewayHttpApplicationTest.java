@@ -23,21 +23,21 @@ import static org.forgerock.services.context.ClientContext.buildExternalClientCo
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
-import org.forgerock.http.session.Session;
-import org.forgerock.services.context.AttributesContext;
-import org.forgerock.services.context.ClientContext;
-import org.forgerock.services.context.RootContext;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.handler.router.DestroyDetectHandler;
 import org.forgerock.openig.handler.router.Files;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.ClientContext;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.testng.annotations.DataProvider;

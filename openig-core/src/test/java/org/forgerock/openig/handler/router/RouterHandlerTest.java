@@ -40,7 +40,6 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
@@ -51,6 +50,7 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.TimeService;

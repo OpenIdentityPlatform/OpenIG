@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -36,6 +35,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 import org.forgerock.util.promise.NeverThrowsException;

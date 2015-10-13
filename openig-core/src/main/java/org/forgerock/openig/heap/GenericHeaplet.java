@@ -19,6 +19,7 @@ package org.forgerock.openig.heap;
 
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;

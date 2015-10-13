@@ -19,10 +19,10 @@ package org.forgerock.openig.decoration.capture;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;

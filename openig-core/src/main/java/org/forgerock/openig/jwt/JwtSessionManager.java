@@ -32,14 +32,14 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.http.session.SessionManager;
-import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
 
 /**
  * A JwtSessionManager is responsible to configure and create a {@link JwtCookieSession}.

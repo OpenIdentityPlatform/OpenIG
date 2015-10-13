@@ -19,7 +19,7 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
-import org.forgerock.services.context.Context;
+
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -27,6 +27,7 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 

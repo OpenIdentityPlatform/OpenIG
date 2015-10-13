@@ -24,7 +24,6 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.net.URI;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
@@ -36,6 +35,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;

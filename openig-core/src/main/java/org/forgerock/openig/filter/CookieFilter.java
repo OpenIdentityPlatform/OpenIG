@@ -29,16 +29,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.forgerock.http.protocol.Header;
-import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Message;
-import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
