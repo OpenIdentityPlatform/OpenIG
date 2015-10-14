@@ -71,17 +71,13 @@
   <!-- Force dependencies version for consistent use all over the project's modules -->
   <dependencyManagement>
     <dependencies>
+      <!-- ForgeRock commons dependencies -->
       <dependency>
-        <groupId>org.testng</groupId>
-        <artifactId>testng</artifactId>
-        <version>6.8.21</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-all</artifactId>
-        <version>1.10.19</version>
-        <scope>test</scope>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-bom</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <scope>import</scope>
+        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -91,33 +87,8 @@
       </dependency>
       <dependency>
         <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-util</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
         <artifactId>json-web-token</artifactId>
         <version>2.4.1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.4.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.7.12</version>
-      </dependency>
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>json-resource</artifactId>
-        <version>${forgerock-rest.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>json-resource-http</artifactId>
-        <version>${forgerock-rest.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -126,9 +97,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- 2.9.1 includes security fix for Security vulnerability CVE-2013-1571 -->
     <javadocPluginVersion>2.9.1</javadocPluginVersion>
-
-    <httpFrameworkVersion>0.0.1-SNAPSHOT</httpFrameworkVersion>
-    <forgerock-rest.version>3.0.0-SNAPSHOT</forgerock-rest.version>
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>

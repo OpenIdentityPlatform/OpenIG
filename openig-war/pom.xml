@@ -36,12 +36,10 @@
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
-      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-servlet</artifactId>
-      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.forgerock.openig</groupId>
