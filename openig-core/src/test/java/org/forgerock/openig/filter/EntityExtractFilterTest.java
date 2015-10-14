@@ -68,7 +68,7 @@ public class EntityExtractFilterTest {
         Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", " OpenIG"),
-                entry("none", null));
+                entry("none", (String) null));
         verify(terminalHandler).handle(exchange, request);
     }
 
@@ -91,7 +91,7 @@ public class EntityExtractFilterTest {
         Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", "Hello OpenIG"),
-                entry("none", null));
+                entry("none", (String) null));
         verify(terminalHandler).handle(exchange, request);
     }
 
@@ -113,6 +113,6 @@ public class EntityExtractFilterTest {
 
         @SuppressWarnings("unchecked")
         Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
-        assertThat(results).containsOnly(entry("hello", null));
+        assertThat(results).containsOnly(entry("hello", (String) null));
     }
 }

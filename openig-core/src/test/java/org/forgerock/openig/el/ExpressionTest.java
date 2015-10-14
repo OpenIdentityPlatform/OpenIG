@@ -251,12 +251,13 @@ public class ExpressionTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void getExchangeRequestEntityAsJson() throws Exception {
         Exchange exchange = new Exchange();
         exchange.setRequest(new Request());
         exchange.getRequest().setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
-        Map<?, ?> map = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
-        assertThat((Map<?, ?>) map).containsOnly(entry("string", "string"), entry("int", 12345));
+        Map<String, Object> map = Expression.valueOf("${exchange.request.entity.json}", Map.class).eval(exchange);
+        assertThat(map).containsOnly(entry("string", "string"), entry("int", 12345));
 
         Integer i = Expression.valueOf("${exchange.request.entity.json.int}", Integer.class)
                 .eval(exchange);
