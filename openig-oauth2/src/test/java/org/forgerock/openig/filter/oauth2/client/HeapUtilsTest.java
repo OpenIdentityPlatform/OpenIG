@@ -15,10 +15,12 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 
+import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.HttpClient;
@@ -36,7 +38,9 @@ public final class HeapUtilsTest {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient());
+        final HttpClient httpClient = new HttpClient();
+        heap.put(HTTP_CLIENT_HEAP_KEY, httpClient);
+        heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(httpClient));
         return heap;
     }
 }
