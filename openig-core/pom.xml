@@ -35,12 +35,10 @@
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
-      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-client-apache-async</artifactId>
-      <version>${httpFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -88,7 +86,6 @@
     <dependency>
         <groupId>org.forgerock.commons.guava</groupId>
         <artifactId>forgerock-guava-cache</artifactId>
-        <version>18.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
@@ -120,13 +117,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
-      <version>1.7.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <version>1.7.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
