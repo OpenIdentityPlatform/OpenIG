@@ -21,6 +21,7 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
+import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
@@ -49,6 +50,12 @@ public final class Keys {
      * Key to retrieve a {@link CaptureDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String CAPTURE_HEAP_KEY = "capture";
+
+    /**
+     * Key to retrieve a default {@link ClientHandler} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String CLIENT_HANDLER_HEAP_KEY = "ClientHandler";
 
     /**
      * Key to retrieve an {@link Environment} instance from the {@link org.forgerock.openig.heap.Heap}.
