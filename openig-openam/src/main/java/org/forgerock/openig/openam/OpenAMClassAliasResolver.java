@@ -29,6 +29,7 @@ public class OpenAMClassAliasResolver implements ClassAliasResolver {
 
     static {
         ALIASES.put("PolicyEnforcementFilter", PolicyEnforcementFilter.class);
+        ALIASES.put("TokenTransformationFilter", TokenTransformationFilter.class);
     }
 
     @Override
