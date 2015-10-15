@@ -62,9 +62,9 @@ public class JwtCookieSessionTest {
      * }
      */
     // @Checkstyle:off
-    private static final String ORIGINAL = "eyAiYWxnIjogIlJTQUVTX1BLQ1MxX1YxXzUiLCAidHlwIjogImp3dCIsICJlbmMiOiAiQTEyOENCQ19IUzI1NiIgfQ."
-            + "Ew8KPoUx-PoD3gsYreWud9n0KNqIOSYOgr4EiTgDdMqT_IKZ1juAFV9JUIK2FhN0r5yD6261v_ltlW95voCL3w."
-            + "1-ERoOvu1Tv0JhEh7Utdxg.kexUc5ESTVIOns4HJMmp-eR4bFiBMkIUTuNnDMGsyPkQMSqIIqWnIHRKzxMR1CXo.QzTRu5uBtUqdAXhcRj8TJw";
+    private static final String ORIGINAL = "eyAidHlwIjogIkpXVCIsICJhbGciOiAiUlNBRVNfUEtDUzFfVjFfNSIsICJlbmMiOiAiQTEyOENCQ19IUzI1NiIgfQ."
+            + "VcBqC0hgiEdE2OqirUY9QGItTboPunTwlBaKOIQu81vwEYocaO20G0DecedPpiE99np5v1Rifw82kCfAd4Kvfg."
+            + "InWrJbg39qUmMS11Hc54SA.xgatQtOnS-krnjq9hN_e3t4pPw_0yxJX1ByXOv0W0plRnAHoldtRFJLLOvS09TlC.14WSYyCegapzGCIU3fbGPw";
     // @Checkstyle:on
 
     /**
