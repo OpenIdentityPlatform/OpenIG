@@ -4,32 +4,32 @@ DO NOT TRANSLATE OR LOCALIZE
 Apache Software License, Version 2.0
 ***************************************************************************
 
-Version: commons-codec-1.3.jar
-Copyright: Copyright 2002-2013 The Apache Software Foundation
+Version: commons-codec-1.9.jar
+Copyright: Copyright 2002-2014 The Apache Software Foundation
            Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
 
-Version: commons-logging-1.1.1.jar
-Copyright: Copyright 2001-2007 The Apache Software Foundation
+Version: commons-logging-1.2.jar
+Copyright: Copyright 2001-2014 The Apache Software Foundation
 
-Version: httpclient-4.0.1.jar
-Copyright: Copyright 1999-2014 The Apache Software Foundation
+Version: httpcore-4.4.1.jar
+Copyright: Copyright 1999-2015 The Apache Software Foundation
 
-Version: httpcore-4.0.1.jar
-Copyright: Copyright 1999-2014 The Apache Software Foundation
+Version: httpcore-nio-4.4.1.jar
+Copyright: Copyright 1999-2015 The Apache Software Foundation
 
-Version: jackson-annotations-2.4.0.jar
-Copyright: Copyright 2007-2012 The Apache Software Foundation
+Version: httpclient-4.4.1.jar
+Copyright: Copyright 1999-2015 The Apache Software Foundation
 
-Version: jackson-core-2.4.3.jar
+Version: httpclient-async-4.1.jar
+Copyright: Copyright 1999-2015 The Apache Software Foundation
+
+Version: jackson-annotations-2.5.0.jar
+Copyright: Copyright 2007-2015 The Apache Software Foundation
+
+Version: jackson-core-2.5.3.jar
 Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
 
-Version: jackson-core-asl-1.9.2.jar
-Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
-
-Version: jackson-databind-2.4.3.jar
-Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
-
-Version: jackson-mapper-asl-1.9.2.jar
+Version: jackson-databind-2.5.3.jar
 Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
 
 Version: juel-api-2.2.7.jar 
@@ -140,11 +140,11 @@ Verions: i18n-core-1.4.0.jar
 Copyright: Copyright 2009 Sun Microsystems, Inc
            Portions Copyright 2010–2011 ApexIdentity Inc.
 
-Verions: openig-core-3.1.0.jar
+Verions: openig-core-4.0.0.jar
 Copyright: Copyright 2011-2014 ForgeRock AS. 
            Portions Copyright 2010–2011 ApexIdentity Inc.
 
-Verions: openig-saml-3.1.0.jar
+Verions: openig-saml-4.0.0.jar
 Copyright: Copyright 2011-2014 ForgeRock AS. 
            Portions Copyright 2010–2011 ApexIdentity Inc.
 
@@ -876,4 +876,37 @@ EXHIBIT A -Mozilla Public License.
      the notices in the Source Code files of the Original Code. You should
      use the text of this Exhibit A rather than the text found in the
      Original Code Source Code for Your Modifications.]
+
+***************************************************************************
+The MIT License (MIT)
+***************************************************************************
+
+Version: slf4j-api-1.7.12.jar
+Copyright: Copyright (c) 2004-2013 QOS.ch
+
+==================
+Full license text:
+==================
+
+The MIT License (MIT)
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
