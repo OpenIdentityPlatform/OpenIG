@@ -42,6 +42,7 @@
     <module>openig-oauth2</module>
     <module>openig-doc</module>
     <module>openig-uma</module>
+    <module>openig-openam</module>
   </modules>
 
   <build>
