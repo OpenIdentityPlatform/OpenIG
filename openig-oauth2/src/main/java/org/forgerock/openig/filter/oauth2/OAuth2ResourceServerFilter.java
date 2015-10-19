@@ -214,7 +214,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
         // Resolve the token
         AccessToken accessToken;
         try {
-            accessToken = resolver.resolve(token);
+            accessToken = resolver.resolve(context, token);
         } catch (OAuth2TokenException e) {
             logger.debug(format("Access Token '%s' cannot be resolved", token));
             logger.debug(e);

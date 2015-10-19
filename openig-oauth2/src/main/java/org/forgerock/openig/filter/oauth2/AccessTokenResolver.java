@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.filter.oauth2;
 
+import org.forgerock.services.context.Context;
+
 /**
  * Resolves a given token against a dedicated OAuth2 Identity Provider (OpenAM, Google, Facebook, ...).
  */
@@ -24,11 +26,11 @@ public interface AccessTokenResolver {
     /**
      * Resolves a given access token against a authorization server.
      *
-     * @param token
-     *         token identifier to be resolved
+     * @param context Context chain used to keep a relationship between requests (tracking)
+     * @param token token identifier to be resolved
      * @return a valid {@link AccessToken} (well formed, known by the server)
      * @throws OAuth2TokenException
      *         if the token is unknown by the server
      */
-    AccessToken resolve(String token) throws OAuth2TokenException;
+    AccessToken resolve(Context context, String token) throws OAuth2TokenException;
 }

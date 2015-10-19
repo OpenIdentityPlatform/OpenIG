@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
+import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -52,8 +53,8 @@ public class CachingAccessTokenResolverTest {
     public void shouldUseCache() throws Exception {
         CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
 
-        AccessToken token = caching.resolve("TOKEN");
-        AccessToken token2 = caching.resolve("TOKEN");
+        AccessToken token = caching.resolve(new RootContext(), "TOKEN");
+        AccessToken token2 = caching.resolve(new RootContext(), "TOKEN");
 
         assertThat(token).isSameAs(token2);
         verify(cache, times(2)).getValue(eq("TOKEN"), any(Callable.class));

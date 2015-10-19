@@ -17,15 +17,23 @@
 package org.forgerock.openig.filter.oauth2.resolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.filter.oauth2.ResponseHandler;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.time.TimeService;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -39,6 +47,9 @@ public class OpenAmAccessTokenResolverTest {
     @Mock
     private TimeService time;
 
+    @Captor
+    private ArgumentCaptor<Context> contextCaptor;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -51,14 +62,18 @@ public class OpenAmAccessTokenResolverTest {
     @Test
     public void shouldProduceAnAccessToken() throws Exception {
         when(time.now()).thenReturn(0L);
-        Handler client = new ResponseHandler(response(Status.OK, doubleQuote("{'expires_in':10, "
+        Handler client = spy(new ResponseHandler(response(Status.OK, doubleQuote("{'expires_in':10, "
                 + "'access_token':'ACCESS_TOKEN', "
-                + "'scope': [ 'email', 'name' ]}")));
+                + "'scope': [ 'email', 'name' ]}"))));
         OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
-        AccessToken token = resolver.resolve(TOKEN);
+        final RootContext context = new RootContext();
+        AccessToken token = resolver.resolve(context, TOKEN);
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L);
+
+        verify(client).handle(contextCaptor.capture(), any(Request.class));
+        assertThat(contextCaptor.getValue()).isSameAs(context);
     }
 
     @Test(expectedExceptions = OAuth2TokenException.class)
@@ -69,7 +84,7 @@ public class OpenAmAccessTokenResolverTest {
         OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         //When
-        resolver.resolve(TOKEN);
+        resolver.resolve(new RootContext(), TOKEN);
     }
 
     private static String doubleQuote(final String value) {
