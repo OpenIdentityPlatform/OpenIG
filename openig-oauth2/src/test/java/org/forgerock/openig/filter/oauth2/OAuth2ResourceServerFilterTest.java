@@ -23,6 +23,8 @@ import static org.assertj.core.util.Sets.newLinkedHashSet;
 import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.DEFAULT_ACCESS_TOKEN_KEY;
 import static org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilter.DEFAULT_REALM_NAME;
 import static org.forgerock.openig.filter.oauth2.challenge.AuthenticateChallengeHandler.WWW_AUTHENTICATE;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +41,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -74,7 +77,7 @@ public class OAuth2ResourceServerFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(resolver.resolve(TOKEN_ID)).thenReturn(token);
+        when(resolver.resolve(any(Context.class), eq(TOKEN_ID))).thenReturn(token);
         when(token.getScopes()).thenReturn(new HashSet<>(asList("a", "b", "c")));
 
         // By default consider all token as valid since their expiration time is greater than now
@@ -125,7 +128,7 @@ public class OAuth2ResourceServerFilterTest {
 
     @Test
     public void shouldFailBecauseOfUnresolvableToken() throws Exception {
-        when(resolver.resolve(TOKEN_ID))
+        when(resolver.resolve(any(Context.class), eq(TOKEN_ID)))
                 .thenThrow(new OAuth2TokenException("error"));
         runAndExpectUnauthorizedInvalidTokenResponse();
     }

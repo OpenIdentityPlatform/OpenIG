@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
+import org.forgerock.services.context.Context;
 
 /**
  * A {@link CachingAccessTokenResolver} is a delegating {@link AccessTokenResolver} that uses a write-through cache
@@ -48,12 +49,12 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
     }
 
     @Override
-    public AccessToken resolve(final String token) throws OAuth2TokenException {
+    public AccessToken resolve(final Context context, final String token) throws OAuth2TokenException {
         try {
             return cache.getValue(token, new Callable<AccessToken>() {
                 @Override
                 public AccessToken call() throws Exception {
-                    return resolver.resolve(token);
+                    return resolver.resolve(context, token);
                 }
             });
         } catch (InterruptedException e) {

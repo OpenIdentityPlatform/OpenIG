@@ -33,7 +33,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -83,9 +83,8 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
 
 
     @Override
-    public AccessToken resolve(final String token) throws OAuth2TokenException {
+    public AccessToken resolve(Context context, final String token) throws OAuth2TokenException {
         try {
-            Exchange exchange = new Exchange();
             Request request = new Request();
             request.setMethod("GET");
             request.setUri(new URI(tokenInfoEndpoint));
@@ -98,7 +97,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
             // Call the client handler
             Response response = null;
             try {
-                response = client.handle(exchange, request).getOrThrow();
+                response = client.handle(context, request).getOrThrow();
             } catch (InterruptedException e) {
                 throw new OAuth2TokenException("AccessToken loading has been interrupted", e);
             }
