@@ -284,10 +284,11 @@ public class GroovyScriptableFilterTest {
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
                     "import org.forgerock.http.protocol.*",
+                    "import org.forgerock.services.context.RootContext",
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
-                    "http.executeAsync(request)");
+                    "http.executeAsync(new RootContext(), request)");
             filter.setHttpClient(new HttpClient());
 
             // @formatter:on
