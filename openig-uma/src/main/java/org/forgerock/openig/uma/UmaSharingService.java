@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.MutableUri;
-import org.forgerock.services.context.RootContext;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -46,7 +45,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -160,6 +159,8 @@ public class UmaSharingService {
     /**
      * Creates a Share that will be used to protect the given {@code resourcePath}.
      *
+     * @param context
+     *         Context chain used to keep a relationship between requests (tracking)
      * @param resourcePath
      *         resource to be protected
      * @param pat
@@ -168,7 +169,9 @@ public class UmaSharingService {
      * @see <a href="https://docs.kantarainitiative.org/uma/draft-oauth-resource-reg.html#rfc.section.2">Resource Set
      * Registration</a>
      */
-    public Promise<Share, UmaException> createShare(final String resourcePath, final String pat) {
+    public Promise<Share, UmaException> createShare(final Context context,
+                                                    final String resourcePath,
+                                                    final String pat) {
 
         if (isShared(resourcePath)) {
             // We do not accept re-sharing or post-creation resource_set configuration
@@ -182,7 +185,7 @@ public class UmaSharingService {
             return newExceptionPromise(new UmaException(format("Can't find a template for resource %s", resourcePath)));
         }
 
-        return createResourceSet(matching, resourcePath, pat)
+        return createResourceSet(context, matching, resourcePath, pat)
                 .then(new Function<Response, Share, UmaException>() {
                     @Override
                     public Share apply(final Response response) throws UmaException {
@@ -236,7 +239,8 @@ public class UmaSharingService {
         return false;
     }
 
-    private Promise<Response, NeverThrowsException> createResourceSet(final ShareTemplate template,
+    private Promise<Response, NeverThrowsException> createResourceSet(final Context context,
+                                                                      final ShareTemplate template,
                                                                       final String path,
                                                                       final String pat) {
         Request request = new Request();
@@ -247,11 +251,7 @@ public class UmaSharingService {
 
         request.setEntity(resourceSet(path, template).asMap());
 
-        return protectionApiHandler.handle(newExchange(request), request);
-    }
-
-    private static Exchange newExchange(final Request request) {
-        return new Exchange(new RootContext(), request.getUri().asURI());
+        return protectionApiHandler.handle(context, request);
     }
 
     private JsonValue resourceSet(final String name, final ShareTemplate template) {

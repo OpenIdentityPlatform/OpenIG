@@ -80,7 +80,7 @@ public class ShareCollectionProviderTest {
 
     @Test
     public void shouldCreateShare() throws Exception {
-        when(service.createShare("/alice/allergies", PAT))
+        when(service.createShare(context, "/alice/allergies", PAT))
                 .thenReturn(Promises.<Share, UmaException>newResultPromise(SHARE));
 
         ResourceResponse resource = connection.create(context,
@@ -98,7 +98,7 @@ public class ShareCollectionProviderTest {
 
     @Test(expectedExceptions = ResourceException.class)
     public void shouldReturnBadRequestExceptionWhenShareCreationFailed() throws Exception {
-        when(service.createShare("/alice/allergies", PAT))
+        when(service.createShare(context, "/alice/allergies", PAT))
                 .thenReturn(Promises.<Share, UmaException>newExceptionPromise(new UmaException("Boom")));
 
         connection.create(context, newCreateRequest("",
