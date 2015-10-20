@@ -25,12 +25,13 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.util.regex.Pattern;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -84,7 +85,7 @@ public class UmaSharingServiceTest {
                                         "uma",
                                         "uma");
 
-        Share share = service.createShare("/alice/allergies", PAT).getOrThrow();
+        Share share = service.createShare(new RootContext(), "/alice/allergies", PAT).getOrThrow();
 
         assertThat(share.getPAT()).isEqualTo(PAT);
         assertThat(share.getTemplate()).isSameAs(template);
@@ -113,19 +114,19 @@ public class UmaSharingServiceTest {
                                                           "uma",
                                                           "uma");
 
-        service.createShare("/alice/allergies", PAT).getOrThrow();
+        service.createShare(new RootContext(), "/alice/allergies", PAT).getOrThrow();
     }
 
     @Test(dependsOnMethods = "shouldCreateShare",
           expectedExceptions = UmaException.class)
     public void shouldNotShareTheSameResourceAgain() throws Exception {
-        service.createShare("/alice/allergies", PAT).getOrThrow();
+        service.createShare(new RootContext(), "/alice/allergies", PAT).getOrThrow();
     }
 
     @Test(dependsOnMethods = "shouldCreateShare",
           expectedExceptions = UmaException.class)
     public void shouldNotShareResourceWithNoAssociatedTemplate() throws Exception {
-        service.createShare("/bob/heart", PAT).getOrThrow();
+        service.createShare(new RootContext(), "/bob/heart", PAT).getOrThrow();
     }
 
     @Test(dependsOnMethods = "shouldCreateShare")
@@ -152,7 +153,7 @@ public class UmaSharingServiceTest {
     @Test(dependsOnMethods = "shouldCreateShare")
     public void shouldFindBestShare() throws Exception {
         // Before: Add a second share (more specific)
-        Share newShare = service.createShare("/alice/allergies/pollen", PAT)
+        Share newShare = service.createShare(new RootContext(), "/alice/allergies/pollen", PAT)
                                 .getOrThrow();
         try {
             Request request = new Request();

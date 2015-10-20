@@ -94,7 +94,7 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
         }
         String path = request.getContent().get("path").asString();
         String pat = request.getContent().get("pat").asString();
-        return service.createShare(path, pat)
+        return service.createShare(context, path, pat)
                       .then(new Function<Share, ResourceResponse, ResourceException>() {
                           @Override
                           public ResourceResponse apply(final Share share) throws ResourceException {

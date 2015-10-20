@@ -34,7 +34,6 @@ import java.util.Set;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.services.context.RootContext;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -44,7 +43,6 @@ import org.forgerock.openig.filter.oauth2.BearerTokenExtractor;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -106,12 +104,12 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             // Is there an RPT ?
             if (rpt != null) {
                 // Validate the token
-                return introspectToken(rpt, share.getPAT())
+                return introspectToken(context, rpt, share.getPAT())
                         .thenAsync(new VerifyScopesAsyncFunction(share, context, request, next));
             }
 
             // Error case: ask for a ticket
-            return ticket(share, request);
+            return ticket(context, share, request);
 
         } catch (UmaException e) {
             // No share found
@@ -136,6 +134,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
      *     }
      * </pre>
      *
+     * @param context
+     *         Context chain used to keep a relationship between requests (tracking)
      * @param share
      *         represents protection information about the requested resource
      * @param incoming
@@ -144,7 +144,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
      * @see <a href="https://docs.kantarainitiative.org/uma/rec-uma-core-v1_0.html#rfc.section.3.2">Request Permission
      * Registration</a>
      */
-    private Promise<Response, NeverThrowsException> ticket(final Share share,
+    private Promise<Response, NeverThrowsException> ticket(final Context context,
+                                                           final Share share,
                                                            final Request incoming) {
         Request request = new Request();
         request.setMethod("POST");
@@ -153,7 +154,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         request.getHeaders().put("Accept", "application/json");
         request.setEntity(createPermissionRequest(share, incoming).asMap());
 
-        return protectionApiHandler.handle(newExchange(request), request)
+        return protectionApiHandler.handle(context, request)
                                    .then(new TicketResponseFunction());
     }
 
@@ -176,7 +177,9 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                            field("scopes", array(scopes.toArray(new Object[scopes.size()])))));
     }
 
-    private Promise<Response, NeverThrowsException> introspectToken(final String token, final String pat) {
+    private Promise<Response, NeverThrowsException> introspectToken(final Context context,
+                                                                    final String token,
+                                                                    final String pat) {
         Request request = new Request();
         request.setUri(umaService.getIntrospectionEndpoint());
         // Should accept a PAT as per the spec (See OPENAM-6320 / OPENAM-5928)
@@ -189,14 +192,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         query.putSingle("client_secret", umaService.getClientSecret());
         query.toRequestEntity(request);
 
-        return protectionApiHandler.handle(newExchange(request), request);
-    }
-
-    /**
-     * Build a minimal {@link Context} implementation using an Exchange.
-     */
-    private static Exchange newExchange(final Request request) {
-        return new Exchange(new RootContext(), request.getUri().asURI());
+        return protectionApiHandler.handle(context, request);
     }
 
     private class VerifyScopesAsyncFunction implements AsyncFunction<Response, Response, NeverThrowsException> {
@@ -237,7 +233,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
 
                     // Not all of the required scopes are in the token
                     // Error case: ask for a ticket, append an error code
-                    return ticket(share, request)
+                    return ticket(context, share, request)
                             .thenOnResult(new ResultHandler<Response>() {
                                 @Override
                                 public void handleResult(final Response response) {
@@ -255,7 +251,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             }
 
             // Error case: ask for a ticket
-            return ticket(share, request);
+            return ticket(context, share, request);
         }
 
         private List<String> getScopes(final JsonValue value, final String resourceSetId) {
