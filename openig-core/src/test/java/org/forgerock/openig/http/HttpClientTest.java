@@ -37,6 +37,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.spi.HttpClientProvider;
 import org.forgerock.http.spi.Loader;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -90,7 +91,7 @@ public class HttpClientTest {
             request.setMethod("POST");
             request.setUri(format("http://localhost:%d/test", server.getPort()));
             request.getEntity().setString("Hello");
-            assertThat(client.execute(request).getStatus()).isEqualTo(Status.OK);
+            assertThat(client.execute(new RootContext(), request).getStatus()).isEqualTo(Status.OK);
         } finally {
             client.shutdown();
         }
@@ -107,7 +108,7 @@ public class HttpClientTest {
             Request request = new Request();
             request.setMethod("POST");
             request.setUri(format("http://localhost:%d/test", server.getPort()));
-            assertThat(client.execute(request).getStatus()).isEqualTo(Status.OK);
+            assertThat(client.execute(new RootContext(), request).getStatus()).isEqualTo(Status.OK);
         } finally {
             client.shutdown();
         }
@@ -125,19 +126,20 @@ public class HttpClientTest {
         request.setUri(format("http://localhost:%d/test", server.getPort()));
 
         // Should throw an Exception as we closed the client before.
-        client.execute(request);
+        client.execute(new RootContext(), request);
     }
 
     @Test
     public void shouldLogException() throws Exception {
         Exception cause = new Exception("Boom");
+        Response response = new Response().setCause(cause);
         HttpClient client = new HttpClient(
                 new HttpClientHandler(Options.defaultOptions()
-                                             .set(HttpClientHandler.OPTION_LOADER, new ExceptionLoader(cause))));
+                                             .set(HttpClientHandler.OPTION_LOADER, new ResponseLoader(response))));
 
         Logger logger = mock(Logger.class);
         client.setLogger(logger);
-        client.executeAsync(new Request());
+        client.executeAsync(new RootContext(), new Request());
 
         verify(logger).warning(cause);
     }
@@ -159,11 +161,12 @@ public class HttpClientTest {
     }
 
     /** Make checkstyle happy. */
-    private static class ExceptionLoader implements Loader {
-        private final Exception cause;
+    private static class ResponseLoader implements Loader {
 
-        public ExceptionLoader(final Exception cause) {
-            this.cause = cause;
+        private final Response response;
+
+        public ResponseLoader(Response response) {
+            this.response = response;
         }
 
         @Override
@@ -175,7 +178,7 @@ public class HttpClientTest {
                     return new org.forgerock.http.spi.HttpClient() {
                         @Override
                         public Promise<Response, NeverThrowsException> sendAsync(final Request request) {
-                            return Response.newResponsePromise(new Response().setCause(cause));
+                            return Response.newResponsePromise(response);
                         }
 
                         @Override

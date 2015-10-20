@@ -64,7 +64,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        return client.executeAsync(request);
+        return client.executeAsync(context, request);
     }
 
     /** Creates and initializes a client handler in a heap environment. */

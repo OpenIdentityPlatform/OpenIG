@@ -24,6 +24,8 @@ import static com.xebialabs.restito.semantics.Condition.method;
 import static com.xebialabs.restito.semantics.Condition.uri;
 import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -34,6 +36,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.http.HttpClient;
+import org.forgerock.services.context.Context;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.testng.annotations.Test;
@@ -64,7 +67,7 @@ public class ClientHandlerTest {
             assertThat(response.getStatus()).isEqualTo(Status.OK);
             verifyHttp(server).once(method(Method.POST), uri("/example"),
                                     withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
-            verify(client).executeAsync(request);
+            verify(client).executeAsync(any(Context.class), eq(request));
         } finally {
             server.stop();
         }

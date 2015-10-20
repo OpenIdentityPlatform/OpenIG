@@ -49,7 +49,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
-import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -318,9 +317,6 @@ public class HttpClient extends GenericHeapObject {
     /** The HTTP client handler to which requests will be delegated. */
     private final HttpClientHandler client;
 
-    /** Dummy root context to send with each request. */
-    private final Context context = new RootContext();
-
     /**
      * Creates a new {@code HttpClient} using the provided commons HTTP client
      * handler.
@@ -344,30 +340,18 @@ public class HttpClient extends GenericHeapObject {
     }
 
     /**
-     * Submits the exchange request to the remote server. Creates and populates
-     * the exchange.response from that provided by the remote server.
-     *
-     * @param exchange
-     *            The HTTP exchange containing the request to send and where the
-     *            response will be placed.
-     */
-    public void execute(final Exchange exchange) {
-        // recover any previous response connection, if present
-        closeSilently(exchange.getResponse());
-        exchange.setResponse(execute(exchange.getRequest()));
-    }
-
-    /**
      * Submits the request to the remote server. Creates and populates the
      * response from that provided by the remote server.
      *
+     * @param context
+     *            The context's chain.
      * @param request
      *            The HTTP request to send.
      * @return The HTTP response.
      */
-    public Response execute(final Request request) {
+    public Response execute(final Context context, final Request request) {
         try {
-            return executeAsync(request).getOrThrow();
+            return executeAsync(context, request).getOrThrow();
         } catch (final InterruptedException e) {
             // FIXME: is a 408 time out the best status code?
             return new Response().setStatus(Status.REQUEST_TIMEOUT);
@@ -378,11 +362,13 @@ public class HttpClient extends GenericHeapObject {
      * Submits asynchronously the request to the remote server. Creates and populates the
      * response from that provided by the remote server.
      *
+     * @param context
+     *            The context's chain.
      * @param request
      *            The HTTP request to send.
      * @return The promise of the HTTP response.
      */
-    public Promise<Response, NeverThrowsException> executeAsync(final Request request) {
+    public Promise<Response, NeverThrowsException> executeAsync(final Context context, final Request request) {
         return client.handle(context, request)
                      .thenOnResult(new ResultHandler<Response>() {
                          @Override
