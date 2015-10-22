@@ -49,6 +49,8 @@ public final class SampleServer {
     private static final Logger LOGGER = Logger.getLogger(SampleServer.class.getName());
     private static final int DEFAULT_PORT = 8081;
     private static final int DEFAULT_SSL_PORT = 8444;
+    /** Name of fake OpenAM cookie. */
+    private static final String IPLANET_DIRECTORY_PRO_COOKIE = "iPlanetDirectoryPro";
     /** URL used to contact OpenAM. */
     private static String openamUrl;
 
@@ -267,7 +269,7 @@ public final class SampleServer {
         @Override
         public void service(Request request, Response response) throws Exception {
             if (request.getHttpHandlerPath().equalsIgnoreCase("/login")) {
-                response.addCookie(new Cookie("login-cookie", "chocolate chip"));
+                response.addCookie(new Cookie("login-cookie", "chocolate-chip"));
             }
 
             if (request.getHttpHandlerPath().equalsIgnoreCase("/.well-known/webfinger")) {
@@ -301,6 +303,19 @@ public final class SampleServer {
                 response.setContentLength(json.toString().length());
                 response.getWriter().write(json.toString());
                 return;
+            }
+
+            // When a fake OpenAM cookie is presented, simulate OpenAM's response.
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equalsIgnoreCase(IPLANET_DIRECTORY_PRO_COOKIE)) {
+                    String[] credentials = cookie.getValue().split(":");
+                    if (credentials.length == 2) {
+                        simulateOpenAMResponse(credentials[0], credentials[1], response);
+                    } else {
+                        simulateOpenAMResponse("", "", response);
+                    }
+                    return;
+                }
             }
 
             if (Method.GET == request.getMethod()) {
@@ -402,8 +417,9 @@ public final class SampleServer {
      *
      * If the username and password are valid, sets response status to 200 OK
      * and writes a text message and fake SSO Token cookie in the response.
+     * The fake cookie holds the credentials.
      *
-     * Otherwise, sets reponse status to 403 Forbidden
+     * Otherwise, sets response status to 403 Forbidden
      * and writes a failure text message in the response.
      *
      * @param username      A username such as {@code demo}
@@ -417,10 +433,13 @@ public final class SampleServer {
         String message;
         if (credentialsAreValid(username, password)) {
             message = "Welcome, " + username + "!" + EOL;
-            response.addCookie(new Cookie("iPlanetDirectoryPro", "fakeSsoToken"));
+            Cookie cookie = new Cookie(IPLANET_DIRECTORY_PRO_COOKIE, username + ":" + password);
+            cookie.setPath("/");
+            response.addCookie(cookie);
             response.setStatus(200, "OK");
         } else {
-            message = "Too bad, " + username + ", you failed to authenticate." + EOL;
+            String user = isNullOrEmpty(username) ? "" : username + ", ";
+            message = "Too bad, " + user + "you failed to authenticate." + EOL;
             response.setStatus(403, "Forbidden");
         }
         response.setContentType("text/plain");
@@ -435,11 +454,15 @@ public final class SampleServer {
      * @param password A password such as {@code changeit}
      *
      * @return True if the username matches the password in credentials.properties
-     * @throws java.io.IOException Could not read credentials.properties
+     * @throws IOException Could not read credentials.properties
      */
     static synchronized boolean credentialsAreValid(
             final String username, final String password)
             throws IOException {
+
+        if (isNullOrEmpty(username) || isNullOrEmpty(password)) {
+            return false;
+        }
 
         boolean result = false;
 
