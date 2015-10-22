@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.handler;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -50,7 +52,7 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
-        return runScript(exchange, request, null);
+        return runScript(bindings(exchange, request), null);
     }
 
     /**

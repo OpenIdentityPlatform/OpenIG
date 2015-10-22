@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.filter;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -58,7 +60,7 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
                                                           final Handler next) {
         final Exchange exchange = context.asContext(Exchange.class);
         // Delegates filtering to the script.
-        return runScript(exchange, request, next);
+        return runScript(bindings(exchange, request), next);
     }
 
     /**
