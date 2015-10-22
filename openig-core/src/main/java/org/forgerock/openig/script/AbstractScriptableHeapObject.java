@@ -32,6 +32,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -51,6 +52,7 @@ import org.forgerock.util.promise.Promise;
  * successive invocations of the script
  * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
+ * <li>{@link Map contexts} - the visible contexts, keyed by context's name
  * <li>{@link Request request} - the HTTP request
  * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
@@ -180,18 +182,16 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * Runs the compiled script using the provided exchange and optional
      * forwarding handler.
      *
-     * @param exchange The HTTP exchange.
-     * @param request the HTTP request
+     * @param bindings Base bindings available to the script (will be enriched).
      * @param next The next handler in the chain if applicable, may be
      * {@code null}.
      * @return the Promise of a Response produced by the script
      */
     @SuppressWarnings("unchecked")
-    protected final Promise<Response, NeverThrowsException> runScript(final Exchange exchange,
-                                                                      final Request request,
+    protected final Promise<Response, NeverThrowsException> runScript(final Bindings bindings,
                                                                       final Handler next) {
         try {
-            Object o = compiledScript.run(createBindings(exchange, request, next));
+            Object o = compiledScript.run(enrichBindings(bindings, next));
             if (o instanceof Promise) {
                 return ((Promise<Response, NeverThrowsException>) o);
             } else if (o instanceof Response) {
@@ -207,12 +207,10 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
     }
 
-    private Map<String, Object> createBindings(final Exchange exchange, final Request request, final Handler next) {
+    private Map<String, Object> enrichBindings(final Bindings source, final Handler next) {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
-        bindings.put("exchange", exchange);
-        bindings.put("context", exchange);
-        bindings.put("request", request);
+        bindings.putAll(source.asMap());
         bindings.put("logger", logger);
         bindings.put("globals", scriptGlobals);
         if (httpClient != null) {
