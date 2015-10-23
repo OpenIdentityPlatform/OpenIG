@@ -242,7 +242,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
      * presence of these attributes in the Session implies the assertion has been processed and validated.
      *
      * @param session
-     *            exchange's {@link Session}
+     *            Request's {@link Session}
      * @param assertion
      *            SAML assertion content
      */
