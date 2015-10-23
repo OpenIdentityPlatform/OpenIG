@@ -34,6 +34,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
@@ -141,8 +142,8 @@ final class OAuth2Utils {
                                              final Expression<String> clientEndpoint,
                                              final TimeService time) throws OAuth2ErrorException,
                                                                             ResponseException {
-        Exchange exchange = context.asContext(Exchange.class);
-        final Object sessionJson = exchange.getSession().get(sessionKey(context,
+        SessionContext sessionContext = context.asContext(SessionContext.class);
+        final Object sessionJson = sessionContext.getSession().get(sessionKey(context,
                                                                         buildUri(context, request, clientEndpoint)));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
@@ -153,15 +154,15 @@ final class OAuth2Utils {
     static void removeSession(final Context context,
                               final Request request,
                               final Expression<String> clientEndpoint) throws ResponseException {
-        Exchange exchange = context.asContext(Exchange.class);
-        exchange.getSession().remove(sessionKey(context, buildUri(context, request, clientEndpoint)));
+        SessionContext sessionContext = context.asContext(SessionContext.class);
+        sessionContext.getSession().remove(sessionKey(context, buildUri(context, request, clientEndpoint)));
     }
 
     static void saveSession(final Context context,
                             final OAuth2Session session,
                             final URI clientEndpoint) throws ResponseException {
-        Exchange exchange = context.asContext(Exchange.class);
-        exchange.getSession().put(sessionKey(context, clientEndpoint), session.toJson().getObject());
+        SessionContext sessionContext = context.asContext(SessionContext.class);
+        sessionContext.getSession().put(sessionKey(context, clientEndpoint), session.toJson().getObject());
     }
 
     static String sessionKey(final Context context, final URI clientEndpoint) {

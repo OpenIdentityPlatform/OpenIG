@@ -25,7 +25,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.http.session.Session;
 import org.forgerock.json.JsonValue;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
@@ -58,7 +57,6 @@ public class Exchange implements Context {
     private final Context parent;
 
     private ClientContext clientContext;
-    private Session session;
 
     /**
      * Builds a new Exchange without any originalUri value (will be {@code null}) and no parent context.
@@ -148,24 +146,6 @@ public class Exchange implements Context {
     @Override
     public boolean isRootContext() {
         return false;
-    }
-
-    /**
-     * Session context associated with the remote client.
-     *
-     * @return the session
-     */
-    public Session getSession() {
-        return session;
-    }
-
-    /**
-     * Sets the session context associated with the remote client.
-     *
-     * @param session the session to set
-     */
-    public void setSession(Session session) {
-        this.session = session;
     }
 
     /**

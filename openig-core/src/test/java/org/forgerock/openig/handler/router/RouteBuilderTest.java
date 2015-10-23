@@ -125,12 +125,10 @@ public class RouteBuilderTest {
 
         SimpleMapSession simpleSession = new SimpleMapSession();
         SessionContext sessionContext = new SessionContext(new RootContext(), simpleSession);
-        Exchange exchange = new Exchange(sessionContext, null);
         Request request = new Request();
-        exchange.setSession(simpleSession);
 
 
-        assertThat(route.handle(exchange, request)
+        assertThat(route.handle(sessionContext, request)
                         .get()
                         .getHeaders()
                         .getFirst("Set-Cookie")).isNotNull();

@@ -22,6 +22,7 @@ import static com.xebialabs.restito.semantics.Action.stringContent;
 import static com.xebialabs.restito.semantics.Condition.get;
 import static com.xebialabs.restito.semantics.Condition.method;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
@@ -29,9 +30,7 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.opendj.ldap.Connections;
 import org.forgerock.opendj.ldap.LDAPClientContext;
@@ -489,8 +489,7 @@ public class GroovyScriptableFilterTest {
             // FixMe: Passing the LDAP host and port as headers is wrong.
             exchange.getAttributes().put("ldapHost", "localhost");
             exchange.getAttributes().put("ldapPort", String.valueOf(port));
-            exchange.setSession(new SimpleMapSession());
-            filter.filter(exchange, request, mock(Handler.class));
+            filter.filter(new SessionContext(exchange, new SimpleMapSession()), request, mock(Handler.class));
 
             Set<String> cnValues = new HashSet<>();
             cnValues.add("Barbara Jensen");
@@ -781,23 +780,18 @@ public class GroovyScriptableFilterTest {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
                 "import org.forgerock.http.protocol.*",
-                "assert exchange.session.inKey == 'inValue'",
-                "exchange.session.outKey = 'outValue'",
-                "assert exchange.session.remove('inKey')",
+                "assert contexts.session.session.inKey == 'inValue'",
+                "contexts.session.session.outKey = 'outValue'",
+                "assert contexts.session.session.remove('inKey')",
                 "return new Response(Status.OK)");
         // @formatter:on
-        final Exchange exchange = new Exchange();
-        exchange.setSession(mock(Session.class));
-        when(exchange.getSession().get("inKey")).thenReturn("inValue");
-        when(exchange.getSession().remove("inKey")).thenReturn(true);
-
-        Response response = filter.filter(exchange, null, null).get();
+        Session session = new SimpleMapSession();
+        session.put("inKey", "inValue");
+        Response response = filter.filter(new SessionContext(null, session), null, null).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.OK);
-        verify(exchange.getSession()).get("inKey");
-        verify(exchange.getSession()).put("outKey", "outValue");
-        verify(exchange.getSession()).remove("inKey");
-        verifyNoMoreInteractions(exchange.getSession());
+        assertThat(session).doesNotContainKey("inKey");
+        assertThat(session).containsExactly(entry("outKey", "outValue"));
     }
 
     @Test
