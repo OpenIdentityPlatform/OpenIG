@@ -261,32 +261,32 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         Exchange exchange = context.asContext(Exchange.class);
         try {
             // Login: {clientEndpoint}/login
-            if (matchesUri(exchange, buildLoginUri(exchange, request))) {
+            if (matchesUri(exchange.getOriginalUri(), buildLoginUri(context, request))) {
                 if (request.getForm().containsKey("discovery")) {
                     // User input: {clientEndpoint}/login?discovery={input}[&goto={url}]
                     return handleUserInitiatedDiscovery(request, context);
                 } else {
                     // Login: {clientEndpoint}/login?clientRegistration={name}[&goto={url}]
                     checkRequestIsSufficientlySecure(exchange);
-                    return handleUserInitiatedLogin(exchange, request);
+                    return handleUserInitiatedLogin(context, request);
                 }
             }
 
             // Authorize call-back: {clientEndpoint}/callback?...
-            if (matchesUri(exchange, buildCallbackUri(exchange, request))) {
+            if (matchesUri(exchange.getOriginalUri(), buildCallbackUri(context, request))) {
                 checkRequestIsSufficientlySecure(exchange);
-                return handleAuthorizationCallback(exchange, request);
+                return handleAuthorizationCallback(context, request);
             }
 
             // Logout: {clientEndpoint}/logout[?goto={url}]
-            if (matchesUri(exchange, buildLogoutUri(exchange, request))) {
-                return handleUserInitiatedLogout(exchange, request);
+            if (matchesUri(exchange.getOriginalUri(), buildLogoutUri(context, request))) {
+                return handleUserInitiatedLogout(context, request);
             }
 
             // Everything else...
-            return handleProtectedResource(exchange, request, next);
+            return handleProtectedResource(context, request, next);
         } catch (final OAuth2ErrorException e) {
-            return handleOAuth2ErrorException(exchange, request, e);
+            return handleOAuth2ErrorException(context, request, e);
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }
@@ -441,16 +441,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return this;
     }
 
-    private URI buildCallbackUri(final Exchange exchange, final Request request) throws ResponseException {
-        return buildUri(exchange, request, clientEndpoint, "callback");
+    private URI buildCallbackUri(final Context context, final Request request) throws ResponseException {
+        return buildUri(context, request, clientEndpoint, "callback");
     }
 
-    private URI buildLoginUri(final Exchange exchange, final Request request) throws ResponseException {
-        return buildUri(exchange, request, clientEndpoint, "login");
+    private URI buildLoginUri(final Context context, final Request request) throws ResponseException {
+        return buildUri(context, request, clientEndpoint, "login");
     }
 
-    private URI buildLogoutUri(final Exchange exchange, final Request request) throws ResponseException {
-        return buildUri(exchange, request, clientEndpoint, "logout");
+    private URI buildLogoutUri(final Context context, final Request request) throws ResponseException {
+        return buildUri(context, request, clientEndpoint, "logout");
     }
 
     private void checkRequestIsSufficientlySecure(final Exchange exchange)
@@ -467,7 +467,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return name != null ? getClientRegistrationFromHeap(name) : null;
     }
 
-    private Promise<Response, NeverThrowsException> handleAuthorizationCallback(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> handleAuthorizationCallback(final Context context,
                                                                                 final Request request)
             throws OAuth2ErrorException {
 
@@ -486,7 +486,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new OAuth2ErrorException(E_INVALID_REQUEST,
                         "Authorization call-back failed because there was no state parameter");
             }
-            final OAuth2Session session = loadOrCreateSession(exchange, request, clientEndpoint, time);
+            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
             if (!session.isAuthorizing()) {
                 throw new OAuth2ErrorException(E_INVALID_REQUEST,
                         "Authorization call-back failed because there is no authorization in progress");
@@ -513,9 +513,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         "Authorization call-back failed because the client registration %s was unrecognized",
                         session.getClientRegistrationName()));
             }
-            final JsonValue accessTokenResponse = client.getAccessToken(exchange,
+            final JsonValue accessTokenResponse = client.getAccessToken(context,
                                                                         code,
-                                                                        buildCallbackUri(exchange, request).toString());
+                                                                        buildCallbackUri(context, request).toString());
 
             /*
              * Finally complete the authorization request by redirecting to the
@@ -524,12 +524,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              * response cookies.
              */
             final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
-            return httpRedirectGoto(exchange, request, gotoUri, defaultLoginGoto)
+            return httpRedirectGoto(context, request, gotoUri, defaultLoginGoto)
                     .then(new Function<Response, Response, NeverThrowsException>() {
                         @Override
                         public Response apply(final Response response) {
                             try {
-                                saveSession(exchange, authorizedSession, buildUri(exchange, request, clientEndpoint));
+                                saveSession(context, authorizedSession, buildUri(context, request, clientEndpoint));
                             } catch (ResponseException e) {
                                 return e.getResponse();
                             }
@@ -541,7 +541,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private Promise<Response, NeverThrowsException> handleOAuth2ErrorException(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> handleOAuth2ErrorException(final Context context,
                                                                                final Request request,
                                                                                final OAuth2ErrorException e) {
         final OAuth2Error error = e.getOAuth2Error();
@@ -553,7 +553,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         final Map<String, Object> info = new LinkedHashMap<>();
         try {
-            final OAuth2Session session = loadOrCreateSession(exchange, request, clientEndpoint, time);
+            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
             info.putAll(session.getAccessTokenResponse());
 
             // Override these with effective values.
@@ -577,37 +577,37 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              */
         }
         info.put("error", error.toJsonContent());
-        target.set(bindings(exchange, request), info);
-        return failureHandler.handle(exchange, request);
+        target.set(bindings(context, request), info);
+        return failureHandler.handle(context, request);
     }
 
-    private Promise<Response, NeverThrowsException> handleProtectedResource(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> handleProtectedResource(final Context context,
                                                                             final Request request,
                                                                             final Handler next)
             throws OAuth2ErrorException {
         try {
-            final OAuth2Session session = loadOrCreateSession(exchange, request, clientEndpoint, time);
+            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
             if (!session.isAuthorized() && requireLogin) {
-                return sendAuthorizationRedirect(exchange, request, null);
+                return sendAuthorizationRedirect(context, request, null);
             }
             final OAuth2Session refreshedSession =
-                    session.isAuthorized() ? prepareExchange(exchange, session) : session;
-            return next.handle(exchange, request)
+                    session.isAuthorized() ? prepareExchange(context, session) : session;
+            return next.handle(context, request)
                     .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                         @Override
                         public Promise<Response, NeverThrowsException> apply(final Response response) {
                             if (Status.UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
-                                return sendAuthorizationRedirect(exchange, request, null);
+                                return sendAuthorizationRedirect(context, request, null);
                             } else if (session != refreshedSession) {
                                 /*
                                  * Only update the session if it has changed in order to avoid send
                                  * back JWT session cookies with every response.
                                  */
                                 try {
-                                    saveSession(exchange,
+                                    saveSession(context,
                                                 refreshedSession,
-                                                buildUri(exchange, request, clientEndpoint));
+                                                buildUri(context, request, clientEndpoint));
                                 } catch (ResponseException e) {
                                     return newResultPromise(e.getResponse());
                                 }
@@ -627,7 +627,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return discoveryAndDynamicRegistrationChain.handle(context, request);
     }
 
-    private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Context context,
                                                                              final Request request)
             throws OAuth2ErrorException, ResponseException {
         final String clientRegistrationName = request.getForm().getFirst("clientRegistration");
@@ -640,19 +640,19 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization OpenID Connect Provider '"
                     + clientRegistrationName + "' was not recognized");
         }
-        return sendAuthorizationRedirect(exchange, request, clientRegistration);
+        return sendAuthorizationRedirect(context, request, clientRegistration);
     }
 
-    private Promise<Response, NeverThrowsException> handleUserInitiatedLogout(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> handleUserInitiatedLogout(final Context context,
                                                                               final Request request)
             throws ResponseException {
         final String gotoUri = request.getForm().getFirst("goto");
-        return httpRedirectGoto(exchange, request, gotoUri, defaultLogoutGoto)
+        return httpRedirectGoto(context, request, gotoUri, defaultLogoutGoto)
                 .then(new Function<Response, Response, NeverThrowsException>() {
                     @Override
                     public Response apply(final Response response) {
                         try {
-                            removeSession(exchange, request, clientEndpoint);
+                            removeSession(context, request, clientEndpoint);
                         } catch (ResponseException e) {
                             return e.getResponse();
                         }
@@ -661,7 +661,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 });
     }
 
-    private Promise<Response, NeverThrowsException> httpRedirectGoto(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> httpRedirectGoto(final Context context,
                                                                      final Request request,
                                                                      final String gotoUri,
                                                                      final Expression<String> defaultGotoUri) {
@@ -669,7 +669,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             if (gotoUri != null) {
                 return completion(httpRedirect(gotoUri));
             } else if (defaultGotoUri != null) {
-                return completion(httpRedirect(buildUri(exchange, request, defaultGotoUri).toString()));
+                return completion(httpRedirect(buildUri(context, request, defaultGotoUri).toString()));
             } else {
                 return completion(httpResponse(Status.OK));
             }
@@ -682,10 +682,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return newResultPromise(response);
     }
 
-    private OAuth2Session prepareExchange(final Exchange exchange, final OAuth2Session session)
+    private OAuth2Session prepareExchange(final Context context, final OAuth2Session session)
             throws ResponseException, OAuth2ErrorException {
         try {
-            tryPrepareExchange(exchange, session);
+            tryPrepareExchange(context, session);
             return session;
         } catch (final OAuth2ErrorException e) {
             /*
@@ -696,9 +696,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final ClientRegistration clientRegistration = getClientRegistration(session);
             if (error.is(E_INVALID_TOKEN) && clientRegistration != null && session.getRefreshToken() != null) {
                 // The session is updated with new access token.
-                final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(exchange, session);
+                final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(context, session);
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
-                tryPrepareExchange(exchange, refreshedSession);
+                tryPrepareExchange(context, refreshedSession);
                 return refreshedSession;
             }
 
@@ -711,16 +711,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Exchange exchange,
+    private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Context context,
                                                                               final Request request,
                                                                               final ClientRegistration cr) {
         if (cr == null && loginHandler != null) {
-            return loginHandler.handle(exchange, request);
+            return loginHandler.handle(context, request);
         }
         return new AuthorizationRedirectHandler(time,
                                                 clientEndpoint,
                                                 cr != null ? cr : getClientRegistrationFromHeap(clientRegistrationName))
-                                    .handle(exchange, request);
+                                    .handle(context, request);
     }
 
     private ClientRegistration getClientRegistrationFromHeap(final String name) {
@@ -733,7 +733,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return clientRegistration;
     }
 
-    private void tryPrepareExchange(final Exchange exchange, final OAuth2Session session)
+    private void tryPrepareExchange(final Context context, final OAuth2Session session)
             throws ResponseException, OAuth2ErrorException {
         final Map<String, Object> info =
                 new LinkedHashMap<>(session.getAccessTokenResponse());
@@ -758,8 +758,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             // Load the user_info resources lazily (when requested)
             info.put("user_info", new LazyMap<>(new UserInfoFactory(session,
                                                                     clientRegistration,
-                                                                    exchange)));
+                                                                    context)));
         }
+        final Exchange exchange = context.asContext(Exchange.class);
         target.set(bindings().bind("exchange", exchange), info);
     }
 
@@ -843,8 +844,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         public UserInfoFactory(final OAuth2Session session,
                                final ClientRegistration clientRegistration,
-                               final Exchange exchange) {
-            this.callable = new LoadUserInfoCallable(session, clientRegistration, exchange);
+                               final Context context) {
+            this.callable = new LoadUserInfoCallable(session, clientRegistration, context);
         }
 
         @Override
@@ -892,19 +893,19 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private class LoadUserInfoCallable implements Callable<Map<String, Object>> {
         private final OAuth2Session session;
         private final ClientRegistration clientRegistration;
-        private final Exchange exchange;
+        private final Context context;
 
         public LoadUserInfoCallable(final OAuth2Session session,
                                     final ClientRegistration clientRegistration,
-                                    final Exchange exchange) {
+                                    final Context context) {
             this.session = session;
             this.clientRegistration = clientRegistration;
-            this.exchange = exchange;
+            this.context = context;
         }
 
         @Override
         public Map<String, Object> call() throws Exception {
-            return clientRegistration.getUserInfo(exchange, session).asMap();
+            return clientRegistration.getUserInfo(context, session).asMap();
         }
 
         public OAuth2Session getSession() {

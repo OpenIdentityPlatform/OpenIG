@@ -21,7 +21,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;
@@ -36,7 +35,7 @@ import org.forgerock.util.promise.Promise;
  * successive invocations of the script
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Request request} - the HTTP request
- * <li>{@link Exchange exchange} - the HTTP exchange
+ * <li>{@link org.forgerock.openig.http.Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
@@ -51,8 +50,7 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        final Exchange exchange = context.asContext(Exchange.class);
-        return runScript(bindings(exchange, request), null);
+        return runScript(bindings(context, request), null);
     }
 
     /**

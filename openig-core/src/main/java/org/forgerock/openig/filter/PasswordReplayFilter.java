@@ -292,8 +292,7 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Request request,
                                                                               final Handler next) {
                             // Request targeting the login page ?
-                            Exchange exchange = context.asContext(Exchange.class);
-                            if (isLoginPageRequest(bindings(exchange, request))) {
+                            if (isLoginPageRequest(bindings(context, request))) {
                                 return createRequestFilter.filter(context, request, next);
                             }
                             // pass through
@@ -310,8 +309,8 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Request request,
                                                                               final Handler next) {
                             // Request targeting the login page ?
-                            final Exchange exchange = context.asContext(Exchange.class);
-                            if (isLoginPageRequest(bindings(exchange, request))) {
+                            if (isLoginPageRequest(bindings(context, request))) {
+                                final Exchange exchange = context.asContext(Exchange.class);
                                 return extractFilter.filter(context, request, next)
                                                     .thenOnResult(markAsLoginPage(exchange))
                                                     .thenAsync(authenticateIfNeeded(context, request, next, false));

@@ -34,7 +34,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -69,7 +68,6 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
 
         final PromiseImpl<Response, NeverThrowsException> composite = PromiseImpl.create();
 
-        final Exchange exchange = context.asContext(Exchange.class);
         final Deque<Binding> theBindings = new ArrayDeque<>(bindings);
 
         Binding binding = theBindings.peekFirst();
@@ -79,7 +77,7 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
             @Override
             public void handleResult(final Response result) {
                 Binding binding = theBindings.removeFirst();
-                Bindings scope = Bindings.bindings(exchange, request, result);
+                Bindings scope = Bindings.bindings(context, request, result);
                 if ((binding.postcondition != null && !Boolean.TRUE.equals(binding.postcondition.eval(scope)))
                         || theBindings.isEmpty()) {
                     // Do not continue

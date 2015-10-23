@@ -33,7 +33,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -89,14 +88,13 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Exchange exchange = context.asContext(Exchange.class);
         for (Binding binding : bindings) {
             if (binding.condition == null
-                    || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(exchange, request)))) {
+                    || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(context, request)))) {
                 if (binding.baseURI != null) {
                     request.getUri().rebase(binding.baseURI);
                 }
-                return binding.handler.handle(exchange, request);
+                return binding.handler.handle(context, request);
             }
         }
         return Promises.newResultPromise(Responses.newNotFound("no handler to dispatch to"));

@@ -60,8 +60,7 @@ public class EnforcerFilter implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Exchange exchange = context.asContext(Exchange.class);
-        if (!isConditionVerified(bindings(exchange, request))) {
+        if (!isConditionVerified(bindings(context, request))) {
             return newResultPromise(Responses.newInternalServerError(
                     "Exchange could not satisfy the enforcement expression"));
         }

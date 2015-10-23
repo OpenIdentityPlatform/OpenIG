@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,17 +51,21 @@ public class OAuth2UtilsTest {
 
     @Test
     public void shouldMatchesAgainstOriginalUri() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange(), new URI("http://www.example.com"))).isTrue();
+        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+                                          new URI("http://www.example.com"))).isTrue();
     }
 
     @Test
     public void shouldMatchesIgnoringQueryAndFragments() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange(), new URI("http://www.example.com?p1=2#fragment"))).isTrue();
+        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+                                          new URI("http://www.example.com?p1=2#fragment")
+        )).isTrue();
     }
 
     @Test
     public void shouldNotMatchesDifferentBaseUri() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange(), new URI("http://openig.example.com"))).isFalse();
+        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+                                          new URI("http://openig.example.com"))).isFalse();
     }
 
     private Exchange buildExchange() throws URISyntaxException {

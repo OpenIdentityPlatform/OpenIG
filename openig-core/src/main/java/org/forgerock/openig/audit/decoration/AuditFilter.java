@@ -26,7 +26,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -52,13 +51,12 @@ class AuditFilter extends AuditBaseObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-        fireAuditEvent(bindings(exchange, request), requestTags);
+        fireAuditEvent(bindings(context, request), requestTags);
         return delegate.filter(context, request, next)
                        .thenOnResult(new ResultHandler<Response>() {
                            @Override
                            public void handleResult(final Response response) {
-                               fireAuditEvent(bindings(exchange, request, response), completedResponseTags);
+                               fireAuditEvent(bindings(context, request, response), completedResponseTags);
                            }
                        });
     }

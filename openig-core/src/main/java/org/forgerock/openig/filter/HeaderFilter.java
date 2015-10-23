@@ -36,7 +36,6 @@ import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -102,16 +101,15 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
-            process(request, bindings(exchange, request));
+            process(request, bindings(context, request));
         }
         Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
             return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
-                    process(response, bindings(exchange, request, response));
+                    process(response, bindings(context, request, response));
                 }
             });
         }

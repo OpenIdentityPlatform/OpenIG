@@ -33,7 +33,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -167,19 +166,17 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
-                                                       final Request request,
-                                                       final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-
+                                                          final Request request,
+                                                          final Handler next) {
         for (Binding binding : onRequest) {
-            eval(binding, bindings(exchange, request));
+            eval(binding, bindings(context, request));
         }
         Promise<Response, NeverThrowsException> nextOne = next.handle(context, request);
         return nextOne.thenOnResult(new ResultHandler<Response>() {
             @Override
             public void handleResult(final Response result) {
                 for (Binding binding : onResponse) {
-                    eval(binding, bindings(exchange, request, result));
+                    eval(binding, bindings(context, request, result));
                 }
             }
         });

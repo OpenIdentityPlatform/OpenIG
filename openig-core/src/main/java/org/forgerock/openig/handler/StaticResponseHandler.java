@@ -35,7 +35,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -104,8 +103,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         // TODO Remove that when Expression will no more use an Exchange
-        Exchange exchange = context.asContext(Exchange.class);
-        Bindings bindings = bindings(exchange, request);
+        Bindings bindings = bindings(context, request);
         Response response = new Response();
         response.setStatus(this.status);
         if (this.version != null) { // default in Message class

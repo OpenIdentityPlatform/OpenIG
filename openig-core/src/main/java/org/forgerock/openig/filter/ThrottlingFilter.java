@@ -38,7 +38,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Keys;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
@@ -124,9 +123,7 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-
-        final String key = partitionKey.eval(bindings(exchange, request));
+        final String key = partitionKey.eval(bindings(context, request));
         if (key == null) {
             logger.error("Did not expect a null value for the partitionKey after evaluated the expression : "
                     + partitionKey);

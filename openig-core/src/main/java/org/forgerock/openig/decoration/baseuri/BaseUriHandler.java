@@ -24,7 +24,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -54,9 +53,8 @@ class BaseUriHandler implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Exchange exchange = context.asContext(Exchange.class);
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(bindings(exchange, request))));
+            request.getUri().rebase(URI.create(baseUri.eval(bindings(context, request))));
         }
         return delegate.handle(context, request);
     }

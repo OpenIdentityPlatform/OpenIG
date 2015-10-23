@@ -37,7 +37,6 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
@@ -130,8 +129,7 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
     }
 
     private Promise<String, NeverThrowsException> createSsoToken(final Context context, final Request request) {
-        Exchange exchange = context.asContext(Exchange.class);
-        return ssoClientHandler.handle(context, authenticationRequest(bindings(exchange, request)))
+        return ssoClientHandler.handle(context, authenticationRequest(bindings(context, request)))
                                .then(extractSsoToken(context));
     }
 

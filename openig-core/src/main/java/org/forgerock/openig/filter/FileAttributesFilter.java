@@ -34,7 +34,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.openig.text.Separators;
 import org.forgerock.services.context.Context;
@@ -98,8 +97,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-        final Bindings bindings = bindings(exchange, request);
+        final Bindings bindings = bindings(context, request);
         target.set(bindings, new LazyMap<>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {

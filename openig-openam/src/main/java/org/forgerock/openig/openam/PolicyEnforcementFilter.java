@@ -54,7 +54,6 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
@@ -213,13 +212,12 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
     private Promise<JsonValue, ResourceException> askForPolicyDecision(final Context context,
                                                                        final Request request) {
-        final Exchange exchange = context.asContext(Exchange.class);
         final RequestHandler requestHandler = CrestHttp.newRequestHandler(policiesHandler,
                                                                           openamUrl.resolve(BASE_ENDPOINT + realm));
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
-        Bindings bindings = bindings(exchange, request);
+        Bindings bindings = bindings(context, request);
         final Map<?, ?> subject =
                 json(object(
                           fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),

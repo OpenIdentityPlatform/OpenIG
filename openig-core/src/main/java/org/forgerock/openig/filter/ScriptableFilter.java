@@ -58,9 +58,8 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
         // Delegates filtering to the script.
-        return runScript(bindings(exchange, request), next);
+        return runScript(bindings(context, request), next);
     }
 
     /**

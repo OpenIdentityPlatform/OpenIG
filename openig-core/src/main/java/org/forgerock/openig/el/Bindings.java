@@ -46,40 +46,6 @@ public class Bindings {
     }
 
     /**
-     * Returns a {@link Bindings} initialized with the given {@code exchange} and {@code request}.
-     *
-     * <p>This method is intended for compatibility until chained {@link Context} are made available in expressions.
-     *
-     * @param exchange
-     *         The exchange to expose
-     * @param request
-     *         The request to expose
-     * @return an initialized {@link Bindings} instance.
-     */
-    public static Bindings bindings(Exchange exchange, Request request) {
-        return bindings((Context) exchange, request)
-                .bind("exchange", exchange);
-    }
-
-    /**
-     * Returns a {@link Bindings} initialized with the given {@code exchange}, {@code request} and {@code response}.
-     *
-     * <p>This method is intended for compatibility until chained {@link Context} are made available in expressions.
-     *
-     * @param exchange
-     *         The exchange to expose
-     * @param request
-     *         The request to expose
-     * @param response
-     *         The response to expose
-     * @return an initialized {@link Bindings} instance.
-     */
-    public static Bindings bindings(Exchange exchange, Request request, Response response) {
-        return bindings((Context) exchange, request, response)
-                .bind("exchange", exchange);
-    }
-
-    /**
      * Returns a {@link Bindings} initialized with the given {@code context} and {@code request}.
      *
      * <p>The returned bindings also contains a {@code contexts} entry that provides easy access to visible parent
@@ -97,6 +63,11 @@ public class Bindings {
                 .bind("request", request);
         if (context != null) {
             bindings.bind("contexts", flatten(context));
+
+            // Bind Exchange if there is one
+            if (context.containsContext(Exchange.class)) {
+                bindings.bind("exchange", context.asContext(Exchange.class));
+            }
         }
         return bindings;
     }

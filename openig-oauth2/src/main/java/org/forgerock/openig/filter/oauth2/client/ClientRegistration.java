@@ -40,7 +40,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.encode.Base64;
 
@@ -233,7 +232,7 @@ public final class ClientRegistration {
      * Refreshes the actual access token, making a refresh request to the token
      * end-point.
      *
-     * @param exchange
+     * @param context
      *            The current exchange.
      * @param session
      *            The current session.
@@ -247,11 +246,11 @@ public final class ClientRegistration {
      *             or if the returned response status code is different than 200
      *             OK.
      */
-    public JsonValue refreshAccessToken(final Exchange exchange,
+    public JsonValue refreshAccessToken(final Context context,
                                         final OAuth2Session session) throws ResponseException, OAuth2ErrorException {
 
-        final Request request = createRequestForTokenRefresh(exchange, session);
-        final Response response = httpRequestToAuthorizationServer(exchange, request);
+        final Request request = createRequestForTokenRefresh(session);
+        final Response response = httpRequestToAuthorizationServer(context, request);
         checkResponseStatus(response, true);
         return getJsonContent(response);
     }
@@ -271,7 +270,7 @@ public final class ClientRegistration {
      * 200. Otherwise, it throws an exception, meaning the access token may have
      * expired.
      *
-     * @param exchange
+     * @param context
      *            The current exchange.
      * @param session
      *            The current session to use.
@@ -285,10 +284,10 @@ public final class ClientRegistration {
      *             or if the returned response status code is different than 200
      *             OK. May signify that the access token has expired.
      */
-    public JsonValue getUserInfo(final Exchange exchange,
+    public JsonValue getUserInfo(final Context context,
                                  final OAuth2Session session) throws ResponseException, OAuth2ErrorException  {
-        final Request request = createRequestForUserInfo(exchange, session.getAccessToken());
-        final Response response = httpRequestToAuthorizationServer(exchange, request);
+        final Request request = createRequestForUserInfo(session.getAccessToken());
+        final Response response = httpRequestToAuthorizationServer(context, request);
         if (!Status.OK.equals(response.getStatus())) {
             /*
              * The access token may have expired. Trigger an exception,
@@ -333,8 +332,7 @@ public final class ClientRegistration {
         return request;
     }
 
-    private Request createRequestForTokenRefresh(final Exchange exchange,
-                                                 final OAuth2Session session) throws ResponseException {
+    private Request createRequestForTokenRefresh(final OAuth2Session session) throws ResponseException {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(issuer.getTokenEndpoint());
@@ -346,8 +344,7 @@ public final class ClientRegistration {
         return request;
     }
 
-    private Request createRequestForUserInfo(final Exchange exchange,
-                                             final String accessToken) throws ResponseException {
+    private Request createRequestForUserInfo(final String accessToken) throws ResponseException {
         final Request request = new Request();
         request.setMethod("GET");
         request.setUri(issuer.getUserInfoEndpoint());
