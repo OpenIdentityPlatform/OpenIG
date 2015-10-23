@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.audit.decoration;
 
+import static org.forgerock.openig.el.Bindings.bindings;
+
 import java.util.Set;
 
 import org.forgerock.http.Handler;
@@ -46,12 +48,12 @@ class AuditHandler extends AuditBaseObject implements Handler {
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         final Exchange exchange = context.asContext(Exchange.class);
-        fireAuditEvent(exchange, requestTags);
+        fireAuditEvent(bindings(exchange, request), requestTags);
         return delegate.handle(context, request)
                 .thenOnResult(new ResultHandler<Response>() {
                     @Override
-                    public void handleResult(final Response result) {
-                        fireAuditEvent(exchange, completedResponseTags);
+                    public void handleResult(final Response response) {
+                        fireAuditEvent(bindings(exchange, request, response), completedResponseTags);
                     }
                 });
     }

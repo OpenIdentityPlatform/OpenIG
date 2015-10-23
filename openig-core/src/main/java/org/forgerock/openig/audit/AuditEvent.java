@@ -21,8 +21,10 @@ import static org.forgerock.util.Reject.*;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.http.Exchange;
 
 /**
@@ -35,14 +37,14 @@ import org.forgerock.openig.http.Exchange;
  * The {@literal timestamp} property gives a time marker to keep events organized in a
  * sequential manner (expressed in milliseconds).
  * The {@literal exchange} property gives a pointer to the captured {@link Exchange} (never {@code null}). There is
- * no way to guarantee, if the notification is processed in an asynchronous way, that the exchange content was not
+ * no way to guarantee, if the notification is processed in an asynchronous way, that the bindings content was not
  * modified in the meantime.
  * The {@literal tags} property helps to qualify this notification (no duplicated values).
  */
 public final class AuditEvent {
     private final AuditSource source;
     private final long timestamp;
-    private final Exchange exchange;
+    private final Map<String, Object> data;
     private final Set<String> tags = new LinkedHashSet<>();
 
     /**
@@ -52,18 +54,18 @@ public final class AuditEvent {
      *         source of the event (never {@code null})
      * @param timestamp
      *         creation date of the notification (expressed in milliseconds)
-     * @param exchange
-     *         captured exchange (never {@code null})
+     * @param bindings
+     *         Exposed data (never {@code null})
      * @param tags
      *         qualifiers (never {@code null})
      */
     public AuditEvent(final AuditSource source,
                       final long timestamp,
-                      final Exchange exchange,
+                      final Bindings bindings,
                       final Collection<String> tags) {
         this.source = checkNotNull(source);
         this.timestamp = timestamp;
-        this.exchange = checkNotNull(exchange);
+        this.data = checkNotNull(bindings).asMap();
         this.tags.addAll(checkNotNull(tags));
     }
 
@@ -86,14 +88,14 @@ public final class AuditEvent {
     }
 
     /**
-     * Returns the captured {@link Exchange} (never {@code null}).
-     * Notice that this is a pointer to the being processed exchange (a live object, not a copy), so, if this event
-     * is processed asynchronously, the exchange content may have changed.
+     * Returns the captured {@code data} (never {@code null}).
+     * Notice that this is a pointer to the being processed data (live objects, not copy), so, if this event
+     * is processed asynchronously, the data content may have changed without notice.
      *
-     * @return the captured {@link Exchange} (never {@code null}).
+     * @return the captured {@code data} (never {@code null}).
      */
-    public Exchange getExchange() {
-        return exchange;
+    public Map<String, Object> getData() {
+        return data;
     }
 
     /**
