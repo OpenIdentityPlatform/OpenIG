@@ -15,8 +15,11 @@
  */
 package org.forgerock.openig.audit.decoration;
 
-import static java.util.Arrays.*;
-import static org.forgerock.openig.audit.Tag.*;
+import static java.util.Arrays.asList;
+import static org.forgerock.openig.audit.Tag.completed;
+import static org.forgerock.openig.audit.Tag.exception;
+import static org.forgerock.openig.audit.Tag.request;
+import static org.forgerock.openig.audit.Tag.response;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -24,7 +27,7 @@ import java.util.Set;
 import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.openig.el.Bindings;
 
 /**
  * Provides a basic implementation for auditable objects.
@@ -49,8 +52,8 @@ abstract class AuditBaseObject {
         this.failedResponseTags = tags(additionalTags, response.name(), exception.name());
     }
 
-    protected void fireAuditEvent(final Exchange exchange, final Set<String> tags) {
-        AuditEvent event = new AuditEvent(source, System.currentTimeMillis(), exchange, tags);
+    protected void fireAuditEvent(final Bindings bindings, final Set<String> tags) {
+        AuditEvent event = new AuditEvent(source, System.currentTimeMillis(), bindings, tags);
         auditSystem.onAuditEvent(event);
     }
 

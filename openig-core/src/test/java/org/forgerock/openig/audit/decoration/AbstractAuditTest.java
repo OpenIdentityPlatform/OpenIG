@@ -57,6 +57,6 @@ public abstract class AbstractAuditTest {
     protected void assertThatEventIncludes(final AuditEvent event, final Exchange exchange, final String... tags) {
         assertThat(event.getTags()).containsOnly(tags);
         assertThat(event.getSource()).isSameAs(source);
-        assertThat(event.getExchange()).isSameAs(exchange);
+        assertThat(event.getData().get("context")).isSameAs(exchange);
     }
 }

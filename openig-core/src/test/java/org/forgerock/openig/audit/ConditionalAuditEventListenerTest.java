@@ -16,13 +16,14 @@
 
 package org.forgerock.openig.audit;
 
-import static java.util.Collections.*;
-import static org.mockito.Mockito.*;
+import static java.util.Collections.singleton;
+import static org.forgerock.openig.el.Bindings.bindings;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -41,7 +42,7 @@ public class ConditionalAuditEventListenerTest {
         MockitoAnnotations.initMocks(this);
         source = new AuditEvent(new AuditSource(Name.of("source")),
                                 System.currentTimeMillis(),
-                                new Exchange(),
+                                bindings(),
                                 singleton("tag#1"));
     }
 

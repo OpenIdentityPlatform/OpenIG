@@ -16,8 +16,9 @@
 
 package org.forgerock.openig.audit.monitor;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,7 +30,6 @@ import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.util.EnumUtil;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -113,7 +113,7 @@ public class MonitorEndpointHandlerTest {
     private static AuditEvent buildAuditEvent(final String... tags) {
         return new AuditEvent(new AuditSource(Name.of("source")),
                               System.currentTimeMillis(),
-                              new Exchange(),
+                              bindings(),
                               asList(tags));
     }
 }
