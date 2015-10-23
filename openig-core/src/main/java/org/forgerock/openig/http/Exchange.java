@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.json.JsonValue;
-import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
 
@@ -55,8 +54,6 @@ public class Exchange implements Context {
      */
     private final URI originalUri;
     private final Context parent;
-
-    private ClientContext clientContext;
 
     /**
      * Builds a new Exchange without any originalUri value (will be {@code null}) and no parent context.
@@ -146,24 +143,6 @@ public class Exchange implements Context {
     @Override
     public boolean isRootContext() {
         return false;
-    }
-
-    /**
-     * The info we can obtain from the client from this request.
-     *
-     * @return the client info
-     */
-    public ClientContext getClientContext() {
-        return clientContext;
-    }
-
-    /**
-     * Sets the clientInfo.
-     *
-     * @param clientContext the clientInfo to set
-     */
-    public void setClientContext(ClientContext clientContext) {
-        this.clientContext = clientContext;
     }
 
     /**
