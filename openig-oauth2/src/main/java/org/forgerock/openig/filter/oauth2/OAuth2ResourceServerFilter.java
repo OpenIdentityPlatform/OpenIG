@@ -199,7 +199,6 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Exchange exchange = context.asContext(Exchange.class);
         String token = null;
         try {
             token = getAccessToken(request);
@@ -229,7 +228,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             return invalidToken.handle(context, request);
         }
 
-        Bindings bindings = bindings(exchange, request);
+        Bindings bindings = bindings(context, request);
         try {
             final Set<String> setOfScopes = getScopes(bindings);
             if (areRequiredScopesMissing(accessToken, setOfScopes)) {

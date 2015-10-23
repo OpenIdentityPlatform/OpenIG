@@ -39,7 +39,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.regex.StreamPatternExtractor;
 import org.forgerock.openig.util.MessageType;
@@ -138,16 +137,15 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
 
-        final Exchange exchange = context.asContext(Exchange.class);
         if (messageType == MessageType.REQUEST) {
-            process(bindings(exchange, request), request);
+            process(bindings(context, request), request);
         }
         Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (messageType == MessageType.RESPONSE) {
             return promise.thenOnResult(new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response response) {
-                    process(bindings(exchange, request, response), response);
+                    process(bindings(context, request, response), response);
                 }
             });
         }

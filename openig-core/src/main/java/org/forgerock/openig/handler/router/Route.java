@@ -168,12 +168,13 @@ class Route implements Handler {
     }
 
     /**
-     * Evaluate if this route will accept the given {@link Exchange}.
-     * @param exchange used to evaluate the condition against
+     * Evaluate if this route will accept the given {@link Context} and {@link Request}.
+     * @param context used to evaluate the condition against
+     * @param request used to evaluate the condition against
      * @return {@literal true} if the exchange matches the condition of this route.
      */
-    public boolean accept(final Exchange exchange, Request request) {
-        return (condition == null) || Boolean.TRUE.equals(condition.eval(bindings(exchange, request)));
+    public boolean accept(final Context context, Request request) {
+        return (condition == null) || Boolean.TRUE.equals(condition.eval(bindings(context, request)));
     }
 
     /**

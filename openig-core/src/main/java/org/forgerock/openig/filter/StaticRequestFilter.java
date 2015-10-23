@@ -38,7 +38,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -189,8 +188,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Exchange exchange = context.asContext(Exchange.class);
-        Bindings bindings = bindings(exchange, request);
+        Bindings bindings = bindings(context, request);
 
         Request newRequest = new Request();
         newRequest.setMethod(this.method);

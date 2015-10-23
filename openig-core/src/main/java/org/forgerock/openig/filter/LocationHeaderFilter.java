@@ -85,16 +85,16 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
     /**
      * Rewrite Location header if it would have the user go directly to the application.
      *
-     * @param exchange the exchange containing the response message containing the Location header
      * @param response http message to be updated
      * @param bindings bindings to use when evaluating the new {@literal Location} value
+     * @param originalUri request's original Uri
      */
-    private Response processResponse(Exchange exchange, Response response, Bindings bindings) {
+    private Response processResponse(Response response, Bindings bindings, final URI originalUri) {
         LocationHeader header = LocationHeader.valueOf(response);
         if (header.getLocationUri() != null) {
             try {
                 URI currentURI = new URI(header.getLocationUri());
-                URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(exchange, bindings));
+                URI rebasedURI = Uris.rebase(currentURI, evaluateBaseUri(bindings, originalUri));
                 // Only rewrite header if it has changed
                 if (!currentURI.equals(rebasedURI)) {
                     response.getHeaders().put(LocationHeader.NAME, rebasedURI.toString());
@@ -108,7 +108,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
         return response;
     }
 
-    private URI evaluateBaseUri(final Exchange exchange, final Bindings bindings)
+    private URI evaluateBaseUri(final Bindings bindings, final URI originalUri)
             throws URISyntaxException, ResponseException {
         if (baseURI != null) {
             String uri = baseURI.eval(bindings);
@@ -119,7 +119,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
             }
             return new URI(uri);
         } else {
-            return exchange.getOriginalUri();
+            return originalUri;
         }
     }
 
@@ -133,7 +133,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                        @Override
                        public Response apply(final Response value) {
                            Exchange exchange = context.asContext(Exchange.class);
-                           return processResponse(exchange, value, bindings(exchange, request, value));
+                           return processResponse(value, bindings(context, request, value), exchange.getOriginalUri());
                        }
                    });
     }

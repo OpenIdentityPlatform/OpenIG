@@ -49,7 +49,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
@@ -116,8 +115,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
 
-        final Exchange exchange = context.asContext(Exchange.class);
-        final Bindings bindings = bindings(exchange, request);
+        final Bindings bindings = bindings(context, request);
 
         target.set(bindings, new LazyMap<>(new Factory<Map<String, Object>>() {
             @Override

@@ -38,7 +38,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -253,9 +252,8 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         // Traverse the routes
         read.lock();
         try {
-            Exchange exchange = context.asContext(Exchange.class);
             for (Route route : sorted) {
-                if (route.accept(exchange, request)) {
+                if (route.accept(context, request)) {
                     return route.handle(context, request);
                 }
             }

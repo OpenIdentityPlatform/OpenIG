@@ -34,7 +34,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -100,10 +99,8 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-
         // Switch on the request flow
-        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(exchange, request),
+        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(context, request),
                                                                    context,
                                                                    request,
                                                                    requestCases);
@@ -116,7 +113,9 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
                 .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(final Response value) {
-                        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(exchange, request, value),
+                        Promise<Response, NeverThrowsException> promise = doSwitch(bindings(context,
+                                                                                            request,
+                                                                                            value),
                                                                                    context,
                                                                                    request,
                                                                                    responseCases);

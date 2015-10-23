@@ -41,7 +41,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.encode.Base64;
@@ -126,7 +125,6 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                                                           final Request request,
                                                           final Handler next) {
 
-        Exchange exchange = context.asContext(Exchange.class);
         Session session = context.asContext(SessionContext.class).getSession();
 
         // Remove existing headers from incoming message
@@ -166,7 +164,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                 closeSilently(response);
 
                 // credentials might be stale, so fetch them
-                Bindings bindings = bindings(exchange, request);
+                Bindings bindings = bindings(context, request);
                 String user = username.eval(bindings);
                 String pass = password.eval(bindings);
                 // no credentials is equivalent to invalid credentials

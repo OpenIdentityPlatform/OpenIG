@@ -24,6 +24,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
@@ -51,15 +52,15 @@ public class BindingsTest {
     }
 
     @Test
-    public void shouldBindExchangeAndRequest() throws Exception {
-        assertThat(bindings(new Exchange(), new Request()).asMap())
+    public void shouldBindExchangeContextAndRequest() throws Exception {
+        assertThat(bindings(new AttributesContext(new Exchange()), new Request()).asMap())
                 .containsKeys("exchange", "context", "request", "contexts")
                 .hasSize(4);
     }
 
     @Test
-    public void shouldBindExchangeRequestAndResponse() throws Exception {
-        assertThat(bindings(new Exchange(), new Request(), new Response()).asMap())
+    public void shouldBindExchangeContextRequestAndResponse() throws Exception {
+        assertThat(bindings(new AttributesContext(new Exchange()), new Request(), new Response()).asMap())
                 .containsKeys("exchange", "context", "request", "response", "contexts")
                 .hasSize(5);
     }
