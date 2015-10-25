@@ -85,16 +85,16 @@ public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new AuditFilter(auditSystem, source(context, delegate), delegate, getAdditionalTags(decoratorConfig));
+        return new AuditFilter(auditSystem, source(context), delegate, getAdditionalTags(decoratorConfig));
     }
 
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        return new AuditHandler(auditSystem, source(context, delegate), delegate, getAdditionalTags(decoratorConfig));
+        return new AuditHandler(auditSystem, source(context), delegate, getAdditionalTags(decoratorConfig));
     }
 
-    private static AuditSource source(final Context context, final Object delegate) {
+    private static AuditSource source(final Context context) {
         return new AuditSource(context.getName());
     }
 
