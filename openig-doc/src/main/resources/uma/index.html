@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2015 ForgeRock AS.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trying User-Managed Access</title>
+  <link type="text/css" rel="stylesheet" href="style.css">
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+</head>
+<body>
+  <h1>Trying User-Managed Access (UMA)</h1>
+
+  <p>
+    This demonstrates a simple UMA scenario involving OpenAM, OpenIG,
+    and users Alice (resource owner) and Bob (requesting party).
+  </p>
+
+  <p>
+    There are two client pages:
+  </p>
+
+  <ol>
+    <li>
+      <a href="alice.html" target="_blank">Alice shares resources</a>
+    </li>
+
+    <li>
+      <a href="bob.html" target="_blank">Bob accesses resources</a>
+    </li>
+  </ol>
+
+  <div id="conf"></div>
+
+  <script type="text/javascript">
+$(document).ready(function () {
+  $("#conf").html(json2html(conf, "Current Configuration"));
+});
+  </script>
+</body>
+</html>

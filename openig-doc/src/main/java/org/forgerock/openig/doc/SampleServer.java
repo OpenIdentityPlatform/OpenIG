@@ -272,6 +272,30 @@ public final class SampleServer {
                 response.addCookie(new Cookie("login-cookie", "chocolate-chip"));
             }
 
+            if (request.getHttpHandlerPath().startsWith("/uma")) {
+                // Provides access to UMA example client files.
+                // If there is a need to serve more files in the future,
+                // consider a CLStaticHttpHandler.
+                final String file = request.getHttpHandlerPath();
+                String content = SampleServer.getResourceAsString(file);
+                if (isNullOrEmpty(content)) {
+                    content = SampleServer.getResourceAsString("/uma/index.html");
+                }
+
+                if (file.endsWith("css")) {
+                    response.setContentType("text/css");
+                } else if (file.endsWith("js")) {
+                    response.setContentType("application/javascript");
+                } else {
+                    response.setContentType("text/html");
+                }
+
+                response.setStatus(200, "OK");
+                response.setContentLength(content.length());
+                response.getWriter().write(content);
+                return;
+            }
+
             if (request.getHttpHandlerPath().equalsIgnoreCase("/.well-known/webfinger")) {
                 // See http://tools.ietf.org/html/rfc7033
                 // This is not fully compliant. Just enough for an OIDC discovery example.
@@ -400,11 +424,20 @@ public final class SampleServer {
         }
 
         /**
+         * Returns true if the String to test is null nor empty.
+         * @param s The String to test.
+         * @return true if the String to test is null nor empty.
+         */
+        private static boolean isNullOrEmpty(final String s) {
+            return s == null || s.isEmpty();
+        }
+
+        /**
          * Returns true if the String to test is neither null nor empty.
          * @param s The String to test.
          * @return true if the String to test is neither null nor empty.
          */
-        private boolean notNullOrEmpty(final String s) {
+        private static boolean notNullOrEmpty(final String s) {
             return s != null && !s.isEmpty();
         }
     }

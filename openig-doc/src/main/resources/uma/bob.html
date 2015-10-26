@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!--
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2015 ForgeRock AS.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bob (Requesting Party)</title>
+  <link type="text/css" rel="stylesheet" href="style.css">
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+</head>
+<body>
+  <h1>Bob (Requesting Party)</h1>
+
+  <p>
+    Bob is an UMA requesting party who request a resource that Alice owns:
+  </p>
+
+  <ol>
+    <li>
+      Bob requests the resource without authorization.
+      OpenIG responds with a header indicating where to authenticate,
+      and including a permission ticket.
+    </li>
+
+    <li>
+      Bob authenticates with the authorization server (OpenAM),
+      and gets an authorization API token (AAT).
+    </li>
+
+    <li>
+      Bob obtains a requesting party token (RPT) using the AAT and permission ticket.
+    </li>
+
+    <li>
+      Bob requests the resource again, this time with the RPT.
+    </li>
+  </ol>
+
+  <p>
+    <button id="start">GET Alice's resource</button>
+  </p>
+
+  <div id="try"></div>
+  <div id="aat"></div>
+  <div id="rpt"></div>
+  <div id="result"></div>
+
+  <script type="text/javascript">
+$("#start").click(function () {
+    $.ajax({
+        url: resource_url,
+        type: "GET"
+    })
+    .done(function (data) {
+        $("#try").html(json2html(data, "Resource Not Protected?"));
+    })
+    .fail(function (data) {
+        var ticket = data.responseJSON.ticket || "";
+
+        $("#try").html(json2html(data, "Response Without RPT"));
+
+        // Get an AAT as Bob.
+        $.ajax({
+            url: access_token_url,
+            type: "POST",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", authHeader(uma_client_id, uma_client_secret));
+            },
+            data: {
+                "grant_type": "password",
+                "username": uma_username,
+                "password": uma_password,
+                "scope": uma_scope
+            },
+            accepts: "json"
+        })
+        .done(function (data) {
+            var aat = data.access_token;
+            $("#aat").html(json2html(data, "Authorization API Token"));
+
+            // Get an RPT.
+            $.ajax({
+                url: rpt_url,
+                type: "POST",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + aat);
+                },
+                data: JSON.stringify({ "ticket": ticket }),
+                contentType: "application/json",
+                accepts: "json"
+            })
+            .done(function (data) {
+                var rpt = data.rpt;
+                $("#rpt").html(json2html(data, "Requesting Party Token"));
+
+                // Get a resource.
+                $.ajax({
+                    url: resource_url,
+                    type: "GET",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Bearer " + rpt);
+                    }
+                })
+                // Alternative: Post to a resource.
+                //  FixMe: fails with error="insufficient_scope", see https://docs.kantarainitiative.org/uma/draft-uma-core.html#client-presents-rpt
+                /*
+                $.ajax({
+                    url: resource_url,
+                    type: "POST",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Bearer " + rpt);
+                    },
+                    data: {
+                        "username": "demo",
+                        "password": "password"
+                    }
+                })
+                */
+                .done(function (data) {
+                    var title = "<h3>Resulting Resource</h3>";
+                    var escapedData = data.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+                    var html  = "<small><pre>" + escapedData + "</pre></small>";
+                    $("#result").html(title + html);
+                })
+                .fail(function (data) {
+                    $("#result").html(json2html(data, "Failed to access the resource"));
+                });
+            })
+            .fail(function (data) {
+                $("#rpt").html(json2html(data, "Failed to obtain requesting party token"));
+            })
+        })
+        .fail(function (data) {
+            $("#aat").html(json2html(data, "Failed to obtain authorization API token"));
+        })
+    });
+});
+  </script>
+</body>
+</html>
