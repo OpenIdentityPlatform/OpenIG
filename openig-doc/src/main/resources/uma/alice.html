@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2015 ForgeRock AS.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alice (Resource Owner)</title>
+  <link type="text/css" rel="stylesheet" href="style.css">
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+</head>
+<body>
+  <h1>Alice (Resource Owner)</h1>
+
+  <p>
+    Alice is an UMA resource owner who shares with Bob:
+  </p>
+
+  <ol>
+    <li>
+      Alice obtains a protection API token (PAT) from OpenAM.
+    </li>
+
+    <li>
+      OpenIG uses the PAT to create an UMA resource set with OpenAM
+      to share resources according to the OpenIG UmaService configuration:
+      <ul>
+        <li>
+          Paths to protected resources match the pattern, <code>.*</code>.
+        </li>
+
+        <li>
+          Scopes indicate actions that can be permitted on protected resources:
+          <code>#read</code> for HTTP GET requests,
+          <code>#create</code> for HTTP POST requests.
+        </li>
+      </ul>
+    </li>
+
+    <li>
+      Alice authenticates with OpenAM and grants Bob permissions
+      to the shared resources for <code>#read</code> and <code>#create</code>.
+      <br>
+      Note that only Alice can share Alice's resources.
+    </li>
+  </ol>
+
+  <p>
+    <button id="start">Share with Bob</button>
+  </p>
+
+  <div id="pat"></div>
+  <div id="resource-set-id"></div>
+  <div id="auth"></div>
+  <div id="share"></div>
+
+  <script type="text/javascript">
+$("#start").click(function () {
+    // Get a protection access token from OpenAM as resource owner using ROPC grant.
+    $.ajax({
+        url: access_token_url,
+        type: "POST",
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", authHeader(rs_client_id, rs_client_secret));
+        },
+        data: {
+            "grant_type": "password",
+            "username": rs_username,
+            "password": rs_password,
+            "scope": rs_scope
+        },
+        accepts: "json"
+    })
+    .done(function (data) {
+        $("#pat").html(json2html(data, "Protection API Token"));
+
+        // Create a resource set to share.
+        $.ajax({
+            url: share_url,
+            type: "POST",
+            data: JSON.stringify({ "path": share, "pat": data.access_token }),
+            contentType: "application/json",
+            accepts: "json"
+        })
+        .done(function (data) {
+            $("#resource-set-id").html(json2html(data, "Resource Set ID"));
+            var resourceSetId = data.resource_set_id;
+
+            // Authenticate to OpenAM as Alice.
+            $.ajax({
+                url: authenticate_url,
+                type: "POST",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-OpenAM-Username", rs_username);
+                    xhr.setRequestHeader("X-OpenAM-Password", rs_password);
+                },
+                data: JSON.stringify({}),
+                contentType: "application/json",
+                accepts: "json"
+            })
+            .done(function (data) {
+                $("#auth").html(json2html(data, "Authenticated as Alice"));
+
+                // Share permissions with Bob.
+                $.ajax({
+                    url: policy_create_url,
+                    type: "POST",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("iPlanetDirectoryPro", data.tokenId);
+                    },
+                    data: JSON.stringify({
+                        "policyId": resourceSetId,
+                        "permissions": [
+                            {
+                                "subject": subjectDn,
+                                "scopes": [
+                                    "#read",
+                                    "#create"
+                                ]
+                            }
+                        ]
+                    }),
+                    contentType: "application/json",
+                    accepts: "json"
+                })
+                .done(function (data) {
+                    $("#share").html(json2html(data, "Permissions Shared ({} == Success)"));
+                })
+                .fail(function (data) {
+                    $("#share").html(json2html(data, "Failed to share with Bob"));
+                })
+            })
+            .fail(function (data) {
+                $("#auth").html(json2html(data, "Failed to authenticate as Alice"));
+            })
+        })
+        .fail(function (data) {
+            $("#resource-set-id").html(json2html(data, "Failed to obtain resource set ID"));
+        })
+    })
+    .fail(function (data) {
+        $("#pat").html(json2html(data, "Failed to obtain PAT"));
+    });
+});
+  </script>
+</body>
+</html>
