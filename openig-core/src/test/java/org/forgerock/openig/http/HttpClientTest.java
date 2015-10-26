@@ -19,6 +19,7 @@ package org.forgerock.openig.http;
 import static com.xebialabs.restito.builder.stub.StubHttp.whenHttp;
 import static com.xebialabs.restito.semantics.Action.status;
 import static com.xebialabs.restito.semantics.Condition.get;
+import static com.xebialabs.restito.semantics.Condition.not;
 import static com.xebialabs.restito.semantics.Condition.post;
 import static com.xebialabs.restito.semantics.Condition.withPostBody;
 import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
@@ -42,15 +43,10 @@ import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.glassfish.grizzly.http.util.HttpStatus;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.xebialabs.restito.semantics.Call;
-import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
 
 @SuppressWarnings("javadoc")
@@ -58,25 +54,14 @@ public class HttpClientTest {
 
     private StubServer server;
 
-    @BeforeTest
-    public void setUp() throws Exception {
-        // Create mock HTTP server.
+    @BeforeMethod
+    public void beforeMethod() throws Exception {
         server = new StubServer().run();
     }
 
-    @AfterTest
-    public void tearDown() throws Exception {
+    @AfterMethod
+    public void afterMethod() throws Exception {
         server.stop();
-    }
-
-    @BeforeMethod
-    public void cleanup() throws Exception {
-        // Clear mocked invocations between tests
-        // So we can reuse the server instance (less traces) still having isolation
-        if (server != null) {
-            server.getCalls().clear();
-            server.getStubs().clear();
-        }
     }
 
     @Test
@@ -142,22 +127,6 @@ public class HttpClientTest {
         client.executeAsync(new RootContext(), new Request());
 
         verify(logger).warning(cause);
-    }
-
-    /**
-     * Restito doesn't provide any way to express a negative condition yet.
-     */
-    private static Condition not(final Condition condition) {
-        return new MyCondition(Predicates.not(condition.getPredicate()));
-    }
-
-    /**
-     * And Condition has a unique protected constructor.
-     */
-    private static class MyCondition extends Condition {
-        protected MyCondition(final Predicate<Call> predicate) {
-            super(predicate);
-        }
     }
 
     /** Make checkstyle happy. */
