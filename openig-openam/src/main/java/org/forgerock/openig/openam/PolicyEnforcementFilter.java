@@ -27,7 +27,7 @@ import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import java.net.URI;
@@ -50,11 +50,9 @@ import org.forgerock.json.resource.ResourcePath;
 import org.forgerock.json.resource.http.CrestHttp;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
@@ -73,8 +71,8 @@ import org.forgerock.util.promise.Promise;
  *          "openamUrl"         :    uriExpression,      [REQUIRED]
  *          "pepUsername"       :    expression,         [REQUIRED*]
  *          "pepPassword"       :    expression,         [REQUIRED*]
- *          "policiesHandler"   :    handler,            [OPTIONAL - default is using a new ClientHandler
- *                                                                   wrapping the default HttpClient.]
+ *          "policiesHandler"   :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                   provided in heap.]
  *          "realm"             :    String,             [OPTIONAL]
  *          "ssoTokenHeader"    :    String,             [OPTIONAL]
  *          "application"       :    String,             [OPTIONAL]
@@ -276,12 +274,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             final Expression<String> pepUsername = asExpression(config.get("pepUsername").required(), String.class);
             final Expression<String> pepPassword = asExpression(config.get("pepPassword").required(), String.class);
             final String realm = config.get("realm").defaultTo("/").asString();
-            final Handler policiesHandler;
-            if (config.isDefined("policiesHandler")) {
-                policiesHandler = heap.resolve(config.get("policiesHandler"), Handler.class);
-            } else {
-                policiesHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
+            final Handler policiesHandler = heap.resolve(config.get("policiesHandler")
+                                                               .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                                         Handler.class);
             final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
             final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
                                                                      openamUrl,

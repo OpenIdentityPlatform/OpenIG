@@ -26,6 +26,7 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -47,6 +48,7 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -263,7 +265,9 @@ public class PolicyEnforcementFilterTest {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient());
+        final HttpClient httpClient = new HttpClient();
+        heap.put(HTTP_CLIENT_HEAP_KEY, httpClient);
+        heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(httpClient));
         return heap;
     }
 }
