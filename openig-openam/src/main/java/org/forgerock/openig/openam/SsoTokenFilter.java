@@ -45,7 +45,7 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * Provides an OpenAM SSO Token in the {@literal iPlanetDirectoryPro} header for downstream components.
+ * Provides an OpenAM SSO Token in the given header name for downstream components.
  *
  * <p>The SSO Token is stored in the session to avoid DOS on OpenAM endpoints.
  *
@@ -56,21 +56,25 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
     static final String SSO_TOKEN_KEY = "SSOToken";
     static final String BASE_ENDPOINT = "json";
     static final String AUTHENTICATION_ENDPOINT = "/authenticate";
+    static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
     private final Handler ssoClientHandler;
     private final URI openamUrl;
     private final String realm;
+    private final String headerName;
     private final Expression<String> username;
     private final Expression<String> password;
 
     SsoTokenFilter(final Handler ssoClientHandler,
                    final URI openamUrl,
                    final String realm,
+                   final String headerName,
                    final Expression<String> username,
                    final Expression<String> password) {
         this.ssoClientHandler = checkNotNull(ssoClientHandler);
         this.openamUrl = checkNotNull(openamUrl);
         this.realm = startsWithSlash(realm);
+        this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
         this.username = username;
         this.password = password;
     }
@@ -91,7 +95,7 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(String token) {
                         if (token != null) {
-                            request.getHeaders().put("iPlanetDirectoryPro", token);
+                            request.getHeaders().put(headerName, token);
                             return next.handle(context, request);
                         } else {
                             return newResponsePromise(newInternalServerError("Unable to retrieve SSO Token"));
