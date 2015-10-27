@@ -56,14 +56,14 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  * {@code
  * HTTP/1.1 302 Found
- * Location: https://server.example.com/authorize?           // from Issuer
+ * Location: https://server.example.com/authorize?              // from Issuer
  *     response_type=code
- *     &scope=openid%20profile%20email                       // from ClientRegistration
- *     &client_id=s6BhdRkqt3                                 // from ClientRegistration
+ *     &scope=openid%20profile%20email                          // from ClientRegistration
+ *     &client_id=s6BhdRkqt3                                    // from ClientRegistration
  *     &state=af0ifjsldkj
- *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb   // from Client Registration or if none,
- *                                                              default to loginEndpoint callback URI.
- *     &login_hint=<input if available>                      // login_hint from OPENID RFC.
+ *     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcallback// based on the 'clientEndpoint' attribute,
+ *                                                                 from the OAuth2ClientFilter.
+ *     &login_hint=<input if available>                         // login_hint from OPENID RFC.
  * }
  * </pre>
  *
@@ -113,11 +113,7 @@ class AuthorizationRedirectHandler implements Handler {
             final Form query = new Form();
             query.add("response_type", "code");
             query.add("client_id", cr.getClientId());
-            if (cr.getRedirectUris() != null) {
-                query.addAll("redirect_uri", cr.getRedirectUris());
-            } else {
-                query.putSingle("redirect_uri",  buildDefaultCallbackUri(clientEndpoint));
-            }
+            query.putSingle("redirect_uri",  buildDefaultCallbackUri(clientEndpoint));
             query.add("scope", joinAsString(" ", requestedScopes));
             if (loginHint != null && !loginHint.isEmpty()) {
                 query.add("login_hint", loginHint);
