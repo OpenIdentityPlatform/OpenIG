@@ -31,7 +31,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.loadOrCreate
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.removeSession;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.Utils.closeSilently;
@@ -56,13 +56,11 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.oauth2.cache.ThreadSafeCache;
-import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
@@ -103,8 +101,8 @@ import org.forgerock.util.time.TimeService;
  * OR
  * "clientRegistrationName"       : string,             [REQUIRED - if you want to use a single client
  *                                                                  registration]
- * "discoveryHandler"             : handler,            [OPTIONAL - default is using a new ClientHandler
- *                                                                  wrapping the default HttpClient.]
+ * "discoveryHandler"             : handler,            [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                  provided in heap.]
  * "failureHandler"               : handler,            [REQUIRED]
  * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
  * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
@@ -784,12 +782,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         @Override
         public Object create() throws HeapException {
 
-            final Handler discoveryHandler;
-            if (config.isDefined("discoveryHandler")) {
-                discoveryHandler = heap.resolve(config.get("discoveryHandler"), Handler.class);
-            } else {
-                discoveryHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
+            final Handler discoveryHandler = heap.resolve(config.get("discoveryHandler")
+                                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                                          Handler.class);
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             final Expression<String> clientEndpoint = asExpression(config.get("clientEndpoint").required(),
                                                                    String.class);
