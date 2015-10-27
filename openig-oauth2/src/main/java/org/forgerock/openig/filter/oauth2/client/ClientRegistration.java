@@ -29,7 +29,6 @@ import static org.forgerock.openig.util.JsonValues.firstOf;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
@@ -39,6 +38,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.encode.Base64;
 
 /**
