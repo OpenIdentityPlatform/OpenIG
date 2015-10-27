@@ -18,6 +18,7 @@ package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -300,9 +301,9 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
 
         @Override
         public Object create() throws HeapException {
-            Handler httpHandler =
-                    heap.resolve(getWithDeprecation(config, logger, "providerHandler",
-                            "httpHandler").required(), Handler.class);
+            Handler httpHandler = heap.resolve(getWithDeprecation(config, logger, "providerHandler", "httpHandler")
+                                                     .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                               Handler.class);
 
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             AccessTokenResolver resolver = new OpenAmAccessTokenResolver(

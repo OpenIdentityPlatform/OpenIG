@@ -22,7 +22,7 @@ import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 
@@ -37,10 +37,8 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.encode.Base64;
 
 /**
@@ -57,8 +55,8 @@ import org.forgerock.util.encode.Base64;
  *                                                                  linked to this registration.]
  *   "redirect_uris"                : [ uriExpressions ][OPTIONAL - but required for dynamic client
  *                                                                  registration. ]
- *   "registrationHandler"          : handler           [OPTIONAL - default is using a new ClientHandler.]
- *                                                                  wrapping the default HttpClient.]
+ *   "registrationHandler"          : handler           [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                  provided in heap.]
  *   "tokenEndpointUseBasicAuth"    : boolean           [OPTIONAL - default is true, use Basic Authentication.]
  * }
  * }
@@ -402,12 +400,9 @@ public final class ClientRegistration {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final Handler registrationHandler;
-            if (config.isDefined("registrationHandler")) {
-                registrationHandler = heap.resolve(config.get("registrationHandler"), Handler.class);
-            } else {
-                registrationHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
+            final Handler registrationHandler = heap.resolve(config.get("registrationHandler")
+                                                                   .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                                             Handler.class);
             final Issuer issuer = heap.resolve(config.get("issuer"), Issuer.class);
             return new ClientRegistration(this.name,
                                           evaluate(config, logger),

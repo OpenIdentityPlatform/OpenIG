@@ -17,7 +17,7 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 
@@ -34,11 +34,9 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
-import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.Exchange;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.util.Reject;
 
 /**
@@ -52,8 +50,8 @@ import org.forgerock.util.Reject;
  * {@code
  * {
  *   "wellKnownEndpoint"            : uriExpression,   [REQUIRED]
- *   "issuerHandler"                : handler          [OPTIONAL - default is using a new ClientHandler
- *                                                                 wrapping the default HttpClient.]
+ *   "issuerHandler"                : handler          [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                 provided in heap.]
  *   "supportedDomains"             : [ patterns ]     [OPTIONAL - if this issuer supports other domain names]
  * }
  * }
@@ -286,12 +284,9 @@ public final class Issuer {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final Handler issuerHandler;
-            if (config.isDefined("issuerHandler")) {
-                issuerHandler = heap.resolve(config.get("issuerHandler"), Handler.class);
-            } else {
-                issuerHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
-            }
+            final Handler issuerHandler = heap.resolve(config.get("issuerHandler")
+                                                             .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                                       Handler.class);
             final List<String> supportedDomains = config.get("supportedDomains").asList(String.class);
             if (config.isDefined("wellKnownEndpoint")
                     && !config.isDefined("authorizeEndpoint")
