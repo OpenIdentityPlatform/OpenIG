@@ -59,6 +59,7 @@ public class SsoTokenFilterTest {
     static final private String REVOKED_TOKEN = "BBBwns...*";
     static final private Object AUTHENTICATION_SUCCEEDED = object(field("tokenId", VALID_TOKEN),
                                                                   field("successUrl", "/openam/console"));
+    private static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
     private SessionContext sessionContext;
     private Exchange exchange;
@@ -80,8 +81,16 @@ public class SsoTokenFilterTest {
     @DataProvider
     private static Object[][] nullRequiredParameters() {
         return new Object[][] {
-            { null, OPENAM_URI},
-            { next, null} };
+            { null, OPENAM_URI },
+            { next, null } };
+    }
+
+    @DataProvider
+    private static Object[][] ssoTokenHeaderName() {
+        return new Object[][] {
+            { null },
+            { DEFAULT_HEADER_NAME },
+            { "iForgeSession" } };
     }
 
     @Test(dataProvider = "nullRequiredParameters", expectedExceptions = NullPointerException.class)
@@ -90,6 +99,7 @@ public class SsoTokenFilterTest {
         new SsoTokenFilter(handler,
                            openAmUri,
                            "/",
+                           DEFAULT_HEADER_NAME,
                            Expression.valueOf("bjensen", String.class),
                            Expression.valueOf("${exchange.attributes.password}",
                                               String.class));
@@ -100,6 +110,7 @@ public class SsoTokenFilterTest {
         final SsoTokenFilter filter = new SsoTokenFilter(authenticate,
                                                          OPENAM_URI,
                                                          "/myrealm/sub",
+                                                         DEFAULT_HEADER_NAME,
                                                          Expression.valueOf("bjensen", String.class),
                                                          Expression.valueOf("${exchange.attributes.password}",
                                                                             String.class));
@@ -110,8 +121,8 @@ public class SsoTokenFilterTest {
         assertThat(request.getUri().toASCIIString()).isEqualTo(OPENAM_URI + "json/myrealm/sub/authenticate");
     }
 
-    @Test
-    public void shouldPlaceGivenSSOTokenToRequestHeader() throws Exception {
+    @Test(dataProvider = "ssoTokenHeaderName")
+    public void shouldPlaceGivenSSOTokenToRequestHeader(final String givenSsoTokenHeaderName) throws Exception {
         // Given
         sessionContext.getSession().put(SSO_TOKEN_KEY, VALID_TOKEN);
         final Request request = new Request();
@@ -119,11 +130,13 @@ public class SsoTokenFilterTest {
         when(next.handle(exchange, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        buildSsoTokenFilter().filter(exchange, request, next);
+        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(exchange, request, next);
 
         // Then
         verify(next).handle(any(Exchange.class), any(Request.class));
-        assertThat(request.getHeaders().get("iPlanetDirectoryPro").getFirstValue()).isEqualTo(VALID_TOKEN);
+        assertThat(request.getHeaders().get(givenSsoTokenHeaderName != null
+                                            ? givenSsoTokenHeaderName
+                                            : DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
     }
 
     @Test
@@ -145,7 +158,7 @@ public class SsoTokenFilterTest {
         // Then
         verify(authenticate).handle(any(Exchange.class), any(Request.class));
         verify(next).handle(exchange, request);
-        assertThat(request.getHeaders().get("iPlanetDirectoryPro").getFirstValue()).isEqualTo(VALID_TOKEN);
+        assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
     }
 
     @Test
@@ -177,7 +190,7 @@ public class SsoTokenFilterTest {
         // Then
         verify(authenticate).handle(any(Exchange.class), any(Request.class));
         verify(next, times(2)).handle(exchange, request);
-        assertThat(request.getHeaders().get("iPlanetDirectoryPro").getFirstValue()).isEqualTo(VALID_TOKEN);
+        assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
     }
 
@@ -205,7 +218,7 @@ public class SsoTokenFilterTest {
         // Then
         verify(authenticate, times(2)).handle(any(Exchange.class), any(Request.class));
         verify(next, times(2)).handle(exchange, request);
-        assertThat(request.getHeaders().containsKey("iPlanetDirectoryPro")).isTrue();
+        assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
         assertThat(finalResponse).isSameAs(forbidden);
     }
 
@@ -227,16 +240,21 @@ public class SsoTokenFilterTest {
         // Then
         verifyZeroInteractions(next);
         verify(authenticate).handle(any(Exchange.class), any(Request.class));
-        assertThat(request.getHeaders().containsKey("iPlanetDirectoryPro")).isFalse();
+        assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEqualTo("Unable to retrieve SSO Token");
 
     }
 
     private static SsoTokenFilter buildSsoTokenFilter() throws Exception {
+        return buildSsoTokenFilter(null);
+    }
+
+    private static SsoTokenFilter buildSsoTokenFilter(final String headerName) throws Exception {
         return new SsoTokenFilter(authenticate,
                                   OPENAM_URI,
                                   null,
+                                  headerName,
                                   Expression.valueOf("bjensen", String.class),
                                   Expression.valueOf("${exchange.attributes.password}",
                                                      String.class));

@@ -76,6 +76,7 @@ import org.forgerock.util.promise.Promise;
  *          "policiesHandler"   :    handler,            [OPTIONAL - default is using a new ClientHandler
  *                                                                   wrapping the default HttpClient.]
  *          "realm"             :    String,             [OPTIONAL]
+ *          "ssoTokenHeader"    :    String,             [OPTIONAL]
  *          "application"       :    String,             [OPTIONAL]
  *          "ssoTokenSubject"   :    expression,         [OPTIONAL - must be specified if no jwtSubject ]
  *          "jwtSubject"        :    expression          [OPTIONAL - must be specified if no ssoTokenSubject ]
@@ -281,9 +282,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             } else {
                 policiesHandler = new ClientHandler(heap.get(HTTP_CLIENT_HEAP_KEY, HttpClient.class));
             }
+            final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
             final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
                                                                      openamUrl,
                                                                      realm,
+                                                                     ssoTokenHeader,
                                                                      pepUsername,
                                                                      pepPassword);
 
