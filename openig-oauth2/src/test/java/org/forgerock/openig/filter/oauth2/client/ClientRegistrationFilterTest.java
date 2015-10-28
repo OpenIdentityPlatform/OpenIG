@@ -22,11 +22,13 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.mock;
 
 import java.net.URI;
 
@@ -36,6 +38,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -49,6 +52,7 @@ public class ClientRegistrationFilterTest {
     private Exchange exchange;
     private static final String SAMPLE_URI = "http://www.example.com:8089";
     private static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
+    private static final String SUFFIX = "ForMyApp";
 
     @Captor
     private ArgumentCaptor<Request> captor;
@@ -60,6 +64,42 @@ public class ClientRegistrationFilterTest {
     public void setUp() throws Exception {
         initMocks(this);
         exchange = new Exchange(null, new URI("path"));
+    }
+
+    @Test
+    public void shouldFailToPerformDynamicRegistrationWhenMissingRedirectUris() throws Exception {
+        // given
+        final JsonValue invalidConfig = json(object(
+                                                field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
+                                                field("scopes", array("openid"))));
+
+        exchange.getAttributes().put(ISSUER_KEY, new Issuer("myIssuer", issuerConfigWithAllRequestedEndpoints()));
+        final HeapImpl heap = mock(HeapImpl.class);
+        when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
+        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, invalidConfig, heap, SUFFIX);
+
+        // when
+        final Response response = crf.filter(exchange, new Request(), handler).get();
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).contains("'redirect_uris' should be defined");
+    }
+
+    @Test
+    public void shouldFailToPerformDynamicRegistrationWhenIssuerHasNoRegistrationEndpoint() throws Exception {
+        // given
+        exchange.getAttributes().put(ISSUER_KEY, new Issuer("myIssuer", issuerConfigWithNoRegistrationEndpoint()));
+        final HeapImpl heap = mock(HeapImpl.class);
+        when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
+        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, getFilterConfig(), heap, SUFFIX);
+
+        // when
+        final Response response = crf.filter(exchange, new Request(), handler).get();
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).contains("Registration is not supported by the issuer");
     }
 
     @Test
@@ -103,7 +143,7 @@ public class ClientRegistrationFilterTest {
     }
 
     private ClientRegistrationFilter buildFilter() throws HeapException, Exception {
-        return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap(), "ForMyApp");
+        return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap(), SUFFIX);
     }
 
     private JsonValue getFilterConfig() {
@@ -111,5 +151,17 @@ public class ClientRegistrationFilterTest {
                         field("redirect_uris", array("https://client.example.org/callback")),
                         field("contact", array("ve7jtb@example.org", "bjensen@example.org")),
                         field("scopes", array("openid"))));
+    }
+
+    private JsonValue issuerConfigWithNoRegistrationEndpoint() {
+        return json(object(
+                        field("authorizeEndpoint", "http://www.example.com:8089/openam/oauth2/authorize"),
+                        field("tokenEndpoint", "http://www.example.com:8089/openam/oauth2/access_token"),
+                        field("userInfoEndpoint", "http://www.example.com:8089/openam/oauth2/userinfo")));
+    }
+
+    private JsonValue issuerConfigWithAllRequestedEndpoints() {
+        return issuerConfigWithNoRegistrationEndpoint()
+                .put("registrationEndpoint", "http://www.example.com:8089/openam/oauth2/connect/register");
     }
 }
