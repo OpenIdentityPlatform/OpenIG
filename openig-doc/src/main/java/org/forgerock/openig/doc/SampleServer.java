@@ -306,15 +306,14 @@ public final class SampleServer {
             }
 
             // When a fake OpenAM cookie is presented, simulate OpenAM's response.
+            // If the cookie smells real, continue processing.
             for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equalsIgnoreCase(IPLANET_DIRECTORY_PRO_COOKIE)) {
                     String[] credentials = cookie.getValue().split(":");
                     if (credentials.length == 2) {
                         simulateOpenAMResponse(credentials[0], credentials[1], response);
-                    } else {
-                        simulateOpenAMResponse("", "", response);
+                        return;
                     }
-                    return;
                 }
             }
 
