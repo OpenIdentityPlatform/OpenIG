@@ -25,7 +25,9 @@ import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
 import static org.forgerock.openig.util.StringUtil.slug;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -47,12 +49,13 @@ import org.forgerock.openig.filter.HttpAccessAuditFilter;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.time.TimeService;
+
+import com.codahale.metrics.MetricRegistry;
 
 /**
  * Builder for new {@link Route}s.
@@ -121,12 +124,11 @@ class RouteBuilder {
         routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
 
         routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
-                "globalDecorators");
+                "globalDecorators", "monitor");
 
-        SessionManager sessionManager = routeHeap.resolve(config.get("session"), SessionManager.class, true);
         Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
 
-        final LogSink logSink = heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+        final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
         Logger logger = new Logger(logSink, routeHeapName);
 
         if (!slug.equals(routeName)) {
@@ -136,10 +138,7 @@ class RouteBuilder {
                            slug));
         }
 
-        AuditService auditService = heap.resolve(config.get("audit-service"), AuditService.class, true);
-        Handler handler = setupRouteHandler(routeHeap.getHandler(), logger, sessionManager, auditService);
-
-        return new Route(handler, routeName, condition) {
+        return new Route(setupRouteHandler(routeHeap, config, logger), routeName, condition) {
             @Override
             public void destroy() {
                 super.destroy();
@@ -149,19 +148,30 @@ class RouteBuilder {
         };
     }
 
-    private Handler setupRouteHandler(Handler handler,
-                                      Logger logger,
-                                      SessionManager sessionManager,
-                                      AuditService auditService) throws HeapException {
+    private Handler setupRouteHandler(final HeapImpl routeHeap,
+                                      final JsonValue config,
+                                      final Logger logger) throws HeapException {
+
+        TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+
         List<Filter> filters = new ArrayList<>();
+
+        SessionManager sessionManager = routeHeap.resolve(config.get("session"), SessionManager.class, true);
         if (sessionManager != null) {
             filters.add(newSessionFilter(sessionManager));
         }
+
+        AuditService auditService = routeHeap.resolve(config.get("audit-service"), AuditService.class, true);
         if (auditService != null) {
-            filters.add(new HttpAccessAuditFilter(auditService,
-                                                  heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class)));
+            filters.add(new HttpAccessAuditFilter(auditService, time));
         }
-        return chainOf(handler, filters);
+
+        if (evaluateJsonStaticExpression(config.get("monitor").defaultTo("${false}")).asBoolean()) {
+            MetricRegistry registry = new MetricRegistry();
+            filters.add(new MetricsFilter(registry));
+        }
+
+        return chainOf(routeHeap.getHandler(), filters);
     }
 
     /**
