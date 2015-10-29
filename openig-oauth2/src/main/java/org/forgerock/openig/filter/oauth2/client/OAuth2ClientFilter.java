@@ -76,7 +76,7 @@ import org.forgerock.util.time.TimeService;
  * delegated authorization. The filter does the following depending on the
  * incoming request URI:
  * <ul>
- * <li>{@code {clientEndpoint}/login/{clientRegistration}?goto=<url>} - redirects
+ * <li>{@code {clientEndpoint}/login/{registration}?goto=<url>} - redirects
  * the user for authorization against the specified client
  * registration
  * <li>{@code {clientEndpoint}/login?{*}discovery={input}&goto=<url>} -
@@ -99,8 +99,8 @@ import org.forgerock.util.time.TimeService;
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR
- * "clientRegistrationName"       : string,             [REQUIRED - if you want to use a single client
- *                                                                  registration]
+ * "registration"                 : reference or        [REQUIRED - if you want to use a single client
+ *                                  inlined declaration,            registration]
  * "discoveryHandler"             : handler,            [OPTIONAL - by default it uses the 'ClientHandler'
  *                                                                  provided in heap.]
  * "failureHandler"               : handler,            [REQUIRED]
@@ -144,7 +144,7 @@ import org.forgerock.util.time.TimeService;
  *     "config": {
  *         "target"                : "${exchange.attributes.openid}",
  *         "clientEndpoint"        : "/openid",
- *         "clientRegistrationName": "openam",
+ *         "registration"          : "openam",
  *         "failureHandler"        : "LoginFailed"
  *     }
  * }
@@ -204,7 +204,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private final Handler discoveryHandler;
     private Handler failureHandler;
     private Handler loginHandler;
-    private String clientRegistrationName;
+    private ClientRegistration clientRegistration;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
     private Expression<?> target;
@@ -264,7 +264,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     // User input: {clientEndpoint}/login?discovery={input}[&goto={url}]
                     return handleUserInitiatedDiscovery(request, context);
                 } else {
-                    // Login: {clientEndpoint}/login?clientRegistration={name}[&goto={url}]
+                    // Login: {clientEndpoint}/login?registration={name}[&goto={url}]
                     checkRequestIsSufficientlySecure(exchange);
                     return handleUserInitiatedLogin(context, request);
                 }
@@ -385,16 +385,17 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     /**
-     * You can avoid a nascar page by setting a client registration name.
+     * You can avoid a nascar page by setting a client registration.
      *
-     * @param clientRegistrationName
-     *            The name of the client registration to use.
+     * @param registration
+     *            The client registration to use.
      * @return This filter.
      */
-    public OAuth2ClientFilter setClientRegistrationName(final String clientRegistrationName) {
-        this.clientRegistrationName = clientRegistrationName;
+    public OAuth2ClientFilter setClientRegistration(final ClientRegistration registration) {
+        this.clientRegistration = registration;
         return this;
     }
+
     /**
      * Specifies whether all incoming requests must use TLS. This configuration
      * parameter is optional and set to {@code true} by default.
@@ -628,7 +629,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Context context,
                                                                              final Request request)
             throws OAuth2ErrorException, ResponseException {
-        final String clientRegistrationName = request.getForm().getFirst("clientRegistration");
+        final String clientRegistrationName = request.getForm().getFirst("registration");
         if (clientRegistrationName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization OpenID Connect Provider must be specified");
@@ -717,7 +718,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         return new AuthorizationRedirectHandler(time,
                                                 clientEndpoint,
-                                                cr != null ? cr : getClientRegistrationFromHeap(clientRegistrationName))
+                                                cr != null ? cr : clientRegistration)
                                     .handle(context, request);
     }
 
@@ -797,8 +798,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
-            if (config.isDefined("clientRegistrationName")) {
-                filter.setClientRegistrationName(config.get("clientRegistrationName").required().asString());
+            if (config.isDefined("registration")) {
+                filter.setClientRegistration(heap.resolve(config.get("registration").required(),
+                                             ClientRegistration.class));
             } else {
                 final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
                 filter.setLoginHandler(loginHandler);
