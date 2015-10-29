@@ -38,6 +38,9 @@ Copyright: Copyright 2006-2009 Odysseus Software GmbH
 Version: juel-impl-2.2.7.jar
 Copyright: Copyright 2006-2009 Odysseus Software GmbH
 
+Version: metrics-core-3.1.2.jar
+Copyright: Copyright (c) 2010-2014 Coda Hale, Yammer.com
+
 Version: groovy-all-2.3.1.jar
 Copyright: Copyright 2003-2013 The Codehaus. All rights reserved.
 

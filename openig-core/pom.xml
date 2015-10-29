@@ -105,6 +105,11 @@
         <version>${caud.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>3.1.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <scope>test</scope>
@@ -145,12 +150,6 @@
      <artifactId>simple-jndi</artifactId>
      <version>0.11.4.1</version>
      <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-core</artifactId>
-        <version>3.1.2</version>
-        <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
