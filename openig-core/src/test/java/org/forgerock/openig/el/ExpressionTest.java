@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -336,6 +338,21 @@ public class ExpressionTest {
         Expression<String> expression = Expression.valueOf("${item.thereIsNoSuchMethod()}", String.class);
         assertThat(expression.eval(bindings("item", "Hello")))
                 .isNull();
+    }
+
+    @Test
+    public void shouldReturnHeapObjects() throws Exception {
+        HeapImpl heap = new HeapImpl(Name.of("ExpressionTest"));
+        heap.put("foo", "bar");
+        Expression<String> expression = Expression.valueOf("${heap['foo']}", String.class);
+        assertThat(expression.eval(bindings("heap", heap))).isEqualTo("bar");
+    }
+
+    @Test
+    public void shouldReturnNullForAbsentHeapObject() throws Exception {
+        HeapImpl heap = new HeapImpl(Name.of("ExpressionTest"));
+        Expression<String> expression = Expression.valueOf("${heap['foo']}", String.class);
+        assertThat(expression.eval(bindings("heap", heap))).isNull();
     }
 
     public static class ExternalBean {
