@@ -52,9 +52,6 @@ import org.forgerock.util.encode.Base64;
  *   "issuer"                       : String / Issuer   [REQUIRED - the issuer name, or its inlined declaration,
  *   "scopes"                       : [ expressions ],  [OPTIONAL - specific scopes to use for this client
  *                                                                  registration. ]
- *                                                                  linked to this registration.]
- *   "redirect_uris"                : [ uriExpressions ][OPTIONAL - but required for dynamic client
- *                                                                  registration. ]
  *   "registrationHandler"          : handler           [OPTIONAL - by default it uses the 'ClientHandler'
  *                                                                  provided in heap.]
  *   "tokenEndpointUseBasicAuth"    : boolean           [OPTIONAL - default is true, use Basic Authentication.]
@@ -75,9 +72,6 @@ import org.forgerock.util.encode.Base64;
  *         "scopes": [
  *             "openid",
  *             "profile"
- *         ],
- *         "redirect_uris": [
- *             "https://client.example.org/callback"
  *         ],
  *         "issuer": "OpenAM"
  *     }
@@ -124,7 +118,6 @@ public final class ClientRegistration {
     private final String clientId;
     private final String clientSecret;
     private final Issuer issuer;
-    private final List<String> redirectUris;
     private final List<String> scopes;
     private boolean tokenEndpointUseBasicAuth;
     private final Handler registrationHandler;
@@ -153,7 +146,6 @@ public final class ClientRegistration {
         this.clientId = firstOf(config, "clientId", "client_id").required().asString();
         this.clientSecret = firstOf(config, "clientSecret", "client_secret").required().asString();
         this.scopes = config.get("scopes").defaultTo(emptyList()).required().asList(String.class);
-        this.redirectUris = config.get("redirect_uris").asList(String.class);
         if (config.isDefined("token_endpoint_auth_method")
                 && config.get("token_endpoint_auth_method").asString().equals("client_secret_post")) {
             this.tokenEndpointUseBasicAuth = false;
@@ -215,15 +207,6 @@ public final class ClientRegistration {
      */
     public Issuer getIssuer() {
         return issuer;
-    }
-
-    /**
-     * Returns the redirect URIs of this client registration.
-     *
-     * @return the redirect URIs of this client registration.
-     */
-    public List<String> getRedirectUris() {
-        return redirectUris;
     }
 
     /**
