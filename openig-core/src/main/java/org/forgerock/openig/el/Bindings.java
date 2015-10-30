@@ -117,6 +117,19 @@ public class Bindings {
     }
 
     /**
+     * Binds all the bindings already bound from {@code source}.
+     *
+     * @param source
+     *         current bindings to copy (must not be {@code null})
+     * @return this {@link Bindings}
+     */
+    public Bindings bind(Bindings source) {
+        Reject.ifNull(source);
+        map.putAll(source.map);
+        return this;
+    }
+
+    /**
      * Returns an unmodifiable {@code Map} view of this {@code Bindings} instance.
      * <p>
      * Note that while the consumer of the Map cannot modify it, any changes done through the Bindings methods

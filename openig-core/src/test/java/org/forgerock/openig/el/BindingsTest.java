@@ -85,4 +85,11 @@ public class BindingsTest {
                   .asMap()
                   .put("a", "c");
     }
+
+    @Test
+    public void shouldCopyBindings() throws Exception {
+        Bindings source = bindings().bind("a", "b");
+        Bindings target = bindings().bind("c", "d");
+        assertThat(target.bind(source).asMap()).containsOnly(entry("a", "b"), entry("c", "d"));
+    }
 }
