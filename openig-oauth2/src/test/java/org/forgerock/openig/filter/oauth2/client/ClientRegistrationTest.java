@@ -93,14 +93,7 @@ public class ClientRegistrationTest {
                     field("clientSecret", "password"),
                     field("scopes", array("openid", "profile", "email", "address", "phone", "offline_access")),
                     field("issuer", "myIssuer"),
-                    field("tokenEndpointUseBasicAuth", false))) },
-            /* With redirect uris. */
-            { json(object(
-                    field("client_id", "OpenIG"),
-                    field("client_secret", "password"),
-                    field("scopes", array("openid", "profile")),
-                    field("issuer", "myIssuer"),
-                    field("redirect_uris", array("https://client.example.org/callback")))) }};
+                    field("tokenEndpointUseBasicAuth", false))) } };
     }
 
     @DataProvider
@@ -110,21 +103,18 @@ public class ClientRegistrationTest {
             { json(object(
                     field("clientSecret", "password"),
                     field("scopes", array("openid")),
-                    field("issuer", "myIssuer"),
-                    field("redirect_uris", array("https://client.example.org/callback")))) },
+                    field("issuer", "myIssuer"))) },
             /* Missing clientSecret. */
             { json(object(
                     field("clientId", "OpenIG"),
                     field("scopes", array("openid")),
-                    field("issuer", "myIssuer"),
-                    field("redirect_uris", array("https://client.example.org/callback2")))) },
+                    field("issuer", "myIssuer"))) },
             /* Missing issuer. */
             { json(object(
                     field("clientId", "OpenIG"),
                     field("clientSecret", "password"),
                     field("scopes", array("openid")),
-                    field("issuer", "notDeclaredIssuer"),
-                    field("redirect_uris", array("https://client.example.org/callback4")))) }};
+                    field("issuer", "notDeclaredIssuer"))) }};
     }
 
     @DataProvider
