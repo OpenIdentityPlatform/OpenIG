@@ -21,6 +21,7 @@ import static com.xebialabs.restito.semantics.Action.status;
 import static com.xebialabs.restito.semantics.Action.stringContent;
 import static com.xebialabs.restito.semantics.Condition.get;
 import static com.xebialabs.restito.semantics.Condition.method;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.JsonValue.json;
@@ -65,6 +66,7 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
 import org.forgerock.openig.handler.ScriptableHandler;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
@@ -88,7 +90,6 @@ import org.testng.annotations.Test;
 
 import com.xebialabs.restito.semantics.Condition;
 import com.xebialabs.restito.server.StubServer;
-import org.forgerock.openig.heap.Heap;
 
 /**
  * Tests Groovy integration for the scriptable filter.
@@ -943,9 +944,9 @@ public class GroovyScriptableFilterTest {
      *         "file": "ScriptWithParams.groovy",
      *         "args": {
      *             "title": "Coffee time",
-     *             "status": 418,
+     *             "status": "${400 + 18},
      *             "reason": [
-     *                 "Not Acceptable",
+     *                 "${'Not Acceptable'}",
      *                 "I'm a teapot",
      *                 "Acceptable" ],
      *             "names": {
@@ -967,7 +968,7 @@ public class GroovyScriptableFilterTest {
         final Map<String, Object> args = new LinkedHashMap<>();
         args.put("title", "Coffee time");
         args.put("status", "${400 + 18}"); // show that the args are evaluated as expressions
-        args.put("reason", new String[] { "Not Acceptable", "I'm a teapot", "Acceptable" });
+        args.put("reason", asList(new String[] { "${'Not Acceptable'}", "I'm a teapot", "Acceptable" }));
         final Map<String, Object> coffeeNames = new LinkedHashMap<>();
         coffeeNames.put("1", "koffie");
         coffeeNames.put("2", "kafe");

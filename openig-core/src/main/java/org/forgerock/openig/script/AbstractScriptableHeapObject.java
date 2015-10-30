@@ -17,6 +17,7 @@ package org.forgerock.openig.script;
 
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
@@ -34,7 +35,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.el.Bindings;
-import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -72,15 +72,6 @@ import org.forgerock.util.promise.Promise;
  * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
 public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
-
-    private void checkBindingNotAlreadyUsed(final Map<String, Object> bindings,
-                                            final String key) throws ScriptException {
-        if (bindings.containsKey(key)) {
-            final String errorMsg = "Can't override the binding named " + key;
-            logger.error(errorMsg);
-            throw new ScriptException(errorMsg);
-        }
-    }
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
@@ -239,27 +230,26 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             bindings.put("next", next);
         }
         if (args != null) {
-            final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
-            for (final Entry<String, Object> entry : args.entrySet()) {
-                final String key = entry.getKey();
-                checkBindingNotAlreadyUsed(bindings, key);
-                final Object value = entry.getValue();
-                if (value instanceof String) {
-                    try {
-                        // Process it as an expression
-                        Expression<Object> expr = Expression.valueOf((String) entry.getValue(), Object.class);
-
-                        bindings.put(key, expr.eval(exprEvalBindings));
-                    } catch (ExpressionException ex) {
-                        throw new ScriptException(ex);
-                    }
-                } else {
-                    bindings.put(key, entry.getValue());
+            try {
+                final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
+                for (final Entry<String, Object> entry : args.entrySet()) {
+                    bindings.put(entry.getKey(), evaluate(entry.getValue(), exprEvalBindings));
                 }
+            } catch (ExpressionException ex) {
+                throw new ScriptException(ex);
             }
         }
 
         // Redirect streams? E.g. in = request entity, out = response entity?
         return bindings;
+    }
+
+    private void checkBindingNotAlreadyUsed(final Map<String, Object> bindings,
+                                            final String key) throws ScriptException {
+        if (bindings.containsKey(key)) {
+            final String errorMsg = "Can't override the binding named " + key;
+            logger.error(errorMsg);
+            throw new ScriptException(errorMsg);
+        }
     }
 }
