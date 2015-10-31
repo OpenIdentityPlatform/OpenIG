@@ -23,10 +23,11 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.handler.router.Files;
-import org.forgerock.openig.http.Exchange;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -34,15 +35,15 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class FunctionsTest {
 
-    private Exchange exchange;
+    private Map<String, Object> attributes;
     private Request request;
     private Bindings bindings;
 
     @BeforeMethod
     public void beforeMethod() {
-        exchange = new Exchange();
+        attributes = new HashMap<>();
         request = new Request();
-        bindings = bindings(exchange, request);
+        bindings = bindings().bind("attributes", attributes).bind("request", request);
     }
 
     @Test
@@ -54,26 +55,26 @@ public class FunctionsTest {
 
     @Test
     public void keyMatch() throws ExpressionException {
-        exchange.getAttributes().put("bjensen", "Barbara Jensen");
-        exchange.getAttributes().put("bmaddox", "Barbara Maddox");
+        attributes.put("bjensen", "Barbara Jensen");
+        attributes.put("bmaddox", "Barbara Maddox");
 
-        String o = Expression.valueOf("${exchange.attributes[keyMatch(exchange.attributes, '^bjense.*')]}",
+        String o = Expression.valueOf("${attributes[keyMatch(attributes, '^bjense.*')]}",
                                       String.class).eval(bindings);
         // Returns the first key found in a map that matches the regular expression
-        assertThat(o).isEqualTo(exchange.getAttributes().get("bjensen"));
+        assertThat(o).isEqualTo(attributes.get("bjensen"));
     }
 
     @Test
     public void lengthString() throws ExpressionException {
-        exchange.getAttributes().put("foo", "12345678901");
-        Integer o = Expression.valueOf("${length(exchange.attributes.foo)}", Integer.class).eval(bindings);
+        attributes.put("foo", "12345678901");
+        Integer o = Expression.valueOf("${length(attributes.foo)}", Integer.class).eval(bindings);
         assertThat(o).isEqualTo(11);
     }
 
     @Test
     public void lengthCollection() throws ExpressionException {
-        exchange.getAttributes().put("foo", Arrays.asList("1", "2", "3", "4", "5"));
-        Integer o = Expression.valueOf("${length(exchange.attributes.foo)}", Integer.class).eval(bindings);
+        attributes.put("foo", Arrays.asList("1", "2", "3", "4", "5"));
+        Integer o = Expression.valueOf("${length(attributes.foo)}", Integer.class).eval(bindings);
         assertThat(o).isEqualTo(5);
     }
 
@@ -86,32 +87,32 @@ public class FunctionsTest {
     @Test
     public void join() throws ExpressionException {
         String[] s = {"a", "b", "c"};
-        exchange.getAttributes().put("foo", s);
-        String o = Expression.valueOf("${join(exchange.attributes.foo, ',')}", String.class).eval(bindings);
+        attributes.put("foo", s);
+        String o = Expression.valueOf("${join(attributes.foo, ',')}", String.class).eval(bindings);
         assertThat(o).isEqualTo("a,b,c");
     }
 
     @Test
     public void contains() throws ExpressionException {
         String s = "allyoucaneat";
-        exchange.getAttributes().put("s", s);
-        Boolean o = Expression.valueOf("${contains(exchange.attributes.s, 'can')}", Boolean.class).eval(bindings);
+        attributes.put("s", s);
+        Boolean o = Expression.valueOf("${contains(attributes.s, 'can')}", Boolean.class).eval(bindings);
         assertThat(o).isEqualTo(true);
     }
 
     @Test
     public void notContains() throws ExpressionException {
         String s = "allyoucaneat";
-        exchange.getAttributes().put("s", s);
-        Boolean o = Expression.valueOf("${contains(exchange.attributes.s, 'foo')}", Boolean.class).eval(bindings);
+        attributes.put("s", s);
+        Boolean o = Expression.valueOf("${contains(attributes.s, 'foo')}", Boolean.class).eval(bindings);
         assertThat(o).isEqualTo(false);
     }
 
     @Test
     public void containsSplit() throws ExpressionException {
         String s = "all,you,can,eat";
-        exchange.getAttributes().put("s", s);
-        Boolean o = Expression.valueOf("${contains(split(exchange.attributes.s, ','), 'can')}", Boolean.class)
+        attributes.put("s", s);
+        Boolean o = Expression.valueOf("${contains(split(attributes.s, ','), 'can')}", Boolean.class)
                               .eval(bindings);
         assertThat(o).isEqualTo(true);
     }
@@ -135,8 +136,8 @@ public class FunctionsTest {
     @Test(dataProvider = "matchData")
     public void matches(String s, String pattern, boolean matches, String[] groups)
             throws Exception {
-        exchange.getAttributes().put("s", s);
-        Boolean o = Expression.valueOf("${matches(exchange.attributes.s, '" + pattern + "')}", Boolean.class)
+        attributes.put("s", s);
+        Boolean o = Expression.valueOf("${matches(attributes.s, '" + pattern + "')}", Boolean.class)
                               .eval(bindings);
         assertThat(o).isEqualTo(matches);
     }
@@ -144,8 +145,8 @@ public class FunctionsTest {
     @Test(dataProvider = "matchData")
     public void matchingGroups(String s, String pattern, boolean matches, String[] groups)
             throws Exception {
-        exchange.getAttributes().put("s", s);
-        Expression<String[]> stringArrayExpr = Expression.valueOf("${matchingGroups(exchange.attributes.s, "
+        attributes.put("s", s);
+        Expression<String[]> stringArrayExpr = Expression.valueOf("${matchingGroups(attributes.s, "
                 + "'" + pattern + "')}", String[].class);
         String[] o = stringArrayExpr.eval(bindings);
         if (matches) {
@@ -171,15 +172,15 @@ public class FunctionsTest {
 
     @Test(dataProvider = "urlEncodings")
     public void urlEncode(String decoded, String encoded) throws ExpressionException {
-        exchange.getAttributes().put("s", decoded);
-        String o = Expression.valueOf("${urlEncode(exchange.attributes.s)}", String.class).eval(bindings);
+        attributes.put("s", decoded);
+        String o = Expression.valueOf("${urlEncode(attributes.s)}", String.class).eval(bindings);
         assertThat(o).isEqualTo(encoded);
     }
 
     @Test(dataProvider = "urlEncodings")
     public void urlDecode(String decoded, String encoded) throws ExpressionException {
-        exchange.getAttributes().put("s", encoded);
-        String o = Expression.valueOf("${urlDecode(exchange.attributes.s)}", String.class).eval(bindings);
+        attributes.put("s", encoded);
+        String o = Expression.valueOf("${urlDecode(attributes.s)}", String.class).eval(bindings);
         assertThat(o).isEqualTo(decoded);
     }
 

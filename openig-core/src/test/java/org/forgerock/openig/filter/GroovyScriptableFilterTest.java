@@ -73,7 +73,9 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -111,19 +113,19 @@ public class GroovyScriptableFilterTest {
     public void testAssignment() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "exchange.attributes.test = false",
+                "contexts.attributes.attributes.test = false",
                 "next.handle(context, request)",
                 "    .thenOnResult({ response -> ",
-                "      exchange.attributes.test = (response.status.code == 302)",
+                "      contexts.attributes.attributes.test = (response.status.code == 302)",
                 "})"
         );
         // @formatter:on
         final Response response = new Response();
         response.setStatus(Status.FOUND);
         final Handler handler = new ResponseHandler(response);
-        Exchange exchange = new Exchange();
-        filter.filter(exchange, null, handler);
-        assertThat((Boolean) exchange.getAttributes().get("test")).isTrue();
+        AttributesContext context = new AttributesContext(new RootContext());
+        filter.filter(context, null, handler);
+        assertThat((Boolean) context.getAttributes().get("test")).isTrue();
     }
 
     @Test
@@ -484,19 +486,19 @@ public class GroovyScriptableFilterTest {
                             .create(Name.of("test"), new JsonValue(config), getHeap());
 
             // Authenticate using correct password.
-            final Exchange exchange = new Exchange();
+            AttributesContext attributesContext = new AttributesContext(new RootContext());
             Request request = new Request();
             request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
             // FixMe: Passing the LDAP host and port as headers is wrong.
-            exchange.getAttributes().put("ldapHost", "localhost");
-            exchange.getAttributes().put("ldapPort", String.valueOf(port));
-            filter.filter(new SessionContext(exchange, new SimpleMapSession()), request, mock(Handler.class));
+            attributesContext.getAttributes().put("ldapHost", "localhost");
+            attributesContext.getAttributes().put("ldapPort", String.valueOf(port));
+            filter.filter(new SessionContext(attributesContext, new SimpleMapSession()), request, mock(Handler.class));
 
             Set<String> cnValues = new HashSet<>();
             cnValues.add("Barbara Jensen");
             cnValues.add("Babs Jensen");
-            assertThat(exchange.getAttributes().get("cn")).isEqualTo(cnValues);
-            assertThat(exchange.getAttributes().get("description"))
+            assertThat(attributesContext.getAttributes().get("cn")).isEqualTo(cnValues);
+            assertThat(attributesContext.getAttributes().get("description"))
                     .isEqualTo("New description set by my script");
             assertThat(request.getHeaders().get("Ldap-User-Dn").getValues())
                     .containsOnly("uid=bjensen,ou=people,dc=example,dc=com");
@@ -507,7 +509,7 @@ public class GroovyScriptableFilterTest {
             // FixMe: Passing the LDAP host and port as headers is wrong.
             request2.getHeaders().add("LdapHost", "0.0.0.0");
             request2.getHeaders().add("LdapPort", "" + port);
-            Response response = filter.filter(exchange, request2, mock(Handler.class)).get();
+            Response response = filter.filter(attributesContext, request2, mock(Handler.class)).get();
             assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
         } finally {
             listener.close();

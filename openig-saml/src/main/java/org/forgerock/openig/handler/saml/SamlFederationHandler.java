@@ -32,21 +32,21 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -171,9 +171,8 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Exchange exchange = context.asContext(Exchange.class);
-        HttpServletRequest servletRequest = adaptRequest(exchange, request);
-        HttpServletResponse servletResponse = adaptResponse(exchange);
+        HttpServletRequest servletRequest = adaptRequest(context, request);
+        HttpServletResponse servletResponse = adaptResponse(context);
 
         Session session = context.asContext(SessionContext.class).getSession();
         try {
@@ -559,12 +558,14 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         return response;
     }
 
-    private static HttpServletResponse adaptResponse(Exchange exchange) {
-        return (HttpServletResponse) exchange.getAttributes().get(HttpServletResponse.class.getName());
+    private static HttpServletResponse adaptResponse(Context context) {
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        return (HttpServletResponse) attributesContext.getAttributes().get(HttpServletResponse.class.getName());
     }
 
-    private static HttpServletRequest adaptRequest(Exchange exchange, Request req) {
-        HttpServletRequest request = (HttpServletRequest) exchange.getAttributes()
+    private static HttpServletRequest adaptRequest(Context context, Request req) {
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        HttpServletRequest request = (HttpServletRequest) attributesContext.getAttributes()
                                                                   .get(HttpServletRequest.class.getName());
         return new RequestAdapter(request, req);
     }

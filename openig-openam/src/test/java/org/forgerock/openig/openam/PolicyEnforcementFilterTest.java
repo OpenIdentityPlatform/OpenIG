@@ -52,11 +52,12 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
@@ -77,7 +78,7 @@ public class PolicyEnforcementFilterTest {
                                                             field("attributes", object())));
 
     private SessionContext sessionContext;
-    private Exchange exchange;
+    private AttributesContext attributesContext;
 
     @Mock
     private Handler terminalHandler;
@@ -89,9 +90,9 @@ public class PolicyEnforcementFilterTest {
     public void setUp() throws Exception {
         initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
-        exchange = new Exchange(sessionContext, null);
-        exchange.getAttributes().put("password", "hifalutin");
-        exchange.getAttributes().put("ssoTokenSubject", TOKEN);
+        attributesContext = new AttributesContext(sessionContext);
+        attributesContext.getAttributes().put("password", "hifalutin");
+        attributesContext.getAttributes().put("ssoTokenSubject", TOKEN);
     }
 
     @DataProvider
@@ -101,13 +102,13 @@ public class PolicyEnforcementFilterTest {
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${exchange.attributes.ssoTokenSubject}"),
+                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"),
                     field("application", "myApplication"))) },
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("jwtSubject", "${exchange.attributes.jwtSubject}"),
+                    field("jwtSubject", "${contexts.attributes.attributes.jwtSubject}"),
                     field("application", "anotherApplication"))) } };
     }
 
@@ -118,17 +119,17 @@ public class PolicyEnforcementFilterTest {
             { json(object(
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${exchange.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
             /* Missing pepUsername. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${exchange.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
             /* Missing pepPassword. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
-                    field("ssoTokenSubject", "${exchange.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
             /* Missing ssoTokenSubject OR jwtSubject. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
@@ -158,15 +159,15 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Exchange.class), any(Request.class)))
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()));
 
         // When
-        final Response finalResponse = filter.filter(exchange,
+        final Response finalResponse = filter.filter(attributesContext,
                                                      request,
                                                      terminalHandler).get();
         // Then
-        verify(terminalHandler).handle(any(Exchange.class), any(Request.class));
+        verify(terminalHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
     }
 
@@ -180,16 +181,16 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Exchange.class), any(Request.class)))
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()))
             .thenReturn(newResponsePromise(displayResourceResponse()));
 
         // When
-        final Response finalResponse = filter.filter(exchange,
+        final Response finalResponse = filter.filter(attributesContext,
                                                      request,
                                                      terminalHandler).get();
         // Then
-        verify(terminalHandler, times(2)).handle(any(Exchange.class), any(Request.class));
+        verify(terminalHandler, times(2)).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
     }
@@ -209,15 +210,15 @@ public class PolicyEnforcementFilterTest {
         filter.setLogger(logger);
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Exchange.class), any(Request.class)))
+        when(terminalHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(errorResponse));
 
         // When
-        final Response finalResponse = filter.filter(exchange,
+        final Response finalResponse = filter.filter(attributesContext,
                                                      request,
                                                      terminalHandler).get();
         // Then
-        verify(terminalHandler).handle(any(Exchange.class), any(Request.class));
+        verify(terminalHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).debug(any(Exception.class));
@@ -241,7 +242,9 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
                                                                            null,
                                                                            terminalHandler);
-        filter.setSsoTokenSubject(Expression.valueOf("${exchange.attributes.ssoTokenSubject}", String.class));
+        Expression<String> subject = Expression.valueOf("${contexts.attributes.attributes.ssoTokenSubject}",
+                                                        String.class);
+        filter.setSsoTokenSubject(subject);
         return filter;
     }
 

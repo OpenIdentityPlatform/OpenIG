@@ -38,6 +38,8 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
@@ -51,9 +53,10 @@ public class AuthorizationRedirectHandlerTest {
     private static final String OPENAM_BASE_OAUTH2 = "http://www.example.com:8089/openam/oauth2";
     private static final String ORIGINAL_URI = "http://www.ig.original.com:8082";
 
-    private Exchange exchange;
+    private Context context;
     private Request request;
     private SessionContext sessionContext;
+    private AttributesContext attributesContext;
 
     @Mock
     private TimeService time;
@@ -62,8 +65,9 @@ public class AuthorizationRedirectHandlerTest {
     public void setUp() throws Exception {
         initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
-        exchange = new Exchange(sessionContext, URI.create(ORIGINAL_URI));
-        exchange.getAttributes().put("clientEndpoint", CLIENT_ENDPOINT);
+        attributesContext = new AttributesContext(sessionContext);
+        context = new Exchange(attributesContext, URI.create(ORIGINAL_URI));
+        attributesContext.getAttributes().put("clientEndpoint", CLIENT_ENDPOINT);
         request = new Request();
     }
 
@@ -75,16 +79,17 @@ public class AuthorizationRedirectHandlerTest {
     @Test
     public void shouldFailWhenProvidedEndpointIsInvalid() throws Exception {
         // Given
-        exchange.getAttributes().put("invalidClientEndpoint", "[fails");
+        attributesContext.getAttributes().put("invalidClientEndpoint", "[fails");
 
         // When
+        Expression<String> expression = Expression.valueOf("${contexts.attributes.attributes.invalidClientEndpoint}",
+                                                           String.class);
         final AuthorizationRedirectHandler handler =
                 new AuthorizationRedirectHandler(time,
-                                                 Expression.valueOf("${exchange.attributes.invalidClientEndpoint}",
-                                                                    String.class),
+                                                 expression,
                                                  buildClientRegistration());
         // Then
-        final Response response = handler.handle(exchange, request).get();
+        final Response response = handler.handle(context, request).get();
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
     }
 
@@ -96,7 +101,7 @@ public class AuthorizationRedirectHandlerTest {
         final AuthorizationRedirectHandler handler = buildAuthorizationRedirectHandler(null);
 
         // When
-        final Response response = handler.handle(exchange, request).get();
+        final Response response = handler.handle(context, request).get();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
@@ -113,7 +118,7 @@ public class AuthorizationRedirectHandlerTest {
         final AuthorizationRedirectHandler handler = buildAuthorizationRedirectHandler(registration);
 
         // When
-        final Response response = handler.handle(exchange, request).get();
+        final Response response = handler.handle(context, request).get();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
@@ -130,7 +135,7 @@ public class AuthorizationRedirectHandlerTest {
         final AuthorizationRedirectHandler handler = buildAuthorizationRedirectHandler(registration);
 
         // When
-        final Response response = handler.handle(exchange, request).get();
+        final Response response = handler.handle(context, request).get();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(FOUND);
@@ -147,7 +152,7 @@ public class AuthorizationRedirectHandlerTest {
     private AuthorizationRedirectHandler buildAuthorizationRedirectHandler(final ClientRegistration registration)
             throws Exception {
         return new AuthorizationRedirectHandler(time,
-                                                Expression.valueOf("${exchange.attributes.clientEndpoint}",
+                                                Expression.valueOf("${contexts.attributes.attributes.clientEndpoint}",
                                                                    String.class),
                                                 registration);
     }

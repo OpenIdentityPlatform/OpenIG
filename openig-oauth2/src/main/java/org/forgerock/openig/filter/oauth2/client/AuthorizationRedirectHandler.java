@@ -42,6 +42,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -102,9 +103,10 @@ class AuthorizationRedirectHandler implements Handler {
         if (gotoUri == null) {
             gotoUri = exchange.getOriginalUri().toString();
         }
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
         final ClientRegistration cr = registration != null
                                     ? registration
-                                    : (ClientRegistration) exchange.getAttributes().get(CLIENT_REG_KEY);
+                                    : (ClientRegistration) attributesContext.getAttributes().get(CLIENT_REG_KEY);
         final String loginHint = request.getForm().getFirst("discovery");
 
         if (cr != null && cr.getIssuer() != null) {

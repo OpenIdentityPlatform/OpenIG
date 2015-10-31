@@ -40,8 +40,9 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -104,7 +105,7 @@ public class OAuth2ResourceServerFilterTest {
         if (authorizationValue != null) {
             request.getHeaders().put("Authorization", authorizationValue);
         }
-        Response response = filter.filter(new Exchange(), request, null).get();
+        Response response = filter.filter(newContextChain(), request, null).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
@@ -119,7 +120,7 @@ public class OAuth2ResourceServerFilterTest {
         request.getHeaders().add("Authorization", "Bearer 1234");
         request.getHeaders().add("Authorization", "Bearer 5678");
 
-        Response response = filter.filter(new Exchange(), request, null).get();
+        Response response = filter.filter(newContextChain(), request, null).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.BAD_REQUEST);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
@@ -144,7 +145,7 @@ public class OAuth2ResourceServerFilterTest {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
         Request request = buildAuthorizedRequest();
 
-        Response response = filter.filter(new Exchange(), request, null).get();
+        Response response = filter.filter(newContextChain(), request, null).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders().getFirst(WWW_AUTHENTICATE))
@@ -156,7 +157,7 @@ public class OAuth2ResourceServerFilterTest {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter("a-missing-scope", "another-one");
         Request request = buildAuthorizedRequest();
 
-        Response response = filter.filter(new Exchange(), request, null).get();
+        Response response = filter.filter(newContextChain(), request, null).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
         String header = response.getHeaders().getFirst(WWW_AUTHENTICATE);
@@ -164,46 +165,48 @@ public class OAuth2ResourceServerFilterTest {
     }
 
     @Test
-    public void shouldStoreAccessTokenInTheExchange() throws Exception {
+    public void shouldStoreAccessTokenInTheContext() throws Exception {
         OAuth2ResourceServerFilter filter = buildResourceServerFilter();
 
-        Exchange exchange = new Exchange();
+        Context context = newContextChain();
         Request request = buildAuthorizedRequest();
-        filter.filter(exchange, request, nextHandler);
+        filter.filter(context, request, nextHandler);
 
-        assertThat(exchange.getAttributes()).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
-        verify(nextHandler).handle(exchange, request);
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        assertThat(attributesContext.getAttributes()).containsKey(DEFAULT_ACCESS_TOKEN_KEY);
+        verify(nextHandler).handle(context, request);
     }
 
     @Test
-    public void shouldStoreAccessTokenInTargetInTheExchange() throws Exception {
+    public void shouldStoreAccessTokenInTargetInTheContext() throws Exception {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                Expression.valueOf("${exchange.attributes.myToken}", String.class));
+                Expression.valueOf("${contexts.attributes.attributes.myToken}", String.class));
 
-        final Exchange exchange = new Exchange();
+        final Context context = newContextChain();
         Request request = buildAuthorizedRequest();
-        filter.filter(exchange, request, nextHandler);
+        filter.filter(context, request, nextHandler);
 
-        assertThat(exchange.getAttributes()).containsKey("myToken");
-        assertThat(exchange.getAttributes().get("myToken")).isInstanceOf(AccessToken.class);
-        verify(nextHandler).handle(exchange, request);
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        assertThat(attributesContext.getAttributes()).containsKey("myToken");
+        assertThat(attributesContext.getAttributes().get("myToken")).isInstanceOf(AccessToken.class);
+        verify(nextHandler).handle(context, request);
     }
 
     @Test
     public void shouldEvaluateScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter =
-                buildResourceServerFilter("${exchange.attributes.attribute}",
+                buildResourceServerFilter("${contexts.attributes.attributes.attribute}",
                                           "${split('to,b,or,not,to', ',')[1]}",
                                           "c");
 
-        final Exchange exchange = new Exchange();
-        exchange.getAttributes().put("attribute", "a");
+        final AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("attribute", "a");
         Request request = buildAuthorizedRequest();
-        filter.filter(exchange, request, nextHandler);
+        filter.filter(context, request, nextHandler);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
     }
 
     @Test
@@ -211,7 +214,7 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = buildResourceServerFilter("${bad.attribute}");
 
         Request request = buildAuthorizedRequest();
-        Response response = filter.filter(new Exchange(), request, null).getOrThrow();
+        Response response = filter.filter(newContextChain(), request, null).getOrThrow();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).matches(".*scope expression \'.*\' could not be resolved");
     }
@@ -223,8 +226,12 @@ public class OAuth2ResourceServerFilterTest {
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
                                               Expression.valueOf(
-                                                      format("${exchange.attributes.%s}",
+                                                      format("${contexts.attributes.attributes.%s}",
                                                       DEFAULT_ACCESS_TOKEN_KEY), String.class));
+    }
+
+    private static Context newContextChain() {
+        return new AttributesContext(new RootContext());
     }
 
     private static Set<Expression<String>> getScopes(final String... scopes) throws ExpressionException {

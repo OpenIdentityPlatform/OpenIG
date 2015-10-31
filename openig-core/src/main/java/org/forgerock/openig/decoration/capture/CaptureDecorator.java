@@ -61,15 +61,15 @@ import org.forgerock.openig.log.Logger;
  *       "type": "CaptureDecorator",
  *       "config": {
  *           "captureEntity": false,
- *           "captureExchange": false
+ *           "captureContext": false
  *       }
  *     }
  *     }
  * </pre>
  * The capture decorator can be configured to globally enable entity capture using the {@literal captureEntity}
  * boolean attribute (default to {@code false}).
- * To capture the exchange without the request and response at the capture point as well,
- * use the {@literal captureExchange} boolean attribute (default to {@code false}).
+ * To capture the context at the capture point as well, use the {@literal captureContext} boolean attribute
+ * (default to {@code false}), Note that {@literal captureExchange} is deprecated.
  * The common {@literal logSink} attribute can be used to force message capture in a given sink. By default, messages
  * are sent to the heap object defined LogSink.
  * <p>
@@ -94,7 +94,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
     private final LazyReference<LogSink> reference;
     private final boolean captureEntity;
-    private final boolean captureExchange;
+    private final boolean captureContext;
 
     /**
      * Builds a new {@code capture} decorator with the given sink reference (possibly {@code null})
@@ -106,16 +106,16 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
      *         Log Sink reference for message capture (may be {@code null})
      * @param captureEntity
      *         {@code true} if the decorator needs to capture the entity, {@code false} otherwise
-     * @param captureExchange
-     *         {@code true} if the decorator needs to capture the exchange excluding request and response,
+     * @param captureContext
+     *         {@code true} if the decorator needs to capture the context,
      *         {@code false} otherwise
      */
     public CaptureDecorator(final LazyReference<LogSink> reference,
                             final boolean captureEntity,
-                            final boolean captureExchange) {
+                            final boolean captureContext) {
         this.reference = reference;
         this.captureEntity = captureEntity;
-        this.captureExchange = captureExchange;
+        this.captureContext = captureContext;
     }
 
     @Override
@@ -186,7 +186,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
             sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
         }
         Name name = context.getName();
-        return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureExchange);
+        return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureContext);
     }
 
     /**
@@ -200,8 +200,16 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
                                                             LogSink.class,
                                                             true);
             boolean captureEntity = config.get("captureEntity").defaultTo(false).asBoolean();
-            boolean captureExchange = config.get("captureExchange").defaultTo(false).asBoolean();
-            return new CaptureDecorator(reference, captureEntity, captureExchange);
+
+            // captureExchange is deprecated
+            boolean captureContext = false;
+            if (config.isDefined("captureExchange")) {
+                captureContext = config.get("captureExchange").asBoolean();
+            }
+            if (config.isDefined("captureContext")) {
+                captureContext = config.get("captureContext").asBoolean();
+            }
+            return new CaptureDecorator(reference, captureEntity, captureContext);
         }
     }
 }

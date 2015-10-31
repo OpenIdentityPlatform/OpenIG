@@ -34,7 +34,9 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -158,10 +160,11 @@ public class LocationHeaderFilterTest {
     @Test
     public void caseBaseUriAsExpression() throws Exception {
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(Expression.valueOf("http://${exchange.attributes.host}:8080", String.class));
+        filter.setBaseURI(Expression.valueOf("http://${contexts.attributes.attributes.host}:8080", String.class));
 
-        Exchange exchange = new Exchange();
-        exchange.getAttributes().put("host", "app.example.com");
+        AttributesContext attributesContext = new AttributesContext(new RootContext());
+        attributesContext.getAttributes().put("host", "app.example.com");
+        Exchange context = new Exchange(attributesContext, null);
 
         // Prepare a response
         Response expectedResponse = new Response();
@@ -170,7 +173,7 @@ public class LocationHeaderFilterTest {
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
 
-        Response response = filter.filter(exchange, null, next).get();
+        Response response = filter.filter(context, null, next).get();
 
         assertThat(response.getHeaders().getFirst(LocationHeader.NAME))
                 .isEqualTo("http://app.example.com:8080/redirected");

@@ -29,7 +29,6 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -37,7 +36,8 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -64,7 +64,7 @@ import org.forgerock.util.promise.Promise;
  *             "profile",
  *             "email"
  *         ],
- *         "target": "${exchange.attributes.openid}",
+ *         "target": "${contexts.attributes.attributes.openid}",
  *         "failureHandler": ...,
  *         "redirect_uris": [
  *             "http://localhost:8082/openid/callback",
@@ -122,8 +122,8 @@ public class ClientRegistrationFilter implements Filter {
                                                           Request request,
                                                           Handler next) {
         try {
-            final Exchange exchange = context.asContext(Exchange.class);
-            final Issuer issuer = (Issuer) exchange.getAttributes().get(ISSUER_KEY);
+            AttributesContext attributesContext = context.asContext(AttributesContext.class);
+            final Issuer issuer = (Issuer) attributesContext.getAttributes().get(ISSUER_KEY);
             if (issuer != null) {
                 ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
                 if (cr == null) {
@@ -141,7 +141,7 @@ public class ClientRegistrationFilter implements Filter {
                             createClientRegistrationDeclaration(registeredClientConfiguration, issuer.getName()),
                             ClientRegistration.class);
                 }
-                exchange.getAttributes().put(CLIENT_REG_KEY, cr);
+                attributesContext.getAttributes().put(CLIENT_REG_KEY, cr);
             } else {
                 throw new RegistrationException("Cannot retrieve issuer from the exchange");
             }

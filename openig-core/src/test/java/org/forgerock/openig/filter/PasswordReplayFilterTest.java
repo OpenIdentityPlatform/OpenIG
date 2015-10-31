@@ -41,7 +41,6 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -73,17 +72,18 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPage(IS_GET_LOGIN_PAGE)
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
                                                   .build()
                                            .build()
                                  .build();
 
-        Exchange exchange = newExchange();
-        exchange.getAttributes().put("username", "demo");
-        exchange.getAttributes().put("password", "changeit");
+        Context context = newContextChain();
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        attributesContext.getAttributes().put("username", "demo");
+        attributesContext.getAttributes().put("password", "changeit");
         filter.filter(
-                exchange,
+                context,
                 new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_LOGIN),
                 new Handler() {
                     @Override
@@ -102,15 +102,15 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPage(IS_GET_LOGIN_PAGE)
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
                                                   .build()
                                            .build()
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_HOME);
         filter.filter(
-                newExchange(),
+                newContextChain(),
                 incoming,
                 new Handler() {
                     @Override
@@ -128,18 +128,19 @@ public class PasswordReplayFilterTest {
                                  .extract("nonce", "nonce='(.*)'")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
-                                                  .param("nonce", "${exchange.attributes.extracted.nonce}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
+                                                  .param("nonce", "${contexts.attributes.attributes.extracted.nonce}")
                                            .build()
                                            .build()
                                  .build();
 
-        Exchange exchange = newExchange();
-        exchange.getAttributes().put("username", "demo");
-        exchange.getAttributes().put("password", "changeit");
+        Context context = newContextChain();
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        attributesContext.getAttributes().put("username", "demo");
+        attributesContext.getAttributes().put("password", "changeit");
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_LOGIN);
-        filter.filter(exchange,
+        filter.filter(context,
                       incoming,
                       verifyAuthSequenceWithNonceReturned(incoming));
     }
@@ -150,16 +151,16 @@ public class PasswordReplayFilterTest {
                                  .extract("nonce", "nonce='(.*)'")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
-                                                  .param("nonce", "${exchange.attributes.extracted.nonce}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
+                                                  .param("nonce", "${contexts.attributes.attributes.extracted.nonce}")
                                                   .build()
                                            .build()
                                  .build();
 
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_HOME);
-        filter.filter(exchange,
+        filter.filter(context,
                       incoming,
                       verifyOriginalRequestIsForwarded(incoming,
                                                        new Response(Status.OK)
@@ -171,17 +172,18 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPageContentMarker("I'm a login page")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
                                                   .build()
                                            .build()
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
-        Exchange exchange = newExchange();
-        exchange.getAttributes().put("username", "demo");
-        exchange.getAttributes().put("password", "changeit");
-        Response response = filter.filter(exchange,
+        Context context = newContextChain();
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        attributesContext.getAttributes().put("username", "demo");
+        attributesContext.getAttributes().put("password", "changeit");
+        Response response = filter.filter(context,
                                           incoming,
                                           verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
@@ -209,8 +211,8 @@ public class PasswordReplayFilterTest {
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
-        Exchange exchange = newExchange();
-        Response response = filter.filter(exchange,
+        Context context = newContextChain();
+        Response response = filter.filter(context,
                                           incoming,
                                           verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
@@ -243,7 +245,7 @@ public class PasswordReplayFilterTest {
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
-        Response response = filter.filter(newExchange(),
+        Response response = filter.filter(newContextChain(),
                                           incoming,
                                           verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
@@ -284,16 +286,16 @@ public class PasswordReplayFilterTest {
         Filter filter = builder().loginPageContentMarker("I'm a login page")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
                                                   .build()
                                            .build()
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         Response expected = new Response(Status.OK).setEntity(FINAL_CONTENT_MARKER);
-        Response response = filter.filter(exchange,
+        Response response = filter.filter(context,
                                            incoming,
                                            verifyOriginalRequestIsForwarded(incoming,
                                                                             expected)).get();
@@ -325,18 +327,19 @@ public class PasswordReplayFilterTest {
                                  .extract("nonce", "nonce='(.*)'")
                                  .request().uri("http://internal.example.com/login")
                                            .method("POST")
-                                           .form().param("username", "${exchange.attributes.username}")
-                                                  .param("password", "${exchange.attributes.password}")
-                                                  .param("nonce", "${exchange.attributes.extracted.nonce}")
+                                           .form().param("username", "${contexts.attributes.attributes.username}")
+                                                  .param("password", "${contexts.attributes.attributes.password}")
+                                                  .param("nonce", "${contexts.attributes.attributes.extracted.nonce}")
                                                   .build()
                                            .build()
                                  .build();
 
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
-        Exchange exchange = newExchange();
-        exchange.getAttributes().put("username", "demo");
-        exchange.getAttributes().put("password", "changeit");
-        Response response = filter.filter(exchange,
+        Context context = newContextChain();
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        attributesContext.getAttributes().put("username", "demo");
+        attributesContext.getAttributes().put("password", "changeit");
+        Response response = filter.filter(context,
                                           incoming,
                                           verifyAuthSequenceWithNonceReturned(incoming)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
@@ -374,8 +377,8 @@ public class PasswordReplayFilterTest {
         };
     }
 
-    private Exchange newExchange() {
-        return new Exchange(new SessionContext(new AttributesContext(new RootContext()), new InMemorySession()), null);
+    private Context newContextChain() {
+        return new SessionContext(new AttributesContext(new RootContext()), new InMemorySession());
     }
 
     private FilterBuilder builder() {

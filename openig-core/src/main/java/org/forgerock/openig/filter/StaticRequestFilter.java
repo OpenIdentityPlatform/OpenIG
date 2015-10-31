@@ -82,8 +82,8 @@ import org.forgerock.util.promise.Promises;
  *          "method": "POST",
  *          "uri": "http://10.10.0.2:8080/wp-login.php",
  *          "entity": "{\"auth\":{\"passwordCredentials\":
- *                     {\"username\":\"${exchange.attributes.username}\",
- *                      \"password\":\"${exchange.attributes.password}\"}}}"
+ *                     {\"username\":\"${contexts.attributes.attributes.username}\",
+ *                      \"password\":\"${contexts.attributes.attributes.password}\"}}}"
  *          "headers": {
  *              "Warning": [ "199 Miscellaneous warning" ]
  *          }

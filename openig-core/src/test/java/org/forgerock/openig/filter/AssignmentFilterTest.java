@@ -39,6 +39,8 @@ import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -52,20 +54,20 @@ public class AssignmentFilterTest {
         return new Object[][] {
             { json(object(field("onRequest", array(
                     object(
-                        field("target", "${exchange.attributes.target}"),
+                        field("target", "${contexts.attributes.attributes.target}"),
                         field("value", VALUE)))))) },
             { json(object(field("onRequest", array(
                     object(
-                        field("target", "${exchange.attributes.target}"),
+                        field("target", "${contexts.attributes.attributes.target}"),
                         field("value", VALUE),
                         field("condition", "${1==1}")))))) },
             { json(object(field("onResponse", array(
                     object(
-                        field("target", "${exchange.attributes.target}"),
+                        field("target", "${contexts.attributes.attributes.target}"),
                         field("value", VALUE)))))) },
             { json(object(field("onResponse", array(
                     object(
-                        field("target", "${exchange.attributes.target}"),
+                        field("target", "${contexts.attributes.attributes.target}"),
                         field("value", VALUE),
                         field("condition", "${1==1}")))))) } };
     }
@@ -92,43 +94,43 @@ public class AssignmentFilterTest {
     @Test(dataProvider = "validConfigurations")
     public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
         final AssignmentFilter filter = buildAssignmentFilter(config);
-        final Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
-        chainOf(handler, filter).handle(exchange, null).get();
-        assertThat(exchange.getAttributes().get("target")).isEqualTo(VALUE);
+        chainOf(handler, filter).handle(context, null).get();
+        assertThat(context.getAttributes().get("target")).isEqualTo(VALUE);
     }
 
     @Test
     public void shouldSucceedToUnsetVar() throws Exception {
         final AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${exchange.attributes.target}", String.class);
+        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.target}", String.class);
         filter.addRequestBinding(target, null);
 
-        final Exchange exchange = new Exchange();
-        exchange.getAttributes().put("target", "UNSET");
+        AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("target", "UNSET");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         final Handler chain = chainOf(handler, singletonList((Filter) filter));
-        Bindings bindings = bindings(exchange, null);
+        Bindings bindings = bindings(context, null);
         assertThat(target.eval(bindings)).isEqualTo("UNSET");
 
-        chain.handle(exchange, null).get();
+        chain.handle(context, null).get();
         assertThat(target.eval(bindings)).isNull();
     }
 
     @Test
     public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.newAttr}", String.class);
         filter.addRequestBinding(target,
                                  Expression.valueOf("${request.method}", String.class));
 
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Request request = new Request();
         request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
         Chain chain = new Chain(handler, singletonList((Filter) filter));
-        chain.handle(exchange, request).get();
-        assertThat(exchange.getAttributes().get("newAttr")).isEqualTo("DELETE");
+        chain.handle(context, request).get();
+        assertThat(context.getAttributes().get("newAttr")).isEqualTo("DELETE");
     }
 
     @Test
@@ -150,14 +152,14 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${exchange.attributes.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.newAttr}", String.class);
         filter.addResponseBinding(target,
                                   Expression.valueOf("${response.status.code}", Integer.class));
 
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
-        chain.handle(exchange, new Request()).get();
-        assertThat(exchange.getAttributes().get("newAttr")).isEqualTo(200);
+        chain.handle(context, new Request()).get();
+        assertThat(context.getAttributes().get("newAttr")).isEqualTo(200);
     }
 
     private AssignmentFilter buildAssignmentFilter(final JsonValue config) throws Exception {

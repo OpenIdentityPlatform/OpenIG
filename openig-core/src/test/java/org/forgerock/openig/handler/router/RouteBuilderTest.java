@@ -36,6 +36,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -90,11 +91,11 @@ public class RouteBuilderTest {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("conditional-route.json"));
 
-        Exchange exchange = new Exchange();
-        exchange.getAttributes().put("value", 42);
-        assertThat(route.accept(exchange, null)).isTrue();
-        exchange.getAttributes().put("value", 44);
-        assertThat(route.accept(exchange, null)).isFalse();
+        AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("value", 42);
+        assertThat(route.accept(context, null)).isTrue();
+        context.getAttributes().put("value", 44);
+        assertThat(route.accept(context, null)).isFalse();
     }
 
     @Test

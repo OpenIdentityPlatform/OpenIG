@@ -36,8 +36,9 @@ import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 
 /**
  * Capture a message.
@@ -53,7 +54,7 @@ public class MessageCapture {
 
     private final Logger logger;
     private final boolean captureEntity;
-    private final boolean captureExchange;
+    private final boolean captureContext;
 
     /**
      * Builds a MessageCapture that will prints messages in the provided {@code logger}.
@@ -74,44 +75,44 @@ public class MessageCapture {
      *         where to write captured messages
      * @param captureEntity
      *         capture the entity content (if not binary)
-     * @param captureExchange
-     *         capture the exchange content (excluding request and response object) as json
+     * @param captureContext
+     *         capture the context content (excluding request and response object) as json
      */
-    public MessageCapture(final Logger logger, final boolean captureEntity, final boolean captureExchange) {
+    public MessageCapture(final Logger logger, final boolean captureEntity, final boolean captureContext) {
         this.logger = logger;
         this.captureEntity = captureEntity;
-        this.captureExchange = captureExchange;
+        this.captureContext = captureContext;
     }
 
     /**
      * Captures the given request, in the given mode.
      *
-     * @param exchange
-     *         Captured message's {@link org.forgerock.openig.decoration.Context}
+     * @param context
+     *         Captured message's {@link Context}
      * @param request
      *         Captured message
      * @param mode
      *         one of {@link CapturePoint#REQUEST},  {@link CapturePoint#FILTERED_REQUEST}
      */
-    void capture(final Exchange exchange, final Request request, final CapturePoint mode) {
+    void capture(final Context context, final Request request, final CapturePoint mode) {
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
-        int exchangeId = System.identityHashCode(exchange);
+        String id = context.getId();
         switch (mode) {
         case REQUEST:
-            captureRequest(writer, request, exchangeId);
+            captureRequest(writer, request, id);
             break;
         case FILTERED_REQUEST:
-            captureFilteredRequest(writer, request, exchangeId);
+            captureFilteredRequest(writer, request, id);
             break;
         default:
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
         }
 
-        // Prints the exchange if required
-        if (captureExchange) {
-            writer.println("Exchange's content as JSON (without request/response):");
-            captureExchangeAsJson(writer, exchange);
+        // Prints the context if required
+        if (captureContext) {
+            writer.println("Context's content as JSON:");
+            captureContextAsJson(writer, context);
         }
 
         // Print the message
@@ -121,71 +122,70 @@ public class MessageCapture {
     /**
      * Captures the given response, in the given mode.
      *
-     * @param exchange
-     *         Captured message's {@link org.forgerock.openig.decoration.Context}
+     * @param context
+     *         Captured message's {@link Context}
      * @param response
      *         Captured message
      * @param mode
      *         one of {@link CapturePoint#FILTERED_RESPONSE} or {@link CapturePoint#RESPONSE}
      */
-    void capture(final Exchange exchange, final Response response, final CapturePoint mode) {
+    void capture(final Context context, final Response response, final CapturePoint mode) {
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
-        int exchangeId = System.identityHashCode(exchange);
+        String id = context.getId();
         switch (mode) {
         case RESPONSE:
-            captureResponse(writer, response, exchangeId);
+            captureResponse(writer, response, id);
             break;
         case FILTERED_RESPONSE:
-            captureFilteredResponse(writer, response, exchangeId);
+            captureFilteredResponse(writer, response, id);
             break;
         default:
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
         }
 
         // Prints the exchange if required
-        if (captureExchange) {
-            writer.println("Exchange's content as JSON (without request/response):");
-            captureExchangeAsJson(writer, exchange);
+        if (captureContext) {
+            writer.println("Context's content as JSON:");
+            captureContextAsJson(writer, context);
         }
 
         // Print the message
         logger.info(out.toString());
     }
 
-    private void captureExchangeAsJson(final PrintWriter writer, final Exchange exchange) {
-        Map<String, Object> map = new LinkedHashMap<>(exchange.getAttributes());
-        map.remove("exchange");
-        map.remove("request");
-        map.remove("response");
+    private void captureContextAsJson(final PrintWriter writer, final Context context) {
+        // TODO we restrict ourselves to attributes only here, we should pretty print the chain of contexts instead
+        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+        Map<String, Object> map = new LinkedHashMap<>(attributesContext.getAttributes());
         map.remove("javax.servlet.http.HttpServletRequest");
         map.remove("javax.servlet.http.HttpServletResponse");
         writer.println(prettyPrint(toJson(map)));
     }
 
-    private void captureRequest(PrintWriter writer, Request request, long id) {
-        writer.printf("%n%n--- (request) exchange:%d --->%n%n", id);
+    private void captureRequest(PrintWriter writer, Request request, String id) {
+        writer.printf("%n%n--- (request) id:%s --->%n%n", id);
         if (request != null) {
             captureRequestMessage(writer, request);
         }
     }
 
-    private void captureFilteredRequest(PrintWriter writer, Request request, long id) {
-        writer.printf("%n%n--- (filtered-request) exchange:%d --->%n%n", id);
+    private void captureFilteredRequest(PrintWriter writer, Request request, String id) {
+        writer.printf("%n%n--- (filtered-request) id:%s --->%n%n", id);
         if (request != null) {
             captureRequestMessage(writer, request);
         }
     }
 
-    private void captureResponse(PrintWriter writer, Response response, long id) {
-        writer.printf("%n%n<--- (response) exchange:%d ---%n%n", id);
+    private void captureResponse(PrintWriter writer, Response response, String id) {
+        writer.printf("%n%n<--- (response) id:%s ---%n%n", id);
         if (response != null) {
             captureResponseMessage(writer, response);
         }
     }
 
-    private void captureFilteredResponse(PrintWriter writer, Response response, long id) {
-        writer.printf("%n%n<--- (filtered-response) exchange:%d ---%n%n", id);
+    private void captureFilteredResponse(PrintWriter writer, Response response, String id) {
+        writer.printf("%n%n<--- (filtered-response) id:%s ---%n%n", id);
         if (response != null) {
             captureResponseMessage(writer, response);
         }
