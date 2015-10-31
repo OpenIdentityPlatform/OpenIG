@@ -17,7 +17,6 @@
 package org.forgerock.openig.http;
 
 import org.forgerock.http.protocol.Request;
-import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 
 /**
@@ -42,11 +41,6 @@ public final class Adapters {
      * @return An HTTP exchange of request which can be used in legacy OpenIG.
      */
     public static Exchange asExchange(Context context, Request request) {
-        final Exchange exchange = new Exchange(context, request.getUri().asURI());
-        // TODO We will need to find a more robust solution when Exchange will be removed
-        final AttributesContext attributesContext = context.asContext(AttributesContext.class);
-        exchange.getAttributes().putAll(attributesContext.getAttributes());
-        attributesContext.getAttributes().clear();
-        return exchange;
+        return new Exchange(context, request.getUri().asURI());
     }
 }

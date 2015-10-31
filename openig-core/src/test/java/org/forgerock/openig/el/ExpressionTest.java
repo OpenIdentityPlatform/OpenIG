@@ -30,7 +30,8 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -115,7 +116,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void exchangeRequestHeader() throws ExpressionException {
+    public void requestHeader() throws ExpressionException {
         Request request = new Request();
         request.getHeaders().put("Host", "www.example.com");
         Expression<String> expr = Expression.valueOf("${request.headers['Host'][0]}", String.class);
@@ -132,13 +133,13 @@ public class ExpressionTest {
     }
 
     @Test
-    public void exchangeSetAttribute() throws ExpressionException {
-        Exchange exchange = new Exchange();
-        Bindings bindings = bindings(exchange, null);
+    public void setAttribute() throws ExpressionException {
+        AttributesContext context = new AttributesContext(new RootContext());
+        Bindings bindings = bindings(context, null);
         @SuppressWarnings("rawtypes")
-        Expression<Map> expr = Expression.valueOf("${exchange.attributes.testmap}", Map.class);
+        Expression<Map> expr = Expression.valueOf("${contexts.attributes.attributes.testmap}", Map.class);
         expr.set(bindings, singletonMap("foo", "bar"));
-        Expression<String> foo = Expression.valueOf("${exchange.attributes.testmap.foo}", String.class);
+        Expression<String> foo = Expression.valueOf("${contexts.attributes.attributes.testmap.foo}", String.class);
         assertThat(foo.eval(bindings)).isEqualTo("bar");
     }
 

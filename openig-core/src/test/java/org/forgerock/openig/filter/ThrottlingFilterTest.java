@@ -32,8 +32,9 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -68,26 +69,27 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        Expression<String> expr = Expression.valueOf("${matches(exchange.attributes.foo, 'bar-00') ?'bucket-00' :''}",
-                                                     String.class);
+        Expression<String> expr =
+                Expression.valueOf("${matches(contexts.attributes.attributes.foo, 'bar-00') ?'bucket-00' :''}",
+                                   String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 
         Handler handler = new ResponseHandler(Status.OK);
 
         // The time does not need to advance
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Promise<Response, NeverThrowsException> promise;
 
-        exchange.getAttributes().put("foo", "bar-00");
-        promise = filter.filter(exchange, new Request(), handler);
+        context.getAttributes().put("foo", "bar-00");
+        promise = filter.filter(context, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
 
-        exchange.getAttributes().put("foo", "bar-00");
-        promise = filter.filter(exchange, new Request(), handler);
+        context.getAttributes().put("foo", "bar-00");
+        promise = filter.filter(context, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
 
-        exchange.getAttributes().put("foo", "bar-01");
-        promise = filter.filter(exchange, new Request(), handler);
+        context.getAttributes().put("foo", "bar-01");
+        promise = filter.filter(context, new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.OK);
     }
 
@@ -100,17 +102,16 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldUseDefaultValueWithExpressionEvaluatingNull() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        Expression<String> expr = Expression.valueOf("${exchange.attributes.bar}",
+        Expression<String> expr = Expression.valueOf("${contexts.attributes.attributes.bar}",
                                                      String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 
         Handler handler = new ResponseHandler(Status.OK);
 
         // The time does not need to advance
-        Exchange exchange = new Exchange();
         Promise<Response, NeverThrowsException> promise;
 
-        promise = filter.filter(exchange, new Request(), handler);
+        promise = filter.filter(new RootContext(), new Request(), handler);
         assertThat(promise.get().getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -149,7 +150,7 @@ public class ThrottlingFilterTest {
         // Call the filter in order to trigger the bucket creation
         Handler handler1 = mock(Handler.class, "handler1");
         filter.filter(context, new Request(), handler1);
-        verify(handler1).handle(any(Exchange.class), any(Request.class));
+        verify(handler1).handle(any(Context.class), any(Request.class));
 
         time.advance(duration("4 seconds"));
 
@@ -157,7 +158,7 @@ public class ThrottlingFilterTest {
         // internal structure
         Handler handler2 = mock(Handler.class, "handler2");
         filter.filter(context, new Request(), handler2);
-        verify(handler2).handle(any(Exchange.class), any(Request.class));
+        verify(handler2).handle(any(Context.class), any(Request.class));
 
         assertThat(filter.getBucketsStats().evictionCount()).isEqualTo(1);
     }
@@ -206,7 +207,7 @@ public class ThrottlingFilterTest {
 
             @Override
             public void run() {
-                filter.filter(new Exchange(), new Request(), handler1);
+                filter.filter(new RootContext(), new Request(), handler1);
             }
         };
         Thread t1 = new Thread(r);
@@ -218,7 +219,7 @@ public class ThrottlingFilterTest {
         try {
             // This one does not have to be called as there no token anymore in the bucket.
             Handler handler2 = mock(Handler.class, "handler2");
-            Promise<Response, NeverThrowsException> promise2 = filter.filter(new Exchange(),
+            Promise<Response, NeverThrowsException> promise2 = filter.filter(new RootContext(),
                                                                              new Request(),
                                                                              handler2);
 

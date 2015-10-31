@@ -38,8 +38,8 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -87,8 +87,8 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "form": {
- *             "username": [ "${exchange.attributes.username}" ],
- *             "password": [ "${exchange.attributes.password}" ]
+ *             "username": [ "${contexts.attributes.attributes.username}" ],
+ *             "password": [ "${contexts.attributes.attributes.password}" ]
  *           }
  *         }
  *       }
@@ -107,8 +107,8 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "headers": {
- *             "X-OpenAM-Username": [ "${exchange.attributes.username}" ],
- *             "X-OpenAM-Password": [ "${exchange.attributes.password}" ]
+ *             "X-OpenAM-Username": [ "${contexts.attributes.attributes.username}" ],
+ *             "X-OpenAM-Password": [ "${contexts.attributes.attributes.password}" ]
  *           }
  *         }
  *       }
@@ -136,16 +136,16 @@ import org.forgerock.util.promise.ResultHandler;
  *             "config": {
  *                 "file": "${system.home}/users.csv",
  *                 "key": "uid",
- *                 "value": "${exchange.attributes.whoami}",
- *                 "target": "${exchange.attributes.user}"
+ *                 "value": "${contexts.attributes.attributes.whoami}",
+ *                 "target": "${contexts.attributes.attributes.user}"
  *             }
  *         }
  *         "request": {
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "headers": {
- *             "X-OpenAM-Username": [ "${exchange.attributes.user.uid}" ],
- *             "X-OpenAM-Password": [ "${exchange.attributes.user.password}" ]
+ *             "X-OpenAM-Username": [ "${contexts.attributes.attributes.user.uid}" ],
+ *             "X-OpenAM-Password": [ "${contexts.attributes.attributes.user.password}" ]
  *           }
  *         }
  *       }
@@ -162,7 +162,8 @@ import org.forgerock.util.promise.ResultHandler;
  * <p>Multiple values can be extracted at once, extraction is based on pattern matching (and use a
  * {@link EntityExtractFilter} under the hood).
  * As opposed to the {@literal EntityExtractFilter}, only 1 group is supported, and matched group value is placed in
- * the results. All extracted values will be placed in a Map available in {@literal exchange.attributes.extracted}.
+ * the results. All extracted values will be placed in a Map available in
+ * {@literal contexts.attributes.attributes.extracted}.
  *
  * <pre>
  *     {@code {
@@ -177,9 +178,9 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "form": {
- *             "username": [ "${exchange.attributes.username}" ],
- *             "password": [ "${exchange.attributes.password}" ]
- *             "nonce": [ "${exchange.attributes.extracted.nonce}" ]
+ *             "username": [ "${contexts.attributes.attributes.username}" ],
+ *             "password": [ "${contexts.attributes.attributes.password}" ]
+ *             "nonce": [ "${contexts.attributes.attributes.extracted.nonce}" ]
  *           }
  *         }
  *       }
@@ -310,9 +311,8 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Handler next) {
                             // Request targeting the login page ?
                             if (isLoginPageRequest(bindings(context, request))) {
-                                final Exchange exchange = context.asContext(Exchange.class);
                                 return extractFilter.filter(context, request, next)
-                                                    .thenOnResult(markAsLoginPage(exchange))
+                                                    .thenOnResult(markAsLoginPage(context))
                                                     .thenAsync(authenticateIfNeeded(context, request, next, false));
                             }
                             // pass through
@@ -339,11 +339,11 @@ public class PasswordReplayFilter extends GenericHeapObject {
             }
         }
 
-        private ResultHandler<Response> markAsLoginPage(final Exchange exchange) {
+        private ResultHandler<Response> markAsLoginPage(final Context context) {
             return new ResultHandler<Response>() {
                 @Override
                 public void handleResult(final Response result) {
-                    getExtractedValues(exchange).put(IS_LOGIN_PAGE_ATTR, "true");
+                    getExtractedValues(context).put(IS_LOGIN_PAGE_ATTR, "true");
                 }
             };
         }
@@ -369,8 +369,7 @@ public class PasswordReplayFilter extends GenericHeapObject {
                     }
 
                     // values have been extracted
-                    Exchange exchange = context.asContext(Exchange.class);
-                    Map<String, String> values = getExtractedValues(exchange);
+                    Map<String, String> values = getExtractedValues(context);
                     if (values.get(IS_LOGIN_PAGE_ATTR) != null) {
                         // we got a login page, we need to authenticate the user
                         filters.add(createRequestFilter);
@@ -404,13 +403,14 @@ public class PasswordReplayFilter extends GenericHeapObject {
         }
 
         @SuppressWarnings("unchecked")
-        private Map<String, String> getExtractedValues(final Exchange exchange) {
-            return (Map<String, String>) exchange.getAttributes().get("extracted");
+        private Map<String, String> getExtractedValues(final Context context) {
+            AttributesContext attributesContext = context.asContext(AttributesContext.class);
+            return (Map<String, String>) attributesContext.getAttributes().get("extracted");
         }
 
         private EntityExtractFilter createEntityExtractFilter() throws HeapException {
             try {
-                Expression<Object> target = Expression.valueOf("${exchange.attributes.extracted}",
+                Expression<Object> target = Expression.valueOf("${contexts.attributes.attributes.extracted}",
                                                                Object.class);
                 return new EntityExtractFilter(RESPONSE, target);
             } catch (ExpressionException e) {

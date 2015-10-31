@@ -22,8 +22,6 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.services.context.Context;
@@ -45,8 +43,6 @@ import org.forgerock.util.Reject;
  * that the processing of the response from a remote server is complete.
  */
 public class Exchange implements Context {
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     /**
      * The original message's URI, as received by the web container. This value is set by the receiving servlet and
@@ -153,15 +149,6 @@ public class Exchange implements Context {
      */
     public URI getOriginalUri() {
         return originalUri;
-    }
-
-    /**
-     * Returns the attributes associated with this exchange.
-     *
-     * @return The exchange's attributes.
-     */
-    public Map<String, Object> getAttributes() {
-        return attributes;
     }
 
     @Override

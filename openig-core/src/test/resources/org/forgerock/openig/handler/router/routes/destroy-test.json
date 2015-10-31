@@ -7,5 +7,5 @@
         }
     ],
     "handler": "Detection",
-    "condition": "${exchange.attributes.test == 'Destroy'}"
+    "condition": "${contexts.attributes.attributes.test == 'Destroy'}"
 }

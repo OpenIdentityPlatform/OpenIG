@@ -28,9 +28,10 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.MessageType;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -53,66 +54,66 @@ public class EntityExtractFilterTest {
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
+                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
 
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Request request = new Request();
         request.setEntity("Hello OpenIG");
 
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
+        Map<String, String> results = (Map<String, String>) context.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", " OpenIG"),
                 entry("none", (String) null));
-        verify(terminalHandler).handle(exchange, request);
+        verify(terminalHandler).handle(context, request);
     }
 
     @Test
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
+                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Request request = new Request();
         request.setEntity("Hello OpenIG");
 
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         // The entry has a non-null value if it matches or a null value if it does not match
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
+        Map<String, String> results = (Map<String, String>) context.getAttributes().get("result");
         assertThat(results).containsOnly(
                 entry("hello", "Hello OpenIG"),
                 entry("none", (String) null));
-        verify(terminalHandler).handle(exchange, request);
+        verify(terminalHandler).handle(context, request);
     }
 
     @Test
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.RESPONSE,
-                                        Expression.valueOf("${exchange.attributes.result}", Map.class));
+                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
-        Exchange exchange = new Exchange();
+        AttributesContext context = new AttributesContext(new RootContext());
         Response response = new Response();
         response.setEntity((String) null);
 
-        when(terminalHandler.handle(exchange, null))
+        when(terminalHandler.handle(context, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(response));
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         @SuppressWarnings("unchecked")
-        Map<String, String> results = (Map<String, String>) exchange.getAttributes().get("result");
+        Map<String, String> results = (Map<String, String>) context.getAttributes().get("result");
         assertThat(results).containsOnly(entry("hello", (String) null));
     }
 }

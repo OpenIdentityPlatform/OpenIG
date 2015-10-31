@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -32,23 +33,21 @@ public class StaticResponseHandlerTest {
     public void shouldSetStatusReasonAndHeaders() throws Exception {
         final StaticResponseHandler handler = new StaticResponseHandler(Status.FOUND);
         handler.addHeader("Location", Expression.valueOf("http://www.example.com/", String.class));
-        final Exchange exchange = new Exchange();
-        Response response = handler.handle(exchange, null).get();
+        Response response = handler.handle(new RootContext(), null).get();
         assertThat(response.getStatus()).isEqualTo(Status.FOUND);
         assertThat(response.getHeaders().getFirst("Location")).isEqualTo("http://www.example.com/");
     }
 
     @Test
     public void shouldEvaluateTheEntityExpressionContent() throws Exception {
-        final StaticResponseHandler handler =
-                new StaticResponseHandler(
-                        Status.OK,
-                        null,
-                        Expression.valueOf(
-                        "<a href='/login?goto=${urlEncode(exchange.attributes.goto)}'>GOTO</a>", String.class));
-        final Exchange exchange = new Exchange();
-        exchange.getAttributes().put("goto", "http://goto.url");
-        Response response = handler.handle(exchange, null).get();
+        Expression<String> expression =
+                Expression.valueOf("<a href='/login?goto=${urlEncode(contexts.attributes.attributes.goto)}'>GOTO</a>",
+                                   String.class);
+        final StaticResponseHandler handler = new StaticResponseHandler(Status.OK, null, expression);
+
+        final AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("goto", "http://goto.url");
+        Response response = handler.handle(context, null).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
         assertThat(response.getEntity().getString()).isEqualTo(
                 "<a href='/login?goto=http%3A%2F%2Fgoto.url'>GOTO</a>");

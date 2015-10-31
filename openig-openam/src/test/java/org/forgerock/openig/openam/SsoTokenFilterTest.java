@@ -42,7 +42,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
@@ -62,7 +62,7 @@ public class SsoTokenFilterTest {
     private static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
     private SessionContext sessionContext;
-    private Exchange exchange;
+    private AttributesContext attributesContext;
 
     @Mock
     static Handler next;
@@ -74,8 +74,8 @@ public class SsoTokenFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
-        exchange = new Exchange(sessionContext, null);
-        exchange.getAttributes().put("password", "hifalutin");
+        attributesContext = new AttributesContext(sessionContext);
+        attributesContext.getAttributes().put("password", "hifalutin");
     }
 
     @DataProvider
@@ -101,20 +101,20 @@ public class SsoTokenFilterTest {
                            "/",
                            DEFAULT_HEADER_NAME,
                            Expression.valueOf("bjensen", String.class),
-                           Expression.valueOf("${exchange.attributes.password}",
+                           Expression.valueOf("${contexts.attributes.attributes.password}",
                                               String.class));
     }
 
     @Test
     public void shouldCreateRequestForSSOToken() throws Exception  {
-        final SsoTokenFilter filter = new SsoTokenFilter(authenticate,
-                                                         OPENAM_URI,
-                                                         "/myrealm/sub",
-                                                         DEFAULT_HEADER_NAME,
-                                                         Expression.valueOf("bjensen", String.class),
-                                                         Expression.valueOf("${exchange.attributes.password}",
-                                                                            String.class));
-        final Request request = filter.authenticationRequest(bindings(exchange, null));
+        final SsoTokenFilter filter =
+                new SsoTokenFilter(authenticate,
+                                   OPENAM_URI,
+                                   "/myrealm/sub",
+                                   DEFAULT_HEADER_NAME,
+                                   Expression.valueOf("bjensen", String.class),
+                                   Expression.valueOf("${contexts.attributes.attributes.password}", String.class));
+        final Request request = filter.authenticationRequest(bindings(attributesContext, null));
         assertThat(request.getHeaders().get("X-OpenAM-Username").getFirstValue()).isEqualTo("bjensen");
         assertThat(request.getHeaders().get("X-OpenAM-Password").getFirstValue()).isEqualTo("hifalutin");
         assertThat(request.getMethod()).isEqualTo("POST");
@@ -127,13 +127,13 @@ public class SsoTokenFilterTest {
         sessionContext.getSession().put(SSO_TOKEN_KEY, VALID_TOKEN);
         final Request request = new Request();
 
-        when(next.handle(exchange, request)).thenReturn(newResponsePromise(new Response(OK)));
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(exchange, request, next);
+        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(attributesContext, request, next);
 
         // Then
-        verify(next).handle(any(Exchange.class), any(Request.class));
+        verify(next).handle(any(Context.class), any(Request.class));
         assertThat(request.getHeaders().get(givenSsoTokenHeaderName != null
                                             ? givenSsoTokenHeaderName
                                             : DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
@@ -150,14 +150,14 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(any(Context.class), any(Request.class)))
                                 .thenReturn(newResponsePromise(responseContainingToken));
 
-        when(next.handle(exchange, request)).thenReturn(newResponsePromise(new Response(OK)));
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        buildSsoTokenFilter().filter(exchange, request, next);
+        buildSsoTokenFilter().filter(attributesContext, request, next);
 
         // Then
-        verify(authenticate).handle(any(Exchange.class), any(Request.class));
-        verify(next).handle(exchange, request);
+        verify(authenticate).handle(any(Context.class), any(Request.class));
+        verify(next).handle(attributesContext, request);
         assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
     }
 
@@ -176,20 +176,20 @@ public class SsoTokenFilterTest {
         responseContainingToken.setStatus(OK);
         responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
 
-        when(authenticate.handle(any(Exchange.class), any(Request.class)))
+        when(authenticate.handle(any(Context.class), any(Request.class)))
                                 .thenReturn(newResponsePromise(responseContainingToken));
 
-        when(next.handle(exchange, request)).thenReturn(newResponsePromise(forbidden))
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(forbidden))
                                             .thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(exchange,
+        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
                                                                     request,
                                                                     next).get();
 
         // Then
-        verify(authenticate).handle(any(Exchange.class), any(Request.class));
-        verify(next, times(2)).handle(exchange, request);
+        verify(authenticate).handle(any(Context.class), any(Request.class));
+        verify(next, times(2)).handle(attributesContext, request);
         assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
     }
@@ -205,19 +205,19 @@ public class SsoTokenFilterTest {
         responseContainingToken.setStatus(OK);
         responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
 
-        when(next.handle(any(Exchange.class), any(Request.class))).thenReturn(newResponsePromise(forbidden));
+        when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(forbidden));
 
-        when(authenticate.handle(any(Exchange.class), any(Request.class)))
+        when(authenticate.handle(any(Context.class), any(Request.class)))
                                 .thenReturn(newResponsePromise(responseContainingToken));
 
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(exchange,
+        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
                                                                     request,
                                                                     next).get();
 
         // Then
-        verify(authenticate, times(2)).handle(any(Exchange.class), any(Request.class));
-        verify(next, times(2)).handle(exchange, request);
+        verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
+        verify(next, times(2)).handle(attributesContext, request);
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
         assertThat(finalResponse).isSameAs(forbidden);
     }
@@ -235,11 +235,11 @@ public class SsoTokenFilterTest {
                 .thenReturn(newResponsePromise(badRequestResponse));
 
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(exchange, request, next).get();
+        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext, request, next).get();
 
         // Then
         verifyZeroInteractions(next);
-        verify(authenticate).handle(any(Exchange.class), any(Request.class));
+        verify(authenticate).handle(any(Context.class), any(Request.class));
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEqualTo("Unable to retrieve SSO Token");
@@ -256,7 +256,7 @@ public class SsoTokenFilterTest {
                                   null,
                                   headerName,
                                   Expression.valueOf("bjensen", String.class),
-                                  Expression.valueOf("${exchange.attributes.password}",
+                                  Expression.valueOf("${contexts.attributes.attributes.password}",
                                                      String.class));
     }
 

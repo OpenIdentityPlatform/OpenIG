@@ -49,7 +49,9 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.TimeService;
@@ -110,9 +112,9 @@ public class RouterHandlerTest {
         assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
 
         // Verify that the second route is inactive
-        Exchange fifth = new Exchange();
-        fifth.getAttributes().put("name", "OpenAM");
-        Response response = handler.handle(fifth, new Request()).get();
+        AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("name", "OpenAM");
+        Response response = handler.handle(context, new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.getEntity().getString()).isEqualTo("no handler to dispatch to");
 
@@ -252,8 +254,8 @@ public class RouterHandlerTest {
 
     private Response handle(final RouterHandler handler, final String value)
             throws Exception {
-        Exchange exchange = new Exchange();
-        exchange.getAttributes().put("name", value);
-        return handler.handle(exchange, new Request()).getOrThrow();
+        AttributesContext context = new AttributesContext(new RootContext());
+        context.getAttributes().put("name", value);
+        return handler.handle(context, new Request()).getOrThrow();
     }
 }

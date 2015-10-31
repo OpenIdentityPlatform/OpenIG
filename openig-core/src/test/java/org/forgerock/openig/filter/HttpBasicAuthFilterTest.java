@@ -34,6 +34,8 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -74,7 +76,7 @@ public class HttpBasicAuthFilterTest {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(null, null, failureHandler);
         filter.setCacheHeader(false);
 
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         Request request = newRequest();
         request.getHeaders().put(AUTHORIZATION_HEADER, "Basic azerty");
 
@@ -88,10 +90,10 @@ public class HttpBasicAuthFilterTest {
                 return Promises.newResultPromise(response);
 
             }
-        }).when(terminalHandler).handle(eq(exchange),
+        }).when(terminalHandler).handle(eq(context),
                                         argThat(new AbsenceOfHeaderInRequest(AUTHORIZATION_HEADER)));
 
-        Response response = filter.filter(exchange, request, terminalHandler).getOrThrow();
+        Response response = filter.filter(context, request, terminalHandler).getOrThrow();
 
         // Verify that the outgoing message has no authenticate header
         assertThat(response.getHeaders().get(AUTHENTICATE_HEADER))
@@ -107,9 +109,9 @@ public class HttpBasicAuthFilterTest {
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         Request request = newRequest();
-        Response response = filter.filter(exchange, request, terminalHandler).getOrThrow();
+        Response response = filter.filter(context, request, terminalHandler).getOrThrow();
 
         assertThat(response.getStatus()).isEqualTo(Status.OK);
     }
@@ -128,12 +130,12 @@ public class HttpBasicAuthFilterTest {
         doAnswer(new UnauthorizedAnswer())
                 .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
 
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         Request request = newRequest();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
-        verify(terminalHandler, times(1)).handle(exchange, request);
-        verify(failureHandler).handle(exchange, request);
+        verify(terminalHandler, times(1)).handle(context, request);
+        verify(failureHandler).handle(context, request);
     }
 
     /**
@@ -152,13 +154,13 @@ public class HttpBasicAuthFilterTest {
         doAnswer(new UnauthorizedAnswer())
                 .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
 
-        Exchange exchange = newExchange();
+        Context context = newContextChain();
         Request request = newRequest();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         // if credentials were rejected all the times, the failure Handler is invoked
-        verify(terminalHandler, times(2)).handle(exchange, request);
-        verify(failureHandler).handle(exchange, request);
+        verify(terminalHandler, times(2)).handle(context, request);
+        verify(failureHandler).handle(context, request);
     }
 
     /**
@@ -182,11 +184,11 @@ public class HttpBasicAuthFilterTest {
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 
-        Exchange first = newExchange();
+        Context first = newContextChain();
         Request firstRequest = newRequest();
         Response firstResponse = filter.filter(first, firstRequest, terminalHandler).getOrThrow();
 
-        Exchange second = newExchange();
+        Context second = newContextChain();
         Request secondRequest = newRequest();
         Response secondResponse = filter.filter(second, secondRequest, terminalHandler).getOrThrow();
 
@@ -205,7 +207,7 @@ public class HttpBasicAuthFilterTest {
 
         HttpBasicAuthFilter filter =
                 new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
-                                        Expression.valueOf("${exchange.attributes.password}", String.class),
+                                        Expression.valueOf("${contexts.attributes.attributes.password}", String.class),
                                         failureHandler);
         filter.setCacheHeader(true);
 
@@ -229,17 +231,19 @@ public class HttpBasicAuthFilterTest {
                 .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
 
         // Initial round-trip
-        Exchange first = newExchange();
-        first.getAttributes().put("password", "hifalutin");
+        Context first = newContextChain();
+        AttributesContext firstAttributesContext = first.asContext(AttributesContext.class);
+        firstAttributesContext.getAttributes().put("password", "hifalutin");
         Response firstResponse = filter.filter(first, newRequest(), terminalHandler).getOrThrow();
 
         // Usage of cached value
-        Exchange second = newExchange();
+        Context second = newContextChain();
         Response secondResponse = filter.filter(second, newRequest(), terminalHandler).getOrThrow();
 
         // Cached value is no longer valid, trigger a user/pass refresh
-        Exchange third = newExchange();
-        third.getAttributes().put("password", "hifalutin2");
+        Context third = newContextChain();
+        AttributesContext thirdAttributesContext = third.asContext(AttributesContext.class);
+        thirdAttributesContext.getAttributes().put("password", "hifalutin2");
         Response thirdResponse = filter.filter(third, newRequest(), terminalHandler).getOrThrow();
 
         // Terminal handler should be called 5 times, not 6
@@ -266,7 +270,7 @@ public class HttpBasicAuthFilterTest {
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
 
-        Response response = filter.filter(newExchange(), newRequest(), terminalHandler).get();
+        Response response = filter.filter(newContextChain(), newRequest(), terminalHandler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).contains("username must not contain a colon ':' character");
     }
@@ -285,9 +289,8 @@ public class HttpBasicAuthFilterTest {
                 .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
     }
 
-    private Exchange newExchange() throws Exception {
-        Exchange exchange = new Exchange(new SessionContext(null, session), null);
-        return exchange;
+    private Context newContextChain() throws Exception {
+        return new AttributesContext(new SessionContext(null, session));
     }
 
     private Request newRequest() throws Exception {

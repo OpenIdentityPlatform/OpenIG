@@ -24,7 +24,9 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -48,9 +50,9 @@ public class EnforcerFilterTest {
     @Test
     public void shouldDelegateToTheRealFilter() throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}", Boolean.class), delegate);
-        Exchange exchange = new Exchange();
-        enforcer.filter(exchange, null, handler);
-        verify(delegate).filter(exchange, null, handler);
+        Context context = new RootContext();
+        enforcer.filter(context, null, handler);
+        verify(delegate).filter(context, null, handler);
     }
 
     @DataProvider
@@ -59,7 +61,7 @@ public class EnforcerFilterTest {
         return new Object[][] {
                 { "${false}" },
                 { "not a condition" },
-                { "${exchange.attributes.missing}" }
+                { "${contexts.attributes.attributes.missing}" }
         };
         // @Checkstyle:on
     }
@@ -68,7 +70,7 @@ public class EnforcerFilterTest {
     public void shouldReturnAnInternalServerErrorForInvalidOrEvaluatedToFalseConditions(String condition)
             throws Exception {
         EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf(condition, Boolean.class), delegate);
-        Response response = enforcer.filter(new Exchange(), null, handler).get();
+        Response response = enforcer.filter(new AttributesContext(new RootContext()), null, handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 }

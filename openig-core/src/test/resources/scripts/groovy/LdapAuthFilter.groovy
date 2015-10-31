@@ -14,8 +14,9 @@ password = request.form?.password[0]
 
 // For testing purposes, the LDAP host and port are provided in the exchange.
 // Edit as needed to match your directory service.
-host = exchange.attributes.ldapHost ?: "localhost"
-port = exchange.attributes.ldapPort ?: 1389
+def attributes = contexts.attributes.attributes
+host = attributes.ldapHost ?: "localhost"
+port = attributes.ldapPort ?: 1389
 
 client = ldap.connect(host, port as Integer)
 try {
@@ -40,13 +41,13 @@ try {
     // When you read multi-valued attributes, use the parse() method,
     // with an AttributeParser method
     // that specifies the type of object to return.
-    exchange.attributes.cn = user.cn?.parse().asSetOfString()
+    attributes.cn = user.cn?.parse().asSetOfString()
 
     // When you write attribute values, set them directly.
     user.description = "New description set by my script"
 
     // Here is how you might read a single value of a multi-valued attribute:
-    exchange.attributes.description = user.description?.parse().asString()
+    attributes.description = user.description?.parse().asString()
 
     // Call the next handler. This returns when the request has been handled.
     return next.handle(context, request)

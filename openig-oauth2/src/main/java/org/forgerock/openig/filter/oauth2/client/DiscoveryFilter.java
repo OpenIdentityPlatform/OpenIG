@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Form;
@@ -40,7 +39,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -105,8 +105,6 @@ public class DiscoveryFilter implements Filter {
     public Promise<Response, NeverThrowsException> filter(Context context,
                                                           Request request,
                                                           Handler next) {
-        final Exchange exchange = context.asContext(Exchange.class);
-
         try {
             final AccountIdentifier account = extractFromInput(request.getForm().getFirst("discovery"));
             final String hostString = account.getHostBase().toASCIIString();
@@ -122,7 +120,8 @@ public class DiscoveryFilter implements Filter {
                 final JsonValue issuerDeclaration = createIssuerDeclaration(hostString, wellKnowIssuerUri);
                 issuer = heap.resolve(issuerDeclaration, Issuer.class);
             }
-            exchange.getAttributes().put(ISSUER_KEY, issuer);
+            AttributesContext attributesContext = context.asContext(AttributesContext.class);
+            attributesContext.getAttributes().put(ISSUER_KEY, issuer);
         } catch (URISyntaxException | DiscoveryException e) {
             return newResultPromise(newInternalServerError("Discovery cannot be performed", e));
         } catch (HeapException e) {

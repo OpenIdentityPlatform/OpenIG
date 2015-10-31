@@ -95,7 +95,7 @@ import org.forgerock.util.time.TimeService;
  *
  * <pre>
  * {@code
- * "target"                       : expression,         [OPTIONAL - default is ${exchange.attributes.openid}]
+ * "target"                       : expression,         [OPTIONAL - default is ${contexts.attributes.attributes.openid}]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR
@@ -121,7 +121,7 @@ import org.forgerock.util.time.TimeService;
  *     "name": "OpenIDConnect",
  *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${exchange.attributes.openid}",
+ *         "target"                : "${contexts.attributes.attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
@@ -142,7 +142,7 @@ import org.forgerock.util.time.TimeService;
  *     "name": "OpenIDConnect",
  *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${exchange.attributes.openid}",
+ *         "target"                : "${contexts.attributes.attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "registration"          : "openam",
  *         "failureHandler"        : "LoginFailed"
@@ -797,11 +797,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                      clientEndpoint);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
-                    format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
+                    format("${contexts.attributes.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             final JsonValue registration = getWithDeprecation(config, logger, "registration", "clientRegistrationName");
             if (registration.isNotNull()) {
                 filter.setClientRegistration(heap.resolve(registration.required(),
-                                             ClientRegistration.class));
+                                                          ClientRegistration.class));
             } else {
                 final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
                 filter.setLoginHandler(loginHandler);

@@ -9,5 +9,5 @@
         }
     ],
     "handler": "StatusHandler",
-    "condition": "${exchange.attributes.value == 42}"
+    "condition": "${contexts.attributes.attributes.value == 42}"
 }

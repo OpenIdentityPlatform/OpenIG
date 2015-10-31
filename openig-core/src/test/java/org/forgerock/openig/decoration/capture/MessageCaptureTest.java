@@ -16,14 +16,16 @@
 
 package org.forgerock.openig.decoration.capture;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.verify;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
@@ -49,8 +51,7 @@ public class MessageCaptureTest {
     public void shouldLogRequest() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false);
 
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, new Request(), CapturePoint.REQUEST);
+        capture.capture(new RootContext(), new Request(), CapturePoint.REQUEST);
 
         verify(logger).info(anyString());
     }
@@ -59,9 +60,9 @@ public class MessageCaptureTest {
     public void shouldLogExchange() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false, true);
 
-        Exchange exchange = new Exchange();
-        exchange.getAttributes().put("a", "b");
-        capture.capture(exchange, new Request(), CapturePoint.REQUEST);
+        AttributesContext attributesContext = new AttributesContext(new RootContext());
+        attributesContext.getAttributes().put("a", "b");
+        capture.capture(attributesContext, new Request(), CapturePoint.REQUEST);
 
         verify(logger).info(captor.capture());
         assertThat(captor.getValue()).contains("\"a\": \"b\"");
@@ -71,8 +72,7 @@ public class MessageCaptureTest {
     public void shouldLogFilteredRequest() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false);
 
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, new Request(), CapturePoint.FILTERED_REQUEST);
+        capture.capture(new RootContext(), new Request(), CapturePoint.FILTERED_REQUEST);
 
         verify(logger).info(anyString());
     }
@@ -81,8 +81,7 @@ public class MessageCaptureTest {
     public void shouldLogResponse() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false);
 
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, new Response(), CapturePoint.RESPONSE);
+        capture.capture(new RootContext(), new Response(), CapturePoint.RESPONSE);
 
         verify(logger).info(anyString());
     }
@@ -91,8 +90,7 @@ public class MessageCaptureTest {
     public void shouldLogFilteredResponse() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false);
 
-        Exchange exchange = new Exchange();
-        capture.capture(exchange, new Response(), CapturePoint.FILTERED_RESPONSE);
+        capture.capture(new RootContext(), new Response(), CapturePoint.FILTERED_RESPONSE);
 
         verify(logger).info(anyString());
     }

@@ -32,8 +32,9 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -45,12 +46,15 @@ import org.testng.annotations.Test;
 public class StaticRequestFilterTest {
     public static final String URI = "http://openig.forgerock.org";
     private TerminalHandler terminalHandler;
-    private Exchange exchange;
+
+    private AttributesContext attributesContext;
+    private Context context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         terminalHandler = new TerminalHandler();
-        exchange = new Exchange();
+        attributesContext = new AttributesContext(new RootContext());
+        context = attributesContext;
     }
 
     @DataProvider
@@ -59,8 +63,8 @@ public class StaticRequestFilterTest {
             { "${decodeBase64('RG9uJ3QgcGFuaWMu')}", "Don't panic." },
             /* See OPENIG-65 */
             { "{\"auth\":{\"passwordCredentials\":{"
-                    + "\"username\":\"${exchange.attributes.username}\""
-                    + ",\"password\":\"${exchange.attributes.password}\"}}}",
+                    + "\"username\":\"${contexts.attributes.attributes.username}\""
+                    + ",\"password\":\"${contexts.attributes.attributes.password}\"}}}",
               "{\"auth\":{\"passwordCredentials\":{"
                     + "\"username\":\"bjensen\",\"password\":\"password\"}}}" },
             {"OpenIG", "OpenIG"}
@@ -131,7 +135,7 @@ public class StaticRequestFilterTest {
         final StaticRequestFilter filter = (StaticRequestFilter) heaplet.create(Name.of("myStaticRequestFilter"),
                                                                                 config,
                                                                                 buildDefaultHeap());
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
         assertThat(terminalHandler.request).isNotNull();
         assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
     }
@@ -147,7 +151,7 @@ public class StaticRequestFilterTest {
         filter.setVersion("1.1");
 
         Request request = new Request();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
         assertThat(terminalHandler.request).isNotSameAs(request);
@@ -169,7 +173,7 @@ public class StaticRequestFilterTest {
         Request original = new Request();
         original.setVersion("2");
 
-        filter.filter(exchange, original, terminalHandler);
+        filter.filter(context, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
         assertThat(terminalHandler.request).isNotSameAs(original);
@@ -194,7 +198,7 @@ public class StaticRequestFilterTest {
         Request request = new Request();
         request.setVersion("2");
 
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
         assertThat(terminalHandler.request).isNotSameAs(request);
@@ -219,7 +223,7 @@ public class StaticRequestFilterTest {
         Request original = new Request();
         original.setVersion("2");
 
-        filter.filter(exchange, original, terminalHandler);
+        filter.filter(context, original, terminalHandler);
 
         // Verify the request transmitted to downstream filters is not the original one
         assertThat(terminalHandler.request).isNotSameAs(original);
@@ -235,15 +239,15 @@ public class StaticRequestFilterTest {
 
     @Test(dataProvider = "entityContentAndExpected")
     public void shouldAddRequestEntity(final String value, final String result) throws Exception {
-        exchange.getAttributes().putAll(singletonMap("username", "bjensen"));
-        exchange.getAttributes().putAll(singletonMap("password", "password"));
+        attributesContext.getAttributes().putAll(singletonMap("username", "bjensen"));
+        attributesContext.getAttributes().putAll(singletonMap("password", "password"));
 
         final StaticRequestFilter filter = new StaticRequestFilter("POST");
         filter.setUri(Expression.valueOf(URI, String.class));
         filter.setEntity(Expression.valueOf(value, String.class));
 
         Request request = new Request();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         assertThat(terminalHandler.request.getUri()).isEqualTo(uri(URI));
@@ -259,7 +263,7 @@ public class StaticRequestFilterTest {
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
 
         Request request = new Request();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         // The form combined with the POST method uses the Form#toRequestEntity
@@ -275,7 +279,7 @@ public class StaticRequestFilterTest {
         filter.addFormParameter("mono", Expression.valueOf("one", String.class));
 
         Request request = new Request();
-        filter.filter(exchange, request, terminalHandler);
+        filter.filter(context, request, terminalHandler);
 
         assertThat(terminalHandler.request).isNotSameAs(request).isNotNull();
         assertThat(terminalHandler.request.getUri().toString()).startsWith(URI)
