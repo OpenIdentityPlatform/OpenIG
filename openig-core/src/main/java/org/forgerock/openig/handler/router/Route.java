@@ -16,16 +16,18 @@
 
 package org.forgerock.openig.handler.router;
 
+import static org.forgerock.http.filter.Filters.newSessionFilter;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
@@ -35,7 +37,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.ResultHandler;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -106,11 +107,6 @@ class Route implements Handler {
     private final Expression<Boolean> condition;
 
     /**
-     * If this value is not null, it will be used to create a new Session instance.
-     */
-    private final SessionManager sessionManager;
-
-    /**
      * Route's name (may be inferred from the file's name).
      */
     private final String name;
@@ -125,15 +121,17 @@ class Route implements Handler {
      * @throws HeapException if the heap does not contains the required handler object
      *         (or one of it's transitive dependencies)
      */
-    public Route(final HeapImpl parentHeap, final Name routeHeapName, final JsonValue config,
-            final String defaultName) throws HeapException {
+    public Route(final HeapImpl parentHeap,
+                 final Name routeHeapName,
+                 final JsonValue config,
+                 final String defaultName) throws HeapException {
         this.heap = new HeapImpl(parentHeap, routeHeapName);
         heap.init(config, "handler", "session", "name", "condition", "globalDecorators");
 
-        this.handler = heap.getHandler();
-        this.sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
         this.name = config.get("name").defaultTo(defaultName).asString();
         this.condition = asExpression(config.get("condition"), Boolean.class);
+        SessionManager sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
+        this.handler = initHandler(heap.getHandler(), sessionManager);
     }
 
     /**
@@ -152,10 +150,9 @@ class Route implements Handler {
                  final Expression<Boolean> condition) {
 
         this.heap = heap;
-        this.handler = handler;
-        this.sessionManager = sessionManager;
         this.name = name;
         this.condition = condition;
+        this.handler = initHandler(handler, sessionManager);
     }
 
     /**
@@ -185,35 +182,16 @@ class Route implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        if (sessionManager == null) {
-            return handler.handle(context, request);
-        } else {
-            // Swap the session instance
-            final SessionContext sessionContext = context.asContext(SessionContext.class);
-            final Session session = sessionContext.getSession();
-            sessionContext.setSession(sessionManager.load(request));
-            return handler.handle(context, request)
-                          .thenOnResult(new ResultHandler<Response>() {
-                              @Override
-                              public void handleResult(Response response) {
-                                  save(sessionContext.getSession(), response);
-                              }
-                          })
-                          .thenAlways(new Runnable() {
-                              @Override
-                              public void run() {
-                                  sessionContext.setSession(session);
-                              }
-                          });
-        }
+        return handler.handle(context, request);
     }
 
-    private void save(final Session session, final Response response) {
-        try {
-            sessionManager.save(session, response);
-        } catch (IOException e) {
-            // TODO Use a Logger
-            e.printStackTrace();
+    private Handler initHandler(Handler handler,
+                                SessionManager sessionManager) {
+        List<Filter> filters = new ArrayList<>();
+        if (sessionManager != null) {
+            filters.add(newSessionFilter(sessionManager));
         }
+
+        return chainOf(handler, filters);
     }
 }
