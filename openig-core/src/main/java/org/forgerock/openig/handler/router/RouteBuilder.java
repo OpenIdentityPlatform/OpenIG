@@ -17,15 +17,24 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.*;
+import static org.forgerock.http.filter.Filters.newSessionFilter;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.util.Json.*;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -64,7 +73,35 @@ class RouteBuilder {
         final JsonValue config = readJson(resource);
         final Name routeHeapName = this.name.child(resource.getPath());
         final String defaultRouteName = resource.getName();
-        return new Route(heap, routeHeapName, config, defaultRouteName);
+
+        return build(config, routeHeapName, defaultRouteName);
+    }
+    /**
+     * Builds a new route from the given resource file.
+     *
+     * @param resource route definition
+     * @return a new configured Route
+     * @throws HeapException if the new Route cannot be build
+     */
+    Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
+        HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
+        routeHeap.init(config, "handler", "session", "name", "condition", "globalDecorators");
+
+        SessionManager sessionManager = routeHeap.resolve(config.get("session"), SessionManager.class, true);
+        String routeName = config.get("name").defaultTo(defaultRouteName).asString();
+        Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
+        Handler handler = setupRouteHandler(routeHeap.getHandler(), sessionManager);
+
+        return new Route(routeHeap, handler, routeName, condition);
+    }
+
+    private Handler setupRouteHandler(Handler handler, SessionManager sessionManager) {
+        List<Filter> filters = new ArrayList<>();
+        if (sessionManager != null) {
+            filters.add(newSessionFilter(sessionManager));
+        }
+
+        return chainOf(handler, filters);
     }
 
     /**

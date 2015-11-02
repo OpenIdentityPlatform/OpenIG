@@ -16,24 +16,14 @@
 
 package org.forgerock.openig.handler.router;
 
-import static org.forgerock.http.filter.Filters.newSessionFilter;
-import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.SessionManager;
-import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -60,10 +50,6 @@ import org.forgerock.util.promise.Promise;
  *       "config": {
  *         ...
  *       }
- *     },
- *     {
- *       "name": "ClientHandler",
- *       "type": "ClientHandler"
  *     }
  *   ],
  *   "handler": "ClientHandler",
@@ -112,47 +98,21 @@ class Route implements Handler {
     private final String name;
 
     /**
-     * Builds a new Route from the given configuration.
-     *
-     * @param parentHeap The parent heap, which may be {@code null}
-     * @param routeHeapName The name to use for this route's heap
-     * @param config Json representation of the file's content
-     * @param defaultName default name of the route if none is found in the configuration
-     * @throws HeapException if the heap does not contains the required handler object
-     *         (or one of it's transitive dependencies)
-     */
-    public Route(final HeapImpl parentHeap,
-                 final Name routeHeapName,
-                 final JsonValue config,
-                 final String defaultName) throws HeapException {
-        this.heap = new HeapImpl(parentHeap, routeHeapName);
-        heap.init(config, "handler", "session", "name", "condition", "globalDecorators");
-
-        this.name = config.get("name").defaultTo(defaultName).asString();
-        this.condition = asExpression(config.get("condition"), Boolean.class);
-        SessionManager sessionManager = heap.resolve(config.get("session"), SessionManager.class, true);
-        this.handler = initHandler(heap.getHandler(), sessionManager);
-    }
-
-    /**
      * Builds a new Route.
      *
      * @param heap heap containing the objects associated to this route.
      * @param handler main handler of the route.
-     * @param sessionManager user-provided {@link SessionManager} to be used within this route (may be {@code null})
      * @param name route's name
      * @param condition used to dispatch only a subset of incoming request to this route.
      */
     public Route(final HeapImpl heap,
                  final Handler handler,
-                 final SessionManager sessionManager,
                  final String name,
                  final Expression<Boolean> condition) {
-
         this.heap = heap;
+        this.handler = handler;
         this.name = name;
         this.condition = condition;
-        this.handler = initHandler(handler, sessionManager);
     }
 
     /**
@@ -183,15 +143,5 @@ class Route implements Handler {
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         return handler.handle(context, request);
-    }
-
-    private Handler initHandler(Handler handler,
-                                SessionManager sessionManager) {
-        List<Filter> filters = new ArrayList<>();
-        if (sessionManager != null) {
-            filters.add(newSessionFilter(sessionManager));
-        }
-
-        return chainOf(handler, filters);
     }
 }
