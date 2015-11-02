@@ -34,6 +34,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
@@ -797,8 +798,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${exchange.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
-            if (config.isDefined("registration")) {
-                filter.setClientRegistration(heap.resolve(config.get("registration").required(),
+            final JsonValue registration = getWithDeprecation(config, logger, "registration", "clientRegistrationName");
+            if (registration.isNotNull()) {
+                filter.setClientRegistration(heap.resolve(registration.required(),
                                              ClientRegistration.class));
             } else {
                 final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
