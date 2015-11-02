@@ -136,6 +136,22 @@ public class RouteBuilderTest {
 
     }
 
+    @Test
+    public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        Route route = builder.build(getTestResourceFile("session-route.json"));
+
+        SimpleMapSession simpleSession = new SimpleMapSession();
+        simpleSession.put("foo", "bar");
+        SessionContext sessionContext = new SessionContext(new RootContext(), simpleSession);
+
+        route.handle(sessionContext, new Request());
+
+        // session-route uses the inner class SessionHandler, that binds a value for the session's key "ForgeRock".
+        // As this is not the same session, then the original session is not impacted.
+        assertThat(simpleSession.get("ForgeRock")).isNull();
+    }
+
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
 
