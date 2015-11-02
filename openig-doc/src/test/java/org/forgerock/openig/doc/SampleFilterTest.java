@@ -25,7 +25,8 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.handler.StaticResponseHandler;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -37,12 +38,12 @@ public class SampleFilterTest {
         filter.name  = "X-Greeting";
         filter.value = "Hello world";
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
 
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
-        Response response = chain.handle(exchange, request).get();
+        Response response = chain.handle(context, request).get();
 
         assertThat(request.getHeaders().get(filter.name).getValues())
                 .containsOnly("Hello world");

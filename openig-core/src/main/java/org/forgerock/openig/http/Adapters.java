@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.http;
 
-import org.forgerock.http.protocol.Request;
 import org.forgerock.services.context.Context;
 
 /**
@@ -36,11 +35,9 @@ public final class Adapters {
      * @param context
      *            The context associated with a request currently being
      *            processed.
-     * @param request
-     *            The current request.
      * @return An HTTP exchange of request which can be used in legacy OpenIG.
      */
-    public static Exchange asExchange(Context context, Request request) {
-        return new Exchange(context, request.getUri().asURI());
+    public static Exchange asExchange(Context context) {
+        return new Exchange(context);
     }
 }

@@ -23,17 +23,18 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.net.URI;
+import java.util.Collections;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -164,7 +165,12 @@ public class LocationHeaderFilterTest {
 
         AttributesContext attributesContext = new AttributesContext(new RootContext());
         attributesContext.getAttributes().put("host", "app.example.com");
-        Exchange context = new Exchange(attributesContext, null);
+        Context context = new UriRouterContext(attributesContext,
+                                               null,
+                                               null,
+                                               Collections.<String, String>emptyMap(),
+                                               new URI("http://www.origin.com:443"));
+
 
         // Prepare a response
         Response expectedResponse = new Response();
@@ -194,7 +200,11 @@ public class LocationHeaderFilterTest {
     private void callFilter(LocationHeaderFilter filter, URI testRedirectionURI, String expectedResult)
             throws Exception {
 
-        final Exchange exchange = new Exchange(null, new URI("http://www.origin.com:443"));
+        final Context context = new UriRouterContext(new RootContext(),
+                                                     null,
+                                                     null,
+                                                     Collections.<String, String>emptyMap(),
+                                                     new URI("http://www.origin.com:443"));
 
         Response expectedResponse = new Response();
         expectedResponse.getHeaders().put(LocationHeader.NAME, testRedirectionURI.toString());
@@ -202,7 +212,7 @@ public class LocationHeaderFilterTest {
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
 
-        Response response = filter.filter(exchange, null, next).get();
+        Response response = filter.filter(context, null, next).get();
 
         LocationHeader header = LocationHeader.valueOf(response);
         assertThat(header.getLocationUri()).isEqualTo(expectedResult);

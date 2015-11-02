@@ -41,7 +41,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -71,7 +70,7 @@ public class ClientRegistrationFilterTest {
     public void setUp() throws Exception {
         initMocks(this);
         attributesContext = new AttributesContext(new RootContext());
-        context = new Exchange(attributesContext, new URI("path"));
+        context = attributesContext;
     }
 
     @Test

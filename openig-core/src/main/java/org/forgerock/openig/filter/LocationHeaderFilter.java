@@ -28,13 +28,13 @@ import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.http.util.Uris;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
@@ -132,8 +132,9 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                    .then(new Function<Response, Response, NeverThrowsException>() {
                        @Override
                        public Response apply(final Response value) {
-                           Exchange exchange = context.asContext(Exchange.class);
-                           return processResponse(value, bindings(context, request, value), exchange.getOriginalUri());
+                           UriRouterContext routerContext = context.asContext(UriRouterContext.class);
+                           return processResponse(value, bindings(context, request, value),
+                                                  routerContext.getOriginalUri());
                        }
                    });
     }

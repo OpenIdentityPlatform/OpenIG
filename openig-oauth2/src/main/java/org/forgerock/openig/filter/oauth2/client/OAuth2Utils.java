@@ -34,10 +34,10 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.time.TimeService;
 
@@ -69,8 +69,8 @@ final class OAuth2Utils {
                 }
             }
             // Resolve the computed Uri against the original Exchange URI
-            Exchange exchange = context.asContext(Exchange.class);
-            return exchange.getOriginalUri().resolve(new URI(uriString));
+            UriRouterContext routerContext = context.asContext(UriRouterContext.class);
+            return routerContext.getOriginalUri().resolve(new URI(uriString));
         } catch (final URISyntaxException e) {
             throw new ResponseException(format("Cannot build URI from %s", uriString), e);
         }

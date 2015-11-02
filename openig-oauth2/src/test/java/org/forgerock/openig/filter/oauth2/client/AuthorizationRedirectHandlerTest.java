@@ -28,16 +28,17 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -66,7 +67,11 @@ public class AuthorizationRedirectHandlerTest {
         initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
         attributesContext = new AttributesContext(sessionContext);
-        context = new Exchange(attributesContext, URI.create(ORIGINAL_URI));
+        context = new UriRouterContext(attributesContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       URI.create(ORIGINAL_URI));
         attributesContext.getAttributes().put("clientEndpoint", CLIENT_ENDPOINT);
         request = new Request();
     }
