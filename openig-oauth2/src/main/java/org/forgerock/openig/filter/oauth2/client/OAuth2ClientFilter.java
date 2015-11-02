@@ -95,7 +95,6 @@ import org.forgerock.util.time.TimeService;
  * <pre>
  * {@code
  * "target"                       : expression,         [OPTIONAL - default is ${exchange.attributes.openid}]
- *                                                                  for dynamic client registration ]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR
