@@ -17,6 +17,9 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Status.BAD_REQUEST;
+import static org.forgerock.http.protocol.Status.CREATED;
+import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -25,20 +28,19 @@ import static org.forgerock.openig.filter.oauth2.client.HeapUtilsTest.buildDefau
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.mockito.Mockito.mock;
 
 import java.net.URI;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.Exchange;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -46,13 +48,14 @@ import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-/** Unit tests for the client registration filter class. */
 @SuppressWarnings("javadoc")
 public class ClientRegistrationFilterTest {
-    private Exchange exchange;
-    private static final String SAMPLE_URI = "http://www.example.com:8089";
+
     private static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
+    private static final String SAMPLE_URI = "http://www.example.com:8089";
     private static final String SUFFIX = "ForMyApp";
+
+    private Exchange exchange;
 
     @Captor
     private ArgumentCaptor<Request> captor;
@@ -74,7 +77,7 @@ public class ClientRegistrationFilterTest {
                                                 field("scopes", array("openid"))));
 
         exchange.getAttributes().put(ISSUER_KEY, new Issuer("myIssuer", issuerConfigWithAllRequestedEndpoints()));
-        final HeapImpl heap = mock(HeapImpl.class);
+        final Heap heap = mock(Heap.class);
         when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
         final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, invalidConfig, heap, SUFFIX);
 
@@ -82,7 +85,7 @@ public class ClientRegistrationFilterTest {
         final Response response = crf.filter(exchange, new Request(), handler).get();
 
         // then
-        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).contains("'redirect_uris' should be defined");
     }
 
@@ -90,7 +93,7 @@ public class ClientRegistrationFilterTest {
     public void shouldFailToPerformDynamicRegistrationWhenIssuerHasNoRegistrationEndpoint() throws Exception {
         // given
         exchange.getAttributes().put(ISSUER_KEY, new Issuer("myIssuer", issuerConfigWithNoRegistrationEndpoint()));
-        final HeapImpl heap = mock(HeapImpl.class);
+        final Heap heap = mock(Heap.class);
         when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
         final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, getFilterConfig(), heap, SUFFIX);
 
@@ -98,20 +101,22 @@ public class ClientRegistrationFilterTest {
         final Response response = crf.filter(exchange, new Request(), handler).get();
 
         // then
-        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).contains("Registration is not supported by the issuer");
     }
 
     @Test
     public void shouldPerformDynamicRegistration() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildFilter();
+        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
         final Response response = new Response();
-        response.setStatus(Status.CREATED);
+        response.setStatus(CREATED);
         response.setEntity(json(object()));
         when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+
         // when
         drf.performDynamicClientRegistration(exchange, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+
         // then
         verify(handler).handle(eq(exchange), captor.capture());
         Request request = captor.getValue();
@@ -122,10 +127,11 @@ public class ClientRegistrationFilterTest {
     @Test(expectedExceptions = RegistrationException.class)
     public void shouldFailWhenStatusCodeResponseIsDifferentFromCreated() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildFilter();
+        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
         final Response response = new Response();
-        response.setStatus(Status.BAD_REQUEST);
+        response.setStatus(BAD_REQUEST);
         when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+
         // when
         drf.performDynamicClientRegistration(exchange, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
     }
@@ -133,16 +139,17 @@ public class ClientRegistrationFilterTest {
     @Test(expectedExceptions = RegistrationException.class)
     public void shouldFailWhenResponseHasInvalidResponseContent() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildFilter();
+        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
         final Response response = new Response();
-        response.setStatus(Status.CREATED);
+        response.setStatus(CREATED);
         response.setEntity(array("invalid", "content"));
         when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+
         // when
         drf.performDynamicClientRegistration(exchange, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
     }
 
-    private ClientRegistrationFilter buildFilter() throws HeapException, Exception {
+    private ClientRegistrationFilter buildClientRegistrationFilter() throws HeapException, Exception {
         return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap(), SUFFIX);
     }
 
