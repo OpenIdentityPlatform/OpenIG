@@ -80,6 +80,38 @@
         <scope>import</scope>
         <type>pom</type>
       </dependency>
+
+      <!-- ForgeRock HTTP Framework dependencies -->
+      <dependency>
+        <groupId>org.forgerock.http</groupId>
+        <artifactId>chf-client-apache-async</artifactId>
+        <version>${forgerock-http-framework.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.forgerock.http</groupId>
+        <artifactId>chf-client-apache-common</artifactId>
+        <version>${forgerock-http-framework.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.forgerock.http</groupId>
+        <artifactId>chf-client-apache-sync</artifactId>
+        <version>${forgerock-http-framework.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.forgerock.http</groupId>
+        <artifactId>chf-http-core</artifactId>
+        <version>${forgerock-http-framework.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.forgerock.http</groupId>
+        <artifactId>chf-http-servlet</artifactId>
+        <version>${forgerock-http-framework.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -90,6 +122,8 @@
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
+
+    <forgerock-http-framework.version>1.0.1-SNAPSHOT</forgerock-http-framework.version>
   </properties>
 
   <repositories>
