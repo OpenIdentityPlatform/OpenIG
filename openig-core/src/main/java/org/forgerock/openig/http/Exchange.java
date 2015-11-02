@@ -21,8 +21,6 @@ package org.forgerock.openig.http;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
-import java.net.URI;
-
 import org.forgerock.json.JsonValue;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
@@ -44,30 +42,22 @@ import org.forgerock.util.Reject;
  */
 public class Exchange implements Context {
 
-    /**
-     * The original message's URI, as received by the web container. This value is set by the receiving servlet and
-     * is immutable.
-     */
-    private final URI originalUri;
     private final Context parent;
 
     /**
-     * Builds a new Exchange without any originalUri value (will be {@code null}) and no parent context.
+     * Builds a new Exchange without any parent context.
      */
     public Exchange() {
-        this(null, null);
+        this(null);
     }
 
     /**
      * Builds a new Exchange with the given originalUri value (can be {@code null}).
      *
-     * @param originalUri
-     *            original message's URI, as received by the web container
      * @param parent
      *            the parent context, can be null.
      */
-    public Exchange(final Context parent, final URI originalUri) {
-        this.originalUri = originalUri;
+    public Exchange(final Context parent) {
         this.parent = parent;
     }
 
@@ -139,16 +129,6 @@ public class Exchange implements Context {
     @Override
     public boolean isRootContext() {
         return false;
-    }
-
-    /**
-     * The original message's URI, as received by the web container. This value is set by the receiving servlet and
-     * is immutable.
-     *
-     * @return the originalUri
-     */
-    public URI getOriginalUri() {
-        return originalUri;
     }
 
     @Override

@@ -53,6 +53,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
@@ -61,7 +62,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
@@ -256,28 +256,29 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Exchange exchange = context.asContext(Exchange.class);
         try {
             // Login: {clientEndpoint}/login
-            if (matchesUri(exchange.getOriginalUri(), buildLoginUri(context, request))) {
+            UriRouterContext routerContext = context.asContext(UriRouterContext.class);
+            URI originalUri = routerContext.getOriginalUri();
+            if (matchesUri(originalUri, buildLoginUri(context, request))) {
                 if (request.getForm().containsKey("discovery")) {
                     // User input: {clientEndpoint}/login?discovery={input}[&goto={url}]
                     return handleUserInitiatedDiscovery(request, context);
                 } else {
                     // Login: {clientEndpoint}/login?registration={name}[&goto={url}]
-                    checkRequestIsSufficientlySecure(exchange);
+                    checkRequestIsSufficientlySecure(context);
                     return handleUserInitiatedLogin(context, request);
                 }
             }
 
             // Authorize call-back: {clientEndpoint}/callback?...
-            if (matchesUri(exchange.getOriginalUri(), buildCallbackUri(context, request))) {
-                checkRequestIsSufficientlySecure(exchange);
+            if (matchesUri(originalUri, buildCallbackUri(context, request))) {
+                checkRequestIsSufficientlySecure(context);
                 return handleAuthorizationCallback(context, request);
             }
 
             // Logout: {clientEndpoint}/logout[?goto={url}]
-            if (matchesUri(exchange.getOriginalUri(), buildLogoutUri(context, request))) {
+            if (matchesUri(originalUri, buildLogoutUri(context, request))) {
                 return handleUserInitiatedLogout(context, request);
             }
 
@@ -452,10 +453,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return buildUri(context, request, clientEndpoint, "logout");
     }
 
-    private void checkRequestIsSufficientlySecure(final Exchange exchange)
+    private void checkRequestIsSufficientlySecure(final Context context)
             throws OAuth2ErrorException {
         // FIXME: use enforce filter?
-        if (requireHttps && !"https".equalsIgnoreCase(exchange.getOriginalUri().getScheme())) {
+        UriRouterContext routerContext = context.asContext(UriRouterContext.class);
+        if (requireHttps && !"https".equalsIgnoreCase(routerContext.getOriginalUri().getScheme())) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "SSL is required in order to perform this operation");
         }
@@ -759,8 +761,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                     clientRegistration,
                                                                     context)));
         }
-        final Exchange exchange = context.asContext(Exchange.class);
-        target.set(bindings().bind("exchange", exchange), info);
+        target.set(bindings(context, null), info);
     }
 
     /**

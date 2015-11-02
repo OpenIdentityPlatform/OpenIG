@@ -15,8 +15,8 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
@@ -40,8 +40,8 @@ import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
@@ -91,8 +91,7 @@ class AuthorizationRedirectHandler implements Handler {
     }
 
     @Override
-    public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
-        final Exchange exchange = context.asContext(Exchange.class);
+    public Promise<Response, NeverThrowsException> handle(final Context context, Request request) {
         final URI clientEndpoint;
         try {
             clientEndpoint = buildUri(context, request, endpoint);
@@ -101,7 +100,8 @@ class AuthorizationRedirectHandler implements Handler {
         }
         String gotoUri = request.getForm().getFirst("goto");
         if (gotoUri == null) {
-            gotoUri = exchange.getOriginalUri().toString();
+            UriRouterContext routerContext = context.asContext(UriRouterContext.class);
+            gotoUri = routerContext.getOriginalUri().toString();
         }
         AttributesContext attributesContext = context.asContext(AttributesContext.class);
         final ClientRegistration cr = registration != null
@@ -150,7 +150,7 @@ class AuthorizationRedirectHandler implements Handler {
                                                                                   clientUri,
                                                                                   nonce,
                                                                                   requestedScopes);
-                                saveSession(exchange, session, clientEndpoint);
+                                saveSession(context, session, clientEndpoint);
                                 return response;
                             } catch (ResponseException e) {
                                 return e.getResponse();

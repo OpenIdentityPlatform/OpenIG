@@ -19,15 +19,19 @@ package org.forgerock.openig.filter.oauth2.client;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Collections;
 
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class OAuth2UtilsTest {
+
+    public static final URI ORIGINAL_URI = URI.create("http://www.example.com");
 
     @Test
     public void shouldBuildUriUsingOriginalExchangeUri() throws Exception {
@@ -51,24 +55,28 @@ public class OAuth2UtilsTest {
 
     @Test
     public void shouldMatchesAgainstOriginalUri() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+        assertThat(OAuth2Utils.matchesUri(ORIGINAL_URI,
                                           new URI("http://www.example.com"))).isTrue();
     }
 
     @Test
     public void shouldMatchesIgnoringQueryAndFragments() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+        assertThat(OAuth2Utils.matchesUri(ORIGINAL_URI,
                                           new URI("http://www.example.com?p1=2#fragment")
         )).isTrue();
     }
 
     @Test
     public void shouldNotMatchesDifferentBaseUri() throws Exception {
-        assertThat(OAuth2Utils.matchesUri(buildExchange().getOriginalUri(),
+        assertThat(OAuth2Utils.matchesUri(ORIGINAL_URI,
                                           new URI("http://openig.example.com"))).isFalse();
     }
 
-    private Exchange buildExchange() throws URISyntaxException {
-        return new Exchange(null, new URI("http://www.example.com"));
+    private Context buildExchange() {
+        return new UriRouterContext(new RootContext(),
+                                    null,
+                                    null,
+                                    Collections.<String, String>emptyMap(),
+                                    ORIGINAL_URI);
     }
 }

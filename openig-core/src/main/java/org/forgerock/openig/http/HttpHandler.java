@@ -36,7 +36,7 @@ final class HttpHandler implements Handler {
     private final Handler delegate;
 
     /**
-     * Constructs a new {@code ServletHandler} instance.
+     * Constructs a new {@code HttpHandler} instance.
      *
      * @param delegate The configured {@code Handler}.
      */
@@ -44,18 +44,10 @@ final class HttpHandler implements Handler {
         this.delegate = delegate;
     }
 
-    /**
-     * Rebases the request with the configured {@literal baseURI}, if not {@code null} before calling the configured
-     * {@code Handler}.
-     *
-     * @param context {@inheritDoc}
-     * @param request {@inheritDoc}
-     * @return {@inheritDoc}
-     */
     @Override
     public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
         // Builds the only Exchange and use it
-        Exchange exchange = asExchange(context, request);
+        Exchange exchange = asExchange(context);
         return delegate.handle(exchange, request);
     }
 }

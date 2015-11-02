@@ -88,9 +88,9 @@ public class RouteTest {
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
 
         Route route = createRoute(sessionManager, null);
-        Exchange exchange = new Exchange(new SessionContext(new RootContext(), original), null);
+        Context context = new SessionContext(new RootContext(), original);
 
-        when(handler.handle(exchange, new Request()))
+        when(handler.handle(context, new Request()))
                 .then(new Answer<Void>() {
                     @Override
                     public Void answer(final InvocationOnMock invocation) throws Throwable {
@@ -100,10 +100,10 @@ public class RouteTest {
                     }
                 });
 
-        route.handle(exchange, new Request());
+        route.handle(context, new Request());
         promise.handleResult(new Response());
 
-        assertThat(exchange.asContext(SessionContext.class).getSession()).isSameAs(original);
+        assertThat(context.asContext(SessionContext.class).getSession()).isSameAs(original);
     }
 
     private Route createRoute(final SessionManager sessionManager,

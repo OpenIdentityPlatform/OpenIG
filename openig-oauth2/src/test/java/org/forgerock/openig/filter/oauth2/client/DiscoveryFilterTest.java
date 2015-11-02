@@ -31,14 +31,17 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.filter.oauth2.client.DiscoveryFilter.AccountIdentifier;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -51,7 +54,7 @@ import org.testng.annotations.Test;
 public class DiscoveryFilterTest {
     private static final String REL_OPENID_ISSUER = "&rel=http://openid.net/specs/connect/1.0/issuer";
 
-    private Exchange exchange;
+    private Context context;
 
     @Captor
     private ArgumentCaptor<Request> captor;
@@ -65,7 +68,11 @@ public class DiscoveryFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        exchange = new Exchange(null, new URI("www.example.com"));
+        context = new UriRouterContext(new RootContext(),
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI("www.example.com"));
     }
 
     @DataProvider
@@ -176,13 +183,13 @@ public class DiscoveryFilterTest {
                                                         object(
                                                            field("rel" , OPENID_SERVICE),
                                                            field("href", "http://localhost:8090/openam/oauth2")))))));
-        when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+        when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final URI openIdWellKnownUri = df.performOpenIdIssuerDiscovery(exchange, account);
+        final URI openIdWellKnownUri = df.performOpenIdIssuerDiscovery(context, account);
 
         // then
-        verify(handler).handle(eq(exchange), captor.capture());
+        verify(handler).handle(eq(context), captor.capture());
         final Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toString()).isEqualTo(givenWebFingerUri);
@@ -203,10 +210,10 @@ public class DiscoveryFilterTest {
                                                             field("rel" , "copyright"),
                                                             field("href", "http://www.example.com/copyright")))))));
 
-        when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+        when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(exchange, account);
+        df.performOpenIdIssuerDiscovery(context, account);
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
@@ -219,10 +226,10 @@ public class DiscoveryFilterTest {
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
         response.setEntity(json(object(field("links", "not an array. Should fail"))));
-        when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+        when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(exchange, account);
+        df.performOpenIdIssuerDiscovery(context, account);
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
@@ -235,9 +242,9 @@ public class DiscoveryFilterTest {
         final Response response = new Response();
         response.setStatus(Status.OK);
         response.setEntity(null);
-        when(handler.handle(eq(exchange), any(Request.class))).thenReturn(newResponsePromise(response));
+        when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(exchange, account);
+        df.performOpenIdIssuerDiscovery(context, account);
     }
 }

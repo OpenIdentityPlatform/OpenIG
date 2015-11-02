@@ -80,7 +80,7 @@ import org.forgerock.util.time.TimeService;
  *           "requireHttps": false,
  *           "providerHandler": "ClientHandler",
  *           "realm": "Informative realm name",
- *           "target": "${exchange.oauth2AccessToken}"
+ *           "target": "${contexts.attributes.attributes.oauth2AccessToken}"
  *         }
  * }
  * }

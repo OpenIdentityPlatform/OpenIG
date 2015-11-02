@@ -25,7 +25,6 @@ import java.util.Set;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -58,16 +57,15 @@ class CaptureHandler implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        final Exchange exchange = context.asContext(Exchange.class);
         if (points.contains(REQUEST)) {
-            capture.capture(exchange, request, REQUEST);
+            capture.capture(context, request, REQUEST);
         }
         return delegate.handle(context, request)
                 .thenOnResult(new ResultHandler<Response>() {
                     @Override
                     public void handleResult(final Response response) {
                         if (points.contains(RESPONSE)) {
-                            capture.capture(exchange, response, RESPONSE);
+                            capture.capture(context, response, RESPONSE);
                         }
                     }
                 });
