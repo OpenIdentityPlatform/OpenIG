@@ -29,8 +29,10 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.util.Reject.checkNotNull;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.forgerock.http.Filter;
@@ -56,6 +58,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
+import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -109,14 +112,12 @@ import org.forgerock.util.promise.Promise;
  */
 public class PolicyEnforcementFilter extends GenericHeapObject implements Filter {
 
-    private static final String BASE_ENDPOINT = "json/";
     private static final String POLICY_ENDPOINT = "/policies";
     private static final String EVALUATE_ACTION = "evaluate";
     private static final String SUBJECT_ERROR = "The attribute 'ssoTokenSubject' or 'jwtSubject' must be specified";
 
     private final Handler policiesHandler;
-    private final URI openamUrl;
-    private final String realm;
+    private final URI baseUri;
     private String application;
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
@@ -124,19 +125,16 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     /**
      * Creates a new OpenAM enforcement filter.
      *
-     * @param openamUrl
-     *            The location of the selected OpenAM instance.
-     * @param realm
-     *            The targeted realm.
+     * @param baseUri
+     *            The location of the selected OpenAM instance, including the
+     *            realm, to the json base endpoint, not null.
      * @param policiesHandler
-     *            The handler used to get perform policies requests.
+     *            The handler used to get perform policies requests, not null.
      */
-    public PolicyEnforcementFilter(final URI openamUrl,
-                                   final String realm,
+    public PolicyEnforcementFilter(final URI baseUri,
                                    final Handler policiesHandler) {
-        this.openamUrl = openamUrl;
-        this.realm = realm;
-        this.policiesHandler = chainOf(policiesHandler,
+        this.baseUri = checkNotNull(baseUri);
+        this.policiesHandler = chainOf(checkNotNull(policiesHandler),
                                        new ApiVersionProtocolHeaderFilter());
     }
 
@@ -211,8 +209,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
     private Promise<JsonValue, ResourceException> askForPolicyDecision(final Context context,
                                                                        final Request request) {
-        final RequestHandler requestHandler = CrestHttp.newRequestHandler(policiesHandler,
-                                                                          openamUrl.resolve(BASE_ENDPOINT + realm));
+        final RequestHandler requestHandler = CrestHttp.newRequestHandler(policiesHandler, baseUri);
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
@@ -285,8 +282,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                      pepUsername,
                                                                      pepPassword);
 
-            final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(openamUrl,
-                                                                               realm,
+            final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
+                                                                                                       realm),
                                                                                chainOf(policiesHandler,
                                                                                        ssoTokenFilter));
             filter.setApplication(config.get("application").asString());
@@ -297,6 +294,32 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             }
 
             return filter;
+        }
+
+        @VisibleForTesting
+        static URI normalizeToJsonEndpoint(final URI openamUri, final String realm) throws HeapException {
+            try {
+                final String baseUri = openamUri.toASCIIString();
+                final StringBuilder builder = new StringBuilder(baseUri);
+                if (!baseUri.endsWith("/")) {
+                    builder.append("/");
+                }
+                builder.append("json");
+                if (realm == null || realm.trim().isEmpty()) {
+                    builder.append("/");
+                } else {
+                    if (!realm.startsWith("/")) {
+                        builder.append("/");
+                    }
+                    builder.append(realm);
+                    if (!realm.endsWith("/")) {
+                        builder.append("/");
+                    }
+                }
+                return new URI(builder.toString());
+            } catch (URISyntaxException e) {
+                throw new HeapException(e);
+            }
         }
     }
 
