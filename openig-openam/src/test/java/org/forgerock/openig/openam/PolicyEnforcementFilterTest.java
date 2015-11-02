@@ -30,6 +30,7 @@ import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -66,6 +67,7 @@ import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class PolicyEnforcementFilterTest {
+    private static final URI BASE_URI = URI.create("http://www.example.com:8090/openam/json/");
     private static final String OPENAM_URI = "http://www.example.com:8090/openam/";
     private static final String RESOURCE_CONTENT = "Access granted!";
     private static final String TOKEN = "ARrrg...42*";
@@ -134,19 +136,59 @@ public class PolicyEnforcementFilterTest {
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
-                    field("pepPassword", "password"))) } };
+                    field("pepPassword", "password"))) },
+            /* Invalid realm */
+            { json(object(
+                          field("openamUrl", OPENAM_URI),
+                          field("pepUsername", "jackson"),
+                          field("pepPassword", "password"),
+                          field("realm", "   >>invalid<<    "),
+                          field("jwtSubject", "${contexts.attributes.attributes.jwtSubject}"),
+                          field("application", "anotherApplication"))) } };
+    }
+
+    @DataProvider
+    private static Object[][] baseUriBuiltFromOpenamUriAndRealm() throws Exception {
+        return new Object[][] {
+            // @Checkstyle:off
+            // openamUri, realm -> expected
+            { "http://www.example.com:8090/openam",       null, "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam",         "", "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam",        "/", "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam/",      null, "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam/",        "", "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam/",       "/", "http://www.example.com:8090/openam/json/" },
+            { "http://www.example.com:8090/openam",   "realm/", "http://www.example.com:8090/openam/json/realm/" },
+            { "http://www.example.com:8090/openam",   "/realm", "http://www.example.com:8090/openam/json/realm/" },
+            { "http://www.example.com:8090/openam/",  "realm/", "http://www.example.com:8090/openam/json/realm/" },
+            { "http://www.example.com:8090/openam/",  "/realm", "http://www.example.com:8090/openam/json/realm/" },
+            { "http://www.example.com:8090/openam/", "/realm/", "http://www.example.com:8090/openam/json/realm/" } };
+            // @Checkstyle:on
+    }
+
+    @DataProvider
+    private Object[][] invalidParameters() throws Exception {
+        return new Object[][] {
+            { null, terminalHandler },
+            { URI.create(OPENAM_URI), null } };
     }
 
     @Test(dataProvider = "invalidConfigurations",
           expectedExceptions = { JsonValueException.class, HeapException.class })
-    public void shouldFailToCreateHeapletWhenRequiredAttributeIsMissing(final JsonValue config) throws Exception {
-        buildPolicyEnforcementFilter(config);
+    public void shouldFailToCreateHeaplet(final JsonValue invalidConfiguration) throws Exception {
+        buildPolicyEnforcementFilter(invalidConfiguration);
     }
 
     @Test(dataProvider = "validConfigurations")
     public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(config);
         assertThat(filter).isNotNull();
+    }
+
+    @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
+    public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri, final Handler policiesHandler)
+            throws Exception {
+        new PolicyEnforcementFilter(baseUri, policiesHandler);
     }
 
     @Test
@@ -224,6 +266,12 @@ public class PolicyEnforcementFilterTest {
         verify(logger).debug(any(Exception.class));
     }
 
+    @Test(dataProvider = "baseUriBuiltFromOpenamUriAndRealm")
+    public void shouldSucceedToCreateBaseUri(final String openamUri, final String realm, final String expected)
+            throws Exception {
+        assertThat(normalizeToJsonEndpoint(URI.create(openamUri), realm)).isEqualTo(URI.create(expected));
+    }
+
     private static Response policyDecisionAsJsonResponse() {
         final Response response = new Response();
         response.setStatus(OK);
@@ -239,9 +287,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
-        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
-                                                                           null,
-                                                                           terminalHandler);
+        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, terminalHandler);
         Expression<String> subject = Expression.valueOf("${contexts.attributes.attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
