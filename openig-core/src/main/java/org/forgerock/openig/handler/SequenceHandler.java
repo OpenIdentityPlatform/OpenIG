@@ -41,7 +41,7 @@ import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.promise.ResultHandler;
 
 /**
- * Processes an exchange through a sequence of handlers. This allows multi-request processing such as retrieving a form,
+ * Processes a request through a sequence of handlers. This allows multi-request processing such as retrieving a form,
  * extracting form content (e.g. nonce) and submitting in a subsequent request.
  */
 public class SequenceHandler extends GenericHeapObject implements Handler {
@@ -106,7 +106,7 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
          * Default constructor.
          *
          * @param handler
-         *            Handler to dispatch exchange to.
+         *            Handler to dispatch request to.
          * @param postcondition
          *            Postcondition evaluated to determine if sequence continues (default: {@code null} a.k.a.
          *            unconditional).

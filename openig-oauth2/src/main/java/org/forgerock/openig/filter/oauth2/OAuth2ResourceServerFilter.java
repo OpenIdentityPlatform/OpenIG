@@ -53,7 +53,6 @@ import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -61,12 +60,12 @@ import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**
- * Validates an {@link Exchange} that contains an OAuth 2.0 access token. <p> This filter expects an OAuth 2.0 token to
+ * Validates a {@link Request} that contains an OAuth 2.0 access token. <p> This filter expects an OAuth 2.0 token to
  * be available in the HTTP {@literal Authorization} header:
  *
  * <pre>{@code Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9}</pre>
  *
- * It extracts the token and validate it against the {@literal token-info-endpoint} URL provided in the configuration.
+ * It extracts the token and validate it against the {@literal tokenInfoEndpoint} URL provided in the configuration.
  *
  * <pre>
  * {@code
@@ -115,14 +114,14 @@ import org.forgerock.util.time.TimeService;
  * returned back to the client in case of errors.
  * <p>
  * The {@literal target} optional attribute specifies the expression which will be used for storing the OAuth 2.0 access
- * token information in the exchange. Defaults to <tt>${contexts.attributes.attributes.oauth2AccessToken}</tt>.
+ * token information in the context. Defaults to <tt>${contexts.attributes.attributes.oauth2AccessToken}</tt>.
  *
  * @see Duration
  */
 public class OAuth2ResourceServerFilter extends GenericHeapObject implements Filter {
 
     /**
-     * The key under which downstream handlers will find the access token in the {@link Exchange}.
+     * The key under which downstream handlers will find the access token in the {@link Context}'s {@code attributes}.
      */
     public static final String DEFAULT_ACCESS_TOKEN_KEY = "oauth2AccessToken";
 
@@ -153,7 +152,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
      *         A {@link TimeService} instance used to check if token is expired or not.
      * @param target
      *            The {@literal target} optional attribute specifies the expression which will be used for storing the
-     *            OAuth 2.0 access token information in the exchange. Should not be null.
+     *            OAuth 2.0 access token information in the context. Should not be null.
      */
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
@@ -177,7 +176,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
      *         Name of the realm (used in authentication challenge returned in case of error).
      * @param target
      *            The {@literal target} optional attribute specifies the expression which will be used for storing the
-     *            OAuth 2.0 access token information in the exchange. Should not be null.
+     *            OAuth 2.0 access token information in the context. Should not be null.
      */
     public OAuth2ResourceServerFilter(final AccessTokenResolver resolver,
                                       final BearerTokenExtractor extractor,
@@ -240,7 +239,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             return newResultPromise(e.getResponse());
         }
 
-        // Store the AccessToken in the exchange for downstream handlers
+        // Store the AccessToken in the context for downstream handlers
         target.set(bindings, accessToken);
 
         // Call the rest of the chain

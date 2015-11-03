@@ -57,7 +57,7 @@ public class MessageCaptureTest {
     }
 
     @Test
-    public void shouldLogExchange() throws Exception {
+    public void shouldLogContext() throws Exception {
         MessageCapture capture = new MessageCapture(logger, false, true);
 
         AttributesContext attributesContext = new AttributesContext(new RootContext());

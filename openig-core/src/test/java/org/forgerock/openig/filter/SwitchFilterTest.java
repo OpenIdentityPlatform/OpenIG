@@ -27,8 +27,8 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
@@ -41,7 +41,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class SwitchFilterTest {
 
-    private Exchange exchange = new Exchange();
+    private Context context = new RootContext();
 
     @Mock
     private Handler terminalHandler;
@@ -78,11 +78,11 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
         filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler1);
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         // Filter's handler should not be called because the stream has been diverted
         verifyZeroInteractions(terminalHandler);
-        verify(handler1).handle(exchange, null);
+        verify(handler1).handle(context, null);
     }
 
     @Test
@@ -90,13 +90,13 @@ public class SwitchFilterTest {
         SwitchFilter filter = new SwitchFilter();
         filter.addResponseCase(Expression.valueOf("${true}", Boolean.class), handler1);
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         // No request conditions were met (there was none), so the responses cases are tried
         // and the case's handler that evaluated to true is being executed
         InOrder inOrder = inOrder(terminalHandler, handler1);
-        inOrder.verify(terminalHandler).handle(exchange, null);
-        inOrder.verify(handler1).handle(exchange, null);
+        inOrder.verify(terminalHandler).handle(context, null);
+        inOrder.verify(handler1).handle(context, null);
     }
 
     @Test
@@ -109,13 +109,13 @@ public class SwitchFilterTest {
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.TEAPOT)));
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         // No request conditions were met (there was none), so the responses cases are tried
         // and the case's handler that evaluated to true is being executed
         InOrder inOrder = inOrder(terminalHandler, handler1);
-        inOrder.verify(terminalHandler).handle(exchange, null);
-        inOrder.verify(handler1).handle(exchange, null);
+        inOrder.verify(terminalHandler).handle(context, null);
+        inOrder.verify(handler1).handle(context, null);
     }
 
     @Test
@@ -126,11 +126,11 @@ public class SwitchFilterTest {
         filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler1);
         filter.addResponseCase(Expression.valueOf("${true}", Boolean.class), handler2);
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         // As the request condition is fulfilled, the handler plugged onto
         // the response should not be called
-        verify(handler1).handle(exchange, null);
+        verify(handler1).handle(context, null);
         verifyZeroInteractions(terminalHandler);
         verifyZeroInteractions(handler2);
     }
@@ -146,11 +146,11 @@ public class SwitchFilterTest {
         filter.addRequestCase(Expression.valueOf("${false}", Boolean.class), handler3);
         filter.addRequestCase(Expression.valueOf("${true}", Boolean.class), handler4);
 
-        filter.filter(exchange, null, terminalHandler);
+        filter.filter(context, null, terminalHandler);
 
         // Ensure that only the first handler with true condition gets invoked
         // Other cases in the chain will never be tested
         verifyZeroInteractions(handler1, handler3, handler4);
-        verify(handler2).handle(exchange, null);
+        verify(handler2).handle(context, null);
     }
 }

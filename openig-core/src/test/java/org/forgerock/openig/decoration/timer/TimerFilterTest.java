@@ -25,11 +25,11 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -65,15 +65,15 @@ public class TimerFilterTest {
     public void shouldLogStartedAndElapsedMessages() throws Exception {
         TimerFilter time = new TimerFilter(delegate, logger);
 
-        Exchange exchange = new Exchange();
-        when(delegate.filter(exchange, null, terminal))
+        Context context = new RootContext();
+        when(delegate.filter(context, null, terminal))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
-        time.filter(exchange, null, terminal).get();
+        time.filter(context, null, terminal).get();
 
         InOrder inOrder = inOrder(timer, terminal);
         inOrder.verify(timer).start();
         inOrder.verify(timer).pause();
-        inOrder.verify(terminal).handle(exchange, null);
+        inOrder.verify(terminal).handle(context, null);
         inOrder.verify(timer).resume();
         inOrder.verify(timer).stop();
     }

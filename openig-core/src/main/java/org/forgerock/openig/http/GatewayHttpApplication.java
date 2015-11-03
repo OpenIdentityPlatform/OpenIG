@@ -160,7 +160,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                     TemporaryStorage.class);
 
             // Create the root handler.
-            Handler rootHandler = new HttpHandler(heap.getHandler());
+            Handler rootHandler = heap.getHandler();
 
             // Let the user override the container's session.
             final SessionManager sessionManager = heap.get(SESSION_FACTORY_HEAP_KEY, SessionManager.class);
@@ -170,7 +170,6 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             Router router = new Router();
             router.setDefaultRoute(rootHandler);
-            // I can't use the StaticResponseHandler as it mandates the Context to have an Exchange.
             Handler openigHandler = new Handler() {
                 @Override
                 public Promise<Response, NeverThrowsException> handle(Context context, Request request) {

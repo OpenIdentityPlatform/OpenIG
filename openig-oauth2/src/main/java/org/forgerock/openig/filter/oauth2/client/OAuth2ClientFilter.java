@@ -195,7 +195,7 @@ import org.forgerock.util.time.TimeService;
  */
 public final class OAuth2ClientFilter extends GenericHeapObject implements Filter {
 
-    /** The expression which will be used for storing authorization information in the exchange. */
+    /** The expression which will be used for storing authorization information in the context. */
     public static final String DEFAULT_TOKEN_KEY = "openid";
 
     private Expression<String> clientEndpoint;
@@ -332,7 +332,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * configuration parameter is required. If authorization fails for any
      * reason and the request cannot be processed using the next filter/handler,
      * then the request will be forwarded to the failure handler. In addition,
-     * the {@code exchange} target will be populated with the following OAuth
+     * the target expression will be populated with the following OAuth
      * 2.0 error information:
      *
      * <pre>
@@ -429,11 +429,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     /**
      * Sets the expression which will be used for storing authorization
-     * information in the exchange. This configuration parameter is required.
+     * information in the context. This configuration parameter is required.
      *
      * @param target
      *            The expression which will be used for storing authorization
-     *            information in the exchange.
+     *            information in the context.
      * @return This filter.
      */
     public OAuth2ClientFilter setTarget(final Expression<?> target) {
@@ -592,7 +592,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 return sendAuthorizationRedirect(context, request, null);
             }
             final OAuth2Session refreshedSession =
-                    session.isAuthorized() ? prepareExchange(context, session) : session;
+                    session.isAuthorized() ? prepareContext(context, session) : session;
             return next.handle(context, request)
                     .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                         @Override
@@ -683,10 +683,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return newResultPromise(response);
     }
 
-    private OAuth2Session prepareExchange(final Context context, final OAuth2Session session)
+    private OAuth2Session prepareContext(final Context context, final OAuth2Session session)
             throws ResponseException, OAuth2ErrorException {
         try {
-            tryPrepareExchange(context, session);
+            tryPrepareContext(context, session);
             return session;
         } catch (final OAuth2ErrorException e) {
             /*
@@ -699,7 +699,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 // The session is updated with new access token.
                 final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(context, session);
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
-                tryPrepareExchange(context, refreshedSession);
+                tryPrepareContext(context, refreshedSession);
                 return refreshedSession;
             }
 
@@ -734,7 +734,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return clientRegistration;
     }
 
-    private void tryPrepareExchange(final Context context, final OAuth2Session session)
+    private void tryPrepareContext(final Context context, final OAuth2Session session)
             throws ResponseException, OAuth2ErrorException {
         final Map<String, Object> info =
                 new LinkedHashMap<>(session.getAccessTokenResponse());

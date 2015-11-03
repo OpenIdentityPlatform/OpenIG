@@ -12,7 +12,7 @@ import org.forgerock.http.protocol.Status
 username = request.form?.username[0]
 password = request.form?.password[0]
 
-// For testing purposes, the LDAP host and port are provided in the exchange.
+// For testing purposes, the LDAP host and port are provided in the context's attributes.
 // Edit as needed to match your directory service.
 def attributes = contexts.attributes.attributes
 host = attributes.ldapHost ?: "localhost"
@@ -54,7 +54,7 @@ try {
 
 } catch (AuthenticationException e) {
 
-    // LDAP authentication failed, so fail the exchange with
+    // LDAP authentication failed, so fail the response with
     // HTTP status code 403 Forbidden.
 
     response = new Response()
@@ -64,7 +64,7 @@ try {
 } catch (Exception e) {
 
     // Something other than authentication failed on the server side,
-    // so fail the exchange with HTTP 500 Internal Server Error.
+    // so fail the response with HTTP 500 Internal Server Error.
 
     response = new Response()
     response.status = Status.INTERNAL_SERVER_ERROR

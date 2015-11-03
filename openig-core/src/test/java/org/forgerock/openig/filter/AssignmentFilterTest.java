@@ -38,8 +38,8 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -139,13 +139,13 @@ public class AssignmentFilterTest {
         filter.addRequestBinding(Expression.valueOf("${request.uri}", String.class),
                                  Expression.valueOf("www.forgerock.com", String.class));
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("www.example.com");
 
         Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
-        chain.handle(exchange, request).get();
+        chain.handle(context, request).get();
         assertThat(request.getUri().toString()).isEqualTo("www.forgerock.com");
     }
 

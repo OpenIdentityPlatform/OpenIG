@@ -36,7 +36,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Reject;
@@ -122,7 +121,7 @@ import org.forgerock.util.Reject;
  * </pre>
  */
 public final class Issuer {
-    /** The key used to store this issuer in the exchange. */
+    /** The key used to store this issuer in the context. */
     public static final String ISSUER_KEY = "issuer";
 
     private final String name;
@@ -252,7 +251,7 @@ public final class Issuer {
         request.setMethod("GET");
         request.setUri(wellKnownUri);
 
-        final Response response = handler.handle(new Exchange(new AttributesContext(new RootContext())), request)
+        final Response response = handler.handle(new AttributesContext(new RootContext()), request)
                                                .getOrThrowUninterruptibly();
         if (!OK.equals(response.getStatus())) {
             throw new DiscoveryException("Unable to read well-known OpenID Configuration from '"

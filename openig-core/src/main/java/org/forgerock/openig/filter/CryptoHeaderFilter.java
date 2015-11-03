@@ -79,7 +79,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
     /** Indicated the operation (encryption/decryption) to apply to the headers. */
     private Operation operation;
 
-    /** Indicates the type of message in the exchange to process headers for. */
+    /** Indicates the type of message to process headers for. */
     private MessageType messageType;
 
     /** Cryptographic algorithm. */
@@ -105,10 +105,10 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
     }
 
     /**
-     * Sets the type of message in the exchange to process headers for.
+     * Sets the type of message to process headers for.
      *
      * @param messageType
-     *            The type of message in the exchange to process headers for.
+     *            The type of message to process headers for.
      */
     public void setMessageType(final MessageType messageType) {
         this.messageType = messageType;

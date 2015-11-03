@@ -24,7 +24,7 @@ import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.audit.AuditSource;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -54,9 +54,9 @@ public abstract class AbstractAuditTest {
         source = new AuditSource(Name.of("Test"));
     }
 
-    protected void assertThatEventIncludes(final AuditEvent event, final Exchange exchange, final String... tags) {
+    protected void assertThatEventIncludes(final AuditEvent event, final Context context, final String... tags) {
         assertThat(event.getTags()).containsOnly(tags);
         assertThat(event.getSource()).isSameAs(source);
-        assertThat(event.getData().get("context")).isSameAs(exchange);
+        assertThat(event.getData().get("context")).isSameAs(context);
     }
 }

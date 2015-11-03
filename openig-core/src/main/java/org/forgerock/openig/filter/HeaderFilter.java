@@ -47,7 +47,7 @@ import org.forgerock.util.promise.ResultHandler;
  */
 public class HeaderFilter extends GenericHeapObject implements Filter {
 
-    /** Indicates the type of message in the exchange to filter headers for. */
+    /** Indicates the type of message to filter headers for. */
     private final MessageType messageType;
 
     /** The names of header fields to remove from the message. */

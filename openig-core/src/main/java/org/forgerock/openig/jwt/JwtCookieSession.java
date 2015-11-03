@@ -89,7 +89,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private final KeyPair pair;
 
     /**
-     * Builds a new JwtCookieSession that will manage the given Exchange's session.
+     * Builds a new JwtCookieSession that will manage the given Request's session.
      *
      * @param request
      *         Request used to access {@literal Cookie} and {@literal Set-Cookie} headers.

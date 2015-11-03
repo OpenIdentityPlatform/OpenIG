@@ -26,7 +26,8 @@ import java.util.Set;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -45,29 +46,29 @@ public class AuditFilterTest extends AbstractAuditTest {
     public void shouldEmitAuditEventsWithAdditionalTagsContainingNullOrEmpty(final Set<String> additionalTags)
             throws Exception {
         AuditFilter audit = new AuditFilter(auditSystem, source, delegate, additionalTags);
-        Exchange exchange = new Exchange();
-        when(delegate.filter(exchange, null, handler))
+        Context context = new RootContext();
+        when(delegate.filter(context, null, handler))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
-        audit.filter(exchange, null, handler).getOrThrow();
+        audit.filter(context, null, handler).getOrThrow();
 
         verify(auditSystem, times(2)).onAuditEvent(captor.capture());
-        assertThatEventIncludes(captor.getAllValues().get(0), exchange, "request");
-        assertThatEventIncludes(captor.getAllValues().get(1), exchange, "response", "completed");
+        assertThatEventIncludes(captor.getAllValues().get(0), context, "request");
+        assertThatEventIncludes(captor.getAllValues().get(1), context, "response", "completed");
     }
 
     @Test
     public void shouldEmitAuditEventsWhenCompleted() throws Exception {
         AuditFilter audit = new AuditFilter(auditSystem, source, delegate, singleton("tag"));
-        Exchange exchange = new Exchange();
-        when(delegate.filter(exchange, null, handler))
+        Context context = new RootContext();
+        when(delegate.filter(context, null, handler))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
-        audit.filter(exchange, null, handler).getOrThrow();
+        audit.filter(context, null, handler).getOrThrow();
 
         verify(auditSystem, times(2)).onAuditEvent(captor.capture());
-        assertThatEventIncludes(captor.getAllValues().get(0), exchange, "tag", "request");
-        assertThatEventIncludes(captor.getAllValues().get(1), exchange, "tag", "response", "completed");
+        assertThatEventIncludes(captor.getAllValues().get(0), context, "tag", "request");
+        assertThatEventIncludes(captor.getAllValues().get(1), context, "tag", "response", "completed");
     }
 
 }

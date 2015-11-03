@@ -44,7 +44,7 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * Retrieves and exposes a record from a delimier-separated file. Lookup of the record is
- * performed using a specified key, whose value is derived from an exchange-scoped expression.
+ * performed using a specified key, whose value is derived from an expression.
  * The resulting record is exposed in a {@link Map} object, whose location is specified by the
  * {@code target} expression. If a matching record cannot be found, then the resulting map
  * will be empty.

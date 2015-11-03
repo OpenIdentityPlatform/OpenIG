@@ -33,7 +33,7 @@ import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -75,7 +75,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     @Test
     public void shouldContainsDefaultTagsOnly() throws Exception {
         final Handler decorated = buildDecoratedHandler(json(""));
-        decorated.handle(new Exchange(), new Request());
+        decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
         final AuditEvent event = captor.getValue();
@@ -85,7 +85,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     @Test
     public void shouldExtractAdditionalSingleTag() throws Exception {
         final Handler decorated = buildDecoratedHandler(json("tag-1"));
-        decorated.handle(new Exchange(), new Request());
+        decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
         final AuditEvent event = captor.getValue();
@@ -95,7 +95,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     @Test
     public void shouldExtractMultipleAdditionalTags() throws Exception {
         final Handler decorated = buildDecoratedHandler(json(array("tag-1", "tag-2")));
-        decorated.handle(new Exchange(), new Request());
+        decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
         final AuditEvent event = captor.getValue();
@@ -105,7 +105,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
     @Test
     public void shouldExtractAdditionalTagsButNotduplicateIfTheyAreIdentical() throws Exception {
         final Handler decorated = buildDecoratedHandler(json(array("tag-1", "tag-1")));
-        decorated.handle(new Exchange(), new Request());
+        decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
         final AuditEvent event = captor.getValue();

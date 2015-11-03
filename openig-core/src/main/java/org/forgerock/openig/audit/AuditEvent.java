@@ -25,18 +25,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forgerock.openig.el.Bindings;
-import org.forgerock.openig.http.Exchange;
 
 /**
- * An AuditEvent represents a point in time during the processing of an Exchange.
+ * An AuditEvent represents a point in time during the processing of a Request.
  * <p>
- * Instances of this class are <b>not thread-safe</b>: any filter can possibly update the {@link Exchange} while
- * processing the audit event. Special care must be taken when dealing with the Exchange.
+ * Instances of this class are <b>not thread-safe</b>: any filter can possibly update the {@code data} while
+ * processing the audit event. Special care must be taken when dealing with {@link org.forgerock.http.protocol.Request},
+ * {@link org.forgerock.http.protocol.Response} and {@link org.forgerock.services.context.Context}.
  * <p>
  * The {@literal source} property helps to identify the object that emitted the notification.
  * The {@literal timestamp} property gives a time marker to keep events organized in a
  * sequential manner (expressed in milliseconds).
- * The {@literal exchange} property gives a pointer to the captured {@link Exchange} (never {@code null}). There is
+ * The {@literal data} property gives a pointer to the captured {@code context} (never {@code null}), {@code request}
+ * (never {@code null}) and {@code response} (may be {@code null} when audit happens on the request flow). There is
  * no way to guarantee, if the notification is processed in an asynchronous way, that the bindings content was not
  * modified in the meantime.
  * The {@literal tags} property helps to qualify this notification (no duplicated values).

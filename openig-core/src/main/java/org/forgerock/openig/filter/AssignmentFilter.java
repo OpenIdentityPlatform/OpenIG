@@ -39,7 +39,7 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
 /**
- * Conditionally assigns values to expressions before and after the exchange is handled.
+ * Conditionally assigns values to expressions before and after the request is handled.
  */
 public class AssignmentFilter extends GenericHeapObject implements Filter {
 

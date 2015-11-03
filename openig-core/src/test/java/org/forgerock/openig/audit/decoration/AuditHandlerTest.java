@@ -25,7 +25,8 @@ import java.util.Set;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -41,41 +42,41 @@ public class AuditHandlerTest extends AbstractAuditTest {
     public void shouldEmitAuditEventsWithAdditionalTagsContainingNullOrEmpty(final Set<String> additionalTags)
             throws Exception {
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, additionalTags);
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
 
-        when(delegate.handle(exchange, null))
+        when(delegate.handle(context, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
-        audit.handle(exchange, null).get();
+        audit.handle(context, null).get();
         verify(auditSystem, times(2)).onAuditEvent(captor.capture());
 
         assertThatEventIncludes(captor.getAllValues().get(0),
-                                exchange,
+                                context,
                                 "request");
 
         assertThatEventIncludes(captor.getAllValues().get(1),
-                                exchange,
+                                context,
                                 "response", "completed");
     }
 
     @Test
     public void shouldEmitAuditEventsWhenCompleted() throws Exception {
         AuditHandler audit = new AuditHandler(auditSystem, source, delegate, singleton("tag"));
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
 
-        when(delegate.handle(exchange, null))
+        when(delegate.handle(context, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
 
-        audit.handle(exchange, null).get();
+        audit.handle(context, null).get();
 
         verify(auditSystem, times(2)).onAuditEvent(captor.capture());
 
         assertThatEventIncludes(captor.getAllValues().get(0),
-                                exchange,
+                                context,
                                 "tag", "request");
 
         assertThatEventIncludes(captor.getAllValues().get(1),
-                                exchange,
+                                context,
                                 "tag", "response", "completed");
     }
 

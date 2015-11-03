@@ -55,7 +55,7 @@ public class LocationHeaderFilterTest {
             { json(object(
                     field("baseURI", "https://client.example.org/callback"))) },
             { json(object(
-                    field("baseURI", "${exchange.uri}"))) } };
+                    field("baseURI", "${request.uri}"))) } };
     }
 
     @DataProvider

@@ -32,8 +32,8 @@ import java.util.TreeSet;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -90,17 +90,17 @@ public class CaptureHandlerTest {
     public void shouldCaptureAllMessages(List<CapturePoint> points) throws Exception {
         CaptureHandler handler = new CaptureHandler(delegate, capture, new TreeSet<>(points));
 
-        Exchange exchange = new Exchange();
-        handler.handle(exchange, null).get();
+        Context context = new RootContext();
+        handler.handle(context, null).get();
 
         for (CapturePoint capturePoint : points) {
             // A handler does not capture "filtered" messages, but should accept them as parameter, simply ignoring them
             switch (capturePoint) {
             case REQUEST:
-                verify(capture).capture(exchange, (Request) null, capturePoint);
+                verify(capture).capture(context, (Request) null, capturePoint);
                 break;
             case RESPONSE:
-                verify(capture).capture(exchange, response, capturePoint);
+                verify(capture).capture(context, response, capturePoint);
                 break;
             }
         }

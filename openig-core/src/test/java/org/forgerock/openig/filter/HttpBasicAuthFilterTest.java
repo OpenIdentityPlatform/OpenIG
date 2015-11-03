@@ -33,7 +33,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -128,7 +127,7 @@ public class HttpBasicAuthFilterTest {
 
         // Always answer with 401
         doAnswer(new UnauthorizedAnswer())
-                .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
+                .when(terminalHandler).handle(any(Context.class), any(Request.class));
 
         Context context = newContextChain();
         Request request = newRequest();
@@ -152,7 +151,7 @@ public class HttpBasicAuthFilterTest {
 
         // Always answer with 401
         doAnswer(new UnauthorizedAnswer())
-                .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
+                .when(terminalHandler).handle(any(Context.class), any(Request.class));
 
         Context context = newContextChain();
         Request request = newRequest();
@@ -193,7 +192,7 @@ public class HttpBasicAuthFilterTest {
         Response secondResponse = filter.filter(second, secondRequest, terminalHandler).getOrThrow();
 
         // Terminal handler should be called 3 times, not 4
-        verify(terminalHandler, times(3)).handle(any(Exchange.class), any(Request.class));
+        verify(terminalHandler, times(3)).handle(any(Context.class), any(Request.class));
         // Session should be updated with cached value
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
 
@@ -228,7 +227,7 @@ public class HttpBasicAuthFilterTest {
                 .doAnswer(new AuthorizedAnswer(INITIAL_CREDENTIALS))
                 .doAnswer(new UnauthorizedAnswer())
                 .doAnswer(new AuthorizedAnswer(REFRESHED_CREDENTIALS))
-                .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
+                .when(terminalHandler).handle(any(Context.class), any(Request.class));
 
         // Initial round-trip
         Context first = newContextChain();
@@ -250,7 +249,7 @@ public class HttpBasicAuthFilterTest {
         // first: 2 times
         // second: 1 time
         // third: 2 times
-        verify(terminalHandler, times(5)).handle(any(Exchange.class), any(Request.class));
+        verify(terminalHandler, times(5)).handle(any(Context.class), any(Request.class));
         // Session should be updated with cached value 2 times
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
         verify(session).put(endsWith(":userpass"), eq(REFRESHED_CREDENTIALS));
@@ -286,7 +285,7 @@ public class HttpBasicAuthFilterTest {
     private void basicAuthServerAnswersUnauthorizedThenSuccess(final String credentials) throws Exception {
         doAnswer(new UnauthorizedAnswer())
                 .doAnswer(new AuthorizedAnswer(credentials))
-                .when(terminalHandler).handle(any(Exchange.class), any(Request.class));
+                .when(terminalHandler).handle(any(Context.class), any(Request.class));
     }
 
     private Context newContextChain() throws Exception {

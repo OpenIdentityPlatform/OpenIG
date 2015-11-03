@@ -40,7 +40,6 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -54,7 +53,6 @@ import org.forgerock.util.promise.Promise;
  * <ul>
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
- * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Map contexts} - the visible contexts, keyed by context's name
  * <li>{@link Request request} - the HTTP request
@@ -188,7 +186,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     }
 
     /**
-     * Runs the compiled script using the provided exchange and optional
+     * Runs the compiled script using the provided bindings and optional
      * forwarding handler.
      *
      * @param bindings Base bindings available to the script (will be enriched).

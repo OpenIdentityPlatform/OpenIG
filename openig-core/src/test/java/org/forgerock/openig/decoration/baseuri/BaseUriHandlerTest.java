@@ -16,15 +16,16 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 import java.net.URISyntaxException;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -38,12 +39,12 @@ public class BaseUriHandlerTest {
     @Mock
     private Handler delegate;
 
-    private Exchange exchange;
+    private Context context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        exchange = new Exchange();
+        context = new RootContext();
     }
 
     @Test
@@ -53,9 +54,9 @@ public class BaseUriHandlerTest {
                                                                   String.class));
 
         final Request request = createRequest();
-        handler.handle(exchange, request);
+        handler.handle(context, request);
 
-        verify(delegate).handle(exchange, request);
+        verify(delegate).handle(context, request);
 
         assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
     }
@@ -66,7 +67,7 @@ public class BaseUriHandlerTest {
                                                           null);
 
         final Request request = createRequest();
-        handler.handle(exchange, request);
+        handler.handle(context, request);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -76,7 +77,7 @@ public class BaseUriHandlerTest {
                                                                   String.class));
 
         final Request request = createRequest();
-        handler.handle(exchange, request);
+        handler.handle(context, request);
     }
 
     private Request createRequest() throws URISyntaxException {

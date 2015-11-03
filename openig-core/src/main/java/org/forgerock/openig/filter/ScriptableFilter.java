@@ -23,7 +23,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;
@@ -36,7 +35,6 @@ import org.forgerock.util.promise.Promise;
  * <ul>
  * <li>{@link java.util.Map globals} - the Map of global variables which persist across
  * successive invocations of the script
- * <li>{@link Exchange exchange} - the HTTP exchange
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Request request} - the HTTP request
  * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for

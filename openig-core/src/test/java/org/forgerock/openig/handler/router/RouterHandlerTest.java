@@ -46,7 +46,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.AttributesContext;
@@ -190,7 +189,7 @@ public class RouterHandlerTest {
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
 
         // Register the initial route
         router.onChanges(new FileChangeSet(null,
@@ -198,7 +197,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet(),
                                            Collections.<File>emptySet()));
 
-        router.handle(exchange, new Request()).getOrThrow();
+        router.handle(context, new Request()).getOrThrow();
 
         // Simulate file renaming
         router.onChanges(new FileChangeSet(null,
@@ -206,7 +205,7 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet(),
                                            Collections.singleton(before)));
 
-        router.handle(exchange, new Request()).getOrThrow();
+        router.handle(context, new Request()).getOrThrow();
 
     }
 
