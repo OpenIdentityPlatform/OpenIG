@@ -45,47 +45,32 @@ import org.forgerock.util.promise.Promise;
  * The client registration filter is the way to dynamically register an OpenID
  * Connect Relying Party with the End-User's OpenID Provider.
  * <p>
- * All meta data must be included in the OAuth2ClientFilter configuration.
- * Dynamic client registration requires the "redirect_uris" attributes.
+ * All OpenID metadata must be included in the <b>{@link OAuth2ClientFilter}</b> configuration,
+ * in the <b>"metadata" attribute</b>. Note that for dynamic client registration,
+ * only the "redirect_uris" attribute is mandatory.
  * </p>
  *
- * <pre>
- * {@code
- * {
- *  "name": "Portal",
- *     "type": "OAuth2ClientFilter",
- *     "config": {
- *         "clientEndpoint": "/openid",
- *         "requireHttps": false,
- *         "requireLogin": true,
- *         "loginHandler": "NascarPage",
- *         "scopes": [
- *             "openid",
- *             "profile",
- *             "email"
- *         ],
- *         "target": "${contexts.attributes.attributes.openid}",
- *         "failureHandler": ...,
- *         "redirect_uris": [
- *             "http://localhost:8082/openid/callback",
- *             "http://localhost:8082/openid/callback2"
- *         ],
- *         "client_name": "My App",
- *         "contacts": ["ve7jtb@example.org", "mary@example.org"]
- *     }
- * }
- * }
- * </pre>
+ * Note: When using OpenAM, the "client_name" is required in order to perform dynamic registration,
+ * that means minimal json configuration MUST contain "redirect_uris" and "client_name".
+ * Moreover, still on OpenAM, the "scopes" may be specified to this configuration but
+ * it must be defined as: "scopes"(array of string), which differs from
+ * the OAuth2 metadata "scope" (a string containing a space separated list of scope values).
  *
  * <br>
  * Note for developers: The suffix is added to the issuer name to compose the
  * client registration name in the current heap. When automatically called by
- * the OAuth2Client filter, this name is {@literal IssuerName} + {@literal OAuth2ClientFilterName}
+ * the {@link OAuth2ClientFilter}, this name is {@literal IssuerName} + {@literal OAuth2ClientFilterName}
  * This is required in order to retrieve the Client Registration when performing
  * dynamic client registration.
  *
  * @see <a href="https://openid.net/specs/openid-connect-registration-1_0.html">
  *      OpenID Connect Dynamic Client Registration 1.0</a>
+ * @see <a
+ *      href="https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata">
+ *      OpenID Connect Dynamic Client Registration 1.0 </a>
+ * @see <a
+ *      href="https://tools.ietf.org/html/draft-ietf-oauth-dyn-reg-30#section-2">
+ *      OAuth 2.0 Dynamic Client Registration Protocol </a>
  */
 public class ClientRegistrationFilter implements Filter {
     private final Handler registrationHandler;
@@ -99,8 +84,9 @@ public class ClientRegistrationFilter implements Filter {
      * @param registrationHandler
      *            The handler to perform the dynamic registration to the AS.
      * @param config
-     *            The configuration of this filter. Must contains the
-     *            'redirect_uris' attributes.
+     *            Can contain any client metadata attributes that the client
+     *            chooses to specify for itself during the registration. Must
+     *            contains the 'redirect_uris' attributes.
      * @param heap
      *            A reference to the current heap.
      * @param suffix

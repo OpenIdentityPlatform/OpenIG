@@ -101,7 +101,10 @@ public class ClientRegistrationFilterTest {
                                                                      issuerConfigWithNoRegistrationEndpoint()));
         final Heap heap = mock(Heap.class);
         when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
-        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, getFilterConfig(), heap, SUFFIX);
+        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler,
+                                                                          getMetadata(),
+                                                                          heap,
+                                                                          SUFFIX);
 
         // when
         final Response response = crf.filter(context, new Request(), handler).get();
@@ -114,14 +117,16 @@ public class ClientRegistrationFilterTest {
     @Test
     public void shouldPerformDynamicRegistration() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
+        final ClientRegistrationFilter crf = buildClientRegistrationFilter();
         final Response response = new Response();
         response.setStatus(CREATED);
         response.setEntity(json(object()));
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        drf.performDynamicClientRegistration(context, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+        crf.performDynamicClientRegistration(context,
+                                             getMetadata(),
+                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
 
         // then
         verify(handler).handle(eq(context), captor.capture());
@@ -133,33 +138,37 @@ public class ClientRegistrationFilterTest {
     @Test(expectedExceptions = RegistrationException.class)
     public void shouldFailWhenStatusCodeResponseIsDifferentFromCreated() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
+        final ClientRegistrationFilter crf = buildClientRegistrationFilter();
         final Response response = new Response();
         response.setStatus(Status.BAD_REQUEST);
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        drf.performDynamicClientRegistration(context, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+        crf.performDynamicClientRegistration(context,
+                                             getMetadata(),
+                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
     }
 
     @Test(expectedExceptions = RegistrationException.class)
     public void shouldFailWhenResponseHasInvalidResponseContent() throws Exception {
         // given
-        final ClientRegistrationFilter drf = buildClientRegistrationFilter();
+        final ClientRegistrationFilter crf = buildClientRegistrationFilter();
         final Response response = new Response();
         response.setStatus(CREATED);
         response.setEntity(array("invalid", "content"));
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        drf.performDynamicClientRegistration(context, getFilterConfig(), new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+        crf.performDynamicClientRegistration(context,
+                                             getMetadata(),
+                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
     }
 
     private ClientRegistrationFilter buildClientRegistrationFilter() throws HeapException, Exception {
-        return new ClientRegistrationFilter(handler, getFilterConfig(), buildDefaultHeap(), SUFFIX);
+        return new ClientRegistrationFilter(handler, getMetadata(), buildDefaultHeap(), SUFFIX);
     }
 
-    private JsonValue getFilterConfig() {
+    private JsonValue getMetadata() {
         return json(object(
                         field("redirect_uris", array("https://client.example.org/callback")),
                         field("contact", array("ve7jtb@example.org", "bjensen@example.org")),

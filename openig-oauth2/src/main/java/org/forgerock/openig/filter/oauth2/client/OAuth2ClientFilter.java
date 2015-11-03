@@ -109,6 +109,12 @@ import org.forgerock.util.time.TimeService;
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
+ * "metadata"                     : {                   [OPTIONAL - contains metadata dedicated for dynamic
+ *                                                                  client registration.]
+ *             "redirect_uris"    : [ strings ],            [REQUIRED for dynamic client registration.]
+ *             "client_name"      : string ,                [OPTIONAL but required if used with OpenAM.]
+ *             "scopes"           : [ strings ]             [OPTIONAL - usage with OpenAM only.]
+ * }
  * }
  * </pre>
  *
@@ -129,6 +135,37 @@ import org.forgerock.util.time.TimeService;
  *         "defaultLogoutGoto"     : "/loggedOut",
  *         "requireHttps"          : false,
  *         "requireLogin"          : true
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * This one, containing a nascar page and allowing dynamic client registration with OpenAM:
+ *
+ * <pre>
+ * {@code
+ * {
+ *     "name": "OpenIDConnect",
+ *     "type": "OAuth2ClientFilter",
+ *     "config": {
+ *         "target"                : "${contexts.attributes.attributes.openid}",
+ *         "clientEndpoint"        : "/openid",
+ *         "loginHandler"          : "NascarPage",
+ *         "failureHandler"        : "LoginFailed",
+ *         "defaultLoginGoto"      : "/homepage",
+ *         "defaultLogoutGoto"     : "/loggedOut",
+ *         "requireHttps"          : false,
+ *         "requireLogin"          : true,
+ *         "metadata"              : {
+ *             "client_name": "iRock",
+ *             "contacts": [ "werock@example.com", "werock@forgerock.org" ],
+ *             "scopes": [
+ *                 "openid", "profile"
+ *             ],
+ *             "redirect_uris": [ "http://my.example.com:8082/openid/callback" ],
+ *             "logo_uri": "https://client.example.org/logo.png",
+ *             "subject_type": "pairwise"
+ *         }
  *     }
  * }
  * }
@@ -220,8 +257,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *            The TimeService to use.
      * @param heap
      *            The current heap.
-     * @param config
-     *            The json configuration of this filter.
+     * @param metadata
+     *            The json configuration containing all the OpenID metadata used for
+     *            the dynamic client registration.
      * @param name
      *            The name of this filter.
      * @param discoveryHandler
@@ -233,7 +271,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      */
     public OAuth2ClientFilter(TimeService time,
                               Heap heap,
-                              JsonValue config,
+                              JsonValue metadata,
                               String name,
                               Handler discoveryHandler,
                               Expression<String> clientEndpoint) {
@@ -241,15 +279,17 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         this.heap = heap;
         this.discoveryHandler = discoveryHandler;
         this.clientEndpoint = clientEndpoint;
-        discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap, config, name);
+        discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap,
+                                                                                         metadata,
+                                                                                         name);
     }
 
     private Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
-                                                              final JsonValue config,
+                                                              final JsonValue metadata,
                                                               final String name) {
         return chainOf(new AuthorizationRedirectHandler(time, clientEndpoint),
                        new DiscoveryFilter(discoveryHandler, heap),
-                       new ClientRegistrationFilter(discoveryHandler, config, heap, name));
+                       new ClientRegistrationFilter(discoveryHandler, metadata, heap, name));
     }
 
     @Override
@@ -792,7 +832,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                    String.class);
             final OAuth2ClientFilter filter = new OAuth2ClientFilter(time,
                                                                      heap,
-                                                                     config,
+                                                                     config.get("metadata"),
                                                                      this.name,
                                                                      discoveryHandler,
                                                                      clientEndpoint);
