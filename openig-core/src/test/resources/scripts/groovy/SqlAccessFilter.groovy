@@ -1,7 +1,7 @@
 /*
  * Look up user credentials in a relational database
  * based on the user's email address provided in the request form data,
- * and set the credentials in the exchange headers for the next handler.
+ * and set the credentials in the request headers for the next handler.
  */
 
 def client = new SqlClient()

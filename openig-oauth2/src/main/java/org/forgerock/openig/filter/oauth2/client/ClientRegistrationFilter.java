@@ -143,7 +143,7 @@ public class ClientRegistrationFilter implements Filter {
                 }
                 attributesContext.getAttributes().put(CLIENT_REG_KEY, cr);
             } else {
-                throw new RegistrationException("Cannot retrieve issuer from the exchange");
+                throw new RegistrationException("Cannot retrieve issuer from the context");
             }
         } catch (RegistrationException e) {
             return newResultPromise(newInternalServerError(e));

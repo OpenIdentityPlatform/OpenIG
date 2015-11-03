@@ -73,7 +73,7 @@ import org.forgerock.util.promise.Promise;
  * <br>
  * Based on the returned OpenID Issuer's location, the OpenID well-known
  * end-point is extracted and the filter builds a {@link Issuer} which is
- * placed in the exchange and in the heap to be reused if needed.
+ * placed in the context and in the heap to be reused if needed.
  * </p>
  *
  * @see <a href="https://openid.net/specs/openid-connect-discovery-1_0.html">

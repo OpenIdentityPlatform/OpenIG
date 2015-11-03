@@ -49,8 +49,8 @@ import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either
- * before the exchange is handled if {@code messageType} is {@link MessageType#REQUEST}, or
- * after the exchange is handled if it is {@link MessageType#RESPONSE}. Each pattern can have
+ * before the request is handled if {@code messageType} is {@link MessageType#REQUEST}, or
+ * after the request is handled if it is {@link MessageType#RESPONSE}. Each pattern can have
  * an associated template, which is applied to its match result.
  * <p>
  * The extraction results are contained in a {@link Map} object, whose location is specified
@@ -66,7 +66,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
     /** Extracts regular expression patterns from entities. */
     private final StreamPatternExtractor extractor = new StreamPatternExtractor();
 
-    /** The message type in the exchange to extract patterns from. */
+    /** The message type to extract patterns from. */
     private final MessageType messageType;
 
     /** Overrides the character set encoding specified in message. If {@code null}, the message encoding is used. */

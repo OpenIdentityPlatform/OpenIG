@@ -33,8 +33,8 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -101,18 +101,18 @@ public class CaptureFilterTest {
     public void shouldCaptureAllMessages(List<CapturePoint> points) throws Exception {
         CaptureFilter filter = new CaptureFilter(delegate, capture, new TreeSet<>(points));
 
-        Exchange exchange = new Exchange();
-        filter.filter(exchange, null, terminal).get();
+        Context context = new RootContext();
+        filter.filter(context, null, terminal).get();
 
         for (CapturePoint capturePoint : points) {
             switch (capturePoint) {
             case REQUEST:
             case FILTERED_REQUEST:
-                verify(capture).capture(exchange, (Request) null, capturePoint);
+                verify(capture).capture(context, (Request) null, capturePoint);
                 break;
             case RESPONSE:
             case FILTERED_RESPONSE:
-                verify(capture).capture(exchange, response, capturePoint);
+                verify(capture).capture(context, response, capturePoint);
                 break;
             }
 

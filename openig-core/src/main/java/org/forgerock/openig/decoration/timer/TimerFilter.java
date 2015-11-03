@@ -20,7 +20,6 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
@@ -28,9 +27,9 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * Log a {@literal started} message when an {@link Exchange} is flowing into this Filter and both a {@literal
+ * Log a {@literal started} message when an {@link Request} is flowing into this Filter and both a {@literal
  * elapsed} and (potentially, if not equals to the globally elapsed time) {@literal elapsed-within}
- * messages when the {@link Exchange} is flowing out, delegating to a given encapsulated {@link Filter} instance.
+ * messages when the {@link Response} is flowing out, delegating to a given encapsulated {@link Filter} instance.
  */
 class TimerFilter implements Filter {
     private final Filter delegate;

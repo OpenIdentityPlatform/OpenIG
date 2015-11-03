@@ -57,7 +57,7 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * Executes a SQL query through a prepared statement and exposes its first result. Parameters
- * in the prepared statement are derived from exchange-scoped expressions. The query result is
+ * in the prepared statement are derived from expressions. The query result is
  * exposed in a {@link Map} object, whose location is specified by the {@code target}
  * expression. If the query yields no result, then the resulting map will be empty.
  * <p>

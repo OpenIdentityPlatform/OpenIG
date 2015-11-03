@@ -32,8 +32,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -246,7 +246,7 @@ public class DecoratorSystemTest {
     }
 
     private void assertThatResponseEntityIsEqualTo(final Handler handler, final String expected) throws Exception {
-        Response response = handler.handle(new Exchange(), null).getOrThrow();
+        Response response = handler.handle(new RootContext(), null).getOrThrow();
         assertThat(response.getEntity().getString()).isEqualTo(expected);
     }
 

@@ -23,10 +23,11 @@ import static org.mockito.Mockito.when;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.log.LogTimer;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.InOrder;
@@ -58,14 +59,14 @@ public class TimerHandlerTest {
     public void shouldLogStartedAndElapsedMessages() throws Exception {
         TimerHandler time = new TimerHandler(delegate, logger);
 
-        Exchange exchange = new Exchange();
-        when(delegate.handle(exchange, null))
+        Context context = new RootContext();
+        when(delegate.handle(context, null))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
-        time.handle(exchange, null).get();
+        time.handle(context, null).get();
 
         InOrder inOrder = inOrder(timer, delegate);
         inOrder.verify(timer).start();
-        inOrder.verify(delegate).handle(exchange, null);
+        inOrder.verify(delegate).handle(context, null);
         inOrder.verify(timer).stop();
     }
 

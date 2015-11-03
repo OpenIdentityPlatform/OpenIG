@@ -144,7 +144,7 @@ public class MessageCapture {
             throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
         }
 
-        // Prints the exchange if required
+        // Prints the context if required
         if (captureContext) {
             writer.println("Context's content as JSON:");
             captureContextAsJson(writer, context);

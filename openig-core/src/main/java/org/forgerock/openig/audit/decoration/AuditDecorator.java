@@ -44,9 +44,9 @@ import org.forgerock.openig.heap.HeapException;
  * <ul>
  *     <li>{@link Tag#request}: The event happens before the delegate {@link Filter}/{@link Handler} is called</li>
  *     <li>{@link Tag#response}: The event happens after the delegate {@link Filter}/{@link Handler} was called</li>
- *     <li>{@link Tag#completed}: The event happens when the exchange has been completely handled <b>successfully</b>
+ *     <li>{@link Tag#completed}: The event happens when the request has been completely handled <b>successfully</b>
  *     by the processing unit (always complements a {@link Tag#response} tag)</li>
- *     <li>{@link Tag#exception}: The event happens when the exchange has been handled with <b>errors</b>
+ *     <li>{@link Tag#exception}: The event happens when the request has been handled with <b>errors</b>
  *     by the processing unit (always complements a {@link Tag#response} tag). Notice that this does not indicate that
  *     the source heap object is the origin of the failure (it may or may not have thrown the exception itself).</li>
  * </ul>

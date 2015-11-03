@@ -16,6 +16,6 @@
  */
 
 /**
- * Filters the requests and/or responses of HTTP exchanges.
+ * Filters the requests and/or responses of HTTP.
  */
 package org.forgerock.openig.filter;

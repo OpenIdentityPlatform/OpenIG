@@ -244,7 +244,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
             return Promises.newResultPromise(Responses.newInternalServerError("Can't add request cookies", e));
         }
 
-        // pass exchange to next handler in chain
+        // pass request to next handler in chain
         return next.handle(context, request)
                 .then(new Function<Response, Response, NeverThrowsException>() {
                     @Override

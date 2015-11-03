@@ -41,16 +41,16 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * Conditionally diverts the exchange to another handler. Before and after the exchange is
+ * Conditionally diverts the request to another handler. Before and after the request is
  * handled, associated conditions are evaluated. If a condition evaluates to {@code true}, then
- * the exchange flow is diverted to the associated handler. If no condition evaluates to
- * {@code true}, then the exchange flows normally through the filter.
+ * the processing flow is diverted to the associated handler. If no condition evaluates to
+ * {@code true}, then the request flows normally through the filter.
  */
 public class SwitchFilter extends GenericHeapObject implements Filter {
 
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
-        /** Condition to evaluate if exchange should be diverted to handler. */
+        /** Condition to evaluate if request should be diverted to handler. */
         private final Expression<Boolean> condition;
 
         /** Handler to divert to if condition yields {@code true}. */
@@ -67,10 +67,10 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         }
     }
 
-    /** Switch cases to test before the exchange is handled. */
+    /** Switch cases to test before the request is handled. */
     private final List<Case> requestCases = new ArrayList<>();
 
-    /** Switch cases to test after the exchange is handled. */
+    /** Switch cases to test after the request is handled. */
     private final List<Case> responseCases = new ArrayList<>();
 
     /**

@@ -32,7 +32,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -101,8 +100,8 @@ class Route implements Handler {
     private final Handler handler;
 
     /**
-     * If the expression evaluates to {@literal true} for a given {@link Exchange}, this route
-     * will process the exchange. May be {@literal null} (semantically equivalent to "always {@literal true}").
+     * If the expression evaluates to {@literal true} for a given {@link Request} and {@link Context}, this route
+     * will process the request. May be {@literal null} (semantically equivalent to "always {@literal true}").
      */
     private final Expression<Boolean> condition;
 
@@ -144,7 +143,7 @@ class Route implements Handler {
      * @param handler main handler of the route.
      * @param sessionManager user-provided {@link SessionManager} to be used within this route (may be {@code null})
      * @param name route's name
-     * @param condition used to dispatch only a subset of Exchanges to this route.
+     * @param condition used to dispatch only a subset of incoming request to this route.
      */
     public Route(final HeapImpl heap,
                  final Handler handler,
@@ -171,7 +170,7 @@ class Route implements Handler {
      * Evaluate if this route will accept the given {@link Context} and {@link Request}.
      * @param context used to evaluate the condition against
      * @param request used to evaluate the condition against
-     * @return {@literal true} if the exchange matches the condition of this route.
+     * @return {@literal true} if the provided context and request match the condition of this route.
      */
     public boolean accept(final Context context, Request request) {
         return (condition == null) || Boolean.TRUE.equals(condition.eval(bindings(context, request)));

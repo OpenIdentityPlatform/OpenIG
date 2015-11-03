@@ -29,8 +29,8 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
@@ -70,13 +70,13 @@ public class DispatchHandlerTest {
         dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class),
                 nextHandler, new URI("http://www.hostA.domain.com"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.example.com/key_path");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
         assertThat(request.getUri()).isEqualTo(uri("http://www.hostA.domain.com/key_path"));
     }
 
@@ -88,13 +88,13 @@ public class DispatchHandlerTest {
                                     nextHandler,
                                     new URI("http://www.hostA.domain.com:443"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://user.0:password@www.example.com/key_path");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
         assertThat(request.getUri()).isEqualTo(uri(
                 "http://user.0:password@www.hostA.domain.com:443/key_path"));
     }
@@ -106,13 +106,13 @@ public class DispatchHandlerTest {
         dispatchHandler.addBinding(Expression.valueOf(CONDITION, Boolean.class), nextHandler,
                 new URI("https://www.hostA.domain.com"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.example.com:40/key_path?query=true&name=b%20jensen#20");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
         assertThat(request.getUri()).isEqualTo(uri(
                 "https://www.hostA.domain.com/key_path?query=true&name=b%20jensen#20"));
     }
@@ -123,13 +123,13 @@ public class DispatchHandlerTest {
         // unconditional dispatch when expression is null.
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.example.com:40/key_path/path");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
         assertThat(request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/key_path/path"));
     }
 
@@ -141,13 +141,13 @@ public class DispatchHandlerTest {
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, new URI("https://www.secure.domain.com"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
 
         assertThat(request.getUri()).isEqualTo(uri("https://www.secure.domain.com/data/user.0"));
     }
@@ -160,13 +160,13 @@ public class DispatchHandlerTest {
         final DispatchHandler dispatchHandler = new DispatchHandler();
         dispatchHandler.addBinding(expression, nextHandler, null);
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.this.domain.com/data/user.0");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
 
         assertThat(request.getUri()).isEqualTo(uri("http://www.this.domain.com/data/user.0"));
     }
@@ -179,27 +179,27 @@ public class DispatchHandlerTest {
                 new URI("https://www.hostA.domain.com"));
         dispatchHandler.addUnconditionalBinding(nextHandler, new URI("https://www.hostB.domain.com"));
 
-        final Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://www.example.com/");
 
-        dispatchHandler.handle(exchange, request);
+        dispatchHandler.handle(context, request);
 
-        verify(nextHandler).handle(exchange, request);
+        verify(nextHandler).handle(context, request);
         // Only the first verified binding applies.
         assertThat(request.getUri()).isEqualTo(uri("https://www.hostB.domain.com/"));
 
         // Now with an URI which verifies the first condition
         request.setUri("http://www.example.com/key_path");
-        dispatchHandler.handle(exchange, request);
-        verify(nextHandler, times(2)).handle(exchange, request);
+        dispatchHandler.handle(context, request);
+        verify(nextHandler, times(2)).handle(context, request);
         assertThat(request.getUri()).isEqualTo(uri("https://www.hostA.domain.com/key_path"));
 
     }
 
     @Test
     public void testDispatchNoHandlerToDispatch() throws Exception {
-        Response response = new DispatchHandler().handle(new Exchange(), new Request()).get();
+        Response response = new DispatchHandler().handle(new RootContext(), new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.getEntity().getString()).contains("no handler to dispatch to");
     }

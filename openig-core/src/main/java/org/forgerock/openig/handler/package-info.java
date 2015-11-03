@@ -16,6 +16,6 @@
  */
 
 /**
- * Handles HTTP exchange requests by generating responses.
+ * Handles HTTP requests by generating responses.
  */
 package org.forgerock.openig.handler;

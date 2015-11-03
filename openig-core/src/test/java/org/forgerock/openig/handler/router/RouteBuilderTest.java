@@ -35,7 +35,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -66,9 +65,9 @@ public class RouteBuilderTest {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("inlined-handler-route.json"));
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
 
-        assertThat(route.handle(exchange, new Request())
+        assertThat(route.handle(context, new Request())
                         .get()
                         .getStatus()).isEqualTo(Status.TEAPOT);
     }
@@ -110,11 +109,11 @@ public class RouteBuilderTest {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
         request.setUri("http://openig.forgerock.org/demo");
 
-        route.handle(exchange, request);
+        route.handle(context, request);
 
         assertThat(request.getUri()).isEqualTo(uri("https://localhost:443/demo"));
     }

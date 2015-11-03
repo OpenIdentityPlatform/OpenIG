@@ -41,7 +41,7 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * Creates a static response in an HTTP exchange.
+ * Creates a static HTTP response.
  */
 public class StaticResponseHandler extends GenericHeapObject implements Handler {
 
@@ -102,7 +102,6 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        // TODO Remove that when Expression will no more use an Exchange
         Bindings bindings = bindings(context, request);
         Response response = new Response();
         response.setStatus(this.status);

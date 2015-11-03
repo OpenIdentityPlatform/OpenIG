@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
 
@@ -63,11 +62,6 @@ public class Bindings {
                 .bind("request", request);
         if (context != null) {
             bindings.bind("contexts", flatten(context));
-
-            // Bind Exchange if there is one
-            if (context.containsContext(Exchange.class)) {
-                bindings.bind("exchange", context.asContext(Exchange.class));
-            }
         }
         return bindings;
     }

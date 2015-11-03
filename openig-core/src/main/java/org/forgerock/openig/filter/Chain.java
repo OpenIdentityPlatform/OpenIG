@@ -35,16 +35,16 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * A chain of exchange zero or more filters and one handler. The chain is responsible for
- * dispatching the exchange to each filter in the chain, and finally the handler.
+ * A chain of zero or more filters and one handler. The chain is responsible for
+ * dispatching the request to each filter in the chain, and finally the handler.
  * <p>
- * When a chain dispatches an exchange to a filter, it creates a "subchain" (a subset of this
+ * When a chain dispatches a request to a filter, it creates a "subchain" (a subset of this
  * chain, which contains the remaining downstream filters and handler), and passes it as a
  * parameter to the filter. For this reason, a filter should make no assumptions or
  * correlations using the chain it is supplied with when invoked.
  * <p>
- * A filter may elect to terminate dispatching of the exchange to the rest of the chain by not
- * calling {@code chain.handle(exchange)} and generate its own response or dispatch to a
+ * A filter may elect to terminate dispatching of the request to the rest of the chain by not
+ * calling {@code chain.handle(Context, Request)} and generate its own response or dispatch to a
  * completely different handler.
  *
  * @see Filter

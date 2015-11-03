@@ -40,8 +40,8 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * Dispatches to one of a list of handlers. When an exchange is handled, each handler's
- * condition is evaluated. If a condition expression yields {@code true}, then the exchange
+ * Dispatches to one of a list of handlers. When a request is handled, each handler's
+ * condition is evaluated. If a condition expression yields {@code true}, then the request
  * is dispatched to the associated handler with no further processing.
  * <p>
  * If no condition yields {@code true} then the handler will return a {@literal 404} not found response.
@@ -50,7 +50,7 @@ import org.forgerock.util.promise.Promises;
  */
 public class DispatchHandler extends GenericHeapObject implements Handler {
 
-    /** Expressions to evaluate against exchange, bound to handlers to dispatch to. */
+    /** Expressions to evaluate against request and context, bound to handlers to dispatch to. */
     private final List<Binding> bindings = new ArrayList<>();
 
     /**

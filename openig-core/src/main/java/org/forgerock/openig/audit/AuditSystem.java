@@ -24,7 +24,7 @@ package org.forgerock.openig.audit;
  * Concrete {@link AuditSystem} implementations could:
  * <ul>
  *     <li>Persist the notifications</li>
- *     <li>Call agents in an asynchronous way (limit the latency in exchange processing, but consume more CPU)</li>
+ *     <li>Call agents in an asynchronous way (limit the latency in request processing, but consume more CPU)</li>
  *     <li>Pre-filter the notifications</li>
  * </ul>
  */

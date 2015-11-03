@@ -213,8 +213,8 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "form": {
- *             "username": [ "${exchange.headers['X-OpenAM-Username'][0]}" ],
- *             "password": [ "${exchange.headers['X-OpenAM-Password'][0]}" ]
+ *             "username": [ "${request.headers['X-OpenAM-Username'][0]}" ],
+ *             "password": [ "${request.headers['X-OpenAM-Password'][0]}" ]
  *           }
  *         }
  *       }

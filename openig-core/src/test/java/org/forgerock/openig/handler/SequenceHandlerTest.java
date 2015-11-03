@@ -25,8 +25,8 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
@@ -64,9 +64,9 @@ public class SequenceHandlerTest {
         Response response = new Response();
         promise1.handleResult(response);
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
-        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(context, request);
         assertThat(result.get()).isSameAs(response);
     }
 
@@ -80,9 +80,9 @@ public class SequenceHandlerTest {
         Response response2 = new Response();
         promise2.handleResult(response2);
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
-        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(context, request);
         assertThat(result.get()).isSameAs(response2);
     }
 
@@ -96,9 +96,9 @@ public class SequenceHandlerTest {
         Response response2 = new Response();
         promise2.handleResult(response2);
 
-        Exchange exchange = new Exchange();
+        Context context = new RootContext();
         Request request = new Request();
-        Promise<Response, NeverThrowsException> result = sequence.handle(exchange, request);
+        Promise<Response, NeverThrowsException> result = sequence.handle(context, request);
         assertThat(result.get()).isSameAs(response1);
         verifyZeroInteractions(handler2);
     }

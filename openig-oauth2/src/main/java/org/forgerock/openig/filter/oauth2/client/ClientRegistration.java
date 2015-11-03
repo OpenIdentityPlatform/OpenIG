@@ -111,7 +111,7 @@ import org.forgerock.util.encode.Base64;
  *      OpenID Connect Dynamic Client Registration 1.0 </a>
  */
 public final class ClientRegistration {
-    /** The key used to store this client registration in the exchange. */
+    /** The key used to store this client registration in the context. */
     static final String CLIENT_REG_KEY = "registration";
 
     private final String name;
@@ -214,7 +214,7 @@ public final class ClientRegistration {
      * end-point.
      *
      * @param context
-     *            The current exchange.
+     *            The current context.
      * @param session
      *            The current session.
      * @return The JSON content of the response if status return code of the
@@ -252,7 +252,7 @@ public final class ClientRegistration {
      * expired.
      *
      * @param context
-     *            The current exchange.
+     *            The current context.
      * @param session
      *            The current session to use.
      * @return A JsonValue containing the requested user info.

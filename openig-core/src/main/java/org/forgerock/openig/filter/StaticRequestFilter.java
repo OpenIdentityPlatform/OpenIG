@@ -45,9 +45,8 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 
 /**
- * Creates a new request with in the exchange object. It will replace any
- * request that may already be present in the exchange. The request can include
- * a form, specified in the {@code form} field, which is included in an entity
+ * Creates a new request and send it down the next handler (effectively replacing the previous request).
+ * The request can include a form, specified in the {@code form} field, which is included in an entity
  * encoded in {@code application/x-www-form-urlencoded} format if request method
  * is {@code POST}, or otherwise as (additional) query parameters in the URI.
  *
@@ -110,7 +109,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
     private final MultiValueMap<String, Expression<String>> headers =
             new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 
-    /** A form to include in the request, whose values are exchange-scoped expressions that are evaluated. */
+    /** A form to include in the request, whose values are expressions that are evaluated. */
     private final MultiValueMap<String, Expression<String>> form =
             new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 

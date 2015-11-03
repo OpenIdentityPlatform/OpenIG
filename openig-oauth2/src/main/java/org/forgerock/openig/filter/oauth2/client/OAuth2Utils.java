@@ -68,7 +68,7 @@ final class OAuth2Utils {
                     uriString += "/" + additionalPath;
                 }
             }
-            // Resolve the computed Uri against the original Exchange URI
+            // Resolve the computed Uri against the original Request URI
             UriRouterContext routerContext = context.asContext(UriRouterContext.class);
             return routerContext.getOriginalUri().resolve(new URI(uriString));
         } catch (final URISyntaxException e) {

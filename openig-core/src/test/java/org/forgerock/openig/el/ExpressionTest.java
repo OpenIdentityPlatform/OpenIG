@@ -125,7 +125,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void exchangeRequestURI() throws ExpressionException, java.net.URISyntaxException {
+    public void requestURI() throws ExpressionException, java.net.URISyntaxException {
         Request request = new Request();
         request.setUri("http://test.com:123/path/to/resource.html");
         String o = Expression.valueOf("${request.uri.path}", String.class).eval(bindings("request", request));
@@ -224,21 +224,21 @@ public class ExpressionTest {
     }
 
     @Test
-    public void getNullExchangeRequestEntityAsString() throws Exception {
+    public void getNullRequestEntityAsString() throws Exception {
         String o = Expression.valueOf("${request.entity.string}", String.class)
                              .eval(bindings("request", new Request()));
         assertThat(o).isEqualTo("");
     }
 
     @Test
-    public void getNullExchangeRequestEntityAsJson() throws Exception {
+    public void getNullRequestEntityAsJson() throws Exception {
         Map<?, ?> o = Expression.valueOf("${request.entity.json}", Map.class)
                                 .eval(bindings("request", new Request()));
         assertThat(o).isNull();
     }
 
     @Test
-    public void getExchangeRequestEntityAsString() throws Exception {
+    public void getRequestEntityAsString() throws Exception {
         Request request = new Request();
         request.setEntity("old mcdonald had a farm");
         String o = Expression.valueOf("${request.entity.string}", String.class)
@@ -248,7 +248,7 @@ public class ExpressionTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void getExchangeRequestEntityAsJson() throws Exception {
+    public void getRequestEntityAsJson() throws Exception {
         Request request = new Request();
         request.setEntity("{ \"string\" : \"string\", \"int\" : 12345 }");
         Map<String, Object> map = Expression.valueOf("${request.entity.json}", Map.class)
@@ -261,7 +261,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void setExchangeRequestEntityAsJson() throws Exception {
+    public void setRequestEntityAsJson() throws Exception {
         Request request = new Request();
         Expression.valueOf("${request.entity.json}", Map.class)
                   .set(bindings("request", request), object(field("k1", "v1"), field("k2", 123)));
@@ -271,7 +271,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void setExchangeRequestEntityAsString() throws Exception {
+    public void setRequestEntityAsString() throws Exception {
         Request request = new Request();
         Expression.valueOf("${request.entity.string}", String.class)
                   .set(bindings("request", request), "mary mary quite contrary");

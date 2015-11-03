@@ -26,8 +26,8 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
@@ -45,13 +45,13 @@ public class BaseUriFilterTest {
     @Mock
     private Handler terminal;
 
-    private Exchange exchange;
+    private Context context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         delegate = new DelegateFilter();
-        exchange = new Exchange();
+        context = new RootContext();
     }
 
     @Test
@@ -61,9 +61,9 @@ public class BaseUriFilterTest {
                                                                       String.class));
 
         final Request request = createRequest();
-        baseUriFilter.filter(exchange, request, terminal);
+        baseUriFilter.filter(context, request, terminal);
 
-        verify(terminal).handle(exchange, request);
+        verify(terminal).handle(context, request);
 
         assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
     }
@@ -74,7 +74,7 @@ public class BaseUriFilterTest {
                                                               null);
 
         final Request request = createRequest();
-        baseUriFilter.filter(exchange, request, terminal);
+        baseUriFilter.filter(context, request, terminal);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -84,7 +84,7 @@ public class BaseUriFilterTest {
                                                                       "http://<<servername>>:8080",  String.class));
 
         final Request request = createRequest();
-        baseUriFilter.filter(exchange, request, terminal);
+        baseUriFilter.filter(context, request, terminal);
     }
 
     private Request createRequest() throws URISyntaxException {

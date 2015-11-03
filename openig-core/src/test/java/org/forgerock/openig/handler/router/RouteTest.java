@@ -29,7 +29,6 @@ import org.forgerock.http.session.SessionManager;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -67,21 +66,21 @@ public class RouteTest {
     }
 
     @Test
-    public void testRouteAcceptingTheExchange() throws Exception {
+    public void testRouteAcceptingTheRequest() throws Exception {
         Route route = createRoute(null, Expression.valueOf("${true}", Boolean.class));
-        assertThat(route.accept(new Exchange(), null)).isTrue();
+        assertThat(route.accept(new RootContext(), null)).isTrue();
     }
 
     @Test
-    public void testRouteRejectingTheExchange() throws Exception {
+    public void testRouteRejectingTheRequest() throws Exception {
         Route route = createRoute(null, Expression.valueOf("${false}", Boolean.class));
-        assertThat(route.accept(new Exchange(), null)).isFalse();
+        assertThat(route.accept(new RootContext(), null)).isFalse();
     }
 
     @Test
-    public void testRouteIsDelegatingTheExchange() throws Exception {
+    public void testRouteIsDelegatingTheRequest() throws Exception {
         Route route = createRoute(null, null);
-        assertThat(route.handle(new Exchange(), new Request())).isSameAs(promise);
+        assertThat(route.handle(new RootContext(), new Request())).isSameAs(promise);
     }
 
     @Test

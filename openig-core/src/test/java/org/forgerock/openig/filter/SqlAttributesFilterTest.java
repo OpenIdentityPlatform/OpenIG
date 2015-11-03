@@ -77,7 +77,7 @@ public class SqlAttributesFilterTest {
     }
 
     @Test
-    public void testSqlResultRowIsStoredInAMapAndInAnExchangeProperty() throws Exception {
+    public void testSqlResultRowIsStoredInAMapAndInAttributesContextProperty() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
                 Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
 
@@ -86,7 +86,7 @@ public class SqlAttributesFilterTest {
         AttributesContext context = new AttributesContext(new RootContext());
         filter.filter(context, null, terminalHandler);
 
-        // The expression has stored the Map result as an entry in the Exchange's backing map
+        // The expression has stored the Map result as an entry in the Context's attributes
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) context.getAttributes().get("result");
         assertThat(result).containsOnly(entry("password", "secret"));

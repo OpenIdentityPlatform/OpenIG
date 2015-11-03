@@ -26,14 +26,13 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.http.Exchange;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * A {@link EnforcerFilter} makes sure that the handled {@link Exchange} verifies a condition.
+ * A {@link EnforcerFilter} makes sure that the handled {@link Request} verifies a condition.
  * If the condition is not verified, it simply returns a {@literal 500} internal server error response
  * (that actually stops the chain execution).
  */
@@ -62,7 +61,7 @@ public class EnforcerFilter implements Filter {
                                                           final Handler next) {
         if (!isConditionVerified(bindings(context, request))) {
             return newResultPromise(Responses.newInternalServerError(
-                    "Exchange could not satisfy the enforcement expression"));
+                    "Cannot satisfy the enforcement expression"));
         }
         return delegate.filter(context, request, next);
     }
