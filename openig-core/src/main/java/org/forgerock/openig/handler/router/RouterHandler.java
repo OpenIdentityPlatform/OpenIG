@@ -362,7 +362,9 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         @Override
         public void destroy() {
-            ((RouterHandler) object).stop();
+            if (object != null) {
+                ((RouterHandler) object).stop();
+            }
             if (registration != null) {
                 registration.unregister();
             }
