@@ -55,7 +55,19 @@
 
     <dependency>
       <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-openam</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-saml</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-uma</artifactId>
       <version>${project.version}</version>
     </dependency>
 
