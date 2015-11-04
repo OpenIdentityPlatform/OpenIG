@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2015 ForgeRock AS.
+  !
+-->
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0
+                              http://maven.apache.org/xsd/xdoc-2.0.xsd">
+  <properties>
+    <title>OpenIG News</title>
+    <author email="openig@forgerock.org">ForgeRock AS</author>
+  </properties>
+  <body>
+    <section name="New Releases">
+      <p>
+       December 12, 2014. ForgeRock has released OpenIG 3.1.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 3.1.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/3.1.0/">docs.forgerock.org</a>.
+      </p>
+
+      <p>
+       August 11, 2014. ForgeRock has released OpenIG 3.0.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 3.0.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/3.0.0/">docs.forgerock.org</a>.
+      </p>
+
+      <p>
+       May 15, 2012. ForgeRock has released OpenIG 2.1.0.
+       You can get the release from the ForgeRock
+       <a href="http://forgerock.com/download-stack/">download page</a>.
+       Documentation for OpenIG 2.1.0 is available at
+       <a href="http://docs.forgerock.org/en/openig/2.1.0/">docs.forgerock.org</a>.
+      </p>
+    </section>
+  </body>
+</document>
