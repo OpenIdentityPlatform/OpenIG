@@ -234,6 +234,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             try {
                 final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
                 for (final Entry<String, Object> entry : args.entrySet()) {
+                    checkBindingNotAlreadyUsed(bindings, entry.getKey());
                     bindings.put(entry.getKey(), evaluate(entry.getValue(), exprEvalBindings));
                 }
             } catch (ExpressionException ex) {
