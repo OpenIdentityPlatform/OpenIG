@@ -91,7 +91,7 @@ class RouteBuilder {
      * @throws HeapException if the new Route cannot be build
      */
     Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
-        HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
+        final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
         routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
                 "globalDecorators");
 
@@ -105,7 +105,13 @@ class RouteBuilder {
         AuditService auditService = heap.resolve(config.get("audit-service"), AuditService.class, true);
         Handler handler = setupRouteHandler(routeHeap.getHandler(), logger, sessionManager, auditService);
 
-        return new Route(routeHeap, handler, routeName, condition);
+        return new Route(handler, routeName, condition) {
+            @Override
+            public void destroy() {
+                super.destroy();
+                routeHeap.destroy();
+            }
+        };
     }
 
     private Handler setupRouteHandler(Handler handler,

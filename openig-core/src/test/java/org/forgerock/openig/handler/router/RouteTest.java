@@ -24,8 +24,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -69,8 +67,7 @@ public class RouteTest {
     }
 
     private Route createRoute(final Expression<Boolean> condition) {
-        return new Route(new HeapImpl(Name.of("anonymous")),
-                         handler,
+        return new Route(handler,
                          "router",
                          condition);
     }

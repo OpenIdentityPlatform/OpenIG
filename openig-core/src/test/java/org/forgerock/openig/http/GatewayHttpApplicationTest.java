@@ -40,6 +40,7 @@ import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -54,6 +55,11 @@ public class GatewayHttpApplicationTest {
                 { "unknown_type" }
         };
         // @Checkstyle:on
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        DestroyDetectHandler.destroyed = false;
     }
 
     @Test(dataProvider = "invalidConfigurations")
