@@ -18,9 +18,11 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.MutableUri.uri;
+import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -43,6 +45,7 @@ import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -58,6 +61,11 @@ public class RouteBuilderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         heap = buildDefaultHeap();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        DestroyDetectHandler.destroyed = false;
     }
 
     @Test(description = "OPENIG-329")
@@ -102,6 +110,16 @@ public class RouteBuilderTest {
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
         Route route = builder.build(getTestResourceFile("named-route.json"));
         assertThat(route.getName()).isEqualTo("my-route");
+    }
+
+    @Test
+    public void testRouteDestroy() throws Exception {
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        Route route = builder.build(new File(getTestResourceDirectory("routes"), "destroy-test.json"));
+
+        assertThat(DestroyDetectHandler.destroyed).isFalse();
+        route.destroy();
+        assertThat(DestroyDetectHandler.destroyed).isTrue();
     }
 
     @Test

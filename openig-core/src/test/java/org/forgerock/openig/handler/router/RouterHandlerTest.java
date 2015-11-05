@@ -57,6 +57,7 @@ import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -83,6 +84,11 @@ public class RouterHandlerTest {
         routes = getTestResourceDirectory("routes");
         supply = getTestResourceDirectory("supply");
         heap = buildDefaultHeap();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        DestroyDetectHandler.destroyed = false;
     }
 
     @Test

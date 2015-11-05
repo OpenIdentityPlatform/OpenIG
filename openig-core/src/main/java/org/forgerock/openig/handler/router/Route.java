@@ -23,7 +23,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -77,11 +76,6 @@ import org.forgerock.util.promise.Promise;
 class Route implements Handler {
 
     /**
-     * Contains objects, filters and handlers instances that may be used in this route.
-     */
-    private final HeapImpl heap;
-
-    /**
      * Main entry point of this route.
      */
     private final Handler handler;
@@ -99,17 +93,13 @@ class Route implements Handler {
 
     /**
      * Builds a new Route.
-     *
-     * @param heap heap containing the objects associated to this route.
      * @param handler main handler of the route.
      * @param name route's name
      * @param condition used to dispatch only a subset of incoming request to this route.
      */
-    public Route(final HeapImpl heap,
-                 final Handler handler,
+    public Route(final Handler handler,
                  final String name,
                  final Expression<Boolean> condition) {
-        this.heap = heap;
         this.handler = handler;
         this.name = name;
         this.condition = condition;
@@ -134,11 +124,9 @@ class Route implements Handler {
     }
 
     /**
-     * Cleanup the resources used by this route.
+     * Cleanup the resources used by this route. May be overridden by sub-classes.
      */
-    public void destroy() {
-        heap.destroy();
-    }
+    public void destroy() { }
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
