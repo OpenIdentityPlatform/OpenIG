@@ -24,7 +24,9 @@ import static com.xebialabs.restito.semantics.Condition.method;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
@@ -866,6 +868,20 @@ public class GroovyScriptableFilterTest {
         Response response = filter.filter(new RootContext(), null, successHandler).get();
         assertThat(response.getStatus()).isEqualTo(Status.ACCEPTED);
         assertThat(response.getHeaders().get("X-Test").getValues()).containsOnly("Been there, done that");
+    }
+
+    @Test
+    public void shouldFailWhenOverridingPredefinedBinding() throws Exception {
+        JsonValue config = json(object(
+                field("type", Script.GROOVY_MIME_TYPE),
+                field("source", "next.handle(context, request)"),
+                field("args", object(field("logger", "foo")))
+                ));
+        ScriptableFilter filter = (ScriptableFilter) new Heaplet().create(Name.of("test"),
+                                                                          config,
+                                                                          getHeap());
+        Response response = filter.filter(new RootContext(), new Request(), mock(Handler.class)).get();
+        assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 
     private HeapImpl getHeap() throws Exception {
