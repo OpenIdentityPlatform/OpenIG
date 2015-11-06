@@ -32,6 +32,7 @@ import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -776,9 +777,12 @@ public class GroovyScriptableFilterTest {
     @Test(dataProvider = "failingScripts")
     public void testRunTimeFailure(String script) throws Exception {
         final ScriptableFilter filter = newGroovyFilter(script);
+        final Logger logger = mock(Logger.class);
+        filter.setLogger(logger);
         Response response = filter.filter(new RootContext(), null, null).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).contains("Cannot execute script");
+        assertThat(response.getEntity().getString()).isEmpty();
+        verify(logger).warning(anyString());
     }
 
     @DataProvider
@@ -875,13 +879,14 @@ public class GroovyScriptableFilterTest {
         JsonValue config = json(object(
                 field("type", Script.GROOVY_MIME_TYPE),
                 field("source", "next.handle(context, request)"),
-                field("args", object(field("logger", "foo")))
-                ));
+                field("args", object(field("logger", "foo")))));
         ScriptableFilter filter = (ScriptableFilter) new Heaplet().create(Name.of("test"),
                                                                           config,
                                                                           getHeap());
         Response response = filter.filter(new RootContext(), new Request(), mock(Handler.class)).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getCause()).isNotNull()
+                                       .isInstanceOf(ScriptException.class);
     }
 
     private HeapImpl getHeap() throws Exception {
