@@ -207,12 +207,13 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                 // Allow to return a response directly from script
                 return newResponsePromise((Response) o);
             } else {
-                String message = "Script did not return a Response or a Promise<Response, NeverThrowsException>";
-                logger.error(message);
-                return newResponsePromise(newInternalServerError(message));
+                logger.error("Script did not return a Response or a Promise<Response, NeverThrowsException>");
+                return newResponsePromise(newInternalServerError());
             }
         } catch (final ScriptException e) {
-            return newResponsePromise(newInternalServerError("Cannot execute script", logger.warning(e)));
+            logger.warning("Cannot execute script");
+            logger.warning(e);
+            return newResponsePromise(newInternalServerError().setCause(e));
         }
     }
 
