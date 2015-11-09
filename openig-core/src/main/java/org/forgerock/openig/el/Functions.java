@@ -17,64 +17,31 @@
 
 package org.forgerock.openig.el;
 
-import static org.forgerock.openig.util.StringUtil.*;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.openig.util.StringUtil.asString;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.el.FunctionMapper;
-
 import org.forgerock.http.util.Uris;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
 
 /**
- * Maps between EL function names and methods. In this implementation all public
- * static methods are automatically exposed as functions.
+ * Methods exposed for EL usage.
  */
-public class Functions extends FunctionMapper {
+public final class Functions {
 
-    /** A mapping of function names with methods to return. */
-    private static final Map<String, Method> METHODS;
-    static {
-        METHODS = new HashMap<>();
-        for (Method method : Functions.class.getMethods()) {
-            if (Modifier.isStatic(method.getModifiers())) {
-                METHODS.put(method.getName(), method);
-            }
-        }
-    }
-
-    /**
-     * Resolves the specified prefix and local name into a method. In this
-     * implementation, the only supported supported prefix is none ({@code ""}).
-     *
-     * @param prefix the prefix of the function, or {@code ""} if no prefix.
-     * @param localName the short name of the function.
-     * @return the static method to invoke, or {@code null} if no match was
-     * found.
-     */
-    @Override
-    public Method resolveFunction(String prefix, String localName) {
-        if (prefix != null && localName != null && prefix.length() == 0) {
-            return METHODS.get(localName);
-        }
-        // no match was found
-        return null;
-    }
+    private Functions() { }
 
     /**
      * Create an array of String based on the strings given as parameters.
