@@ -23,6 +23,7 @@ import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import org.forgerock.http.Filter;
@@ -107,7 +108,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                 } catch (IOException ioe) {
                     logger.warning(ioe);
                     // results in an empty map
-                    return null;
+                    return Collections.emptyMap();
                 }
             }
         }));
