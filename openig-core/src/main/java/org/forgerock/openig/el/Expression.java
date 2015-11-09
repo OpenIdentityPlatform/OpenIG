@@ -149,7 +149,6 @@ public final class Expression<T> {
 
     private static class XLContext extends ELContext {
         private final ELResolver elResolver;
-        private final FunctionMapper fnMapper = new Functions();
 
         public XLContext(Object scope) {
             elResolver = new XLResolver(scope);
@@ -162,7 +161,7 @@ public final class Expression<T> {
 
         @Override
         public FunctionMapper getFunctionMapper() {
-            return fnMapper;
+            return MethodsMapper.INSTANCE;
         }
 
         @Override
