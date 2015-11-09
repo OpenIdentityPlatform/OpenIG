@@ -38,7 +38,6 @@ import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
-import org.forgerock.openig.filter.TransactionIdFilter;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
@@ -118,7 +117,6 @@ class RouteBuilder {
             filters.add(newSessionFilter(sessionManager));
         }
         if (auditService != null) {
-            filters.add(new TransactionIdFilter(logger));
             filters.add(new HttpAccessAuditFilter(auditService,
                                                   heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class)));
         }

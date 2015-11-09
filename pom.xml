@@ -123,8 +123,8 @@
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
 
-    <forgerock-http-framework.version>1.0.1-SNAPSHOT</forgerock-http-framework.version>
-    <caud.version>0.11.0-SNAPSHOT</caud.version>
+    <forgerock-http-framework.version>2.0.1-SNAPSHOT</forgerock-http-framework.version>
+    <caud.version>1.0.0</caud.version>
   </properties>
 
   <repositories>
