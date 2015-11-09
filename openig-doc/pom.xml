@@ -14,20 +14,23 @@
 
   Copyright 2014-2015 ForgeRock AS.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-   <artifactId>openig-project</artifactId>
-   <groupId>org.forgerock.openig</groupId>
-   <version>4.0.0-SNAPSHOT</version>
+    <artifactId>openig-project</artifactId>
+    <groupId>org.forgerock.openig</groupId>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>openig-doc</artifactId>
 
   <name>OpenIG doc</name>
   <description>
-   Documentation samples and aggregated Javadoc
+    Documentation samples and aggregated Javadoc
   </description>
 
   <dependencies>
@@ -37,14 +40,54 @@
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>openig-core</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-json</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-csv</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-syslog</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-jdbc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>json-resource</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>json-resource-http</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.http</groupId>
+      <artifactId>chf-http-servlet</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -77,22 +120,22 @@
     </dependency>
 
     <dependency>
-       <groupId>net.sourceforge.htmlunit</groupId>
-       <artifactId>htmlunit</artifactId>
-       <version>2.9</version>
-       <scope>test</scope>
+      <groupId>net.sourceforge.htmlunit</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.9</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
-       <groupId>org.assertj</groupId>
-       <artifactId>assertj-core</artifactId>
-       <scope>test</scope>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
-       <groupId>org.testng</groupId>
-       <artifactId>testng</artifactId>
-       <scope>test</scope>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -222,10 +265,11 @@
 
               <!-- Aggregates javadocs from dependencies -->
               <includeDependencySources>true</includeDependencySources>
+              <includeTransitiveDependencySources>true</includeTransitiveDependencySources>
               <dependencySourceIncludes>
                 <dependencySourceInclude>org.forgerock.openig:*</dependencySourceInclude>
                 <dependencySourceInclude>org.forgerock.http:*</dependencySourceInclude>
-                <dependencySourceInclude>org.forgerock.commons:forgerock-util</dependencySourceInclude>
+                <dependencySourceInclude>org.forgerock.commons:*</dependencySourceInclude>
               </dependencySourceIncludes>
 
               <author>false</author>
@@ -244,12 +288,16 @@
                   <packages>org.forgerock.openig*</packages>
                 </group>
                 <group>
+                  <title>ForgeRock Commons Audit</title>
+                  <packages>org.forgerock.audit*</packages>
+                </group>
+                <group>
                   <title>ForgeRock Http Framework</title>
                   <packages>org.forgerock.http*</packages>
                 </group>
                 <group>
                   <title>ForgeRock Utilities</title>
-                  <packages>org.forgerock.util*:org.forgerock.json</packages>
+                  <packages>org.forgerock.util*:org.forgerock.json*</packages>
                 </group>
               </groups>
 
