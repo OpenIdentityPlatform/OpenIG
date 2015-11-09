@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.forgerock.audit.events.TransactionId;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -37,10 +36,11 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.CreateRequest;
 import org.forgerock.json.resource.RequestHandler;
-import org.forgerock.openig.http.TransactionIdContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RequestAuditContext;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.services.TransactionId;
+import org.forgerock.services.context.TransactionIdContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;

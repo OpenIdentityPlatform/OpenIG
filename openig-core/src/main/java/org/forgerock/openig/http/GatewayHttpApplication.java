@@ -51,6 +51,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.filter.TransactionIdOutboundFilter;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -65,7 +66,6 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
-import org.forgerock.openig.filter.TransactionIdForwardFilter;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
@@ -165,7 +165,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                     TemporaryStorage.class);
 
             final ClientHandler clientHandler = heap.get(CLIENT_HANDLER_HEAP_KEY, ClientHandler.class);
-            final Handler handler = chainOf(clientHandler, new TransactionIdForwardFilter(clientHandler.getLogger()));
+            final Handler handler = chainOf(clientHandler, new TransactionIdOutboundFilter());
             heap.put(Keys.FORGEROCK_HANDLER_HEAP_KEY, handler);
 
             // Create the root handler.
