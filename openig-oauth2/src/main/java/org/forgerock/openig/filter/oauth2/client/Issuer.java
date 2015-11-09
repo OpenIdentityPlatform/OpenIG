@@ -261,7 +261,7 @@ public final class Issuer {
         try {
             config = getJsonContent(response);
         } catch (OAuth2ErrorException | JsonValueException e) {
-            throw new DiscoveryException(e.getMessage());
+            throw new DiscoveryException("Cannot read JSON", e);
         }
         return new Issuer(name, config.put("supportedDomains", supportedDomains));
     }
