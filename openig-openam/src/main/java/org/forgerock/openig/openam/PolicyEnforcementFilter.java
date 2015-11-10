@@ -29,6 +29,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.net.URI;
@@ -267,7 +268,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         @Override
         public Object create() throws HeapException {
 
-            final URI openamUrl = config.get("openamUrl").required().asURI();
+            final String openamUrl = trailingSlash(config.get("openamUrl").required().asString());
             final Expression<String> pepUsername = asExpression(config.get("pepUsername").required(), String.class);
             final Expression<String> pepPassword = asExpression(config.get("pepPassword").required(), String.class);
             final String realm = config.get("realm").defaultTo("/").asString();
@@ -275,51 +276,46 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY),
                                                          Handler.class);
             final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
-            final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
-                                                                     openamUrl,
-                                                                     realm,
-                                                                     ssoTokenHeader,
-                                                                     pepUsername,
-                                                                     pepPassword);
 
-            final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
-                                                                                                       realm),
-                                                                               chainOf(policiesHandler,
-                                                                                       ssoTokenFilter));
-            filter.setApplication(config.get("application").asString());
-            filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
-            filter.setJwtSubject(asExpression(config.get("jwtSubject"), String.class));
-            if (config.get("ssoTokenSubject").isNull() && config.get("jwtSubject").isNull()) {
-                throw new HeapException(SUBJECT_ERROR);
-            }
-
-            return filter;
-        }
-
-        @VisibleForTesting
-        static URI normalizeToJsonEndpoint(final URI openamUri, final String realm) throws HeapException {
             try {
-                final String baseUri = openamUri.toASCIIString();
-                final StringBuilder builder = new StringBuilder(baseUri);
-                if (!baseUri.endsWith("/")) {
-                    builder.append("/");
+                final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
+                                                                         new URI(openamUrl),
+                                                                         realm,
+                                                                         ssoTokenHeader,
+                                                                         pepUsername,
+                                                                         pepPassword);
+
+                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
+                                                                                                           realm),
+                                                                                   chainOf(policiesHandler,
+                                                                                           ssoTokenFilter));
+
+                filter.setApplication(config.get("application").asString());
+                filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
+                filter.setJwtSubject(asExpression(config.get("jwtSubject"), String.class));
+                if (config.get("ssoTokenSubject").isNull() && config.get("jwtSubject").isNull()) {
+                    throw new HeapException(SUBJECT_ERROR);
                 }
-                builder.append("json");
-                if (realm == null || realm.trim().isEmpty()) {
-                    builder.append("/");
-                } else {
-                    if (!realm.startsWith("/")) {
-                        builder.append("/");
-                    }
-                    builder.append(realm);
-                    if (!realm.endsWith("/")) {
-                        builder.append("/");
-                    }
-                }
-                return new URI(builder.toString());
+
+                return filter;
             } catch (URISyntaxException e) {
                 throw new HeapException(e);
             }
+        }
+
+        @VisibleForTesting
+        static URI normalizeToJsonEndpoint(final String openamUri, final String realm) throws URISyntaxException {
+            final StringBuilder builder = new StringBuilder(openamUri);
+            builder.append("json");
+            if (realm == null || realm.trim().isEmpty()) {
+                builder.append("/");
+            } else {
+                if (!realm.startsWith("/")) {
+                    builder.append("/");
+                }
+                builder.append(trailingSlash(realm.trim()));
+            }
+            return new URI(builder.toString());
         }
     }
 

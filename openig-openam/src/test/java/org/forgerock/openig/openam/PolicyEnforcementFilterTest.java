@@ -148,22 +148,16 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private static Object[][] baseUriBuiltFromOpenamUriAndRealm() throws Exception {
+    private static Object[][] realms() throws Exception {
         return new Object[][] {
-            // @Checkstyle:off
-            // openamUri, realm -> expected
-            { "http://www.example.com:8090/openam",       null, "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam",         "", "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam",        "/", "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam/",      null, "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam/",        "", "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam/",       "/", "http://www.example.com:8090/openam/json/" },
-            { "http://www.example.com:8090/openam",   "realm/", "http://www.example.com:8090/openam/json/realm/" },
-            { "http://www.example.com:8090/openam",   "/realm", "http://www.example.com:8090/openam/json/realm/" },
-            { "http://www.example.com:8090/openam/",  "realm/", "http://www.example.com:8090/openam/json/realm/" },
-            { "http://www.example.com:8090/openam/",  "/realm", "http://www.example.com:8090/openam/json/realm/" },
-            { "http://www.example.com:8090/openam/", "/realm/", "http://www.example.com:8090/openam/json/realm/" } };
-            // @Checkstyle:on
+            { null },
+            { "" },
+            { "/" },
+            { "realm/" },
+            { "/realm" },
+            { "/realm/" },
+            { "/realm " },
+            { " realm/" } };
     }
 
     @DataProvider
@@ -266,10 +260,12 @@ public class PolicyEnforcementFilterTest {
         verify(logger).debug(any(Exception.class));
     }
 
-    @Test(dataProvider = "baseUriBuiltFromOpenamUriAndRealm")
-    public void shouldSucceedToCreateBaseUri(final String openamUri, final String realm, final String expected)
-            throws Exception {
-        assertThat(normalizeToJsonEndpoint(URI.create(openamUri), realm)).isEqualTo(URI.create(expected));
+    @Test(dataProvider = "realms")
+    public void shouldSucceedToCreateBaseUri(final String realm) throws Exception {
+        assertThat(normalizeToJsonEndpoint("http://www.example.com:8090/openam/", realm).toASCIIString())
+            .endsWith("/")
+            .containsSequence("http://www.example.com:8090/openam/json/",
+                              realm != null ? realm.trim() : "");
     }
 
     private static Response policyDecisionAsJsonResponse() {

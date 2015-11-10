@@ -94,4 +94,18 @@ public final class StringUtil {
         }
     }
 
+    /**
+     * Appends a final slash on a given value.
+     *
+     * @param value
+     *            The given string.
+     * @return A string ending with a slash.
+     */
+    public static String trailingSlash(String value) {
+        if (value == null
+                || (value != null && value.endsWith("/"))) {
+            return value;
+        }
+        return value.concat("/");
+    }
 }
