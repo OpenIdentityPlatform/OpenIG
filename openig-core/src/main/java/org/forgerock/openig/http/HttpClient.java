@@ -39,6 +39,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.apache.async.AsyncHttpClientProvider;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.handler.HttpClientHandler.HostnameVerifier;
 import org.forgerock.http.protocol.Request;
@@ -74,6 +75,7 @@ import org.forgerock.util.time.Duration;
  *       "sslContextAlgorithm": "TLS",
  *       "soTimeout": "10 seconds",
  *       "connectionTimeout": "10 seconds",
+ *       "numberOfWorkers": 6,
  *       "keystore": {
  *           "file": "/path/to/keystore.jks",
  *           "password": "changeit"
@@ -132,6 +134,10 @@ import org.forgerock.util.time.Duration;
  * The {@literal connectionTimeout} optional attribute specifies a connection timeout (the given amount of time to
  * wait until the connection is established). It defaults to {@literal 10 seconds}.
  *
+ * <p>The {@literal numberOfWorkers} optional attribute specifies the number of threads dedicated to process outgoing
+ * requests. It defaults to the number of CPUs available to the JVM. This attribute is only used if an asynchronous
+ * HttpClient is used (that is the default).
+ *
  * @see Duration
  * @see org.forgerock.openig.security.KeyManagerHeaplet
  * @see org.forgerock.openig.security.TrustManagerHeaplet
@@ -172,6 +178,11 @@ public class HttpClient extends GenericHeapObject {
 
             if (config.isDefined("connectionTimeout")) {
                 options.set(OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout").asString()));
+            }
+
+            if (config.isDefined("numberOfWorkers")) {
+                options.set(AsyncHttpClientProvider.OPTION_WORKER_THREADS,
+                            config.get("numberOfWorkers").asInteger());
             }
 
             options.set(OPTION_TEMPORARY_STORAGE, storage);
