@@ -23,6 +23,7 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +68,24 @@ public class PasswordReplayFilterTest {
         heap = buildDefaultHeap();
     }
 
+    private Handler verifyAuthRequestOnlyIsSend() {
+        return new Handler() {
+            int index = 0;
+            @Override
+            public Promise<Response, NeverThrowsException> handle(final Context context,
+                                                                  final Request request) {
+                if (index++ == 0) {
+                    assertThat(request.getMethod()).isEqualTo("POST");
+                    assertThat(request.getForm().getFirst("username")).isEqualTo("demo");
+                    assertThat(request.getForm().getFirst("password")).isEqualTo("changeit");
+                    return newResponsePromise(new Response(Status.OK));
+                }
+                fail("Unexpected interaction");
+                return newResponsePromise(newInternalServerError());
+            }
+        };
+    }
+
     @Test
     public void shouldAuthenticateWhenQueryingLoginPage() throws Exception {
         Filter filter = builder().loginPage(IS_GET_LOGIN_PAGE)
@@ -85,16 +104,37 @@ public class PasswordReplayFilterTest {
         filter.filter(
                 context,
                 new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_LOGIN),
-                new Handler() {
-                    @Override
-                    public Promise<Response, NeverThrowsException> handle(final Context context,
-                                                                          final Request request) {
-                        assertThat(request.getMethod()).isEqualTo("POST");
-                        assertThat(request.getForm().getFirst("username")).isEqualTo("demo");
-                        assertThat(request.getForm().getFirst("password")).isEqualTo("changeit");
-                        return newResponsePromise(new Response(Status.OK));
-                    }
-                });
+                verifyAuthRequestOnlyIsSend());
+    }
+
+    @Test
+    public void shouldCallCredentialsAndDecryptionFiltersAndThenAuthenticateWhenQueryingLoginPage() throws Exception {
+        Filter filter = builder().loginPage(IS_GET_LOGIN_PAGE)
+                                 .request().uri("http://internal.example.com/login")
+                                           .method("POST")
+                                           .form().param("username", "${request.headers['X-Username'][0]}")
+                                                  .param("password", "${request.headers['X-Password'][0]}")
+                                                  .build()
+                                           .build()
+                                 .credentials(new Filter() {
+                                     @Override
+                                     public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                                                           final Request request,
+                                                                                           final Handler next) {
+                                         request.getHeaders().put("X-Username", "demo");
+                                         request.getHeaders().put("X-Password", "sn/Wr2datgfvpSYSS8N1jA==");
+                                         return next.handle(context, request);
+                                     }
+                                 })
+                                 .headerDecryption(singletonList("X-Password"),
+                                                   "DES/ECB/NoPadding",
+                                                   "SoMI5WFkI0o=",
+                                                   "DES")
+                                 .build();
+
+        filter.filter(newContextChain(),
+                      new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_LOGIN),
+                      verifyAuthRequestOnlyIsSend());
     }
 
     @Test

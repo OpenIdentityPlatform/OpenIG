@@ -294,10 +294,22 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                               final Handler next) {
                             // Request targeting the login page ?
                             if (isLoginPageRequest(bindings(context, request))) {
-                                return createRequestFilter.filter(context, request, next);
+                                return authentication(next).handle(context, request);
                             }
                             // pass through
                             return next.handle(context, request);
+                        }
+
+                        private Handler authentication(final Handler next) {
+                            List<Filter> filters = new ArrayList<>();
+                            if (credentialsFilter != null) {
+                                filters.add(credentialsFilter);
+                            }
+                            if (decryptFilter != null) {
+                                filters.add(decryptFilter);
+                            }
+                            filters.add(createRequestFilter);
+                            return chainOf(next, filters);
                         }
                     };
                 } else {
