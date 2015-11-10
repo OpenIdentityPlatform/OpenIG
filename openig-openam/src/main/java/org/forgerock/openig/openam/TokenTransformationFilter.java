@@ -24,6 +24,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
+import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.io.IOException;
@@ -223,13 +224,6 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
             } catch (URISyntaxException e) {
                 throw new HeapException(format("Cannot append trailing '/' on %s", baseUri), e);
             }
-        }
-
-        private static String trailingSlash(final String uri) {
-            if (uri.endsWith("/")) {
-                return uri;
-            }
-            return uri.concat("/");
         }
 
         private static URI transformationEndpoint(final URI baseUri, final String realm, final String instance)
