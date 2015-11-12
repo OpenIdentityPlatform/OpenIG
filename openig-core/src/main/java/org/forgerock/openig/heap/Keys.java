@@ -22,6 +22,7 @@ import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.ClientHandler;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 
@@ -29,6 +30,12 @@ import org.forgerock.openig.log.LogSink;
  * Define here the constants that can be used as Heap's keys.
  */
 public final class Keys {
+
+    /**
+     * Key to retrieve a {@link org.forgerock.http.Filter} instance from the {@link org.forgerock.openig.heap.Heap} of
+     * {@literal config.json}.
+     */
+    public static final String API_PROTECTION_FILTER_HEAP_KEY = "ApiProtectionFilter";
 
     /**
      * Key to retrieve a {@link AuditDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
@@ -55,6 +62,20 @@ public final class Keys {
      * {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String CLIENT_HANDLER_HEAP_KEY = "ClientHandler";
+
+    /**
+     * Key to retrieve the {@link EndpointRegistry} instance dedicated for the current Route's objects
+     * from the {@link org.forgerock.openig.heap.Heap}.
+     *
+     * <p>Objects declared in {@literal config.json} will have a registry pointing to {@literal /openig/system/objects}.
+     * <p>Objects declared into routes will have another registry that is dedicated to the host route: {@literal
+     * /openig/system/objects/.../[route-name]/objects}.
+     *
+     * <p>Note that generic heaplets may use their private registry (using their own namespace based on their name)
+     * through {@linkplain GenericHeaplet#endpointRegistry() endpointRegistry()}.
+     * @see GenericHeaplet#endpointRegistry()
+     */
+    public static final String ENDPOINT_REGISTRY_HEAP_KEY = "EndpointRegistry";
 
     /**
      * Key to retrieve an {@link Environment} instance from the {@link org.forgerock.openig.heap.Heap}.

@@ -1,0 +1,13 @@
+{
+  "comment" : "This configuration creates a Handler that always responds TEAPOT.",
+  "heap": [
+    {
+      "comment" : "Overwrite the default protection filter with pseudo OAuth 2.0 support",
+      "name": "ApiProtectionFilter",
+      "type": "org.forgerock.openig.http.GatewayHttpApplicationTest$PseudoOAuth2Filter"
+    }
+  ],
+  "handler": {
+    "type": "org.forgerock.openig.http.TeapotHandler"
+  }
+}

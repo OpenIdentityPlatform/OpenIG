@@ -19,14 +19,16 @@ package org.forgerock.openig.heap;
 
 // TODO: consider detecting cyclic dependencies
 
-import static java.lang.String.*;
-import static java.util.Arrays.*;
-import static java.util.Collections.*;
-import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.decoration.global.GlobalDecorator.*;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.openig.decoration.global.GlobalDecorator.GLOBAL_DECORATOR_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Reject.*;
+import static org.forgerock.openig.util.JsonValues.asClass;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.util.Reject.checkNotNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

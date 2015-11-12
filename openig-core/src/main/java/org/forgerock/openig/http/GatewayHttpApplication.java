@@ -20,17 +20,21 @@ package org.forgerock.openig.http;
 import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.Keys.API_PROTECTION_FILTER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.AUDIT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
@@ -42,7 +46,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +72,7 @@ import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.ClientHandler;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
@@ -73,11 +80,11 @@ import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.LoggerFactory;
 
@@ -130,6 +137,22 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // Create and configure the heap
             heap = new HeapImpl(Name.of(configurationURL.toString()));
+
+            // Provide the base tree:
+            // /openig/api/system/objects
+            Router router = new Router();
+            Router openigRouter = new Router();
+            Router apiRouter = new Router();
+            Router systemRouter = new Router();
+            Router systemObjectsRouter = new Router();
+            addSubRouter(openigRouter, "api", apiRouter);
+            addSubRouter(apiRouter, "system", systemRouter);
+            // TODO Could be removed after OPENIG-425 has been implemented
+            // this is just to mimic the fact that 'system' should be a Route within a RouterHandler
+            addSubRouter(systemRouter, "objects", systemObjectsRouter);
+            systemObjectsRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(systemObjectsRouter));
+
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
             heap.put(TIME_SERVICE_HEAP_KEY, timeService);
@@ -158,6 +181,14 @@ public final class GatewayHttpApplication implements HttpApplication {
             final Handler handler = chainOf(clientHandler, new TransactionIdOutboundFilter());
             heap.put(Keys.FORGEROCK_HANDLER_HEAP_KEY, handler);
 
+            // Protect the /openig namespace
+            Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);
+            if (protector == null) {
+                protector = new LoopbackAddressOnlyFilter(logger);
+            }
+            Handler restricted = chainOf(openigRouter, protector);
+            addSubRouter(router, "openig", restricted);
+
             // Create the root handler.
             List<Filter> filters = new ArrayList<>();
 
@@ -167,19 +198,9 @@ public final class GatewayHttpApplication implements HttpApplication {
                 filters.add(newSessionFilter(sessionManager));
             }
 
-            // Create the root handler.
+            // Create the root handler
             Handler rootHandler = chainOf(heap.getHandler(), filters);
-
-            Router router = new Router();
             router.setDefaultRoute(rootHandler);
-            Handler openigHandler = new Handler() {
-                @Override
-                public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
-                    return Promises.newResultPromise(new Response(Status.NOT_IMPLEMENTED));
-                }
-            };
-            // TODO see OPENIG-571
-            router.addRoute(requestUriMatcher(STARTS_WITH, "/openig"), openigHandler);
 
             return router;
         } catch (Exception e) {
@@ -188,6 +209,11 @@ public final class GatewayHttpApplication implements HttpApplication {
             stop();
             throw new HttpApplicationException("Unable to start OpenIG", e);
         }
+    }
+
+    private static void addSubRouter(final Router base, final String name, final Handler router) {
+        base.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        base.addRoute(requestUriMatcher(STARTS_WITH, name), router);
     }
 
     @Override
@@ -209,6 +235,37 @@ public final class GatewayHttpApplication implements HttpApplication {
             return new JsonValue(readJsonLenient(in));
         } catch (FileNotFoundException e) {
             throw new IOException(format("File %s does not exist", resource), e);
+        }
+    }
+
+    /**
+     * Permits only local clients to access /openig endpoint.
+     */
+    private static class LoopbackAddressOnlyFilter implements Filter {
+        private final Logger logger;
+
+        public LoopbackAddressOnlyFilter(final Logger logger) {
+            this.logger = logger;
+        }
+
+        @Override
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
+            ClientContext client = context.asContext(ClientContext.class);
+            String remoteHost = client.getRemoteHost();
+            try {
+                // Accept any address that is bound to loop-back
+                InetAddress[] addresses = InetAddress.getAllByName(remoteHost);
+                for (InetAddress address : addresses) {
+                    if (address.isLoopbackAddress()) {
+                        return next.handle(context, request);
+                    }
+                }
+            } catch (UnknownHostException e) {
+                logger.trace(format("Cannot resolve host '%s' when accessing '/openig'", remoteHost));
+            }
+            return newResponsePromise(new Response(Status.FORBIDDEN));
         }
     }
 }

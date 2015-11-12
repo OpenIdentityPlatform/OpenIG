@@ -1,0 +1,7 @@
+{
+    "name": "route-with-name",
+    "handler": {
+        "name": "register",
+        "type": "org.forgerock.openig.handler.router.RouteBuilderTest$RegisterRouteHandler"
+    }
+}

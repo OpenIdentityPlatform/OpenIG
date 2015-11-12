@@ -17,6 +17,8 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
+import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.*;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 
@@ -33,11 +35,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.routing.Router;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -269,6 +274,8 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     /** Creates and initializes a routing handler in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
+        private EndpointRegistry.Registration registration;
+
         @Override
         public Object create() throws HeapException {
 
@@ -298,7 +305,16 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                 scanner = new OnlyOnceDirectoryScanner(scanner);
             }
 
-            RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap, qualified), scanner);
+            // Register the /routes/* endpoint
+            Router routes = new Router();
+            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            EndpointRegistry registry = endpointRegistry();
+            registration = registry.register("routes", routes);
+
+            RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
+                                                                       qualified,
+                                                                       new EndpointRegistry(routes)),
+                                                      scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
                                                    Handler.class,
                                                    true));
@@ -313,6 +329,10 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         @Override
         public void destroy() {
             ((RouterHandler) object).stop();
+            if (registration != null) {
+                registration.unregister();
+            }
+            super.destroy();
         }
     }
 }
