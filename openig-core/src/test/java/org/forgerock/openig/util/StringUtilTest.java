@@ -18,6 +18,7 @@ package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
+import static org.forgerock.openig.util.StringUtil.slug;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -38,5 +39,27 @@ public class StringUtilTest {
     public void shouldAppendTrailingSlash(final String given, final String expected) {
         assertThat(trailingSlash(given)).isEqualTo(expected);
     }
-}
 
+    public static Object[][] slugs() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { null, null },
+                { "", "" },
+                { "0123456789", "0123456789" },
+                { "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz" },
+                { " lot of    spaces   ", "lot-of-spaces" },
+                { "route.json", "routejson" },
+                { "some-route-with--dashes  and -- whitespaces", "some-route-with-dashes-and-whitespaces" },
+                { "{ClientHandler}/heap/2", "clienthandler-heap-2"},
+                { "@&$§!*()[]{}£./|\\%", "" },
+                { "éèêàôèïù", "eeeaoeiu" },
+                { "^¨`", "" },
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "slugs")
+    public void shouldPerformSlugConversion(String value, String expected) throws Exception {
+        assertThat(slug(value)).isEqualTo(expected);
+    }
+}

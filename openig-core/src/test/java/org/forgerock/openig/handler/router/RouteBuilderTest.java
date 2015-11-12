@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.MutableUri.uri;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
@@ -30,6 +31,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValueException;
@@ -37,6 +39,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -70,7 +73,7 @@ public class RouteBuilderTest {
 
     @Test(description = "OPENIG-329")
     public void testHandlerCanBeInlinedWithNoHeap() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("inlined-handler-route.json"));
 
         Context context = new RootContext();
@@ -80,22 +83,30 @@ public class RouteBuilderTest {
                         .getStatus()).isEqualTo(Status.TEAPOT);
     }
 
+    private RouteBuilder newRouteBuilder(Router router) {
+        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+    }
+
+    private RouteBuilder newRouteBuilder() {
+        return newRouteBuilder(new Router());
+    }
+
     @Test
     public void testUnnamedRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("route.json"));
-        assertThat(route.getName()).isEqualTo("route.json");
+        assertThat(route.getName()).isEqualTo("route");
     }
 
     @Test(expectedExceptions = JsonValueException.class)
     public void testMissingHandlerRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         builder.build(getTestResourceFile("missing-handler-route.json"));
     }
 
     @Test
     public void testConditionalRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("conditional-route.json"));
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -107,14 +118,14 @@ public class RouteBuilderTest {
 
     @Test
     public void testNamedRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("named-route.json"));
         assertThat(route.getName()).isEqualTo("my-route");
     }
 
     @Test
     public void testRouteDestroy() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(new File(getTestResourceDirectory("routes"), "destroy-test.json"));
 
         assertThat(DestroyDetectHandler.destroyed).isFalse();
@@ -124,7 +135,7 @@ public class RouteBuilderTest {
 
     @Test
     public void testRebaseUriRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
 
         Context context = new RootContext();
@@ -138,7 +149,7 @@ public class RouteBuilderTest {
 
     @Test
     public void testSessionRouteLoading() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -156,7 +167,7 @@ public class RouteBuilderTest {
 
     @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"));
+        RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("session-route.json"));
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -168,6 +179,30 @@ public class RouteBuilderTest {
         // session-route uses the inner class SessionHandler, that binds a value for the session's key "ForgeRock".
         // As this is not the same session, then the original session is not impacted.
         assertThat(simpleSession.get("ForgeRock")).isNull();
+    }
+
+    /**
+     * The api-registration.json route configuration declares a RegisterRouteHandler instance.
+     * This component is a simple handler that return OK, but it doesn't matter for this test.
+     * Here we want to ensure that the additional Handler registered into routes/registration-test/ping endpoint
+     * has been registered and is active
+     */
+    @Test
+    public void testApiRegistration() throws Exception {
+
+        Router router = new Router();
+        RouteBuilder builder = newRouteBuilder(router);
+        Route route = builder.build(getTestResourceFile("api-registration.json"));
+
+        // Ensure that api endpoint is working
+        Request request = new Request().setUri("/registration-test/objects/register/ping");
+        Response response = router.handle(new RootContext(), request).get();
+        assertThat(response.getEntity().getString()).isEqualTo("Pong");
+
+        // Ensure that api endpoint is not accessible anymore after route has been destroyed
+        route.destroy();
+        Response notFound = router.handle(new RootContext(), request).get();
+        assertThat(notFound.getStatus()).isEqualTo(Status.NOT_FOUND);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
@@ -191,6 +226,37 @@ public class RouteBuilderTest {
             @Override
             public Object create() throws HeapException {
                 return new SessionHandler();
+            }
+        }
+    }
+
+    public static class RegisterRouteHandler implements Handler {
+
+        @Override
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+            return newResponsePromise(new Response(Status.OK));
+        }
+
+        public static class Heaplet extends GenericHeaplet {
+
+            private EndpointRegistry.Registration registration;
+
+            @Override
+            public Object create() throws HeapException {
+                EndpointRegistry registry = endpointRegistry();
+                registration = registry.register("ping", new Handler() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> handle(final Context context,
+                                                                          final Request request) {
+                        return newResponsePromise(new Response(Status.OK).setEntity("Pong"));
+                    }
+                });
+                return new RegisterRouteHandler();
+            }
+
+            @Override
+            public void destroy() {
+                registration.unregister();
             }
         }
     }

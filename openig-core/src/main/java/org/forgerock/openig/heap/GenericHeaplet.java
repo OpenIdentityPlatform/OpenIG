@@ -17,15 +17,23 @@
 
 package org.forgerock.openig.heap;
 
+import static java.lang.String.format;
+import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.EQUALS;
+import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.util.StringUtil.slug;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.handler.Handlers;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
@@ -62,6 +70,8 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /** The object created by the heaplet's {@link #create()} method. */
     protected Object object;
+    private EndpointRegistry.Registration registration;
+    private EndpointRegistry registry;
 
     @Override
     public Object create(Name name, JsonValue config, Heap heap) throws HeapException {
@@ -90,9 +100,38 @@ public abstract class GenericHeaplet implements Heaplet {
         return object;
     }
 
+    /**
+     * Returns this object's {@link EndpointRegistry}, creating it lazily when requested for the first time.
+     *
+     * @return this object's {@link EndpointRegistry} ({@literal /objects/[name]})
+     * @throws HeapException
+     *         should never be thrown
+     */
+    protected EndpointRegistry endpointRegistry() throws HeapException {
+        if (registry == null) {
+            // Get parent registry (.../objects)
+            EndpointRegistry parent = heap.get(ENDPOINT_REGISTRY_HEAP_KEY, EndpointRegistry.class);
+            Router router = new Router();
+            router.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            String objectName = qualified.getLeaf();
+            String slug = slug(objectName);
+            if (!slug.equals(objectName)) {
+                logger.warning(format("Heaplet name ('%s') has been converted to "
+                                              + "a slug ('%s') for URL exposition (REST endpoints).",
+                                      objectName,
+                                      slug));
+            }
+            registration = parent.register(slug, router);
+            registry = new EndpointRegistry(router);
+        }
+        return registry;
+    }
+
     @Override
     public void destroy() {
-        // default does nothing
+        if (registration != null) {
+            registration.unregister();
+        }
     }
 
     /**

@@ -18,6 +18,9 @@ package org.forgerock.openig.handler.router;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.util.Utils.closeSilently;
@@ -44,8 +47,12 @@ import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.Router;
+import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.AttributesContext;
@@ -94,7 +101,7 @@ public class RouterHandlerTest {
     @Test
     public void testReactionsToDirectoryContentChanges() throws Exception {
 
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+        RouterHandler handler = new RouterHandler(newRouterBuilder(),
                                                   new DirectoryMonitor(routes));
 
         // Initial scan
@@ -126,9 +133,13 @@ public class RouterHandlerTest {
         handler.stop();
     }
 
+    private RouteBuilder newRouterBuilder() {
+        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(new Router()));
+    }
+
     @Test
     public void testStoppingTheHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")),
+        RouterHandler handler = new RouterHandler(newRouterBuilder(),
                                                   new DirectoryMonitor(routes));
 
         // Initial scan
@@ -142,7 +153,7 @@ public class RouterHandlerTest {
     @Test
     public void testDefaultHandler() throws Exception {
         RouterHandler handler =
-                new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), new DirectoryMonitor(routes));
+                new RouterHandler(newRouterBuilder(), new DirectoryMonitor(routes));
 
         // Initial scan
         handler.start();
@@ -191,7 +202,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
+        RouterHandler router = new RouterHandler(newRouterBuilder(), scanner);
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
@@ -217,7 +228,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
-        RouterHandler router = new RouterHandler(new RouteBuilder(heap, Name.of("anonymous")), scanner);
+        RouterHandler router = new RouterHandler(newRouterBuilder(), scanner);
         router.setLogger(logger);
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
@@ -236,7 +247,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
-        RouteBuilder builder = spy(new RouteBuilder(heap, Name.of("anonymous")));
+        RouteBuilder builder = spy(newRouterBuilder());
         RouterHandler router = new RouterHandler(builder, scanner);
         router.setLogger(logger);
 
@@ -248,6 +259,55 @@ public class RouterHandlerTest {
                                            Collections.<File>emptySet()));
 
         verify(logger).error(matches("The route defined in file '.*' cannot be added"));
+    }
+
+    @Test
+    public void testRouterEndpointIsBeingRegistered() throws Exception {
+        Router router = new Router();
+        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router));
+        heap.put(Keys.ENVIRONMENT_HEAP_KEY, new DefaultEnvironment(new File("dont-care")));
+        heap.put(Keys.TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
+
+        RouterHandler handler = (RouterHandler) new RouterHandler.Heaplet()
+                .create(Name.of("this-router"),
+                        json(object(field("directory", getTestResourceDirectory("endpoints").getPath()))),
+                        heap);
+        handler.start();
+
+        // Ping the 'routes' and intermediate endpoints
+        Request ping = new Request();
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri("/this-router"))
+                         .get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri("/this-router/routes/"))
+                         .get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri("/this-router/routes/route-with-name"))
+                         .get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri("/this-router/routes/route-with-name/objects"))
+                         .get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri("/this-router/routes/route-with-name/objects/register"))
+                         .get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+
+        // Ensure that this RouterHandler /routes endpoint is working
+        Request request1 = new Request().setUri("/this-router/routes/route-with-name/objects/register/ping");
+        Response response1 = router.handle(new RootContext(), request1).get();
+        assertThat(response1.getEntity().getString()).isEqualTo("Pong");
+
+        // Here's an URI when no heap object name is provided
+        String uri = "/this-router/routes/without-name/objects"
+                + "/orgforgerockopenighandlerrouterroutebuildertestregisterroutehandler-handler/ping";
+        Request request2 = new Request().setUri(uri);
+        Response response2 = router.handle(new RootContext(), request2).get();
+        assertThat(response2.getEntity().getString()).isEqualTo("Pong");
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,

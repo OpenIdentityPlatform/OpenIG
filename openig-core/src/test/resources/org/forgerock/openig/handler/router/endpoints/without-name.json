@@ -1,0 +1,5 @@
+{
+    "handler": {
+        "type": "org.forgerock.openig.handler.router.RouteBuilderTest$RegisterRouteHandler"
+    }
+}

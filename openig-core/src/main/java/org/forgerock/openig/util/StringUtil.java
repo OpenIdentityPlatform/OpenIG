@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -108,4 +109,38 @@ public final class StringUtil {
         }
         return value.concat("/");
     }
+
+    /**
+     * Transform the input String value into a slug: a simpler adaptation that is compatible for usage inside an URI
+     * (without requiring URL encoding).
+     *
+     * <p>Examples:
+     * <pre>
+     *     {@code slug("A sentence  with blanks, commas and extra punctuation !  ")
+     *            .equals("a-sentence-with-blanks-commas-and-extra-punctuation");
+     *       slug("{ClientHandler}/heap/2").equals(clienthandler-heap-2);
+     *     }
+     * </pre>
+     *
+     * @param value
+     *         value to be transformed
+     * @return A slug version of the input
+     */
+    public static String slug(String value) {
+        if (value == null) {
+            return null;
+        }
+        // 1. Decompose unicode characters
+        // 2. Remove all combining diacritical marks and also everything that isn't a word, a whitespace character, a
+        // dash or a slash
+        // 3. Replace all occurrences of whitespaces or dashes or slashes with one single whitespace
+        // 4. Trim
+        // 5. Replace all (middle) blanks with a dash
+        return Normalizer.normalize(value.toLowerCase(), Normalizer.Form.NFD)
+                         .replaceAll("\\p{InCombiningDiacriticalMarks}|[^\\w\\s\\-/]", "")
+                         .replaceAll("[\\s\\-/]+", " ")
+                         .trim()
+                         .replaceAll("\\s", "-");
+    }
+
 }

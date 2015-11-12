@@ -18,13 +18,16 @@ package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -34,6 +37,8 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.handler.router.DestroyDetectHandler;
 import org.forgerock.openig.handler.router.Files;
+import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
@@ -86,18 +91,72 @@ public class GatewayHttpApplicationTest {
         // This request must not be handled by the root handler
         request = new Request();
         request.setUri("/openig");
-        promise = start.handle(new RootContext(), request);
+        promise = start.handle(buildLocalContext(), request);
         assertThat(promise.get().getStatus()).isNotEqualTo(Status.TEAPOT);
 
         // This request must be handled by the root handler
         request = new Request();
         request.setUri("/foo");
-        promise = start.handle(buildContext(), request);
+        promise = start.handle(buildExternalContext(), request);
         assertThat(promise.get().getStatus()).isEqualTo(Status.TEAPOT);
     }
 
-    private Context buildContext() {
-        ClientContext clientInfoContext = buildExternalClientContext(new RootContext()).certificates().build();
+    @Test
+    public void shouldDisallowOpenIgEndpointsAccessToExternalClient() throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "teapot"));
+        GatewayHttpApplication application = new GatewayHttpApplication(env);
+        Handler handler = application.start();
+
+        Context context = buildExternalContext();
+        assertThat(handler.handle(context, new Request().setUri("/openig")).get().getStatus())
+                .isEqualTo(Status.FORBIDDEN);
+    }
+
+    @Test
+    public void shouldProvideOpenIgApiStructure() throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "teapot"));
+        GatewayHttpApplication application = new GatewayHttpApplication(env);
+        Handler handler = application.start();
+
+        // This request must not be handled by the root handler
+        Context context = buildLocalContext();
+        assertThat(handler.handle(context, new Request().setUri("/openig")).get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(handler.handle(context, new Request().setUri("/openig/api")).get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(handler.handle(context, new Request().setUri("/openig/api/system")).get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+        assertThat(handler.handle(context, new Request().setUri("/openig/api/system/objects")).get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+    }
+
+
+    @Test
+    public void shouldSupportConfigurationOfEndpointProtection() throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "protection"));
+        GatewayHttpApplication application = new GatewayHttpApplication(env);
+        Handler handler = application.start();
+
+        // The new filter expects an 'access_token=ae32f' parameter
+        Context context = buildExternalContext();
+        assertThat(handler.handle(context, new Request().setUri("/openig")).get().getStatus())
+                .isEqualTo(Status.UNAUTHORIZED);
+
+        assertThat(handler.handle(context, new Request().setUri("/openig?access_token=ae32f")).get().getStatus())
+                .isEqualTo(Status.NO_CONTENT);
+    }
+
+    private static Context buildLocalContext() {
+        return ClientContext.buildExternalClientContext(new RootContext())
+                            .remoteHost("localhost")
+                            .build();
+    }
+
+    private Context buildExternalContext() {
+        ClientContext clientInfoContext = buildExternalClientContext(new RootContext())
+                .certificates()
+                .remoteHost("125.12.34.52")
+                .build();
         return new AttributesContext(new SessionContext(clientInfoContext, new SimpleMapSession()));
     }
 
@@ -106,5 +165,29 @@ public class GatewayHttpApplicationTest {
 
         @Override
         public void save(Response response) throws IOException { }
+    }
+
+    public static class PseudoOAuth2Filter implements Filter {
+
+        @Override
+        public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                              final Request request,
+                                                              final Handler next) {
+            Form form = request.getForm();
+            if (form.containsKey("access_token")) {
+                if ("ae32f".equals(form.getFirst("access_token"))) {
+                    return next.handle(context, request);
+                }
+            }
+            return newResponsePromise(new Response(Status.UNAUTHORIZED));
+        }
+
+        public static class Heaplet extends GenericHeaplet {
+
+            @Override
+            public Object create() throws HeapException {
+                return new PseudoOAuth2Filter();
+            }
+        }
     }
 }

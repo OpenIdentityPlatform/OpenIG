@@ -16,13 +16,18 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
-import static org.forgerock.http.util.Json.*;
+import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.EQUALS;
+import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
+import static org.forgerock.http.util.Json.readJsonLenient;
+import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.openig.util.StringUtil.slug;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,14 +39,17 @@ import java.util.List;
 import org.forgerock.audit.AuditService;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.time.TimeService;
@@ -58,15 +66,18 @@ class RouteBuilder {
      */
     private final HeapImpl heap;
     private final Name name;
+    private final EndpointRegistry registry;
 
     /**
      * Builds a new builder.
      * @param heap parent heap for produced routes
      * @param name router name (used as parent name)
+     * @param registry EndpointRegistry for supported routes
      */
-    RouteBuilder(final HeapImpl heap, final Name name) {
+    RouteBuilder(final HeapImpl heap, final Name name, final EndpointRegistry registry) {
         this.heap = heap;
         this.name = name;
+        this.registry = registry;
     }
 
     /**
@@ -79,28 +90,51 @@ class RouteBuilder {
     Route build(final File resource) throws HeapException {
         final JsonValue config = readJson(resource);
         final Name routeHeapName = this.name.child(resource.getPath());
-        final String defaultRouteName = resource.getName();
+        final String defaultRouteName = withoutDotJson(resource.getName());
 
         return build(config, routeHeapName, defaultRouteName);
     }
+
+    private static String withoutDotJson(final String path) {
+        return path.substring(0, path.length() - ".json".length());
+    }
+
     /**
      * Builds a new route from the given resource file.
      *
-     * @param resource route definition
+     * @param config route definition
      * @return a new configured Route
      * @throws HeapException if the new Route cannot be build
      */
     Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
         final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
+
+        String routeName = config.get("name").defaultTo(defaultRouteName).asString();
+
+        Router thisRouteRouter = new Router();
+        Router objects = new Router();
+        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
+        String slug = slug(routeName);
+        final EndpointRegistry.Registration registration = registry.register(slug, thisRouteRouter);
+        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
+
         routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
                 "globalDecorators");
 
         SessionManager sessionManager = routeHeap.resolve(config.get("session"), SessionManager.class, true);
-        String routeName = config.get("name").defaultTo(defaultRouteName).asString();
         Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
 
         final LogSink logSink = heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
         Logger logger = new Logger(logSink, routeHeapName);
+
+        if (!slug.equals(routeName)) {
+            logger.warning(
+                    format("Route name ('%s') has been converted to a slug ('%s') for URL exposition (REST endpoints).",
+                           routeName,
+                           slug));
+        }
 
         AuditService auditService = heap.resolve(config.get("audit-service"), AuditService.class, true);
         Handler handler = setupRouteHandler(routeHeap.getHandler(), logger, sessionManager, auditService);
@@ -109,6 +143,7 @@ class RouteBuilder {
             @Override
             public void destroy() {
                 super.destroy();
+                registration.unregister();
                 routeHeap.destroy();
             }
         };
@@ -151,5 +186,4 @@ class RouteBuilder {
             closeSilently(fis);
         }
     }
-
 }
