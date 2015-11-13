@@ -68,8 +68,10 @@ $("#start").click(function () {
     .done(function (data) {
         $("#try").html(json2html(data, "Resource Not Protected?"));
     })
-    .fail(function (data) {
-        var ticket = data.responseJSON.ticket || "";
+    .fail(function (data, textStatus, jqXHR) {
+        var authenticate = jqXHR.getResponseHeader("WWW-Authenticate");
+        var result = /ticket=\\"(.*)\\"/.exec(authenticate);
+        var ticket = result[1] || "";
 
         $("#try").html(json2html(data, "Response Without RPT"));
 
