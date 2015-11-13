@@ -20,6 +20,8 @@ import static java.lang.String.format;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.resource.Resources.newCollection;
+import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
@@ -60,7 +62,7 @@ import org.forgerock.util.promise.Promise;
  * array describe a resource set (that can be composed of multiple endpoints) that share the same set of scopes.
  *
  * <p>Each resource contains a {@code pattern} used to define which one of them to use when a {@link Share} is
- * {@linkplain #createShare(String, String)} created}. A resource also contains a list of {@code actions} that
+ * {@linkplain #createShare(Context, String, String) created}. A resource also contains a list of {@code actions} that
  * defines the set of scopes to require when a requesting party request comes in.
  *
  * <pre>
@@ -91,6 +93,11 @@ import org.forgerock.util.promise.Promise;
  *       }
  *     }
  * </pre>
+ *
+ * Along with the {@code UmaService}, a REST endpoint is deployed in OpenIG's API namespace:
+ * {@literal /openig/api/system/objects/../objects/[name-of-the-uma-service-object]/share}.
+ * The dotted segment depends on your deployment (like which RouterHandler hosts the route that
+ * in turns contains this object).
  */
 public class UmaSharingService {
 
@@ -382,7 +389,16 @@ public class UmaSharingService {
             String clientId = evaluate(config.get("clientId").required());
             String clientSecret = evaluate(config.get("clientSecret").required());
             try {
-                return new UmaSharingService(handler, createResourceTemplates(), uri, clientId, clientSecret);
+                UmaSharingService service = new UmaSharingService(handler,
+                                                                  createResourceTemplates(),
+                                                                  uri,
+                                                                  clientId,
+                                                                  clientSecret);
+                // register admin endpoint
+                endpointRegistry().register("share",
+                                            newHttpHandler(newCollection(new ShareCollectionProvider(service))));
+
+                return service;
             } catch (URISyntaxException e) {
                 throw new HeapException("Cannot build UmaSharingService", e);
             }

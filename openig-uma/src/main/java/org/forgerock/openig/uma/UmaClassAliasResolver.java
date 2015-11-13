@@ -30,7 +30,6 @@ public class UmaClassAliasResolver implements ClassAliasResolver {
     static {
         ALIASES.put("UmaService", UmaSharingService.class);
         ALIASES.put("UmaFilter", UmaResourceServerFilter.class);
-        ALIASES.put("UmaRest", ShareCollectionProvider.class);
     }
 
     @Override
