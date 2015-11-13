@@ -70,7 +70,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
     private final String key;
 
     /** Expression that yields the value to be looked-up within the file. */
-    private final Expression<?> value;
+    private final Expression<String> value;
 
     /**
      * Builds a new FileAttributesFilter extracting values from the given separated values file.
@@ -86,7 +86,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
      */
     public FileAttributesFilter(final SeparatedValuesFile file,
                                 final String key,
-                                final Expression<?> value,
+                                final Expression<String> value,
                                 @SuppressWarnings("rawtypes") final Expression<Map> target) {
         this.file = file;
         this.key = key;
@@ -103,8 +103,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
             @Override
             public Map<String, String> newInstance() {
                 try {
-                    // Force the call to the method toString() to
-                    Map<String, String> record = file.getRecord(key, value.eval(bindings).toString());
+                    Map<String, String> record = file.getRecord(key, value.eval(bindings));
                     return record == null ? Collections.<String, String>emptyMap() : record;
                 } catch (IOException ioe) {
                     logger.warning(ioe);
