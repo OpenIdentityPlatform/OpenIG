@@ -17,7 +17,6 @@
 package org.forgerock.openig.uma;
 
 import static java.lang.String.format;
-import static java.util.Collections.singletonMap;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -271,12 +270,13 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                 // Create a new response with authenticate header and status code
                 try {
                     JsonValue value = json(response.getEntity().getJson());
-                    Response forbidden = new Response(Status.FORBIDDEN);
-                    forbidden.setEntity(singletonMap("ticket", value.get("ticket").asString()));
+                    Response forbidden = new Response(Status.UNAUTHORIZED);
+                    String ticket = value.get("ticket").asString();
                     forbidden.getHeaders().put("WWW-Authenticate",
-                                                     format("UMA realm=\"%s\", as_uri=\"%s\"",
+                                                     format("UMA realm=\"%s\", as_uri=\"%s\", ticket=\"%s\"",
                                                             realm,
-                                                            umaService.getAuthorizationServer()));
+                                                            umaService.getAuthorizationServer(),
+                                                            ticket));
                     return forbidden;
                 } catch (IOException e) {
                     // JSON parsing exception

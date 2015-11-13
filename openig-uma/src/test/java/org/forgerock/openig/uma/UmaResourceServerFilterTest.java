@@ -154,10 +154,10 @@ public class UmaResourceServerFilterTest {
     }
 
     private void assertThatTicketIsReturnedWithStatusForbidden(final Response response) throws IOException {
-        JsonValue value = json(response.getEntity().getJson());
-        assertThat(value.get("ticket").asString()).isEqualTo(TICKET);
-        assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
+        assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders()).containsKey("WWW-Authenticate");
+        assertThat(response.getHeaders().getFirst("WWW-Authenticate"))
+                .contains(format("ticket=\"%s\"", TICKET));
     }
 
     private Object insufficientScopesToken() {
