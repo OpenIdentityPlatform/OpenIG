@@ -25,10 +25,11 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -50,6 +51,7 @@ import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -65,11 +67,11 @@ import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
+import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
@@ -274,13 +276,23 @@ public class GroovyScriptableFilterTest {
         assertThat(two.getStatus()).isNotEqualTo(Status.OK);
     }
 
-    @Test
-    public void testHttpClient() throws Exception {
+    @DataProvider
+    public static Object[][] httpSendMethodLine() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { "http.send(context, request)" },
+                { "http.send(request)" }
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "httpSendMethodLine")
+    public void testHttpClient(final String httpSendLine) throws Exception {
         // Create mock HTTP server.
         final StubServer server = new StubServer().run();
         whenHttp(server).match(get("/example")).then(status(HttpStatus.OK_200),
                                                      stringContent(JSON_CONTENT));
-        try {
+        try (HttpClientHandler clientHandler = new HttpClientHandler(defaultOptions())) {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
@@ -289,8 +301,8 @@ public class GroovyScriptableFilterTest {
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
-                    "http.executeAsync(new RootContext(), request)");
-            filter.setHttpClient(new HttpClient());
+                    httpSendLine);
+            filter.setClientHandler(clientHandler);
 
             // @formatter:on
             Response response = filter.filter(new RootContext(), new Request(), null).get();
@@ -861,7 +873,7 @@ public class GroovyScriptableFilterTest {
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
-        heap.put(HTTP_CLIENT_HEAP_KEY, new HttpClient());
+        heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         return heap;
     }
 

@@ -18,8 +18,8 @@ package org.forgerock.openig.script;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.el.Expressions.evaluate;
+import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 
 import java.util.HashMap;
@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.ScriptException;
 
+import org.forgerock.http.Client;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -40,8 +41,8 @@ import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.ldap.LdapClient;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -56,8 +57,7 @@ import org.forgerock.util.promise.Promise;
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Map contexts} - the visible contexts, keyed by context's name
  * <li>{@link Request request} - the HTTP request
- * <li>{@link HttpClient http} - an OpenIG HTTP client which may be used for
- * performing outbound HTTP requests
+ * <li>{@link Client http} - an HTTP client which may be used for performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
  * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
@@ -82,9 +82,9 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject component = newInstance(script, heap);
-            HttpClient httpClient = heap.resolve(config.get("httpClient").defaultTo(HTTP_CLIENT_HEAP_KEY),
-                                                 HttpClient.class);
-            component.setHttpClient(httpClient);
+            Handler clientHandler = heap.resolve(config.get("clientHandler").defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                                 Handler.class);
+            component.setClientHandler(clientHandler);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
             }
@@ -151,7 +151,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
 
     private final Script compiledScript;
     private final Heap heap;
-    private HttpClient httpClient;
+    private Handler clientHandler;
     private final LdapClient ldapClient = LdapClient.getInstance();
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<>();
     private Map<String, Object> args;
@@ -168,12 +168,12 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     }
 
     /**
-     * Sets the HTTP client which should be made available to scripts.
+     * Sets the HTTP client handler which should be made available to scripts.
      *
-     * @param client The HTTP client which should be made available to scripts.
+     * @param clientHandler The HTTP client handler which should be made available to scripts.
      */
-    public void setHttpClient(final HttpClient client) {
-        this.httpClient = client;
+    public void setClientHandler(final Handler clientHandler) {
+        this.clientHandler = clientHandler;
     }
 
     /**
@@ -192,13 +192,15 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
      * @param bindings Base bindings available to the script (will be enriched).
      * @param next The next handler in the chain if applicable, may be
      * {@code null}.
+     * @param context request processing context
      * @return the Promise of a Response produced by the script
      */
     @SuppressWarnings("unchecked")
     protected final Promise<Response, NeverThrowsException> runScript(final Bindings bindings,
-                                                                      final Handler next) {
+                                                                      final Handler next,
+                                                                      final Context context) {
         try {
-            Object o = compiledScript.run(enrichBindings(bindings, next));
+            Object o = compiledScript.run(enrichBindings(bindings, next, context));
             if (o instanceof Promise) {
                 return ((Promise<Response, NeverThrowsException>) o);
             } else if (o instanceof Response) {
@@ -214,14 +216,15 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         }
     }
 
-    private Map<String, Object> enrichBindings(final Bindings source, final Handler next) throws ScriptException {
+    private Map<String, Object> enrichBindings(final Bindings source, final Handler next, final Context context)
+            throws ScriptException {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
         bindings.putAll(source.asMap());
         bindings.put("logger", logger);
         bindings.put("globals", scriptGlobals);
-        if (httpClient != null) {
-            bindings.put("http", httpClient);
+        if (clientHandler != null) {
+            bindings.put("http", new Client(clientHandler, context));
         }
         bindings.put("ldap", ldapClient);
         if (next != null) {

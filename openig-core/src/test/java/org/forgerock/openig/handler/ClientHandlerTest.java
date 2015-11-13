@@ -21,36 +21,65 @@ import static com.xebialabs.restito.builder.verify.VerifyHttp.verifyHttp;
 import static com.xebialabs.restito.semantics.Action.status;
 import static com.xebialabs.restito.semantics.Condition.alwaysTrue;
 import static com.xebialabs.restito.semantics.Condition.method;
+import static com.xebialabs.restito.semantics.Condition.not;
+import static com.xebialabs.restito.semantics.Condition.post;
 import static com.xebialabs.restito.semantics.Condition.uri;
+import static com.xebialabs.restito.semantics.Condition.withPostBody;
 import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.http.HttpClient;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.xebialabs.restito.server.StubServer;
 
 @SuppressWarnings("javadoc")
 public class ClientHandlerTest {
+
+    private StubServer server;
+
+    @Mock
+    private Handler delegate;
+
+    @BeforeMethod
+    public void beforeMethod() throws Exception {
+        server = new StubServer().run();
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @AfterMethod
+    public void afterMethod() throws Exception {
+        server.stop();
+    }
+
     @Test(description = "test for OPENIG-315")
     public void checkRequestIsForwardedUnaltered() throws Exception {
-        final StubServer server = new StubServer().run();
         final int port = server.getPort();
         whenHttp(server).match(alwaysTrue()).then(status(HttpStatus.OK_200));
-        try {
+
+        try (HttpClientHandler clientHandler = new HttpClientHandler(defaultOptions())) {
             Request request = new Request();
             request.setMethod("POST");
             request.setUri("http://0.0.0.0:" + port + "/example");
@@ -60,16 +89,62 @@ public class ClientHandlerTest {
             json.put("k2", "v2");
             request.setEntity(json);
 
-            HttpClient client = spy(new HttpClient());
-            final ClientHandler handler = new ClientHandler(client);
+            ClientHandler handler = new ClientHandler(clientHandler);
             Response response = handler.handle(null, request).get();
 
             assertThat(response.getStatus()).isEqualTo(Status.OK);
             verifyHttp(server).once(method(Method.POST), uri("/example"),
                                     withPostBodyContaining("{\"k1\":\"v1\",\"k2\":\"v2\"}"));
-            verify(client).executeAsync(any(Context.class), eq(request));
-        } finally {
-            server.stop();
         }
+    }
+
+    @Test
+    public void shouldSendPostHttpMessageWithEntityContent() throws Exception {
+        whenHttp(server).match(post("/test"),
+                               withPostBodyContaining("Hello"))
+                        .then(status(HttpStatus.OK_200));
+
+        try (HttpClientHandler clientHandler = new HttpClientHandler(defaultOptions())) {
+            ClientHandler handler = new ClientHandler(clientHandler);
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(format("http://localhost:%d/test", server.getPort()));
+            request.getEntity().setString("Hello");
+            assertThat(handler.handle(new RootContext(), request).get().getStatus())
+                    .isEqualTo(Status.OK);
+        }
+    }
+
+    @Test
+    public void shouldSendPostHttpMessageWithEmptyEntity() throws Exception {
+        whenHttp(server).match(post("/test"),
+                               not(withPostBody()))
+                        .then(status(HttpStatus.OK_200));
+
+        try (HttpClientHandler clientHandler = new HttpClientHandler(defaultOptions())) {
+            ClientHandler handler = new ClientHandler(clientHandler);
+            Request request = new Request();
+            request.setMethod("POST");
+            request.setUri(format("http://localhost:%d/test", server.getPort()));
+            assertThat(handler.handle(new RootContext(), request).get()
+                              .getStatus()).isEqualTo(Status.OK);
+        }
+    }
+
+    @Test
+    public void shouldLogException() throws Exception {
+        Exception cause = new Exception("Boom");
+        Response response = new Response(Status.INTERNAL_SERVER_ERROR).setCause(cause);
+
+        when(delegate.handle(any(Context.class), any(Request.class)))
+                .thenReturn(Response.newResponsePromise(response));
+
+        ClientHandler handler = new ClientHandler(delegate);
+
+        Logger logger = mock(Logger.class);
+        handler.setLogger(logger);
+        handler.handle(new RootContext(), new Request());
+
+        verify(logger).warning(cause);
     }
 }

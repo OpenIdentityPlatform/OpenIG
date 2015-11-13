@@ -37,7 +37,7 @@ import org.forgerock.util.promise.Promise;
  * successive invocations of the script
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Request request} - the HTTP request
- * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
+ * <li>{@link org.forgerock.http.Client http} - an HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
@@ -58,7 +58,7 @@ public class ScriptableFilter extends AbstractScriptableHeapObject implements Fi
                                                           final Request request,
                                                           final Handler next) {
         // Delegates filtering to the script.
-        return runScript(bindings(context, request), next);
+        return runScript(bindings(context, request), next, context);
     }
 
     /**
