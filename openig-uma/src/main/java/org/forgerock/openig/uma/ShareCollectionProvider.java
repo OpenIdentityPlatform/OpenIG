@@ -17,8 +17,6 @@
 package org.forgerock.openig.uma;
 
 import static java.lang.String.format;
-import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
-import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -27,8 +25,6 @@ import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
-import org.forgerock.http.Handler;
-import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
@@ -43,14 +39,9 @@ import org.forgerock.json.resource.QueryRequest;
 import org.forgerock.json.resource.QueryResourceHandler;
 import org.forgerock.json.resource.QueryResponse;
 import org.forgerock.json.resource.ReadRequest;
-import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ResourceResponse;
-import org.forgerock.json.resource.Resources;
 import org.forgerock.json.resource.UpdateRequest;
-import org.forgerock.json.resource.http.CrestHttp;
-import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
@@ -61,18 +52,8 @@ import org.forgerock.util.promise.Promise;
  *
  * <p>Supported operations: {@literal CREATE}, {@literal READ}, {@literal DELETE}
  * and {@literal QUERY} (simple shares list, no filtering).
- *
- * <pre>
- *     {@code {
- *         "type": "UmaRest",
- *         "config": {
- *           "umaService": "UmaService"
- *         }
- *       }
- *     }
- * </pre>
  */
-public class ShareCollectionProvider implements CollectionResourceProvider {
+class ShareCollectionProvider implements CollectionResourceProvider {
 
     private final UmaSharingService service;
 
@@ -179,27 +160,5 @@ public class ShareCollectionProvider implements CollectionResourceProvider {
                                                                      final String resourceId,
                                                                      final ActionRequest request) {
         return new NotSupportedException().asPromise();
-    }
-
-    /**
-     * Creates and initializes an UMA share endpoint in a heap environment.
-     */
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            UmaSharingService service = heap.resolve(config.get("umaService").required(), UmaSharingService.class);
-
-            // Wrap it into the appropriate Crest classes
-            ShareCollectionProvider provider = new ShareCollectionProvider(service);
-            RequestHandler requestHandler = Resources.newCollection(provider);
-            Handler crest = CrestHttp.newHttpHandler(requestHandler);
-
-            // Finally use a router (that may disappear in the future)
-            Router router = new Router();
-            router.addRoute(requestUriMatcher(STARTS_WITH, "_openig/uma/share"), crest);
-
-            return router;
-        }
     }
 }
