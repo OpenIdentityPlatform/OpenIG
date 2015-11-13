@@ -22,7 +22,6 @@ import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.ClientHandler;
-import org.forgerock.openig.http.HttpClient;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 
@@ -67,12 +66,6 @@ public final class Keys {
      * {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String FORGEROCK_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
-
-    /**
-     * Key to retrieve an {@link HttpClient} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String HTTP_CLIENT_HEAP_KEY = "HttpClient";
 
     /**
      * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.

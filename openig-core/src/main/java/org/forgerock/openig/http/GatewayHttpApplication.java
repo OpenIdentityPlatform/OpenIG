@@ -32,7 +32,6 @@ import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.HTTP_CLIENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -93,17 +92,9 @@ public final class GatewayHttpApplication implements HttpApplication {
      */
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GatewayHttpApplication.class);
 
-    /**
-     * Default HttpClient heap object declaration.
-     */
-    private static final JsonValue DEFAULT_HTTP_CLIENT = json(object(field("name", HTTP_CLIENT_HEAP_KEY),
-                                                                     field("type", HttpClient.class.getName())));
-
     private static final JsonValue DEFAULT_CLIENT_HANDLER =
                                         json(object(field("name", CLIENT_HANDLER_HEAP_KEY),
-                                                    field("type", ClientHandler.class.getName()),
-                                                    field("config", object(
-                                                            field("httpClient", HTTP_CLIENT_HEAP_KEY)))));
+                                                    field("type", ClientHandler.class.getName())));
 
     private HeapImpl heap;
     private TemporaryStorage storage;
@@ -153,7 +144,6 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
-            heap.addDefaultDeclaration(DEFAULT_HTTP_CLIENT);
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators");
 

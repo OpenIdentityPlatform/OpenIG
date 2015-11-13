@@ -36,7 +36,7 @@ import org.forgerock.util.promise.Promise;
  * successive invocations of the script
  * <li>{@link org.forgerock.services.context.Context context} - the associated request context
  * <li>{@link Request request} - the HTTP request
- * <li>{@link org.forgerock.openig.http.HttpClient http} - an OpenIG HTTP client which may be used for
+ * <li>{@link org.forgerock.http.Client http} - an HTTP client which may be used for
  * performing outbound HTTP requests
  * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
@@ -50,7 +50,7 @@ public class ScriptableHandler extends AbstractScriptableHeapObject implements H
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        return runScript(bindings(context, request), null);
+        return runScript(bindings(context, request), null, context);
     }
 
     /**
