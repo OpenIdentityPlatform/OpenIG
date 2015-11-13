@@ -17,6 +17,7 @@
 
 package org.forgerock.openig.filter;
 
+import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.evaluate;
@@ -103,8 +104,14 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
             @Override
             public Map<String, String> newInstance() {
                 try {
-                    Map<String, String> record = file.getRecord(key, value.eval(bindings));
-                    return record == null ? Collections.<String, String>emptyMap() : record;
+                    String eval = value.eval(bindings);
+                    Map<String, String> record = file.getRecord(key, eval);
+                    if (record == null) {
+                        logger.debug(format("Couldn't select a row where column %s value is equal to %s", key, eval));
+                        return Collections.emptyMap();
+                    } else {
+                        return record;
+                    }
                 } catch (IOException ioe) {
                     logger.warning(ioe);
                     // results in an empty map
