@@ -104,7 +104,8 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
             public Map<String, String> newInstance() {
                 try {
                     // Force the call to the method toString() to
-                    return file.getRecord(key, value.eval(bindings).toString());
+                    Map<String, String> record = file.getRecord(key, value.eval(bindings).toString());
+                    return record == null ? Collections.<String, String>emptyMap() : record;
                 } catch (IOException ioe) {
                     logger.warning(ioe);
                     // results in an empty map
