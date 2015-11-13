@@ -17,6 +17,7 @@
 package org.forgerock.openig.uma;
 
 import static java.lang.String.format;
+import static org.forgerock.http.header.WarningHeader.MISCELLANEOUS_WARNING;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.forgerock.http.header.WarningHeader;
 import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -287,9 +289,12 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             closeSilently(response);
 
             // Properly handle 400 errors and UMA error codes
-            // The UMA spec doesn't say what to return if the RS cannot obtain a ticket
             // The PAT may need to be refreshed
-            return newInternalServerError("Could not obtain ticket from AS");
+            Response forbidden = new Response(Status.FORBIDDEN);
+            forbidden.getHeaders().put(new WarningHeader(MISCELLANEOUS_WARNING,
+                                                         "-",
+                                                         "\"UMA Authorization Server Unreachable\""));
+            return forbidden;
         }
     }
 

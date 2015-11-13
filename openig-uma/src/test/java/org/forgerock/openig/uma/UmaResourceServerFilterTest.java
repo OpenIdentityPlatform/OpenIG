@@ -36,7 +36,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -44,6 +43,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.services.context.Context;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -135,6 +135,20 @@ public class UmaResourceServerFilterTest {
         verifyZeroInteractions(terminal);
     }
 
+    @Test
+    public void shouldReturnForbiddenWithWarningOnTicketError() throws Exception {
+        // Anything other than CREATED
+        mockTicketCreation(new Response(Status.BAD_REQUEST));
+        UmaResourceServerFilter filter = new UmaResourceServerFilter(service, handler, null);
+
+        Response response = filter.filter(null, request, terminal).get();
+
+        assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
+        assertThat(response.getHeaders().getFirst("Warning"))
+                .isEqualTo("199 - \"UMA Authorization Server Unreachable\"");
+        verifyZeroInteractions(terminal);
+    }
+
     private static Object inactiveToken() {
         return object(field("active", false));
     }
@@ -174,9 +188,11 @@ public class UmaResourceServerFilterTest {
     }
 
     private void mockTicketCreation() throws URISyntaxException {
+        mockTicketCreation(new Response(Status.CREATED).setEntity(object(field("ticket", TICKET))));
+    }
+
+    private void mockTicketCreation(Response response) throws URISyntaxException {
         URI ticketUri = new URI("http://as.example.com/uma/permission_request");
-        Response response = new Response(Status.CREATED);
-        response.setEntity(object(field("ticket", TICKET)));
         when(service.getTicketEndpoint()).thenReturn(ticketUri);
         when(handler.handle(any(Context.class), argThat(allOf(hasUri(ticketUri), hasToken(PAT)))))
                 .thenReturn(Response.newResponsePromise(response));
