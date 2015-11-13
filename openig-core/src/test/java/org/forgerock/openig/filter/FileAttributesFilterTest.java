@@ -56,4 +56,18 @@ public class FileAttributesFilterTest {
 
         assertThat((Map) context.getAttributes().get("result")).isEmpty();
     }
+
+    @Test
+    public void shouldProduceEmptyMapWhenSearchedEntryDoesNotExist() throws Exception {
+        when(file.getRecord("username", "joe")).thenReturn(null);
+
+        Expression<String> value = Expression.valueOf("joe", String.class);
+        Expression<Map> target = Expression.valueOf("${contexts.attributes.attributes.result}", Map.class);
+        FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
+
+        AttributesContext context = new AttributesContext(new RootContext());
+        filter.filter(context, null, new ResponseHandler(Status.OK)).get();
+
+        assertThat((Map) context.getAttributes().get("result")).isEmpty();
+    }
 }
