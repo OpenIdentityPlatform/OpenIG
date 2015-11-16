@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
+import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 
 /**

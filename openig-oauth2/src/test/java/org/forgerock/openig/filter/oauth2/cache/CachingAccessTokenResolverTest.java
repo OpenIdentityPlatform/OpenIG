@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
+import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
