@@ -30,15 +30,20 @@ import org.forgerock.util.time.Duration;
 /**
  * ThreadSafeCache is a thread-safe write-through cache.
  * <p>
- * Instead of storing directly the value in the backing Map, it requires the consumer to provide a value factory (a
- * Callable). A new FutureTask encapsulate the callable, is executed and is placed inside a ConcurrentHashMap if absent.
+ * Instead of storing directly the value in the backing Map, it requires the
+ * consumer to provide a value factory (a Callable). A new FutureTask
+ * encapsulate the callable, is executed and is placed inside a
+ * ConcurrentHashMap if absent.
  * <p>
- * The final behavior is that, even if two concurrent Threads are borrowing an object from the cache,
- * given that they provide an equivalent value factory, the first one will compute the value while the other will get
- * the result from the Future (and will wait until the result is computed or a timeout occurs).
+ * The final behavior is that, even if two concurrent Threads are borrowing an
+ * object from the cache, given that they provide an equivalent value factory,
+ * the first one will compute the value while the other will get the result from
+ * the Future (and will wait until the result is computed or a timeout occurs).
  *
- * @param <K> Type of the key
- * @param <V> Type of the value
+ * @param <K>
+ *            Type of the key
+ * @param <V>
+ *            Type of the value
  */
 public class ThreadSafeCache<K, V> {
 
@@ -50,16 +55,18 @@ public class ThreadSafeCache<K, V> {
      * Build a new {@link ThreadSafeCache} using the given scheduled executor.
      *
      * @param executorService
-     *         scheduled executor for registering expiration callbacks.
+     *            scheduled executor for registering expiration callbacks.
      */
     public ThreadSafeCache(final ScheduledExecutorService executorService) {
         this.executorService = executorService;
     }
 
     /**
-     * Sets the cache entry expiration delay. Notice that this will impact only new cache entries.
+     * Sets the cache entry expiration delay. Notice that this will impact only
+     * new cache entries.
      *
-     * @param timeout new cache entry timeout
+     * @param timeout
+     *            new cache entry timeout
      */
     public void setTimeout(Duration timeout) {
         this.timeout = timeout;
@@ -77,27 +84,26 @@ public class ThreadSafeCache<K, V> {
                 futureTask.run();
 
                 // Register cache entry expiration time
-                executorService.schedule(new Expiration(key),
-                                         timeout.getValue(),
-                                         timeout.getUnit());
+                executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
             }
         }
         return future;
     }
 
     /**
-     * Borrow (and create before hand if absent) a cache entry. If another Thread has created (or the creation is
-     * undergoing) the value, this methods waits indefinitely for the value to be available.
+     * Borrow (and create before hand if absent) a cache entry. If another
+     * Thread has created (or the creation is undergoing) the value, this
+     * methods waits indefinitely for the value to be available.
      *
      * @param key
-     *         entry key
+     *            entry key
      * @param callable
-     *         cached value factory
+     *            cached value factory
      * @return the cached value
      * @throws InterruptedException
-     *         if the current thread was interrupted while waiting
+     *             if the current thread was interrupted while waiting
      * @throws ExecutionException
-     *         if the cached value computation threw an exception
+     *             if the cached value computation threw an exception
      */
     public V getValue(final K key, final Callable<V> callable) throws InterruptedException, ExecutionException {
         try {
@@ -117,7 +123,8 @@ public class ThreadSafeCache<K, V> {
     }
 
     /**
-     * Registered in the executor, this callable simply removes the cache entry after a specified amount of time.
+     * Registered in the executor, this callable simply removes the cache entry
+     * after a specified amount of time.
      */
     private class Expiration implements Callable<Object> {
         private final K key;
