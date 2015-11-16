@@ -315,7 +315,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             if (!expiration.isZero()) {
                 executorService = Executors.newSingleThreadScheduledExecutor();
                 cache = new ThreadSafeCache<>(executorService);
-                cache.setTimeout(expiration);
+                cache.setDefaultTimeout(expiration);
                 resolver = new CachingAccessTokenResolver(resolver, cache);
             }
 

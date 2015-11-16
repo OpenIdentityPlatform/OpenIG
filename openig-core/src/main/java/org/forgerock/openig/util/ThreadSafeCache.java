@@ -25,6 +25,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
+import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.time.Duration;
 
 /**
@@ -39,6 +43,8 @@ import org.forgerock.util.time.Duration;
  * object from the cache, given that they provide an equivalent value factory,
  * the first one will compute the value while the other will get the result from
  * the Future (and will wait until the result is computed or a timeout occurs).
+ * <p>
+ * By default, cache duration is set to 1 minute.
  *
  * @param <K>
  *            Type of the key
@@ -49,7 +55,8 @@ public class ThreadSafeCache<K, V> {
 
     private final ScheduledExecutorService executorService;
     private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
-    private volatile Duration timeout = new Duration(1L, TimeUnit.MINUTES);
+    private AsyncFunction<V, Duration, Exception> defaultTimeoutFunction;
+    private Duration defaultTimeout;
 
     /**
      * Build a new {@link ThreadSafeCache} using the given scheduled executor.
@@ -59,35 +66,66 @@ public class ThreadSafeCache<K, V> {
      */
     public ThreadSafeCache(final ScheduledExecutorService executorService) {
         this.executorService = executorService;
+        setDefaultTimeout(new Duration(1L, TimeUnit.MINUTES));
     }
 
     /**
-     * Sets the cache entry expiration delay. Notice that this will impact only
-     * new cache entries.
+     * Sets the default cache entry expiration delay, if none provided in the
+     * caller. Notice that this will impact only new cache entries.
      *
-     * @param timeout
+     * @param defaultTimeout
      *            new cache entry timeout
      */
-    public void setTimeout(Duration timeout) {
-        this.timeout = timeout;
+    public void setDefaultTimeout(final Duration defaultTimeout) {
+        this.defaultTimeout = defaultTimeout;
+        this.defaultTimeoutFunction = new AsyncFunction<V, Duration, Exception>() {
+            @Override
+            public Promise<Duration, Exception> apply(V value) {
+                return Promises.newResultPromise(defaultTimeout);
+            }
+        };
     }
 
-    private Future<V> createIfAbsent(final K key, final Callable<V> callable) {
+    private Future<V> createIfAbsent(final K key,
+                                     final Callable<V> callable,
+                                     final AsyncFunction<V, Duration, Exception> timeoutFunction)
+            throws InterruptedException, ExecutionException {
+        // See the javadoc of the class for the intent of the Future and FutureTask.
         Future<V> future = cache.get(key);
         if (future == null) {
+            // First call: no value cached for that key
             final FutureTask<V> futureTask = new FutureTask<>(callable);
             future = cache.putIfAbsent(key, futureTask);
             if (future == null) {
+                // after the double check, it seems we are still the first to want to cache that value.
                 future = futureTask;
 
                 // Compute the value
                 futureTask.run();
 
-                // Register cache entry expiration time
-                executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
+                scheduleEviction(key, futureTask.get(), timeoutFunction);
             }
         }
         return future;
+    }
+
+    private void scheduleEviction(final K key,
+                                  final V value,
+                                  final AsyncFunction<V, Duration, Exception> timeoutFunction) {
+        try {
+            timeoutFunction.apply(value)
+                           .thenOnResult(new ResultHandler<Duration>() {
+                               @Override
+                               public void handleResult(Duration timeout) {
+                                   // Register cache entry expiration time
+                                   executorService.schedule(new Expiration(key),
+                                                            timeout.getValue(),
+                                                            timeout.getUnit());
+                               }
+                           });
+        } catch (Exception e) {
+            executorService.schedule(new Expiration(key), defaultTimeout.getValue(), defaultTimeout.getUnit());
+        }
     }
 
     /**
@@ -105,9 +143,34 @@ public class ThreadSafeCache<K, V> {
      * @throws ExecutionException
      *             if the cached value computation threw an exception
      */
-    public V getValue(final K key, final Callable<V> callable) throws InterruptedException, ExecutionException {
+    public V getValue(final K key, final Callable<V> callable) throws InterruptedException,
+                                                                      ExecutionException {
+        return getValue(key, callable, defaultTimeoutFunction);
+    }
+
+    /**
+     * Borrow (and create before hand if absent) a cache entry. If another
+     * Thread has created (or the creation is undergoing) the value, this
+     * methods waits indefinitely for the value to be available.
+     *
+     * @param key
+     *            entry key
+     * @param callable
+     *            cached value factory
+     * @param expire
+     *            function to override the global cache's timeout
+     * @return the cached value
+     * @throws InterruptedException
+     *             if the current thread was interrupted while waiting
+     * @throws ExecutionException
+     *             if the cached value computation threw an exception
+     */
+    public V getValue(final K key,
+                      final Callable<V> callable,
+                      final AsyncFunction<V, Duration, Exception> expire) throws InterruptedException,
+                                                                                 ExecutionException {
         try {
-            return createIfAbsent(key, callable).get();
+            return createIfAbsent(key, callable, expire).get();
         } catch (InterruptedException | RuntimeException | ExecutionException e) {
             cache.remove(key);
             throw e;
@@ -118,7 +181,6 @@ public class ThreadSafeCache<K, V> {
      * Clean-up the cache entries.
      */
     public void clear() {
-        // Clear the cache
         cache.clear();
     }
 
