@@ -14,7 +14,7 @@
  * Copyright 2014-2015 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.cache;
+package org.forgerock.openig.util;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
