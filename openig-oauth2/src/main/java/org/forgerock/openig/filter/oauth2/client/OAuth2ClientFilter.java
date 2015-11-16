@@ -858,7 +858,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             if (!expiration.isZero()) {
                 executor = Executors.newSingleThreadScheduledExecutor();
                 cache = new ThreadSafeCache<>(executor);
-                cache.setTimeout(expiration);
+                cache.setDefaultTimeout(expiration);
                 filter.setUserInfoCache(cache);
             }
 

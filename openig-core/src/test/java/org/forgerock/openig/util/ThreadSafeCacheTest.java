@@ -17,6 +17,7 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -29,6 +30,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.Duration;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -39,9 +43,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class ThreadSafeCacheTest {
 
+    public static final Duration DEFAULT_CACHE_TIMEOUT = duration("30 seconds");
     public static final int NUMBER_OF_ENTRIES = 10;
     public static final int NUMBER_OF_THREADS = 20;
     public static final int INVOCATION_COUNT = 10000;
+
+    private ThreadSafeCache<Integer, Integer> cache;
 
     @Mock
     private ScheduledExecutorService executorService;
@@ -55,6 +62,8 @@ public class ThreadSafeCacheTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        cache = new ThreadSafeCache<>(executorService);
+        cache.setDefaultTimeout(DEFAULT_CACHE_TIMEOUT);
     }
 
     @Test
@@ -70,7 +79,6 @@ public class ThreadSafeCacheTest {
         // At the end of the test, the number of time we created a value should be equal to the number of slots in
         // the cache.
 
-        final ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<>(executorService);
         final Random random = new Random();
         final AtomicInteger count = new AtomicInteger();
 
@@ -113,20 +121,42 @@ public class ThreadSafeCacheTest {
     @SuppressWarnings("unchecked")
     public void shouldRegisterAnExpirationCallbackWithAppropriateDuration() throws Exception {
 
-        ThreadSafeCache<Integer, Integer> cache = new ThreadSafeCache<>(executorService);
-        cache.setTimeout(duration("30 seconds"));
+        cache.getValue(42, getCallable());
 
-        cache.getValue(42, new Callable<Integer>() {
+        verify(executorService).schedule(any(Callable.class),
+                                         delayCaptor.capture(),
+                                         timeUnitCaptor.capture());
+        assertThat(delayCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getValue());
+        assertThat(timeUnitCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getUnit());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldOverrideDefaultTimeout() throws Exception {
+
+        final Duration lowerDuration = duration("10 seconds");
+
+        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
+
             @Override
-            public Integer call() throws Exception {
-                return 404;
+            public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                return newResultPromise(lowerDuration);
             }
         });
 
         verify(executorService).schedule(any(Callable.class),
                                          delayCaptor.capture(),
                                          timeUnitCaptor.capture());
-        assertThat(delayCaptor.getValue()).isEqualTo(30L);
-        assertThat(timeUnitCaptor.getValue()).isEqualTo(TimeUnit.SECONDS);
+        assertThat(delayCaptor.getValue()).isEqualTo(lowerDuration.getValue());
+        assertThat(timeUnitCaptor.getValue()).isEqualTo(lowerDuration.getUnit());
+    }
+
+    private Callable<Integer> getCallable() {
+        return new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return 404;
+            }
+        };
     }
 }
