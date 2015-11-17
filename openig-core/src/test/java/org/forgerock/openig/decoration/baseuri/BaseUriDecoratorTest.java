@@ -16,14 +16,23 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.JsonValue.*;
+import static java.util.Collections.emptyMap;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.decoration.helper.LazyReference;
+import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -33,8 +42,13 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class BaseUriDecoratorTest {
 
+    private LazyReference<LogSink> reference;
+
     @Mock
     private Filter filter;
+
+    @Mock
+    private LogSink logSink;
 
     @Mock
     private Handler handler;
@@ -45,6 +59,12 @@ public class BaseUriDecoratorTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        final HeapImpl heap = new HeapImpl(Name.of("anonymous"));
+        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
+        when(context.getHeap()).thenReturn(heap);
+        when(context.getConfig()).thenReturn(json(emptyMap()));
+        when(context.getName()).thenReturn(Name.of("config.json", "Router"));
+        reference = newReference(heap, json(null), LogSink.class, true);
     }
 
     @DataProvider
@@ -58,31 +78,38 @@ public class BaseUriDecoratorTest {
 
     @Test
     public void shouldDecorateFilter() throws Exception {
-        final Object decorated = new BaseUriDecorator().decorate(filter, json("http://localhost:80"), context);
+        final Object decorated = new BaseUriDecorator(reference).decorate(filter, json("http://localhost:80"), context);
         assertThat(decorated).isInstanceOf(BaseUriFilter.class);
     }
 
     @Test
     public void shouldDecorateHandler() throws Exception {
-        final Object decorated = new BaseUriDecorator().decorate(handler, json("http://localhost:80"), context);
+        final Object decorated = new BaseUriDecorator(reference).decorate(handler,
+                                                                          json("http://localhost:80"),
+                                                                          context);
         assertThat(decorated).isInstanceOf(BaseUriHandler.class);
     }
 
     @Test
     public void shouldNotDecorateFilter() throws Exception {
-        final Object decorated =
-                new BaseUriDecorator().decorate(filter, json(false), context);
+        final Object decorated = new BaseUriDecorator(reference).decorate(filter, json(false), context);
         assertThat(decorated).isSameAs(filter);
     }
 
     @Test
     public void shouldNotDecorateHandler() throws Exception {
-        final Object decorated = new BaseUriDecorator().decorate(handler, json(false), context);
+        final Object decorated = new BaseUriDecorator(reference).decorate(handler, json(false), context);
         assertThat(decorated).isSameAs(handler);
     }
 
     @Test(dataProvider = "undecoratableObjects")
     public void shouldNotDecorateUnsupportedTypes(Object o) throws Exception {
-        assertThat(new BaseUriDecorator().decorate(o, null, context)).isSameAs(o);
+        assertThat(new BaseUriDecorator(reference).decorate(o, null, context)).isSameAs(o);
+    }
+
+    @Test
+    public void shouldSupportNullLogSinkReference() throws Exception {
+        BaseUriDecorator decorator = new BaseUriDecorator(null);
+        decorator.decorate(filter, json("all"), context);
     }
 }
