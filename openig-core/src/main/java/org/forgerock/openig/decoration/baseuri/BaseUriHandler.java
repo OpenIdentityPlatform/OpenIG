@@ -16,7 +16,10 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
+import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
 
@@ -24,6 +27,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -37,6 +41,7 @@ class BaseUriHandler implements Handler {
     private final Handler delegate;
 
     private final Expression<String> baseUri;
+    private final Logger logger;
 
     /**
      * Creates a new base URI handler.
@@ -45,16 +50,25 @@ class BaseUriHandler implements Handler {
      *            The delegated handler.
      * @param baseUri
      *            The new base URI to set.
+     * @param logger
+     *            The logger to use with this handler.
      */
-    BaseUriHandler(final Handler delegate, final Expression<String> baseUri) {
+    BaseUriHandler(final Handler delegate, final Expression<String> baseUri, final Logger logger) {
         this.delegate = delegate;
         this.baseUri = baseUri;
+        this.logger = logger;
     }
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+        final String newBaseUri = baseUri.eval(bindings(context, request));
+        if (newBaseUri == null) {
+            logger.error(format("BaseUri Expression '%s' was evaluated to null",
+                                baseUri));
+            return newResultPromise(newInternalServerError());
+        }
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(baseUri.eval(bindings(context, request))));
+            request.getUri().rebase(URI.create(newBaseUri));
         }
         return delegate.handle(context, request);
     }

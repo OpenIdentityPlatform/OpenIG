@@ -17,17 +17,22 @@
 package org.forgerock.openig.decoration.baseuri;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URISyntaxException;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -39,11 +44,14 @@ public class BaseUriHandlerTest {
     @Mock
     private Handler delegate;
 
+    @Mock
+    private Logger logger;
+
     private Context context;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        initMocks(this);
         context = new RootContext();
     }
 
@@ -51,7 +59,8 @@ public class BaseUriHandlerTest {
     public void shouldRebaseUri() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
                                                           Expression.valueOf("http://www.example.com:443",
-                                                                  String.class));
+                                                                  String.class),
+                                                          logger);
 
         final Request request = createRequest();
         handler.handle(context, request);
@@ -59,25 +68,44 @@ public class BaseUriHandlerTest {
         verify(delegate).handle(context, request);
 
         assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
+        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldFailWithNullExpression() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
-                                                          null);
+                                                          null,
+                                                          logger);
 
         final Request request = createRequest();
         handler.handle(context, request);
+        verify(logger).error(anyString());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldFailWhenRebasingFail() throws Exception {
         final BaseUriHandler handler = new BaseUriHandler(delegate,
                                                           Expression.valueOf("http://<<servername>>:8080",
-                                                                  String.class));
+                                                                  String.class),
+                                                          logger);
 
         final Request request = createRequest();
         handler.handle(context, request);
+        verify(logger).error(anyString());
+    }
+
+    @Test
+    public void shouldReturnErrorResponseDueToUnresolvableExpression() throws Exception {
+        final BaseUriHandler handler = new BaseUriHandler(delegate,
+                                                          Expression.valueOf("${EXPRESSION_ERROR}",
+                                                                  String.class),
+                                                          logger);
+
+        final Request request = createRequest();
+        final Response response = handler.handle(context, request).get();
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).isEmpty();
+        verify(logger).error(anyString());
     }
 
     private Request createRequest() throws URISyntaxException {

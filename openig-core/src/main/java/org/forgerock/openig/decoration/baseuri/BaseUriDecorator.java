@@ -16,7 +16,9 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
+import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.asExpression;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -25,7 +27,12 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
+import org.forgerock.openig.decoration.helper.LazyReference;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.Logger;
 
 /**
  * The {@literal baseURI} decorator can decorate both {@link Filter} and {@link Handler} instances.
@@ -56,11 +63,31 @@ import org.forgerock.openig.heap.HeapException;
  */
 public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
 
+    private final LazyReference<LogSink> reference;
+
+    /**
+     * Builds a new base uri decorator with a null sink reference.
+     */
+    public BaseUriDecorator() {
+        this(null);
+    }
+
+    /**
+     * Builds a new base uri decorator with the given sink reference (possibly
+     * {@code null}).
+     *
+     * @param reference
+     *            Log Sink reference for message capture (may be {@code null})
+     */
+    public BaseUriDecorator(final LazyReference<LogSink> reference) {
+        this.reference = reference;
+    }
+
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriFilter(delegate, asExpression(decoratorConfig, String.class));
+            return new BaseUriFilter(delegate, asExpression(decoratorConfig, String.class), getLogger(context));
         }
         return delegate;
     }
@@ -69,16 +96,31 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriHandler(delegate, asExpression(decoratorConfig, String.class));
+            return new BaseUriHandler(delegate, asExpression(decoratorConfig, String.class), getLogger(context));
         }
         return delegate;
+    }
+
+    private Logger getLogger(final Context context) throws HeapException {
+        LogSink sink = reference != null ? reference.get() : null;
+        if (sink == null) {
+            // Use the sink of the decorated component
+            final Heap heap = context.getHeap();
+            sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+        }
+        final Name name = context.getName();
+        return new Logger(sink, name.decorated("BaseUri"));
     }
 
     /** Creates and initializes a baseUri in a heap environment. */
     public static class Heaplet extends DecoratorHeaplet {
         @Override
         public Decorator create() throws HeapException {
-            return new BaseUriDecorator();
+            final LazyReference<LogSink> reference = newReference(heap,
+                                                                  config.get("logSink"),
+                                                                  LogSink.class,
+                                                                  true);
+            return new BaseUriDecorator(reference);
         }
     }
 }
