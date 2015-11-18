@@ -16,24 +16,29 @@
 
 package org.forgerock.openig.jwt;
 
-import static java.lang.String.*;
+import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.openig.jwt.JwtCookieSession.*;
+import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
+import static org.forgerock.openig.jwt.JwtSessionManager.DEFAULT_SESSION_TIMEOUT;
+import static org.forgerock.openig.jwt.JwtSessionManager.MAX_SESSION_TIMEOUT;
+import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
+import org.forgerock.http.header.CookieHeader;
+import org.forgerock.http.header.SetCookieHeader;
+import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.jose.common.JwtReconstruction;
@@ -42,6 +47,8 @@ import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.time.Duration;
+import org.forgerock.util.time.TimeService;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -106,21 +113,83 @@ public class JwtCookieSessionTest {
         Response response = new Response();
         session.save(response);
 
-        String cookie = response.getHeaders().getFirst("Set-Cookie");
+        Cookie cookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
-        JwtClaimsSet claimsSet = decryptClaimsSet(cookie);
-        assertThat(claimsSet.keys()).containsOnly("a-value");
+        JwtClaimsSet claimsSet = decryptClaimsSet(cookie.getValue());
         assertThat(claimsSet.get("a-value").asString()).isEqualTo("ForgeRock OpenIG");
     }
 
+    @Test
+    public void shouldExpireCookie() throws Exception {
+
+        // Gives us control over the values returned by the TimeService to fake time passing quickly
+        TimeService timeService = mock(TimeService.class);
+        // The final now time is slightly higher then the session timeout to allow for the skew when checking if expired
+        when(timeService.now()).thenReturn(0L, MILLISECONDS.convert(5L, MINUTES), MILLISECONDS.convert(35L, MINUTES));
+
+        Duration sessionTimeout = duration("30 minutes");
+        long expiredBy = sessionTimeout.to(MILLISECONDS);
+
+        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, sessionTimeout);
+        session.put("a-value", "ForgeRock OpenIG");
+        Response response = new Response();
+        session.save(response);
+
+        Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+        // Expires date format does not include milliseconds so eliminate them.
+        Long expectedTime = TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(expiredBy));
+
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(expectedTime);
+
+        Request request = new Request();
+        setRequestCookie(request, jwtCookie.getValue());
+        session = newJwtSession(request, logger, timeService, sessionTimeout);
+        response = new Response();
+        // Unless we add another value, the session won't be seen as dirty and the JWT cookie won't be returned
+        session.put("b-value", "ForgeRock OpenIG");
+        session.save(response);
+        jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+
+        // The initial session expiry time should be used since we already had a session so it should be the same
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(expectedTime);
+
+        // The last timeService.now() call will be after expiry time, assert that the JWT cookie has now expired
+        Logger spied = spy(logger);
+        request = new Request();
+        setRequestCookie(request, jwtCookie.getValue());
+        session = newJwtSession(request, spied, timeService, sessionTimeout);
+        response = new Response();
+        session.save(response);
+        jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+
+        verify(spied).debug(matches("The JWT Session Cookie has expired"));
+        // With no session values we should be returned an expired cookie
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(0L);
+    }
+
+    @Test
+    public void unlimitedSessionTimeout() throws Exception {
+
+        Duration unlimitedSessionTimeout = duration("unlimited");
+
+        TimeService timeService = mock(TimeService.class);
+        when(timeService.now()).thenReturn(0L);
+
+        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, unlimitedSessionTimeout);
+        session.put("a-value", "ForgeRock OpenIG");
+        Response response = new Response();
+        session.save(response);
+
+        Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+        // Expires date format does not include milliseconds so eliminate them.
+        Long expectedTime =
+                TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(MAX_SESSION_TIMEOUT.to(MILLISECONDS)));
+
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(expectedTime);
+    }
+
     private JwtClaimsSet decryptClaimsSet(final String cookieValue) {
-        Pattern extract = Pattern.compile("openig-jwt-session=(.*); Path=/");
-        Matcher matcher = extract.matcher(cookieValue);
-        if (!matcher.matches()) {
-            fail("JWT cannot be extracted");
-        }
-        String encrypted = matcher.group(1);
-        EncryptedJwt jwt = new JwtReconstruction().reconstructJwt(encrypted, EncryptedJwt.class);
+        EncryptedJwt jwt = new JwtReconstruction().reconstructJwt(cookieValue, EncryptedJwt.class);
         jwt.decrypt(keyPair.getPrivate());
         return jwt.getClaimsSet();
     }
@@ -133,8 +202,10 @@ public class JwtCookieSessionTest {
         session.clear();
         Response response = new Response();
         session.save(response);
+        Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
-        assertThat(response.getHeaders().get("Set-Cookie")).isNotNull();
+        // With no session values we should be returned an expired cookie
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(0L);
     }
 
     @Test
@@ -145,8 +216,10 @@ public class JwtCookieSessionTest {
         session.remove("a-value");
         Response response = new Response();
         session.save(response);
+        Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
-        assertThat(response.getHeaders().get("Set-Cookie")).isNotNull();
+        // With no session values we should be returned an expired cookie
+        assertThat(jwtCookie.getExpires().getTime()).isEqualTo(0L);
     }
 
     @Test
@@ -166,6 +239,17 @@ public class JwtCookieSessionTest {
         Response response = new Response();
         session.save(response);
 
+        // First time around with a non-empty pre-sessionTimeout JWT cookie, the expiry time will be added.
+        Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+        assertThat(jwtCookie).isNotNull();
+
+        request = new Request();
+        setRequestCookie(request, jwtCookie.getValue());
+        session = newJwtSession(request);
+        response = new Response();
+        session.save(response);
+
+        // Since the session state has not changed, an updated JWT cookie should not be returned.
         assertThat(response.getHeaders().get("Set-Cookie")).isNull();
     }
 
@@ -193,7 +277,7 @@ public class JwtCookieSessionTest {
         setRequestCookie(request, ORIGINAL);
 
         JwtCookieSession session = newJwtSession(request);
-        assertThat(session).containsOnly(entry("a-value", "ForgeRock OpenIG"));
+        assertThat(session).contains(entry("a-value", "ForgeRock OpenIG"));
     }
 
     @Test(expectedExceptions = IOException.class,
@@ -209,7 +293,13 @@ public class JwtCookieSessionTest {
     public void shouldWarnTheUserAboutGettingCloseToTheThreshold() throws Exception {
         Request request = new Request();
         Logger spied = spy(logger);
-        JwtCookieSession session = new JwtCookieSession(request, keyPair, "Test", spied);
+        JwtCookieSession session = new JwtCookieSession(
+                request,
+                keyPair,
+                "Test",
+                spied,
+                TimeService.SYSTEM,
+                duration(DEFAULT_SESSION_TIMEOUT));
         session.put("in-between-3KB-and-4KB", generateMessageOf(2500));
         session.save(new Response());
 
@@ -224,12 +314,19 @@ public class JwtCookieSessionTest {
         return sb.toString();
     }
 
-    private JwtCookieSession newJwtSession(final Request request)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return new JwtCookieSession(request, keyPair, OPENIG_JWT_SESSION, logger);
+    private JwtCookieSession newJwtSession(final Request request) {
+        return newJwtSession(request, logger, TimeService.SYSTEM, duration(DEFAULT_SESSION_TIMEOUT));
     }
 
-    private static void setRequestCookie(final Request request, final String cookie) {
-        request.getHeaders().put("Cookie", format("%s=%s", OPENIG_JWT_SESSION, cookie));
+    private JwtCookieSession newJwtSession(final Request request,
+                                           final Logger logger,
+                                           final TimeService timeService,
+                                           final Duration sessionTimeout) {
+        return new JwtCookieSession(request, keyPair, OPENIG_JWT_SESSION, logger, timeService, sessionTimeout);
+    }
+
+    private static void setRequestCookie(final Request request, final String value) {
+        request.getHeaders().add(
+                new CookieHeader(singletonList(new Cookie().setValue(value).setName(OPENIG_JWT_SESSION))));
     }
 }

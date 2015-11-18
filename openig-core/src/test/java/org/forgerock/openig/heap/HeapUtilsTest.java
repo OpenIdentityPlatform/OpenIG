@@ -19,12 +19,14 @@ import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 
 import org.forgerock.http.routing.Router;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.util.time.TimeService;
 
 /**
  * Utility class for tests usage.
@@ -40,6 +42,7 @@ public final class HeapUtilsTest {
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
         heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(new Router()));
+        heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
         return heap;
     }
 }

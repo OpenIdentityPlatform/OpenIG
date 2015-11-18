@@ -17,8 +17,10 @@
 package org.forgerock.openig.jwt;
 
 import static java.lang.String.*;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.jwt.JwtCookieSession.*;
 import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -40,6 +42,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.time.Duration;
+import org.forgerock.util.time.TimeService;
 
 /**
  * A JwtSessionManager is responsible to configure and create a {@link JwtCookieSession}.
@@ -53,7 +57,8 @@ import org.forgerock.openig.heap.HeapException;
  *             "keystore": "Ref To A KeyStore",
  *             "alias": "PrivateKey Alias",
  *             "password": "KeyStore/Key Password",
- *             "cookieName": "OpenIG"
+ *             "cookieName": "OpenIG",
+ *             "sessionTimeout": "30 minutes"
  *         }
  *     }
  *     }
@@ -75,10 +80,25 @@ import org.forgerock.openig.heap.HeapException;
  * <p>
  * The {@literal cookieName} optional string attribute specifies the name of the cookie used to store the encrypted JWT.
  * If not set, {@link JwtCookieSession#OPENIG_JWT_SESSION} is used.
+ * <p>
+ * The {@literal sessionTimeout} optional duration attribute, specifies the amount of time before the cookie session
+ * expires. If not set, a default of 30 minutes is used. A duration of 0 is not valid and it will be limited to
+ * a maximum duration of approximately 10 years.
  *
  * @since 3.1
  */
 public class JwtSessionManager extends GenericHeapObject implements SessionManager {
+
+    /**
+     * Default sessionTimeout duration.
+     */
+    public static final String DEFAULT_SESSION_TIMEOUT = "30 minutes";
+
+    /**
+     * The maximum session timeout duration, allows for an expiry time of approx 10 years (does not take leap years
+     * into consideration).
+     */
+    public static final Duration MAX_SESSION_TIMEOUT = Duration.duration("3650 days");
 
     /**
      * The pair of keys for JWT payload encryption/decryption.
@@ -91,6 +111,16 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
     private final String cookieName;
 
     /**
+     * The TimeService to use when setting the cookie session expiry time.
+     */
+    private final TimeService timeService;
+
+    /**
+     * How long before the cookie session expires.
+     */
+    private final Duration sessionTimeout;
+
+    /**
      * Builds a new JwtSessionManager using the given KeyPair for session encryption, storing the opaque result in a
      * cookie with the given name.
      *
@@ -98,15 +128,24 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
      *         Private and public keys used for ciphering/deciphering
      * @param cookieName
      *         name of the cookie
+     * @param timeService
+     *         TimeService to use when dealing with cookie sessions
+     * @param sessionTimeout
+     *         The duration of the cookie session
      */
-    public JwtSessionManager(final KeyPair keyPair, final String cookieName) {
+    public JwtSessionManager(final KeyPair keyPair,
+                             final String cookieName,
+                             final TimeService timeService,
+                             final Duration sessionTimeout) {
         this.keyPair = keyPair;
         this.cookieName = cookieName;
+        this.timeService = timeService;
+        this.sessionTimeout = sessionTimeout;
     }
 
     @Override
     public Session load(final Request request) {
-        return new JwtCookieSession(request, keyPair, cookieName, logger);
+        return new JwtCookieSession(request, keyPair, cookieName, logger, timeService, sessionTimeout);
     }
 
     @Override
@@ -180,9 +219,19 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                         + "JWT session cookies encrypted by another OpenIG server.");
             }
 
+            TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+
+            final Duration sessionTimeout =
+                    duration(config.get("sessionTimeout").defaultTo(DEFAULT_SESSION_TIMEOUT).asString());
+            if (sessionTimeout.isZero()) {
+                throw new HeapException("sessionTimeout duration must be greater than 0");
+            }
+
             // Create the session factory with the given KeyPair and cookie name
             return new JwtSessionManager(keyPair,
-                                         config.get("cookieName").defaultTo(OPENIG_JWT_SESSION).asString());
+                                         config.get("cookieName").defaultTo(OPENIG_JWT_SESSION).asString(),
+                                         timeService,
+                                         sessionTimeout);
         }
     }
 }

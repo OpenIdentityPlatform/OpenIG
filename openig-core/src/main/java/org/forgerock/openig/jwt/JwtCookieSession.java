@@ -17,16 +17,22 @@
 package org.forgerock.openig.jwt;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.forgerock.http.util.Json.*;
+import static org.forgerock.openig.jwt.JwtSessionManager.MAX_SESSION_TIMEOUT;
 
 import java.io.IOException;
 import java.security.KeyPair;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.http.header.SetCookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -45,6 +51,8 @@ import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.MapDecorator;
+import org.forgerock.util.time.Duration;
+import org.forgerock.util.time.TimeService;
 
 /**
  * Represents an OpenIG {@link Session} that will be stored as an encrypted JSON Web Token in a Cookie.
@@ -57,6 +65,23 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      * Name of the cookie that will store the JWT session.
      */
     public static final String OPENIG_JWT_SESSION = "openig-jwt-session";
+
+    /**
+     * Based on the EXP claim concept from from rfc7519: The amount of time allowance between JWT expiring and current
+     * time when using EXP claim. Implementers MAY provide for some small leeway, usually no more than a few minutes,
+     * to account for clock skew.
+     */
+    private static final long SKEW_ALLOWANCE = MILLISECONDS.convert(2L, MINUTES);
+
+    /**
+     * This key will hold the sessionTimeout value within the JWT session.
+     */
+    private static final String IG_EXP_SESSION_KEY = "_ig_exp";
+
+    /**
+     * Setting sessionTimeout to this date will effectively remove it from the user agent.
+     */
+    private static final Date EPOCH = new Date(0L);
 
     /**
      * Know how to rebuild a JWT from a String.
@@ -89,6 +114,16 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private final KeyPair pair;
 
     /**
+     * The TimeService to use when setting the cookie session expiry time.
+     */
+    private final TimeService timeService;
+
+    /**
+     * How long before the cookie session expires.
+     */
+    private final Duration sessionTimeout;
+
+    /**
      * Builds a new JwtCookieSession that will manage the given Request's session.
      *
      * @param request
@@ -99,15 +134,30 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      *         Name to be used for the JWT Cookie.
      * @param logger
      *         Logger
+     * @param timeService
+     *         TimeService to use when dealing with cookie sessions
+     * @param sessionTimeout
+     *         The duration of the cookie session
      */
     public JwtCookieSession(final Request request,
                             final KeyPair pair,
                             final String cookieName,
-                            final Logger logger) {
+                            final Logger logger,
+                            final TimeService timeService,
+                            final Duration sessionTimeout) {
         super(new LinkedHashMap<String, Object>());
         this.pair = pair;
         this.cookieName = cookieName;
         this.logger = logger;
+        this.timeService = timeService;
+
+        // The MAX_SESSION_TIMEOUT is more than enough to mark a session to not expire
+        // so use this in place of larger values.
+        if (sessionTimeout.to(MILLISECONDS) > MAX_SESSION_TIMEOUT.to(MILLISECONDS)) {
+            this.sessionTimeout = MAX_SESSION_TIMEOUT;
+        } else {
+            this.sessionTimeout = sessionTimeout;
+        }
 
         // TODO Make this lazy (intercept read methods)
         loadJwtSession(request);
@@ -128,6 +178,18 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                 for (String key : claimsSet.keys()) {
                     // directly use super to avoid session be marked as dirty
                     super.put(key, claimsSet.getClaim(key));
+                }
+                Number expiryTime = (Number) get(IG_EXP_SESSION_KEY);
+                if (expiryTime != null) {
+                    if (isExpired(expiryTime)) {
+                        logger.debug("The JWT Session Cookie has expired");
+                        clear();
+                    }
+                } else {
+                    // No expiry time in the JWT: must be an old session from OpenIG 3.x
+                    // Force a new entry, this will mark the session as dirty
+                    // but will keep the session's content with an expiration date
+                    put(IG_EXP_SESSION_KEY, getNewExpiryTime());
                 }
             } catch (JweDecryptionException e) {
                 dirty = true; // Force cookie expiration / overwrite.
@@ -205,11 +267,12 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         // Only build the JWT session if the session is dirty
         if (dirty) {
             // Update the Set-Cookie header
-            final String value;
+            final Cookie jwtCookie;
             if (isEmpty()) {
-                value = buildExpiredJwtCookie();
+                jwtCookie = buildExpiredJwtCookie();
             } else {
-                value = buildJwtCookie();
+                jwtCookie = buildJwtCookie();
+                String value = jwtCookie.getValue();
                 if (value.length() > 4096) {
                     throw new IOException(
                             format("JWT session is too large (%d chars), failing the request because "
@@ -223,17 +286,39 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                                     + "less objects in the session", value.length()));
                 }
             }
-            response.getHeaders().add("Set-Cookie", value);
+            response.getHeaders().add(new SetCookieHeader(singletonList(jwtCookie)));
         }
 
     }
 
-    private String buildExpiredJwtCookie() {
-        return format("%s=; Path=/; Max-Age=-1", cookieName);
+    @Override
+    public boolean isEmpty() {
+
+        // If the only item is the IG_EXP_SESSION_KEY then it should be considered empty
+        if (!super.isEmpty()) {
+            return super.size() == 1 && super.containsKey(IG_EXP_SESSION_KEY);
+        } else {
+            return true;
+        }
     }
 
-    private String buildJwtCookie() {
-        return format("%s=%s; Path=%s", cookieName, buildJwtSession(), "/");
+    private Cookie buildExpiredJwtCookie() {
+        return new Cookie().setPath("/").setName(cookieName).setExpires(EPOCH);
+    }
+
+    private Cookie buildJwtCookie() {
+        // Reuse existing expiryTime if it exists.
+        // If the value fits within a Integer, then an Integer rather than a Long is returned.
+        Number expiryTime = (Number) get(IG_EXP_SESSION_KEY);
+        if (expiryTime == null) {
+            expiryTime = getNewExpiryTime();
+            super.put(IG_EXP_SESSION_KEY, expiryTime.longValue());
+        }
+        return new Cookie()
+                .setPath("/")
+                .setName(cookieName)
+                .setValue(buildJwtSession())
+                .setExpires(new Date(expiryTime.longValue()));
     }
 
     /**
@@ -262,5 +347,13 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
             return cookies.get(0);
         }
         return null;
+    }
+
+    private Long getNewExpiryTime() {
+        return timeService.now() + sessionTimeout.to(MILLISECONDS);
+    }
+
+    private boolean isExpired(Number expiryTime) {
+        return expiryTime.longValue() <= (timeService.now() - SKEW_ALLOWANCE);
     }
 }
