@@ -42,8 +42,7 @@ mvn clean install
 
 Executing the OpenIG build is as simple as:
 ```
-cd openig-war
-mvn jetty:run
+mvn -pl openig-war jetty:run
 ```
 
 And you should see something like:
