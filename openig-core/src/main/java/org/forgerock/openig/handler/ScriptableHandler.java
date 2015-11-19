@@ -44,6 +44,8 @@ import org.forgerock.util.promise.Promise;
  * </ul>
  * <p>Contains also easy access to {@code attributes} from the {@link org.forgerock.services.context.AttributesContext},
  * e.g: {@code attributes.user = "jackson"}, instead of {@code contexts.attributes.attributes.user = "jackson"}.
+ * <p>In the same way, it gives access to {@code session} from the {@link org.forgerock.http.session.SessionContext},
+ * for example, you can use: {@code session.put(...)}, instead of {@code contexts.session.session.put(...)}.
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.

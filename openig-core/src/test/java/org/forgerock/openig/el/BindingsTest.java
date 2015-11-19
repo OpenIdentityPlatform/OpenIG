@@ -20,12 +20,16 @@ package org.forgerock.openig.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
@@ -68,6 +72,25 @@ public class BindingsTest {
                 .hasSize(4);
         assertThat(((Map<?, ?>) bindings.asMap().get("contexts")).get("attributes")).isEqualTo(attributesContext);
         assertThat(bindings.asMap().get("attributes")).isEqualTo(attributesContext.getAttributes());
+    }
+
+    @Test
+    public void shouldBindContextAndRequestAndSession() {
+        final SessionContext sessionContext = new SessionContext(new RootContext(), mock(Session.class));
+        final Bindings bindings = bindings(sessionContext, null);
+        assertThat(bindings.asMap())
+                .containsKeys("context", "request", "session", "contexts")
+                .hasSize(4);
+        assertThat(((Map<?, ?>) bindings.asMap().get("contexts")).get("session")).isEqualTo(sessionContext);
+        assertThat(bindings.asMap().get("session")).isEqualTo(sessionContext.getSession());
+    }
+
+    @Test
+    public void shouldBindContextAndRequestAndSessionAndAttributes() {
+        final Context context = new AttributesContext(new SessionContext(new RootContext(), mock(Session.class)));
+        assertThat(bindings(context, null).asMap())
+                .containsKeys("context", "request", "session", "contexts", "attributes")
+                .hasSize(5);
     }
 
     @Test
