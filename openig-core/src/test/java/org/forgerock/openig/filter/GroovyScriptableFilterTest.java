@@ -794,9 +794,9 @@ public class GroovyScriptableFilterTest {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
                 "import org.forgerock.http.protocol.*",
-                "assert contexts.session.session.inKey == 'inValue'",
-                "contexts.session.session.outKey = 'outValue'",
-                "assert contexts.session.session.remove('inKey')",
+                "assert session.inKey == 'inValue'",
+                "session.outKey = 'outValue'",
+                "assert session.remove('inKey')",
                 "return new Response(Status.OK)");
         // @formatter:on
         Session session = new SimpleMapSession();

@@ -24,10 +24,14 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
@@ -142,6 +146,19 @@ public class ExpressionTest {
         Expression<String> foo = Expression.valueOf("${contexts.attributes.attributes.testmap.foo}", String.class);
         Expression<String> easyAccess = Expression.valueOf("${attributes.testmap.foo}", String.class);
         assertThat(foo.eval(bindings)).isEqualTo(easyAccess.eval(bindings)).isEqualTo("bar");
+    }
+
+    @Test
+    public void setSessionAttribute() throws ExpressionException {
+        final SessionContext context = new SessionContext(new RootContext(), new SimpleMapSession());
+        final Session session = context.asContext(SessionContext.class).getSession();
+        final String text = "miniature giant space hamster";
+        session.put("Boo", text);
+
+        final Bindings bindings = bindings(context, null);
+        final Expression<String> expr = Expression.valueOf("${contexts.session.session.Boo}", String.class);
+        final Expression<String> easyAccess = Expression.valueOf("${session.Boo}", String.class);
+        assertThat(expr.eval(bindings)).isEqualTo(easyAccess.eval(bindings)).isEqualTo(text);
     }
 
     @Test
@@ -409,5 +426,12 @@ public class ExpressionTest {
         public String concat(String append) {
             return this.value + append;
         }
+    }
+
+    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void save(Response response) throws IOException { }
     }
 }

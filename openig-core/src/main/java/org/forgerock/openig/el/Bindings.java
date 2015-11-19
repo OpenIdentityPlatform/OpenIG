@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
@@ -52,7 +53,8 @@ public class Bindings {
      * Contexts ({@code contexts.http, contexts.client, ...}).
      *
      * <p>They also give access to the request's {@code attributes} from the
-     * {@link org.forgerock.services.context.AttributesContext}.
+     * {@link org.forgerock.services.context.AttributesContext} and to the {@code session}
+     * from the {@link org.forgerock.http.session.SessionContext}.
      *
      * @param context
      *         The context to expose
@@ -68,6 +70,9 @@ public class Bindings {
             bindings.bind("contexts", flatten(context));
             if (context.containsContext(AttributesContext.class)) {
                 bindings.bind("attributes", context.asContext(AttributesContext.class).getAttributes());
+            }
+            if (context.containsContext(SessionContext.class)) {
+                bindings.bind("session", context.asContext(SessionContext.class).getSession());
             }
         }
         return bindings;
