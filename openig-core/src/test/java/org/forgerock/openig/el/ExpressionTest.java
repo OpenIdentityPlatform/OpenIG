@@ -140,7 +140,8 @@ public class ExpressionTest {
         Expression<Map> expr = Expression.valueOf("${contexts.attributes.attributes.testmap}", Map.class);
         expr.set(bindings, singletonMap("foo", "bar"));
         Expression<String> foo = Expression.valueOf("${contexts.attributes.attributes.testmap.foo}", String.class);
-        assertThat(foo.eval(bindings)).isEqualTo("bar");
+        Expression<String> easyAccess = Expression.valueOf("${attributes.testmap.foo}", String.class);
+        assertThat(foo.eval(bindings)).isEqualTo(easyAccess.eval(bindings)).isEqualTo("bar");
     }
 
     @Test

@@ -21,8 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.openig.el.Bindings.bindings;
 
+import java.util.Map;
+
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
@@ -54,6 +57,17 @@ public class BindingsTest {
         assertThat(bindings(new RootContext(), new Request()).asMap())
                 .containsKeys("context", "request", "contexts")
                 .hasSize(3);
+    }
+
+    @Test
+    public void shouldBindContextAndRequestAndAttributes() {
+        final AttributesContext attributesContext = new AttributesContext(new RootContext());
+        final Bindings bindings = bindings(attributesContext, null);
+        assertThat(bindings.asMap())
+                .containsKeys("context", "request", "attributes", "contexts")
+                .hasSize(4);
+        assertThat(((Map<?, ?>) bindings.asMap().get("contexts")).get("attributes")).isEqualTo(attributesContext);
+        assertThat(bindings.asMap().get("attributes")).isEqualTo(attributesContext.getAttributes());
     }
 
     @Test

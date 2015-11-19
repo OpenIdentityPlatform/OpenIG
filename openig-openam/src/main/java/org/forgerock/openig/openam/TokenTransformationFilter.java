@@ -59,10 +59,10 @@ import org.forgerock.util.promise.Promise;
  *         "config": {
  *             "openamUri": "https://openam.example.com/openam/",
  *             "realm": "/my-realm",
- *             "username": "${contexts.attributes.attributes.username}",
- *             "password": "${contexts.attributes.attributes.password}",
- *             "idToken": "${contexts.attributes.attributes.id_token}",
- *             "target": "${contexts.attributes.attributes.saml_assertions}",
+ *             "username": "${attributes.username}",
+ *             "password": "${attributes.password}",
+ *             "idToken": "${attributes.id_token}",
+ *             "target": "${attributes.saml_assertions}",
  *             "instance": "oidc-to-saml",
  *             "amHandler": "#Handler"
  *         }

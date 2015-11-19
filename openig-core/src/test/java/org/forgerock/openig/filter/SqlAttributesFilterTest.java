@@ -79,7 +79,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSqlResultRowIsStoredInAMapAndInAttributesContextProperty() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
+                Expression.valueOf("${attributes.result}", Map.class), null);
 
         mockDatabaseInteractions();
 
@@ -95,7 +95,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testParametersAreAssignedToTheRightPlaceholders() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
+                Expression.valueOf("${attributes.result}", Map.class), null);
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -118,7 +118,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
+                Expression.valueOf("${attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         // Generate an SQLException when getConnection() is called
@@ -138,7 +138,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testTooMuchParametersProvided() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
+                Expression.valueOf("${attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
@@ -158,7 +158,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testNotEnoughParameters() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${contexts.attributes.attributes.result}", Map.class), null);
+                Expression.valueOf("${attributes.result}", Map.class), null);
         filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));

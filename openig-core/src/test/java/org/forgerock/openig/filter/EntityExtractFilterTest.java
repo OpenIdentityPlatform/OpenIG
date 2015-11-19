@@ -54,7 +54,7 @@ public class EntityExtractFilterTest {
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
+                                        Expression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
@@ -77,7 +77,7 @@ public class EntityExtractFilterTest {
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
+                                        Expression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
@@ -100,7 +100,7 @@ public class EntityExtractFilterTest {
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.RESPONSE,
-                                        Expression.valueOf("${contexts.attributes.attributes.result}", Map.class));
+                                        Expression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         AttributesContext context = new AttributesContext(new RootContext());

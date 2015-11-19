@@ -14,7 +14,6 @@ password = request.form?.password[0]
 
 // For testing purposes, the LDAP host and port are provided in the context's attributes.
 // Edit as needed to match your directory service.
-def attributes = contexts.attributes.attributes
 host = attributes.ldapHost ?: "localhost"
 port = attributes.ldapPort ?: 1389
 

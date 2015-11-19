@@ -182,7 +182,7 @@ public class OAuth2ResourceServerFilterTest {
         final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                 new BearerTokenExtractor(),
                 time,
-                Expression.valueOf("${contexts.attributes.attributes.myToken}", String.class));
+                Expression.valueOf("${attributes.myToken}", String.class));
 
         final Context context = newContextChain();
         Request request = buildAuthorizedRequest();
@@ -197,7 +197,7 @@ public class OAuth2ResourceServerFilterTest {
     @Test
     public void shouldEvaluateScopeExpressions() throws Exception {
         final OAuth2ResourceServerFilter filter =
-                buildResourceServerFilter("${contexts.attributes.attributes.attribute}",
+                buildResourceServerFilter("${attributes.attribute}",
                                           "${split('to,b,or,not,to', ',')[1]}",
                                           "c");
 
@@ -226,7 +226,7 @@ public class OAuth2ResourceServerFilterTest {
                                               getScopes(scopes),
                                               DEFAULT_REALM_NAME,
                                               Expression.valueOf(
-                                                      format("${contexts.attributes.attributes.%s}",
+                                                      format("${attributes.%s}",
                                                       DEFAULT_ACCESS_TOKEN_KEY), String.class));
     }
 

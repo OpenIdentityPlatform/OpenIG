@@ -42,6 +42,8 @@ import org.forgerock.util.promise.Promise;
  * performing LDAP requests such as LDAP authentication
  * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger.
  * </ul>
+ * <p>Contains also easy access to {@code attributes} from the {@link org.forgerock.services.context.AttributesContext},
+ * e.g: {@code attributes.user = "jackson"}, instead of {@code contexts.attributes.attributes.user = "jackson"}.
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.

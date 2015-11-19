@@ -115,10 +115,10 @@ public class GroovyScriptableFilterTest {
     public void testAssignment() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "contexts.attributes.attributes.test = false",
+                "attributes.test = false",
                 "next.handle(context, request)",
                 "    .thenOnResult({ response -> ",
-                "      contexts.attributes.attributes.test = (response.status.code == 302)",
+                "        attributes.test = (response.status.code == 302)",
                 "})"
         );
         // @formatter:on

@@ -95,7 +95,7 @@ import org.forgerock.util.time.TimeService;
  *
  * <pre>
  * {@code
- * "target"                       : expression,         [OPTIONAL - default is ${contexts.attributes.attributes.openid}]
+ * "target"                       : expression,         [OPTIONAL - default is ${attributes.openid}]
  * "clientEndpoint"               : expression,         [REQUIRED]
  * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
  * OR
@@ -127,7 +127,7 @@ import org.forgerock.util.time.TimeService;
  *     "name": "OpenIDConnect",
  *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${contexts.attributes.attributes.openid}",
+ *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
@@ -148,7 +148,7 @@ import org.forgerock.util.time.TimeService;
  *     "name": "OpenIDConnect",
  *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${contexts.attributes.attributes.openid}",
+ *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
@@ -179,7 +179,7 @@ import org.forgerock.util.time.TimeService;
  *     "name": "OpenIDConnect",
  *     "type": "OAuth2ClientFilter",
  *     "config": {
- *         "target"                : "${contexts.attributes.attributes.openid}",
+ *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "registration"          : "openam",
  *         "failureHandler"        : "LoginFailed"
@@ -838,7 +838,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                      clientEndpoint);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
-                    format("${contexts.attributes.attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
+                    format("${attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
             final JsonValue registration = getWithDeprecation(config, logger, "registration", "clientRegistrationName");
             if (registration.isNotNull()) {
                 filter.setClientRegistration(heap.resolve(registration.required(),

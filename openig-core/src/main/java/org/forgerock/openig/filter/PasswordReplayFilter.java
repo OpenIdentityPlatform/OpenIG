@@ -87,8 +87,8 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "form": {
- *             "username": [ "${contexts.attributes.attributes.username}" ],
- *             "password": [ "${contexts.attributes.attributes.password}" ]
+ *             "username": [ "${attributes.username}" ],
+ *             "password": [ "${attributes.password}" ]
  *           }
  *         }
  *       }
@@ -107,8 +107,8 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "headers": {
- *             "X-OpenAM-Username": [ "${contexts.attributes.attributes.username}" ],
- *             "X-OpenAM-Password": [ "${contexts.attributes.attributes.password}" ]
+ *             "X-OpenAM-Username": [ "${attributes.username}" ],
+ *             "X-OpenAM-Password": [ "${attributes.password}" ]
  *           }
  *         }
  *       }
@@ -136,16 +136,16 @@ import org.forgerock.util.promise.ResultHandler;
  *             "config": {
  *                 "file": "${system.home}/users.csv",
  *                 "key": "uid",
- *                 "value": "${contexts.attributes.attributes.whoami}",
- *                 "target": "${contexts.attributes.attributes.user}"
+ *                 "value": "${attributes.whoami}",
+ *                 "target": "${attributes.user}"
  *             }
  *         }
  *         "request": {
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "headers": {
- *             "X-OpenAM-Username": [ "${contexts.attributes.attributes.user.uid}" ],
- *             "X-OpenAM-Password": [ "${contexts.attributes.attributes.user.password}" ]
+ *             "X-OpenAM-Username": [ "${attributes.user.uid}" ],
+ *             "X-OpenAM-Password": [ "${attributes.user.password}" ]
  *           }
  *         }
  *       }
@@ -163,7 +163,7 @@ import org.forgerock.util.promise.ResultHandler;
  * {@link EntityExtractFilter} under the hood).
  * As opposed to the {@literal EntityExtractFilter}, only 1 group is supported, and matched group value is placed in
  * the results. All extracted values will be placed in a Map available in
- * {@literal contexts.attributes.attributes.extracted}.
+ * {@literal attributes.extracted}.
  *
  * <pre>
  *     {@code {
@@ -178,9 +178,9 @@ import org.forgerock.util.promise.ResultHandler;
  *           "method": "POST",
  *           "uri": "http://internal.example.com/login",
  *           "form": {
- *             "username": [ "${contexts.attributes.attributes.username}" ],
- *             "password": [ "${contexts.attributes.attributes.password}" ]
- *             "nonce": [ "${contexts.attributes.attributes.extracted.nonce}" ]
+ *             "username": [ "${attributes.username}" ],
+ *             "password": [ "${attributes.password}" ]
+ *             "nonce": [ "${attributes.extracted.nonce}" ]
  *           }
  *         }
  *       }
@@ -422,7 +422,7 @@ public class PasswordReplayFilter extends GenericHeapObject {
 
         private EntityExtractFilter createEntityExtractFilter() throws HeapException {
             try {
-                Expression<Object> target = Expression.valueOf("${contexts.attributes.attributes.extracted}",
+                Expression<Object> target = Expression.valueOf("${attributes.extracted}",
                                                                Object.class);
                 return new EntityExtractFilter(RESPONSE, target);
             } catch (ExpressionException e) {

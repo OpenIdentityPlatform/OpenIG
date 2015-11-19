@@ -87,7 +87,7 @@ public class AuthorizationRedirectHandlerTest {
         attributesContext.getAttributes().put("invalidClientEndpoint", "[fails");
 
         // When
-        Expression<String> expression = Expression.valueOf("${contexts.attributes.attributes.invalidClientEndpoint}",
+        Expression<String> expression = Expression.valueOf("${attributes.invalidClientEndpoint}",
                                                            String.class);
         final AuthorizationRedirectHandler handler =
                 new AuthorizationRedirectHandler(time,
@@ -157,7 +157,7 @@ public class AuthorizationRedirectHandlerTest {
     private AuthorizationRedirectHandler buildAuthorizationRedirectHandler(final ClientRegistration registration)
             throws Exception {
         return new AuthorizationRedirectHandler(time,
-                                                Expression.valueOf("${contexts.attributes.attributes.clientEndpoint}",
+                                                Expression.valueOf("${attributes.clientEndpoint}",
                                                                    String.class),
                                                 registration);
     }
