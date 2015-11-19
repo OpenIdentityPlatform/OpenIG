@@ -18,7 +18,6 @@ package org.forgerock.openig.openam;
 
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.http.routing.Version.version;
 import static org.forgerock.json.JsonValue.array;
@@ -147,7 +146,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         return askForPolicyDecision(context, request)
                     .then(evaluatePolicyDecision(request))
                     .thenAsync(allowOrDenyAccessToResource(context, request, next),
-                               returnInternalServerError);
+                               returnUnauthorizedResponse);
     }
 
     /**
@@ -182,15 +181,15 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         this.jwtSubject = jwtSubject;
     }
 
-    private AsyncFunction<ResourceException, Response, NeverThrowsException> returnInternalServerError =
+    private AsyncFunction<ResourceException, Response, NeverThrowsException> returnUnauthorizedResponse =
             new AsyncFunction<ResourceException, Response, NeverThrowsException>() {
 
                 @Override
                 public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
                     logger.debug(exception);
-                    final Response errorResponse = new Response(INTERNAL_SERVER_ERROR);
-                    errorResponse.setCause(exception);
-                    return newResponsePromise(errorResponse);
+                    final Response response = new Response(UNAUTHORIZED);
+                    response.setCause(exception);
+                    return newResponsePromise(response);
                 }
             };
 

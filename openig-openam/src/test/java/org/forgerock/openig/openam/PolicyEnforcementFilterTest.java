@@ -19,7 +19,6 @@ package org.forgerock.openig.openam;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
-import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.array;
@@ -240,7 +239,6 @@ public class PolicyEnforcementFilterTest {
 
         final Response errorResponse = new Response();
         errorResponse.setStatus(GATEWAY_TIMEOUT);
-        errorResponse.setEntity(array(json(field("error", "Something has gone wrong"))));
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
         filter.setLogger(logger);
@@ -255,7 +253,7 @@ public class PolicyEnforcementFilterTest {
                                                      terminalHandler).get();
         // Then
         verify(terminalHandler).handle(any(Context.class), any(Request.class));
-        assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).debug(any(Exception.class));
     }
