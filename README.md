@@ -27,7 +27,7 @@ modify the target application or the container that it runs in.
 * Prepackaged SAML 2.0-based federation
 * Password capture and replay
 * Works with any identity provider, including OpenAM
-* Single Sign-On and Single Sign-Out
+* Single Sign-On and Single Log-Out
 * 100% open source
 
 Build and Run
