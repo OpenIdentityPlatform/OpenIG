@@ -206,7 +206,7 @@ public class HttpBasicAuthFilterTest {
 
         HttpBasicAuthFilter filter =
                 new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
-                                        Expression.valueOf("${contexts.attributes.attributes.password}", String.class),
+                                        Expression.valueOf("${attributes.password}", String.class),
                                         failureHandler);
         filter.setCacheHeader(true);
 

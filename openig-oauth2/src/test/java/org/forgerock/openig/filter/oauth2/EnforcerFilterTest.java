@@ -61,7 +61,7 @@ public class EnforcerFilterTest {
         return new Object[][] {
                 { "${false}" },
                 { "not a condition" },
-                { "${contexts.attributes.attributes.missing}" }
+                { "${attributes.missing}" }
         };
         // @Checkstyle:on
     }

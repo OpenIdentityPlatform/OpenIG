@@ -101,7 +101,7 @@ public class SsoTokenFilterTest {
                            "/",
                            DEFAULT_HEADER_NAME,
                            Expression.valueOf("bjensen", String.class),
-                           Expression.valueOf("${contexts.attributes.attributes.password}",
+                           Expression.valueOf("${attributes.password}",
                                               String.class));
     }
 
@@ -113,7 +113,7 @@ public class SsoTokenFilterTest {
                                    "/myrealm/sub",
                                    DEFAULT_HEADER_NAME,
                                    Expression.valueOf("bjensen", String.class),
-                                   Expression.valueOf("${contexts.attributes.attributes.password}", String.class));
+                                   Expression.valueOf("${attributes.password}", String.class));
         final Request request = filter.authenticationRequest(bindings(attributesContext, null));
         assertThat(request.getHeaders().get("X-OpenAM-Username").getFirstValue()).isEqualTo("bjensen");
         assertThat(request.getHeaders().get("X-OpenAM-Password").getFirstValue()).isEqualTo("hifalutin");
@@ -256,7 +256,7 @@ public class SsoTokenFilterTest {
                                   null,
                                   headerName,
                                   Expression.valueOf("bjensen", String.class),
-                                  Expression.valueOf("${contexts.attributes.attributes.password}",
+                                  Expression.valueOf("${attributes.password}",
                                                      String.class));
     }
 

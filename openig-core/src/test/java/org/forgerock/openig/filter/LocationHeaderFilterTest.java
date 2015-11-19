@@ -161,7 +161,7 @@ public class LocationHeaderFilterTest {
     @Test
     public void caseBaseUriAsExpression() throws Exception {
         LocationHeaderFilter filter = new LocationHeaderFilter();
-        filter.setBaseURI(Expression.valueOf("http://${contexts.attributes.attributes.host}:8080", String.class));
+        filter.setBaseURI(Expression.valueOf("http://${attributes.host}:8080", String.class));
 
         AttributesContext attributesContext = new AttributesContext(new RootContext());
         attributesContext.getAttributes().put("host", "app.example.com");

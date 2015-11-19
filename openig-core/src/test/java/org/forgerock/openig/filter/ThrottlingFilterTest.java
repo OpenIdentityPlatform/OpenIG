@@ -70,7 +70,7 @@ public class ThrottlingFilterTest {
     public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
         Expression<String> expr =
-                Expression.valueOf("${matches(contexts.attributes.attributes.foo, 'bar-00') ?'bucket-00' :''}",
+                Expression.valueOf("${matches(attributes.foo, 'bar-00') ?'bucket-00' :''}",
                                    String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 
@@ -102,7 +102,7 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldUseDefaultValueWithExpressionEvaluatingNull() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        Expression<String> expr = Expression.valueOf("${contexts.attributes.attributes.bar}",
+        Expression<String> expr = Expression.valueOf("${attributes.bar}",
                                                      String.class);
         ThrottlingFilter filter = new ThrottlingFilter(time, 1, duration("3 seconds"), expr);
 

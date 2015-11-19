@@ -41,7 +41,7 @@ public class StaticResponseHandlerTest {
     @Test
     public void shouldEvaluateTheEntityExpressionContent() throws Exception {
         Expression<String> expression =
-                Expression.valueOf("<a href='/login?goto=${urlEncode(contexts.attributes.attributes.goto)}'>GOTO</a>",
+                Expression.valueOf("<a href='/login?goto=${urlEncode(attributes.goto)}'>GOTO</a>",
                                    String.class);
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK, null, expression);
 

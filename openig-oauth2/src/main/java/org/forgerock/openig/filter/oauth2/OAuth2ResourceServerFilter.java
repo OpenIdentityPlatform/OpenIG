@@ -79,7 +79,7 @@ import org.forgerock.util.time.TimeService;
  *           "requireHttps": false,
  *           "providerHandler": "ClientHandler",
  *           "realm": "Informative realm name",
- *           "target": "${contexts.attributes.attributes.oauth2AccessToken}"
+ *           "target": "${attributes.oauth2AccessToken}"
  *         }
  * }
  * }
@@ -114,7 +114,7 @@ import org.forgerock.util.time.TimeService;
  * returned back to the client in case of errors.
  * <p>
  * The {@literal target} optional attribute specifies the expression which will be used for storing the OAuth 2.0 access
- * token information in the context. Defaults to <tt>${contexts.attributes.attributes.oauth2AccessToken}</tt>.
+ * token information in the context. Defaults to <tt>${attributes.oauth2AccessToken}</tt>.
  *
  * @see Duration
  */
@@ -325,7 +325,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
 
             final Expression<?> target = asExpression(config.get("target").defaultTo(
-                    format("${contexts.attributes.attributes.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
+                    format("${attributes.%s}", DEFAULT_ACCESS_TOKEN_KEY)), Object.class);
 
             final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(resolver,
                                                            new BearerTokenExtractor(),

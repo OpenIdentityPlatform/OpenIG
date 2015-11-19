@@ -63,8 +63,8 @@ public class StaticRequestFilterTest {
             { "${decodeBase64('RG9uJ3QgcGFuaWMu')}", "Don't panic." },
             /* See OPENIG-65 */
             { "{\"auth\":{\"passwordCredentials\":{"
-                    + "\"username\":\"${contexts.attributes.attributes.username}\""
-                    + ",\"password\":\"${contexts.attributes.attributes.password}\"}}}",
+                    + "\"username\":\"${attributes.username}\""
+                    + ",\"password\":\"${attributes.password}\"}}}",
               "{\"auth\":{\"passwordCredentials\":{"
                     + "\"username\":\"bjensen\",\"password\":\"password\"}}}" },
             {"OpenIG", "OpenIG"}

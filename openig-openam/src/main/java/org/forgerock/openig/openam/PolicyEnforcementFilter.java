@@ -103,9 +103,9 @@ import org.forgerock.util.promise.Promise;
  *      "config": {
  *          "openamUrl": "http://example.com:8090/openam/",
  *          "pepUsername": "bjensen",
- *          "pepPassword": "${contexts.attributes.attributes.userpass}",
+ *          "pepPassword": "${attributes.userpass}",
  *          "application": "myApplication",
- *          "ssoTokenSubject": ${contexts.attributes.attributes.SSOCurrentUser}
+ *          "ssoTokenSubject": ${attributes.SSOCurrentUser}
  *      }
  *  }
  * </pre>

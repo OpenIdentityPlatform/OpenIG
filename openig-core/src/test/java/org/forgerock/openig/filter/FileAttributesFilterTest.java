@@ -54,7 +54,7 @@ public class FileAttributesFilterTest {
         when(file.getRecord("username", "joe")).thenThrow(new IOException());
 
         Expression<String> value = Expression.valueOf("joe", String.class);
-        Expression<Map> target = Expression.valueOf("${contexts.attributes.attributes.result}", Map.class);
+        Expression<Map> target = Expression.valueOf("${attributes.result}", Map.class);
         FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -68,7 +68,7 @@ public class FileAttributesFilterTest {
         when(file.getRecord("username", "joe")).thenReturn(null);
 
         Expression<String> value = Expression.valueOf("joe", String.class);
-        Expression<Map> target = Expression.valueOf("${contexts.attributes.attributes.result}", Map.class);
+        Expression<Map> target = Expression.valueOf("${attributes.result}", Map.class);
         FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
         filter.setLogger(logger);
 

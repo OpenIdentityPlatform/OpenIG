@@ -103,13 +103,13 @@ public class PolicyEnforcementFilterTest {
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"),
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
                     field("application", "myApplication"))) },
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("jwtSubject", "${contexts.attributes.attributes.jwtSubject}"),
+                    field("jwtSubject", "${attributes.jwtSubject}"),
                     field("application", "anotherApplication"))) } };
     }
 
@@ -120,17 +120,17 @@ public class PolicyEnforcementFilterTest {
             { json(object(
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"))) },
             /* Missing pepUsername. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepPassword", "password"),
-                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"))) },
             /* Missing pepPassword. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
-                    field("ssoTokenSubject", "${contexts.attributes.attributes.ssoTokenSubject}"))) },
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"))) },
             /* Missing ssoTokenSubject OR jwtSubject. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
@@ -142,7 +142,7 @@ public class PolicyEnforcementFilterTest {
                           field("pepUsername", "jackson"),
                           field("pepPassword", "password"),
                           field("realm", "   >>invalid<<    "),
-                          field("jwtSubject", "${contexts.attributes.attributes.jwtSubject}"),
+                          field("jwtSubject", "${attributes.jwtSubject}"),
                           field("application", "anotherApplication"))) } };
     }
 
@@ -282,7 +282,7 @@ public class PolicyEnforcementFilterTest {
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
         final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, terminalHandler);
-        Expression<String> subject = Expression.valueOf("${contexts.attributes.attributes.ssoTokenSubject}",
+        Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
         return filter;

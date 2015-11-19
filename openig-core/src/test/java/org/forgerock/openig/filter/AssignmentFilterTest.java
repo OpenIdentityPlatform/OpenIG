@@ -54,20 +54,20 @@ public class AssignmentFilterTest {
         return new Object[][] {
             { json(object(field("onRequest", array(
                     object(
-                        field("target", "${contexts.attributes.attributes.target}"),
+                        field("target", "${attributes.target}"),
                         field("value", VALUE)))))) },
             { json(object(field("onRequest", array(
                     object(
-                        field("target", "${contexts.attributes.attributes.target}"),
+                        field("target", "${attributes.target}"),
                         field("value", VALUE),
                         field("condition", "${1==1}")))))) },
             { json(object(field("onResponse", array(
                     object(
-                        field("target", "${contexts.attributes.attributes.target}"),
+                        field("target", "${attributes.target}"),
                         field("value", VALUE)))))) },
             { json(object(field("onResponse", array(
                     object(
-                        field("target", "${contexts.attributes.attributes.target}"),
+                        field("target", "${attributes.target}"),
                         field("value", VALUE),
                         field("condition", "${1==1}")))))) } };
     }
@@ -103,7 +103,7 @@ public class AssignmentFilterTest {
     @Test
     public void shouldSucceedToUnsetVar() throws Exception {
         final AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.target}", String.class);
+        final Expression<String> target = Expression.valueOf("${attributes.target}", String.class);
         filter.addRequestBinding(target, null);
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -120,7 +120,7 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${attributes.newAttr}", String.class);
         filter.addRequestBinding(target,
                                  Expression.valueOf("${request.method}", String.class));
 
@@ -152,7 +152,7 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${contexts.attributes.attributes.newAttr}", String.class);
+        final Expression<String> target = Expression.valueOf("${attributes.newAttr}", String.class);
         filter.addResponseBinding(target,
                                   Expression.valueOf("${response.status.code}", Integer.class));
 

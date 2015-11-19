@@ -9,5 +9,5 @@
         }
     ],
     "handler": "StatusHandler",
-    "condition": "${contexts.attributes.attributes.value == 42}"
+    "condition": "${attributes.value == 42}"
 }

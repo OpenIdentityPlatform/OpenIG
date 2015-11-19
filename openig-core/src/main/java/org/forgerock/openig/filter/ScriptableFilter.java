@@ -47,6 +47,8 @@ import org.forgerock.util.promise.Promise;
  * Like Java based filters, scripts are free to choose whether or not they
  * forward the request to the next handler or, instead, return a response
  * immediately.
+ * <p>Contains also easy access to {@code attributes} from the {@link org.forgerock.services.context.AttributesContext},
+ * e.g: {@code attributes.user = "jackson"}, instead of {@code contexts.attributes.attributes.user = "jackson"}.
  * <p>
  * <b>NOTE:</b> at the moment only Groovy is supported.
  * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.

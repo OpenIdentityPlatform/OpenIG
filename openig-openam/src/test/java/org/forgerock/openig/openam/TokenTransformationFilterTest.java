@@ -142,8 +142,8 @@ public class TokenTransformationFilterTest {
                                        field("realm", realm),
                                        field("username", "guillaume"),
                                        field("password", "s3cr3t"),
-                                       field("idToken", "${contexts.attributes.attributes.id_token}"),
-                                       field("target", "${contexts.attributes.attributes.saml}"),
+                                       field("idToken", "${attributes.id_token}"),
+                                       field("target", "${attributes.saml}"),
                                        field("instance", instance),
                                        field("amHandler", "#mock-handler")));
         Filter filter = (Filter) new TokenTransformationFilter.Heaplet().create(Name.of("this"), config, heap);
@@ -163,9 +163,9 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${contexts.attributes.attributes.id_token}",
+                                              Expression.valueOf("${attributes.id_token}",
                                                                  String.class),
-                                              Expression.valueOf("${contexts.attributes.attributes.saml_token}",
+                                              Expression.valueOf("${attributes.saml_token}",
                                                                  String.class));
 
         Request request = new Request();
@@ -190,9 +190,9 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${contexts.attributes.attributes.id_token}",
+                                              Expression.valueOf("${attributes.id_token}",
                                                                  String.class),
-                                              Expression.valueOf("${contexts.attributes.attributes.saml_token}",
+                                              Expression.valueOf("${attributes.saml_token}",
                                                                  String.class));
 
         Request request = new Request();
