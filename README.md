@@ -13,6 +13,7 @@
 
   Copyright 2015 ForgeRock AS.
   -->
+
 OpenIG
 ======
 
@@ -66,9 +67,11 @@ If there was no `OPENIG_BASE` environment variable set, OpenIG uses `~/.openig` 
 
 See the [OpenIG guide](http://openig.forgerock.org/doc/bootstrap/gateway-guide/index.html) for examples and detailed explanations.
 
-See also the [Reference Guide](http://openig.forgerock.org/doc/bootstrap/reference/index.html),
-[Release Notes](http://openig.forgerock.org/doc/bootstrap/release-notes/index.html)
-and [Javadoc](http://openig.forgerock.org/javadoc/index.html).
+Other online resources are available:
+
+* [Reference Guide](http://openig.forgerock.org/doc/bootstrap/reference/index.html)
+* [Release Notes](http://openig.forgerock.org/doc/bootstrap/release-notes/index.html)
+* [Javadoc](http://openig.forgerock.org/javadoc/index.html)
 
 License
 =======
