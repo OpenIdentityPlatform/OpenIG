@@ -35,6 +35,7 @@ Build and Run
 =============
 
 You need `git` and `maven` in order to get the source code and build it:
+
 ```
 git clone ssh://git@stash.forgerock.org:7999/openig/openig.git
 cd openig
@@ -42,11 +43,13 @@ mvn clean install
 ```
 
 Executing the OpenIG build is as simple as:
+
 ```
 mvn -pl openig-war jetty:run
 ```
 
 And you should see something like:
+
 ```
 ...
 THU NOV 19 16:33:40 CET 2015 (INFO) _Router
