@@ -82,6 +82,7 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
+import org.forgerock.openig.log.LogSinkLoggerFactory;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
@@ -89,6 +90,7 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -183,8 +185,8 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
-            final Logger logger = new Logger(heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                    LogSink.class, true), Name.of("GatewayServlet"));
+            LogSink logSink = heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class, true);
+            final Logger logger = new Logger(logSink, Name.of("GatewayServlet"));
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
 
@@ -211,6 +213,11 @@ public final class GatewayHttpApplication implements HttpApplication {
             Handler rootHandler = chainOf(heap.getHandler(), filters);
             router.setDefaultRoute(rootHandler);
 
+            // Configure SLF4J with the LogSink defined by the user
+            ILoggerFactory factory = LoggerFactory.getILoggerFactory();
+            if (factory instanceof LogSinkLoggerFactory) {
+                ((LogSinkLoggerFactory) factory).setLogSink(logSink);
+            }
             return router;
         } catch (Exception e) {
             LOG.error("Failed to initialise Http Application", e);
