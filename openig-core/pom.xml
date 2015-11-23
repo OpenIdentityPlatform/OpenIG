@@ -143,11 +143,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-nop</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
      <groupId>simple-jndi</groupId>
      <artifactId>simple-jndi</artifactId>
      <version>0.11.4.1</version>
