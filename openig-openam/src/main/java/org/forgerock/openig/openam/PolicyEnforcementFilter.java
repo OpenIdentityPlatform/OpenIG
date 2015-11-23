@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.openam;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
@@ -30,10 +32,16 @@ import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
+import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -44,6 +52,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
+import org.forgerock.json.resource.InternalServerErrorException;
 import org.forgerock.json.resource.NotSupportedException;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.Requests;
@@ -55,32 +64,40 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.Duration;
 
 /**
  * This filter requests policy decisions from OpenAM which evaluates the
  * original URI based on the context and the policies configured, and according
  * to the decisions, allows or denies the current request.
+ * <p>
+ * Policy decisions are cached for each filter and eviction is based on the
+ * "time-to-live" given in the policy decision returned by AM, if this one
+ * exceed the duration expressed in the cacheMaxExpiration, then the value of
+ * cacheMaxExpiration is used to cache the policy.
  *
  * <pre>
  * {@code {
  *      "type": "PolicyEnforcementFilter",
  *      "config": {
- *          "openamUrl"         :    uriExpression,      [REQUIRED]
- *          "pepUsername"       :    expression,         [REQUIRED*]
- *          "pepPassword"       :    expression,         [REQUIRED*]
- *          "policiesHandler"   :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
- *                                                                   provided in heap.]
- *          "realm"             :    String,             [OPTIONAL]
- *          "ssoTokenHeader"    :    String,             [OPTIONAL]
- *          "application"       :    String,             [OPTIONAL]
- *          "ssoTokenSubject"   :    expression,         [OPTIONAL - must be specified if no jwtSubject ]
- *          "jwtSubject"        :    expression          [OPTIONAL - must be specified if no ssoTokenSubject ]
+ *          "openamUrl"              :    uriExpression,      [REQUIRED]
+ *          "pepUsername"            :    expression,         [REQUIRED*]
+ *          "pepPassword"            :    expression,         [REQUIRED*]
+ *          "policiesHandler"        :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                        provided in heap.]
+ *          "realm"                  :    String,             [OPTIONAL]
+ *          "ssoTokenHeader"         :    String,             [OPTIONAL]
+ *          "application"            :    String,             [OPTIONAL]
+ *          "ssoTokenSubject"        :    expression,         [OPTIONAL - must be specified if no jwtSubject ]
+ *          "jwtSubject"             :    expression,         [OPTIONAL - must be specified if no ssoTokenSubject ]
+ *          "cacheMaxExpiration"     :    duration            [OPTIONAL - default to 1 minute ]
  *      }
  *  }
  * </pre>
@@ -112,30 +129,52 @@ import org.forgerock.util.promise.Promise;
  */
 public class PolicyEnforcementFilter extends GenericHeapObject implements Filter {
 
+    private static final String ONE_MINUTE = "1 minute";
     private static final String POLICY_ENDPOINT = "/policies";
     private static final String EVALUATE_ACTION = "evaluate";
     private static final String SUBJECT_ERROR = "The attribute 'ssoTokenSubject' or 'jwtSubject' must be specified";
 
-    private final Handler policiesHandler;
+    private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
     private final URI baseUri;
+    private final Duration cacheMaxExpiration;
+    private final Handler policiesHandler;
     private String application;
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
+
+    @VisibleForTesting
+    PolicyEnforcementFilter(final URI baseUri, final Handler policiesHandler) {
+        this(baseUri, policiesHandler, duration(ONE_MINUTE));
+    }
 
     /**
      * Creates a new OpenAM enforcement filter.
      *
      * @param baseUri
      *            The location of the selected OpenAM instance, including the
-     *            realm, to the json base endpoint, not null.
+     *            realm, to the json base endpoint, not {@code null}.
      * @param policiesHandler
-     *            The handler used to get perform policies requests, not null.
+     *            The handler used to get perform policies requests, not {@code null}.
+     * @param cacheMaxExpiration
+     *            The max duration to set the cache.
      */
     public PolicyEnforcementFilter(final URI baseUri,
-                                   final Handler policiesHandler) {
+                                   final Handler policiesHandler,
+                                   final Duration cacheMaxExpiration) {
         this.baseUri = checkNotNull(baseUri);
+        this.cacheMaxExpiration = cacheMaxExpiration;
         this.policiesHandler = chainOf(checkNotNull(policiesHandler),
                                        new ApiVersionProtocolHeaderFilter());
+    }
+
+    /**
+     * Sets the cache for the policy decisions.
+     *
+     * @param cache
+     *            The cache for policy decisions to set.
+     */
+    public void setCache(final ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache) {
+        this.policyDecisionCache = cache;
     }
 
     @Override
@@ -186,6 +225,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
                 @Override
                 public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
+                    logger.debug("Cannot get the policy evaluation");
                     logger.debug(exception);
                     final Response response = new Response(UNAUTHORIZED);
                     response.setCause(exception);
@@ -230,8 +270,65 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                             fieldIfNotNull("application", application)));
         actionRequest.setContent(resources);
         actionRequest.setResourceVersion(version(2, 0));
-        return requestHandler.handleAction(context, actionRequest)
-                             .then(EXTRACT_POLICY_DECISION_AS_JSON);
+
+        final String key = createKeyCache((String) subject.get("ssoToken"),
+                                          (String) subject.get("jwt"),
+                                          request.getUri().toASCIIString());
+
+        try {
+            return policyDecisionCache.getValue(key,
+                                                getPolicyDecisionCallable(context, requestHandler, actionRequest),
+                                                extractDurationFromTtl());
+        } catch (InterruptedException | ExecutionException e) {
+            return new InternalServerErrorException(e).asPromise();
+        }
+    }
+
+    private AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>
+    extractDurationFromTtl() {
+        return new AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>() {
+
+            @Override
+            public Promise<Duration, Exception> apply(Promise<JsonValue, ResourceException> value) throws Exception {
+                return value.thenAsync(new AsyncFunction<JsonValue, Duration, Exception>() {
+
+                    @Override
+                    public Promise<? extends Duration, ? extends ResourceException> apply(JsonValue value)
+                            throws Exception {
+                        final Duration timeout = new Duration(value.get("ttl").asLong(), MILLISECONDS);
+                        if (timeout.to(MILLISECONDS) > cacheMaxExpiration.to(MILLISECONDS)) {
+                            return newResultPromise(cacheMaxExpiration);
+                        }
+                        return newResultPromise(timeout);
+                    }
+                }, new AsyncFunction<ResourceException, Duration, Exception>() {
+
+                    @Override
+                    public Promise<? extends Duration, ? extends Exception> apply(ResourceException e)
+                            throws Exception {
+                        return newResultPromise(new Duration(1L, SECONDS));
+                    }
+                });
+            }
+        };
+    }
+
+    private static Callable<Promise<JsonValue, ResourceException>> getPolicyDecisionCallable(
+                                                                                  final Context context,
+                                                                                  final RequestHandler requestHandler,
+                                                                                  final ActionRequest actionRequest) {
+        return new Callable<Promise<JsonValue, ResourceException>>() {
+
+            @Override
+            public Promise<JsonValue, ResourceException> call() throws Exception {
+                return requestHandler.handleAction(context, actionRequest)
+                                     .then(EXTRACT_POLICY_DECISION_AS_JSON);
+            }
+        };
+    }
+
+    private static String createKeyCache(final String ssoToken, final String jwt, final String requestedUri) {
+        return requestedUri + "@" + ssoToken != null ? ssoToken : "" + "@" + jwt != null ? jwt : "";
     }
 
     private static final Function<ActionResponse, JsonValue, ResourceException> EXTRACT_POLICY_DECISION_AS_JSON =
@@ -264,6 +361,10 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
     /** Creates and initializes a policy enforcement filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
+
+        private ScheduledExecutorService executor;
+        private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+
         @Override
         public Object create() throws HeapException {
 
@@ -276,6 +377,12 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                          Handler.class);
             final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
 
+            final Duration cacheMaxExpiration = duration(config.get("cacheMaxExpiration").defaultTo(ONE_MINUTE)
+                                                                                         .asString());
+            if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
+                throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
+            }
+
             try {
                 final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
                                                                          new URI(openamUrl),
@@ -287,7 +394,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
                                                                                                            realm),
                                                                                    chainOf(policiesHandler,
-                                                                                           ssoTokenFilter));
+                                                                                           ssoTokenFilter),
+                                                                                   cacheMaxExpiration);
 
                 filter.setApplication(config.get("application").asString());
                 filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
@@ -295,6 +403,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 if (config.get("ssoTokenSubject").isNull() && config.get("jwtSubject").isNull()) {
                     throw new HeapException(SUBJECT_ERROR);
                 }
+
+                // Sets the cache
+                executor = Executors.newSingleThreadScheduledExecutor();
+                cache = new ThreadSafeCache<>(executor);
+                filter.setCache(cache);
 
                 return filter;
             } catch (URISyntaxException e) {

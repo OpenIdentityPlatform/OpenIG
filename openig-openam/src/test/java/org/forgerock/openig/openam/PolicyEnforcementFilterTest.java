@@ -39,6 +39,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.handler.HttpClientHandler;
@@ -48,6 +49,7 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.json.resource.ResourceException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapException;
@@ -56,9 +58,11 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -70,16 +74,13 @@ public class PolicyEnforcementFilterTest {
     private static final String OPENAM_URI = "http://www.example.com:8090/openam/";
     private static final String RESOURCE_CONTENT = "Access granted!";
     private static final String TOKEN = "ARrrg...42*";
-    private static final Object POLICY_DECISION = array(object(
-                                                            field("advices", object()),
-                                                            field("ttl", "9223372036854776000"),
-                                                            field("resource", "http://example.com/resource.jpg"),
-                                                            field("actions", object(field("POST", false),
-                                                                                    field("GET", true))),
-                                                            field("attributes", object())));
 
-    private SessionContext sessionContext;
     private AttributesContext attributesContext;
+    private SessionContext sessionContext;
+    private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+
+    @Mock
+    private Handler next;
 
     @Mock
     private Handler policiesHandler;
@@ -94,6 +95,7 @@ public class PolicyEnforcementFilterTest {
         attributesContext = new AttributesContext(sessionContext);
         attributesContext.getAttributes().put("password", "hifalutin");
         attributesContext.getAttributes().put("ssoTokenSubject", TOKEN);
+        cache = new ThreadSafeCache<>(Executors.newSingleThreadScheduledExecutor());
     }
 
     @DataProvider
@@ -164,6 +166,13 @@ public class PolicyEnforcementFilterTest {
         return new Object[][] {
             { null, policiesHandler },
             { URI.create(OPENAM_URI), null } };
+    }
+
+    @DataProvider
+    private static Object[][] invalidCacheMaxExpiration() {
+        return new Object[][] {
+            { "0 seconds" },
+            { "unlimited" } };
     }
 
     @Test(dataProvider = "invalidConfigurations",
@@ -266,11 +275,69 @@ public class PolicyEnforcementFilterTest {
                               realm != null ? realm.trim() : "");
     }
 
+    @Test(dataProvider = "invalidCacheMaxExpiration", expectedExceptions = HeapException.class)
+    public void shouldFailToUseCacheForRequestedResource(final String cacheMaxExpiration) throws Exception {
+        buildPolicyEnforcementFilter(buildHeapletConfiguration(cacheMaxExpiration));
+    }
+
+    @Test
+    public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
+        // Given
+        sessionContext.getSession().put("SSOToken", TOKEN);
+        final Request request = new Request();
+        request.setMethod("GET").setUri("http://example.com/resource.jpg");
+        final PolicyEnforcementFilter filter =
+                buildPolicyEnforcementFilter(buildHeapletConfiguration("50 milliseconds"));
+
+        when(policiesHandler.handle(any(Context.class), any(Request.class)))
+            .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()));
+
+        when(next.handle(attributesContext, request))
+            .thenReturn(newResponsePromise(displayResourceResponse()));
+
+        // When first call
+        filter.filter(attributesContext,
+                      request,
+                      next).get();
+        // Then
+        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(next).handle(attributesContext, request);
+
+        // When second call
+        // The policies handler, which provides the policy response, is not called
+        // as the policy decision has been saved into cache for 50 ms. (cacheMaxExpiration)
+        filter.filter(attributesContext,
+                      request,
+                      next).get();
+
+        verify(next, times(2)).handle(attributesContext, request);
+
+        Thread.sleep(60); // Sleep until we exceed the cache timeout.
+        // (As the ttl (Long.MAX_VALUE > cacheMaxExpiration, the cache must use
+        // the cacheMaxExpiration timeout. The previous cached policy must have been removed.
+
+        // When third call: the policiesHandler must do another call to get the policy decision result.
+        filter.filter(attributesContext,
+                      request,
+                      next).get();
+
+        verify(policiesHandler, times(2)).handle(any(Context.class), any(Request.class));
+        verify(next, times(3)).handle(attributesContext, request);
+    }
+
     private static Response policyDecisionAsJsonResponse() {
         final Response response = new Response();
         response.setStatus(OK);
-        response.setEntity(POLICY_DECISION);
+        response.setEntity(getPolicyDecision());
         return response;
+    }
+
+    private static Object getPolicyDecision() {
+        return array(object(field("advices", object()),
+                            field("ttl", Long.MAX_VALUE),
+                            field("resource", "http://example.com/resource.jpg"),
+                            field("actions", object(field("POST", false), field("GET", true))),
+                            field("attributes", object())));
     }
 
     private static Response displayResourceResponse() {
@@ -285,10 +352,22 @@ public class PolicyEnforcementFilterTest {
         Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
+        filter.setCache(cache);
         return filter;
     }
 
-    private static PolicyEnforcementFilter buildPolicyEnforcementFilter(final JsonValue config) throws Exception {
+    private JsonValue buildHeapletConfiguration(final String givenMaxCacheExpiration) {
+        return json(object(
+                       field("openamUrl", OPENAM_URI),
+                       field("pepUsername", "jackson"),
+                       field("pepPassword", "password"),
+                       field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
+                       field("policiesHandler", "policiesHandler"),
+                       field("application", "myApplication"),
+                       field("cacheMaxExpiration", givenMaxCacheExpiration)));
+    }
+
+    private PolicyEnforcementFilter buildPolicyEnforcementFilter(final JsonValue config) throws Exception {
         final PolicyEnforcementFilter.Heaplet heaplet = new PolicyEnforcementFilter.Heaplet();
         return (PolicyEnforcementFilter) heaplet.create(Name.of("myAssignmentFilter"),
                                                                 config,
@@ -304,11 +383,12 @@ public class PolicyEnforcementFilterTest {
         }
     }
 
-    public static HeapImpl buildDefaultHeap() throws Exception {
+    public HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
+        heap.put("policiesHandler", policiesHandler);
         return heap;
     }
 }
