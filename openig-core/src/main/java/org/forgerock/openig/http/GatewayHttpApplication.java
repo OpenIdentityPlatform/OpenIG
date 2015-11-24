@@ -186,7 +186,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
             LogSink logSink = heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class, true);
-            final Logger logger = new Logger(logSink, Name.of("GatewayServlet"));
+            final Logger logger = new Logger(logSink, Name.of(GatewayHttpApplication.class));
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
 
