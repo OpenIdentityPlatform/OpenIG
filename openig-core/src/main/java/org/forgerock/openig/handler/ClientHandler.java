@@ -27,6 +27,7 @@ import static org.forgerock.http.handler.HttpClientHandler.OPTION_RETRY_REQUESTS
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_REUSE_CONNECTIONS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SO_TIMEOUT;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSLCONTEXT_ALGORITHM;
+import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSL_CIPHER_SUITES;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSL_ENABLED_PROTOCOLS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TEMPORARY_STORAGE;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TRUST_MANAGERS;
@@ -78,7 +79,8 @@ import org.forgerock.util.time.Duration;
  *       "numberOfWorkers": 6,
  *       "keyManager": [ "RefToKeyManager", ... ],
  *       "trustManager": [ "RefToTrustManager", ... ],
- *       "sslEnabledProtocols": [ "SSLv2", ... ]
+ *       "sslEnabledProtocols": [ "SSLv2", ... ],
+ *       "sslCipherSuites": [ "TLS_DH_anon_WITH_AES_256_CBC_SHA256", ... ]
  *     }
  *   }
  *   }
@@ -124,6 +126,10 @@ import org.forgerock.util.time.Duration;
  * <p>The {@literal sslEnabledProtocols} optional attribute specifies
  * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#jssenames">the protocol
  * versions</a> to be enabled for use on the connection.
+ *
+ * <p>The {@literal sslCipherSuites} optional attribute specifies
+ * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#ciphersuites">
+ * cipher suite names</a> used by the SSL connection.
  *
  * @see Duration
  * @see org.forgerock.openig.security.KeyManagerHeaplet
@@ -196,6 +202,10 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
             if (config.isDefined("sslEnabledProtocols")) {
                 options.set(OPTION_SSL_ENABLED_PROTOCOLS, config.get("sslEnabledProtocols").asList(String.class));
+            }
+
+            if (config.isDefined("sslCipherSuites")) {
+                options.set(OPTION_SSL_CIPHER_SUITES, config.get("sslCipherSuites").asList(String.class));
             }
 
             if (config.isDefined("numberOfWorkers")) {
