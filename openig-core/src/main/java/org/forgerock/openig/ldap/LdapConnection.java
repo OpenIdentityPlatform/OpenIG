@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.forgerock.opendj.ldap.Connection;
 import org.forgerock.opendj.ldap.DN;
 import org.forgerock.opendj.ldap.Entry;
-import org.forgerock.opendj.ldap.ErrorResultException;
+import org.forgerock.opendj.ldap.LdapException;
 import org.forgerock.opendj.ldap.SearchScope;
 import org.forgerock.opendj.ldap.requests.AddRequest;
 import org.forgerock.opendj.ldap.requests.BindRequest;
@@ -54,14 +54,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The add request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support add operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public Result add(AddRequest request) throws ErrorResultException {
+    public Result add(AddRequest request) throws LdapException {
         return connection.add(request);
     }
 
@@ -80,7 +80,7 @@ public final class LdapConnection implements Closeable {
      * @param entry
      *            The entry to be added.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -91,7 +91,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code entry} was {@code null} .
      */
-    public Result add(Entry entry) throws ErrorResultException {
+    public Result add(Entry entry) throws LdapException {
         return connection.add(entry);
     }
 
@@ -111,7 +111,7 @@ public final class LdapConnection implements Closeable {
      *            Lines of LDIF containing the an LDIF add change record or an
      *            LDIF entry record.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -125,7 +125,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code ldifLines} was {@code null} .
      */
-    public Result add(String... ldifLines) throws ErrorResultException {
+    public Result add(String... ldifLines) throws LdapException {
         return connection.add(ldifLines);
     }
 
@@ -134,14 +134,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The bind request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support bind operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public BindResult bind(BindRequest request) throws ErrorResultException {
+    public BindResult bind(BindRequest request) throws LdapException {
         return connection.bind(request);
     }
 
@@ -165,7 +165,7 @@ public final class LdapConnection implements Closeable {
      *            The password of the Directory object that the client wishes to
      *            bind as, which may be empty.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -179,7 +179,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code name} or {@code password} was {@code null}.
      */
-    public BindResult bind(String name, char[] password) throws ErrorResultException {
+    public BindResult bind(String name, char[] password) throws LdapException {
         return connection.bind(name, password);
     }
 
@@ -218,14 +218,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The compare request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support compare operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public CompareResult compare(CompareRequest request) throws ErrorResultException {
+    public CompareResult compare(CompareRequest request) throws LdapException {
         return connection.compare(request);
     }
 
@@ -249,7 +249,7 @@ public final class LdapConnection implements Closeable {
      * @param assertionValue
      *            The assertion value to be compared.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -265,7 +265,7 @@ public final class LdapConnection implements Closeable {
      *             {@code assertionValue} was {@code null}.
      */
     public CompareResult compare(String name, String attributeDescription, String assertionValue)
-            throws ErrorResultException {
+            throws LdapException {
         return connection.compare(name, attributeDescription, assertionValue);
     }
 
@@ -275,14 +275,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The delete request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support delete operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public Result delete(DeleteRequest request) throws ErrorResultException {
+    public Result delete(DeleteRequest request) throws LdapException {
         return connection.delete(request);
     }
 
@@ -301,7 +301,7 @@ public final class LdapConnection implements Closeable {
      * @param name
      *            The distinguished name of the entry to be deleted.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -315,7 +315,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code name} was {@code null}.
      */
-    public Result delete(String name) throws ErrorResultException {
+    public Result delete(String name) throws LdapException {
         return connection.delete(name);
     }
 
@@ -336,7 +336,7 @@ public final class LdapConnection implements Closeable {
      *            The distinguished name of the subtree base entry to be
      *            deleted.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -350,7 +350,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code name} was {@code null}.
      */
-    public Result deleteSubtree(String name) throws ErrorResultException {
+    public Result deleteSubtree(String name) throws LdapException {
         return connection.deleteSubtree(name);
     }
 
@@ -360,14 +360,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The modify request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support modify operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public Result modify(ModifyRequest request) throws ErrorResultException {
+    public Result modify(ModifyRequest request) throws LdapException {
         return connection.modify(request);
     }
 
@@ -388,7 +388,7 @@ public final class LdapConnection implements Closeable {
      *            Lines of LDIF containing the a single LDIF modify change
      *            record.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -402,7 +402,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code ldifLines} was {@code null} .
      */
-    public Result modify(String... ldifLines) throws ErrorResultException {
+    public Result modify(String... ldifLines) throws LdapException {
         return connection.modify(ldifLines);
     }
 
@@ -412,14 +412,14 @@ public final class LdapConnection implements Closeable {
      *
      * @param request The modify DN request.
      * @return The result of the operation.
-     * @throws ErrorResultException If the result code indicates that the request failed for some
+     * @throws LdapException If the result code indicates that the request failed for some
      * reason.
      * @throws UnsupportedOperationException If this connection does not support modify DN operations.
      * @throws IllegalStateException If this connection has already been closed, i.e. if
      * {@code isClosed() == true}.
      * @throws NullPointerException If {@code request} was {@code null}.
      */
-    public Result modifyDN(ModifyDNRequest request) throws ErrorResultException {
+    public Result modifyDN(ModifyDNRequest request) throws LdapException {
         return connection.modifyDN(request);
     }
 
@@ -441,7 +441,7 @@ public final class LdapConnection implements Closeable {
      * @param newRDN
      *            The new RDN of the entry.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -455,7 +455,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If {@code name} or {@code newRDN} was {@code null}.
      */
-    public Result modifyDN(String name, String newRDN) throws ErrorResultException {
+    public Result modifyDN(String name, String newRDN) throws LdapException {
         return connection.modifyDN(name, newRDN);
     }
 
@@ -483,7 +483,7 @@ public final class LdapConnection implements Closeable {
      *            which may be {@code null} or empty indicating that all user
      *            attributes should be returned.
      * @return The single search result entry returned from the search.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -495,7 +495,7 @@ public final class LdapConnection implements Closeable {
      *             If the {@code name} was {@code null}.
      */
     public SearchResultEntry readEntry(DN name, String... attributeDescriptions)
-            throws ErrorResultException {
+            throws LdapException {
         return connection.readEntry(name, attributeDescriptions);
     }
 
@@ -521,7 +521,7 @@ public final class LdapConnection implements Closeable {
      * @param attributeDescriptions
      *            The names of the attributes to be included with the entry.
      * @return The single search result entry returned from the search.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -536,7 +536,7 @@ public final class LdapConnection implements Closeable {
      *             If the {@code name} was {@code null}.
      */
     public SearchResultEntry readEntry(String name, String... attributeDescriptions)
-            throws ErrorResultException {
+            throws LdapException {
         return connection.readEntry(name, attributeDescriptions);
     }
 
@@ -592,7 +592,7 @@ public final class LdapConnection implements Closeable {
      * @param entries
      *            The collection to which matching entries should be added.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -604,7 +604,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code request} or {@code entries} was {@code null}.
      */
     public Result search(SearchRequest request, Collection<? super SearchResultEntry> entries)
-            throws ErrorResultException {
+            throws LdapException {
         return connection.search(request, entries);
     }
 
@@ -628,7 +628,7 @@ public final class LdapConnection implements Closeable {
      *            The collection to which search result references should be
      *            added, or {@code null} if references are to be discarded.
      * @return The result of the operation.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -640,7 +640,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code request} or {@code entries} was {@code null}.
      */
     public Result search(SearchRequest request, Collection<? super SearchResultEntry> entries,
-                         Collection<? super SearchResultReference> references) throws ErrorResultException {
+                         Collection<? super SearchResultReference> references) throws LdapException {
         return connection.search(request, entries, references);
     }
 
@@ -700,7 +700,7 @@ public final class LdapConnection implements Closeable {
      * @param request
      *            The search request.
      * @return The single search result entry returned from the search.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws UnsupportedOperationException
@@ -711,7 +711,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException
      *             If the {@code request} was {@code null}.
      */
-    public SearchResultEntry searchSingleEntry(SearchRequest request) throws ErrorResultException {
+    public SearchResultEntry searchSingleEntry(SearchRequest request) throws LdapException {
         return connection.searchSingleEntry(request);
     }
 
@@ -745,7 +745,7 @@ public final class LdapConnection implements Closeable {
      * @param attributeDescriptions
      *            The names of the attributes to be included with each entry.
      * @return The single search result entry returned from the search.
-     * @throws ErrorResultException
+     * @throws LdapException
      *             If the result code indicates that the request failed for some
      *             reason.
      * @throws org.forgerock.i18n.LocalizedIllegalArgumentException
@@ -762,7 +762,7 @@ public final class LdapConnection implements Closeable {
      *             were {@code null}.
      */
     public SearchResultEntry searchSingleEntry(String baseObject, SearchScope scope, String filter,
-                                               String... attributeDescriptions) throws ErrorResultException {
+                                               String... attributeDescriptions) throws LdapException {
         return connection.searchSingleEntry(baseObject, scope, filter, attributeDescriptions);
     }
 

@@ -127,8 +127,8 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 Version: activation-1.1.jar
 Copyright: Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
-Version: grizzly-framework-2.3.11.jar
-Copyright: Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+Version: grizzly-framework-2.3.23.jar
+Copyright: Copyright (c) 2007-2015 Oracle and/or its affiliates. All rights reserved.
 
 Version: webservices-api-1.5.jar
 Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
@@ -136,9 +136,13 @@ Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
 Version: webservices-rt-1.5.jar
 Copyright: Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
-Verions: i18n-core-1.4.0.jar
+Version: i18n-core-1.4.1.jar
 Copyright: Copyright 2009 Sun Microsystems, Inc
            Portions Copyright 2010–2011 ApexIdentity Inc.
+           Portions Copyright 2011-2015 ForgeRock AS.
+
+Version: i18n-slf4j-1.4.2.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
 
 Verions: openig-core-4.0.0.jar
 Copyright: Copyright 2011-2014 ForgeRock AS. 
@@ -158,9 +162,11 @@ Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
            Portions Copyrighted 2011-20134 ForgeRock AS, 
            Portions Copyrighted 2013-2014 Nomura Research Institute, Ltd 
 
-Version: opendj-ldap-sdk-2.6.9.jar
-Copyright: Copyright 2010 Sun Microsystems, Inc.,
-           Portions copyright 2010-2014 ForgeRock AS
+Version: opendj-core-3.0.0-M5.jar
+Copyright: Copyright (c) 2011-2015 ForgeRock AS.
+
+Version: opendj-grizzly-3.0.0-M5.jar
+Copyright: Copyright (c) 2011-2015 ForgeRock AS.
 
 ==================
 Full license text:
