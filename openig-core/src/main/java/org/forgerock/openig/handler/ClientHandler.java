@@ -27,6 +27,7 @@ import static org.forgerock.http.handler.HttpClientHandler.OPTION_RETRY_REQUESTS
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_REUSE_CONNECTIONS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SO_TIMEOUT;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSLCONTEXT_ALGORITHM;
+import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSL_ENABLED_PROTOCOLS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TEMPORARY_STORAGE;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TRUST_MANAGERS;
 import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
@@ -76,7 +77,8 @@ import org.forgerock.util.time.Duration;
  *       "connectionTimeout": "10 seconds",
  *       "numberOfWorkers": 6,
  *       "keyManager": [ "RefToKeyManager", ... ],
- *       "trustManager": [ "RefToTrustManager", ... ]
+ *       "trustManager": [ "RefToTrustManager", ... ],
+ *       "sslEnabledProtocols": [ "SSLv2", ... ]
  *     }
  *   }
  *   }
@@ -118,6 +120,10 @@ import org.forgerock.util.time.Duration;
  * <p>The {@literal numberOfWorkers} optional attribute specifies the number of threads dedicated to process outgoing
  * requests. It defaults to the number of CPUs available to the JVM. This attribute is only used if an asynchronous
  * Http client engine is used (that is the default).
+ *
+ * <p>The {@literal sslEnabledProtocols} optional attribute specifies
+ * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#jssenames">the protocol
+ * versions</a> to be enabled for use on the connection.
  *
  * @see Duration
  * @see org.forgerock.openig.security.KeyManagerHeaplet
@@ -186,6 +192,10 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
             if (config.isDefined("connectionTimeout")) {
                 options.set(OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout").asString()));
+            }
+
+            if (config.isDefined("sslEnabledProtocols")) {
+                options.set(OPTION_SSL_ENABLED_PROTOCOLS, config.get("sslEnabledProtocols").asList(String.class));
             }
 
             if (config.isDefined("numberOfWorkers")) {
