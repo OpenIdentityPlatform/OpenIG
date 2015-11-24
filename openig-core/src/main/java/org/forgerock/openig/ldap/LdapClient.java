@@ -15,7 +15,9 @@
  */
 package org.forgerock.openig.ldap;
 
-import static org.forgerock.opendj.ldap.Connections.*;
+import static org.forgerock.opendj.ldap.Connections.newCachedConnectionPool;
+import static org.forgerock.opendj.ldap.LDAPConnectionFactory.HEARTBEAT_ENABLED;
+import static org.forgerock.util.Options.defaultOptions;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,11 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.forgerock.opendj.ldap.ConnectionFactory;
 import org.forgerock.opendj.ldap.DN;
-import org.forgerock.opendj.ldap.ErrorResultException;
 import org.forgerock.opendj.ldap.Filter;
 import org.forgerock.opendj.ldap.LDAPConnectionFactory;
-import org.forgerock.opendj.ldap.LDAPOptions;
+import org.forgerock.opendj.ldap.LdapException;
 import org.forgerock.opendj.ldap.SearchScope;
+import org.forgerock.util.Options;
 
 /**
  * This class acts as a simplified access point into the OpenDJ LDAP SDK. Whilst
@@ -86,10 +88,10 @@ public final class LdapClient {
      * @param host The LDAP server host name.
      * @param port The LDAP server port.
      * @return An LDAP connection for the specified LDAP server.
-     * @throws ErrorResultException If an error occurred while connecting to the LDAP server.
+     * @throws LdapException If an error occurred while connecting to the LDAP server.
      */
-    public LdapConnection connect(final String host, final int port) throws ErrorResultException {
-        return connect(host, port, new LDAPOptions());
+    public LdapConnection connect(final String host, final int port) throws LdapException {
+        return connect(host, port, defaultOptions());
     }
 
     /**
@@ -107,10 +109,10 @@ public final class LdapClient {
      * @param port The LDAP server port.
      * @param options The LDAP options.
      * @return An LDAP connection for the specified LDAP server.
-     * @throws ErrorResultException If an error occurred while connecting to the LDAP server.
+     * @throws LdapException If an error occurred while connecting to the LDAP server.
      */
-    public LdapConnection connect(final String host, final int port, final LDAPOptions options)
-            throws ErrorResultException {
+    public LdapConnection connect(final String host, final int port, final Options options)
+            throws LdapException {
         final ConnectionFactory factory = getConnectionFactory(host, port, options);
         return new LdapConnection(factory.getConnection());
     }
@@ -148,16 +150,15 @@ public final class LdapClient {
     }
 
     private ConnectionFactory getConnectionFactory(final String host, final int port,
-                                                   final LDAPOptions options) {
+                                                   final Options options) {
         final String key = host + ":" + port;
         ConnectionFactory factory = factories.get(key);
         if (factory == null) {
             synchronized (factories) {
                 factory = factories.get(key);
                 if (factory == null) {
-                    factory =
-                            newCachedConnectionPool(newHeartBeatConnectionFactory(new LDAPConnectionFactory(
-                                    host, port, options)));
+                    options.set(HEARTBEAT_ENABLED, true);
+                    factory = newCachedConnectionPool(new LDAPConnectionFactory(host, port, options));
                     factories.put(key, factory);
                 }
             }
@@ -170,6 +171,7 @@ public final class LdapClient {
         for (ConnectionFactory factory : factories.values()) {
             factory.close();
         }
+        factories.clear();
         super.finalize();
     }
 }
