@@ -82,7 +82,7 @@ public class PolicyEnforcementFilterTest {
     private AttributesContext attributesContext;
 
     @Mock
-    private Handler terminalHandler;
+    private Handler policiesHandler;
 
     @Mock
     private Logger logger;
@@ -162,7 +162,7 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private Object[][] invalidParameters() throws Exception {
         return new Object[][] {
-            { null, terminalHandler },
+            { null, policiesHandler },
             { URI.create(OPENAM_URI), null } };
     }
 
@@ -194,15 +194,15 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
                                                      request,
-                                                     terminalHandler).get();
+                                                     policiesHandler).get();
         // Then
-        verify(terminalHandler).handle(any(Context.class), any(Request.class));
+        verify(policiesHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
     }
 
@@ -216,16 +216,16 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()))
             .thenReturn(newResponsePromise(displayResourceResponse()));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
                                                      request,
-                                                     terminalHandler).get();
+                                                     policiesHandler).get();
         // Then
-        verify(terminalHandler, times(2)).handle(any(Context.class), any(Request.class));
+        verify(policiesHandler, times(2)).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
     }
@@ -244,15 +244,15 @@ public class PolicyEnforcementFilterTest {
         filter.setLogger(logger);
 
         sessionContext.getSession().put("SSOToken", TOKEN);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(errorResponse));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
                                                      request,
-                                                     terminalHandler).get();
+                                                     policiesHandler).get();
         // Then
-        verify(terminalHandler).handle(any(Context.class), any(Request.class));
+        verify(policiesHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).debug(any(Exception.class));
@@ -281,7 +281,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
-        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, terminalHandler);
+        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, policiesHandler);
         Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
