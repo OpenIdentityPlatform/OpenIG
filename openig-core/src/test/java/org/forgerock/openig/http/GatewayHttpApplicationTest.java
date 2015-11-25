@@ -130,6 +130,18 @@ public class GatewayHttpApplicationTest {
                 .isEqualTo(Status.NO_CONTENT);
     }
 
+    @Test
+    public void shouldUseDefaultConfigWhenConfigJsonIsMissing() throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "default-config"));
+        GatewayHttpApplication application = new GatewayHttpApplication(env);
+        Handler handler = application.start();
+
+        // Make sure that GET / returns the welcome page
+        Context context = buildExternalContext();
+        Response response = handler.handle(context, new Request().setMethod("GET").setUri("/")).get();
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
+        assertThat(response.getEntity().getString()).contains("Welcome to Open Identity Gateway");
+    }
 
     @Test
     public void shouldSupportConfigurationOfEndpointProtection() throws Exception {
