@@ -140,7 +140,6 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // Provide the base tree:
             // /openig/api/system/objects
-            Router router = new Router();
             Router openigRouter = new Router();
             Router apiRouter = new Router();
             Router systemRouter = new Router();
@@ -187,7 +186,9 @@ public final class GatewayHttpApplication implements HttpApplication {
                 protector = new LoopbackAddressOnlyFilter(logger);
             }
             Handler restricted = chainOf(openigRouter, protector);
-            addSubRouter(router, "openig", restricted);
+
+            Router router = new Router();
+            router.addRoute(requestUriMatcher(STARTS_WITH, "openig"), restricted);
 
             // Create the root handler.
             List<Filter> filters = new ArrayList<>();
