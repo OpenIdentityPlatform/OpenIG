@@ -17,7 +17,6 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -80,7 +79,7 @@ public class DiscoveryFilterTest {
         return new Object[][] {
             { "acct:alice@example.com", "acct:alice@example.com" },
             { "acct:juliet%40capulet.example@shopping.example.com",
-              "acct:juliet@capulet.example@shopping.example.com" },
+              "acct:juliet%40capulet.example@shopping.example.com" },
             { "https://example.com/joe", "https://example.com/joe" },
             { "https://example.com:8080/joe", "https://example.com:8080/joe" },
             { "http://www.example.org/foo.html#bar", "http://www.example.org/foo.html" },
@@ -93,9 +92,11 @@ public class DiscoveryFilterTest {
     }
 
     @DataProvider
-    private Object[][] inputAndExpectedUri() {
+    private Object[][] userInputAndFinalWebfingerProducedUri() {
+        // According to RFC 3986, the characters ":" / "/" / "@" are not percent encoded in query strings
         return new Object[][] {
             // @Checkstyle:off
+            // "decoded user input" -> "produced webfinger URI"
             {
                 "acct:alice@example.com",
                 "https://example.com/.well-known/webfinger?resource=acct:alice@example.com" + REL_OPENID_ISSUER },
@@ -151,14 +152,14 @@ public class DiscoveryFilterTest {
     @Test(dataProvider = "givenInputAndNormalizedIdentifierExtracted")
     public void shouldExtractParameters(final String input, final String expected) throws Exception {
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(formDecodeParameterNameOrValue(input));
+        final AccountIdentifier account = df.extractFromInput(input);
         assertThat(account.getNormalizedIdentifier().toString()).isEqualTo(expected);
     }
 
-    @Test(dataProvider = "inputAndExpectedUri")
+    @Test(dataProvider = "userInputAndFinalWebfingerProducedUri")
     public void shouldReturnWebfingerUri(final String input, final String expected) throws Exception {
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(formDecodeParameterNameOrValue(input));
+        final AccountIdentifier account = df.extractFromInput(input);
         assertThat(df.buildWebFingerRequest(account).getUri().toString()).isEqualTo(expected);
     }
 
@@ -171,8 +172,7 @@ public class DiscoveryFilterTest {
 
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
 
-        final AccountIdentifier account = df.extractFromInput(
-                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.OK);
@@ -200,8 +200,7 @@ public class DiscoveryFilterTest {
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseDoNotContainOpenIdLink() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(
-                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -220,8 +219,7 @@ public class DiscoveryFilterTest {
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseContainInvalidJson() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(
-                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -236,8 +234,7 @@ public class DiscoveryFilterTest {
     public void shouldFailWhenTheIssuerHrefIsNull() throws Exception {
         // given
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
-        final AccountIdentifier account = df.extractFromInput(
-                formDecodeParameterNameOrValue("http://openam.example.com/jackson"));
+        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.OK);
