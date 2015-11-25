@@ -40,7 +40,7 @@
           <a href="./doc/OpenIG-${project.version}-Release-Notes.pdf">PDF</a>
         </dd>
 
-        <dt>Guide to OpenIG</dt>
+        <dt>Gateway Guide</dt>
         <dd>
           <a href="./doc/bootstrap/gateway-guide/index.html">HTML</a>,
           <a href="./doc/OpenIG-${project.version}-Gateway-Guide.pdf">PDF</a>

@@ -66,7 +66,7 @@
     <menu name="Docs in progress">
       <item name="All Formats" href="docs.html" />
       <item name="Release Notes" href="./doc/bootstrap/release-notes/index.html" />
-      <item name="Guide to OpenIG" href="./doc/bootstrap/gateway-guide/index.html" />
+      <item name="Gateway Guide" href="./doc/bootstrap/gateway-guide/index.html" />
       <item name="Config Reference" href="./doc/bootstrap/reference/index.html" />
       <item name="Javadoc" href="./javadoc/index.html" />
     </menu>
