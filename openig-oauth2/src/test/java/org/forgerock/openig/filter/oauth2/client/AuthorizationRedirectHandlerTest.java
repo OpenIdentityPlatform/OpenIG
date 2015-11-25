@@ -149,7 +149,7 @@ public class AuthorizationRedirectHandlerTest {
                                             "redirect_uri=" + ORIGINAL_URI + CLIENT_ENDPOINT + "/callback",
                                             "response_type=code",
                                             "client_id=" + registration.getClientId(),
-                                            "scope=" + join(" ", registration.getScopes()),
+                                            "scope=" + join("%20", registration.getScopes()),
                                             "state=");
         assertThat(sessionContext.getSession().get("oauth2:" + ORIGINAL_URI + CLIENT_ENDPOINT)).isNotNull();
     }

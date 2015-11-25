@@ -16,7 +16,6 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.util.Uris.formDecodeParameterNameOrValue;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
@@ -133,8 +132,7 @@ class AuthorizationRedirectHandler implements Handler {
             final String hash = createAuthorizationNonceHash(nonce);
             query.add("state", createAuthorizationState(hash, gotoUri));
 
-            final String redirect = formDecodeParameterNameOrValue(
-                    withQuery(issuer.getAuthorizeEndpoint(), query).toString());
+            final String redirect = withQuery(issuer.getAuthorizeEndpoint(), query).toString();
             return newResponsePromise(httpRedirect(redirect)).then(
                     new Function<Response, Response, NeverThrowsException>() {
                         @Override
