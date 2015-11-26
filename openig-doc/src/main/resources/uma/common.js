@@ -24,7 +24,7 @@ var rpt_url           = openam_url + "/uma/authz_request";
 
 // OpenIG configuration
 var openig_url        = "http://api.example.com:8080";
-var share_url         = openig_url + "/_openig/uma/share?_action=create";
+var share_url         = openig_url + "/openig/api/system/objects/router-handler/routes/00-uma/objects/umaservice/share?_action=create";
 
 // UMA RS configuration with OpenAM
 var rs_client_id      = "OpenIG";
