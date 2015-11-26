@@ -19,7 +19,7 @@
   <meta charset="UTF-8">
   <title>Bob (Requesting Party)</title>
   <link type="text/css" rel="stylesheet" href="style.css">
-  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="///code.jquery.com/jquery-latest.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
 </head>
 <body>
@@ -68,12 +68,12 @@ $("#start").click(function () {
     .done(function (data) {
         $("#try").html(json2html(data, "Resource Not Protected?"));
     })
-    .fail(function (data, textStatus, jqXHR) {
+    .fail(function (jqXHR) {
         var authenticate = jqXHR.getResponseHeader("WWW-Authenticate");
-        var result = /ticket=\\"(.*)\\"/.exec(authenticate);
+        var result = authenticate.match(/ticket=\"(.*)\"/);
         var ticket = result[1] || "";
 
-        $("#try").html(json2html(data, "Response Without RPT"));
+        $("#try").html("<h3>WWW-Authenticate Header (No RPT)</h3><pre>" + authenticate + "</pre>");
 
         // Get an AAT as Bob.
         $.ajax({
@@ -118,7 +118,8 @@ $("#start").click(function () {
                     }
                 })
                 // Alternative: Post to a resource.
-                //  FixMe: fails with error="insufficient_scope", see https://docs.kantarainitiative.org/uma/draft-uma-core.html#client-presents-rpt
+                //  FixMe: fails with error="insufficient_scope",
+                //         see https://docs.kantarainitiative.org/uma/rec-uma-core.html#rfc.section.3.1.2
                 /*
                 $.ajax({
                     url: resource_url,
