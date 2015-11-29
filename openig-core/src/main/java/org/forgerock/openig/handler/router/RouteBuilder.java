@@ -170,7 +170,7 @@ class RouteBuilder {
         }
 
         AuditService auditService = routeHeap.resolve(config.get("auditService"), AuditService.class, true);
-        if (auditService != null) {
+        if (auditService != null && auditService.isRunning()) {
             filters.add(new HttpAccessAuditFilter(auditService, time));
         }
 
