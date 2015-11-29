@@ -19,16 +19,17 @@ import static org.forgerock.audit.events.AccessAuditEventBuilder.accessEvent;
 import static org.forgerock.json.resource.Requests.newCreateRequest;
 import static org.forgerock.json.resource.ResourcePath.resourcePath;
 
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.audit.events.AccessAuditEventBuilder;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.MutableUri;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.resource.CreateRequest;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.services.context.ClientContext;
@@ -79,7 +80,7 @@ public class HttpAccessAuditFilter implements Filter {
                         clientContext.getRemoteHost())
                 .httpRequest(clientContext.isSecure(),
                              request.getMethod(),
-                             getRequestPath(request.getUri()),
+                             getRequestPath(getURI(context, request)),
                              new Form().fromRequestQuery(request),
                              request.getHeaders().copyAsMultiMapOfStrings());
 
@@ -95,8 +96,17 @@ public class HttpAccessAuditFilter implements Filter {
         }
     }
 
+    private static URI getURI(Context context, Request request) {
+        if (context.containsContext(UriRouterContext.class)) {
+            UriRouterContext uriRouterContext = context.asContext(UriRouterContext.class);
+            return uriRouterContext.getOriginalUri();
+        } else {
+            return request.getUri().asURI();
+        }
+    }
+
     // See HttpContext.getRequestPath
-    private String getRequestPath(MutableUri uri) {
+    private static String getRequestPath(URI uri) {
         return new StringBuilder()
             .append(uri.getScheme())
             .append("://")
