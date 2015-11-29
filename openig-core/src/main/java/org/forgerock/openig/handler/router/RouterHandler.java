@@ -204,20 +204,28 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     }
 
     private void onAddedFile(final File file) {
+        Route route = null;
         try {
-            Route route = builder.build(file);
-            String name = route.getName();
-            if (sorted.contains(route)) {
-                throw new HeapException(format("A route named '%s' is already registered", name));
-            }
-            sorted.add(route);
-            routes.put(file, route);
-            logger.info(format("Added route '%s' defined in file '%s'", name, file));
+            route = builder.build(file);
         } catch (Throwable e) {
             logger.error(format("The route defined in file '%s' cannot be added",
                                 file));
             logger.error(e);
+            return;
         }
+        String name = route.getName();
+        if (sorted.contains(route)) {
+            logger.error(format("The added file '%s' contains a route named '%s' that is already "
+                    + "registered by the file '%s'",
+                                file,
+                                name,
+                                lookupRouteFile(name)));
+            route.destroy();
+            return;
+        }
+        sorted.add(route);
+        routes.put(file, route);
+        logger.info(format("Added route '%s' defined in file '%s'", name, file));
     }
 
     private void onRemovedFile(final File file) {
@@ -239,8 +247,19 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             logger.error(e);
             return;
         }
-        Route oldRoute = routes.remove(file);
+        Route oldRoute = routes.get(file);
         if (oldRoute != null) {
+            // Route did change its name, and the new name is already in use
+            if (!oldRoute.getName().equals(newRoute.getName()) && sorted.contains(newRoute)) {
+                logger.error(format("The modified file '%s' contains a route named '%s' that is already "
+                        + "registered by the file '%s'",
+                                    file,
+                                    newRoute.getName(),
+                                    lookupRouteFile(newRoute.getName())));
+                newRoute.destroy();
+                return;
+            }
+            routes.remove(file);
             sorted.remove(oldRoute);
             oldRoute.destroy();
         }
@@ -269,6 +288,18 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         } finally {
             read.unlock();
         }
+    }
+
+    private File lookupRouteFile(String routeName) {
+        for (Map.Entry<File, Route> entry : routes.entrySet()) {
+            File file = entry.getKey();
+            Route route = entry.getValue();
+
+            if (route.getName().equals(routeName)) {
+                return file;
+            }
+        }
+        return null;
     }
 
     /** Creates and initializes a routing handler in a heap environment. */
