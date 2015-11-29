@@ -179,4 +179,10 @@ public class Bindings {
 
         return contexts;
     }
+
+    @Override
+    public String toString() {
+        return map.toString();
+    }
+
 }
