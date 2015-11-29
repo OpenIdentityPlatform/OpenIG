@@ -242,7 +242,6 @@ public class RouterHandlerTest {
 
         // Should have an error log statement
         verify(logger).error(anyString());
-        verify(logger).error(any(Exception.class));
     }
 
     @Test
