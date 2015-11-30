@@ -11,9 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2015 ForgeRock AS.
  */
 package org.forgerock.openig.ldap;
+
+import static org.forgerock.opendj.ldap.requests.Requests.newAddRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newCompareRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newDeleteRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newModifyDNRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newModifyRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newSearchRequest;
+import static org.forgerock.opendj.ldap.requests.Requests.newSimpleBindRequest;
 
 import java.io.Closeable;
 import java.util.Collection;
@@ -23,12 +31,14 @@ import org.forgerock.opendj.ldap.DN;
 import org.forgerock.opendj.ldap.Entry;
 import org.forgerock.opendj.ldap.LdapException;
 import org.forgerock.opendj.ldap.SearchScope;
+import org.forgerock.opendj.ldap.controls.SubtreeDeleteRequestControl;
 import org.forgerock.opendj.ldap.requests.AddRequest;
 import org.forgerock.opendj.ldap.requests.BindRequest;
 import org.forgerock.opendj.ldap.requests.CompareRequest;
 import org.forgerock.opendj.ldap.requests.DeleteRequest;
 import org.forgerock.opendj.ldap.requests.ModifyDNRequest;
 import org.forgerock.opendj.ldap.requests.ModifyRequest;
+import org.forgerock.opendj.ldap.requests.Request;
 import org.forgerock.opendj.ldap.requests.SearchRequest;
 import org.forgerock.opendj.ldap.responses.BindResult;
 import org.forgerock.opendj.ldap.responses.CompareResult;
@@ -36,6 +46,9 @@ import org.forgerock.opendj.ldap.responses.Result;
 import org.forgerock.opendj.ldap.responses.SearchResultEntry;
 import org.forgerock.opendj.ldap.responses.SearchResultReference;
 import org.forgerock.opendj.ldif.ConnectionEntryReader;
+import org.forgerock.services.TransactionId;
+
+import com.forgerock.opendj.ldap.controls.TransactionIdControl;
 
 /**
  * Provides an adapted view of an OpenDJ LDAP connection exposing only the
@@ -44,9 +57,15 @@ import org.forgerock.opendj.ldif.ConnectionEntryReader;
  */
 public final class LdapConnection implements Closeable {
     private final Connection connection;
+    private final TransactionId rootTransactionId;
 
     LdapConnection(final Connection connection) {
+        this(connection, null);
+    }
+
+    LdapConnection(final Connection connection, final TransactionId rootTransactionId) {
         this.connection = connection;
+        this.rootTransactionId = rootTransactionId;
     }
 
     /**
@@ -62,6 +81,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public Result add(AddRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.add(request);
     }
 
@@ -72,7 +92,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * AddRequest request = new AddRequest(entry);
+     * AddRequest request = newAddRequest(entry);
      * connection.add(request);
      * }
      * </pre>
@@ -92,7 +112,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code entry} was {@code null} .
      */
     public Result add(Entry entry) throws LdapException {
-        return connection.add(entry);
+        return add(newAddRequest(entry));
     }
 
     /**
@@ -102,7 +122,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * AddRequest request = new AddRequest(ldifLines);
+     * AddRequest request = newAddRequest(ldifLines);
      * connection.add(request);
      * }
      * </pre>
@@ -126,7 +146,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code ldifLines} was {@code null} .
      */
     public Result add(String... ldifLines) throws LdapException {
-        return connection.add(ldifLines);
+        return add(newAddRequest(ldifLines));
     }
 
     /**
@@ -142,6 +162,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public BindResult bind(BindRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.bind(request);
     }
 
@@ -153,7 +174,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * BindRequest request = new SimpleBindRequest(name, password);
+     * BindRequest request = newSimpleBindRequest(name, password);
      * connection.bind(request);
      * }
      * </pre>
@@ -180,7 +201,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code name} or {@code password} was {@code null}.
      */
     public BindResult bind(String name, char[] password) throws LdapException {
-        return connection.bind(name, password);
+        return bind(newSimpleBindRequest(name, password));
     }
 
     /**
@@ -226,6 +247,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public CompareResult compare(CompareRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.compare(request);
     }
 
@@ -237,7 +259,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * CompareRequest request = new CompareRequest(name, attributeDescription, assertionValue);
+     * CompareRequest request = newCompareRequest(name, attributeDescription, assertionValue);
      * connection.compare(request);
      * }
      * </pre>
@@ -266,7 +288,7 @@ public final class LdapConnection implements Closeable {
      */
     public CompareResult compare(String name, String attributeDescription, String assertionValue)
             throws LdapException {
-        return connection.compare(name, attributeDescription, assertionValue);
+        return compare(newCompareRequest(name, attributeDescription, assertionValue));
     }
 
     /**
@@ -283,6 +305,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public Result delete(DeleteRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.delete(request);
     }
 
@@ -293,7 +316,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * DeleteRequest request = new DeleteRequest(name);
+     * DeleteRequest request = newDeleteRequest(name);
      * connection.delete(request);
      * }
      * </pre>
@@ -316,7 +339,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code name} was {@code null}.
      */
     public Result delete(String name) throws LdapException {
-        return connection.delete(name);
+        return delete(newDeleteRequest(name));
     }
 
     /**
@@ -327,7 +350,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * DeleteRequest request = new DeleteRequest(name).addControl(
+     * DeleteRequest request = newDeleteRequest(name).addControl(SubtreeDeleteRequestControl.newControl(true)));
      * connection.delete(request);
      * }
      * </pre>
@@ -351,7 +374,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code name} was {@code null}.
      */
     public Result deleteSubtree(String name) throws LdapException {
-        return connection.deleteSubtree(name);
+        return delete(newDeleteRequest(name).addControl(SubtreeDeleteRequestControl.newControl(true)));
     }
 
     /**
@@ -368,6 +391,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public Result modify(ModifyRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.modify(request);
     }
 
@@ -379,7 +403,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * ModifyRequest request = new ModifyRequest(name, ldifChanges);
+     * ModifyRequest request = newModifyRequest(ldifLines);
      * connection.modify(request);
      * }
      * </pre>
@@ -403,7 +427,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code ldifLines} was {@code null} .
      */
     public Result modify(String... ldifLines) throws LdapException {
-        return connection.modify(ldifLines);
+        return modify(newModifyRequest(ldifLines));
     }
 
     /**
@@ -420,6 +444,7 @@ public final class LdapConnection implements Closeable {
      * @throws NullPointerException If {@code request} was {@code null}.
      */
     public Result modifyDN(ModifyDNRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.modifyDN(request);
     }
 
@@ -431,7 +456,7 @@ public final class LdapConnection implements Closeable {
      *
      * <pre>
      * {@code
-     * ModifyDNRequest request = new ModifyDNRequest(name, newRDN);
+     * ModifyDNRequest request = newModifyDNRequest(name, newRDN);
      * connection.modifyDN(request);
      * }
      * </pre>
@@ -456,7 +481,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code name} or {@code newRDN} was {@code null}.
      */
     public Result modifyDN(String name, String newRDN) throws LdapException {
-        return connection.modifyDN(name, newRDN);
+        return modifyDN(newModifyDNRequest(name, newRDN));
     }
 
     /**
@@ -565,6 +590,7 @@ public final class LdapConnection implements Closeable {
      *             If {@code request} or {@code entries} was {@code null}.
      */
     public ConnectionEntryReader search(SearchRequest request) {
+        addTransactionIdControl(request);
         return connection.search(request);
     }
 
@@ -605,6 +631,7 @@ public final class LdapConnection implements Closeable {
      */
     public Result search(SearchRequest request, Collection<? super SearchResultEntry> entries)
             throws LdapException {
+        addTransactionIdControl(request);
         return connection.search(request, entries);
     }
 
@@ -641,6 +668,7 @@ public final class LdapConnection implements Closeable {
      */
     public Result search(SearchRequest request, Collection<? super SearchResultEntry> entries,
                          Collection<? super SearchResultReference> references) throws LdapException {
+        addTransactionIdControl(request);
         return connection.search(request, entries, references);
     }
 
@@ -684,7 +712,7 @@ public final class LdapConnection implements Closeable {
      */
     public ConnectionEntryReader search(String baseObject, SearchScope scope, String filter,
                                         String... attributeDescriptions) {
-        return connection.search(baseObject, scope, filter, attributeDescriptions);
+        return search(newSearchRequest(baseObject, scope, filter, attributeDescriptions));
     }
 
     /**
@@ -712,6 +740,7 @@ public final class LdapConnection implements Closeable {
      *             If the {@code request} was {@code null}.
      */
     public SearchResultEntry searchSingleEntry(SearchRequest request) throws LdapException {
+        addTransactionIdControl(request);
         return connection.searchSingleEntry(request);
     }
 
@@ -763,7 +792,13 @@ public final class LdapConnection implements Closeable {
      */
     public SearchResultEntry searchSingleEntry(String baseObject, SearchScope scope, String filter,
                                                String... attributeDescriptions) throws LdapException {
-        return connection.searchSingleEntry(baseObject, scope, filter, attributeDescriptions);
+        return searchSingleEntry(newSearchRequest(baseObject, scope, filter, attributeDescriptions));
+    }
+
+    private void addTransactionIdControl(Request request) {
+        if (rootTransactionId != null && !request.containsControl(TransactionIdControl.OID)) {
+            request.addControl(TransactionIdControl.newControl(rootTransactionId.createSubTransactionId().getValue()));
+        }
     }
 
 }

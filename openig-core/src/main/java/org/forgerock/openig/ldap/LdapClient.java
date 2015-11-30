@@ -30,6 +30,10 @@ import org.forgerock.opendj.ldap.Filter;
 import org.forgerock.opendj.ldap.LDAPConnectionFactory;
 import org.forgerock.opendj.ldap.LdapException;
 import org.forgerock.opendj.ldap.SearchScope;
+import org.forgerock.services.TransactionId;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.TransactionIdContext;
+import org.forgerock.util.Option;
 import org.forgerock.util.Options;
 
 /**
@@ -43,6 +47,12 @@ import org.forgerock.util.Options;
  * </ul>
  */
 public final class LdapClient {
+
+    /**
+     * The option to pass the TransactionId to LdapConnection.
+     */
+    public static final Option<TransactionId> TRANSACTIONID_OPTION = Option.of(TransactionId.class, null);
+
     private static final LdapClient INSTANCE = new LdapClient();
 
     /**
@@ -53,6 +63,23 @@ public final class LdapClient {
     public static LdapClient getInstance() {
         return INSTANCE;
     }
+
+    /**
+     * Setup the default options to create a LdapClient and adds the transactionId if any in the context's chain.
+     * @param context the context's chain
+     * @return the default options with the current transactionId set if any in the context's chain
+     */
+    public static Options defaultOptions(Context context) {
+        Options defaultOptions = Options.defaultOptions();
+
+        if (context.containsContext(TransactionIdContext.class)) {
+            TransactionIdContext txContext = context.asContext(TransactionIdContext.class);
+            defaultOptions.set(TRANSACTIONID_OPTION, txContext.getTransactionId());
+        }
+
+        return defaultOptions;
+    }
+
 
     private final ConcurrentHashMap<String, ConnectionFactory> factories =
             new ConcurrentHashMap<>();
@@ -91,7 +118,7 @@ public final class LdapClient {
      * @throws LdapException If an error occurred while connecting to the LDAP server.
      */
     public LdapConnection connect(final String host, final int port) throws LdapException {
-        return connect(host, port, defaultOptions());
+        return connect(host, port, Options.defaultOptions());
     }
 
     /**
@@ -114,7 +141,7 @@ public final class LdapClient {
     public LdapConnection connect(final String host, final int port, final Options options)
             throws LdapException {
         final ConnectionFactory factory = getConnectionFactory(host, port, options);
-        return new LdapConnection(factory.getConnection());
+        return new LdapConnection(factory.getConnection(), options.get(TRANSACTIONID_OPTION));
     }
 
     /**

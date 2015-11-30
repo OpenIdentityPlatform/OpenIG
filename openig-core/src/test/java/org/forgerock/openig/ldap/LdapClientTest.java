@@ -100,7 +100,6 @@ public class LdapClientTest {
     @Test
     public void shouldBindToLdapServer() throws Exception {
 
-        LdapClient client = this.client;
         LdapConnection connection = client.connect(listener.getHostName(), listener.getPort());
 
         BindResult bindResult = connection.bind("uid=bjensen,ou=people,dc=example,dc=com", "password".toCharArray());
@@ -110,7 +109,6 @@ public class LdapClientTest {
     @Test(expectedExceptions = AuthenticationException.class)
     public void shouldFailToBindBecauseOfInvalidCredentials() throws Exception {
 
-        LdapClient client = this.client;
         LdapConnection connection = client.connect(listener.getHostName(), listener.getPort());
 
         connection.bind("uid=bjensen,ou=people,dc=example,dc=com", "wrong-value".toCharArray());
