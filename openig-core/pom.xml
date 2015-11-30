@@ -110,6 +110,10 @@
       <version>3.1.2</version>
     </dependency>
     <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>json-resource-http</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <scope>test</scope>

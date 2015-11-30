@@ -26,8 +26,10 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -203,6 +205,32 @@ public class RouteBuilderTest {
         route.destroy();
         Response notFound = router.handle(new RootContext(), request).get();
         assertThat(notFound.getStatus()).isEqualTo(Status.NOT_FOUND);
+    }
+
+    @Test
+    public void testMonitoringIsEnabled() throws Exception {
+        Router router = new Router();
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        builder.build(getTestResourceFile("monitored-route.json"));
+
+        Request request = new Request().setMethod("GET").setUri("/monitored/monitoring");
+        Response response = router.handle(new AttributesContext(new RootContext()), request).get();
+
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
+        assertThat(response.getHeaders().get(ContentTypeHeader.class).getType()).isEqualTo("application/json");
+        assertThat(response.getEntity().getJson()).isInstanceOf(Map.class);
+    }
+
+    @Test
+    public void testMonitoringIsDisabledByDefault() throws Exception {
+        Router router = new Router();
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        builder.build(getTestResourceFile("not-monitored-route.json"));
+
+        Request request = new Request().setMethod("GET").setUri("/not-monitored-route/monitoring");
+        Response response = router.handle(new AttributesContext(new RootContext()), request).get();
+
+        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
