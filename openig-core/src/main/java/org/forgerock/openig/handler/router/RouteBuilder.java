@@ -23,6 +23,8 @@ import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
+import static org.forgerock.json.resource.Resources.newSingleton;
+import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
@@ -138,7 +140,7 @@ class RouteBuilder {
                            slug));
         }
 
-        return new Route(setupRouteHandler(routeHeap, config, logger), routeName, condition) {
+        return new Route(setupRouteHandler(routeHeap, config, thisRouteRouter), routeName, condition) {
             @Override
             public void destroy() {
                 super.destroy();
@@ -150,7 +152,7 @@ class RouteBuilder {
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
                                       final JsonValue config,
-                                      final Logger logger) throws HeapException {
+                                      final Router routeRouter) throws HeapException {
 
         TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
@@ -169,6 +171,8 @@ class RouteBuilder {
         if (evaluateJsonStaticExpression(config.get("monitor").defaultTo("${false}")).asBoolean()) {
             MetricRegistry registry = new MetricRegistry();
             filters.add(new MetricsFilter(registry));
+            routeRouter.addRoute(requestUriMatcher(EQUALS, "monitoring"),
+                                 newHttpHandler(newSingleton(new MetricRegistryResourceProvider(registry))));
         }
 
         return chainOf(routeHeap.getHandler(), filters);
