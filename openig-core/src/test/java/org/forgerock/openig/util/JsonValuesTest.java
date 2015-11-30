@@ -73,6 +73,20 @@ public class JsonValuesTest {
     }
 
     @Test
+    public void shouldEvaluateObjectWithTypeTransformation() throws Exception {
+        JsonValue value = json(object(field("boolean", "${true}"),
+                                      field("array", "${array('one', 'two', 'three')}"),
+                                      field("properties", "${system}")));
+
+        JsonValue transformed = evaluate(value, logger);
+
+        assertThat(transformed.get("boolean").asBoolean()).isTrue();
+        assertThat((String[]) transformed.get("array").getObject()).containsExactly("one", "two", "three");
+        assertThat(transformed.get("properties").asMap(String.class)).containsKey("user.dir");
+        verifyZeroInteractions(logger);
+    }
+
+    @Test
     public void shouldEvaluateObjectWhenAttributeEvaluationFails() throws Exception {
         final JsonValue value = json(object(field("string", "${decodeBase64('notBase64')}")));
         final JsonValue transformed = evaluate(value, logger);
@@ -124,6 +138,14 @@ public class JsonValuesTest {
                 .containsExactly(entry("one", 1),
                                  entry("two", 2L),
                                  entry("three", "${three}"));
+    }
+
+    @Test
+    public void shouldEvaluateExpressionToRealType() throws Exception {
+        assertThat(evaluateJsonStaticExpression(json("${1 == 1}")).isBoolean()).isTrue();
+        assertThat(evaluateJsonStaticExpression(json("${8 * 5 + 2}")).asInteger()).isEqualTo(42);
+        assertThat(evaluateJsonStaticExpression(json("${join(array('foo', 'bar', 'quix'), '@')}")).asString())
+                .isEqualTo("foo@bar@quix");
     }
 
     @Test(expectedExceptions = JsonException.class,
