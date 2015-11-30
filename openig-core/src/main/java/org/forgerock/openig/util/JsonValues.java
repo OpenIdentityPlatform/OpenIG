@@ -65,7 +65,7 @@ public final class JsonValues {
         public void transform(final JsonValue value) {
             if (value.isString()) {
                 try {
-                    Expression<String> expression = Expression.valueOf(value.asString(), String.class);
+                    Expression<Object> expression = Expression.valueOf(value.asString(), Object.class);
                     value.setObject(expression.eval());
                 } catch (ExpressionException e) {
                     throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
@@ -203,9 +203,9 @@ public final class JsonValues {
                 if (value.isString()) {
                     try {
                         // Malformed expressions are ignored
-                        final Expression<String> expression = asExpression(value, String.class);
+                        final Expression<Object> expression = asExpression(value, Object.class);
                         if (expression != null) {
-                            final String evaluated = expression.eval();
+                            final Object evaluated = expression.eval();
                             // Errors during evaluation are represented with a null result
                             if (evaluated == null) {
                                 logger.warning(format("The expression '%s' (in %s) cannot be evaluated",
