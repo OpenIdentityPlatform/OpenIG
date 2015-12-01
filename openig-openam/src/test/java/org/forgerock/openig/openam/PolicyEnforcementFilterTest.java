@@ -28,6 +28,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Matchers.any;
@@ -72,6 +73,8 @@ import org.testng.annotations.Test;
 public class PolicyEnforcementFilterTest {
     private static final URI BASE_URI = URI.create("http://www.example.com:8090/openam/json/");
     private static final String OPENAM_URI = "http://www.example.com:8090/openam/";
+    private static final String JWT_TOKEN = "eyJhbG...";
+    private static final String REQUESTED_URI = "http://www.example.com/";
     private static final String RESOURCE_CONTENT = "Access granted!";
     private static final String TOKEN = "ARrrg...42*";
 
@@ -173,6 +176,15 @@ public class PolicyEnforcementFilterTest {
         return new Object[][] {
             { "0 seconds" },
             { "unlimited" } };
+    }
+
+    @DataProvider
+    private static Object[][] givenAndExpectedKey() {
+        return new Object[][] {
+            { REQUESTED_URI, TOKEN, null, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, JWT_TOKEN, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
+            { REQUESTED_URI, "", JWT_TOKEN, REQUESTED_URI + "@" + JWT_TOKEN },
+            { REQUESTED_URI, TOKEN, "", REQUESTED_URI + "@" + TOKEN } };
     }
 
     @Test(dataProvider = "invalidConfigurations",
@@ -323,6 +335,14 @@ public class PolicyEnforcementFilterTest {
 
         verify(policiesHandler, times(2)).handle(any(Context.class), any(Request.class));
         verify(next, times(3)).handle(attributesContext, request);
+    }
+
+    @Test(dataProvider = "givenAndExpectedKey")
+    public void shouldSucceedToCreateCacheKey(final String requestedUri,
+                                              final String ssoToken,
+                                              final String jwt,
+                                              final String expected) {
+        assertThat(createKeyCache(ssoToken, jwt, requestedUri)).isEqualTo(expected);
     }
 
     private static Response policyDecisionAsJsonResponse() {

@@ -327,8 +327,16 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         };
     }
 
-    private static String createKeyCache(final String ssoToken, final String jwt, final String requestedUri) {
-        return requestedUri + "@" + ssoToken != null ? ssoToken : "" + "@" + jwt != null ? jwt : "";
+    @VisibleForTesting
+    static String createKeyCache(final String ssoToken, final String jwt, final String requestedUri) {
+        return new StringBuilder(requestedUri).append(ifSpecified(ssoToken)).append(ifSpecified(jwt)).toString();
+    }
+
+    private static String ifSpecified(final String value) {
+        if (value != null && !value.isEmpty()) {
+            return "@" + value;
+        }
+        return "";
     }
 
     private static final Function<ActionResponse, JsonValue, ResourceException> EXTRACT_POLICY_DECISION_AS_JSON =
