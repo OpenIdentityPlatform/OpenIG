@@ -48,6 +48,7 @@ import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
+import org.forgerock.openig.filter.RuntimeExceptionFilter;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -180,6 +181,9 @@ class RouteBuilder {
             routeRouter.addRoute(requestUriMatcher(EQUALS, "monitoring"),
                                  newHttpHandler(newSingleton(new MetricRegistryResourceProvider(registry))));
         }
+
+        // Ensure we always get a Response even in case of RuntimeException
+        filters.add(new RuntimeExceptionFilter());
 
         return chainOf(routeHeap.getHandler(), filters);
     }

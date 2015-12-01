@@ -39,7 +39,6 @@ import org.forgerock.services.context.TransactionIdContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
-import org.forgerock.util.promise.RuntimeExceptionHandler;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -84,16 +83,10 @@ public class HttpAccessAuditFilter implements Filter {
                              new Form().fromRequestQuery(request),
                              request.getHeaders().copyAsMultiMapOfStrings());
 
-        try {
-            final Promise<Response, NeverThrowsException> promise;
-            promise = next.handle(context, request)
-                    .thenOnResult(onResult(context, accessAuditEventBuilder));
-            promise.thenOnRuntimeException(onRuntimeException(context, accessAuditEventBuilder));
-            return promise;
-        } catch (RuntimeException re) {
-            onRuntimeException(context, accessAuditEventBuilder).handleRuntimeException(re);
-            throw re;
-        }
+        // We do not expect any RuntimeException as the downstream handler will have to take care
+        // of that case themselves.
+        return next.handle(context, request)
+                .thenOnResult(onResult(context, accessAuditEventBuilder));
     }
 
     private static URI getURI(Context context, Request request) {
@@ -122,18 +115,6 @@ public class HttpAccessAuditFilter implements Filter {
                 sendAuditEvent(response, context, accessAuditEventBuilder);
             }
 
-        };
-    }
-
-    private RuntimeExceptionHandler onRuntimeException(final Context context,
-                                                       final AccessAuditEventBuilder<?> accessAuditEventBuilder) {
-        return new RuntimeExceptionHandler() {
-            @Override
-            public void handleRuntimeException(RuntimeException exception) {
-                // TODO How to be sure that the final status code sent back with the response will be a 500 ?
-                Response response = new Response(Status.INTERNAL_SERVER_ERROR);
-                sendAuditEvent(response, context, accessAuditEventBuilder);
-            }
         };
     }
 
