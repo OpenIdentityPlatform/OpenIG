@@ -18,7 +18,6 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
@@ -36,14 +35,11 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.CreateRequest;
 import org.forgerock.json.resource.RequestHandler;
+import org.forgerock.services.TransactionId;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RequestAuditContext;
 import org.forgerock.services.context.RootContext;
-import org.forgerock.services.TransactionId;
 import org.forgerock.services.context.TransactionIdContext;
-import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.time.TimeService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -84,62 +80,6 @@ public class HttpAccessAuditFilterTest {
 
         assertThat(response.getStatus()).isSameAs(Status.OK);
         verifyAuditServiceCall(reqHandler, response.getStatus());
-    }
-
-    @Test
-    public void shouldSendAnAccessEventEvenInCaseOfRuntimeExceptionInHandler() throws Exception {
-        HttpAccessAuditFilter filter = new HttpAccessAuditFilter(reqHandler, time);
-
-        final RuntimeException runtimeException = new RuntimeException("boom !");
-        Handler chfHandler = new Handler() {
-            @Override
-            public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
-                throw runtimeException;
-            }
-
-        };
-
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri("https://www.example.com/rockstar?who=forgerock");
-
-        try {
-            filter.filter(context(), request, chfHandler);
-            fail("Expected a RuntimeException");
-        } catch (RuntimeException re) {
-            assertThat(re).isSameAs(runtimeException);
-        }
-
-        verifyAuditServiceCall(reqHandler, Status.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test(enabled = false)
-    // TODO Until COMMONS-57 is not fixed and the handling of RuntimeException in the callbacks being clarified,
-    // I disable this test.
-    public void shouldSendAnAccessEventEvenInCaseOfRuntimeExceptionInCallback() throws Exception {
-        HttpAccessAuditFilter filter = new HttpAccessAuditFilter(reqHandler, time);
-
-        final RuntimeException runtimeException = new RuntimeException("boom !");
-        Handler chfHandler = new ResponseHandler(Status.OK) {
-            @Override
-            public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
-                return super.handle(context, request)
-                        .thenOnResult(new ResultHandler<Response>() {
-                            @Override
-                            public void handleResult(Response result) {
-                                throw runtimeException;
-                            }
-                        });
-            }
-        };
-
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri("https://www.example.com/rockstar?who=forgerock");
-
-        filter.filter(context(), request, chfHandler);
-
-        verifyAuditServiceCall(reqHandler, Status.INTERNAL_SERVER_ERROR);
     }
 
     private void verifyAuditServiceCall(RequestHandler handler, Status status) {
