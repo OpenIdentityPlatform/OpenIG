@@ -11,10 +11,11 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.script;
 
+import static java.lang.String.format;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.el.Expressions.evaluate;
@@ -89,6 +90,14 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
             }
+
+            if (config.isDefined("httpClient")) {
+                String message = format("'%s no longer uses a 'httpClient' attribute: 'clientHandler' "
+                                                + "has to be used instead with a reference to a Handler",
+                                        name);
+                logger.warning(message);
+            }
+
             return component;
         }
 
