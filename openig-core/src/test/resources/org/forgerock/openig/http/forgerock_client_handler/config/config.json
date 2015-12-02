@@ -1,0 +1,17 @@
+{
+    "comment": "This configuration uses the ForgeRock Client Handler",
+    "heap": [
+        {
+            "name": "sequence",
+            "type": "SequenceHandler",
+            "config": {
+                "bindings": [
+                    {
+                        "handler": "ForgeRockClientHandler"
+                    }
+                ]
+            }
+        }
+    ],
+    "handler": "sequence"
+}
