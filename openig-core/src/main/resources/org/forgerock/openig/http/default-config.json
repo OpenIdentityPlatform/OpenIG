@@ -1,7 +1,7 @@
 {
     "heap": [
         {
-            "name": "_Router",
+            "name": "_router",
             "type": "Router",
             "config": {
                 "defaultHandler": {
@@ -43,6 +43,6 @@
             }
         }
     ],
-    "handler": "_Router",
+    "handler": "_router",
     "audit": "global"
 }
