@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -216,6 +216,13 @@ public class ClientHandler extends GenericHeapObject implements Handler {
             options.set(OPTION_TEMPORARY_STORAGE, storage);
             options.set(OPTION_KEY_MANAGERS, getKeyManagers());
             options.set(OPTION_TRUST_MANAGERS, getTrustManagers());
+
+            if (config.isDefined("httpClient")) {
+                String message = format("%s no longer uses a 'httpClient' attribute. All former 'HttpClient' "
+                                                + "config attributes must now be set in 'ClientHandler' instead.",
+                                        name);
+                logger.warning(message);
+            }
 
             try {
                 httpClientHandler = new HttpClientHandler(options);
