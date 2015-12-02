@@ -50,6 +50,7 @@ public class FileAttributesFilterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldProduceEmptyMapInCaseOfFailure() throws Exception {
         when(file.getRecord("username", "joe")).thenThrow(new IOException());
 
@@ -64,6 +65,7 @@ public class FileAttributesFilterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldProduceEmptyMapWhenSearchedEntryDoesNotExist() throws Exception {
         when(file.getRecord("username", "joe")).thenReturn(null);
 
