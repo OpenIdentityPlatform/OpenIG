@@ -17,8 +17,13 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.http.MutableUri.uri;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.json.JsonValue.array;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
@@ -36,6 +41,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
+import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -52,6 +58,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -71,6 +78,40 @@ public class RouteBuilderTest {
     @AfterMethod
     public void tearDown() throws Exception {
         DestroyDetectHandler.destroyed = false;
+    }
+
+    @DataProvider
+    public static Object[][] invalidRouteConfigurations() {
+        // @Checkstyle:off
+        return new Object[][] {
+            /** This route throws a HeapException */
+            { json(object(field("heap", array(
+                              object(
+                                  field("name", "Detection"),
+                                  field("type", "org.forgerock.openig.handler.router.DestroyDetectHandler")),
+                              object(
+                                  field("name", "invalidStaticRequestFilter"),
+                                  field("type", "StaticRequestFilter"),
+                                  field("config", object(
+                                      field("method", "POST"),
+                                      field("uri", "http://www.example.com:8081"),
+                                      field("form", object()),
+                                      field("entity", "Mutually exclusive, throws the HeapException")))))),
+                          field("handler", "myHandler"))) },
+            /** This route throws a JsonValueException */
+            { json(object(field("heap", array(
+                              object(
+                                  field("name", "Detection"),
+                                  field("type", "org.forgerock.openig.handler.router.DestroyDetectHandler")),
+                              object(
+                                  field("name", "invalidStaticRequestFilter"),
+                                  field("type", "StaticRequestFilter"),
+                                  field("config", object(
+                                      field("method", "POST"),
+                                      field("uri", "http://www.example.com:8081"),
+                                      field("form", array())))))),
+                          field("handler", "myHandler"))) } };
+        // @Checkstyle:on
     }
 
     @Test(description = "OPENIG-329")
@@ -123,6 +164,22 @@ public class RouteBuilderTest {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("named-route.json"));
         assertThat(route.getName()).isEqualTo("my-route");
+    }
+
+    @Test(dataProvider = "invalidRouteConfigurations")
+    public void shouldDestroyHeapRouteWhenItFailsToLoadIt(final JsonValue routeConfiguration) throws Exception {
+        final HeapImpl parent = buildDefaultHeap();
+        final RouteBuilder builder = new RouteBuilder(parent,
+                                                      Name.of("anonymous"),
+                                                      new EndpointRegistry(new Router()));
+
+        try {
+            builder.build(routeConfiguration, Name.of("invalidRoute"), "default");
+            fail("Must throw an exception");
+        } catch (HeapException | RuntimeException ex) {
+            // Ensure that the route's heap we tried to load was destroyed
+            assertThat(DestroyDetectHandler.destroyed).isTrue();
+        }
     }
 
     @Test

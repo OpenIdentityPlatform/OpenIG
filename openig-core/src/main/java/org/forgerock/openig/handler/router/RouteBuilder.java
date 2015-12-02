@@ -113,41 +113,47 @@ class RouteBuilder {
      */
     Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
         final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
+        try {
+            String routeName = config.get("name").defaultTo(defaultRouteName).asString();
 
-        String routeName = config.get("name").defaultTo(defaultRouteName).asString();
+            Router thisRouteRouter = new Router();
+            Router objects = new Router();
+            objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
+            String slug = slug(routeName);
+            final EndpointRegistry.Registration registration = registry.register(slug, thisRouteRouter);
+            routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
 
-        Router thisRouteRouter = new Router();
-        Router objects = new Router();
-        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-        thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-        thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
-        String slug = slug(routeName);
-        final EndpointRegistry.Registration registration = registry.register(slug, thisRouteRouter);
-        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
+            routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
+                           "globalDecorators", "monitor");
 
-        routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
-                "globalDecorators", "monitor");
+            Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
 
-        Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
+            final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+            Logger logger = new Logger(logSink, routeHeapName);
 
-        final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
-        Logger logger = new Logger(logSink, routeHeapName);
+            if (!slug.equals(routeName)) {
+                logger.warning(format("Route name ('%s') has been converted to a slug ('%s') for URL exposition "
+                                      + "(REST endpoints).",
+                                      routeName,
+                                      slug));
+            }
 
-        if (!slug.equals(routeName)) {
-            logger.warning(
-                    format("Route name ('%s') has been converted to a slug ('%s') for URL exposition (REST endpoints).",
-                           routeName,
-                           slug));
-        }
-
-        return new Route(setupRouteHandler(routeHeap, config, thisRouteRouter), routeName, condition) {
-            @Override
-            public void destroy() {
-                super.destroy();
-                registration.unregister();
+            return new Route(setupRouteHandler(routeHeap, config, thisRouteRouter), routeName, condition) {
+                @Override
+                public void destroy() {
+                    super.destroy();
+                    registration.unregister();
+                    routeHeap.destroy();
+                }
+            };
+        } catch (HeapException | RuntimeException ex) {
+            if (routeHeap != null) {
                 routeHeap.destroy();
             }
-        };
+            throw ex;
+        }
     }
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
