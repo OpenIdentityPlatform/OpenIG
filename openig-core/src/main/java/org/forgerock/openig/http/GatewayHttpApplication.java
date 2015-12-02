@@ -25,6 +25,7 @@ import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
+import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -36,11 +37,13 @@ import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,10 +74,10 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
+import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
@@ -102,6 +105,13 @@ public final class GatewayHttpApplication implements HttpApplication {
     private static final JsonValue DEFAULT_CLIENT_HANDLER =
                                         json(object(field("name", CLIENT_HANDLER_HEAP_KEY),
                                                     field("type", ClientHandler.class.getName())));
+
+    private static final JsonValue FORGEROCK_CLIENT_HANDLER =
+                                json(object(field("name", FORGEROCK_CLIENT_HANDLER_HEAP_KEY),
+                                            field("type", Chain.class.getName()),
+                                            field("config", object(
+                                                   field("filters", array(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY)),
+                                                   field("handler", CLIENT_HANDLER_HEAP_KEY)))));
 
     private HeapImpl heap;
     private TemporaryStorage storage;
@@ -166,7 +176,9 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
+            heap.put(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY, new TransactionIdOutboundFilter());
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
+            heap.addDefaultDeclaration(FORGEROCK_CLIENT_HANDLER);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
@@ -175,10 +187,6 @@ public final class GatewayHttpApplication implements HttpApplication {
                     LogSink.class, true), Name.of("GatewayServlet"));
             storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
                     TemporaryStorage.class);
-
-            final ClientHandler clientHandler = heap.get(CLIENT_HANDLER_HEAP_KEY, ClientHandler.class);
-            final Handler handler = chainOf(clientHandler, new TransactionIdOutboundFilter());
-            heap.put(Keys.FORGEROCK_HANDLER_HEAP_KEY, handler);
 
             // Protect the /openig namespace
             Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);

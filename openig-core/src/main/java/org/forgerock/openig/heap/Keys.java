@@ -15,6 +15,8 @@
  */
 package org.forgerock.openig.heap;
 
+import org.forgerock.http.Handler;
+import org.forgerock.http.filter.TransactionIdOutboundFilter;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.config.Environment;
@@ -83,10 +85,12 @@ public final class Keys {
     public static final String ENVIRONMENT_HEAP_KEY = "Environment";
 
     /**
-     * Key to retrieve a default {@link ClientHandler} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve ForgeRock {@link ClientHandler} instance from the
+     * {@link org.forgerock.openig.heap.Heap}, which chains a
+     * {@link TransactionIdOutboundFilter} to a {@link ClientHandler}. This
+     * {@link Handler} is used by audit to forward custom audit header.
      */
-    public static final String FORGEROCK_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
+    public static final String FORGEROCK_CLIENT_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
 
     /**
      * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.
@@ -114,6 +118,11 @@ public final class Keys {
      * Key to retrieve a {@link TimeService} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String TIME_SERVICE_HEAP_KEY = "TimeService";
+
+    /**
+     * Key to retrieve a {@link TransactionIdOutboundFilter} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY = "TransactionIdOutboundFilter";
 
     private Keys() {
         // Prevents from instantiating.
