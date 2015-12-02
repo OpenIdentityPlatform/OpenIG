@@ -17,6 +17,7 @@ package org.forgerock.openig.heap;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.filter.TransactionIdOutboundFilter;
+import org.forgerock.http.session.SessionManager;
 import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.config.Environment;
@@ -27,6 +28,7 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
+import org.forgerock.util.time.TimeService;
 
 /**
  * Define here the constants that can be used as Heap's keys.
