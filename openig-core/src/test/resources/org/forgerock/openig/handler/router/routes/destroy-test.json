@@ -2,8 +2,7 @@
     "heap": [
         {
             "name": "Detection",
-            "type": "org.forgerock.openig.handler.router.DestroyDetectHandler",
-            "config": { }
+            "type": "org.forgerock.openig.handler.router.DestroyDetectHandler"
         }
     ],
     "handler": "Detection",
