@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.http.MutableUri.uri;
@@ -26,11 +27,13 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
+import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Handler;
@@ -41,8 +44,10 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
+import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.filter.ResponseHandler;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -291,6 +296,60 @@ public class RouteBuilderTest {
         Response response = router.handle(new AttributesContext(new RootContext()), request).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+    }
+
+    @DataProvider
+    public static Object[][] monitoredRouteConfigs() {
+        // @Checkstyle:off
+        return new Object[][] {
+                // config, expectations: enabled, percentiles
+                { json(object(field("handler", "Forwarder"))), false, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", true))), true, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", false))), false, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", "${true}"))), true, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", object(field("enabled", true))))), true, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", object(field("enabled", false))))), false, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", object(field("enabled", "${true}"))))), true, DEFAULT_PERCENTILES },
+                { json(object(field("handler", "Forwarder"),
+                              field("monitor", object(field("enabled", true),
+                                                      field("percentiles", array(0.1)))))),
+                  true,
+                  singletonList(0.1d) },
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "monitoredRouteConfigs")
+    public void testMonitoringConfiguration(final JsonValue config,
+                                            final boolean enabled,
+                                            final List<Double> percentiles) throws Exception {
+        //Given
+        Router router = new Router();
+        heap.put("Forwarder", new ResponseHandler(Status.ACCEPTED));
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        builder.build(config, Name.of("route"), "route");
+
+        // When
+        Request request = new Request().setMethod("GET").setUri("/route/monitoring");
+        Response response = router.handle(new AttributesContext(new RootContext()), request).get();
+
+        // Then
+        if (enabled) {
+            assertThat(response.getStatus()).isEqualTo(Status.OK);
+            JsonValue data = json(response.getEntity().getJson());
+            JsonValue percentilesValues = data.get(new JsonPointer("responseTime/percentiles"));
+            for (Double percentile : percentiles) {
+                assertThat(percentilesValues.get(String.valueOf(percentile)).isNumber()).isTrue();
+            }
+        } else {
+            assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
+        }
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

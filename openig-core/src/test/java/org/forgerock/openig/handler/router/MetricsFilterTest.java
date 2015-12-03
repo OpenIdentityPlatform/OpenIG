@@ -18,8 +18,6 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
-
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -35,7 +33,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 
 @SuppressWarnings("javadoc")
 public class MetricsFilterTest {
@@ -50,34 +47,32 @@ public class MetricsFilterTest {
 
     @Test
     public void shouldUpdateMetrics() throws Exception {
-        MetricRegistry registry = new MetricRegistry();
+        MonitoringMetrics metrics = new MonitoringMetrics();
 
-        Filter filter = new MetricsFilter(registry);
+        Filter filter = new MetricsFilter(metrics);
 
         filter.filter(null, new Request(), next);
 
-        Map<String, Counter> requests = getGroupCounters(registry, "request-counts");
-        assertThat(requests.get("all").getCount()).isEqualTo(1);
-        assertThat(requests.get("inflight").getCount()).isEqualTo(0);
+        assertThat(metrics.getTotalRequestCount().getCount()).isEqualTo(1);
+        assertThat(metrics.getActiveRequestCount().getCount()).isEqualTo(0);
 
-        Map<String, Counter> responses = getGroupCounters(registry, "response-counts");
-        assertThat(responses.get("all").getCount()).isEqualTo(1);
-        assertThat(responses.get("with-errors").getCount()).isEqualTo(0);
-        assertThat(responses.get("other-families").getCount()).isEqualTo(0);
+        assertThat(metrics.getTotalResponseCount().getCount()).isEqualTo(1);
+        assertThat(metrics.getErrorsResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getOtherResponseCount().getCount()).isEqualTo(0);
 
-        assertThat(responses.get("1xx").getCount()).isEqualTo(0);
-        assertThat(responses.get("2xx").getCount()).isEqualTo(1);
-        assertThat(responses.get("3xx").getCount()).isEqualTo(0);
-        assertThat(responses.get("4xx").getCount()).isEqualTo(0);
-        assertThat(responses.get("5xx").getCount()).isEqualTo(0);
+        assertThat(metrics.getInformativeResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getSuccessResponseCount().getCount()).isEqualTo(1);
+        assertThat(metrics.getRedirectResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getClientErrorResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getServerErrorResponseCount().getCount()).isEqualTo(0);
 
-        assertThat(registry.timer("response-rates").getMeanRate()).isNotEqualTo(0);
-        assertThat(registry.counter("total-processing-time").getCount()).isNotEqualTo(0);
+        assertThat(metrics.getThroughput().getMeanRate()).isNotEqualTo(0);
+        assertThat(metrics.getResponseTime().getCount()).isEqualTo(1);
+        assertThat(metrics.getAccumulatedResponseTime().getCount()).isNotEqualTo(0);
     }
 
     @Test
-    public void shouldShowInflightsRequest() throws Exception {
-        MetricRegistry registry = new MetricRegistry();
+    public void shouldShowOneActiveRequest() throws Exception {
         final PromiseImpl<Response, NeverThrowsException> promise = Response.newResponsePromiseImpl();
         Handler next = new Handler() {
             @Override
@@ -85,9 +80,11 @@ public class MetricsFilterTest {
                 return promise;
             }
         };
-        Filter filter = new MetricsFilter(registry);
+        MonitoringMetrics metrics = new MonitoringMetrics();
 
-        Counter counter = getGroupCounters(registry, "request-counts").get("inflight");
+        Filter filter = new MetricsFilter(metrics);
+
+        Counter counter = metrics.getActiveRequestCount();
         assertThat(counter.getCount()).isEqualTo(0);
 
         filter.filter(null, new Request(), next);
@@ -96,10 +93,6 @@ public class MetricsFilterTest {
 
         promise.handleResult(new Response(Status.OK));
         assertThat(counter.getCount()).isEqualTo(0);
-    }
-
-    private Map<String, Counter> getGroupCounters(MetricRegistry registry, String groupName) {
-        return ((MetricsFilter.CounterGroup) registry.getMetrics().get(groupName)).getCounters();
     }
 
 }

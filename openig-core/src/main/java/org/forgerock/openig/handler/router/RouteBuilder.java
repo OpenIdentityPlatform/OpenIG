@@ -25,6 +25,7 @@ import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.resource.Resources.newSingleton;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
+import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
@@ -57,8 +58,6 @@ import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.time.TimeService;
-
-import com.codahale.metrics.MetricRegistry;
 
 /**
  * Builder for new {@link Route}s.
@@ -174,17 +173,67 @@ class RouteBuilder {
             filters.add(new HttpAccessAuditFilter(auditService, time));
         }
 
-        if (evaluateJsonStaticExpression(config.get("monitor").defaultTo("${false}")).asBoolean()) {
-            MetricRegistry registry = new MetricRegistry();
-            filters.add(new MetricsFilter(registry));
+        MonitorConfig mc = getMonitorConfig(config.get("monitor"));
+        if (mc.isEnabled()) {
+            MonitoringMetrics metrics = new MonitoringMetrics();
+            filters.add(new MetricsFilter(metrics));
             routeRouter.addRoute(requestUriMatcher(EQUALS, "monitoring"),
-                                 newHttpHandler(newSingleton(new MetricRegistryResourceProvider(registry))));
+                                 newHttpHandler(newSingleton(new MonitoringResourceProvider(metrics,
+                                                                                            mc.getPercentiles()))));
         }
 
         // Ensure we always get a Response even in case of RuntimeException
         filters.add(new RuntimeExceptionFilter());
 
         return chainOf(routeHeap.getHandler(), filters);
+    }
+
+    /**
+     * Extract monitoring information from JSON.
+     *
+     * <p>Accepted formats:
+     *
+     * <pre>
+     *     {@code
+     *       "monitor": true
+     *     }
+     * </pre>
+     *
+     * <pre>
+     *     {@code
+     *       "monitor": {
+     *           "enabled": false
+     *       }
+     *     }
+     * </pre>
+     *
+     * <pre>
+     *     {@code
+     *       "monitor": {
+     *           "enabled": "${true}",
+     *           "percentiles": [ 0.1, 0.75, 0.99, 0.999 ]
+     *       }
+     *     }
+     * </pre>
+     *
+     * By default (if omitted), monitoring is disabled.
+     */
+    private MonitorConfig getMonitorConfig(final JsonValue monitor) {
+        MonitorConfig mc = new MonitorConfig();
+        if (monitor.isNull() || monitor.isString() || monitor.isBoolean()) {
+            // expression(boolean), boolean or unset
+            mc.setEnabled(evaluateJsonStaticExpression(monitor.defaultTo("${false}")).asBoolean());
+        } else if (monitor.isMap()) {
+            // enabled
+            mc.setEnabled(evaluateJsonStaticExpression(monitor.get("enabled").defaultTo("${false}")).asBoolean());
+            // percentiles
+            JsonValue percentiles = evaluateJsonStaticExpression(monitor.get("percentiles"));
+            mc.setPercentiles(percentiles.defaultTo(DEFAULT_PERCENTILES).asList(Double.class));
+        } else {
+            // by default monitoring is disabled
+            mc.setEnabled(false);
+        }
+        return mc;
     }
 
     /**
@@ -207,6 +256,27 @@ class RouteBuilder {
             throw new HeapException(format("Cannot read/parse content of %s", resource), e);
         } finally {
             closeSilently(fis);
+        }
+    }
+
+    private static class MonitorConfig {
+        private boolean enabled;
+        private List<Double> percentiles = DEFAULT_PERCENTILES;
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setPercentiles(List<Double> percentiles) {
+            this.percentiles = percentiles;
+        }
+
+        public List<Double> getPercentiles() {
+            return percentiles;
         }
     }
 }
