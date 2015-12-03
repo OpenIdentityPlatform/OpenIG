@@ -49,6 +49,7 @@ import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.handler.SequenceHandler;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
+import org.forgerock.openig.handler.router.AuditServiceObject;
 import org.forgerock.openig.handler.router.RouterHandler;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.jwt.JwtSessionManager;
@@ -64,6 +65,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
+        ALIASES.put("AuditService", AuditServiceObject.class);
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);
         ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
         ALIASES.put("CaptureDecorator", CaptureDecorator.class);
