@@ -16,8 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -29,117 +28,75 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 
 /**
  * Collect request processing metrics.
  */
 class MetricsFilter implements Filter {
 
-    private final Counter requestCount;
-    private final Counter responseCount;
-    private final Counter informativeResponseCount;
-    private final Counter successResponseCount;
-    private final Counter redirectResponseCount;
-    private final Counter clientErrorResponseCount;
-    private final Counter serverErrorResponseCount;
-    private final Counter otherResponseCount;
-    private final Counter errorsResponseCount;
-    private final Timer responseRates;
-    private final Counter totalProcessingTime;
-    private final Counter inflightRequestCount;
+    private final MonitoringMetrics metrics;
 
     /**
      * Constructs a MetricsFilter, filling the provided {@linkplain MetricRegistry registry} with metrics.
      *
-     * @param registry
-     *         metrics registry
+     * @param metrics
+     *         monitoring metrics registry
      */
-    MetricsFilter(final MetricRegistry registry) {
-        CounterGroup responses = registry.register("response-counts", new CounterGroup());
-        this.responseCount = responses.counter("all");
-        this.informativeResponseCount = responses.counter("1xx");
-        this.successResponseCount = responses.counter("2xx");
-        this.redirectResponseCount = responses.counter("3xx");
-        this.clientErrorResponseCount = responses.counter("4xx");
-        this.serverErrorResponseCount = responses.counter("5xx");
-        this.otherResponseCount = responses.counter("other-families");
-        this.errorsResponseCount = responses.counter("with-errors");
-
-        CounterGroup requests = registry.register("request-counts", new CounterGroup());
-        this.requestCount = requests.counter("all");
-        this.inflightRequestCount = requests.counter("inflight");
-
-        this.responseRates = registry.timer("response-rates");
-        this.totalProcessingTime = registry.counter("total-processing-time");
+    MetricsFilter(final MonitoringMetrics metrics) {
+        this.metrics = metrics;
     }
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        requestCount.inc();
-        inflightRequestCount.inc();
-        final Timer.Context time = responseRates.time();
+        metrics.getTotalRequestCount().inc();
+        metrics.getActiveRequestCount().inc();
+        final long start = System.nanoTime();
 
         return next.handle(context, request)
                        .thenOnResult(new ResultHandler<Response>() {
                            @Override
                            public void handleResult(final Response result) {
-                               long elapsed = time.stop();
-                               totalProcessingTime.inc(elapsed);
+                               // Elapsed time is computed in microseconds
+                               long elapsed = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - start);
+                               metrics.getAccumulatedResponseTime().inc(elapsed);
+                               metrics.getResponseTime().update(elapsed);
 
-                               responseCount.inc();
-                               inflightRequestCount.dec();
+                               metrics.getThroughput().mark();
+
+                               metrics.getTotalResponseCount().inc();
+                               metrics.getActiveRequestCount().dec();
 
                                if (result.getCause() != null) {
-                                   errorsResponseCount.inc();
+                                   metrics.getErrorsResponseCount().inc();
                                }
                                Status status = result.getStatus();
                                if (status != null) {
                                    // Response doesn't mandate a Status in constructor :'(
                                    switch (status.getFamily()) {
                                    case INFORMATIONAL:
-                                       informativeResponseCount.inc();
+                                       metrics.getInformativeResponseCount().inc();
                                        break;
                                    case SUCCESSFUL:
-                                       successResponseCount.inc();
+                                       metrics.getSuccessResponseCount().inc();
                                        break;
                                    case REDIRECTION:
-                                       redirectResponseCount.inc();
+                                       metrics.getRedirectResponseCount().inc();
                                        break;
                                    case CLIENT_ERROR:
-                                       clientErrorResponseCount.inc();
+                                       metrics.getClientErrorResponseCount().inc();
                                        break;
                                    case SERVER_ERROR:
-                                       serverErrorResponseCount.inc();
+                                       metrics.getServerErrorResponseCount().inc();
                                        break;
                                    case UNKNOWN:
-                                       otherResponseCount.inc();
+                                       metrics.getOtherResponseCount().inc();
                                        break;
                                    }
                                }
                            }
                        });
-    }
-
-    /**
-     * Group Counters together, this is mainly used for later structured representation of the results.
-     */
-    static class CounterGroup implements Metric {
-        private final Map<String, Counter> counters = new LinkedHashMap<>();
-
-        public Counter counter(String name) {
-            Counter counter = new Counter();
-            counters.put(name, counter);
-            return counter;
-        }
-
-        public Map<String, Counter> getCounters() {
-            return counters;
-        }
     }
 }
