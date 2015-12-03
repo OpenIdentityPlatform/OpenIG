@@ -50,9 +50,7 @@ import org.forgerock.util.promise.Promise;
  * only the "redirect_uris" attribute is mandatory.
  * </p>
  *
- * Note: When using OpenAM, the "client_name" is required in order to perform dynamic registration,
- * that means minimal json configuration MUST contain "redirect_uris" and "client_name".
- * Moreover, still on OpenAM, the "scopes" may be specified to this configuration but
+ * Note: When using OpenAM, the "scopes" may be specified to this configuration but
  * it must be defined as: "scopes"(array of string), which differs from
  * the OAuth2 metadata "scope" (a string containing a space separated list of scope values).
  *
