@@ -97,12 +97,10 @@
     <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-audit-core</artifactId>
-        <version>${caud.version}</version>
     </dependency>
     <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-audit-json</artifactId>
-        <version>${caud.version}</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>

@@ -64,19 +64,16 @@
     <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-audit-handler-csv</artifactId>
-        <version>${caud.version}</version>
         <scope>runtime</scope>
     </dependency>
      <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-audit-handler-syslog</artifactId>
-        <version>${caud.version}</version>
         <scope>runtime</scope>
     </dependency>
      <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-audit-handler-jdbc</artifactId>
-        <version>${caud.version}</version>
         <scope>runtime</scope>
     </dependency>
   </dependencies>
