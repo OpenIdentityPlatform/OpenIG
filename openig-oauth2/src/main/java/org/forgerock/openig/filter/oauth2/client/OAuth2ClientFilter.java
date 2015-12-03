@@ -112,7 +112,6 @@ import org.forgerock.util.time.TimeService;
  * "metadata"                     : {                   [OPTIONAL - contains metadata dedicated for dynamic
  *                                                                  client registration.]
  *             "redirect_uris"    : [ strings ],            [REQUIRED for dynamic client registration.]
- *             "client_name"      : string ,                [OPTIONAL but required if used with OpenAM.]
  *             "scopes"           : [ strings ]             [OPTIONAL - usage with OpenAM only.]
  * }
  * }
