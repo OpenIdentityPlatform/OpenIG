@@ -169,7 +169,7 @@ class RouteBuilder {
             filters.add(newSessionFilter(sessionManager));
         }
 
-        AuditService auditService = routeHeap.resolve(config.get("audit-service"), AuditService.class, true);
+        AuditService auditService = routeHeap.resolve(config.get("auditService"), AuditService.class, true);
         if (auditService != null) {
             filters.add(new HttpAccessAuditFilter(auditService, time));
         }
