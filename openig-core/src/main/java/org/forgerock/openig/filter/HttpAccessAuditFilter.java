@@ -35,7 +35,6 @@ import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RequestAuditContext;
-import org.forgerock.services.context.TransactionIdContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
@@ -62,7 +61,6 @@ public class HttpAccessAuditFilter implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
-        TransactionIdContext txContext = context.asContext(TransactionIdContext.class);
         ClientContext clientContext = context.asContext(ClientContext.class);
 
         AccessAuditEventBuilder<?> accessAuditEventBuilder = accessEvent();
@@ -70,7 +68,7 @@ public class HttpAccessAuditFilter implements Filter {
         accessAuditEventBuilder
                 .eventName("OPENIG-HTTP-ACCESS")
                 .timestamp(time.now())
-                .transactionId(txContext.getTransactionId().getValue())
+                .transactionIdFromContext(context)
                 .serverFromContext(clientContext)
                 .clientFromContext(clientContext)
                 .httpRequest(clientContext.isSecure(),
