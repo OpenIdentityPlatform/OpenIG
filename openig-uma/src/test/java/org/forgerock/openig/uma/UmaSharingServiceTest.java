@@ -193,7 +193,7 @@ public class UmaSharingServiceTest {
         HeapImpl heap = new HeapImpl(Name.of("this"));
         heap.put(Keys.LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router));
+        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put("#mock-handler", handler);
 
         when(handler.handle(any(Context.class), any(Request.class)))

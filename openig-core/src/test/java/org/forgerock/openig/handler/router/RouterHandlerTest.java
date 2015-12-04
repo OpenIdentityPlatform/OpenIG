@@ -134,7 +134,7 @@ public class RouterHandlerTest {
     }
 
     private RouteBuilder newRouterBuilder() {
-        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(new Router()));
+        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(new Router(), "/"));
     }
 
     @Test
@@ -263,7 +263,7 @@ public class RouterHandlerTest {
     @Test
     public void testRouterEndpointIsBeingRegistered() throws Exception {
         Router router = new Router();
-        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router));
+        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put(Keys.ENVIRONMENT_HEAP_KEY, new DefaultEnvironment(new File("dont-care")));
         heap.put(Keys.TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
 

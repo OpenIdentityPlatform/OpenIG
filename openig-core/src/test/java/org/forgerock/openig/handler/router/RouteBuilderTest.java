@@ -134,7 +134,7 @@ public class RouteBuilderTest {
     }
 
     private RouteBuilder newRouteBuilder(Router router) {
-        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
     }
 
     private RouteBuilder newRouteBuilder() {
@@ -273,6 +273,10 @@ public class RouteBuilderTest {
         Response response = router.handle(new RootContext(), request).get();
         assertThat(response.getEntity().getString()).isEqualTo("Pong");
 
+        // Ensure that the path is right
+        assertThat(route.handle(null, null).get().getEntity().getString())
+                .isEqualTo("/registration-test/objects/register/ping");
+
         // Ensure that api endpoint is not accessible anymore after route has been destroyed
         route.destroy();
         Response notFound = router.handle(new RootContext(), request).get();
@@ -282,7 +286,7 @@ public class RouteBuilderTest {
     @Test
     public void testMonitoringIsEnabled() throws Exception {
         Router router = new Router();
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
         Route route = builder.build(getTestResourceFile("monitored-route.json"));
         route.start();
 
@@ -297,7 +301,7 @@ public class RouteBuilderTest {
     @Test
     public void testMonitoringIsDisabledByDefault() throws Exception {
         Router router = new Router();
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
         Route route = builder.build(getTestResourceFile("not-monitored-route.json"));
         route.start();
 
@@ -341,7 +345,7 @@ public class RouteBuilderTest {
         //Given
         Router router = new Router();
         heap.put("Forwarder", new ResponseHandler(Status.ACCEPTED));
-        RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
+        RouteBuilder builder = newRouteBuilder(router);
         Route route = builder.build(config, Name.of("route"), "route");
         route.start();
 
@@ -389,9 +393,15 @@ public class RouteBuilderTest {
 
     public static class RegisterRouteHandler implements Handler {
 
+        private final String path;
+
+        public RegisterRouteHandler(String path) {
+            this.path = path;
+        }
+
         @Override
         public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-            return newResponsePromise(new Response(Status.OK));
+            return newResponsePromise(new Response(Status.OK).setEntity(path));
         }
 
         public static class Heaplet extends GenericHeaplet {
@@ -408,7 +418,7 @@ public class RouteBuilderTest {
                         return newResponsePromise(new Response(Status.OK).setEntity("Pong"));
                     }
                 });
-                return new RegisterRouteHandler();
+                return new RegisterRouteHandler(registration.getPath());
             }
 
             @Override

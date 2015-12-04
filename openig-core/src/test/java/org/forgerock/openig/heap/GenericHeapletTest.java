@@ -50,7 +50,7 @@ public class GenericHeapletTest {
         this.heap = buildDefaultHeap();
         router = new Router();
         router.addRoute(RouteMatchers.requestUriMatcher(RoutingMode.EQUALS, ""), Handlers.NO_CONTENT);
-        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router));
+        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
     }
 
     @Test
