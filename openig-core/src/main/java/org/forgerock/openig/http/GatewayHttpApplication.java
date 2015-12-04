@@ -269,17 +269,17 @@ public final class GatewayHttpApplication implements HttpApplication {
                                                               final Request request,
                                                               final Handler next) {
             ClientContext client = context.asContext(ClientContext.class);
-            String remoteHost = client.getRemoteHost();
+            String remoteAddr = client.getRemoteAddress();
             try {
                 // Accept any address that is bound to loop-back
-                InetAddress[] addresses = InetAddress.getAllByName(remoteHost);
+                InetAddress[] addresses = InetAddress.getAllByName(remoteAddr);
                 for (InetAddress address : addresses) {
                     if (address.isLoopbackAddress()) {
                         return next.handle(context, request);
                     }
                 }
             } catch (UnknownHostException e) {
-                logger.trace(format("Cannot resolve host '%s' when accessing '/openig'", remoteHost));
+                logger.trace(format("Cannot resolve host '%s' when accessing '/openig'", remoteAddr));
             }
             return newResponsePromise(new Response(Status.FORBIDDEN));
         }

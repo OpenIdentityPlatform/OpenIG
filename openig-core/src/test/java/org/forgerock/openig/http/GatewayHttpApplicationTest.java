@@ -164,14 +164,14 @@ public class GatewayHttpApplicationTest {
 
     private static Context buildLocalContext() {
         return ClientContext.buildExternalClientContext(new RootContext())
-                            .remoteHost("localhost")
+                            .remoteAddress("127.0.0.1")
                             .build();
     }
 
     private Context buildExternalContext() {
         ClientContext clientInfoContext = buildExternalClientContext(new RootContext())
                 .certificates()
-                .remoteHost("125.12.34.52")
+                .remoteAddress("125.12.34.52")
                 .build();
         return new AttributesContext(new SessionContext(clientInfoContext, new SimpleMapSession()));
     }
