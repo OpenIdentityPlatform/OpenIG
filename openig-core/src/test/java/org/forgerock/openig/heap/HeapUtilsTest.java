@@ -41,7 +41,7 @@ public final class HeapUtilsTest {
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
-        heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(new Router()));
+        heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(new Router(), "/"));
         heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
         return heap;
     }

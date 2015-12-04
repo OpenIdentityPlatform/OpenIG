@@ -346,7 +346,8 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
             RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
                                                                        qualified,
-                                                                       new EndpointRegistry(routes)),
+                                                                       new EndpointRegistry(routes,
+                                                                                            registration.getPath())),
                                                       scanner);
             handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
                                                    Handler.class,

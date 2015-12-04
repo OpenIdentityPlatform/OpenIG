@@ -40,15 +40,18 @@ import org.forgerock.services.routing.RouteMatcher;
  */
 public final class EndpointRegistry {
     private final Router router;
+    private final String path;
 
     /**
      * Creates a registry around the given Router instance.
      * Registered endpoints will be sub-elements of the given {@code router}.
      *
      * @param router base Router
+     * @param path path for this registry
      */
-    public EndpointRegistry(final Router router) {
+    public EndpointRegistry(final Router router, final String path) {
         this.router = router;
+        this.path = path;
     }
 
     /**
@@ -70,7 +73,34 @@ public final class EndpointRegistry {
     public Registration register(final String name, final Handler handler) {
         RouteMatcher<Request> matcher = requestUriMatcher(STARTS_WITH, name);
         router.addRoute(matcher, handler);
-        return new Registration(router, matcher);
+        return new Registration(router, matcher, pathInfo(name));
+    }
+
+    /**
+     * Returns the path info computed by appending the given {@code name} to this registry's path.
+     *
+     * @param name
+     *         path element to append
+     * @return composed path
+     */
+    public String pathInfo(String name) {
+        StringBuilder sb = new StringBuilder(path);
+        if (!name.startsWith("/")) {
+            sb.append("/");
+        }
+        sb.append(name);
+        if (name.endsWith("/")) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns this registry's base path.
+     * @return this registry's base path.
+     */
+    public String getPath() {
+        return path;
     }
 
     /**
@@ -79,10 +109,12 @@ public final class EndpointRegistry {
     public static class Registration {
         private final Router router;
         private final RouteMatcher<Request> matcher;
+        private final String path;
 
-        Registration(final Router router, final RouteMatcher<Request> matcher) {
+        Registration(final Router router, final RouteMatcher<Request> matcher, String path) {
             this.router = router;
             this.matcher = matcher;
+            this.path = path;
         }
 
         /**
@@ -90,6 +122,14 @@ public final class EndpointRegistry {
          */
         public void unregister() {
             router.removeRoute(matcher);
+        }
+
+        /**
+         * Returns this endpoint's path.
+         * @return this endpoint's path.
+         */
+        public String getPath() {
+            return path;
         }
     }
 

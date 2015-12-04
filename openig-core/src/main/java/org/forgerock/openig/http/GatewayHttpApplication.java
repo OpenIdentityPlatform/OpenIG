@@ -163,7 +163,8 @@ public final class GatewayHttpApplication implements HttpApplication {
             // this is just to mimic the fact that 'system' should be a Route within a RouterHandler
             addSubRouter(systemRouter, "objects", systemObjectsRouter);
             systemObjectsRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-            heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(systemObjectsRouter));
+            heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(systemObjectsRouter,
+                                                                      "/openig/api/system/objects"));
 
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);

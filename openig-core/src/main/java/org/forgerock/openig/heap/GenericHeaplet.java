@@ -122,7 +122,7 @@ public abstract class GenericHeaplet implements Heaplet {
                                       slug));
             }
             registration = parent.register(slug, router);
-            registry = new EndpointRegistry(router);
+            registry = new EndpointRegistry(router, registration.getPath());
         }
         return registry;
     }
