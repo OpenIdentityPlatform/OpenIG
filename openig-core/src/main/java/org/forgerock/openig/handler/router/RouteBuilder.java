@@ -114,18 +114,18 @@ class RouteBuilder {
      */
     Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
         final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
+        String routeName = config.get("name").defaultTo(defaultRouteName).asString();
+
+        Router thisRouteRouter = new Router();
+        Router objects = new Router();
+        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
+        String slug = slug(routeName);
+        final EndpointRegistry.Registration registration = registry.register(slug, thisRouteRouter);
+        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
+
         try {
-            String routeName = config.get("name").defaultTo(defaultRouteName).asString();
-
-            Router thisRouteRouter = new Router();
-            Router objects = new Router();
-            objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-            thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-            thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
-            String slug = slug(routeName);
-            final EndpointRegistry.Registration registration = registry.register(slug, thisRouteRouter);
-            routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
-
             routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
                            "globalDecorators", "monitor");
 
@@ -136,7 +136,7 @@ class RouteBuilder {
 
             if (!slug.equals(routeName)) {
                 logger.warning(format("Route name ('%s') has been converted to a slug ('%s') for URL exposition "
-                                      + "(REST endpoints).",
+                                              + "(REST endpoints).",
                                       routeName,
                                       slug));
             }
@@ -150,6 +150,7 @@ class RouteBuilder {
                 }
             };
         } catch (HeapException | RuntimeException ex) {
+            registration.unregister();
             routeHeap.destroy();
             throw ex;
         }

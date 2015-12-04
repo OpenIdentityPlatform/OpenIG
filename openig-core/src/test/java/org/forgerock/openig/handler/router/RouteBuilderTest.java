@@ -85,7 +85,8 @@ public class RouteBuilderTest {
         // @Checkstyle:off
         return new Object[][] {
             /** This route throws a HeapException */
-            { json(object(field("heap", array(
+            { json(object(field("name", "invalid"),
+                          field("heap", array(
                               object(
                                   field("name", "Detection"),
                                   field("type", "org.forgerock.openig.handler.router.DestroyDetectHandler")),
@@ -99,7 +100,8 @@ public class RouteBuilderTest {
                                       field("entity", "Mutually exclusive, throws the HeapException")))))),
                           field("handler", "myHandler"))) },
             /** This route throws a JsonValueException */
-            { json(object(field("heap", array(
+            { json(object(field("name", "invalid"),
+                          field("heap", array(
                               object(
                                   field("name", "Detection"),
                                   field("type", "org.forgerock.openig.handler.router.DestroyDetectHandler")),
@@ -168,10 +170,8 @@ public class RouteBuilderTest {
 
     @Test(dataProvider = "invalidRouteConfigurations")
     public void shouldDestroyHeapRouteWhenItFailsToLoadIt(final JsonValue routeConfiguration) throws Exception {
-        final HeapImpl parent = buildDefaultHeap();
-        final RouteBuilder builder = new RouteBuilder(parent,
-                                                      Name.of("anonymous"),
-                                                      new EndpointRegistry(new Router()));
+        Router router = new Router();
+        RouteBuilder builder = newRouteBuilder(router);
 
         try {
             builder.build(routeConfiguration, Name.of("invalidRoute"), "default");
@@ -179,6 +179,9 @@ public class RouteBuilderTest {
         } catch (HeapException | RuntimeException ex) {
             // Ensure that the route's heap we tried to load was destroyed
             assertThat(DestroyDetectHandler.destroyed).isTrue();
+            // Ensure that the generated route endpoint is unregistered as well
+            Response response = router.handle(new RootContext(), new Request().setUri("/invalid")).get();
+            assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         }
     }
 
