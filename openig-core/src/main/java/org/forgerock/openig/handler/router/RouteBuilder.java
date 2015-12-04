@@ -21,7 +21,6 @@ import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
-import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.resource.Resources.newSingleton;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
@@ -47,6 +46,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
 import org.forgerock.openig.filter.RuntimeExceptionFilter;
@@ -116,12 +116,17 @@ class RouteBuilder {
         final String routeName = config.get("name").defaultTo(defaultRouteName).asString();
 
         final Router thisRouteRouter = new Router();
-        Router objects = new Router();
-        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
         thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-        thisRouteRouter.addRoute(requestUriMatcher(STARTS_WITH, "objects"), objects);
 
-        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
+        final Router objects = new Router();
+        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+
+        final String slug = slug(routeName);
+        // Preemptively get the endpoint path, without actually registering the routes/my-route router
+        EndpointRegistry routeRegistry = new EndpointRegistry(thisRouteRouter, registry.pathInfo(slug));
+        EndpointRegistry.Registration objectsReg = routeRegistry.register("objects", objects);
+
+        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects, objectsReg.getPath()));
 
         try {
             routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "auditService",
@@ -132,20 +137,20 @@ class RouteBuilder {
             final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
             final Logger logger = new Logger(logSink, routeHeapName);
 
-            return new Route(setupRouteHandler(routeHeap, config, thisRouteRouter), routeName, condition) {
+            if (!slug.equals(routeName)) {
+                logger.warning(format("Route name ('%s') has been converted to a slug ('%s') in endpoints URL.",
+                                      routeName,
+                                      slug));
+            }
+
+            return new Route(setupRouteHandler(routeHeap, config, routeRegistry, logger), routeName, condition) {
 
                 private EndpointRegistry.Registration registration;
 
                 @Override
                 public void start() {
                     // Register this route's endpoint into the parent registry
-                    String slug = slug(routeName);
                     registration = registry.register(slug, thisRouteRouter);
-                    if (!slug.equals(routeName)) {
-                        logger.warning(format("Route name ('%s') has been converted to a slug ('%s') in endpoints URL.",
-                                              routeName,
-                                              slug));
-                    }
                 }
 
                 @Override
@@ -164,7 +169,8 @@ class RouteBuilder {
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
                                       final JsonValue config,
-                                      final Router routeRouter) throws HeapException {
+                                      final EndpointRegistry routeRegistry,
+                                      final Logger logger) throws HeapException {
 
         TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
@@ -184,9 +190,10 @@ class RouteBuilder {
         if (mc.isEnabled()) {
             MonitoringMetrics metrics = new MonitoringMetrics();
             filters.add(new MetricsFilter(metrics));
-            routeRouter.addRoute(requestUriMatcher(EQUALS, "monitoring"),
-                                 newHttpHandler(newSingleton(new MonitoringResourceProvider(metrics,
-                                                                                            mc.getPercentiles()))));
+            RequestHandler singleton = newSingleton(new MonitoringResourceProvider(metrics,
+                                                                                   mc.getPercentiles()));
+            EndpointRegistry.Registration monitoring = routeRegistry.register("monitoring", newHttpHandler(singleton));
+            logger.info(format("Monitoring endpoint available at '%s'", monitoring.getPath()));
         }
 
         // Ensure we always get a Response even in case of RuntimeException

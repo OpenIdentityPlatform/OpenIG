@@ -47,6 +47,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -395,8 +396,9 @@ public class UmaSharingService {
                                                                   clientId,
                                                                   clientSecret);
                 // register admin endpoint
-                endpointRegistry().register("share",
-                                            newHttpHandler(newCollection(new ShareCollectionProvider(service))));
+                Handler httpHandler = newHttpHandler(newCollection(new ShareCollectionProvider(service)));
+                EndpointRegistry.Registration share = endpointRegistry().register("share", httpHandler);
+                logger.info(format("UMA Share endpoint available at '%s'", share.getPath()));
 
                 return service;
             } catch (URISyntaxException e) {
