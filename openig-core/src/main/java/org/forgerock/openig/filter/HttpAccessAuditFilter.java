@@ -71,12 +71,8 @@ public class HttpAccessAuditFilter implements Filter {
                 .eventName("OPENIG-HTTP-ACCESS")
                 .timestamp(time.now())
                 .transactionId(txContext.getTransactionId().getValue())
-                .server(clientContext.getLocalAddress(),
-                        clientContext.getLocalPort(),
-                        clientContext.getLocalName())
-                .client(clientContext.getRemoteAddress(),
-                        clientContext.getRemotePort(),
-                        clientContext.getRemoteHost())
+                .serverFromContext(clientContext)
+                .clientFromContext(clientContext)
                 .httpRequest(clientContext.isSecure(),
                              request.getMethod(),
                              getRequestPath(getURI(context, request)),
