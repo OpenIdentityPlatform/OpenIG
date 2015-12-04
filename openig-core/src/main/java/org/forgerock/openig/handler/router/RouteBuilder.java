@@ -150,9 +150,7 @@ class RouteBuilder {
                 }
             };
         } catch (HeapException | RuntimeException ex) {
-            if (routeHeap != null) {
-                routeHeap.destroy();
-            }
+            routeHeap.destroy();
             throw ex;
         }
     }
