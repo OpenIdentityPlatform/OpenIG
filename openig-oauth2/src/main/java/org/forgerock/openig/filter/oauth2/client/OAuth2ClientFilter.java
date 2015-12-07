@@ -631,7 +631,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 return sendAuthorizationRedirect(context, request, null);
             }
             final OAuth2Session refreshedSession =
-                    session.isAuthorized() ? prepareContext(context, session) : session;
+                    session.isAuthorized() ? prepareContext(context, session, request) : session;
             return next.handle(context, request)
                     .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                         @Override
@@ -722,10 +722,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return newResultPromise(response);
     }
 
-    private OAuth2Session prepareContext(final Context context, final OAuth2Session session)
+    private OAuth2Session prepareContext(final Context context, final OAuth2Session session, final Request request)
             throws ResponseException, OAuth2ErrorException {
         try {
-            tryPrepareContext(context, session);
+            tryPrepareContext(context, session, request);
             return session;
         } catch (final OAuth2ErrorException e) {
             /*
@@ -738,7 +738,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 // The session is updated with new access token.
                 final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(context, session);
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
-                tryPrepareContext(context, refreshedSession);
+                tryPrepareContext(context, refreshedSession, request);
                 return refreshedSession;
             }
 
@@ -773,7 +773,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return clientRegistration;
     }
 
-    private void tryPrepareContext(final Context context, final OAuth2Session session)
+    private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request)
             throws ResponseException, OAuth2ErrorException {
         final Map<String, Object> info =
                 new LinkedHashMap<>(session.getAccessTokenResponse());
@@ -798,7 +798,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             // Load the user_info resources lazily (when requested)
             info.put("user_info", new LazyMap<>(new UserInfoFactory(session,
                                                                     clientRegistration,
-                                                                    context)));
+                                                                    context,
+                                                                    request)));
         }
         target.set(bindings(context, null), info);
     }
@@ -882,8 +883,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         public UserInfoFactory(final OAuth2Session session,
                                final ClientRegistration clientRegistration,
-                               final Context context) {
-            this.callable = new LoadUserInfoCallable(session, clientRegistration, context);
+                               final Context context,
+                               final Request request) {
+            this.callable = new LoadUserInfoCallable(session, clientRegistration, context, request);
         }
 
         @Override
@@ -929,21 +931,49 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * LoadUserInfoCallable simply encapsulate the logic required to load the user_info resources.
      */
     private class LoadUserInfoCallable implements Callable<Map<String, Object>> {
-        private final OAuth2Session session;
+        private OAuth2Session session;
         private final ClientRegistration clientRegistration;
         private final Context context;
+        private final Request request;
 
         public LoadUserInfoCallable(final OAuth2Session session,
                                     final ClientRegistration clientRegistration,
-                                    final Context context) {
+                                    final Context context,
+                                    final Request request) {
             this.session = session;
             this.clientRegistration = clientRegistration;
             this.context = context;
+            this.request = request;
         }
 
         @Override
         public Map<String, Object> call() throws Exception {
-            return clientRegistration.getUserInfo(context, session).asMap();
+            try {
+                return clientRegistration.getUserInfo(context, session).asMap();
+            } catch (OAuth2ErrorException e) {
+                final OAuth2Error error = e.getOAuth2Error();
+                if (error.is(E_INVALID_TOKEN)  && clientRegistration != null && session.getRefreshToken() != null) {
+                    // Supposed expired token, try to update it by generating a new access token.
+                    return updateSessionStateWithRefreshTokenOrFailWithNewSession();
+                }
+                throw e;
+            }
+        }
+
+        private Map<String, Object> updateSessionStateWithRefreshTokenOrFailWithNewSession() throws ResponseException,
+                                                                                             OAuth2ErrorException {
+            try {
+                JsonValue refreshAccessToken = clientRegistration.refreshAccessToken(context, session);
+                session = session.stateRefreshed(refreshAccessToken);
+                saveSession(context, session, buildUri(context, request, clientEndpoint));
+                return clientRegistration.getUserInfo(context, session).asMap();
+            } catch (OAuth2ErrorException ex) {
+                logger.debug("Fail to refresh OAuth2 Access Token");
+                logger.debug(ex);
+                session = OAuth2Session.stateNew(time);
+                saveSession(context, session, buildUri(context, request, clientEndpoint));
+                throw ex;
+            }
         }
 
         public OAuth2Session getSession() {
