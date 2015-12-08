@@ -303,7 +303,7 @@ public class HeapImpl implements Heap {
 
     @Override
     public <T> T get(final String name, final Class<T> type) throws HeapException {
-        ExtractedObject extracted = extract(name, type);
+        ExtractedObject extracted = extract(name);
         if (extracted.object == null) {
             return null;
         }
@@ -324,7 +324,7 @@ public class HeapImpl implements Heap {
      * associated context (never returns {@code null})
      * @throws HeapException if extraction failed
      */
-    ExtractedObject extract(final String name, final Class<?> type) throws HeapException {
+    ExtractedObject extract(final String name) throws HeapException {
         if (resolving.contains(name)) {
             // Fail for recursive object resolution
             throw new HeapException(
@@ -349,7 +349,7 @@ public class HeapImpl implements Heap {
                 }
             } else if (parent != null) {
                 // no heaplet available, query parent (if any)
-                return parent.extract(name, type);
+                return parent.extract(name);
             }
         }
         return new ExtractedObject(object, contexts.get(name));
@@ -474,7 +474,7 @@ public class HeapImpl implements Heap {
         }
 
         // Apply global decorations (may be inherited from parent heap)
-        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY, Decorator.class);
+        ExtractedObject deco = extract(GLOBAL_DECORATOR_HEAP_KEY);
         if (deco.object != null) {
             Decorator globalDecorator = (Decorator) deco.object;
             decorated = globalDecorator.decorate(decorated, null, extracted.context);
