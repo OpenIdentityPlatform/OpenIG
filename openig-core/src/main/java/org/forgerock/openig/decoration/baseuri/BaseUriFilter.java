@@ -22,6 +22,7 @@ import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -70,7 +71,12 @@ class BaseUriFilter implements Filter {
             return newResultPromise(newInternalServerError());
         }
         if (request != null && request.getUri() != null) {
-            request.getUri().rebase(URI.create(newBaseUri));
+            try {
+                request.getUri().rebase(new URI(newBaseUri));
+            } catch (URISyntaxException e) {
+                logger.error(format("Invalid baseUri '%s'", baseUri));
+                return newResultPromise(newInternalServerError().setCause(e));
+            }
         }
         return delegate.filter(context, request, next);
     }
