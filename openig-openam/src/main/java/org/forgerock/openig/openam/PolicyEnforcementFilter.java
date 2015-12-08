@@ -100,6 +100,7 @@ import org.forgerock.util.time.Duration;
  *          "cacheMaxExpiration"     :    duration            [OPTIONAL - default to 1 minute ]
  *      }
  *  }
+ *  }
  * </pre>
  * <p>
  * (*) pepUsername and pepPassword are the credentials of the user who has
@@ -124,6 +125,7 @@ import org.forgerock.util.time.Duration;
  *          "application": "myApplication",
  *          "ssoTokenSubject": ${attributes.SSOCurrentUser}
  *      }
+ *  }
  *  }
  * </pre>
  */
