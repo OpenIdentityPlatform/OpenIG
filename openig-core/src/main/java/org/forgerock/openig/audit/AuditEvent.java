@@ -42,6 +42,7 @@ import org.forgerock.openig.el.Bindings;
  * modified in the meantime.
  * The {@literal tags} property helps to qualify this notification (no duplicated values).
  */
+@Deprecated
 public final class AuditEvent {
     private final AuditSource source;
     private final long timestamp;

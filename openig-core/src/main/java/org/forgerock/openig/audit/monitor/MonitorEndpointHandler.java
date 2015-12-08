@@ -16,11 +16,6 @@
 
 package org.forgerock.openig.audit.monitor;
 
-import static org.forgerock.openig.audit.Tag.completed;
-import static org.forgerock.openig.audit.Tag.exception;
-import static org.forgerock.openig.audit.Tag.request;
-import static org.forgerock.openig.audit.Tag.response;
-
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,10 +25,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.audit.AuditEvent;
-import org.forgerock.openig.audit.AuditEventListener;
-import org.forgerock.openig.audit.ConditionalAuditEventListener;
-import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.util.EnumUtil;
 import org.forgerock.services.context.Context;
@@ -45,9 +36,11 @@ import org.forgerock.util.promise.Promises;
 /**
  * Sample statistic endpoint provider that returns JSON-formatted collected statistic values.
  */
-public class MonitorEndpointHandler extends GenericHeapObject implements AuditEventListener, Handler {
+@Deprecated
+public class MonitorEndpointHandler extends GenericHeapObject implements org.forgerock.openig.audit.AuditEventListener,
+                                                                         Handler {
 
-    private static final Set<String> STANDARD_TAG_NAMES = EnumUtil.names(Tag.class);
+    private static final Set<String> STANDARD_TAG_NAMES = EnumUtil.names(org.forgerock.openig.audit.Tag.class);
 
     private ConcurrentHashMap<String, TagMetric> metrics = new ConcurrentHashMap<>();
 
@@ -60,7 +53,7 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
     }
 
     @Override
-    public void onAuditEvent(final AuditEvent event) {
+    public void onAuditEvent(final org.forgerock.openig.audit.AuditEvent event) {
         // Extract the set of additional tags
         Set<String> tags = event.getTags();
 
@@ -71,15 +64,15 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
                 continue;
             }
             TagMetric metric = getMetric(tag);
-            if (tags.contains(request.name())) {
+            if (tags.contains(org.forgerock.openig.audit.Tag.request.name())) {
                 metric.active.incrementAndGet();
             }
-            if (tags.contains(response.name())) {
+            if (tags.contains(org.forgerock.openig.audit.Tag.response.name())) {
                 metric.active.decrementAndGet();
-                if (tags.contains(completed.name())) {
+                if (tags.contains(org.forgerock.openig.audit.Tag.completed.name())) {
                     metric.completed.incrementAndGet();
                 }
-                if (tags.contains(exception.name())) {
+                if (tags.contains(org.forgerock.openig.audit.Tag.exception.name())) {
                     metric.errors.incrementAndGet();
                 }
             }
@@ -119,9 +112,11 @@ public class MonitorEndpointHandler extends GenericHeapObject implements AuditEv
     /**
      * Creates and initializes a MonitorEndpointHandler in a heap environment.
      */
-    public static class Heaplet extends ConditionalAuditEventListener.ConditionalListenerHeaplet {
+    @Deprecated
+    public static class Heaplet extends
+            org.forgerock.openig.audit.ConditionalAuditEventListener.ConditionalListenerHeaplet {
         @Override
-        protected AuditEventListener createListener() {
+        protected org.forgerock.openig.audit.AuditEventListener createListener() {
             return new MonitorEndpointHandler();
         }
     }

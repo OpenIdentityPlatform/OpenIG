@@ -18,8 +18,6 @@ package org.forgerock.openig.heap;
 import org.forgerock.http.Handler;
 import org.forgerock.http.filter.TransactionIdOutboundFilter;
 import org.forgerock.http.session.SessionManager;
-import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.audit.decoration.AuditDecorator;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
@@ -42,13 +40,17 @@ public final class Keys {
     public static final String API_PROTECTION_FILTER_HEAP_KEY = "ApiProtectionFilter";
 
     /**
-     * Key to retrieve a {@link AuditDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve a {@link AuditDecorator} instance
+     * from the {@link org.forgerock.openig.heap.Heap}.
      */
+    @Deprecated
     public static final String AUDIT_HEAP_KEY = "audit";
 
     /**
-     * Key to retrieve a default {@link AuditSystem} instance from the {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve a default {@link AuditSystem} instance
+     * from the {@link org.forgerock.openig.heap.Heap}.
      */
+    @Deprecated
     public static final String AUDIT_SYSTEM_HEAP_KEY = "AuditSystem";
 
     /**

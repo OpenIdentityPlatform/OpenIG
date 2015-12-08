@@ -24,8 +24,6 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.audit.AuditSource;
-import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -34,12 +32,13 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Intercept execution flow and send audit notifications with relevant tags.
  */
+@Deprecated
 class AuditFilter extends AuditBaseObject implements Filter {
     private final Filter delegate;
 
 
-    public AuditFilter(final AuditSystem auditSystem,
-                       final AuditSource source,
+    public AuditFilter(final org.forgerock.openig.audit.AuditSystem auditSystem,
+                       final org.forgerock.openig.audit.AuditSource source,
                        final Filter delegate,
                        final Set<String> additionalTags) {
         super(source, auditSystem, additionalTags);

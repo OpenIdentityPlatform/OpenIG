@@ -19,34 +19,31 @@ package org.forgerock.openig.audit.internal;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.forgerock.openig.audit.AuditEvent;
-import org.forgerock.openig.audit.AuditEventListener;
-import org.forgerock.openig.audit.AuditSystem;
-
 /**
  * Forward the {@link AuditEvent}s to the registered audit listeners (final consumers of the events).
  * <p>
  * No storage is done in this implementation for later connected agents notifications or for post-processing of
  * emitted events.
  */
-public class ForwardingAuditSystem implements AuditSystem {
+@Deprecated
+public class ForwardingAuditSystem implements org.forgerock.openig.audit.AuditSystem {
 
-    private final List<AuditEventListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<org.forgerock.openig.audit.AuditEventListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void onAuditEvent(final AuditEvent event) {
-        for (AuditEventListener listener : listeners) {
+    public void onAuditEvent(final org.forgerock.openig.audit.AuditEvent event) {
+        for (org.forgerock.openig.audit.AuditEventListener listener : listeners) {
             listener.onAuditEvent(event);
         }
     }
 
     @Override
-    public void registerListener(final AuditEventListener listener) {
+    public void registerListener(final org.forgerock.openig.audit.AuditEventListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void unregisterListener(final AuditEventListener listener) {
+    public void unregisterListener(final org.forgerock.openig.audit.AuditEventListener listener) {
         listeners.remove(listener);
     }
 }

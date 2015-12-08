@@ -15,6 +15,7 @@
  */
 
 /**
- * Contains a simple AuditSystem implementation.
+ * [ Deprecated ] Contains a simple AuditSystem implementation.
  */
+@Deprecated
 package org.forgerock.openig.audit.internal;
