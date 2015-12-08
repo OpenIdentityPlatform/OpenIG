@@ -21,6 +21,7 @@ package org.forgerock.openig.audit;
  *
  * @see AuditEvent
  */
+@Deprecated
 public interface AuditEventListener {
 
     /**

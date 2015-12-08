@@ -24,30 +24,32 @@ import java.util.TreeSet;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.audit.AuditEvent;
-import org.forgerock.openig.audit.AuditSource;
-import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.heap.HeapException;
 
 /**
  * The audit decorator can decorate both {@link Handler} and {@link Filter} instances.
- * It triggers notifications ({@link AuditEvent}) to an {@link AuditSystem} sink.
+ * It triggers notifications ({@link org.forgerock.openig.audit.AuditEvent}) to an
+ * {@link org.forgerock.openig.audit.AuditSystem} sink.
  * <p>
- * Each {@link AuditEvent} includes a source marker that will indicate that the event comes
+ * Each {@link org.forgerock.openig.audit.AuditEvent} includes a source marker that will indicate that the event comes
  * from the decorated component.
  * <p>
  * Each notification includes a set of <i>tags</i> that helps the notification receiver to filter the
  * events with simple matching rules. Here is the list of built-in tags:
  * <ul>
- *     <li>{@link Tag#request}: The event happens before the delegate {@link Filter}/{@link Handler} is called</li>
- *     <li>{@link Tag#response}: The event happens after the delegate {@link Filter}/{@link Handler} was called</li>
- *     <li>{@link Tag#completed}: The event happens when the request has been completely handled <b>successfully</b>
- *     by the processing unit (always complements a {@link Tag#response} tag)</li>
- *     <li>{@link Tag#exception}: The event happens when the request has been handled with <b>errors</b>
- *     by the processing unit (always complements a {@link Tag#response} tag). Notice that this does not indicate that
+ *     <li>{@link org.forgerock.openig.audit.Tag#request}: The event happens before the delegate
+ *     {@link Filter}/{@link Handler} is called</li>
+ *     <li>{@link org.forgerock.openig.audit.Tag#response}: The event happens after the delegate
+ *     {@link Filter}/{@link Handler} was called</li>
+ *     <li>{@link org.forgerock.openig.audit.Tag#completed}: The event happens when the request has been completely
+ *     handled <b>successfully</b>
+ *     by the processing unit (always complements a {@link org.forgerock.openig.audit.Tag#response} tag)</li>
+ *     <li>{@link org.forgerock.openig.audit.Tag#exception}: The event happens when the request has been handled
+ *     with <b>errors</b>
+ *     by the processing unit (always complements a {@link org.forgerock.openig.audit.Tag#response} tag).
+ *     Notice that this does not indicate that
  *     the source heap object is the origin of the failure (it may or may not have thrown the exception itself).</li>
  * </ul>
  * <p>
@@ -68,9 +70,10 @@ import org.forgerock.openig.heap.HeapException;
  *
  * @see Tag
  */
+@Deprecated
 public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
 
-    private final AuditSystem auditSystem;
+    private final org.forgerock.openig.audit.AuditSystem auditSystem;
 
     /**
      * Builds a new AuditDecorator that will send events to the provided AuditSystem.
@@ -78,7 +81,7 @@ public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
      * @param auditSystem
      *         AuditSystem reference (cannot be {@code null})
      */
-    public AuditDecorator(final AuditSystem auditSystem) {
+    public AuditDecorator(final org.forgerock.openig.audit.AuditSystem auditSystem) {
         this.auditSystem = checkNotNull(auditSystem);
     }
 
@@ -94,8 +97,8 @@ public class AuditDecorator extends AbstractHandlerAndFilterDecorator {
         return new AuditHandler(auditSystem, source(context), delegate, getAdditionalTags(decoratorConfig));
     }
 
-    private static AuditSource source(final Context context) {
-        return new AuditSource(context.getName());
+    private static org.forgerock.openig.audit.AuditSource source(final Context context) {
+        return new org.forgerock.openig.audit.AuditSource(context.getName());
     }
 
     private static Set<String> getAdditionalTags(final JsonValue config) {

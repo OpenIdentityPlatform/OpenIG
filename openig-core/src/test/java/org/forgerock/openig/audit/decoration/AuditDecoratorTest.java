@@ -29,7 +29,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.audit.AuditEvent;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
@@ -40,8 +39,9 @@ import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
-public class AuditDecoratorTest extends AbstractAuditTest {
+public class AuditDecoratorTest extends org.forgerock.openig.audit.decoration.AbstractAuditTest {
 
     @Mock
     private Filter filter;
@@ -78,7 +78,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
-        final AuditEvent event = captor.getValue();
+        final org.forgerock.openig.audit.AuditEvent event = captor.getValue();
         assertThat(event.getTags()).containsExactly("response", "completed");
     }
 
@@ -88,7 +88,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
-        final AuditEvent event = captor.getValue();
+        final org.forgerock.openig.audit.AuditEvent event = captor.getValue();
         assertThat(event.getTags()).containsExactly("tag-1", "response", "completed");
     }
 
@@ -98,7 +98,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
-        final AuditEvent event = captor.getValue();
+        final org.forgerock.openig.audit.AuditEvent event = captor.getValue();
         assertThat(event.getTags()).containsExactly("tag-1", "tag-2", "response", "completed");
     }
 
@@ -108,7 +108,7 @@ public class AuditDecoratorTest extends AbstractAuditTest {
         decorated.handle(new RootContext(), new Request());
 
         verify(auditSystem, atLeastOnce()).onAuditEvent(captor.capture());
-        final AuditEvent event = captor.getValue();
+        final org.forgerock.openig.audit.AuditEvent event = captor.getValue();
         assertThat(event.getTags()).containsExactly("tag-1", "response", "completed");
     }
 

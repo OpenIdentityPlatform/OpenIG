@@ -34,6 +34,7 @@ import org.forgerock.openig.heap.HeapException;
  * <p>
  * This class is not intended to be sub-classed, although its associated {@link org.forgerock.openig.heap.Heaplet} is.
  */
+@Deprecated
 public class ConditionalAuditEventListener implements AuditEventListener {
 
     private final AuditEventListener delegate;
@@ -81,6 +82,7 @@ public class ConditionalAuditEventListener implements AuditEventListener {
      * to forward the event notification to the real listener. It defaults to {@code ${true}} (will always invoke the
      * delegate).
      */
+    @Deprecated
     public abstract static class ConditionalListenerHeaplet extends GenericHeaplet {
 
         private AuditSystem auditSystem;

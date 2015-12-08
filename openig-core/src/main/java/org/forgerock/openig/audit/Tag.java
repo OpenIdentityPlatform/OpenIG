@@ -25,6 +25,7 @@ import org.forgerock.http.Handler;
  * <p>
  * Notice that, when audit decorator developers are adding new tags, they have to keep this set of values in sync.
  */
+@Deprecated
 public enum Tag {
 
     /**

@@ -15,6 +15,7 @@
  */
 
 /**
- * Contains the audit framework APIs.
+ * [ Deprecated ] Contains the audit framework APIs.
  */
+@Deprecated
 package org.forgerock.openig.audit;

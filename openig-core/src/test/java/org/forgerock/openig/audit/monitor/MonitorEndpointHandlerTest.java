@@ -26,20 +26,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.audit.AuditEvent;
-import org.forgerock.openig.audit.AuditSource;
-import org.forgerock.openig.audit.Tag;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.util.EnumUtil;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
 public class MonitorEndpointHandlerTest {
 
     @DataProvider
     public static Object[][] standardTags() {
-        Set<String> names = EnumUtil.names(Tag.class);
+        Set<String> names = EnumUtil.names(org.forgerock.openig.audit.Tag.class);
         Object[][] values = new Object[4][1];
         int index = 0;
         for (String name : names) {
@@ -110,8 +108,8 @@ public class MonitorEndpointHandlerTest {
         return (Map) response.getEntity().getJson();
     }
 
-    private static AuditEvent buildAuditEvent(final String... tags) {
-        return new AuditEvent(new AuditSource(Name.of("source")),
+    private static org.forgerock.openig.audit.AuditEvent buildAuditEvent(final String... tags) {
+        return new org.forgerock.openig.audit.AuditEvent(new org.forgerock.openig.audit.AuditSource(Name.of("source")),
                               System.currentTimeMillis(),
                               bindings(),
                               asList(tags));

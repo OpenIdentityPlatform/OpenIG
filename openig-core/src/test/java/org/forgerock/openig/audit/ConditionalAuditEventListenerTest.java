@@ -30,6 +30,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
 public class ConditionalAuditEventListenerTest {
 
