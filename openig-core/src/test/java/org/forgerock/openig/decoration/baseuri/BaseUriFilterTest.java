@@ -88,7 +88,7 @@ public class BaseUriFilterTest {
         verify(logger).error(anyString());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test
     public void shouldFailWhenRebasingFail() throws Exception {
         final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
                                                               Expression.valueOf(
@@ -96,7 +96,10 @@ public class BaseUriFilterTest {
                                                               logger);
 
         final Request request = createRequest();
-        baseUriFilter.filter(context, request, terminal);
+        final Response response = baseUriFilter.filter(context, request, terminal).get();
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(response.getEntity().getString()).isEmpty();
+        assertThat(response.getCause()).isInstanceOf(URISyntaxException.class);
         verify(logger).error(anyString());
     }
 
