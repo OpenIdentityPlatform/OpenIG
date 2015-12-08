@@ -20,32 +20,52 @@ Copyright: Copyright 1999-2015 The Apache Software Foundation
 Version: httpclient-4.4.1.jar
 Copyright: Copyright 1999-2015 The Apache Software Foundation
 
-Version: httpclient-async-4.1.jar
+Version: httpasyncclient-4.1.jar
 Copyright: Copyright 1999-2015 The Apache Software Foundation
 
-Version: jackson-annotations-2.5.0.jar
+Version: jackson-annotations-2.6.3.jar
 Copyright: Copyright 2007-2015 The Apache Software Foundation
 
-Version: jackson-core-2.5.3.jar
+Version: jackson-core-2.6.3.jar
 Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
 
-Version: jackson-databind-2.5.3.jar
+Version: jackson-databind-2.6.3.jar
 Copyright: Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
 
-Version: juel-api-2.2.7.jar 
+Version: jackson-module-jsonSchema-2.6.3.jar
+Copyright: Copyright 2013 FasterXML.
+
+Version: joda-time-2.1.jar
+Copyright: Copyright (c) 2001-2006 - Joda.org
+           Copyright 2001-2012 Stephen Colebourne
+
+Version: juel-api-2.2.7.jar
 Copyright: Copyright 2006-2009 Odysseus Software GmbH
 
 Version: juel-impl-2.2.7.jar
 Copyright: Copyright 2006-2009 Odysseus Software GmbH
 
 Version: metrics-core-3.1.2.jar
-Copyright: Copyright (c) 2010-2014 Coda Hale, Yammer.com
+Copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
+           Copyright 2010-2013 Coda Hale and Yammer, Inc.
+           Copyright 2012 Twitter, Inc
+           Copyright (C) 2012 Ryan W Tenney (ryan@10e.us)
 
 Version: groovy-all-2.3.1.jar
 Copyright: Copyright 2003-2013 The Codehaus. All rights reserved.
 
 Version: ivy-2.4.0.jar
 Copyright: Copyright 2007-2014 The Apache Software Foundation
+
+Version: super-csv-2.4.0.jar
+Copyright: Copyright 2007-2015 Kasper B. Graversen
+
+Version: validation-api-1.1.0.Final.jar
+Copyright: Copyright 2009-2013 Red Hat, Inc. and/or its affiliates, and individual contributors
+
+Version: org.apache.servicemix.bundles.javax-inject-1_2.jar
+Copyright: Copyright (C) 2009 The JSR-330 Expert Group
+           Copyright 2011-2012 The Apache Software Foundation
 
 ==================
 Full license text:
@@ -130,6 +150,88 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 Version: activation-1.1.jar
 Copyright: Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
+Version: chf-http-core-3.0.0.jar
+Copyright: Copyright 2012-2015 ForgeRock AS.
+           Copyright 2010-2011 ApexIdentity Inc.
+           Copyright 2009 Sun Microsystems Inc.
+           Portions Copyright 2011-2015 ForgeRock AS.
+           Portions Copyright 2010-2011 ApexIdentity Inc.
+
+Version: chf-client-apache-async-3.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: chf-client-apache-common-3.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: chf-http-servlet-3.0.0.jar
+Copyright: Copyright 2010–2011 ApexIdentity Inc.
+           Copyright 2012-2015 ForgeRock AS.
+           Portions Copyright 2011-2015 ForgeRock AS.
+
+Version: forgerock-util-3.0.1.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
+           Copyright (c) 2010-2011 ApexIdentity Inc. All rights reserved.
+           Portions Copyright 2011-2015 ForgeRock AS.
+
+Version: forgerock-audit-core-4.0.0.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
+           Copyright 2013 Cybernetica AS
+           Copyright 2006-2008 Sun Microsystems, Inc.
+           Portions Copyright 2013-2015 ForgeRock AS.
+
+Version: forgerock-audit-handler-csv-4.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: forgerock-audit-handler-jdbc-4.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: forgerock-audit-handler-syslog-4.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+           Copyright 2013 Cybernetica AS
+
+Version: forgerock-audit-json-4.0.0.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: forgerock-guava-annotations-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-base-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-cache-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-collect-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-concurrent-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-math-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: forgerock-guava-primitives-18.0.3.jar
+Copyright: Copyright (C) 2005-2014 The Guava Authors
+           Copyright 2014-2015 ForgeRock AS.
+
+Version: javax.mail-1.5.1.jar
+Copyright: Copyright (c) 2005-2010 Oracle and/or its affiliates. All rights reserved.
+
+Version: json-resource-4.0.3.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
+
+Version: json-resource-http-4.0.3.jar
+Copyright: Copyright 2012-2015 ForgeRock AS.
+
+Version: json-web-token-3.0.2.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
+
 Version: grizzly-framework-2.3.23.jar
 Copyright: Copyright (c) 2007-2015 Oracle and/or its affiliates. All rights reserved.
 
@@ -147,29 +249,44 @@ Copyright: Copyright 2009 Sun Microsystems, Inc
 Version: i18n-slf4j-1.4.2.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
 
-Verions: openig-core-4.0.0.jar
-Copyright: Copyright 2011-2014 ForgeRock AS. 
+Version: openig-core-4.0.0-SNAPSHOT.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
            Portions Copyright 2010–2011 ApexIdentity Inc.
 
-Verions: openig-saml-4.0.0.jar
-Copyright: Copyright 2011-2014 ForgeRock AS. 
+Version: openig-saml-4.0.0-SNAPSHOT.jar
+Copyright: Copyright 2011-2015 ForgeRock AS.
            Portions Copyright 2010–2011 ApexIdentity Inc.
+
+Version: openig-oauth2-4.0.0-SNAPSHOT.jar
+Copyright: Copyright 2014-2015 ForgeRock AS.
+
+Version: openig-openam-4.0.0-SNAPSHOT.jar
+Copyright: Copyright 2015 ForgeRock AS.
+
+Version: openig-uma-4.0.0-SNAPSHOT.jar
+Copyright: Copyright 2015 ForgeRock AS.
 
 Version: sharedlib-10.0.2.jar
 Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved., 
            Copyright (C) 1999 Netscape Communications Corporation. 
-           Portions Copyrighted 2010-2011 ForgeRock AS, 
+           Portions Copyright 2010-2011 ForgeRock AS,
 
 Version: fedlib-10.0.2.jar
 Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved. 
-           Portions Copyrighted 2011-20134 ForgeRock AS, 
-           Portions Copyrighted 2013-2014 Nomura Research Institute, Ltd 
+           Portions Copyright 2011-20134 ForgeRock AS,
+           Portions Copyright 2013-2014 Nomura Research Institute, Ltd
 
 Version: opendj-core-3.0.0-M5.jar
-Copyright: Copyright (c) 2011-2015 ForgeRock AS.
+Copyright: Copyright 2011-2015 ForgeRock AS.
+           Copyright 2006-2011 Sun Microsystems, Inc.
+           Copyright 2013-2014 Manuel Gaupp
+           Portions Copyright 2011-2015 ForgeRock AS.
+           Portions Copyright 2012-2014 Manuel Gaupp
 
 Version: opendj-grizzly-3.0.0-M5.jar
-Copyright: Copyright (c) 2011-2015 ForgeRock AS.
+Copyright: Copyright 2013-2015 ForgeRock AS.
+           Copyright 2009-2010 Sun Microsystems, Inc.
+           Portions Copyright 2011-2015 ForgeRock AS.
 
 ==================
 Full license text:
