@@ -73,7 +73,7 @@ import org.forgerock.util.promise.Promise;
  * @see RouterHandler
  * @since 2.2
  */
-class Route implements Handler {
+abstract class Route implements Handler {
 
     /**
      * Main entry point of this route.
@@ -124,9 +124,14 @@ class Route implements Handler {
     }
 
     /**
-     * Cleanup the resources used by this route. May be overridden by sub-classes.
+     * Hook this route into the system.
      */
-    public void destroy() { }
+    public abstract void start();
+
+    /**
+     * Cleanup the resources used by this route.
+     */
+    public abstract void destroy();
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
