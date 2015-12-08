@@ -303,7 +303,11 @@ public class HeapImpl implements Heap {
 
     @Override
     public <T> T get(final String name, final Class<T> type) throws HeapException {
-        ExtractedObject extracted = extract(name);
+        return get(name, type, true);
+    }
+
+    private <T> T get(final String name, final Class<T> type, final boolean parentLookup) throws HeapException {
+        ExtractedObject extracted = extract(name, parentLookup);
         if (extracted.object == null) {
             return null;
         }
@@ -325,6 +329,24 @@ public class HeapImpl implements Heap {
      * @throws HeapException if extraction failed
      */
     ExtractedObject extract(final String name) throws HeapException {
+        return extract(name, true);
+    }
+
+    /**
+     * Extract the given named heap object from this heap or its parent (if any, and {@literal parentLookup} is true).
+     * The returned pointer is never {@code null} but can contains {@code null} {@literal object} and {@literal
+     * context}.
+     * The {@literal object} reference has only be decorated with it's locally (per-heaplet) defined decorations.
+     * This is the responsibility of the initial 'requester' heap (the one that have its {@link #get(String, Class)}
+     * method called in the first place) to complete the decoration with global decorators.
+     *
+     * @param name heap object name
+     * @param parentLookup shall we try to lookup into the parent's heap or not ?
+     * @return an {@link ExtractedObject} pair-like structure that may contains both the heap object and its
+     * associated context (never returns {@code null})
+     * @throws HeapException if extraction failed
+     */
+    ExtractedObject extract(final String name, final boolean parentLookup) throws HeapException {
         if (resolving.contains(name)) {
             // Fail for recursive object resolution
             throw new HeapException(
@@ -347,7 +369,7 @@ public class HeapImpl implements Heap {
                 } finally {
                     resolving.pop();
                 }
-            } else if (parent != null) {
+            } else if (parentLookup && parent != null) {
                 // no heaplet available, query parent (if any)
                 return parent.extract(name);
             }
@@ -371,8 +393,8 @@ public class HeapImpl implements Heap {
         // Otherwise we require a value
         JsonValue required = reference.required();
         if (required.isString()) {
-            // handle named reference
-            T value = get(required.asString(), type);
+            // handle named reference; lookup into the parent's heap if not found in the local one
+            T value = get(required.asString(), type, true);
             if (value == null) {
                 throw new JsonValueException(reference, "Object " + reference.asString() + " not found in heap");
             }
@@ -382,13 +404,15 @@ public class HeapImpl implements Heap {
             String generated = name(required);
 
             // when resolve() is called multiple times with the same reference, this prevent "already registered" errors
-            T value = get(generated, type);
+            // do not lookup into parent's heap : if an object is declared with the same name into the parent's heap, it
+            // must not have the priority over the one we are currently declaring.
+            T value = get(generated, type, false);
             if (value == null) {
                 // First resolution
                 required.put("name", generated);
                 addDeclaration(required);
                 // Get decorated object
-                value = get(generated, type);
+                value = get(generated, type, false);
                 if (value == null) {
                     // Very unlikely to happen
                     throw new JsonValueException(reference, "Reference is not a valid heap object");
