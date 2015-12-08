@@ -67,8 +67,11 @@ public class RouteTest {
     }
 
     private Route createRoute(final Expression<Boolean> condition) {
-        return new Route(handler,
-                         "router",
-                         condition);
+        return new Route(handler, "router", condition) {
+            @Override
+            public void start() { }
+            @Override
+            public void destroy() { }
+        };
     }
 }

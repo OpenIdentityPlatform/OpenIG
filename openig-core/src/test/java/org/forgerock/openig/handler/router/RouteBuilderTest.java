@@ -158,6 +158,7 @@ public class RouteBuilderTest {
     public void testConditionalRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("conditional-route.json"));
+        route.start();
 
         AttributesContext context = new AttributesContext(new RootContext());
         context.getAttributes().put("value", 42);
@@ -170,6 +171,7 @@ public class RouteBuilderTest {
     public void testNamedRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("named-route.json"));
+        route.start();
         assertThat(route.getName()).isEqualTo("my-route");
     }
 
@@ -194,6 +196,7 @@ public class RouteBuilderTest {
     public void testRouteDestroy() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(new File(getTestResourceDirectory("routes"), "destroy-test.json"));
+        route.start();
 
         assertThat(DestroyDetectHandler.destroyed).isFalse();
         route.destroy();
@@ -204,6 +207,7 @@ public class RouteBuilderTest {
     public void testRebaseUriRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
+        route.start();
 
         Context context = new RootContext();
         Request request = new Request();
@@ -218,6 +222,7 @@ public class RouteBuilderTest {
     public void testSessionRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("session-route.json"));
+        route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
         SessionContext sessionContext = new SessionContext(new RootContext(), simpleSession);
@@ -236,6 +241,7 @@ public class RouteBuilderTest {
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
         RouteBuilder builder = newRouteBuilder();
         Route route = builder.build(getTestResourceFile("session-route.json"));
+        route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
         simpleSession.put("foo", "bar");
@@ -260,6 +266,7 @@ public class RouteBuilderTest {
         Router router = new Router();
         RouteBuilder builder = newRouteBuilder(router);
         Route route = builder.build(getTestResourceFile("api-registration.json"));
+        route.start();
 
         // Ensure that api endpoint is working
         Request request = new Request().setUri("/registration-test/objects/register/ping");
@@ -276,7 +283,8 @@ public class RouteBuilderTest {
     public void testMonitoringIsEnabled() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
-        builder.build(getTestResourceFile("monitored-route.json"));
+        Route route = builder.build(getTestResourceFile("monitored-route.json"));
+        route.start();
 
         Request request = new Request().setMethod("GET").setUri("/monitored/monitoring");
         Response response = router.handle(new AttributesContext(new RootContext()), request).get();
@@ -290,7 +298,8 @@ public class RouteBuilderTest {
     public void testMonitoringIsDisabledByDefault() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
-        builder.build(getTestResourceFile("not-monitored-route.json"));
+        Route route = builder.build(getTestResourceFile("not-monitored-route.json"));
+        route.start();
 
         Request request = new Request().setMethod("GET").setUri("/not-monitored-route/monitoring");
         Response response = router.handle(new AttributesContext(new RootContext()), request).get();
@@ -333,7 +342,8 @@ public class RouteBuilderTest {
         Router router = new Router();
         heap.put("Forwarder", new ResponseHandler(Status.ACCEPTED));
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router));
-        builder.build(config, Name.of("route"), "route");
+        Route route = builder.build(config, Name.of("route"), "route");
+        route.start();
 
         // When
         Request request = new Request().setMethod("GET").setUri("/route/monitoring");

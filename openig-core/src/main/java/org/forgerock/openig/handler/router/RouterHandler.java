@@ -223,6 +223,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             route.destroy();
             return;
         }
+        route.start();
         sorted.add(route);
         routes.put(file, route);
         logger.info(format("Added route '%s' defined in file '%s'", name, file));
@@ -263,6 +264,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             sorted.remove(oldRoute);
             oldRoute.destroy();
         }
+        newRoute.start();
         sorted.add(newRoute);
         routes.put(file, newRoute);
         logger.info(format("Modified route '%s' defined in file '%s'", newRoute.getName(), file));
