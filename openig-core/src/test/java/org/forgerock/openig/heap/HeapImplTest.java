@@ -419,6 +419,20 @@ public class HeapImplTest {
         assertThat(child.getAll(Architect.class)).isEmpty();
     }
 
+    @Test
+    public void shouldUseOnlyLocalHeapForInlineDeclaration() throws Exception {
+        HeapImpl parentHeap = buildDefaultHeap();
+        parentHeap.init(asJson("heap-object-creation.json"));
+
+        HeapImpl childHeap = new HeapImpl(parentHeap);
+        childHeap.init(asJson("heap-with-no-objects.json"));
+
+        JsonValue config = json(object(field("type", "org.forgerock.openig.heap.HeapObject"),
+                                       field("name", "heap-object"),
+                                       field("config", object(field("message", "child")))));
+        HeapObject resolved = childHeap.resolve(config, HeapObject.class);
+        assertThat(resolved.message).isEqualTo("child");
+    }
 
     private JsonValue asJson(final String resourceName) throws Exception {
         final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));

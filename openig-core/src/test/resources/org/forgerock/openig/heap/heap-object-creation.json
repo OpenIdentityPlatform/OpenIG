@@ -2,7 +2,10 @@
     "heap": [
         {
             "name": "heap-object",
-            "type": "org.forgerock.openig.heap.HeapObject"
+            "type": "org.forgerock.openig.heap.HeapObject",
+            "config" : {
+                "message" : "parent"
+            }
         }
     ]
 }
