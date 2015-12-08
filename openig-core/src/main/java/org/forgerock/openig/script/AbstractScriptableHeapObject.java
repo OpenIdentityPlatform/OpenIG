@@ -21,6 +21,7 @@ import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -130,7 +131,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
                     );
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
-                final String script = config.get(CONFIG_OPTION_FILE).asString();
+                final String script = evaluate(config.get(CONFIG_OPTION_FILE));
                 try {
                     return Script.fromFile(environment, mimeType, script);
                 } catch (final ScriptException e) {
