@@ -18,7 +18,6 @@ package org.forgerock.openig.audit;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.openig.heap.Heap;
@@ -30,6 +29,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
 public class ConditionalListenerHeapletTest {
 
@@ -48,9 +48,10 @@ public class ConditionalListenerHeapletTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(heap.get(AUDIT_SYSTEM_HEAP_KEY, AuditSystem.class)).thenReturn(system);
+        when(heap.get(org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY, AuditSystem.class)).thenReturn(system);
     }
 
+    @Deprecated
     private class TestingHeaplet extends ConditionalAuditEventListener.ConditionalListenerHeaplet {
         @Override
         protected AuditEventListener createListener() {

@@ -98,6 +98,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 3.1.0
  */
+@SuppressWarnings("deprecation")
 public final class GatewayHttpApplication implements HttpApplication {
     /**
      * {@link Logger} instance for the openig-war module.

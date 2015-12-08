@@ -23,8 +23,6 @@ import java.util.Set;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.audit.AuditSource;
-import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -33,11 +31,12 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Intercept execution flow and send audit notifications with relevant tags.
  */
+@Deprecated
 class AuditHandler extends AuditBaseObject implements Handler {
     private final Handler delegate;
 
-    public AuditHandler(final AuditSystem auditSystem,
-                        final AuditSource source,
+    public AuditHandler(final org.forgerock.openig.audit.AuditSystem auditSystem,
+                        final org.forgerock.openig.audit.AuditSource source,
                         final Handler delegate,
                         final Set<String> additional) {
         super(source, auditSystem, additional);

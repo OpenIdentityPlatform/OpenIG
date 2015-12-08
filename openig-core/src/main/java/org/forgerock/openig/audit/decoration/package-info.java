@@ -15,6 +15,7 @@
  */
 
 /**
- * Contains the audit decorator and related filter/handler interceptors.
+ * [ Deprecated ] Contains the audit decorator and related filter/handler interceptors.
  */
+@Deprecated
 package org.forgerock.openig.audit.decoration;

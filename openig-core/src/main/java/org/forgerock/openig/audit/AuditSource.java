@@ -31,6 +31,7 @@ import org.forgerock.openig.heap.Name;
  * Notice that AuditSource is an immutable object.
  * @see AuditEvent
  */
+@Deprecated
 public class AuditSource {
     private final Name name;
 

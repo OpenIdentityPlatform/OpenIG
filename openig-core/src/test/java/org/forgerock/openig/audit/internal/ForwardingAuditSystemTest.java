@@ -18,17 +18,17 @@ package org.forgerock.openig.audit.internal;
 
 import static org.mockito.Mockito.*;
 
-import org.forgerock.openig.audit.AuditEventListener;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
 public class ForwardingAuditSystemTest {
 
     @Mock
-    private AuditEventListener listener;
+    private org.forgerock.openig.audit.AuditEventListener listener;
 
     @BeforeMethod
     public void setUp() throws Exception {

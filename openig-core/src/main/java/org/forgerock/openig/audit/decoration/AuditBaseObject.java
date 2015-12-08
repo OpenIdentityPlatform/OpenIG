@@ -16,17 +16,9 @@
 package org.forgerock.openig.audit.decoration;
 
 import static java.util.Arrays.asList;
-import static org.forgerock.openig.audit.Tag.completed;
-import static org.forgerock.openig.audit.Tag.exception;
-import static org.forgerock.openig.audit.Tag.request;
-import static org.forgerock.openig.audit.Tag.response;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.forgerock.openig.audit.AuditEvent;
-import org.forgerock.openig.audit.AuditSource;
-import org.forgerock.openig.audit.AuditSystem;
 import org.forgerock.openig.el.Bindings;
 
 /**
@@ -34,26 +26,32 @@ import org.forgerock.openig.el.Bindings;
  * @see AuditFilter
  * @see AuditHandler
  */
+@Deprecated
 abstract class AuditBaseObject {
-    private final AuditSource source;
-    private final AuditSystem auditSystem;
+    private final org.forgerock.openig.audit.AuditSource source;
+    private final org.forgerock.openig.audit.AuditSystem auditSystem;
 
     protected final Set<String> requestTags;
     protected final Set<String> completedResponseTags;
     protected final Set<String> failedResponseTags;
 
-    public AuditBaseObject(final AuditSource source,
-                           final AuditSystem auditSystem,
+    public AuditBaseObject(final org.forgerock.openig.audit.AuditSource source,
+                           final org.forgerock.openig.audit.AuditSystem auditSystem,
                            final Set<String> additionalTags) {
         this.source = source;
         this.auditSystem = auditSystem;
-        this.requestTags = tags(additionalTags, request.name());
-        this.completedResponseTags = tags(additionalTags, response.name(), completed.name());
-        this.failedResponseTags = tags(additionalTags, response.name(), exception.name());
+        this.requestTags = tags(additionalTags, org.forgerock.openig.audit.Tag.request.name());
+        this.completedResponseTags = tags(additionalTags,
+                                          org.forgerock.openig.audit.Tag.response.name(),
+                                          org.forgerock.openig.audit.Tag.completed.name());
+        this.failedResponseTags = tags(additionalTags,
+                                       org.forgerock.openig.audit.Tag.response.name(),
+                                       org.forgerock.openig.audit.Tag.exception.name());
     }
 
     protected void fireAuditEvent(final Bindings bindings, final Set<String> tags) {
-        AuditEvent event = new AuditEvent(source, System.currentTimeMillis(), bindings, tags);
+        org.forgerock.openig.audit.AuditEvent event =
+                new org.forgerock.openig.audit.AuditEvent(source, System.currentTimeMillis(), bindings, tags);
         auditSystem.onAuditEvent(event);
     }
 

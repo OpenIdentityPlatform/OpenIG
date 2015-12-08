@@ -33,6 +33,7 @@ import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.testng.annotations.Test;
 
+@Deprecated
 @SuppressWarnings("javadoc")
 public class AuditFilterTest extends AbstractAuditTest {
 

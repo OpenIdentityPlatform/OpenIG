@@ -15,6 +15,8 @@
  */
 
 /**
- * Contains a simple monitoring endpoint that returns monitoring statistics of audited components.
+ * [ Deprecated ] Contains a simple monitoring endpoint that returns monitoring
+ * statistics of audited components.
  */
+@Deprecated
 package org.forgerock.openig.audit.monitor;

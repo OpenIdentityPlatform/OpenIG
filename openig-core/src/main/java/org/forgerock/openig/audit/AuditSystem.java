@@ -28,6 +28,7 @@ package org.forgerock.openig.audit;
  *     <li>Pre-filter the notifications</li>
  * </ul>
  */
+@Deprecated
 public interface AuditSystem extends AuditEventListener {
     /**
      * Registers an event listener into this audit system.
