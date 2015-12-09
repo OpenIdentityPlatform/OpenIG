@@ -62,19 +62,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-csv</artifactId>
-        <scope>runtime</scope>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-csv</artifactId>
+      <scope>runtime</scope>
     </dependency>
-     <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-syslog</artifactId>
-        <scope>runtime</scope>
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-syslog</artifactId>
+      <scope>runtime</scope>
     </dependency>
-     <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-jdbc</artifactId>
-        <scope>runtime</scope>
+    <dependency>
+      <groupId>org.forgerock.commons</groupId>
+      <artifactId>forgerock-audit-handler-jdbc</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
   <build>
