@@ -94,7 +94,6 @@ public class HttpAccessAuditFilterTest {
         assertThat(content.get("response").get("elapsedTimeUnits").asString()).isEqualTo("MILLISECONDS");
         assertThat(content.get("response").get("statusCode").asString()).isEqualTo(String.valueOf(status.getCode()));
         assertThat(content.get("server").get("ip").asString()).isEqualTo("127.0.0.1");
-        assertThat(content.get("server").get("host").asString()).isEqualTo("myserver");
         assertThat(content.get("server").get("port").asInteger()).isEqualTo(80);
         assertThat(content.get("http").get("request").get("method").asString()).isEqualTo("GET");
         assertThat(content.get("http").get("request").get("path").asString())
@@ -108,7 +107,6 @@ public class HttpAccessAuditFilterTest {
         context = new TransactionIdContext(context, new TransactionId("txId"));
         context = buildExternalClientContext(context)
                 .localAddress("127.0.0.1")
-                .localName("myserver")
                 .localPort(80)
                 .build();
         context = new RequestAuditContext(context, time);
