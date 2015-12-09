@@ -124,7 +124,7 @@ class RouteBuilder {
         routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects));
 
         try {
-            routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "audit-service",
+            routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "auditService",
                            "globalDecorators", "monitor");
 
             Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
