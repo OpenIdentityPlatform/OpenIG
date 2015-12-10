@@ -3,7 +3,7 @@ import org.forgerock.http.protocol.Status
 
 /*
  * This simplistic dispatcher matches the path part of the HTTP request.
- * If the path is /login, it checks Username and Password headers,
+ * If the path is /mylogin, it checks Username and Password headers,
  * accepting bjensen:hifalutin, and returning HTTP 403 Forbidden to others.
  * Otherwise it returns HTTP 401 Unauthorized.
  */
@@ -14,7 +14,7 @@ response = new Response();
 
 switch (request.uri.path) {
 
-    case "/login":
+    case "/mylogin":
 
         if (request.headers.Username.values[0] == "bjensen" &&
                 request.headers.Password.values[0] == "hifalutin") {
