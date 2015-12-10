@@ -76,71 +76,9 @@
       <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>forgerock-bom</artifactId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
-
-      <!-- ForgeRock HTTP Framework dependencies -->
-      <dependency>
-        <groupId>org.forgerock.http</groupId>
-        <artifactId>chf-client-apache-async</artifactId>
-        <version>${forgerock-http-framework.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.http</groupId>
-        <artifactId>chf-client-apache-common</artifactId>
-        <version>${forgerock-http-framework.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.http</groupId>
-        <artifactId>chf-client-apache-sync</artifactId>
-        <version>${forgerock-http-framework.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.http</groupId>
-        <artifactId>chf-http-core</artifactId>
-        <version>${forgerock-http-framework.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.http</groupId>
-        <artifactId>chf-http-servlet</artifactId>
-        <version>${forgerock-http-framework.version}</version>
-      </dependency>
-
-      <!-- ForgeRock Commons Audit Framework dependencies -->
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-core</artifactId>
-        <version>${caud.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-json</artifactId>
-        <version>${caud.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-csv</artifactId>
-        <version>${caud.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-syslog</artifactId>
-        <version>${caud.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.forgerock.commons</groupId>
-        <artifactId>forgerock-audit-handler-jdbc</artifactId>
-        <version>${caud.version}</version>
       </dependency>
 
       <dependency>
@@ -159,9 +97,6 @@
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
-
-    <forgerock-http-framework.version>3.0.0-SNAPSHOT</forgerock-http-framework.version>
-    <caud.version>4.0.0-SNAPSHOT</caud.version>
   </properties>
 
   <repositories>
