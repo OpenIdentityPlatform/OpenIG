@@ -193,7 +193,7 @@ public class GroovyScriptableFilterTest {
 
         // Try with valid credentials
         Request one = new Request();
-        one.setUri(new URI("http://test/login"));
+        one.setUri(new URI("http://test/mylogin"));
         one.getHeaders().add("Username", "bjensen");
         one.getHeaders().add("Password", "hifalutin");
         Promise<Response, NeverThrowsException> promise1 = handler.handle(new RootContext(), one);
@@ -201,7 +201,7 @@ public class GroovyScriptableFilterTest {
 
         // Try with invalid credentials
         Request two = new Request();
-        two.setUri(new URI("http://test/login"));
+        two.setUri(new URI("http://test/mylogin"));
         two.getHeaders().add("Username", "bob");
         two.getHeaders().add("Password", "dobbs");
         Promise<Response, NeverThrowsException> promise2 = handler.handle(new RootContext(), two);
