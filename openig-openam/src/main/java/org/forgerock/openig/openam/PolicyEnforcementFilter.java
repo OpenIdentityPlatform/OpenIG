@@ -437,6 +437,16 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             }
             return new URI(builder.toString());
         }
+
+        @Override
+        public void destroy() {
+            if (executor != null) {
+                executor.shutdownNow();
+            }
+            if (cache != null) {
+                cache.clear();
+            }
+        }
     }
 
     private class ApiVersionProtocolHeaderFilter implements Filter {
