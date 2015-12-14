@@ -59,6 +59,7 @@ public class MetricsFilterTest {
         assertThat(metrics.getTotalResponseCount().getCount()).isEqualTo(1);
         assertThat(metrics.getErrorsResponseCount().getCount()).isEqualTo(0);
         assertThat(metrics.getOtherResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getNullResponseCount().getCount()).isEqualTo(0);
 
         assertThat(metrics.getInformativeResponseCount().getCount()).isEqualTo(0);
         assertThat(metrics.getSuccessResponseCount().getCount()).isEqualTo(1);
@@ -95,4 +96,17 @@ public class MetricsFilterTest {
         assertThat(counter.getCount()).isEqualTo(0);
     }
 
+    @Test
+    public void shouldCountNullResponse() throws Exception {
+        final MonitoringMetrics metrics = new MonitoringMetrics();
+
+        new MetricsFilter(metrics).filter(null,
+                                          new Request(),
+                                          new ResponseHandler((Response) null));
+
+        assertThat(metrics.getTotalRequestCount().getCount()).isEqualTo(1);
+        assertThat(metrics.getNullResponseCount().getCount()).isEqualTo(1);
+        assertThat(metrics.getSuccessResponseCount().getCount()).isEqualTo(0);
+        assertThat(metrics.getTotalResponseCount().getCount()).isEqualTo(1);
+    }
 }

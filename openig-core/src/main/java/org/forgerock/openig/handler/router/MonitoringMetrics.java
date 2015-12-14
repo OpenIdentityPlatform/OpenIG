@@ -33,6 +33,7 @@ class MonitoringMetrics {
     private final Counter serverErrorResponseCount;
     private final Counter otherResponseCount;
     private final Counter errorsResponseCount;
+    private final Counter nullResponseCount;
     private final Counter totalRequestCount;
     private final Counter activeRequestCount;
     private final Meter throughput;
@@ -48,6 +49,7 @@ class MonitoringMetrics {
         this.serverErrorResponseCount = new Counter();
         this.otherResponseCount = new Counter();
         this.errorsResponseCount = new Counter();
+        this.nullResponseCount = new Counter();
 
         this.totalRequestCount = new Counter();
         this.activeRequestCount = new Counter();
@@ -87,6 +89,10 @@ class MonitoringMetrics {
 
     public Counter getErrorsResponseCount() {
         return errorsResponseCount;
+    }
+
+    public Counter getNullResponseCount() {
+        return nullResponseCount;
     }
 
     public Counter getTotalRequestCount() {

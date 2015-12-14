@@ -106,6 +106,13 @@ public class JwtCookieSessionTest {
         keyPair = new KeyPair(publicKey, privateKey);
     }
 
+    @Test(expectedExceptions = NullPointerException.class)
+    public void shouldFailToSaveIfResponseIsNull() throws Exception {
+        JwtCookieSession session = newJwtSession(new Request());
+        session.clear(); // Set dirty on
+        session.save(null);
+    }
+
     @Test
     public void shouldStoreSessionContentInACookie() throws Exception {
         JwtCookieSession session = newJwtSession(new Request());
