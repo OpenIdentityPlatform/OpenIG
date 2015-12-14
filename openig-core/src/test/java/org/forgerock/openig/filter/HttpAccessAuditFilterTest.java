@@ -24,6 +24,7 @@ import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -50,6 +51,8 @@ import org.testng.annotations.Test;
 
 public class HttpAccessAuditFilterTest {
 
+    private Request request;
+
     @Mock
     private TimeService time;
 
@@ -59,6 +62,10 @@ public class HttpAccessAuditFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        request = new Request();
+        request.setMethod("GET");
+        request.setUri("https://www.example.com/rockstar?who=forgerock");
 
         when(reqHandler.handleCreate(any(Context.class), any(CreateRequest.class)))
                 .thenReturn(newResourceResponse("1", "1", json(object())).asPromise());
@@ -72,14 +79,21 @@ public class HttpAccessAuditFilterTest {
 
         Handler chfHandler = new ResponseHandler(Status.OK);
 
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri("https://www.example.com/rockstar?who=forgerock");
-
         final Response response = filter.filter(context(), request, chfHandler).get();
 
         assertThat(response.getStatus()).isSameAs(Status.OK);
         verifyAuditServiceCall(reqHandler, response.getStatus());
+    }
+
+    @Test
+    public void shouldNotSendAnAccessEventOnNullResponse() throws Exception {
+        HttpAccessAuditFilter filter = new HttpAccessAuditFilter(reqHandler, time);
+
+        filter.filter(context(),
+                      request,
+                      new ResponseHandler((Response) null)).get();
+
+        verifyZeroInteractions(reqHandler);
     }
 
     private void verifyAuditServiceCall(RequestHandler handler, Status status) {

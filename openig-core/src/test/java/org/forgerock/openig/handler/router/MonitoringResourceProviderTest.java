@@ -51,6 +51,7 @@ public class MonitoringResourceProviderTest {
         assertThat(data.get(ptr("responses/serverError")).asLong()).isEqualTo(0);
         assertThat(data.get(ptr("responses/other")).asLong()).isEqualTo(0);
         assertThat(data.get(ptr("responses/errors")).asLong()).isEqualTo(0);
+        assertThat(data.get(ptr("responses/null")).asLong()).isEqualTo(0);
 
         assertThat(data.get(ptr("throughput/mean")).isNumber()).isTrue();
         assertThat(data.get(ptr("throughput/lastMinute")).isNumber()).isTrue();
