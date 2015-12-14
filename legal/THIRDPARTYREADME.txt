@@ -276,14 +276,14 @@ Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
            Portions Copyright 2011-20134 ForgeRock AS,
            Portions Copyright 2013-2014 Nomura Research Institute, Ltd
 
-Version: opendj-core-3.0.0-M5.jar
+Version: opendj-core-3.0.0-M7.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
            Copyright 2006-2011 Sun Microsystems, Inc.
            Copyright 2013-2014 Manuel Gaupp
            Portions Copyright 2011-2015 ForgeRock AS.
            Portions Copyright 2012-2014 Manuel Gaupp
 
-Version: opendj-grizzly-3.0.0-M5.jar
+Version: opendj-grizzly-3.0.0-M7.jar
 Copyright: Copyright 2013-2015 ForgeRock AS.
            Copyright 2009-2010 Sun Microsystems, Inc.
            Portions Copyright 2011-2015 ForgeRock AS.
