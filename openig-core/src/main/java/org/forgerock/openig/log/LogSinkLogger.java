@@ -28,6 +28,8 @@ import org.slf4j.helpers.MarkerIgnoringBase;
  */
 class LogSinkLogger extends MarkerIgnoringBase {
 
+    private static final long serialVersionUID = 1L;
+
     private final LogSink logSink;
     private final Name name;
 
