@@ -867,8 +867,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         @Override
         public void destroy() {
-            executor.shutdownNow();
-            cache.clear();
+            if (executor != null) {
+                executor.shutdownNow();
+            }
+            if (cache != null) {
+                cache.clear();
+            }
         }
     }
 
