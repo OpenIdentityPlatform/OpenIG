@@ -86,7 +86,8 @@ class MonitoringResourceProvider implements SingletonResourceProvider {
                                      field("clientError", metrics.getClientErrorResponseCount().getCount()),
                                      field("serverError", metrics.getServerErrorResponseCount().getCount()),
                                      field("other", metrics.getOtherResponseCount().getCount()),
-                                     field("errors", metrics.getErrorsResponseCount().getCount())));
+                                     field("errors", metrics.getErrorsResponseCount().getCount()),
+                                     field("null", metrics.getNullResponseCount().getCount())));
 
         // throughput (responses / sec) with 1 decimal point (ex: 2511.3 r/s)
         Meter throughput = metrics.getThroughput();

@@ -68,33 +68,36 @@ class MetricsFilter implements Filter {
 
                                metrics.getTotalResponseCount().inc();
                                metrics.getActiveRequestCount().dec();
-
-                               if (result.getCause() != null) {
-                                   metrics.getErrorsResponseCount().inc();
-                               }
-                               Status status = result.getStatus();
-                               if (status != null) {
-                                   // Response doesn't mandate a Status in constructor :'(
-                                   switch (status.getFamily()) {
-                                   case INFORMATIONAL:
-                                       metrics.getInformativeResponseCount().inc();
-                                       break;
-                                   case SUCCESSFUL:
-                                       metrics.getSuccessResponseCount().inc();
-                                       break;
-                                   case REDIRECTION:
-                                       metrics.getRedirectResponseCount().inc();
-                                       break;
-                                   case CLIENT_ERROR:
-                                       metrics.getClientErrorResponseCount().inc();
-                                       break;
-                                   case SERVER_ERROR:
-                                       metrics.getServerErrorResponseCount().inc();
-                                       break;
-                                   case UNKNOWN:
-                                       metrics.getOtherResponseCount().inc();
-                                       break;
+                               if (result != null) {
+                                   if (result.getCause() != null) {
+                                       metrics.getErrorsResponseCount().inc();
                                    }
+                                   Status status = result.getStatus();
+                                   if (status != null) {
+                                       // Response doesn't mandate a Status in constructor :'(
+                                       switch (status.getFamily()) {
+                                       case INFORMATIONAL:
+                                           metrics.getInformativeResponseCount().inc();
+                                           break;
+                                       case SUCCESSFUL:
+                                           metrics.getSuccessResponseCount().inc();
+                                           break;
+                                       case REDIRECTION:
+                                           metrics.getRedirectResponseCount().inc();
+                                           break;
+                                       case CLIENT_ERROR:
+                                           metrics.getClientErrorResponseCount().inc();
+                                           break;
+                                       case SERVER_ERROR:
+                                           metrics.getServerErrorResponseCount().inc();
+                                           break;
+                                       case UNKNOWN:
+                                           metrics.getOtherResponseCount().inc();
+                                           break;
+                                       }
+                                   }
+                               } else {
+                                   metrics.getNullResponseCount().inc();
                                }
                            }
                        });

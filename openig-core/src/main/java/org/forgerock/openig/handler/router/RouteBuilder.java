@@ -199,6 +199,9 @@ class RouteBuilder {
         // Ensure we always get a Response even in case of RuntimeException
         filters.add(new RuntimeExceptionFilter());
 
+        // Log a message if the response is null
+        filters.add(new NullResponseFilter(logger));
+
         return chainOf(routeHeap.getHandler(), filters);
     }
 

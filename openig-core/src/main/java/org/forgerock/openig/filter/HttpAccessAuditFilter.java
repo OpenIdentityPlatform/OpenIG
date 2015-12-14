@@ -116,15 +116,19 @@ public class HttpAccessAuditFilter implements Filter {
                                 final Context context,
                                 final AccessAuditEventBuilder<?> accessAuditEventBuilder) {
         RequestAuditContext requestAuditContext = context.asContext(RequestAuditContext.class);
-        long elapsedTime = time.now() - requestAuditContext.getRequestReceivedTime();
-        accessAuditEventBuilder.httpResponse(response.getHeaders().copyAsMultiMapOfStrings());
-        accessAuditEventBuilder.response(mapResponseStatus(response.getStatus()),
-                                         String.valueOf(response.getStatus().getCode()),
-                                         elapsedTime,
-                                         TimeUnit.MILLISECONDS);
 
-        CreateRequest request = newCreateRequest(resourcePath("/access"), accessAuditEventBuilder.toEvent().getValue());
-        auditServiceHandler.handleCreate(context, request);
+        if (response != null) {
+            long elapsedTime = time.now() - requestAuditContext.getRequestReceivedTime();
+            accessAuditEventBuilder.httpResponse(response.getHeaders().copyAsMultiMapOfStrings());
+            accessAuditEventBuilder.response(mapResponseStatus(response.getStatus()),
+                                             String.valueOf(response.getStatus().getCode()),
+                                             elapsedTime,
+                                             TimeUnit.MILLISECONDS);
+
+            CreateRequest request = newCreateRequest(resourcePath("/access"),
+                                                     accessAuditEventBuilder.toEvent().getValue());
+            auditServiceHandler.handleCreate(context, request);
+        }
     }
 
     private static AccessAuditEventBuilder.ResponseStatus mapResponseStatus(Status status) {

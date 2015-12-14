@@ -51,6 +51,7 @@ import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.MapDecorator;
+import org.forgerock.util.Reject;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -266,6 +267,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     public void save(Response response) throws IOException {
         // Only build the JWT session if the session is dirty
         if (dirty) {
+            Reject.ifNull(response, "Cannot save session state on a null response");
             // Update the Set-Cookie header
             final Cookie jwtCookie;
             if (isEmpty()) {

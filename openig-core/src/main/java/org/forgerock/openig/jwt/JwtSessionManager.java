@@ -150,7 +150,9 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
     @Override
     public void save(Session session, Response response) throws IOException {
-        session.save(response);
+        if (response != null) {
+            session.save(response);
+        }
     }
 
     /** Creates and initializes a jwt-session in a heap environment. */
