@@ -25,7 +25,20 @@ import org.slf4j.Logger;
  */
 public class LogSinkLoggerFactory implements ILoggerFactory {
 
-    private LogSink logSink = new ConsoleLogSink();
+    private LogSink logSink;
+
+    /**
+     * Build a new LogSinkLoggerFactory using a default ConsoleLogSink.
+     */
+    public LogSinkLoggerFactory() {
+        logSink = defaultLogSink();
+    }
+
+    private static ConsoleLogSink defaultLogSink() {
+        ConsoleLogSink sink = new ConsoleLogSink();
+        sink.setStream(ConsoleLogSink.Stream.AUTO);
+        return sink;
+    }
 
     /**
      * Sets the {@link LogSink} to use. This method is called through reflection avoid any cycling dependency between
