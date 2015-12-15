@@ -324,7 +324,7 @@ public class PolicyEnforcementFilterTest {
 
         verify(next, times(2)).handle(attributesContext, request);
 
-        Thread.sleep(60); // Sleep until we exceed the cache timeout.
+        Thread.sleep(1000); // Sleep until we exceed the cache timeout.
         // (As the ttl (Long.MAX_VALUE > cacheMaxExpiration, the cache must use
         // the cacheMaxExpiration timeout. The previous cached policy must have been removed.
 
