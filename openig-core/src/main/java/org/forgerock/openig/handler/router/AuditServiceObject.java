@@ -82,8 +82,14 @@ public class AuditServiceObject extends GenericHeapObject {
         /** Loads the audit service configuration from JSON. */
         private AuditService buildAuditService(JsonValue config)
                 throws AuditException, ServiceUnavailableException, ResourceException {
-            final AuditServiceConfiguration auditServiceConfiguration =
-                    AuditJsonConfig.parseAuditServiceConfiguration(config.get("config"));
+            final JsonValue auditServiceConfig = config.get("config");
+
+            final AuditServiceConfiguration auditServiceConfiguration;
+            if (auditServiceConfig.isNotNull()) {
+                auditServiceConfiguration = AuditJsonConfig.parseAuditServiceConfiguration(auditServiceConfig);
+            } else {
+                auditServiceConfiguration = new AuditServiceConfiguration();
+            }
             AuditServiceBuilder auditServiceBuilder = newAuditService();
             auditServiceBuilder.withConfiguration(auditServiceConfiguration);
             auditServiceBuilder.withDependencyProvider(new GatewayDependencyProvider());
