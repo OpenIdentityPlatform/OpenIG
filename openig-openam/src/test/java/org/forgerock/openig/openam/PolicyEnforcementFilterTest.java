@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
@@ -28,10 +28,13 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.Options.defaultOptions;
+import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +43,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.handler.HttpClientHandler;
@@ -64,6 +70,8 @@ import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.Promise;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -90,6 +98,9 @@ public class PolicyEnforcementFilterTest {
 
     @Mock
     private Logger logger;
+
+    @Captor
+    private ArgumentCaptor<Callable<Promise<JsonValue, ResourceException>>> captor;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -295,11 +306,16 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
         // Given
-        sessionContext.getSession().put("SSOToken", TOKEN);
         final Request request = new Request();
         request.setMethod("GET").setUri("http://example.com/resource.jpg");
-        final PolicyEnforcementFilter filter =
-                buildPolicyEnforcementFilter(buildHeapletConfiguration("50 milliseconds"));
+
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
+                                                                     policiesHandler,
+                                                                     duration("3 minutes"));
+        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
+
+        ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+        filter.setCache(new ThreadSafeCache<String, Promise<JsonValue, ResourceException>>(executorService));
 
         when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionAsJsonResponse()));
@@ -314,19 +330,19 @@ public class PolicyEnforcementFilterTest {
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
         verify(next).handle(attributesContext, request);
+        verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
         // When second call
         // The policies handler, which provides the policy response, is not called
-        // as the policy decision has been saved into cache for 50 ms. (cacheMaxExpiration)
+        // as the cache entry has not been evicted yet
         filter.filter(attributesContext,
                       request,
                       next).get();
 
         verify(next, times(2)).handle(attributesContext, request);
 
-        Thread.sleep(1000); // Sleep until we exceed the cache timeout.
-        // (As the ttl (Long.MAX_VALUE > cacheMaxExpiration, the cache must use
-        // the cacheMaxExpiration timeout. The previous cached policy must have been removed.
+        // Mimic cache expiration
+        captor.getValue().call();
 
         // When third call: the policiesHandler must do another call to get the policy decision result.
         filter.filter(attributesContext,
