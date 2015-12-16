@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -126,14 +126,14 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
      * WWW-Authenticate} header:
      *
      * <pre>
-     *     {@code HTTP/1.1 403 Forbidden
-     *       WWW-Authenticate: UMA realm="example", as_uri="https://as.example.com"
-     *
-     *       {
-     *         "ticket": "016f84e8-f9b9-11e0-bd6f-0021cc6004de"
-     *       }
+     *     {@code HTTP/1.1 401 Unauthorized
+     *       WWW-Authenticate: UMA realm="example",
+     *                             as_uri="https://as.example.com",
+     *                             ticket="016f84e8-f9b9-11e0-bd6f-0021cc6004de"
      *     }
      * </pre>
+     *
+     * Otherwise, a {@literal 403 Forbidden} response with an informative {@literal Warning} header is produced.
      *
      * @param context
      *         Context chain used to keep a relationship between requests (tracking)
@@ -220,6 +220,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                 try {
                     value = json(token.getEntity().getJson());
                 } catch (IOException e) {
+                    logger.debug("Cannot extract JSON from token introspection response, possibly malformed JSON");
                     return newResponsePromise(newInternalServerError(e));
                 }
                 if (value.get("active").asBoolean()) {
@@ -232,6 +233,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                         return next.handle(context, request);
                     }
 
+                    logger.trace("Insufficient scopes encoded in RPT, asking for a new ticket");
                     // Not all of the required scopes are in the token
                     // Error case: ask for a ticket, append an error code
                     return ticket(context, share, request)
@@ -268,33 +270,42 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
     private class TicketResponseFunction implements Function<Response, Response, NeverThrowsException> {
         @Override
         public Response apply(final Response response) {
-            if (Status.CREATED == response.getStatus()) {
-                // Create a new response with authenticate header and status code
-                try {
-                    JsonValue value = json(response.getEntity().getJson());
-                    Response forbidden = new Response(Status.UNAUTHORIZED);
-                    String ticket = value.get("ticket").asString();
-                    forbidden.getHeaders().put("WWW-Authenticate",
-                                                     format("UMA realm=\"%s\", as_uri=\"%s\", ticket=\"%s\"",
-                                                            realm,
-                                                            umaService.getAuthorizationServer(),
-                                                            ticket));
-                    return forbidden;
-                } catch (IOException e) {
-                    // JSON parsing exception
-                    // Ignored here, will be handled in the later catch-all block
+            try {
+                if (Status.CREATED == response.getStatus()) {
+                    // Create a new response with authenticate header and status code
+                    try {
+                        JsonValue value = json(response.getEntity().getJson());
+                        Response forbidden = new Response(Status.UNAUTHORIZED);
+                        String ticket = value.get("ticket").asString();
+                        forbidden.getHeaders().put("WWW-Authenticate",
+                                                   format("UMA realm=\"%s\", as_uri=\"%s\", ticket=\"%s\"",
+                                                          realm,
+                                                          umaService.getAuthorizationServer(),
+                                                          ticket));
+                        return forbidden;
+                    } catch (IOException e) {
+                        // JSON parsing exception
+                        // Do not process them here, handle them in the later catch-all block
+                        logger.debug("Cannot extract JSON from ticket response, possibly malformed JSON");
+                        logger.debug(e);
+                    }
+                } else {
+                    logger.debug(format("Got a %s Response from '%s', was expecting a 201 Created.",
+                                        response.getStatus(),
+                                        umaService.getTicketEndpoint()));
                 }
-            }
-            // Close previous response object
-            closeSilently(response);
 
-            // Properly handle 400 errors and UMA error codes
-            // The PAT may need to be refreshed
-            Response forbidden = new Response(Status.FORBIDDEN);
-            forbidden.getHeaders().put(new WarningHeader(MISCELLANEOUS_WARNING,
-                                                         "-",
-                                                         "\"UMA Authorization Server Unreachable\""));
-            return forbidden;
+                // Properly handle 400 errors and UMA error codes
+                // The PAT may need to be refreshed
+                Response forbidden = new Response(Status.FORBIDDEN);
+                forbidden.getHeaders().put(new WarningHeader(MISCELLANEOUS_WARNING,
+                                                             "-",
+                                                             "\"UMA Authorization Server Unreachable\""));
+                return forbidden;
+            } finally {
+                // Close previous response object
+                closeSilently(response);
+            }
         }
     }
 
