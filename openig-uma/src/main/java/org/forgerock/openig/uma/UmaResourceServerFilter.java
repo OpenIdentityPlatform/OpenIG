@@ -142,8 +142,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
      * @param incoming
      *         request used to infer the set of permissions to ask
      * @return an asynchronous {@link Response}
-     * @see <a href="https://docs.kantarainitiative.org/uma/rec-uma-core-v1_0.html#rfc.section.3.2">Request Permission
-     * Registration</a>
+     * @see <a href="https://docs.kantarainitiative.org/uma/draft-uma-core-v1_0_1.html#rfc.section.3.2">Request
+     * Permission Registration</a>
      */
     private Promise<Response, NeverThrowsException> ticket(final Context context,
                                                            final Share share,
@@ -167,8 +167,8 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
      * @param request
      *         request used to infer the set of permissions to ask
      * @return a JSON structure that represents a resource set registration
-     * @see <a href="https://docs.kantarainitiative.org/uma/rec-oauth-resource-reg.html#resource-set-desc">Resource Set
-     * Descriptions</a>
+     * @see <a href="https://docs.kantarainitiative.org/uma/draft-oauth-resource-reg-v1_0_1.html#resource-set-desc">
+     * Resource Set Descriptions</a>
      */
     private JsonValue createPermissionRequest(final Share share, final Request request) {
         ShareTemplate template = share.getTemplate();
