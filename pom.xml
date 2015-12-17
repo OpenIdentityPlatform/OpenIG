@@ -26,7 +26,7 @@
   <groupId>org.forgerock.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -142,7 +142,7 @@
      <connection>scm:git:ssh://git@stash.forgerock.org:7999/openig/openig.git</connection>
      <developerConnection>scm:git:ssh://git@stash.forgerock.org:7999/openig/openig.git</developerConnection>
      <url>http://stash.forgerock.org/projects/OPENIG/repos/openig/browse</url>
-    <tag>4.0</tag>
+    <tag>4.0.0</tag>
   </scm>
 
   <mailingLists>
