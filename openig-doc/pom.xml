@@ -247,7 +247,9 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <executions>
               <execution>
-                <id>javadoc-jar</id>
+                <!-- Do not change this execution's ID:
+                     It needs to be in sync with what appears in the forgerock-parent POM -->
+                <id>attach-javadocs</id>
                 <goals>
                   <goal>jar</goal>
                 </goals>
@@ -301,30 +303,6 @@
               <!-- Excludes internal packages from the javadoc generation -->
               <excludePackageNames>com.*:*.internal</excludePackageNames>
             </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.9.1</version>
-            <executions>
-              <execution>
-                <id>attach-javadoc</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>attach-artifact</goal>
-                </goals>
-                <configuration>
-                  <artifacts>
-                    <artifact>
-                      <file>${project.build.directory}/openig-doc-${project.version}-javadoc.jar</file>
-                      <type>jar</type>
-                      <classifier>javadoc</classifier>
-                    </artifact>
-                  </artifacts>
-                </configuration>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>
