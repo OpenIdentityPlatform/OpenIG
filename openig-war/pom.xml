@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.forgerock.openig</groupId>
     <artifactId>openig-project</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>openig-war</artifactId>
   <name>OpenIG web application</name>
