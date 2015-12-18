@@ -21,6 +21,8 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.http.Responses.blockingCall;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -41,7 +43,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -148,7 +149,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                     if (userpass != null) {
                         request.getHeaders().add("Authorization", "Basic " + userpass);
                     }
-                    response = next.handle(context, request).getOrThrow();
+                    response = blockingCall(next, context, request);
                 } finally {
                     request.getEntity().pop();
                 }
@@ -174,7 +175,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                 // ensure conformance with specification
                 if (user.indexOf(':') >= 0) {
                     return newResultPromise(
-                            Responses.newInternalServerError("username must not contain a colon ':' character"));
+                            newInternalServerError("username must not contain a colon ':' character"));
                 }
                 if (cacheHeader) {
                     // set in session for fetch in next iteration of this loop
