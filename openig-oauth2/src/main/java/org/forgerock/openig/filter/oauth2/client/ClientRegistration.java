@@ -23,6 +23,7 @@ import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 
@@ -354,7 +355,7 @@ public final class ClientRegistration {
                                                       final Request request)
             throws OAuth2ErrorException {
         try {
-            return registrationHandler.handle(context, request).getOrThrow();
+            return blockingCall(registrationHandler, context, request);
         } catch (final InterruptedException e) {
             // FIXME Changed IOException to InterruptedException, not very sure about that
             throw new OAuth2ErrorException(E_SERVER_ERROR,

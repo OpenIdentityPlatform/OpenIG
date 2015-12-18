@@ -23,6 +23,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
+import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -154,8 +155,12 @@ public class ClientRegistrationFilter implements Filter {
         request.setUri(registrationEndpoint);
         request.setEntity(clientRegistrationConfiguration.asMap());
 
-        final Response response = registrationHandler.handle(context, request)
-                                                     .getOrThrowUninterruptibly();
+        final Response response;
+        try {
+            response = blockingCall(registrationHandler, context, request);
+        } catch (InterruptedException e) {
+            throw new RegistrationException(format("Interrupted while waiting for '%s' response", request.getUri()), e);
+        }
         if (!CREATED.equals(response.getStatus())) {
             throw new RegistrationException("Cannot perform dynamic registration: this can be caused "
                                             + "by the distant server(busy, offline...) "
