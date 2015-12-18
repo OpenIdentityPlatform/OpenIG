@@ -15,9 +15,11 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.format;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 
@@ -251,8 +253,13 @@ public final class Issuer {
         request.setMethod("GET");
         request.setUri(wellKnownUri);
 
-        final Response response = handler.handle(new AttributesContext(new RootContext()), request)
-                                               .getOrThrowUninterruptibly();
+        Response response;
+        try {
+            response = blockingCall(handler, new AttributesContext(new RootContext()), request);
+        } catch (InterruptedException e) {
+            throw new DiscoveryException(format("Interrupted while waiting for '%s' response", wellKnownUri), e);
+        }
+
         if (!OK.equals(response.getStatus())) {
             throw new DiscoveryException("Unable to read well-known OpenID Configuration from '"
                     + wellKnownUri + "'");

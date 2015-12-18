@@ -15,6 +15,7 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.format;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.json.JsonValue.field;
@@ -22,6 +23,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
+import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -175,8 +177,12 @@ public class DiscoveryFilter implements Filter {
         final Request request = buildWebFingerRequest(account);
         String webFingerHref = null;
 
-        final Response response = discoveryHandler.handle(context, request)
-                                                  .getOrThrowUninterruptibly();
+        final Response response;
+        try {
+            response = blockingCall(discoveryHandler, context, request);
+        } catch (InterruptedException e) {
+            throw new DiscoveryException(format("Interrupted while waiting for '%s' response", request.getUri()), e);
+        }
 
         try {
             final JsonValue config = getJsonContent(response);

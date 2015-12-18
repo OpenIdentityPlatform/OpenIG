@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2.resolver;
 
 import static java.lang.String.format;
+import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
@@ -97,7 +98,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
             // Call the client handler
             Response response = null;
             try {
-                response = client.handle(context, request).getOrThrow();
+                response = blockingCall(client, context, request);
             } catch (InterruptedException e) {
                 throw new OAuth2TokenException("AccessToken loading has been interrupted", e);
             }
