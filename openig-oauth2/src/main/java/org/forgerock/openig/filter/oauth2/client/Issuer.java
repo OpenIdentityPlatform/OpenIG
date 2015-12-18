@@ -262,7 +262,7 @@ public final class Issuer {
 
         if (!OK.equals(response.getStatus())) {
             throw new DiscoveryException("Unable to read well-known OpenID Configuration from '"
-                    + wellKnownUri + "'");
+                    + wellKnownUri + "'", response.getCause());
         }
         JsonValue config = null;
         try {
