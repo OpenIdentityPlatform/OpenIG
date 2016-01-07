@@ -11,16 +11,19 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.appendQuery;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 
+import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.el.Expression;
@@ -72,6 +75,25 @@ public class OAuth2UtilsTest {
     public void shouldNotMatchesDifferentBaseUri() throws Exception {
         assertThat(OAuth2Utils.matchesUri(ORIGINAL_URI,
                                           new URI("http://openig.example.com"))).isFalse();
+    }
+
+    @Test
+    public void shouldAppendQuery() throws URISyntaxException {
+        final URI uri = new URI("http://www.example.com?p=1&n=2");
+        final URI uriWithoutParam = new URI("http://www.example.com");
+
+        assertThat(appendQuery(uri, new Form().fromFormString("name=IG&id=42")).getQuery())
+            .contains("p=1", "n=2", "name=IG", "id=42");
+        assertThat(appendQuery(uri, null)).isEqualTo(uri);
+        assertThat(appendQuery(uri, new Form())).isEqualTo(uri);
+        assertThat(appendQuery(uriWithoutParam, null)).isEqualTo(uriWithoutParam);
+        assertThat(appendQuery(uriWithoutParam, new Form().fromFormString("name=IG&id=42")).getQuery())
+            .contains("name=IG", "id=42");
+    }
+
+    @Test(expectedExceptions = NullPointerException.class)
+    public void shouldFailToAppendQueryToNullURI() {
+        appendQuery(null, new Form());
     }
 
     private Context buildContextChain() {
