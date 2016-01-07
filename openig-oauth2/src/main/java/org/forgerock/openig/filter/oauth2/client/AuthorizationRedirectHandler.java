@@ -11,14 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.appendQuery;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
@@ -132,7 +132,8 @@ class AuthorizationRedirectHandler implements Handler {
             final String hash = createAuthorizationNonceHash(nonce);
             query.add("state", createAuthorizationState(hash, gotoUri));
 
-            final String redirect = withQuery(issuer.getAuthorizeEndpoint(), query).toString();
+            final String redirect = appendQuery(issuer.getAuthorizeEndpoint(), query).toString();
+
             return newResponsePromise(httpRedirect(redirect)).then(
                     new Function<Response, Response, NeverThrowsException>() {
                         @Override
