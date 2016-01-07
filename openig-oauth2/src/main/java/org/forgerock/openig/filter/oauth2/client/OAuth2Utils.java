@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
+import static org.forgerock.http.util.Uris.create;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
@@ -39,6 +41,7 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Reject;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -167,6 +170,39 @@ final class OAuth2Utils {
 
     static String sessionKey(final Context context, final URI clientEndpoint) {
         return "oauth2:" + clientEndpoint;
+    }
+
+    /**
+     * Returns a new URI with the given query parameters appended to the original
+     * ones, if any. The scheme, authority, path, and fragment remain unchanged.
+     *
+     * @param uri
+     *            The URI whose query is to be changed, not {@code null}.
+     * @param query
+     *            The form containing the query parameters to add.
+     * @return A new URI having the provided query parameters added to the given
+     *         URI. The scheme, authority, path, and fragment remain unchanged.
+     */
+    public static URI appendQuery(final URI uri, final Form query) {
+        Reject.ifNull(uri);
+
+        if (query == null || query.isEmpty()) {
+            return uri;
+        }
+        if (uri.getRawQuery() != null) {
+            query.fromQueryString(uri.getRawQuery());
+        }
+        try {
+            return create(uri.getScheme(),
+                          uri.getRawUserInfo(),
+                          uri.getHost(),
+                          uri.getPort(),
+                          uri.getRawPath(),
+                          query.toQueryString(),
+                          uri.getRawFragment());
+        } catch (final URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private OAuth2Utils() {
