@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010–2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -50,6 +50,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -142,9 +143,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
         try {
             // Load the configuration
-            final File configuration = new File(environment.getConfigDirectory(), "config.json");
-            final URL configurationURL = configuration.canRead() ? configuration.toURI().toURL() : getClass()
-                    .getResource("default-config.json");
+            final URL configurationURL = selectConfigurationUrl();
             final JsonValue config = readJson(configurationURL);
             TimeService timeService = TimeService.SYSTEM;
 
@@ -227,6 +226,21 @@ public final class GatewayHttpApplication implements HttpApplication {
             stop();
             throw new HttpApplicationException("Unable to start OpenIG", e);
         }
+    }
+
+    private URL selectConfigurationUrl() throws MalformedURLException {
+        LOG.info("OpenIG base directory : {}", environment.getBaseDirectory());
+
+        final File configuration = new File(environment.getConfigDirectory(), "config.json");
+        final URL configurationURL;
+        if (configuration.canRead()) {
+            LOG.info("Reading the configuration from {}", configuration.getAbsolutePath());
+            configurationURL = configuration.toURI().toURL();
+        } else {
+            LOG.info("{} not readable, using OpenIG default configuration", configuration.getAbsolutePath());
+            configurationURL = getClass().getResource("default-config.json");
+        }
+        return configurationURL;
     }
 
     private static void addSubRouter(final Router base, final String name, final Handler router) {
