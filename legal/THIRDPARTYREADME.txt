@@ -249,21 +249,24 @@ Copyright: Copyright 2009 Sun Microsystems, Inc
 Version: i18n-slf4j-1.4.2.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
 
-Version: openig-core-4.0.0-SNAPSHOT.jar
+Version: openig-core-5.0.0-SNAPSHOT.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
            Portions Copyright 2010–2011 ApexIdentity Inc.
+           Portions Copyright 2011-2016 ForgeRock AS.
 
-Version: openig-saml-4.0.0-SNAPSHOT.jar
-Copyright: Copyright 2011-2015 ForgeRock AS.
-           Portions Copyright 2010–2011 ApexIdentity Inc.
+Version: openig-saml-5.0.0-SNAPSHOT.jar
+Copyright: Copyright (c) 2007-2008 Sun Microsystems Inc. All Rights Reserved
+           Copyright 2010–2011 ApexIdentity Inc.
+           Copyright 2014-2015 ForgeRock AS.
+           Portions Copyright 2011-2015 ForgeRock AS.
 
-Version: openig-oauth2-4.0.0-SNAPSHOT.jar
-Copyright: Copyright 2014-2015 ForgeRock AS.
+Version: openig-oauth2-5.0.0-SNAPSHOT.jar
+Copyright: Copyright 2011-2016 ForgeRock AS.
 
-Version: openig-openam-4.0.0-SNAPSHOT.jar
+Version: openig-openam-5.0.0-SNAPSHOT.jar
 Copyright: Copyright 2015 ForgeRock AS.
 
-Version: openig-uma-4.0.0-SNAPSHOT.jar
+Version: openig-uma-5.0.0-SNAPSHOT.jar
 Copyright: Copyright 2015 ForgeRock AS.
 
 Version: sharedlib-10.0.2.jar
