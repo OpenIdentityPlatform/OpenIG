@@ -150,46 +150,46 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 Version: activation-1.1.jar
 Copyright: Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
-Version: chf-http-core-3.0.0.jar
-Copyright: Copyright 2012-2015 ForgeRock AS.
+Version: chf-http-core-3.0.1.jar
+Copyright: Copyright 2012-2016 ForgeRock AS.
            Copyright 2010-2011 ApexIdentity Inc.
            Copyright 2009 Sun Microsystems Inc.
-           Portions Copyright 2011-2015 ForgeRock AS.
+           Portions Copyright 2011-2016 ForgeRock AS.
            Portions Copyright 2010-2011 ApexIdentity Inc.
 
-Version: chf-client-apache-async-3.0.0.jar
+Version: chf-client-apache-async-3.0.1.jar
 Copyright: Copyright 2015 ForgeRock AS.
 
-Version: chf-client-apache-common-3.0.0.jar
+Version: chf-client-apache-common-3.0.1.jar
 Copyright: Copyright 2015 ForgeRock AS.
 
-Version: chf-http-servlet-3.0.0.jar
+Version: chf-http-servlet-3.0.1.jar
 Copyright: Copyright 2010–2011 ApexIdentity Inc.
            Copyright 2012-2015 ForgeRock AS.
            Portions Copyright 2011-2015 ForgeRock AS.
 
-Version: forgerock-util-3.0.1.jar
+Version: forgerock-util-3.0.2.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
            Copyright (c) 2010-2011 ApexIdentity Inc. All rights reserved.
            Portions Copyright 2011-2015 ForgeRock AS.
 
-Version: forgerock-audit-core-4.1.0.jar
+Version: forgerock-audit-core-4.1.1.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
            Copyright 2013 Cybernetica AS
            Copyright 2006-2008 Sun Microsystems, Inc.
            Portions Copyright 2013-2015 ForgeRock AS.
 
-Version: forgerock-audit-handler-csv-4.1.0.jar
-Copyright: Copyright 2015 ForgeRock AS.
+Version: forgerock-audit-handler-csv-4.1.1.jar
+Copyright: Copyright 2015-2016 ForgeRock AS.
 
-Version: forgerock-audit-handler-jdbc-4.1.0.jar
-Copyright: Copyright 2015 ForgeRock AS.
+Version: forgerock-audit-handler-jdbc-4.1.1.jar
+Copyright: Copyright 2015-2016 ForgeRock AS.
 
-Version: forgerock-audit-handler-syslog-4.1.0.jar
+Version: forgerock-audit-handler-syslog-4.1.1.jar
 Copyright: Copyright 2015 ForgeRock AS.
            Copyright 2013 Cybernetica AS
 
-Version: forgerock-audit-json-4.1.0.jar
+Version: forgerock-audit-json-4.1.1.jar
 Copyright: Copyright 2015 ForgeRock AS.
 
 Version: forgerock-guava-annotations-18.0.3.jar
@@ -276,14 +276,14 @@ Copyright: Copyright 2007-2009 Sun Microsystems, Inc. All rights reserved.
            Portions Copyright 2011-20134 ForgeRock AS,
            Portions Copyright 2013-2014 Nomura Research Institute, Ltd
 
-Version: opendj-core-3.0.0-M7.jar
+Version: opendj-core-3.0.0.jar
 Copyright: Copyright 2011-2015 ForgeRock AS.
            Copyright 2006-2011 Sun Microsystems, Inc.
            Copyright 2013-2014 Manuel Gaupp
            Portions Copyright 2011-2015 ForgeRock AS.
            Portions Copyright 2012-2014 Manuel Gaupp
 
-Version: opendj-grizzly-3.0.0-M7.jar
+Version: opendj-grizzly-3.0.0.jar
 Copyright: Copyright 2013-2015 ForgeRock AS.
            Copyright 2009-2010 Sun Microsystems, Inc.
            Portions Copyright 2011-2015 ForgeRock AS.
