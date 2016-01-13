@@ -18,10 +18,10 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.endsWith;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +36,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -75,52 +76,25 @@ public class HttpBasicAuthFilterTest {
     }
 
     @Test
-    public void testHeadersAreRemoved() throws Exception {
-        HttpBasicAuthFilter filter = new HttpBasicAuthFilter(null, null, failureHandler);
-        filter.setCacheHeader(false);
-
-        Context context = newContextChain();
-        Request request = newRequest();
-        request.getHeaders().put(AUTHORIZATION_HEADER, "Basic azerty");
-
-        doAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
-            @Override
-            public Promise<Response, NeverThrowsException> answer(final InvocationOnMock invocation) throws Throwable {
-                // Produce a valid response with an authentication challenge
-                Response response = new Response();
-                response.setStatus(Status.OK);
-                response.getHeaders().put(AUTHENTICATE_HEADER, "Realm toto");
-                return Promises.newResultPromise(response);
-
-            }
-        }).when(terminalHandler).handle(eq(context),
-                                        argThat(new AbsenceOfHeaderInRequest(AUTHORIZATION_HEADER)));
-
-        Response response = filter.filter(context, request, terminalHandler).getOrThrow();
-
-        // Verify that the outgoing message has no authenticate header
-        assertThat(response.getHeaders().get(AUTHENTICATE_HEADER))
-                .isNull();
-    }
-
-    @Test
     public void testNominalInteraction() throws Exception {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
                                                              Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
         filter.setCacheHeader(false);
 
-        basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
+        basicAuthServerAnswersSuccess(INITIAL_CREDENTIALS);
 
         Context context = newContextChain();
         Request request = newRequest();
-        Response response = filter.filter(context, request, terminalHandler).getOrThrow();
+        Response response = filter.filter(context, request, terminalHandler).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.OK);
+        // Verify that the outgoing message has no authenticate header
+        assertThat(response.getHeaders().get(AUTHENTICATE_HEADER)).isNull();
     }
 
     /**
-     * If there is no credentials provided, the filter should not try to forward the request more than once
+     * If there is no credentials provided, the filter should not try to forward the request
      */
     @Test
     public void testNoCredentialsProvided() throws Exception {
@@ -137,7 +111,7 @@ public class HttpBasicAuthFilterTest {
         Request request = newRequest();
         filter.filter(context, request, terminalHandler);
 
-        verify(terminalHandler, times(1)).handle(context, request);
+        verify(terminalHandler, never()).handle(context, request);
         verify(failureHandler).handle(context, request);
     }
 
@@ -162,19 +136,18 @@ public class HttpBasicAuthFilterTest {
         filter.filter(context, request, terminalHandler);
 
         // if credentials were rejected all the times, the failure Handler is invoked
-        verify(terminalHandler, times(2)).handle(context, request);
+        verify(terminalHandler).handle(context, request);
         verify(failureHandler).handle(context, request);
     }
 
     /**
      * 2 consecutive requests are sharing the same session.
-     * The first one should build and cache the Authorization header after a round trip
-     * to the next handler (firstly answer with a challenge).
+     * The first one should build and cache the Authorization header.
      * The second should simply re-use the cached value
      * @throws Exception
      */
     @Test
-    public void tesAuthorizationHeaderCaching() throws Exception {
+    public void testAuthorizationHeaderCaching() throws Exception {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf("bjensen", String.class),
                                                              Expression.valueOf("hifalutin", String.class),
                                                              failureHandler);
@@ -185,7 +158,7 @@ public class HttpBasicAuthFilterTest {
         when(session.get(endsWith(":userpass")))
                 .thenReturn(null, INITIAL_CREDENTIALS);
 
-        basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
+        basicAuthServerAnswersSuccess(INITIAL_CREDENTIALS);
 
         Context first = newContextChain();
         Request firstRequest = newRequest();
@@ -195,8 +168,8 @@ public class HttpBasicAuthFilterTest {
         Request secondRequest = newRequest();
         Response secondResponse = filter.filter(second, secondRequest, terminalHandler).getOrThrow();
 
-        // Terminal handler should be called 3 times, not 4
-        verify(terminalHandler, times(3)).handle(any(Context.class), any(Request.class));
+        // Terminal handler should be called 2 times, not 3
+        verify(terminalHandler, times(2)).handle(any(Context.class), any(Request.class));
         // Session should be updated with cached value
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
 
@@ -226,8 +199,7 @@ public class HttpBasicAuthFilterTest {
         //  first request (cache the value after initial round-trip)
         //  second request (cached value is OK)
         //  third request (cached value is no longer valid, trigger a refresh)
-        doAnswer(new UnauthorizedAnswer())
-                .doAnswer(new AuthorizedAnswer(INITIAL_CREDENTIALS))
+        doAnswer(new AuthorizedAnswer(INITIAL_CREDENTIALS))
                 .doAnswer(new AuthorizedAnswer(INITIAL_CREDENTIALS))
                 .doAnswer(new UnauthorizedAnswer())
                 .doAnswer(new AuthorizedAnswer(REFRESHED_CREDENTIALS))
@@ -249,11 +221,11 @@ public class HttpBasicAuthFilterTest {
         thirdAttributesContext.getAttributes().put("password", "hifalutin2");
         Response thirdResponse = filter.filter(third, newRequest(), terminalHandler).getOrThrow();
 
-        // Terminal handler should be called 5 times, not 6
+        // Terminal handler should be called 4 times, not 5
         // first: 2 times
         // second: 1 time
         // third: 2 times
-        verify(terminalHandler, times(5)).handle(any(Context.class), any(Request.class));
+        verify(terminalHandler, times(4)).handle(any(Context.class), any(Request.class));
         // Session should be updated with cached value 2 times
         verify(session).put(endsWith(":userpass"), eq(INITIAL_CREDENTIALS));
         verify(session).put(endsWith(":userpass"), eq(REFRESHED_CREDENTIALS));
@@ -294,8 +266,13 @@ public class HttpBasicAuthFilterTest {
                 .when(terminalHandler).handle(any(Context.class), any(Request.class));
     }
 
+    private void basicAuthServerAnswersSuccess(final String credentials) throws Exception {
+        doAnswer(new AuthorizedAnswer(credentials))
+                .when(terminalHandler).handle(any(Context.class), any(Request.class));
+    }
+
     private Context newContextChain() throws Exception {
-        return new AttributesContext(new SessionContext(null, session));
+        return new AttributesContext(new SessionContext(new RootContext(), session));
     }
 
     private Request newRequest() throws Exception {
@@ -331,7 +308,7 @@ public class HttpBasicAuthFilterTest {
             assertThat(request.getHeaders().getFirst(AUTHORIZATION_HEADER))
                     .isEqualTo("Basic " + credentials);
 
-            // Produce a valid response, no special headers are required
+            // Produce a valid response, no special header is required
             Response response = new Response();
             response.setStatus(Status.OK);
             return Promises.newResultPromise(response);
