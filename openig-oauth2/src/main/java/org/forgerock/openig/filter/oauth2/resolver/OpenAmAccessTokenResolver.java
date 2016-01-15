@@ -11,13 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
 
 import static java.lang.String.format;
-import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
@@ -34,7 +33,11 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Function;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -82,9 +85,8 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         this.tokenInfoEndpoint = tokenInfoEndpoint;
     }
 
-
     @Override
-    public AccessToken resolve(Context context, final String token) throws OAuth2TokenException {
+    public Promise<AccessToken, OAuth2TokenException> resolve(Context context, final String token) {
         try {
             Request request = new Request();
             request.setMethod("GET");
@@ -96,38 +98,40 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
             form.toRequestQuery(request);
 
             // Call the client handler
-            Response response = null;
-            try {
-                response = blockingCall(client, context, request);
-            } catch (InterruptedException e) {
-                throw new OAuth2TokenException("AccessToken loading has been interrupted", e);
-            }
-
-            if (isResponseEmpty(response)) {
-                throw new OAuth2TokenException("Authorization Server did not return any AccessToken");
-            }
-
-            JsonValue content = asJson(response.getEntity());
-            if (isOk(response)) {
-                return builder.build(content);
-            }
-
-            if (content.isDefined("error")) {
-                String error = content.get("error").asString();
-                String description = content.get("error_description").asString();
-                throw new OAuth2TokenException(format("Authorization Server returned an error "
-                                                              + "(error: %s, description: %s)",
-                                                      error,
-                                                      description));
-            }
-
-            throw new OAuth2TokenException("AccessToken returned by the AuthorizationServer has a problem");
+            return client.handle(context, request)
+                         .then(onResult(), Responses.<AccessToken, OAuth2TokenException>noopExceptionFunction());
         } catch (URISyntaxException e) {
-            throw new OAuth2TokenException(
+            return Promises.newExceptionPromise(new OAuth2TokenException(
                     format("The token_info endpoint %s could not be accessed because it is a malformed URI",
                            tokenInfoEndpoint),
-                    e);
+                    e));
         }
+    }
+
+    private Function<Response, AccessToken, OAuth2TokenException> onResult() {
+        return new Function<Response, AccessToken, OAuth2TokenException>() {
+            @Override
+            public AccessToken apply(Response response) throws OAuth2TokenException {
+                if (isResponseEmpty(response)) {
+                    throw new OAuth2TokenException("Authorization Server did not return any AccessToken");
+                }
+                JsonValue content = asJson(response.getEntity());
+                if (isOk(response)) {
+                    return builder.build(content);
+                }
+
+                if (content.isDefined("error")) {
+                    String error = content.get("error").asString();
+                    String description = content.get("error_description").asString();
+                    throw new OAuth2TokenException(format("Authorization Server returned an error "
+                                                                  + "(error: %s, description: %s)",
+                                                          error,
+                                                          description));
+                }
+
+                throw new OAuth2TokenException("AccessToken returned by the AuthorizationServer has a problem");
+            }
+        };
     }
 
     private boolean isResponseEmpty(final Response response) {
