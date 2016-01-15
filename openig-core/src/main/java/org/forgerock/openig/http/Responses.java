@@ -11,12 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
-
-import static java.lang.String.format;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -47,42 +45,16 @@ public final class Responses {
     }
 
     /**
-     * Generates an {@literal Internal Server Error} response ({@literal 500}) whose content is set to the given {@code
-     * exception}'s message.
+     * Generates an {@literal Internal Server Error} response ({@literal 500})
+     * containing the cause of the error response.
      *
      * @param exception
-     *         wrapped exception
-     * @return a configured {@literal Internal Server Error} response ({@literal 500}).
+     *            wrapped exception
+     * @return an empty {@literal Internal Server Error} response {@literal 500}
+     *         with the cause set.
      */
     public static Response newInternalServerError(Exception exception) {
-        return newInternalServerError(exception.getMessage())
-                .setCause(exception);
-    }
-
-    /**
-     * Generates an {@literal Internal Server Error} response ({@literal 500}) whose content is set to a concatenation
-     * of the given {@code message} and {@code exception}'s message.
-     *
-     * @param message
-     *         first part of the response's content
-     * @param exception
-     *         wrapped exception
-     * @return a configured {@literal Internal Server Error} response ({@literal 500}).
-     */
-    public static Response newInternalServerError(String message, Exception exception) {
-        return newInternalServerError(format("%s: %s", message, exception.getMessage())).setCause(exception);
-    }
-
-    /**
-     * Generates an {@literal Internal Server Error} response ({@literal 500}) whose content is set to the given {@code
-     * message}.
-     *
-     * @param message
-     *         response's content
-     * @return a configured {@literal Internal Server Error} response ({@literal 500}).
-     */
-    public static Response newInternalServerError(String message) {
-        return newInternalServerError().setEntity(message);
+        return newInternalServerError().setCause(exception);
     }
 
     /**
@@ -92,17 +64,6 @@ public final class Responses {
      */
     public static Response newNotFound() {
         return new Response(Status.NOT_FOUND);
-    }
-
-    /**
-     * Generates a {@literal Not Found} response ({@literal 404}) whose content is set to the given {@code message}.
-     *
-     * @param message
-     *         response's content
-     * @return a configured {@literal Not Found} response ({@literal 404}).
-     */
-    public static Response newNotFound(String message) {
-        return newNotFound().setEntity(message);
     }
 
     /**

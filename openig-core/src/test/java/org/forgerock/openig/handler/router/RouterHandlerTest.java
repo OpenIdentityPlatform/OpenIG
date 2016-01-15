@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -103,6 +103,7 @@ public class RouterHandlerTest {
 
         RouterHandler handler = new RouterHandler(newRouterBuilder(),
                                                   new DirectoryMonitor(routes));
+        handler.setLogger(logger);
 
         // Initial scan
         handler.start();
@@ -128,7 +129,8 @@ public class RouterHandlerTest {
         context.getAttributes().put("name", "OpenAM");
         Response response = handler.handle(context, new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
-        assertThat(response.getEntity().getString()).isEqualTo("no handler to dispatch to");
+        assertThat(response.getEntity().getString()).isEmpty();
+        verify(logger).error("no handler to dispatch to");
 
         handler.stop();
     }

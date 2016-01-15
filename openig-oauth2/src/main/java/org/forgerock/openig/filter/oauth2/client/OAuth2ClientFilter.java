@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
@@ -237,7 +237,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Expression<String> clientEndpoint;
     private Expression<String> defaultLoginGoto;
     private Expression<String> defaultLogoutGoto;
-    private final Handler discoveryHandler;
     private Handler failureHandler;
     private Handler loginHandler;
     private ClientRegistration clientRegistration;
@@ -256,39 +255,20 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *            The TimeService to use.
      * @param heap
      *            The current heap.
-     * @param metadata
-     *            The json configuration containing all the OpenID metadata used for
-     *            the dynamic client registration.
-     * @param name
-     *            The name of this filter.
-     * @param discoveryHandler
-     *            The handler used for discovery and dynamic client
-     *            registration.
+     * @param discoveryAndDynamicRegistrationChain
+     *            The chain used for discovery and dynamic client registration.
      * @param clientEndpoint
      *            The expression which will be used for obtaining the base URI
      *            for this filter.
      */
     public OAuth2ClientFilter(TimeService time,
                               Heap heap,
-                              JsonValue metadata,
-                              String name,
-                              Handler discoveryHandler,
+                              Handler discoveryAndDynamicRegistrationChain,
                               Expression<String> clientEndpoint) {
         this.time = time;
         this.heap = heap;
-        this.discoveryHandler = discoveryHandler;
         this.clientEndpoint = clientEndpoint;
-        discoveryAndDynamicRegistrationChain = buildDiscoveryAndDynamicRegistrationChain(heap,
-                                                                                         metadata,
-                                                                                         name);
-    }
-
-    private Handler buildDiscoveryAndDynamicRegistrationChain(final Heap heap,
-                                                              final JsonValue metadata,
-                                                              final String name) {
-        return chainOf(new AuthorizationRedirectHandler(time, clientEndpoint),
-                       new DiscoveryFilter(discoveryHandler, heap),
-                       new ClientRegistrationFilter(discoveryHandler, metadata, heap, name));
+        this.discoveryAndDynamicRegistrationChain = discoveryAndDynamicRegistrationChain;
     }
 
     @Override
@@ -759,7 +739,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         return new AuthorizationRedirectHandler(time,
                                                 clientEndpoint,
-                                                cr != null ? cr : clientRegistration)
+                                                cr != null ? cr : clientRegistration,
+                                                logger)
                                     .handle(context, request);
     }
 
@@ -830,11 +811,15 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             final Expression<String> clientEndpoint = asExpression(config.get("clientEndpoint").required(),
                                                                    String.class);
+
+            final Handler discoveryAndDynamicRegistrationChain = chainOf(
+                    new AuthorizationRedirectHandler(time, clientEndpoint, logger),
+                    new DiscoveryFilter(discoveryHandler, heap, logger),
+                    new ClientRegistrationFilter(discoveryHandler, config.get("metadata"), heap, name, logger));
+
             final OAuth2ClientFilter filter = new OAuth2ClientFilter(time,
                                                                      heap,
-                                                                     config.get("metadata"),
-                                                                     this.name,
-                                                                     discoveryHandler,
+                                                                     discoveryAndDynamicRegistrationChain,
                                                                      clientEndpoint);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(

@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -241,7 +241,9 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         try {
             addRequestCookies(manager, resolved, request);
         } catch (IOException e) {
-            return Promises.newResultPromise(Responses.newInternalServerError("Can't add request cookies", e));
+            logger.error("Can't add request cookies");
+            logger.error(e);
+            return Promises.newResultPromise(Responses.newInternalServerError(e));
         }
 
         // pass request to next handler in chain
@@ -253,7 +255,9 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                         try {
                             manager.put(resolved.asURI(), value.getHeaders().copyAsMultiMapOfStrings());
                         } catch (IOException e) {
-                            return Responses.newInternalServerError("Can't process managed cookies in response", e);
+                            logger.error("Can't process managed cookies in response");
+                            logger.error(e);
+                            return Responses.newInternalServerError(e);
                         }
                         // remove cookies that are suppressed or managed
                         suppress(value);

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -29,6 +29,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -41,6 +42,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -66,6 +68,9 @@ public class ClientRegistrationFilterTest {
     @Mock
     private Handler handler;
 
+    @Mock
+    private Logger logger;
+
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
@@ -84,14 +89,16 @@ public class ClientRegistrationFilterTest {
                                                                      issuerConfigWithAllRequestedEndpoints()));
         final Heap heap = mock(Heap.class);
         when(heap.get("myIssuer" + SUFFIX, ClientRegistration.class)).thenReturn(null);
-        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, invalidConfig, heap, SUFFIX);
+        final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler, invalidConfig, heap, SUFFIX, logger);
 
         // when
         final Response response = crf.filter(context, new Request(), handler).get();
 
         // then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).contains("'redirect_uris' should be defined");
+        assertThat(response.getEntity().getString()).isEmpty();
+        assertThat(response.getCause().getMessage()).contains("'redirect_uris' should be defined");
+        verify(logger).error(any(RegistrationException.class));
     }
 
     @Test
@@ -104,14 +111,17 @@ public class ClientRegistrationFilterTest {
         final ClientRegistrationFilter crf = new ClientRegistrationFilter(handler,
                                                                           getMetadata(),
                                                                           heap,
-                                                                          SUFFIX);
+                                                                          SUFFIX,
+                                                                          logger);
 
         // when
         final Response response = crf.filter(context, new Request(), handler).get();
 
         // then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).contains("Registration is not supported by the issuer");
+        assertThat(response.getEntity().getString()).isEmpty();
+        assertThat(response.getCause().getMessage()).contains("Registration is not supported by the issuer");
+        verify(logger).error(any(RegistrationException.class));
     }
 
     @Test
@@ -133,6 +143,7 @@ public class ClientRegistrationFilterTest {
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
         assertThat(request.getEntity().toString()).containsSequence("redirect_uris", "contact", "scopes");
+        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = RegistrationException.class)
@@ -165,7 +176,7 @@ public class ClientRegistrationFilterTest {
     }
 
     private ClientRegistrationFilter buildClientRegistrationFilter() throws HeapException, Exception {
-        return new ClientRegistrationFilter(handler, getMetadata(), buildDefaultHeap(), SUFFIX);
+        return new ClientRegistrationFilter(handler, getMetadata(), buildDefaultHeap(), SUFFIX, logger);
     }
 
     private JsonValue getMetadata() {

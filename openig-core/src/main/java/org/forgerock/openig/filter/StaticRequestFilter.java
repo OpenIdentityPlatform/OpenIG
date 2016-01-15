@@ -12,14 +12,16 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URISyntaxException;
 import java.util.List;
@@ -38,11 +40,9 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * Creates a new request and send it down the next handler (effectively replacing the previous request).
@@ -196,14 +196,14 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
             try {
                 newRequest.setUri(value);
             } catch (URISyntaxException e) {
-                logger.debug(e);
-                String message = format("The URI %s was not valid", value);
-                return Promises.newResultPromise(Responses.newInternalServerError(message, e));
+                logger.error(format("The URI %s was not valid", value));
+                logger.error(e);
+                return newResultPromise(newInternalServerError(e));
             }
         } else {
             String message = format("The URI expression '%s' could not be resolved", uri.toString());
-            logger.debug(message);
-            return Promises.newResultPromise(Responses.newInternalServerError(message));
+            logger.error(message);
+            return newResultPromise(newInternalServerError());
         }
 
         if (entity != null) {

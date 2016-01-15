@@ -223,7 +223,7 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
         } catch (final ScriptException e) {
             logger.warning("Cannot execute script");
             logger.warning(e);
-            return newResponsePromise(newInternalServerError().setCause(e));
+            return newResponsePromise(newInternalServerError(e));
         }
     }
 

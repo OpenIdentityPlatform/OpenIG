@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -25,6 +25,7 @@ import static org.forgerock.openig.filter.oauth2.client.DiscoveryFilter.OPENID_S
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -39,6 +40,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.filter.oauth2.client.DiscoveryFilter.AccountIdentifier;
 import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
@@ -63,6 +65,9 @@ public class DiscoveryFilterTest {
 
     @Mock
     private Handler handler;
+
+    @Mock
+    private Logger logger;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -133,32 +138,32 @@ public class DiscoveryFilterTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldFailWhenInputIsNull() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         df.extractFromInput(null);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldFailWhenInputIsEmpty() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         df.extractFromInput("");
     }
 
     @Test(expectedExceptions = URISyntaxException.class)
     public void shouldFailWhenInputIsInvalid() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         df.extractFromInput("+://zorg");
     }
 
     @Test(dataProvider = "givenInputAndNormalizedIdentifierExtracted")
     public void shouldExtractParameters(final String input, final String expected) throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         final AccountIdentifier account = df.extractFromInput(input);
         assertThat(account.getNormalizedIdentifier().toString()).isEqualTo(expected);
     }
 
     @Test(dataProvider = "userInputAndFinalWebfingerProducedUri")
     public void shouldReturnWebfingerUri(final String input, final String expected) throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         final AccountIdentifier account = df.extractFromInput(input);
         assertThat(df.buildWebFingerRequest(account).getUri().toString()).isEqualTo(expected);
     }
@@ -170,7 +175,7 @@ public class DiscoveryFilterTest {
                                          + "?resource=http://openam.example.com/jackson"
                                          + "&rel=http://openid.net/specs/connect/1.0/issuer";
 
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
 
         final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
@@ -194,12 +199,13 @@ public class DiscoveryFilterTest {
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toString()).isEqualTo(givenWebFingerUri);
         assertThat(openIdWellKnownUri.toString()).endsWith("/.well-known/openid-configuration");
+        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseDoNotContainOpenIdLink() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
@@ -218,7 +224,7 @@ public class DiscoveryFilterTest {
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseContainInvalidJson() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
@@ -233,7 +239,7 @@ public class DiscoveryFilterTest {
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailWhenTheIssuerHrefIsNull() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
         final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();

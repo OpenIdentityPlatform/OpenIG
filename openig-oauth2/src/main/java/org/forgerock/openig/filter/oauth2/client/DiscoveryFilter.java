@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -41,6 +41,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -89,18 +90,21 @@ public class DiscoveryFilter implements Filter {
 
     private final Handler discoveryHandler;
     private final Heap heap;
+    private final Logger logger;
 
     /**
      * Creates a discovery filter.
-     *
      * @param handler
      *            The handler to perform the queries.
      * @param heap
      *            A reference to the current heap.
+     * @param logger
+     *            For logging activities.
      */
-    DiscoveryFilter(final Handler handler, final Heap heap) {
+    DiscoveryFilter(final Handler handler, final Heap heap, final Logger logger) {
         this.discoveryHandler = handler;
         this.heap = heap;
+        this.logger = logger;
     }
 
     @Override
@@ -125,9 +129,13 @@ public class DiscoveryFilter implements Filter {
             AttributesContext attributesContext = context.asContext(AttributesContext.class);
             attributesContext.getAttributes().put(ISSUER_KEY, issuer);
         } catch (URISyntaxException | DiscoveryException e) {
-            return newResultPromise(newInternalServerError("Discovery cannot be performed", e));
+            logger.error("Discovery cannot be performed");
+            logger.error(e);
+            return newResultPromise(newInternalServerError(e));
         } catch (HeapException e) {
-            return newResultPromise(newInternalServerError("Cannot inject inlined Issuer declaration to heap", e));
+            logger.error("Cannot inject inlined Issuer declaration to heap");
+            logger.error(e);
+            return newResultPromise(newInternalServerError(e));
         }
 
         return next.handle(context, request);

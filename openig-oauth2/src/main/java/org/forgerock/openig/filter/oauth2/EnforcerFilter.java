@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -27,6 +28,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.http.Responses;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -40,6 +42,7 @@ public class EnforcerFilter implements Filter {
 
     private final Expression<Boolean> enforcement;
     private final Filter delegate;
+    private final Logger logger;
 
     /**
      * Creates a new {@link EnforcerFilter} delegating to the given {@link Filter} if the enforcement expression yields
@@ -49,10 +52,13 @@ public class EnforcerFilter implements Filter {
      *         {@link Expression} that needs to evaluates to {@literal true} for the delegating Filter to be executed.
      * @param delegate
      *         Filter instance to delegate to.
+     * @param logger
+     *         For logging activities.
      */
-    public EnforcerFilter(final Expression<Boolean> enforcement, final Filter delegate) {
+    public EnforcerFilter(final Expression<Boolean> enforcement, final Filter delegate, final Logger logger) {
         this.enforcement = enforcement;
         this.delegate = delegate;
+        this.logger = logger;
     }
 
     @Override
@@ -60,8 +66,8 @@ public class EnforcerFilter implements Filter {
                                                           final Request request,
                                                           final Handler next) {
         if (!isConditionVerified(bindings(context, request))) {
-            return newResultPromise(Responses.newInternalServerError(
-                    "Cannot satisfy the enforcement expression"));
+            logger.error(format("Cannot satisfy the enforcement expression '%s'", enforcement.toString()));
+            return newResultPromise(Responses.newInternalServerError());
         }
         return delegate.filter(context, request, next);
     }
