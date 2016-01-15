@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -26,9 +26,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.promise.ExceptionHandler;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.promise.ResultHandler;
+import org.forgerock.util.promise.RuntimeExceptionHandler;
 import org.forgerock.util.time.Duration;
 
 /**
@@ -118,14 +120,28 @@ public class ThreadSafeCache<K, V> {
                                @Override
                                public void handleResult(Duration timeout) {
                                    // Register cache entry expiration time
-                                   executorService.schedule(new Expiration(key),
-                                                            timeout.getValue(),
-                                                            timeout.getUnit());
+                                   scheduleEviction(key, timeout);
+                               }
+                           })
+                           .thenOnException(new ExceptionHandler<Exception>() {
+                               @Override
+                               public void handleException(Exception exception) {
+                                   scheduleEviction(key, defaultTimeout);
+                               }
+                           })
+                           .thenOnRuntimeException(new RuntimeExceptionHandler() {
+                               @Override
+                               public void handleRuntimeException(RuntimeException exception) {
+                                   scheduleEviction(key, defaultTimeout);
                                }
                            });
         } catch (Exception e) {
-            executorService.schedule(new Expiration(key), defaultTimeout.getValue(), defaultTimeout.getUnit());
+            scheduleEviction(key, defaultTimeout);
         }
+    }
+
+    private void scheduleEviction(final K key, final Duration timeout) {
+        executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
     }
 
     /**
