@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
@@ -36,7 +36,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
@@ -51,7 +51,7 @@ import org.forgerock.util.promise.Promise;
  *
  * <p>If the request failed, a unique attempt to refresh the SSO token is tried.
  */
-public class SsoTokenFilter extends GenericHeapObject implements Filter {
+public class SsoTokenFilter implements Filter {
 
     static final String SSO_TOKEN_KEY = "SSOToken";
     static final String BASE_ENDPOINT = "json";
@@ -64,19 +64,22 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
     private final String headerName;
     private final Expression<String> username;
     private final Expression<String> password;
+    private final Logger logger;
 
     SsoTokenFilter(final Handler ssoClientHandler,
                    final URI openamUrl,
                    final String realm,
                    final String headerName,
                    final Expression<String> username,
-                   final Expression<String> password) {
+                   final Expression<String> password,
+                   final Logger logger) {
         this.ssoClientHandler = checkNotNull(ssoClientHandler);
         this.openamUrl = checkNotNull(openamUrl);
         this.realm = startsWithSlash(realm);
         this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
         this.username = username;
         this.password = password;
+        this.logger = logger;
     }
 
     private static String startsWithSlash(final String realm) {
@@ -98,7 +101,8 @@ public class SsoTokenFilter extends GenericHeapObject implements Filter {
                             request.getHeaders().put(headerName, token);
                             return next.handle(context, request);
                         } else {
-                            return newResponsePromise(newInternalServerError("Unable to retrieve SSO Token"));
+                            logger.error("Unable to retrieve SSO Token");
+                            return newResponsePromise(newInternalServerError());
                         }
                     }
                 };

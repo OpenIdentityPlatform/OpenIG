@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2015 ForgeRock AS.
+ * Copyright 2012-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -100,7 +100,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                     response.getHeaders().put(LocationHeader.NAME, rebasedURI.toString());
                 }
             } catch (URISyntaxException | ResponseException ex) {
-                logger.debug(ex);
+                logger.error(ex);
                 return Responses.newInternalServerError(ex);
             }
         }
@@ -114,8 +114,8 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
             String uri = baseURI.eval(bindings);
 
             if (uri == null) {
-                throw logger.debug(new ResponseException(format("The baseURI expression '%s' could not be resolved",
-                        baseURI.toString())));
+                throw new ResponseException(format("The baseURI expression '%s' could not be resolved",
+                                            baseURI.toString()));
             }
             return new URI(uri);
         } else {

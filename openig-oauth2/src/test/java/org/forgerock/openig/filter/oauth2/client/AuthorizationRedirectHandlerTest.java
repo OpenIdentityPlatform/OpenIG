@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -24,6 +24,8 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.util.StringUtil.join;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
@@ -39,6 +41,7 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -60,6 +63,9 @@ public class AuthorizationRedirectHandlerTest {
     private AttributesContext attributesContext;
 
     @Mock
+    private Logger logger;
+
+    @Mock
     private TimeService time;
 
     @BeforeMethod
@@ -78,7 +84,7 @@ public class AuthorizationRedirectHandlerTest {
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldFailWhenProvidedEndpointIsNull() {
-        new AuthorizationRedirectHandler(time, null);
+        new AuthorizationRedirectHandler(time, null, logger);
     }
 
     @Test
@@ -92,10 +98,12 @@ public class AuthorizationRedirectHandlerTest {
         final AuthorizationRedirectHandler handler =
                 new AuthorizationRedirectHandler(time,
                                                  expression,
-                                                 buildClientRegistration());
+                                                 buildClientRegistration(),
+                                                 logger);
         // Then
         final Response response = handler.handle(context, request).get();
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        verifyZeroInteractions(logger);
     }
 
     @Test
@@ -110,8 +118,7 @@ public class AuthorizationRedirectHandlerTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).contains("The selected client or its issuer is null",
-                                                              "Authorization redirect aborted");
+        verify(logger).error("The selected client or its issuer is null. Authorization redirect aborted.");
     }
 
     @Test
@@ -127,8 +134,7 @@ public class AuthorizationRedirectHandlerTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).contains("The selected client or its issuer is null",
-                                                              "Authorization redirect aborted");
+        verify(logger).error("The selected client or its issuer is null. Authorization redirect aborted.");
     }
 
     @Test
@@ -152,6 +158,7 @@ public class AuthorizationRedirectHandlerTest {
                                             "scope=" + join("%20", registration.getScopes()),
                                             "state=");
         assertThat(sessionContext.getSession().get("oauth2:" + ORIGINAL_URI + CLIENT_ENDPOINT)).isNotNull();
+        verifyZeroInteractions(logger);
     }
 
     private AuthorizationRedirectHandler buildAuthorizationRedirectHandler(final ClientRegistration registration)
@@ -159,7 +166,8 @@ public class AuthorizationRedirectHandlerTest {
         return new AuthorizationRedirectHandler(time,
                                                 Expression.valueOf("${attributes.clientEndpoint}",
                                                                    String.class),
-                                                registration);
+                                                registration,
+                                                logger);
     }
 
     private ClientRegistration buildClientRegistration() throws Exception {

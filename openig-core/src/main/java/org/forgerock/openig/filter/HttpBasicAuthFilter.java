@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 // TODO: distinguish between basic and other schemes that use 401 (Digest, OAuth, ...)
@@ -174,8 +174,8 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                 }
                 // ensure conformance with specification
                 if (user.indexOf(':') >= 0) {
-                    return newResultPromise(
-                            newInternalServerError("username must not contain a colon ':' character"));
+                    logger.error("username must not contain a colon ':' character");
+                    return newResultPromise(newInternalServerError());
                 }
                 if (cacheHeader) {
                     // set in session for fetch in next iteration of this loop
@@ -186,9 +186,9 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
                 }
             }
         } catch (Exception e) {
-            Response response = new Response().setStatus(Status.FORBIDDEN)
-                                              .setEntity("Can't authenticate user with Basic Http Authorization");
-            return newResultPromise(response);
+            logger.error("Can't authenticate user with Basic Http Authorization");
+            logger.error(e);
+            return newResultPromise(new Response(Status.FORBIDDEN));
         }
 
 

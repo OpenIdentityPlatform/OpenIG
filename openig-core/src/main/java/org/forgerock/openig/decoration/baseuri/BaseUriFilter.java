@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.baseuri;
@@ -75,7 +75,7 @@ class BaseUriFilter implements Filter {
                 request.getUri().rebase(new URI(newBaseUri));
             } catch (URISyntaxException e) {
                 logger.error(format("Invalid baseUri '%s'", baseUri));
-                return newResultPromise(newInternalServerError().setCause(e));
+                return newResultPromise(newInternalServerError(e));
             }
         }
         return delegate.filter(context, request, next);

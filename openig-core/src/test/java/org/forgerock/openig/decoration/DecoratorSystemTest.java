@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration;
@@ -284,7 +284,7 @@ public class DecoratorSystemTest {
                                         response.getEntity().setString(content);
                                         return response;
                                     } catch (IOException e) {
-                                        return Responses.newInternalServerError("IOException", e);
+                                        return Responses.newInternalServerError(e);
                                     }
                                 }
                             });

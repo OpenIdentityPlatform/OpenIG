@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -97,7 +97,8 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
                 return binding.handler.handle(context, request);
             }
         }
-        return Promises.newResultPromise(Responses.newNotFound("no handler to dispatch to"));
+        logger.error("no handler to dispatch to");
+        return Promises.newResultPromise(Responses.newNotFound());
     }
 
     /** Binds an expression with a handler to dispatch to. */

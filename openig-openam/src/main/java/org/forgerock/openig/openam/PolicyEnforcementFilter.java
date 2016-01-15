@@ -399,7 +399,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                          realm,
                                                                          ssoTokenHeader,
                                                                          pepUsername,
-                                                                         pepPassword);
+                                                                         pepPassword,
+                                                                         logger);
 
                 final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
                                                                                                            realm),

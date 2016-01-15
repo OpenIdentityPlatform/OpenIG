@@ -11,19 +11,22 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -42,6 +45,9 @@ public class EnforcerFilterTest {
     @Mock
     private Handler handler;
 
+    @Mock
+    private Logger logger;
+
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -49,10 +55,11 @@ public class EnforcerFilterTest {
 
     @Test
     public void shouldDelegateToTheRealFilter() throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}", Boolean.class), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf("${true}", Boolean.class), delegate, logger);
         Context context = new RootContext();
         enforcer.filter(context, null, handler);
         verify(delegate).filter(context, null, handler);
+        verifyZeroInteractions(logger);
     }
 
     @DataProvider
@@ -69,8 +76,10 @@ public class EnforcerFilterTest {
     @Test(dataProvider = "conditionsEvaluatingToFalse")
     public void shouldReturnAnInternalServerErrorForInvalidOrEvaluatedToFalseConditions(String condition)
             throws Exception {
-        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf(condition, Boolean.class), delegate);
+        EnforcerFilter enforcer = new EnforcerFilter(Expression.valueOf(condition, Boolean.class), delegate, logger);
         Response response = enforcer.filter(new AttributesContext(new RootContext()), null, handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
+        assertThat(response.getCause()).isNull();
+        verify(logger).error(anyString());
     }
 }

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -286,7 +286,8 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             if (defaultHandler != null) {
                 return defaultHandler.handle(context, request);
             }
-            return Promises.newResultPromise(Responses.newNotFound("no handler to dispatch to"));
+            logger.error("no handler to dispatch to");
+            return Promises.newResultPromise(Responses.newNotFound());
         } finally {
             read.unlock();
         }

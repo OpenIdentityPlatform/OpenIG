@@ -41,6 +41,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
@@ -76,17 +77,22 @@ class AuthorizationRedirectHandler implements Handler {
     private final ClientRegistration registration;
     private final Expression<String> endpoint;
     private final TimeService timeService;
+    private final Logger logger;
 
-    AuthorizationRedirectHandler(final TimeService timeService, final Expression<String> endpoint) {
-        this(timeService, endpoint, null);
+    AuthorizationRedirectHandler(final TimeService timeService,
+                                 final Expression<String> endpoint,
+                                 final Logger logger) {
+        this(timeService, endpoint, null, logger);
     }
 
     AuthorizationRedirectHandler(final TimeService timeService,
                                  final Expression<String> endpoint,
-                                 final ClientRegistration registration) {
+                                 final ClientRegistration registration,
+                                 final Logger logger) {
         this.timeService = timeService;
         this.endpoint = checkNotNull(endpoint);
         this.registration = registration;
+        this.logger = logger;
     }
 
     @Override
@@ -157,8 +163,8 @@ class AuthorizationRedirectHandler implements Handler {
                         }
                     });
         } else {
-            return newResultPromise(newInternalServerError("The selected client or its issuer is null. "
-                                                           + "Authorization redirect aborted."));
+            logger.error("The selected client or its issuer is null. Authorization redirect aborted.");
+            return newResultPromise(newInternalServerError());
         }
     }
 

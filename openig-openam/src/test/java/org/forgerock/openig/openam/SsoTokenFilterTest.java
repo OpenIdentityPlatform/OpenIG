@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
@@ -42,6 +42,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -69,6 +70,9 @@ public class SsoTokenFilterTest {
 
     @Mock
     static Handler authenticate;
+
+    @Mock
+    static Logger logger;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -101,8 +105,8 @@ public class SsoTokenFilterTest {
                            "/",
                            DEFAULT_HEADER_NAME,
                            Expression.valueOf("bjensen", String.class),
-                           Expression.valueOf("${attributes.password}",
-                                              String.class));
+                           Expression.valueOf("${attributes.password}", String.class),
+                           logger);
     }
 
     @Test
@@ -113,7 +117,8 @@ public class SsoTokenFilterTest {
                                    "/myrealm/sub",
                                    DEFAULT_HEADER_NAME,
                                    Expression.valueOf("bjensen", String.class),
-                                   Expression.valueOf("${attributes.password}", String.class));
+                                   Expression.valueOf("${attributes.password}", String.class),
+                                   logger);
         final Request request = filter.authenticationRequest(bindings(attributesContext, null));
         assertThat(request.getHeaders().get("X-OpenAM-Username").getFirstValue()).isEqualTo("bjensen");
         assertThat(request.getHeaders().get("X-OpenAM-Password").getFirstValue()).isEqualTo("hifalutin");
@@ -234,15 +239,18 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(any(Context.class), any(Request.class)))
                 .thenReturn(newResponsePromise(badRequestResponse));
 
+        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext, request, next).get();
+        final Response finalResponse = ssoTokenFilter.filter(attributesContext, request, next).get();
 
         // Then
         verifyZeroInteractions(next);
         verify(authenticate).handle(any(Context.class), any(Request.class));
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(finalResponse.getEntity().getString()).isEqualTo("Unable to retrieve SSO Token");
+        assertThat(finalResponse.getEntity().getString()).isEmpty();
+        verify(logger).error("Unable to retrieve SSO Token");
 
     }
 
@@ -256,8 +264,8 @@ public class SsoTokenFilterTest {
                                   null,
                                   headerName,
                                   Expression.valueOf("bjensen", String.class),
-                                  Expression.valueOf("${attributes.password}",
-                                                     String.class));
+                                  Expression.valueOf("${attributes.password}", String.class),
+                                  logger);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

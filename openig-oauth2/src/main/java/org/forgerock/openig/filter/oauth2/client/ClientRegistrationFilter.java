@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -37,6 +37,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -76,6 +77,7 @@ public class ClientRegistrationFilter implements Filter {
     private final Heap heap;
     private final JsonValue config;
     private final String suffix;
+    private final Logger logger;
 
     /**
      * Creates a new dynamic registration filter.
@@ -91,15 +93,19 @@ public class ClientRegistrationFilter implements Filter {
      * @param suffix
      *            The name of the client registration in the heap will be
      *            {@literal IssuerName} + {@literal suffix}. Must not be {@code null}.
+     * @param logger
+     *            For logging activities.
      */
     public ClientRegistrationFilter(final Handler registrationHandler,
                                     final JsonValue config,
                                     final Heap heap,
-                                    final String suffix) {
+                                    final String suffix,
+                                    final Logger logger) {
         this.registrationHandler = registrationHandler;
         this.config = config;
         this.heap = heap;
         this.suffix = checkNotNull(suffix);
+        this.logger = logger;
     }
 
     @Override
@@ -131,10 +137,12 @@ public class ClientRegistrationFilter implements Filter {
                 throw new RegistrationException("Cannot retrieve issuer from the context");
             }
         } catch (RegistrationException e) {
+            logger.error(e);
             return newResultPromise(newInternalServerError(e));
         } catch (HeapException e) {
-            return newResultPromise(
-                    newInternalServerError("Cannot inject inlined Client Registration declaration to heap", e));
+            logger.error("Cannot inject inlined Client Registration declaration to heap");
+            logger.error(e);
+            return newResultPromise(newInternalServerError(e));
         }
         return next.handle(context, request);
     }

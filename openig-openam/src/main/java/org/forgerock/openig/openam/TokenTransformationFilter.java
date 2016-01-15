@@ -204,7 +204,8 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                                                                realm,
                                                                ssoTokenHeader,
                                                                username,
-                                                               password);
+                                                               password,
+                                                               logger);
 
             Expression<String> idToken = asExpression(config.get("idToken").required(), String.class);
             Expression<String> target = asExpression(config.get("target").required(), String.class);
