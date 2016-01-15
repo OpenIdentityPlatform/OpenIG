@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.cache;
@@ -24,6 +24,8 @@ import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 
 /**
  * A {@link CachingAccessTokenResolver} is a delegating {@link AccessTokenResolver} that uses a write-through cache
@@ -32,7 +34,7 @@ import org.forgerock.services.context.Context;
 public class CachingAccessTokenResolver implements AccessTokenResolver {
 
     private final AccessTokenResolver resolver;
-    private final ThreadSafeCache<String, AccessToken> cache;
+    private final ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache;
 
     /**
      * Builds a {@link CachingAccessTokenResolver} delegating to the given {@link AccessTokenResolver} using the given
@@ -44,24 +46,26 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
      *         access token cache
      */
     public CachingAccessTokenResolver(final AccessTokenResolver resolver,
-                                      final ThreadSafeCache<String, AccessToken> cache) {
+                                      final ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache) {
         this.resolver = resolver;
         this.cache = cache;
     }
 
     @Override
-    public AccessToken resolve(final Context context, final String token) throws OAuth2TokenException {
+    public Promise<AccessToken, OAuth2TokenException> resolve(final Context context, final String token) {
         try {
-            return cache.getValue(token, new Callable<AccessToken>() {
+            return cache.getValue(token, new Callable<Promise<AccessToken, OAuth2TokenException>>() {
                 @Override
-                public AccessToken call() throws Exception {
+                public Promise<AccessToken, OAuth2TokenException> call() throws Exception {
                     return resolver.resolve(context, token);
                 }
             });
         } catch (InterruptedException e) {
-            throw new OAuth2TokenException("Timed out retrieving OAuth2 access token information", e);
+            return Promises.newExceptionPromise(
+                    new OAuth2TokenException("Timed out retrieving OAuth2 access token information", e));
         } catch (ExecutionException e) {
-            throw new OAuth2TokenException("Initial token resolution has failed", e);
+            return Promises.newExceptionPromise(
+                    new OAuth2TokenException("Initial token resolution has failed", e));
         }
     }
 }

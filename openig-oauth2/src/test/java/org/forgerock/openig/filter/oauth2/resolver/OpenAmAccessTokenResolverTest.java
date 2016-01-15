@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
@@ -56,7 +56,7 @@ public class OpenAmAccessTokenResolverTest {
     }
 
     private Response response(final Status status, final String content) throws Exception {
-        return new Response().setStatus(status).setEntity(content);
+        return new Response(status).setEntity(content);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class OpenAmAccessTokenResolverTest {
         OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         final RootContext context = new RootContext();
-        AccessToken token = resolver.resolve(context, TOKEN);
+        AccessToken token = resolver.resolve(context, TOKEN).get();
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L);
 
@@ -84,7 +84,7 @@ public class OpenAmAccessTokenResolverTest {
         OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         //When
-        resolver.resolve(new RootContext(), TOKEN);
+        resolver.resolve(new RootContext(), TOKEN).getOrThrow();
     }
 
     private static String doubleQuote(final String value) {

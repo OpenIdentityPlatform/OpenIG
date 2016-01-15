@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
 
 import org.forgerock.services.context.Context;
+import org.forgerock.util.promise.Promise;
 
 /**
  * Resolves a given token against a dedicated OAuth2 Identity Provider (OpenAM, Google, Facebook, ...).
@@ -24,13 +25,12 @@ import org.forgerock.services.context.Context;
 public interface AccessTokenResolver {
 
     /**
-     * Resolves a given access token against a authorization server.
+     * Resolves a given access token against an authorization server.
      *
      * @param context Context chain used to keep a relationship between requests (tracking)
      * @param token token identifier to be resolved
-     * @return a valid {@link AccessToken} (well formed, known by the server)
-     * @throws OAuth2TokenException
-     *         if the token is unknown by the server
+     * @return a promise completed either with a valid {@link AccessToken} (well formed, known by the server), or by an
+     * exception
      */
-    AccessToken resolve(Context context, String token) throws OAuth2TokenException;
+    Promise<AccessToken, OAuth2TokenException> resolve(Context context, String token);
 }

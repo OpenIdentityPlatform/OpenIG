@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -43,6 +43,8 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -78,8 +80,10 @@ public class OAuth2ResourceServerFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(resolver.resolve(any(Context.class), eq(TOKEN_ID))).thenReturn(token);
-        when(token.getScopes()).thenReturn(new HashSet<>(asList("a", "b", "c")));
+        when(resolver.resolve(any(Context.class), eq(TOKEN_ID)))
+                .thenReturn(Promises.<AccessToken, OAuth2TokenException>newResultPromise(token));
+        when(token.getScopes())
+                .thenReturn(new HashSet<>(asList("a", "b", "c")));
 
         // By default consider all token as valid since their expiration time is greater than now
         when(token.getExpiresAt()).thenReturn(100L);
@@ -130,8 +134,12 @@ public class OAuth2ResourceServerFilterTest {
     @Test
     public void shouldFailBecauseOfUnresolvableToken() throws Exception {
         when(resolver.resolve(any(Context.class), eq(TOKEN_ID)))
-                .thenThrow(new OAuth2TokenException("error"));
+                .thenReturn(oAuth2TokenExceptionPromise());
         runAndExpectUnauthorizedInvalidTokenResponse();
+    }
+
+    private Promise<AccessToken, OAuth2TokenException> oAuth2TokenExceptionPromise() {
+        return Promises.<AccessToken, OAuth2TokenException>newExceptionPromise(new OAuth2TokenException("error"));
     }
 
     @Test

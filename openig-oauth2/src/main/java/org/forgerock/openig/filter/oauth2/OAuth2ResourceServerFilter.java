@@ -54,6 +54,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
@@ -199,7 +200,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        String token = null;
+        String token;
         try {
             token = getAccessToken(request);
             if (token == null) {
@@ -213,37 +214,56 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
         }
 
         // Resolve the token
-        AccessToken accessToken;
-        try {
-            accessToken = resolver.resolve(context, token);
-        } catch (OAuth2TokenException e) {
-            logger.debug(format("Access Token '%s' cannot be resolved", token));
-            logger.debug(e);
-            return invalidToken.handle(context, request);
-        }
+        return resolver.resolve(context, token)
+                       .thenAsync(onResolverSuccess(context, request, next),
+                                  onResolverException(token, context, request));
+    }
 
-        // Validate the token (expiration + scopes)
-        if (isExpired(accessToken)) {
-            logger.debug(format("Access Token '%s' is expired", token));
-            return invalidToken.handle(context, request);
-        }
-
-        Bindings bindings = bindings(context, request);
-        try {
-            final Set<String> setOfScopes = getScopes(bindings);
-            if (areRequiredScopesMissing(accessToken, setOfScopes)) {
-                logger.debug(format("Access Token '%s' is missing required scopes", token));
-                return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
+    private AsyncFunction<OAuth2TokenException, Response, NeverThrowsException> onResolverException(
+            final String token,
+            final Context context,
+            final Request request) {
+        return new AsyncFunction<OAuth2TokenException, Response, NeverThrowsException>() {
+            @Override
+            public Promise<? extends Response, ? extends NeverThrowsException> apply(OAuth2TokenException e) {
+                logger.debug(format("Access Token '%s' cannot be resolved", token));
+                logger.debug(e);
+                return invalidToken.handle(context, request);
             }
-        } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
-        }
+        };
 
-        // Store the AccessToken in the context for downstream handlers
-        target.set(bindings, accessToken);
+    }
 
-        // Call the rest of the chain
-        return next.handle(context, request);
+    private AsyncFunction<AccessToken, Response, NeverThrowsException> onResolverSuccess(final Context context,
+                                                                                         final Request request,
+                                                                                         final Handler next) {
+        return new AsyncFunction<AccessToken, Response, NeverThrowsException>() {
+            @Override
+            public Promise<? extends Response, ? extends NeverThrowsException> apply(AccessToken accessToken) {
+                // Validate the token (expiration + scopes)
+                if (isExpired(accessToken)) {
+                    logger.debug(format("Access Token '%s' is expired", accessToken.getToken()));
+                    return invalidToken.handle(context, request);
+                }
+
+                Bindings bindings = bindings(context, request);
+                try {
+                    final Set<String> setOfScopes = getScopes(bindings);
+                    if (areRequiredScopesMissing(accessToken, setOfScopes)) {
+                        logger.debug(format("Access Token '%s' is missing required scopes", accessToken.getToken()));
+                        return new InsufficientScopeChallengeHandler(realm, setOfScopes).handle(context, request);
+                    }
+                } catch (ResponseException e) {
+                    return newResultPromise(e.getResponse());
+                }
+
+                // Store the AccessToken in the context for downstream handlers
+                target.set(bindings, accessToken);
+
+                // Call the rest of the chain
+                return next.handle(context, request);
+            }
+        };
     }
 
     private boolean isExpired(final AccessToken accessToken) {
@@ -295,7 +315,7 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
     /** Creates and initializes an OAuth2 filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private ThreadSafeCache<String, AccessToken> cache;
+        private ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache;
         private ScheduledExecutorService executorService;
 
         @Override
