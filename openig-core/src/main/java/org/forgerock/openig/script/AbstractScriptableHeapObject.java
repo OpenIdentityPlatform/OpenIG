@@ -16,13 +16,13 @@
 package org.forgerock.openig.script;
 
 import static java.lang.String.format;
-import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +33,6 @@ import javax.script.ScriptException;
 
 import org.forgerock.http.Client;
 import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.el.Bindings;
@@ -45,33 +43,30 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.services.context.Context;
-import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
 /**
- * An abstract scriptable heap object which should be used as the base class for
- * implementing {@link org.forgerock.http.Filter filters} and {@link Handler handlers}. This heap
- * object acts as a simple wrapper around the scripting engine. Scripts are
- * provided with the following variable bindings:
+ * An abstract scriptable heap object acts as a simple wrapper around the scripting engine. This class is a base class
+ * for implementing any interface that we want to make pluggable through scripting support. Scripts are provided with
+ * the following variables bindings:
  * <ul>
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
- * <li>{@link org.forgerock.services.context.Context context} - the associated request context
+ * <li>{@link Context context} - the associated request context
  * <li>{@link Map contexts} - the visible contexts, keyed by context's name
- * <li>{@link Request request} - the HTTP request
  * <li>{@link Client http} - an HTTP client which may be used for performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
  * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
- * <li>{@link Handler next} - if the heap object is a filter then this variable
- * will contain the next handler in the filter chain.
  * <li>{@link Heap heap} - the heap.
  * </ul>
  * <p>
- * <b>NOTE:</b> at the moment only Groovy is supported.
- * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
+ * <b>NOTE :</b> at the moment only Groovy is supported.
+ *
+ * @param <V> The expected result type of the {@link Promise}. As a convenience, this class supports non-Promise type to
+ * be returned from the script, and will wrap it into a {@link Promise}.
  */
-public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
+public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
@@ -196,39 +191,31 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
     }
 
     /**
-     * Runs the compiled script using the provided bindings and optional
-     * forwarding handler.
+     * Runs the compiled script using the provided bindings.
      *
      * @param bindings Base bindings available to the script (will be enriched).
-     * @param next The next handler in the chain if applicable, may be
-     * {@code null}.
      * @param context request processing context
+     * @param clazz the class representing the expected result type of the {@code Promise}
      * @return the Promise of a Response produced by the script
      */
-    @SuppressWarnings("unchecked")
-    protected final Promise<Response, NeverThrowsException> runScript(final Bindings bindings,
-                                                                      final Handler next,
-                                                                      final Context context) {
+    protected final Promise<V, ScriptException> runScript(final Bindings bindings,
+                                                          final Context context,
+                                                          final Class<V> clazz) {
         try {
-            Object o = compiledScript.run(enrichBindings(bindings, next, context));
+            Object o = compiledScript.run(enrichBindings(bindings, context));
             if (o instanceof Promise) {
-                return ((Promise<Response, NeverThrowsException>) o);
-            } else if (o instanceof Response) {
-                // Allow to return a response directly from script
-                return newResponsePromise((Response) o);
-            } else {
-                logger.error("Script did not return a Response or a Promise<Response, NeverThrowsException>");
-                return newResponsePromise(newInternalServerError());
+                return ((Promise<V, ScriptException>) o);
             }
-        } catch (final ScriptException e) {
+            // Allow to return an instance of directly from script, then we wrap it in a Promise.
+            return newResultPromise(clazz.cast(o));
+        } catch (final Exception e) {
             logger.warning("Cannot execute script");
             logger.warning(e);
-            return newResponsePromise(newInternalServerError(e));
+            return newExceptionPromise(new ScriptException(e));
         }
     }
 
-    private Map<String, Object> enrichBindings(final Bindings source, final Handler next, final Context context)
-            throws ScriptException {
+    private Map<String, Object> enrichBindings(final Bindings source, final Context context) throws ScriptException {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
         bindings.putAll(source.asMap());
@@ -238,9 +225,6 @@ public abstract class AbstractScriptableHeapObject extends GenericHeapObject {
             bindings.put("http", new Client(clientHandler, context));
         }
         bindings.put("ldap", ldapClient);
-        if (next != null) {
-            bindings.put("next", next);
-        }
         if (args != null) {
             try {
                 final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);

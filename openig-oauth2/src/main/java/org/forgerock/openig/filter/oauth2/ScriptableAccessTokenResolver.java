@@ -11,47 +11,51 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
-package org.forgerock.openig.handler;
+package org.forgerock.openig.filter.oauth2;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.http.Responses.onExceptionInternalServerError;
 
-import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
+import javax.script.ScriptException;
+
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;
-import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 
 /**
- * A scriptable handler. This handler acts as a simple wrapper around the
+ * A Scriptable access token resolver. This access token resolver acts as a simple wrapper around the
  * scripting engine. Scripts are provided with the bindings provided by {@link AbstractScriptableHeapObject}.
  */
-public class ScriptableHandler extends AbstractScriptableHeapObject<Response> implements Handler {
+public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<AccessToken>
+        implements AccessTokenResolver {
 
     @Override
-    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        return runScript(bindings(context, request), context, Response.class)
-                .thenCatch(onExceptionInternalServerError());
+    public Promise<AccessToken, OAuth2TokenException> resolve(Context context, String token) {
+        return runScript(bindings(context).bind("token", token), context, AccessToken.class)
+                .thenCatch(new Function<ScriptException, AccessToken, OAuth2TokenException>() {
+                    @Override
+                    public AccessToken apply(ScriptException e) throws OAuth2TokenException {
+                        throw new OAuth2TokenException("Error while resolving the access token", e);
+                    }
+                });
     }
 
     /**
-     * Creates and initializes a scriptable handler in a heap environment.
+     * Creates and initializes a scriptable access token resolver in a heap environment.
      */
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
-        public ScriptableHandler newInstance(Script script, Heap heap) throws HeapException {
-            return new ScriptableHandler(script, heap);
+        public ScriptableAccessTokenResolver newInstance(Script script, Heap heap) throws HeapException {
+            return new ScriptableAccessTokenResolver(script, heap);
         }
     }
 
-    ScriptableHandler(final Script compiledScript, Heap heap) {
+    ScriptableAccessTokenResolver(final Script compiledScript, Heap heap) {
         super(compiledScript, heap);
     }
 }

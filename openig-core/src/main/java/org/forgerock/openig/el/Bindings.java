@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  *
  */
 
@@ -52,20 +52,16 @@ public class Bindings {
      * <p>The returned bindings contain a {@code contexts} entry that provides easy access to visible parent
      * Contexts ({@code contexts.http, contexts.client, ...}).
      *
-     * <p>They also give access to the request's {@code attributes} from the
+     * <p>They also give access to the context's {@code attributes} from the
      * {@link org.forgerock.services.context.AttributesContext} and to the {@code session}
      * from the {@link org.forgerock.http.session.SessionContext}.
      *
      * @param context
      *         The context to expose
-     * @param request
-     *         The request to expose
      * @return an initialized {@link Bindings} instance.
      */
-    public static Bindings bindings(Context context, Request request) {
-        Bindings bindings = bindings()
-                .bind("context", context)
-                .bind("request", request);
+    public static Bindings bindings(Context context) {
+        Bindings bindings = bindings("context", context);
         if (context != null) {
             bindings.bind("contexts", flatten(context));
             if (context.containsContext(AttributesContext.class)) {
@@ -76,6 +72,20 @@ public class Bindings {
             }
         }
         return bindings;
+    }
+
+    /**
+     * Returns a {@link Bindings} initialized with the given {@code context} and {@code request}.
+     *
+     * @param context
+     *         The context to expose
+     * @param request
+     *         The request to expose
+     * @return an initialized {@link Bindings} instance.
+     */
+    public static Bindings bindings(Context context, Request request) {
+        return bindings(context)
+                .bind("request", request);
     }
 
     /**

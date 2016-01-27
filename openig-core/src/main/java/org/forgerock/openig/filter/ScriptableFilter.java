@@ -11,11 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.http.Responses.onExceptionInternalServerError;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -31,38 +32,23 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * A scriptable filter. This filter acts as a simple wrapper around the
- * scripting engine. Scripts are provided with the following variable bindings:
+ * scripting engine. Scripts are provided with the bindings provided by {@link AbstractScriptableHeapObject} plus :
  * <ul>
- * <li>{@link java.util.Map globals} - the Map of global variables which persist across
- * successive invocations of the script
- * <li>{@link org.forgerock.services.context.Context context} - the associated request context
- * <li>{@link Request request} - the HTTP request
- * <li>{@link org.forgerock.http.Client http} - an HTTP client which may be used for
- * performing outbound HTTP requests
- * <li>{@link org.forgerock.openig.ldap.LdapClient ldap} - an OpenIG LDAP client which may be used for
- * performing LDAP requests such as LDAP authentication
- * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
  * <li>{@link Handler next} - the next handler in the filter chain.
  * </ul>
  * Like Java based filters, scripts are free to choose whether or not they
  * forward the request to the next handler or, instead, return a response
  * immediately.
- * <p>Contains also easy access to {@code attributes} from the {@link org.forgerock.services.context.AttributesContext},
- * e.g: {@code attributes.user = "jackson"}, instead of {@code contexts.attributes.attributes.user = "jackson"}.
- * <p>In the same way, it gives access to {@code session} from the {@link org.forgerock.http.session.SessionContext},
- * for example, you can use: {@code session.put(...)}, instead of {@code contexts.session.session.put(...)}.
- * <p>
- * <b>NOTE:</b> at the moment only Groovy is supported.
- * <p><b>NOTE:</b> As of OpenIG 4.0, {@code exchange.request} and {@code exchange.response} are not set anymore.
  */
-public class ScriptableFilter extends AbstractScriptableHeapObject implements Filter {
+public class ScriptableFilter extends AbstractScriptableHeapObject<Response> implements Filter {
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
         // Delegates filtering to the script.
-        return runScript(bindings(context, request), next, context);
+        return runScript(bindings(context, request).bind("next", next), context, Response.class)
+                .thenCatch(onExceptionInternalServerError());
     }
 
     /**

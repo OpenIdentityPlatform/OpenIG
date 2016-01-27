@@ -155,4 +155,23 @@ public final class Responses {
     public static <E extends Exception> AsyncFunction<E, Response, NeverThrowsException> internalServerError() {
         return (AsyncFunction<E, Response, NeverThrowsException>) INTERNAL_SERVER_ERROR_ASYNC_FUNC;
     }
+
+    /**
+     * Utility function that returns a {@link Response} whose status is {@link Status#INTERNAL_SERVER_ERROR} and the
+     * exception attached to the response as the cause.
+     *
+     * @param <E>
+     *         The type of the incoming exception
+     * @return {@link Response} whose status is {@link Status#INTERNAL_SERVER_ERROR} and the
+     * exception attached to the response as the cause.
+     */
+    public static <E extends Exception> Function<E, Response, NeverThrowsException> onExceptionInternalServerError() {
+        return new Function<E, Response, NeverThrowsException>() {
+            @Override
+            public Response apply(E e) {
+                return newInternalServerError(e);
+            }
+        };
+    }
+
 }
