@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.handler.saml;
 
@@ -425,7 +425,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         HashMap<String, String> paramsMap = new HashMap<>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
         paramsMap.put(SAML2Constants.SESSION_INDEX, sessionIndex);
-        paramsMap.put(SAML2Constants.METAALIAS, metaAlias);
+        paramsMap.put(SAML2Constants.SP_METAALIAS, metaAlias);
         paramsMap.put(SAML2Constants.IDPENTITYID, idpEntityID);
         paramsMap.put(SAML2Constants.ROLE, SAML2Constants.SP_ROLE);
         paramsMap.put(SAML2Constants.BINDING, binding);
