@@ -23,12 +23,22 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Function;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.ResultHandler;
 
 /**
  * Provide out-of-the-box, pre-configured {@link Response} objects.
  */
 public final class Responses {
+
+    private static final Function<NeverThrowsException, Object, Exception> NOOP_EXCEPTION_FUNC =
+            new Function<NeverThrowsException, Object, Exception>() {
+                @Override
+                public Object apply(final NeverThrowsException value) throws Exception {
+                    return null;
+                }
+            };
 
     /**
      * Empty private constructor for utility.
@@ -103,4 +113,19 @@ public final class Responses {
 
         return response;
     }
+
+    /**
+     * Utility method an empty function, whose goal is to ease the transformation of a
+     * {@link org.forgerock.util.promise.Promise} type. Its main usage will be as the second argument in
+     * {@link org.forgerock.util.promise.Promise#then(Function, Function)}. The implementation of this function is just
+     * to return null : as its name suggests it, an {@code Exception} of type {@link NeverThrowsException} will never be
+     * thrown.
+     * @param <V> The expected type of that function
+     * @param <E> The new {@code Exception} that can be thrown by this function.
+     * @return a function that will return {@literal null} and not throw any {@code Exception}.
+     */
+    public static <V, E extends Exception> Function<NeverThrowsException, V, E> noopExceptionFunction() {
+        return (Function<NeverThrowsException, V, E>) NOOP_EXCEPTION_FUNC;
+    }
+
 }
