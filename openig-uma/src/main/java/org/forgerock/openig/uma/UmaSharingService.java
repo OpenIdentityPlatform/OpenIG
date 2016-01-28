@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -48,6 +48,7 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.http.EndpointRegistry;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -209,13 +210,7 @@ public class UmaSharingService {
                         }
                         throw new UmaException("Cannot register resource_set in AS");
                     }
-                }, new Function<NeverThrowsException, Share, UmaException>() {
-                    @Override
-                    public Share apply(final NeverThrowsException value) throws UmaException {
-                        // Cannot happen
-                        return null;
-                    }
-                });
+                }, Responses.<Share, UmaException>noopExceptionFunction());
     }
 
     /**
