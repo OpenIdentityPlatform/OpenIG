@@ -19,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011-2015 ForgeRock AS.
+  !      Copyright 2011-2016 ForgeRock AS.
   !
 -->
 <project name="${project.name}"
@@ -58,6 +58,7 @@
     </menu>
 
     <menu name="Released Documentation">
+      <item name="OpenIG 4" href="https://backstage.forgerock.com/#!/docs/openig/4" />
       <item name="OpenIG 3.1.0" href="https://backstage.forgerock.com/#!/docs/openig/3.1.0" />
       <item name="OpenIG 3.0.0" href="https://backstage.forgerock.com/#!/docs/openig/3.0.0" />
       <item name="OpenIG 2.1.0" href="https://backstage.forgerock.com/#!/docs/openig/2.1.0" />
