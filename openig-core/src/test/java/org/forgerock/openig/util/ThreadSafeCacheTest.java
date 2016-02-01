@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -21,6 +21,7 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -118,7 +119,6 @@ public class ThreadSafeCacheTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void shouldRegisterAnExpirationCallbackWithAppropriateDuration() throws Exception {
 
         cache.getValue(42, getCallable());
@@ -131,9 +131,7 @@ public class ThreadSafeCacheTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void shouldOverrideDefaultTimeout() throws Exception {
-
         final Duration lowerDuration = duration("10 seconds");
 
         cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
@@ -149,6 +147,32 @@ public class ThreadSafeCacheTest {
                                          timeUnitCaptor.capture());
         assertThat(delayCaptor.getValue()).isEqualTo(lowerDuration.getValue());
         assertThat(timeUnitCaptor.getValue()).isEqualTo(lowerDuration.getUnit());
+    }
+
+    @Test
+    public void shouldNotCacheTheValueWhenTimeoutIsZero() throws Exception {
+        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
+
+            @Override
+            public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                return newResultPromise(duration("0 second"));
+            }
+        });
+
+        verify(executorService).submit(any(Callable.class));
+    }
+
+    @Test
+    public void shouldNotScheduleExpirationWhenTimeoutIsUnlimited() throws Exception {
+        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
+
+            @Override
+            public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                return newResultPromise(duration("unlimited"));
+            }
+        });
+
+        verifyZeroInteractions(executorService);
     }
 
     private Callable<Integer> getCallable() {
