@@ -141,7 +141,14 @@ public class ThreadSafeCache<K, V> {
     }
 
     private void scheduleEviction(final K key, final Duration timeout) {
-        executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
+        if (timeout.isZero()) {
+            // Remove the value ASAP
+            executorService.submit(new Expiration(key));
+        } else if (timeout.isUnlimited()) {
+            // Never schedule an expiration
+        } else {
+            executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
+        }
     }
 
     /**
