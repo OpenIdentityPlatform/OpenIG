@@ -16,11 +16,19 @@
 
 package org.forgerock.openig.filter.oauth2.cache;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.forgerock.openig.filter.oauth2.AccessToken;
 import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
@@ -28,6 +36,7 @@ import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
@@ -64,6 +73,22 @@ public class CachingAccessTokenResolverTest {
         Promise<AccessToken, OAuth2TokenException> p2 = caching.resolve(new RootContext(), "TOKEN");
 
         assertThat(p1.get()).isSameAs(p2.get());
-        verify(cache, times(2)).getValue(eq("TOKEN"), any(Callable.class));
+        verify(cache, times(2)).getValue(eq("TOKEN"), any(Callable.class), any(AsyncFunction.class));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldUseExpiresAttribute() throws Exception {
+        AccessToken token = mock(AccessToken.class);
+        when(token.getExpiresAt()).thenReturn(42L);
+        when(resolver.resolve(any(Context.class), eq("TOKEN")))
+                .thenReturn(Promises.<AccessToken, OAuth2TokenException>newResultPromise(token));
+
+        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
+
+        AccessToken accessToken = caching.resolve(new RootContext(), "TOKEN").get();
+
+        verify(executorService).schedule(any(Callable.class), eq(42L), eq(TimeUnit.MILLISECONDS));
+    }
+
 }
