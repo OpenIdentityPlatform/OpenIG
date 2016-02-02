@@ -23,8 +23,8 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
@@ -41,9 +41,12 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -108,37 +111,70 @@ public class DiscoveryFilter implements Filter {
     }
 
     @Override
-    public Promise<Response, NeverThrowsException> filter(Context context,
-                                                          Request request,
-                                                          Handler next) {
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        return retrieveIssuer(context, request)
+                .thenAsync(new AsyncFunction<Issuer, Response, NeverThrowsException>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> apply(Issuer issuer) {
+                        AttributesContext attributesContext = context.asContext(AttributesContext.class);
+                        attributesContext.getAttributes().put(ISSUER_KEY, issuer);
+
+                        return next.handle(context, request);
+                    }
+                }, new AsyncFunction<DiscoveryException, Response, NeverThrowsException>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> apply(DiscoveryException e) {
+                        logger.error(e);
+                        return newResultPromise(newInternalServerError(e));
+                    }
+                });
+    }
+
+    private Promise<Issuer, DiscoveryException> retrieveIssuer(Context context, Request request) {
+        final AccountIdentifier account;
         try {
-            final AccountIdentifier account = extractFromInput(request.getForm().getFirst("discovery"));
-            final String hostString = account.getHostBase().toASCIIString();
-            /* Auto-created Issuer heap objects are named according to the discovered host base. */
-            Issuer issuer = heap.get(hostString, Issuer.class);
-            /* Checks if this domain name should be supported by an existing issuer. */
-            if (issuer == null) {
-                issuer = fromSupportedDomainNames(hostString);
-            }
-            /* Performs discovery otherwise. */
-            if (issuer == null) {
-                final URI wellKnowIssuerUri = performOpenIdIssuerDiscovery(context, account);
-                final JsonValue issuerDeclaration = createIssuerDeclaration(hostString, wellKnowIssuerUri);
-                issuer = heap.resolve(issuerDeclaration, Issuer.class);
-            }
-            AttributesContext attributesContext = context.asContext(AttributesContext.class);
-            attributesContext.getAttributes().put(ISSUER_KEY, issuer);
-        } catch (URISyntaxException | DiscoveryException e) {
-            logger.error("Discovery cannot be performed");
-            logger.error(e);
-            return newResultPromise(newInternalServerError(e));
-        } catch (HeapException e) {
-            logger.error("Cannot inject inlined Issuer declaration to heap");
-            logger.error(e);
-            return newResultPromise(newInternalServerError(e));
+            account = extractFromInput(request.getForm().getFirst("discovery"));
+        } catch (DiscoveryException e) {
+            return newExceptionPromise(e);
         }
 
-        return next.handle(context, request);
+        final String hostString = account.getHostBase().toASCIIString();
+        Issuer issuer;
+        try {
+            // Auto-created Issuer heap objects are named according to the discovered host base.
+            issuer = heap.get(hostString, Issuer.class);
+            if (issuer != null) {
+                return newResultPromise(issuer);
+            }
+
+            // Checks if this domain name should be supported by an existing issuer.
+            issuer = fromSupportedDomainNames(hostString);
+            if (issuer != null) {
+                return newResultPromise(issuer);
+            }
+        } catch (HeapException e) {
+            return newExceptionPromise(new DiscoveryException("Error while retrieving the Issuer", e));
+        }
+
+        // Performs discovery otherwise.
+        return performOpenIdIssuerDiscovery(context, account)
+                .then(new Function<URI, Issuer, DiscoveryException>() {
+                    @Override
+                    public Issuer apply(URI wellKnownUri) throws DiscoveryException {
+                        JsonValue issuerDeclaration = createIssuerDeclaration(hostString, wellKnownUri);
+                        try {
+                            return heap.resolve(issuerDeclaration, Issuer.class);
+                        } catch (HeapException e) {
+                            String message = format("Cannot resolve the issuerDeclaration '%s'",
+                                                    issuerDeclaration.toString());
+                            logger.error(message);
+                            logger.error(e);
+                            throw new DiscoveryException(message, e);
+                        }
+                    }
+                });
     }
 
     /**
@@ -173,46 +209,58 @@ public class DiscoveryFilter implements Filter {
      *            Current context.
      * @param account
      *            The account identifier links to this input.
-     * @return The '.well-known' URI if succeed.
-     * @throws DiscoveryException
-     *             If an error occurs during retrieving the WebFinger URI.
-     * @throws URISyntaxException
-     *             If an error occurs during building the WebFinger URI.
+     * @return A promise completed with the '.well-known' URI if succeed or with a {@link DiscoveryException} if not.
      */
-    URI performOpenIdIssuerDiscovery(final Context context,
-                                     final AccountIdentifier account) throws DiscoveryException,
-                                                                             URISyntaxException {
-        final Request request = buildWebFingerRequest(account);
-        String webFingerHref = null;
+    Promise<URI, DiscoveryException> performOpenIdIssuerDiscovery(final Context context,
+                                                                  final AccountIdentifier account) {
+        return discoveryHandler.handle(context, buildWebFingerRequest(account))
+                               .then(extractWellKnownUri(), Responses.<URI, DiscoveryException>noopExceptionFunction());
 
-        final Response response;
-        try {
-            response = blockingCall(discoveryHandler, context, request);
-        } catch (InterruptedException e) {
-            throw new DiscoveryException(format("Interrupted while waiting for '%s' response", request.getUri()), e);
-        }
+    }
 
-        try {
-            final JsonValue config = getJsonContent(response);
-            final JsonValue links = config.get("links").expect(List.class);
-            for (final JsonValue link : links) {
-                if (OPENID_SERVICE.equals(link.get("rel").asString())) {
-                    webFingerHref = link.get("href").asString();
-                    break;
+    private Function<Response, URI, DiscoveryException> extractWellKnownUri() {
+        return new Function<Response, URI, DiscoveryException>() {
+            @Override
+            public URI apply(Response response) throws DiscoveryException {
+                if (!OK.equals(response.getStatus())) {
+                    throw new DiscoveryException(format("Invalid response received from WebFinger URI : expected OK "
+                                                                + "but got %s", response.getStatus()));
+                }
+                return buildUri(extractWebFingerHref(response)).resolve(WELLKNOWN_OPENID_CONFIGURATION);
+            }
+
+            private String extractWebFingerHref(Response response) throws DiscoveryException {
+                String webFingerHref = null;
+                try {
+                    final JsonValue config = getJsonContent(response);
+                    final JsonValue links = config.get("links").expect(List.class);
+                    for (final JsonValue link : links) {
+                        if (OPENID_SERVICE.equals(link.get("rel").asString())) {
+                            webFingerHref = link.get("href").asString();
+                            break;
+                        }
+                    }
+                } catch (JsonValueException e) {
+                    throw new DiscoveryException("Invalid JSON response", e);
+                } catch (OAuth2ErrorException e) {
+                    throw new DiscoveryException("Cannot read JSON response in webfinger process", e);
+                }
+
+                if (webFingerHref == null) {
+                    throw new DiscoveryException("Invalid WebFinger URI : this can be caused by the distant server or "
+                                                         + "a malformed WebFinger file");
+                }
+                return webFingerHref.endsWith("/") ? webFingerHref : webFingerHref + "/";
+            }
+
+            private URI buildUri(String uri) throws DiscoveryException {
+                try {
+                    return new URI(uri);
+                } catch (URISyntaxException e) {
+                    throw new DiscoveryException(format("Invalid URI '%s'", uri));
                 }
             }
-        } catch (JsonValueException e) {
-            throw new DiscoveryException("Invalid Json response", e);
-        } catch (OAuth2ErrorException e) {
-            throw new DiscoveryException("Cannot read JSON response in webfinger process", e);
-        }
-
-        if (!OK.equals(response.getStatus()) || webFingerHref == null) {
-            throw new DiscoveryException("Invalid WebFinger URI : this can be caused by the distant server or "
-                                         + "a malformed WebFinger file");
-        }
-        final URI resourceLocation = new URI(webFingerHref.endsWith("/") ? webFingerHref : webFingerHref + "/");
-        return resourceLocation.resolve(WELLKNOWN_OPENID_CONFIGURATION);
+        };
     }
 
     Request buildWebFingerRequest(final AccountIdentifier account) {
@@ -235,42 +283,46 @@ public class DiscoveryFilter implements Filter {
      *      OpenID Connect Dynamic Client Registration 1.0 - Normalization
      *      steps</a>
      */
-    AccountIdentifier extractFromInput(final String decodedUserInput) throws URISyntaxException {
+    static AccountIdentifier extractFromInput(final String decodedUserInput) throws DiscoveryException {
         if (decodedUserInput == null || decodedUserInput.isEmpty()) {
-            throw new IllegalArgumentException("Invalid input");
+            throw new DiscoveryException("Invalid input");
         }
 
-        final URI uri;
-        String normalizedIdentifier = decodedUserInput;
-        if (decodedUserInput.startsWith("acct:") || decodedUserInput.contains("@")) {
-            /* email case */
-            if (!decodedUserInput.startsWith("acct:")) {
-                normalizedIdentifier = "acct:" + decodedUserInput;
-            }
-            if (decodedUserInput.lastIndexOf("@") > decodedUserInput.indexOf("@") + 1) {
-                /* Extracting the host only when the input like 'joe@example.com@example.org' */
-                /* the https scheme is assumed */
-                uri = new URI("https://".concat(decodedUserInput.substring(decodedUserInput.lastIndexOf("@") + 1,
-                                                                           decodedUserInput.length())));
+        try {
+            final URI uri;
+            String normalizedIdentifier = decodedUserInput;
+            if (decodedUserInput.startsWith("acct:") || decodedUserInput.contains("@")) {
+                /* email case */
+                if (!decodedUserInput.startsWith("acct:")) {
+                    normalizedIdentifier = "acct:" + decodedUserInput;
+                }
+                if (decodedUserInput.lastIndexOf("@") > decodedUserInput.indexOf("@") + 1) {
+                    /* Extracting the host only when the input like 'joe@example.com@example.org' */
+                    /* the https scheme is assumed */
+                    uri = new URI("https://".concat(decodedUserInput.substring(decodedUserInput.lastIndexOf("@") + 1,
+                                                                               decodedUserInput.length())));
+                } else {
+                    uri = new URI(normalizedIdentifier.replace("acct:", "acct://"));
+                }
             } else {
-                uri = new URI(normalizedIdentifier.replace("acct:", "acct://"));
+                uri = new URI(decodedUserInput);
+                // Removing fragments
+                if (decodedUserInput.contains("#")) {
+                    normalizedIdentifier = decodedUserInput.substring(0, decodedUserInput.indexOf("#"));
+                }
             }
-        } else {
-            uri = new URI(decodedUserInput);
-            // Removing fragments
-            if (decodedUserInput.contains("#")) {
-                normalizedIdentifier = decodedUserInput.substring(0, decodedUserInput.indexOf("#"));
-            }
-        }
 
-        final int port = uri.getPort();
-        final String host = uri.getHost();
-        return new AccountIdentifier(new URI(normalizedIdentifier),
-                                     new URI("http".equals(uri.getScheme()) ? "http" : "https",
-                                             null, host, port, "/", null, null));
+            final int port = uri.getPort();
+            final String host = uri.getHost();
+            return new AccountIdentifier(new URI(normalizedIdentifier),
+                                         new URI("http".equals(uri.getScheme()) ? "http" : "https",
+                                                 null, host, port, "/", null, null));
+        } catch (URISyntaxException e) {
+            throw new DiscoveryException("Unable to parse the user input", e);
+        }
     }
 
-    final class AccountIdentifier {
+    static final class AccountIdentifier {
         private final URI normalizedIdentifier;
         private final URI hostBase;
 

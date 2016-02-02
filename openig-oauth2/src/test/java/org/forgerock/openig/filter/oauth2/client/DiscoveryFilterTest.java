@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 
 import org.forgerock.http.Handler;
@@ -136,35 +135,31 @@ public class DiscoveryFilterTest {
             // @Checkstyle:on
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailWhenInputIsNull() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        df.extractFromInput(null);
+        DiscoveryFilter.extractFromInput(null);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailWhenInputIsEmpty() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        df.extractFromInput("");
+        DiscoveryFilter.extractFromInput("");
     }
 
-    @Test(expectedExceptions = URISyntaxException.class)
+    @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailWhenInputIsInvalid() throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        df.extractFromInput("+://zorg");
+        DiscoveryFilter.extractFromInput("+://zorg");
     }
 
     @Test(dataProvider = "givenInputAndNormalizedIdentifierExtracted")
     public void shouldExtractParameters(final String input, final String expected) throws Exception {
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        final AccountIdentifier account = df.extractFromInput(input);
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput(input);
         assertThat(account.getNormalizedIdentifier().toString()).isEqualTo(expected);
     }
 
     @Test(dataProvider = "userInputAndFinalWebfingerProducedUri")
     public void shouldReturnWebfingerUri(final String input, final String expected) throws Exception {
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput(input);
         final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        final AccountIdentifier account = df.extractFromInput(input);
         assertThat(df.buildWebFingerRequest(account).getUri().toString()).isEqualTo(expected);
     }
 
@@ -175,9 +170,7 @@ public class DiscoveryFilterTest {
                                          + "?resource=http://openam.example.com/jackson"
                                          + "&rel=http://openid.net/specs/connect/1.0/issuer";
 
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-
-        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.OK);
@@ -191,7 +184,8 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final URI openIdWellKnownUri = df.performOpenIdIssuerDiscovery(context, account);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final URI openIdWellKnownUri = df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
 
         // then
         verify(handler).handle(eq(context), captor.capture());
@@ -205,8 +199,7 @@ public class DiscoveryFilterTest {
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseDoNotContainOpenIdLink() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -218,14 +211,14 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(context, account);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailPerformOpenIdIssuerDiscoveryWhenServerResponseContainInvalidJson() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.TEAPOT);
@@ -233,14 +226,14 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(context, account);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailWhenTheIssuerHrefIsNull() throws Exception {
         // given
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
-        final AccountIdentifier account = df.extractFromInput("http://openam.example.com/jackson");
+        final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
         final Response response = new Response();
         response.setStatus(Status.OK);
@@ -248,6 +241,7 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        df.performOpenIdIssuerDiscovery(context, account);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 }
