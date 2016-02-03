@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.http;
 
+import static org.forgerock.util.promise.Promises.newResultPromise;
+
 import java.util.concurrent.CountDownLatch;
 
 import org.forgerock.http.Handler;
@@ -23,8 +25,10 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 
 /**
@@ -37,6 +41,14 @@ public final class Responses {
                 @Override
                 public Object apply(final NeverThrowsException value) throws Exception {
                     return null;
+                }
+            };
+
+    private static final AsyncFunction<Exception, Response, NeverThrowsException> INTERNAL_SERVER_ERROR_ASYNC_FUNC =
+            new AsyncFunction<Exception, Response, NeverThrowsException>() {
+                @Override
+                public Promise<Response, NeverThrowsException> apply(Exception e) {
+                    return newResultPromise(newInternalServerError(e));
                 }
             };
 
@@ -115,17 +127,32 @@ public final class Responses {
     }
 
     /**
-     * Utility method an empty function, whose goal is to ease the transformation of a
+     * Utility method returning an empty function, whose goal is to ease the transformation of a
      * {@link org.forgerock.util.promise.Promise} type. Its main usage will be as the second argument in
      * {@link org.forgerock.util.promise.Promise#then(Function, Function)}. The implementation of this function is just
-     * to return null : as its name suggests it, an {@code Exception} of type {@link NeverThrowsException} will never be
-     * thrown.
-     * @param <V> The expected type of that function
-     * @param <E> The new {@code Exception} that can be thrown by this function.
+     * to return null : as its name suggests it, an {@code Exception} of type {@link NeverThrowsException} will never
+     * be thrown.
+     *
+     * @param <V>
+     *         The expected type of that function
+     * @param <E>
+     *         The new {@link Exception} that can be thrown by this function.
      * @return a function that will return {@literal null} and not throw any {@code Exception}.
      */
     public static <V, E extends Exception> Function<NeverThrowsException, V, E> noopExceptionFunction() {
         return (Function<NeverThrowsException, V, E>) NOOP_EXCEPTION_FUNC;
     }
 
+    /**
+     * Utility method returning an async function that creates a {@link Response} with status
+     * {@link Status#INTERNAL_SERVER_ERROR} and the exception set as the cause.
+     *
+     * @param <E>
+     *         The type of the incoming {@link Exception}
+     * @return an async function that creates a {@link Response} with status {@link Status#INTERNAL_SERVER_ERROR}
+     * and the exception set as the cause.
+     */
+    public static <E extends Exception> AsyncFunction<E, Response, NeverThrowsException> internalServerError() {
+        return (AsyncFunction<E, Response, NeverThrowsException>) INTERNAL_SERVER_ERROR_ASYNC_FUNC;
+    }
 }

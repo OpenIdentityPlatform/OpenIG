@@ -29,7 +29,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -41,7 +40,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -98,7 +96,6 @@ public class ClientRegistrationFilterTest {
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
         assertThat(response.getCause().getMessage()).contains("'redirect_uris' should be defined");
-        verify(logger).error(any(RegistrationException.class));
     }
 
     @Test
@@ -120,8 +117,9 @@ public class ClientRegistrationFilterTest {
         // then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
-        assertThat(response.getCause().getMessage()).contains("Registration is not supported by the issuer");
-        verify(logger).error(any(RegistrationException.class));
+        Exception cause = response.getCause();
+        assertThat(cause).isInstanceOf(RegistrationException.class);
+        assertThat(cause.getMessage()).contains("Registration is not supported by the issuer");
     }
 
     @Test
@@ -143,7 +141,6 @@ public class ClientRegistrationFilterTest {
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
         assertThat(request.getEntity().toString()).containsSequence("redirect_uris", "contact", "scopes");
-        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = RegistrationException.class)
@@ -157,7 +154,7 @@ public class ClientRegistrationFilterTest {
         // when
         crf.performDynamicClientRegistration(context,
                                              getMetadata(),
-                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT)).getOrThrow();
     }
 
     @Test(expectedExceptions = RegistrationException.class)
@@ -172,10 +169,10 @@ public class ClientRegistrationFilterTest {
         // when
         crf.performDynamicClientRegistration(context,
                                              getMetadata(),
-                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
+                                             new URI(SAMPLE_URI + REGISTRATION_ENDPOINT)).getOrThrow();
     }
 
-    private ClientRegistrationFilter buildClientRegistrationFilter() throws HeapException, Exception {
+    private ClientRegistrationFilter buildClientRegistrationFilter() throws Exception {
         return new ClientRegistrationFilter(handler, getMetadata(), buildDefaultHeap(), SUFFIX, logger);
     }
 
