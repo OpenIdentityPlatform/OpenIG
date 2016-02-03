@@ -11,15 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.format;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.http.Responses.blockingCall;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 
@@ -38,9 +36,13 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.AttributesContext;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.Function;
 import org.forgerock.util.Reject;
+import org.forgerock.util.promise.Promise;
 
 /**
  * A configuration for an OpenID Connect Issuer. Two approaches to create the
@@ -230,6 +232,8 @@ public final class Issuer {
     /**
      * Builds a new Issuer based on the given well-known URI.
      *
+     * @param context
+     *            The context's chain.
      * @param name
      *            The issuer's identifier. Usually, it's the host name or a
      *            given name.
@@ -240,37 +244,33 @@ public final class Issuer {
      * @param handler
      *            The issuer handler that does the call to the given well-known
      *            URI.
-     * @return An OpenID issuer.
-     * @throws DiscoveryException
-     *             If an error occurred when retrieving the JSON content from
-     *             the server response.
+     * @return A promise completed with either an OAuth 2.0 issuer on success or a {@link DiscoveryException} on failure
      */
-    public static Issuer build(final String name,
-                               final URI wellKnownUri,
-                               final List<String> supportedDomains,
-                               final Handler handler) throws DiscoveryException {
+    public static Promise<Issuer, DiscoveryException> build(final Context context,
+                                                            final String name,
+                                                            final URI wellKnownUri,
+                                                            final List<String> supportedDomains,
+                                                            final Handler handler) {
         final Request request = new Request();
         request.setMethod("GET");
         request.setUri(wellKnownUri);
 
-        Response response;
-        try {
-            response = blockingCall(handler, new AttributesContext(new RootContext()), request);
-        } catch (InterruptedException e) {
-            throw new DiscoveryException(format("Interrupted while waiting for '%s' response", wellKnownUri), e);
-        }
-
-        if (!OK.equals(response.getStatus())) {
-            throw new DiscoveryException("Unable to read well-known OpenID Configuration from '"
-                    + wellKnownUri + "'", response.getCause());
-        }
-        JsonValue config = null;
-        try {
-            config = getJsonContent(response);
-        } catch (OAuth2ErrorException | JsonValueException e) {
-            throw new DiscoveryException("Cannot read JSON", e);
-        }
-        return new Issuer(name, config.put("supportedDomains", supportedDomains));
+        return handler.handle(new AttributesContext(context), request)
+                      .then(new Function<Response, Issuer, DiscoveryException>() {
+                          @Override
+                          public Issuer apply(Response response) throws DiscoveryException {
+                              if (!OK.equals(response.getStatus())) {
+                                  throw new DiscoveryException("Unable to read well-known OpenID Configuration from '"
+                                                                       + wellKnownUri + "'", response.getCause());
+                              }
+                              try {
+                                  JsonValue config = getJsonContent(response);
+                                  return new Issuer(name, config.put("supportedDomains", supportedDomains));
+                              } catch (OAuth2ErrorException | JsonValueException e) {
+                                  throw new DiscoveryException("Cannot read JSON", e);
+                              }
+                          }
+                      }, Responses.<Issuer, DiscoveryException>noopExceptionFunction());
     }
 
     private static List<Pattern> extractPatterns(final List<String> from) {
@@ -301,8 +301,12 @@ public final class Issuer {
                     && !config.isDefined("tokenEndpoint")) {
                 try {
                     final URI wellKnownEndpoint = new URI(evaluate(config.get("wellKnownEndpoint")));
-                    return build(this.name, wellKnownEndpoint, supportedDomains, issuerHandler);
-                } catch (DiscoveryException | URISyntaxException e) {
+                    return build(new AttributesContext(new RootContext()),
+                                 this.name,
+                                 wellKnownEndpoint,
+                                 supportedDomains,
+                                 issuerHandler).getOrThrow();
+                } catch (URISyntaxException | DiscoveryException | InterruptedException e) {
                     throw new HeapException(e);
                 }
             }
