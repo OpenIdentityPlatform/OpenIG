@@ -23,6 +23,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_INVALID_TOKEN;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
@@ -533,9 +534,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         "Authorization call-back failed because the client registration %s was unrecognized",
                         session.getClientRegistrationName()));
             }
-            final JsonValue accessTokenResponse = client.getAccessToken(context,
-                                                                        code,
-                                                                        buildCallbackUri(context, request).toString());
+            final JsonValue accessTokenResponse =
+                    blockingCall(client.getAccessToken(context, code, buildCallbackUri(context, request).toString()),
+                                 "getting the access token");
 
             /*
              * Finally complete the authorization request by redirecting to the
@@ -716,7 +717,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final ClientRegistration clientRegistration = getClientRegistration(session);
             if (error.is(E_INVALID_TOKEN) && clientRegistration != null && session.getRefreshToken() != null) {
                 // The session is updated with new access token.
-                final JsonValue accessTokenResponse = clientRegistration.refreshAccessToken(context, session);
+                final JsonValue accessTokenResponse =
+                        blockingCall(clientRegistration.refreshAccessToken(context, session),
+                                     "refreshing the access token");
                 final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
                 tryPrepareContext(context, refreshedSession, request);
                 return refreshedSession;
@@ -938,10 +941,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         @Override
         public Map<String, Object> call() throws Exception {
             try {
-                return clientRegistration.getUserInfo(context, session).asMap();
+                return blockingCall(clientRegistration.getUserInfo(context, session), "getting the user info").asMap();
             } catch (OAuth2ErrorException e) {
                 final OAuth2Error error = e.getOAuth2Error();
-                if (error.is(E_INVALID_TOKEN)  && clientRegistration != null && session.getRefreshToken() != null) {
+                if (error.is(E_INVALID_TOKEN) && session.getRefreshToken() != null) {
                     // Supposed expired token, try to update it by generating a new access token.
                     return updateSessionStateWithRefreshTokenOrFailWithNewSession();
                 }
@@ -952,10 +955,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         private Map<String, Object> updateSessionStateWithRefreshTokenOrFailWithNewSession() throws ResponseException,
                                                                                              OAuth2ErrorException {
             try {
-                JsonValue refreshAccessToken = clientRegistration.refreshAccessToken(context, session);
+                JsonValue refreshAccessToken = blockingCall(clientRegistration.refreshAccessToken(context, session),
+                                                            "refreshing the access token");
                 session = session.stateRefreshed(refreshAccessToken);
                 saveSession(context, session, buildUri(context, request, clientEndpoint));
-                return clientRegistration.getUserInfo(context, session).asMap();
+                return blockingCall(clientRegistration.getUserInfo(context, session), "getting the user info").asMap();
             } catch (OAuth2ErrorException ex) {
                 logger.debug("Fail to refresh OAuth2 Access Token");
                 logger.debug(ex);
@@ -971,6 +975,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         public ClientRegistration getClientRegistration() {
             return clientRegistration;
+        }
+    }
+
+    private <V, E extends Exception> V blockingCall(Promise<V, E> promise, String message)
+            throws E, OAuth2ErrorException {
+        try {
+            return promise.getOrThrow();
+        } catch (InterruptedException e) {
+            // TODO Remove the getOrThrow()
+            throw new OAuth2ErrorException(E_SERVER_ERROR, "Interrupted while " + message, e);
         }
     }
 }
