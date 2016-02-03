@@ -23,12 +23,14 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.http.Responses.blockingCall;
+import static org.forgerock.openig.http.Responses.internalServerError;
 import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -37,9 +39,12 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
@@ -85,16 +90,16 @@ public class ClientRegistrationFilter implements Filter {
      * @param registrationHandler
      *            The handler to perform the dynamic registration to the AS.
      * @param config
-     *            Can contain any client metadata attributes that the client
-     *            chooses to specify for itself during the registration. Must
-     *            contains the 'redirect_uris' attributes.
+     *             Can contain any client metadata attributes that the client
+     *             chooses to specify for itself during the registration. Must
+     *             contains the 'redirect_uris' attributes.
      * @param heap
-     *            A reference to the current heap.
+     *             A reference to the current heap.
      * @param suffix
-     *            The name of the client registration in the heap will be
-     *            {@literal IssuerName} + {@literal suffix}. Must not be {@code null}.
+     *             The name of the client registration in the heap will be
+     *             {@literal IssuerName} + {@literal suffix}. Must not be {@code null}.
      * @param logger
-     *            For logging activities.
+     *             For logging activities.
      */
     public ClientRegistrationFilter(final Handler registrationHandler,
                                     final JsonValue config,
@@ -109,75 +114,118 @@ public class ClientRegistrationFilter implements Filter {
     }
 
     @Override
-    public Promise<Response, NeverThrowsException> filter(Context context,
-                                                          Request request,
-                                                          Handler next) {
-        try {
-            AttributesContext attributesContext = context.asContext(AttributesContext.class);
-            final Issuer issuer = (Issuer) attributesContext.getAttributes().get(ISSUER_KEY);
-            if (issuer != null) {
-                ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
-                if (cr == null) {
-                    if (!config.isDefined("redirect_uris")) {
-                        throw new RegistrationException(
-                                "Cannot perform dynamic registration: 'redirect_uris' should be defined");
-                    }
-                    if (issuer.getRegistrationEndpoint() == null) {
-                        throw new RegistrationException(format("Registration is not supported by the issuer '%s'",
-                                issuer));
-                    }
-                    final JsonValue registeredClientConfiguration = performDynamicClientRegistration(context, config,
-                            issuer.getRegistrationEndpoint());
-                    cr = heap.resolve(
-                            createClientRegistrationDeclaration(registeredClientConfiguration, issuer.getName()),
-                            ClientRegistration.class);
-                }
-                attributesContext.getAttributes().put(CLIENT_REG_KEY, cr);
-            } else {
-                throw new RegistrationException("Cannot retrieve issuer from the context");
-            }
-        } catch (RegistrationException e) {
-            logger.error(e);
-            return newResultPromise(newInternalServerError(e));
-        } catch (HeapException e) {
-            logger.error("Cannot inject inlined Client Registration declaration to heap");
-            logger.error(e);
-            return newResultPromise(newInternalServerError(e));
+    public Promise<Response, NeverThrowsException> filter(final Context context,
+                                                          final Request request,
+                                                          final Handler next) {
+        final Map<String, Object> attributes = context.asContext(AttributesContext.class).getAttributes();
+        final Issuer issuer = (Issuer) attributes.get(ISSUER_KEY);
+        if (issuer == null) {
+            return newResultPromise(newInternalServerError(
+                    new RegistrationException("Cannot retrieve issuer from the context")));
         }
-        return next.handle(context, request);
+
+        return retrieveClientRegistration(context, issuer)
+                .thenAsync(filterWithClientRegistration(context, request, next, attributes),
+                           internalServerError());
+    }
+
+    private AsyncFunction<ClientRegistration, Response, NeverThrowsException> filterWithClientRegistration(
+            final Context context,
+            final Request request,
+            final Handler next,
+            final Map<String, Object> attributes) {
+        return new AsyncFunction<ClientRegistration, Response, NeverThrowsException>() {
+            @Override
+            public Promise<Response, NeverThrowsException> apply(ClientRegistration clientRegistration) {
+                attributes.put(CLIENT_REG_KEY, clientRegistration);
+                return next.handle(context, request);
+            }
+        };
+    }
+
+    private Promise<ClientRegistration, RegistrationException> retrieveClientRegistration(final Context context,
+                                                                                          final Issuer issuer) {
+        try {
+            final ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
+            if (cr != null) {
+                return newResultPromise(cr);
+            }
+        } catch (HeapException e) {
+            String message = format("Error while trying to get the issuer '%s' from the heap", issuer.getName());
+            logger.error(message);
+            logger.error(e);
+            return newExceptionPromise(new RegistrationException(message, e));
+        }
+
+        // No matching ClientRegistration found in the heap, let's see if we can build one
+        if (!config.isDefined("redirect_uris")) {
+            return newExceptionPromise(new RegistrationException(
+                    "Cannot perform dynamic registration: 'redirect_uris' should be defined"));
+        }
+        if (issuer.getRegistrationEndpoint() == null) {
+            return newExceptionPromise(
+                    new RegistrationException(format("Registration is not supported by the issuer '%s'",
+                                                     issuer.getName())));
+        }
+
+        return performDynamicClientRegistration(context, config, issuer.getRegistrationEndpoint())
+                .then(new Function<JsonValue, ClientRegistration, RegistrationException>() {
+                    @Override
+                    public ClientRegistration apply(JsonValue registeredClientConfiguration)
+                            throws RegistrationException {
+                        try {
+                            return heap.resolve(createClientRegistrationDeclaration(registeredClientConfiguration,
+                                                                                    issuer.getName()),
+                                                ClientRegistration.class);
+                        } catch (HeapException e) {
+                            String message = "Cannot inject inlined Client Registration declaration to heap";
+                            logger.error(message);
+                            logger.error(e);
+                            throw new RegistrationException(message, e);
+                        }
+                    }
+                });
     }
 
     private JsonValue createClientRegistrationDeclaration(final JsonValue configuration, final String issuerName) {
         configuration.put("issuer", issuerName);
         return json(object(
-                        field("name", issuerName + suffix),
-                        field("type", "ClientRegistration"),
-                        field("config", configuration)));
+                       field("name", issuerName + suffix),
+                       field("type", "ClientRegistration"),
+                       field("config", configuration)));
     }
 
-    JsonValue performDynamicClientRegistration(final Context context,
-                                               final JsonValue clientRegistrationConfiguration,
-                                               final URI registrationEndpoint) throws RegistrationException {
+    Promise<JsonValue, RegistrationException> performDynamicClientRegistration(
+            final Context context,
+            final JsonValue clientRegistrationConfiguration,
+            final URI registrationEndpoint) {
         final Request request = new Request();
         request.setMethod("POST");
         request.setUri(registrationEndpoint);
         request.setEntity(clientRegistrationConfiguration.asMap());
 
-        final Response response;
-        try {
-            response = blockingCall(registrationHandler, context, request);
-        } catch (InterruptedException e) {
-            throw new RegistrationException(format("Interrupted while waiting for '%s' response", request.getUri()), e);
-        }
-        if (!CREATED.equals(response.getStatus())) {
-            throw new RegistrationException("Cannot perform dynamic registration: this can be caused "
-                                            + "by the distant server(busy, offline...) "
-                                            + "or a malformed registration response.");
-        }
-        try {
-            return getJsonContent(response);
-        } catch (OAuth2ErrorException e) {
-            throw new RegistrationException("Cannot perform dynamic registration: invalid response JSON content.");
-        }
+        return registrationHandler.handle(context, request)
+                                  .then(extractJsonContent(),
+                                        Responses.<JsonValue, RegistrationException>noopExceptionFunction());
+    }
+
+    private Function<Response, JsonValue, RegistrationException> extractJsonContent() {
+        return new Function<Response, JsonValue, RegistrationException>() {
+            @Override
+            public JsonValue apply(Response response) throws RegistrationException {
+                if (!CREATED.equals(response.getStatus())) {
+                    throw new RegistrationException("Cannot perform dynamic registration: this can be "
+                                                            + "caused by the distant server(busy, offline...) "
+                                                            + "or a malformed registration response.");
+                }
+                try {
+                    return getJsonContent(response);
+                } catch (OAuth2ErrorException e) {
+                    throw new RegistrationException("Cannot perform dynamic registration: invalid response "
+                                                            + "JSON content.", e);
+                }
+            }
+
+        };
     }
 }
