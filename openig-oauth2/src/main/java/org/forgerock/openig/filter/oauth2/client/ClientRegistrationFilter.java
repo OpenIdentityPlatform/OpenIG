@@ -216,7 +216,8 @@ public class ClientRegistrationFilter implements Filter {
                 if (!CREATED.equals(response.getStatus())) {
                     throw new RegistrationException("Cannot perform dynamic registration: this can be "
                                                             + "caused by the distant server(busy, offline...) "
-                                                            + "or a malformed registration response.");
+                                                            + "or a malformed registration response.",
+                                                    response.getCause());
                 }
                 try {
                     return getJsonContent(response);

@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -125,7 +125,6 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 try {
                     c = dataSource.getConnection();
 
-
                     PreparedStatement ps = createPreparedStatement(c);
 
                     ResultSet rs = ps.executeQuery();
@@ -210,8 +209,8 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 source = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
                 throw new JsonValueException(dataSource, ne);
-            } catch (ClassCastException ne) {
-                throw new JsonValueException(dataSource, "expecting " + DataSource.class.getName() + " type");
+            } catch (ClassCastException cce) {
+                throw new JsonValueException(dataSource, "expecting " + DataSource.class.getName() + " type", cce);
             }
 
             @SuppressWarnings("rawtypes")

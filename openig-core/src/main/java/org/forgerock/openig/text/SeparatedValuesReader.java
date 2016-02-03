@@ -12,10 +12,12 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.text;
+
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -112,11 +114,7 @@ public class SeparatedValuesReader {
      * {@code IOException}. Closing a previously closed reader has no effect.
      */
     public void close() {
-        try {
-            input.close();
-        } catch (IOException ioe) {
-            // exceptions closing the reader are not reported
-        }
+        closeSilently(input);
     }
 
     private int read() throws IOException {

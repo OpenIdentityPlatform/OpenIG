@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -55,7 +55,7 @@ final class OAuth2Session {
             } catch (final JwtReconstructionException e) {
                 throw new OAuth2ErrorException(E_SERVER_ERROR,
                         "Authorization call-back failed because the OpenID Connect ID token"
-                                + "could not be decoded");
+                                + "could not be decoded", e);
             }
         }
         return null;
