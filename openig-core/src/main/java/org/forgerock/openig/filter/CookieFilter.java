@@ -191,7 +191,8 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                                                                   null,
                                                                   null).relativize(uri));
             } catch (URISyntaxException use) {
-                // suppress exception
+                logger.trace(use);
+                // swallow exception
             }
         }
         return uri;
