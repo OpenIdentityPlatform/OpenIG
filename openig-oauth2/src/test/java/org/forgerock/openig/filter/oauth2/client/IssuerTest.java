@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -38,6 +38,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -130,7 +131,7 @@ public class IssuerTest {
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final Issuer issuer = Issuer.build("myIssuer", wellKnownUri, null, handler);
+        final Issuer issuer = Issuer.build(new RootContext(), "myIssuer", wellKnownUri, null, handler).getOrThrow();
 
         // then
         verify(handler).handle(any(Context.class), captor.capture());
@@ -155,10 +156,11 @@ public class IssuerTest {
         final URI wellKnownUri = new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT);
 
         // when
-        final Issuer issuer = Issuer.build("myIssuer",
+        final Issuer issuer = Issuer.build(new RootContext(),
+                                           "myIssuer",
                                            wellKnownUri,
                                            asList("openam.com", "openam.example.com"),
-                                           handler);
+                                           handler).getOrThrow();
 
         // then
         verify(handler).handle(any(Context.class), captor.capture());
@@ -173,7 +175,7 @@ public class IssuerTest {
         assertThat(issuer.getSupportedDomains()).hasSize(2);
     }
 
-    @Test(expectedExceptions = JsonValueException.class)
+    @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailToPerformBuildWithWellKnownUriProvidedCausedByInvalidResponse() throws Exception {
         // given
         final Response response = new Response();
@@ -181,7 +183,8 @@ public class IssuerTest {
         response.setEntity(json(object(field("invalid", "response"))));
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
-        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler);
+        Issuer.build(new RootContext(), "myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler)
+              .getOrThrow();
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
@@ -192,10 +195,11 @@ public class IssuerTest {
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
-        Issuer.build("myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler);
+        Issuer.build(new RootContext(), "myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler)
+              .getOrThrow();
     }
 
-    private final JsonValue getValidWellKnownOpenIdConfigurationResponse() {
+    private JsonValue getValidWellKnownOpenIdConfigurationResponse() {
         return json(object(
                         field("authorizeEndpoint", SAMPLE_URI + AUTHORIZE_ENDPOINT),
                         field("registrationEndpoint", SAMPLE_URI + REGISTRATION_ENDPOINT),
@@ -203,7 +207,7 @@ public class IssuerTest {
                         field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT)));
     }
 
-    private final JsonValue buildJsonConfig() {
+    private JsonValue buildJsonConfig() {
         return json(object(
                     field("authorizeEndpoint", "http://www.example.com:8089/openam/oauth2/authorize"),
                     field("registrationEndpoint", "http://www.example.com:8089/openam/oauth2/connect/register"),
