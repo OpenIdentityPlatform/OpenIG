@@ -321,7 +321,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         List<String> headers = new ArrayList<>(cookieHeader.getValues());
         for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
             String header = hi.next();
-            ArrayList<String> parts = new ArrayList<>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
+            List<String> parts = new ArrayList<>(Arrays.asList(DELIM_SEMICOLON.split(header, 0)));
             int originalSize = parts.size();
             boolean remove = false;
             int intact = 0;
@@ -366,7 +366,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                 List<String> headers = new ArrayList<>(setCookieHeader.getValues());
                 for (ListIterator<String> hi = headers.listIterator(); hi.hasNext();) {
                     String header = hi.next();
-                    ArrayList<String> parts;
+                    List<String> parts;
                     if ("Set-Cookie2".equals(name)) {
                         // RFC 2965 cookie
                         parts = new ArrayList<>(Arrays.asList(DELIM_COMMA.split(header, 0)));

@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -155,7 +155,7 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         }
 
         private List<Case> asCases(String name) throws HeapException {
-            ArrayList<Case> result = new ArrayList<>();
+            List<Case> result = new ArrayList<>();
             JsonValue cases = config.get(name).expect(List.class);
             for (JsonValue value : cases) {
                 result.add(asCase(value.required().expect(Map.class)));

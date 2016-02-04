@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -110,7 +110,7 @@ class MonitoringResourceProvider implements SingletonResourceProvider {
     }
 
     private Map<String, BigDecimal> percentilesValues(Snapshot snapshot) {
-        LinkedHashMap<String, BigDecimal> map = new LinkedHashMap<>();
+        Map<String, BigDecimal> map = new LinkedHashMap<>();
         for (Double percentile : percentiles) {
             map.put(String.valueOf(percentile), toMilliseconds(snapshot.getValue(percentile)));
         }

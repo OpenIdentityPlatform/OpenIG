@@ -120,7 +120,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
         target.set(bindings, new LazyMap<>(new Factory<Map<String, Object>>() {
             @Override
             public Map<String, Object> newInstance() {
-                HashMap<String, Object> result = new HashMap<>();
+                Map<String, Object> result = new HashMap<>();
                 Connection c = null;
                 try {
                     c = dataSource.getConnection();

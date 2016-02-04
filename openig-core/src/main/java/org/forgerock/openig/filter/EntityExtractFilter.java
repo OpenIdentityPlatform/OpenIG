@@ -116,7 +116,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
     }
 
     private void process(Bindings bindings, Message message) {
-        HashMap<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         if (message != null) {
             try {
                 try (Reader reader = message.getEntity().newDecodedContentReader(charset)) {

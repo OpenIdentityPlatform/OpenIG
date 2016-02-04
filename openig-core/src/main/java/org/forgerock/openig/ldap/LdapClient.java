@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.ldap;
 
@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.forgerock.opendj.ldap.ConnectionFactory;
 import org.forgerock.opendj.ldap.DN;
@@ -81,7 +82,7 @@ public final class LdapClient {
     }
 
 
-    private final ConcurrentHashMap<String, ConnectionFactory> factories =
+    private final ConcurrentMap<String, ConnectionFactory> factories =
             new ConcurrentHashMap<>();
 
     /**
