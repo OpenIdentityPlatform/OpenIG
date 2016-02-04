@@ -19,7 +19,7 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2012-2015 ForgeRock AS.
+  !      Copyright 2012-2016 ForgeRock AS.
   !
 -->
 <document xmlns="http://maven.apache.org/XDOC/2.0"
@@ -31,7 +31,10 @@
   </properties>
   <body>
     <section name="Core Documentation">
-      <p>This core documentation is in progress as part of the OpenIG project.</p>
+      <p>This core documentation is <strong>in progress</strong> as part of the OpenIG project.</p>
+      <p>For completed, released documentation, see <a
+         href="http://docs.forgerock.org/en/openig/">docs.forgerock.org</a>.</p>
+
       <dl>
 
         <dt>Release Notes</dt>
