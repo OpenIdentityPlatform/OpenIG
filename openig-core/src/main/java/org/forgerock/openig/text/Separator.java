@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.text;
@@ -76,7 +76,7 @@ public class Separator {
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof Separator)) {
+        if (!(o instanceof Separator)) {
             return false;
         }
         if (this == o) {
