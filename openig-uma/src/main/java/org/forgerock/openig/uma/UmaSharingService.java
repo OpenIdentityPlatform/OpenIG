@@ -288,11 +288,9 @@ public class UmaSharingService {
         int longest = -1;
         for (Share share : shares.values()) {
             Matcher matcher = share.getPattern().matcher(path);
-            if (matcher.matches()) {
-                if (matcher.end() > longest) {
-                    matching = share;
-                    longest = matcher.end();
-                }
+            if (matcher.matches() && matcher.end() > longest) {
+                matching = share;
+                longest = matcher.end();
             }
         }
 
