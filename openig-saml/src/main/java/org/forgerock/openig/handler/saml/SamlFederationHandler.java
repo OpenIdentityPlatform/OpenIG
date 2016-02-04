@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -249,7 +250,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
         if (attributeStatement != null) {
             for (String key : attributeMapping.keySet()) {
-                HashSet<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
+                Set<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
                 if (t != null) {
                     String sessionValue = (String) t.iterator().next();
                     session.put(key, sessionValue);
@@ -422,7 +423,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
 
         logger.debug(format("FederationServlet.serviceSPInitiatedSLO binding: %s", binding));
 
-        HashMap<String, String> paramsMap = new HashMap<>(7);
+        Map<String, String> paramsMap = new HashMap<>(7);
         paramsMap.put(SAML2Constants.INFO_KEY, spEntityID + "|" + idpEntityID + "|" + nameID);
         paramsMap.put(SAML2Constants.SESSION_INDEX, sessionIndex);
         paramsMap.put(SAML2Constants.SP_METAALIAS, metaAlias);

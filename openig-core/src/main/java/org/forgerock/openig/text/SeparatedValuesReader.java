@@ -66,7 +66,7 @@ public class SeparatedValuesReader {
      * @throws IOException if an I/O exception occurs.
      */
     public List<String> next() throws IOException {
-        ArrayList<String> list = new ArrayList<>(this.fields);
+        List<String> list = new ArrayList<>(this.fields);
         StringBuilder sb = new StringBuilder();
         int c;
         boolean escaped = false;
