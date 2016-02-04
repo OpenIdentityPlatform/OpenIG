@@ -207,7 +207,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         Route route = null;
         try {
             route = builder.build(file);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error(format("The route defined in file '%s' cannot be added",
                                 file));
             logger.error(e);
@@ -242,7 +242,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         Route newRoute;
         try {
             newRoute = builder.build(file);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error(format("The route defined in file '%s' cannot be modified",
                                   file));
             logger.error(e);
