@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -145,14 +145,5 @@ public class LogTimer {
             paused = Long.MIN_VALUE;
         }
         return this;
-    }
-
-    private String source(String event) {
-        StringBuilder sb = new StringBuilder();
-        if (this.event != null) {
-            sb.append(this.event).append('.');
-        }
-        sb.append(event);
-        return sb.toString();
     }
 }
