@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -71,6 +71,15 @@ public final class Heaplets {
         if (heaplet == null) {
             // try standalone class
             heaplet = Loader.newInstance(c.getName() + "Heaplet", Heaplet.class);
+        }
+
+        // we're directly pointing to the Heaplet
+        if (Heaplet.class.isAssignableFrom(c)) {
+            try {
+                heaplet = c.asSubclass(Heaplet.class).newInstance();
+            } catch (Exception e) {
+                // Ignored
+            }
         }
         return heaplet;
     }

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -72,6 +72,17 @@ public class HeapletsTest {
     @Test
     public void shouldUseHeapletFactory() throws Exception {
         Heaplet heaplet = Heaplets.getHeaplet(Editor.class);
+
+        assertThat(heaplet)
+                .isNotNull()
+                .isInstanceOf(EditorHeapletFactory.EditorHeaplet.class);
+        assertThat(heaplet.create(Name.of("Editor"), json(object()), heap))
+                .isInstanceOf(Editor.class);
+    }
+
+    @Test
+    public void shouldUseGivenHeapletClass() throws Exception {
+        Heaplet heaplet = Heaplets.getHeaplet(EditorHeapletFactory.EditorHeaplet.class);
 
         assertThat(heaplet)
                 .isNotNull()
