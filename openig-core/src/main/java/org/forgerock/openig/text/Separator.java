@@ -82,9 +82,10 @@ public class Separator {
         if (this == o) {
             return true;
         }
-        return (this.character == ((Separator) o).character
-                && this.quote == ((Separator) o).quote
-                && this.escape == ((Separator) o).escape);
+        Separator other = (Separator) o;
+        return (this.character == other.character
+                && this.quote == other.quote
+                && this.escape == other.escape);
     }
 
     @Override
