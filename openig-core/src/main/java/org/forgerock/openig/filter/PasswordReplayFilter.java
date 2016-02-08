@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -22,6 +22,7 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -392,6 +393,8 @@ public class PasswordReplayFilter extends GenericHeapObject {
                         // let the response flow back
                         return newResponsePromise(response);
                     }
+                    closeSilently(response);
+
                     // Go through the authentication chain
                     Promise<Response, NeverThrowsException> promise = chainOf(next, filters).handle(context, request);
                     if (replay) {
@@ -407,8 +410,9 @@ public class PasswordReplayFilter extends GenericHeapObject {
                                                                                               final Handler next) {
             return new AsyncFunction<Response, Response, NeverThrowsException>() {
                 @Override
-                public Promise<Response, NeverThrowsException> apply(final Response value) {
+                public Promise<Response, NeverThrowsException> apply(final Response response) {
                     // Ignore response and replay original request
+                    closeSilently(response);
                     return next.handle(context, request);
                 }
             };
