@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.forgerock.authz.modules.oauth2.OAuth2;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.WarningHeader;
@@ -39,7 +40,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.filter.oauth2.BearerTokenExtractor;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -72,8 +72,6 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
     private final Handler protectionApiHandler;
     private final String realm;
 
-    private final BearerTokenExtractor tokenExtractor = new BearerTokenExtractor();
-
     /**
      * Constructs a new UmaResourceServerFilter.
      *
@@ -100,7 +98,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
         try {
             // Find a Share for this request
             final Share share = umaService.findShare(request);
-            String rpt = tokenExtractor.getAccessToken(request.getHeaders().getFirst("Authorization"));
+            String rpt = OAuth2.getBearerAccessToken(request.getHeaders().getFirst("Authorization"));
 
             // Is there an RPT ?
             if (rpt != null) {

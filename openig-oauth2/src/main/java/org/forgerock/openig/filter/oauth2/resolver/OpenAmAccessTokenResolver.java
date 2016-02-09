@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Entity;
 import org.forgerock.http.protocol.Form;
@@ -30,9 +33,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
@@ -86,7 +86,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     }
 
     @Override
-    public Promise<AccessToken, OAuth2TokenException> resolve(Context context, final String token) {
+    public Promise<AccessToken, AccessTokenException> resolve(Context context, final String token) {
         try {
             Request request = new Request();
             request.setMethod("GET");
@@ -99,21 +99,21 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
 
             // Call the client handler
             return client.handle(context, request)
-                         .then(onResult(), Responses.<AccessToken, OAuth2TokenException>noopExceptionFunction());
+                         .then(onResult(), Responses.<AccessToken, AccessTokenException>noopExceptionFunction());
         } catch (URISyntaxException e) {
-            return Promises.newExceptionPromise(new OAuth2TokenException(
+            return Promises.newExceptionPromise(new AccessTokenException(
                     format("The token_info endpoint %s could not be accessed because it is a malformed URI",
                            tokenInfoEndpoint),
                     e));
         }
     }
 
-    private Function<Response, AccessToken, OAuth2TokenException> onResult() {
-        return new Function<Response, AccessToken, OAuth2TokenException>() {
+    private Function<Response, AccessToken, AccessTokenException> onResult() {
+        return new Function<Response, AccessToken, AccessTokenException>() {
             @Override
-            public AccessToken apply(Response response) throws OAuth2TokenException {
+            public AccessToken apply(Response response) throws AccessTokenException {
                 if (isResponseEmpty(response)) {
-                    throw new OAuth2TokenException("Authorization Server did not return any AccessToken");
+                    throw new AccessTokenException("Authorization Server did not return any AccessToken");
                 }
                 JsonValue content = asJson(response.getEntity());
                 if (isOk(response)) {
@@ -123,13 +123,13 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
                 if (content.isDefined("error")) {
                     String error = content.get("error").asString();
                     String description = content.get("error_description").asString();
-                    throw new OAuth2TokenException(format("Authorization Server returned an error "
+                    throw new AccessTokenException(format("Authorization Server returned an error "
                                                                   + "(error: %s, description: %s)",
                                                           error,
                                                           description));
                 }
 
-                throw new OAuth2TokenException("AccessToken returned by the AuthorizationServer has a problem");
+                throw new AccessTokenException("AccessToken returned by the AuthorizationServer has a problem");
             }
         };
     }
@@ -147,14 +147,14 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
      * Parse the response's content as a JSON structure.
      * @param entity stream response's content
      * @return {@link JsonValue} representing the JSON content
-     * @throws OAuth2TokenException if there was some errors during parsing
+     * @throws AccessTokenException if there was some errors during parsing
      */
-    private JsonValue asJson(final Entity entity) throws OAuth2TokenException {
+    private JsonValue asJson(final Entity entity) throws AccessTokenException {
         try {
             return new JsonValue(entity.getJson());
         } catch (IOException e) {
             // Do not use Entity.toString(), we probably don't want to fully output the content here
-            throw new OAuth2TokenException("Cannot read response content as JSON", e);
+            throw new AccessTokenException("Cannot read response content as JSON", e);
         } finally {
             closeSilently(entity);
         }

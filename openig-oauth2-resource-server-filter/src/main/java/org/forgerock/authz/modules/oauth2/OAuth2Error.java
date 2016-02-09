@@ -11,10 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.client;
+package org.forgerock.authz.modules.oauth2;
 
 import static org.forgerock.http.header.HeaderUtil.parseParameters;
 import static org.forgerock.http.header.HeaderUtil.quote;
