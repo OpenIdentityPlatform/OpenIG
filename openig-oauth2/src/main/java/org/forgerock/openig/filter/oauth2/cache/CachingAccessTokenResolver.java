@@ -20,9 +20,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
@@ -38,7 +38,7 @@ import org.forgerock.util.time.Duration;
 public class CachingAccessTokenResolver implements AccessTokenResolver {
 
     private final AccessTokenResolver resolver;
-    private final ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache;
+    private final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
 
     /**
      * Builds a {@link CachingAccessTokenResolver} delegating to the given {@link AccessTokenResolver} using the given
@@ -50,38 +50,38 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
      *         access token cache
      */
     public CachingAccessTokenResolver(final AccessTokenResolver resolver,
-                                      final ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache) {
+                                      final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache) {
         this.resolver = resolver;
         this.cache = cache;
     }
 
     @Override
-    public Promise<AccessToken, OAuth2TokenException> resolve(final Context context, final String token) {
+    public Promise<AccessToken, AccessTokenException> resolve(final Context context, final String token) {
         try {
-            return cache.getValue(token, new Callable<Promise<AccessToken, OAuth2TokenException>>() {
+            return cache.getValue(token, new Callable<Promise<AccessToken, AccessTokenException>>() {
                 @Override
-                public Promise<AccessToken, OAuth2TokenException> call() throws Exception {
+                public Promise<AccessToken, AccessTokenException> call() throws Exception {
                     return resolver.resolve(context, token);
                 }
             }, expires());
         } catch (InterruptedException e) {
             return Promises.newExceptionPromise(
-                    new OAuth2TokenException("Timed out retrieving OAuth2 access token information", e));
+                    new AccessTokenException("Timed out retrieving OAuth2 access token information", e));
         } catch (ExecutionException e) {
             return Promises.newExceptionPromise(
-                    new OAuth2TokenException("Initial token resolution has failed", e));
+                    new AccessTokenException("Initial token resolution has failed", e));
         }
     }
 
-    private AsyncFunction<Promise<AccessToken, OAuth2TokenException>, Duration, Exception> expires() {
-        return new AsyncFunction<Promise<AccessToken, OAuth2TokenException>, Duration, Exception>() {
+    private AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> expires() {
+        return new AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception>() {
             @Override
             public Promise<? extends Duration, ? extends Exception> apply(
-                    Promise<AccessToken, OAuth2TokenException> accessTokenPromise)
+                    Promise<AccessToken, AccessTokenException> accessTokenPromise)
                     throws Exception {
-                return accessTokenPromise.then(new Function<AccessToken, Duration, OAuth2TokenException>() {
+                return accessTokenPromise.then(new Function<AccessToken, Duration, AccessTokenException>() {
                     @Override
-                    public Duration apply(AccessToken accessToken) throws OAuth2TokenException {
+                    public Duration apply(AccessToken accessToken) throws AccessTokenException {
                         if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
                             return Duration.duration("unlimited");
                         }

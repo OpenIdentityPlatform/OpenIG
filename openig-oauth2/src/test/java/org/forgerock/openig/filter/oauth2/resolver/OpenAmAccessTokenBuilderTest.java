@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
@@ -21,10 +21,10 @@ import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.mockito.Mockito.*;
 
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -82,7 +82,7 @@ public class OpenAmAccessTokenBuilderTest {
     }
 
     @Test(dataProvider = "invalidJsonStructures",
-          expectedExceptions = OAuth2TokenException.class)
+          expectedExceptions = AccessTokenException.class)
     public void shouldFailBecauseOfMissingAttribute(JsonValue tokenInfo) throws Exception {
         new OpenAmAccessToken.Builder(time).build(tokenInfo);
     }

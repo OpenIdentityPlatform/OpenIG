@@ -11,12 +11,16 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
 /**
- * This package contains handlers implementations that return challenging responses in case of OAuth2 processing errors.
- * They conform to expected messages from <a href="http://tools.ietf.org/html/rfc6750">RFC 6750</a> (OAuth 2.0
- * Authorization Framework: Bearer Token Usage)
+ * This package provides APIs for implementation OAuth2 services. Included in the package is an OAuth2 token
+ * validation filter that acts as an OAuth 2 Resource Server.
+ * <ul>
+ *     <li>It ensures that there is an existing bearer access token in the request's headers.</li>
+ *     <li>It resolves it against a given Authorization Server (that must provide a {@literal token-info} endpoint).
+ *     <li>It performs token validation: checking expiration time and required scopes compliance.</li>
+ * </ul>
  */
-package org.forgerock.openig.filter.oauth2.challenge;
+package org.forgerock.authz.modules.oauth2;

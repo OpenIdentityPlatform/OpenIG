@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -22,6 +22,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2BearerWWWAuthentic
 import java.util.Arrays;
 import java.util.List;
 
+import org.forgerock.authz.modules.oauth2.OAuth2Error;
 import org.forgerock.http.protocol.Response;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

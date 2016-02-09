@@ -11,10 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2;
+package org.forgerock.authz.modules.oauth2;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -22,7 +22,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class BearerTokenExtractorTest {
+public class OAuth2Test {
 
     @DataProvider
     public Object[][] validHeaders() {
@@ -61,13 +61,11 @@ public class BearerTokenExtractorTest {
 
     @Test(dataProvider = "validHeaders")
     public void shouldExtractTheTokenValue(String header) throws Exception {
-        BearerTokenExtractor extractor = new BearerTokenExtractor();
-        assertThat(extractor.getAccessToken(header)).isEqualTo("token");
+        assertThat(OAuth2.getBearerAccessToken(header)).isEqualTo("token");
     }
 
     @Test(dataProvider = "invalidHeaders")
     public void shouldNotReturnABearerToken(String header) throws Exception {
-        BearerTokenExtractor extractor = new BearerTokenExtractor();
-        assertThat(extractor.getAccessToken(header)).isNull();
+        assertThat(OAuth2.getBearerAccessToken(header)).isNull();
     }
 }

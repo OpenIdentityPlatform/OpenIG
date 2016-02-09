@@ -22,12 +22,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.openig.filter.oauth2.ResponseHandler;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -76,7 +76,7 @@ public class OpenAmAccessTokenResolverTest {
         assertThat(contextCaptor.getValue()).isSameAs(context);
     }
 
-    @Test(expectedExceptions = OAuth2TokenException.class)
+    @Test(expectedExceptions = AccessTokenException.class)
     public void shouldThrowAnOAuthTokenExceptionCausedByAnError() throws Exception {
 
         //Given

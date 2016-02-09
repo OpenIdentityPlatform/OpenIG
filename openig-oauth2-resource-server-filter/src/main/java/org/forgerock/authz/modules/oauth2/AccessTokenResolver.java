@@ -14,7 +14,7 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2;
+package org.forgerock.authz.modules.oauth2;
 
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.Promise;
@@ -32,5 +32,5 @@ public interface AccessTokenResolver {
      * @return a promise completed either with a valid {@link AccessToken} (well formed, known by the server), or by an
      * exception
      */
-    Promise<AccessToken, OAuth2TokenException> resolve(Context context, String token);
+    Promise<AccessToken, AccessTokenException> resolve(Context context, String token);
 }

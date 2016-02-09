@@ -37,9 +37,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <!-- BearerTokenExtractor -->
       <groupId>org.forgerock.openig</groupId>
-      <artifactId>openig-oauth2</artifactId>
+      <artifactId>openig-oauth2-resource-server-filter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

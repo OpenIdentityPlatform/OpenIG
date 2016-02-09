@@ -19,6 +19,9 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 import javax.script.ScriptException;
 
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
@@ -35,12 +38,12 @@ public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<
         implements AccessTokenResolver {
 
     @Override
-    public Promise<AccessToken, OAuth2TokenException> resolve(Context context, String token) {
+    public Promise<AccessToken, AccessTokenException> resolve(Context context, String token) {
         return runScript(bindings(context).bind("token", token), context, AccessToken.class)
-                .thenCatch(new Function<ScriptException, AccessToken, OAuth2TokenException>() {
+                .thenCatch(new Function<ScriptException, AccessToken, AccessTokenException>() {
                     @Override
-                    public AccessToken apply(ScriptException e) throws OAuth2TokenException {
-                        throw new OAuth2TokenException("Error while resolving the access token", e);
+                    public AccessToken apply(ScriptException e) throws AccessTokenException {
+                        throw new AccessTokenException("Error while resolving the access token", e);
                     }
                 });
     }

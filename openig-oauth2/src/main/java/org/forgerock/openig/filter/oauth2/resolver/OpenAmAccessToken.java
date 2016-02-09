@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.resolver;
@@ -23,10 +23,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
-import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -133,10 +133,10 @@ public class OpenAmAccessToken implements AccessToken {
          * @param raw
          *         JSON response
          * @return a new {@link OpenAmAccessToken}
-         * @throws OAuth2TokenException
+         * @throws AccessTokenException
          *         if the JSON response is not formatted correctly.
          */
-        public OpenAmAccessToken build(final JsonValue raw) throws OAuth2TokenException {
+        public OpenAmAccessToken build(final JsonValue raw) throws AccessTokenException {
             try {
                 long expiresIn = raw.get("expires_in").required().asLong();
                 Set<String> scopes = new HashSet<>(raw.get("scope").required().asList(String.class));
@@ -146,7 +146,7 @@ public class OpenAmAccessToken implements AccessToken {
                                              scopes,
                                              getExpirationTime(expiresIn));
             } catch (JsonValueException e) {
-                throw new OAuth2TokenException("Cannot build AccessToken from the given JSON: invalid format", e);
+                throw new AccessTokenException("Cannot build AccessToken from the given JSON: invalid format", e);
             }
         }
 

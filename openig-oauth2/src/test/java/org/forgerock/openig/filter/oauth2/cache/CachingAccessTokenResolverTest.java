@@ -29,10 +29,9 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.forgerock.openig.filter.oauth2.AccessToken;
-import org.forgerock.openig.filter.oauth2.AccessTokenResolver;
-import org.forgerock.openig.filter.oauth2.OAuth2TokenException;
+import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -54,14 +53,14 @@ public class CachingAccessTokenResolverTest {
     private ScheduledExecutorService executorService;
 
     // Don't know why but if I @Spy this field, Mockito does not re-creates the cache instance, leading to errors
-    private ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>> cache;
+    private ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(resolver.resolve(any(Context.class), anyString()))
-                .thenReturn(Promises.<AccessToken, OAuth2TokenException>newResultPromise(null));
-        cache = spy(new ThreadSafeCache<String, Promise<AccessToken, OAuth2TokenException>>(executorService));
+                .thenReturn(Promises.<AccessToken, AccessTokenException>newResultPromise(null));
+        cache = spy(new ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>>(executorService));
     }
 
     @Test
@@ -69,8 +68,8 @@ public class CachingAccessTokenResolverTest {
     public void shouldUseCache() throws Exception {
         CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
 
-        Promise<AccessToken, OAuth2TokenException> p1 = caching.resolve(new RootContext(), "TOKEN");
-        Promise<AccessToken, OAuth2TokenException> p2 = caching.resolve(new RootContext(), "TOKEN");
+        Promise<AccessToken, AccessTokenException> p1 = caching.resolve(new RootContext(), "TOKEN");
+        Promise<AccessToken, AccessTokenException> p2 = caching.resolve(new RootContext(), "TOKEN");
 
         assertThat(p1.get()).isSameAs(p2.get());
         verify(cache, times(2)).getValue(eq("TOKEN"), any(Callable.class), any(AsyncFunction.class));
@@ -82,7 +81,7 @@ public class CachingAccessTokenResolverTest {
         AccessToken token = mock(AccessToken.class);
         when(token.getExpiresAt()).thenReturn(42L);
         when(resolver.resolve(any(Context.class), eq("TOKEN")))
-                .thenReturn(Promises.<AccessToken, OAuth2TokenException>newResultPromise(token));
+                .thenReturn(Promises.<AccessToken, AccessTokenException>newResultPromise(token));
 
         CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
 

@@ -43,6 +43,7 @@
     <module>openig-doc</module>
     <module>openig-uma</module>
     <module>openig-openam</module>
+    <module>openig-oauth2-resource-server-filter</module>
   </modules>
 
   <build>

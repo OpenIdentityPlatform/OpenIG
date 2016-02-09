@@ -11,15 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2;
+package org.forgerock.authz.modules.oauth2;
 
 /**
  * Represents an exception whilst retrieving an OAuth2 access token.
  */
-public class OAuth2TokenException extends Exception {
+public class AccessTokenException extends Exception {
 
     /**
      * Serial Version UID.
@@ -27,24 +27,24 @@ public class OAuth2TokenException extends Exception {
     public static final long serialVersionUID = -1L;
 
     /**
-     * Builds an {@link OAuth2TokenException} with a given message.
+     * Builds an {@link AccessTokenException} with a given message.
      *
      * @param message
      *         Exception's message
      */
-    public OAuth2TokenException(final String message) {
+    public AccessTokenException(final String message) {
         this(message, null);
     }
 
     /**
-     * Builds an {@link OAuth2TokenException} with a given message and cause.
+     * Builds an {@link AccessTokenException} with a given message and cause.
      *
      * @param message
      *         Exception's message
      * @param cause
      *         Exception cause
      */
-    public OAuth2TokenException(final String message, final Exception cause) {
+    public AccessTokenException(final String message, final Exception cause) {
         super(message, cause);
     }
 }

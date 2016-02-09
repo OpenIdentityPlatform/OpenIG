@@ -11,12 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.newAuthorizationServerError;
+import static org.forgerock.authz.modules.oauth2.OAuth2Error.newAuthorizationServerError;
+
+import org.forgerock.authz.modules.oauth2.OAuth2Error;
 
 /**
  * An exception that is thrown when OAuth 2.0 request fails.

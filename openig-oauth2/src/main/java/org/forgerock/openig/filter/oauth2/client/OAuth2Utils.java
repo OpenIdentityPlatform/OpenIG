@@ -20,14 +20,12 @@ import static java.lang.String.format;
 import static org.forgerock.http.util.Uris.create;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.filter.oauth2.client.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.header.LocationHeader;
@@ -88,22 +86,6 @@ final class OAuth2Utils {
         } finally {
             closeSilently(response);
         }
-    }
-
-    static List<String> getScopes(final Context context,
-                                  final Request request,
-                                  final List<Expression<String>> scopeExpressions)
-            throws ResponseException {
-        final List<String> scopeValues = new ArrayList<>(scopeExpressions.size());
-        for (final Expression<String> scope : scopeExpressions) {
-            final String result = scope.eval(bindings(context, request));
-            if (result == null) {
-                throw new ResponseException(format(
-                        "The OAuth 2.0 client filter scope expression '%s' could not be resolved", scope.toString()));
-            }
-            scopeValues.add(result);
-        }
-        return scopeValues;
     }
 
     static Response httpRedirect(final String uri) {
