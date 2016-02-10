@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.openam;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
@@ -28,6 +29,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.util.Options.defaultOptions;
@@ -44,6 +46,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,13 +57,16 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.ClientHandler;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -90,6 +97,8 @@ public class PolicyEnforcementFilterTest {
     private AttributesContext attributesContext;
     private SessionContext sessionContext;
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+    @SuppressWarnings("rawtypes")
+    private Expression<Map> target;
 
     @Mock
     private Handler next;
@@ -104,13 +113,14 @@ public class PolicyEnforcementFilterTest {
     private ArgumentCaptor<Callable<Promise<JsonValue, ResourceException>>> captor;
 
     @BeforeMethod
-    public void setUp() {
+    public void setUp() throws ExpressionException {
         initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
         attributesContext = new AttributesContext(sessionContext);
         attributesContext.getAttributes().put("password", "hifalutin");
         attributesContext.getAttributes().put("ssoTokenSubject", TOKEN);
         cache = new ThreadSafeCache<>(Executors.newSingleThreadScheduledExecutor());
+        target = Expression.valueOf("${attributes.policy}", Map.class);
 
         when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionResponse()));
@@ -130,7 +140,13 @@ public class PolicyEnforcementFilterTest {
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
                     field("jwtSubject", "${attributes.jwtSubject}"),
-                    field("application", "anotherApplication"))) } };
+                    field("application", "anotherApplication"))) },
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("jwtSubject", "${attributes.jwtSubject}"),
+                    field("target", "${attributes.myPolicy}"))) } };
     }
 
     @DataProvider
@@ -158,12 +174,20 @@ public class PolicyEnforcementFilterTest {
                     field("pepPassword", "password"))) },
             /* Invalid realm. */
             { json(object(
-                          field("openamUrl", OPENAM_URI),
-                          field("pepUsername", "jackson"),
-                          field("pepPassword", "password"),
-                          field("realm", "   >>invalid<<    "),
-                          field("jwtSubject", "${attributes.jwtSubject}"),
-                          field("application", "anotherApplication"))) } };
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("realm", "   >>invalid<<    "),
+                    field("jwtSubject", "${attributes.jwtSubject}"),
+                    field("application", "anotherApplication"))) },
+            /* Invalid target. */
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("target", 123),
+                    field("jwtSubject", "${attributes.jwtSubject}"),
+                    field("application", "anotherApplication"))) } };
     }
 
     @DataProvider
@@ -180,10 +204,11 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private Object[][] invalidParameters() {
+    private Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
-            { null, policiesHandler },
-            { URI.create(OPENAM_URI), null } };
+            { null, Expression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
+            { URI.create(OPENAM_URI), Expression.valueOf("${attributes.policy}", Map.class), null },
+            { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
     }
 
     @DataProvider
@@ -215,19 +240,30 @@ public class PolicyEnforcementFilterTest {
     }
 
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
-    public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri, final Handler policiesHandler)
+    public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri,
+                                                          final Expression<Map> target,
+                                                          final Handler policiesHandler)
             throws Exception {
-        new PolicyEnforcementFilter(baseUri, policiesHandler);
+        new PolicyEnforcementFilter(baseUri, target, policiesHandler);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotAuthorizeAccessWhenRequestedResourceNotInPolicyDecision() throws Exception {
         // Given
+        final String resource = "http://example.com/user.1/edit";
         final Request request = new Request();
         request.setMethod("GET");
-        request.setUri("http://example.com/user.1/edit");
+        request.setUri(resource);
+
+        final Response displayEmptyResourceResponse = new Response();
+        displayEmptyResourceResponse.setStatus(Status.OK)
+                                    .setEntity(emptyPolicyDecision(resource));
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
+
+        when(policiesHandler.handle(any(Context.class), any(Request.class)))
+            .thenReturn(newResponsePromise(displayEmptyResourceResponse));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
@@ -236,6 +272,10 @@ public class PolicyEnforcementFilterTest {
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
+        final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
+                                                                                       .get(DEFAULT_POLICY_KEY);
+        assertThat((Map<String, Object>) policyExtraAttributes.get("attributes")).isEmpty();
+        assertThat((Map<String, Object>) policyExtraAttributes.get("advices")).isEmpty();
     }
 
     @Test
@@ -259,6 +299,7 @@ public class PolicyEnforcementFilterTest {
         verify(next).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
+        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
     }
 
     @Test
@@ -277,6 +318,7 @@ public class PolicyEnforcementFilterTest {
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
+        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
     }
 
     @Test
@@ -326,6 +368,7 @@ public class PolicyEnforcementFilterTest {
         request.setMethod("GET").setUri("http://example.com/resource.jpg");
 
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
+                                                                     target,
                                                                      policiesHandler,
                                                                      duration("3 minutes"));
         filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
@@ -374,6 +417,20 @@ public class PolicyEnforcementFilterTest {
         assertThat(createKeyCache(ssoToken, jwt, requestedUri)).isEqualTo(expected);
     }
 
+    @SuppressWarnings("unchecked")
+    private void assertThatAttributesAndAdvicesAreStoredInAttributesContext() {
+        final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
+                                                                                       .get(DEFAULT_POLICY_KEY);
+        assertThat(policyExtraAttributes).containsOnlyKeys("attributes", "advices");
+        assertThat((Map<String, List<String>>) policyExtraAttributes.get("attributes"))
+            .containsOnlyKeys("customAttribute").containsEntry("customAttribute",
+                                                               singletonList("myCustomAttribute"));
+
+        assertThat((Map<String, List<String>>) policyExtraAttributes.get("advices"))
+            .containsOnlyKeys("AuthLevelConditionAdvice").containsEntry("AuthLevelConditionAdvice",
+                                                                        singletonList("3"));
+    }
+
     private static Response policyDecisionResponse() {
         final Response response = new Response();
         response.setStatus(OK);
@@ -381,11 +438,53 @@ public class PolicyEnforcementFilterTest {
         return response;
     }
 
+    /**
+     * An example of a response given by OpenAM when the resource is supported
+     * by the policy:
+     * <pre>
+     * {@code
+     * [{
+     *      "advices": {
+     *          "AuthLevelConditionAdvice" : [ "3" ]
+     *      }
+     *      "ttl": 9223372036854775807,
+     *      "resource": "http://example.com/resource.jpg",
+     *      "actions": {
+     *          "POST": false,
+     *          "GET": true
+     *      },
+     *      "attributes": {
+     *          "customAttribute": [ "myCustomAttribute" ]
+     *      }
+     * }]
+     * }</pre>
+     */
     private static Object policyDecision() {
-        return array(object(field("advices", object()),
+        return array(object(field("advices", object(field("AuthLevelConditionAdvice", array("3")))),
                             field("ttl", Long.MAX_VALUE),
                             field("resource", "http://example.com/resource.jpg"),
                             field("actions", object(field("POST", false), field("GET", true))),
+                            field("attributes", object(field("customAttribute", array("myCustomAttribute"))))));
+    }
+
+    /**
+     * An example of a response given by OpenAM when the resource is not supported by the policy.
+     * <pre>
+     * {@code
+     * [{
+     *      "advices": {},
+     *      "ttl": 9223372036854775807,
+     *      "resource": "http://localhost:8082/url-not-in-policy",
+     *      "actions": {},
+     *      "attributes": {}
+     * }]
+     * }</pre>
+     */
+    private static Object emptyPolicyDecision(final String resource) {
+        return array(object(field("advices", object()),
+                            field("ttl", Long.MAX_VALUE),
+                            field("resource", resource),
+                            field("actions", object()),
                             field("attributes", object())));
     }
 
@@ -397,7 +496,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
-        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, policiesHandler);
+        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, target, policiesHandler);
         Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
