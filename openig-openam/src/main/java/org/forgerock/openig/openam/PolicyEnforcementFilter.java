@@ -11,11 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
 
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
@@ -37,6 +38,7 @@ import static org.forgerock.util.time.Duration.duration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -97,7 +99,8 @@ import org.forgerock.util.time.Duration;
  *          "application"            :    String,             [OPTIONAL]
  *          "ssoTokenSubject"        :    expression,         [OPTIONAL - must be specified if no jwtSubject ]
  *          "jwtSubject"             :    expression,         [OPTIONAL - must be specified if no ssoTokenSubject ]
- *          "cacheMaxExpiration"     :    duration            [OPTIONAL - default to 1 minute ]
+ *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute ]
+ *          "target"                 :    mapExpression       [OPTIONAL - default is ${attributes.policy} ]
  *      }
  *  }
  *  }
@@ -109,6 +112,11 @@ import org.forgerock.util.time.Duration;
  * and its role is to retrieve and set the SSO token header of this given user.
  * (REST API calls must present the session token, aka SSO Token, in the HTTP
  * header as proof of authentication)
+ * <p>
+ * The target represents a map in the attribute context where the "attributes"
+ * and "advices" map fields from the policy decision will be saved in. By
+ * default, these values are stored in ${attributes.policy.attributes} and
+ * ${attributes.policy.advices}.
  * <p>
  * Note: Claims are not supported right now.
  * <p>
@@ -123,13 +131,20 @@ import org.forgerock.util.time.Duration;
  *          "pepUsername": "bjensen",
  *          "pepPassword": "${attributes.userpass}",
  *          "application": "myApplication",
- *          "ssoTokenSubject": ${attributes.SSOCurrentUser}
+ *          "ssoTokenSubject": ${attributes.SSOCurrentUser},
+ *          "target": "${attributes.currentPolicy}"
  *      }
  *  }
  *  }
  * </pre>
+ *
+ * @see <a href="http://openam.forgerock.org/doc/bootstrap/dev-guide/index.html#rest-api-authz-policy-decisions">
+ *      Requesting Policy Decisions in OpenAM</a>
  */
 public class PolicyEnforcementFilter extends GenericHeapObject implements Filter {
+
+    /** The expression which will be used for storing policy decision extra attributes in the context. */
+    public static final String DEFAULT_POLICY_KEY = "policy";
 
     private static final String ONE_MINUTE = "1 minute";
     private static final String POLICY_ENDPOINT = "/policies";
@@ -143,10 +158,14 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     private String application;
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
+    @SuppressWarnings("rawtypes")
+    private final Expression<Map> target;
 
     @VisibleForTesting
-    PolicyEnforcementFilter(final URI baseUri, final Handler policiesHandler) {
-        this(baseUri, policiesHandler, duration(ONE_MINUTE));
+    PolicyEnforcementFilter(final URI baseUri,
+                            @SuppressWarnings("rawtypes") final Expression<Map> target,
+                            final Handler policiesHandler) {
+        this(baseUri, target, policiesHandler, duration(ONE_MINUTE));
     }
 
     /**
@@ -155,15 +174,20 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
      * @param baseUri
      *            The location of the selected OpenAM instance, including the
      *            realm, to the json base endpoint, not {@code null}.
+     * @param target
+     *            Map which will be used to store policy decision extra
+     *            attributes, not {@code null}.
      * @param policiesHandler
      *            The handler used to get perform policies requests, not {@code null}.
      * @param cacheMaxExpiration
      *            The max duration to set the cache.
      */
     public PolicyEnforcementFilter(final URI baseUri,
+                                   @SuppressWarnings("rawtypes") final Expression<Map> target,
                                    final Handler policiesHandler,
                                    final Duration cacheMaxExpiration) {
         this.baseUri = checkNotNull(baseUri);
+        this.target = checkNotNull(target);
         this.cacheMaxExpiration = cacheMaxExpiration;
         this.policiesHandler = chainOf(checkNotNull(policiesHandler),
                                        new ApiVersionProtocolHeaderFilter());
@@ -185,7 +209,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                           final Handler next) {
 
         return askForPolicyDecision(context, request)
-                    .then(evaluatePolicyDecision(request))
+                    .then(evaluatePolicyDecision(context, request))
                     .thenAsync(allowOrDenyAccessToResource(context, request, next),
                                returnUnauthorizedResponse);
     }
@@ -351,13 +375,18 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 }
             };
 
-    private static Function<JsonValue, Boolean, ResourceException> evaluatePolicyDecision(final Request request) {
+    private Function<JsonValue, Boolean, ResourceException> evaluatePolicyDecision(final Context context,
+                                                                                   final Request request) {
         return new Function<JsonValue, Boolean, ResourceException>() {
 
             @Override
             public Boolean apply(final JsonValue policyDecision) {
                 final MutableUri original = request.getUri();
                 if (policyDecision.get("resource").asString().equals(original.toASCIIString())) {
+                    final Map<String, Object> extra = new LinkedHashMap<>();
+                    extra.put("attributes", policyDecision.get("attributes").asMap());
+                    extra.put("advices", policyDecision.get("advices").asMap());
+                    target.set(bindings(context, request), extra);
                     final String method = request.getMethod();
                     final Map<String, Object> actions = policyDecision.get("actions").asMap();
                     if (actions.containsKey(method)) {
@@ -392,6 +421,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
                 throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
             }
+            @SuppressWarnings("rawtypes")
+            final Expression<Map> target = asExpression(
+                    config.get("target").defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY)), Map.class);
 
             try {
                 final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
@@ -404,6 +436,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
                 final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
                                                                                                            realm),
+                                                                                   target,
                                                                                    chainOf(policiesHandler,
                                                                                            ssoTokenFilter),
                                                                                    cacheMaxExpiration);
