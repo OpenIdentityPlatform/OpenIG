@@ -17,9 +17,12 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
@@ -32,13 +35,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -159,7 +165,54 @@ public class ThreadSafeCacheTest {
             }
         });
 
-        verify(executorService).submit(anyCallable());
+        assertThat(cache.size()).isEqualTo(0);
+    }
+
+    @DataProvider
+    private static Object[][] timeoutFunctionsNotCacheable() {
+        // @formatter:off
+        return new Object[][]{
+            {
+                new AsyncFunction<Integer, Duration, Exception>() {
+                    @Override
+                    public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                        throw new Exception("Boom");
+                    }
+                }
+            },
+            {
+                new AsyncFunction<Integer, Duration, Exception>() {
+                    @Override
+                    public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                        return newRuntimeExceptionPromise(new RuntimeException("Boom"));
+                    }
+                }
+            },
+            {
+                new AsyncFunction<Integer, Duration, Exception>() {
+                    @Override
+                    public Promise<Duration, Exception> apply(Integer value) throws Exception {
+                        return newExceptionPromise(new Exception("Boom"));
+                    }
+                }
+            }
+        };
+        // @formatter:on
+    }
+
+    @Test(dataProvider = "timeoutFunctionsNotCacheable")
+    public void shouldNotCacheWithTheseTimeoutFunctions(AsyncFunction<Integer, Duration, Exception> timeoutFunction)
+            throws Exception {
+        Callable<Integer> callable = spy(getCallable());
+
+        // First call : the timeout function fails with an RuntimeException : the value should not have been cached
+        cache.getValue(42, callable, timeoutFunction);
+
+        // Second call with the same Callable
+        cache.getValue(42, callable);
+
+        // since the value was not cached previously, then
+        verify(callable, times(2)).call();
     }
 
     @Test
@@ -186,5 +239,16 @@ public class ThreadSafeCacheTest {
                 return 404;
             }
         };
+    }
+
+    private static Promise<Duration, Exception> newRuntimeExceptionPromise(final RuntimeException runtimeException) {
+        // Cannot create a RuntimeExceptionPromise in another way
+        return Promises.<Duration, Exception>newResultPromise(null)
+                .then(new Function<Duration, Duration, Exception>() {
+                    @Override
+                    public Duration apply(Duration value) throws Exception {
+                        throw runtimeException;
+                    }
+                });
     }
 }

@@ -58,7 +58,6 @@ public class ThreadSafeCache<K, V> {
     private final ScheduledExecutorService executorService;
     private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
     private AsyncFunction<V, Duration, Exception> defaultTimeoutFunction;
-    private Duration defaultTimeout;
 
     /**
      * Build a new {@link ThreadSafeCache} using the given scheduled executor.
@@ -79,7 +78,6 @@ public class ThreadSafeCache<K, V> {
      *            new cache entry timeout
      */
     public void setDefaultTimeout(final Duration defaultTimeout) {
-        this.defaultTimeout = defaultTimeout;
         this.defaultTimeoutFunction = new AsyncFunction<V, Duration, Exception>() {
             @Override
             public Promise<Duration, Exception> apply(V value) {
@@ -119,35 +117,31 @@ public class ThreadSafeCache<K, V> {
                            .thenOnResult(new ResultHandler<Duration>() {
                                @Override
                                public void handleResult(Duration timeout) {
-                                   // Register cache entry expiration time
-                                   scheduleEviction(key, timeout);
+                                   if (timeout.isZero()) {
+                                       // Fast path : no need to schedule, evict it now
+                                       evict(key);
+                                   } else if (!timeout.isUnlimited()) {
+                                       // Schedule the eviction
+                                       executorService.schedule(new Expiration(key),
+                                                                timeout.getValue(),
+                                                                timeout.getUnit());
+                                   }
                                }
                            })
                            .thenOnException(new ExceptionHandler<Exception>() {
                                @Override
                                public void handleException(Exception exception) {
-                                   scheduleEviction(key, defaultTimeout);
+                                   evict(key);
                                }
                            })
                            .thenOnRuntimeException(new RuntimeExceptionHandler() {
                                @Override
                                public void handleRuntimeException(RuntimeException exception) {
-                                   scheduleEviction(key, defaultTimeout);
+                                   evict(key);
                                }
                            });
         } catch (Exception e) {
-            scheduleEviction(key, defaultTimeout);
-        }
-    }
-
-    private void scheduleEviction(final K key, final Duration timeout) {
-        if (timeout.isZero()) {
-            // Remove the value ASAP
-            executorService.submit(new Expiration(key));
-        } else if (timeout.isUnlimited()) {
-            // Never schedule an expiration
-        } else {
-            executorService.schedule(new Expiration(key), timeout.getValue(), timeout.getUnit());
+            evict(key);
         }
     }
 
@@ -195,7 +189,7 @@ public class ThreadSafeCache<K, V> {
         try {
             return createIfAbsent(key, callable, expire).get();
         } catch (InterruptedException | RuntimeException | ExecutionException e) {
-            cache.remove(key);
+            evict(key);
             throw e;
         }
     }
@@ -205,6 +199,18 @@ public class ThreadSafeCache<K, V> {
      */
     public void clear() {
         cache.clear();
+    }
+
+    /**
+     * Returns the number of cached values.
+     * @return the number of cached values
+     */
+    public int size() {
+        return cache.size();
+    }
+
+    private Future<V> evict(K key) {
+        return cache.remove(key);
     }
 
     /**
@@ -220,7 +226,7 @@ public class ThreadSafeCache<K, V> {
 
         @Override
         public Object call() throws Exception {
-            return cache.remove(key);
+            return evict(key);
         }
     }
 }
