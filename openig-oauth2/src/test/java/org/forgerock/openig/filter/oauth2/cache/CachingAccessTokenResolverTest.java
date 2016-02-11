@@ -29,15 +29,17 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
 import org.forgerock.authz.modules.oauth2.AccessToken;
-import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -46,8 +48,13 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class CachingAccessTokenResolverTest {
 
+    private static final String TOKEN = "TOKEN";
+
     @Mock
     private AccessTokenResolver resolver;
+
+    @Mock
+    private TimeService time;
 
     @Mock
     private ScheduledExecutorService executorService;
@@ -66,28 +73,53 @@ public class CachingAccessTokenResolverTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldUseCache() throws Exception {
-        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
+        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(time, resolver, cache);
 
-        Promise<AccessToken, AccessTokenException> p1 = caching.resolve(new RootContext(), "TOKEN");
-        Promise<AccessToken, AccessTokenException> p2 = caching.resolve(new RootContext(), "TOKEN");
+        Promise<AccessToken, AccessTokenException> p1 = caching.resolve(new RootContext(), TOKEN);
+        Promise<AccessToken, AccessTokenException> p2 = caching.resolve(new RootContext(), TOKEN);
 
         assertThat(p1.get()).isSameAs(p2.get());
-        verify(cache, times(2)).getValue(eq("TOKEN"), any(Callable.class), any(AsyncFunction.class));
+        verify(cache, times(2)).getValue(eq(TOKEN), any(Callable.class), any(AsyncFunction.class));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldUseExpiresAttribute() throws Exception {
         AccessToken token = mock(AccessToken.class);
+        when(time.now()).thenReturn(20L);
         when(token.getExpiresAt()).thenReturn(42L);
-        when(resolver.resolve(any(Context.class), eq("TOKEN")))
+        when(resolver.resolve(any(Context.class), eq(TOKEN)))
                 .thenReturn(Promises.<AccessToken, AccessTokenException>newResultPromise(token));
 
-        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(resolver, cache);
+        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(time, resolver, cache);
 
-        AccessToken accessToken = caching.resolve(new RootContext(), "TOKEN").get();
+        AccessToken accessToken = caching.resolve(new RootContext(), TOKEN).get();
 
-        verify(executorService).schedule(any(Callable.class), eq(42L), eq(TimeUnit.MILLISECONDS));
+        verify(executorService).schedule(any(Callable.class), eq(22L), eq(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldNotCacheWhenExpiresAtIsOver() throws Exception {
+        // The expiresAt will be over every time,
+        // so the token will never be cached,
+        // thus the resolver will be called every time
+
+        // Given
+        AccessToken token = mock(AccessToken.class);
+        when(time.now()).thenReturn(60L);
+        when(token.getExpiresAt()).thenReturn(42L);
+        when(resolver.resolve(any(Context.class), eq(TOKEN)))
+                .thenReturn(Promises.<AccessToken, AccessTokenException>newResultPromise(token));
+
+        CachingAccessTokenResolver caching = new CachingAccessTokenResolver(time, resolver, cache);
+
+        // When
+        caching.resolve(new RootContext(), TOKEN);
+        caching.resolve(new RootContext(), TOKEN);
+
+        // Then
+        verify(resolver, times(2)).resolve(any(Context.class), eq(TOKEN));
     }
 
 }
