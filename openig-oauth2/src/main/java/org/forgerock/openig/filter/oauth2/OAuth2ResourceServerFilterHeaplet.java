@@ -135,7 +135,7 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                                                                     ScheduledExecutorService.class);
             cache = new ThreadSafeCache<>(executorService);
             cache.setDefaultTimeout(expiration);
-            resolver = new CachingAccessTokenResolver(resolver, cache);
+            resolver = new CachingAccessTokenResolver(time, resolver, cache);
         }
 
         Set<Expression<String>> scopes =
