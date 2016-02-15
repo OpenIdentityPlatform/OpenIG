@@ -17,6 +17,7 @@
 package org.forgerock.openig.openam;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
@@ -26,6 +27,7 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -63,6 +65,7 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ResourceException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.ClientHandler;
@@ -88,13 +91,21 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class PolicyEnforcementFilterTest {
     private static final URI BASE_URI = URI.create("http://www.example.com:8090/openam/json/");
+    private static final JsonValue CLAIMS_SUBJECT = json(object(field("iss", "jwt-bearer-client"),
+                                                                field("sub", "client_id"),
+                                                                field("aud", "http://example.com:8088/openam"),
+                                                                field("exp", 1300819380)));
+    private static final List<String> IP_LIST = singletonList("192.168.1.1");
+    private static final JsonValue ENVIRONMENT = json(object(field("IP", IP_LIST)));
     private static final String OPENAM_URI = "http://www.example.com:8090/openam/";
     private static final String JWT_TOKEN = "eyJhbG...";
     private static final String REQUESTED_URI = "http://www.example.com/";
     private static final String RESOURCE_CONTENT = "Access granted!";
+    private static final String RESOURCE_URI = "http://example.com/resource.jpg";
     private static final String TOKEN = "ARrrg...42*";
 
     private AttributesContext attributesContext;
+    private Bindings bindings;
     private SessionContext sessionContext;
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
     @SuppressWarnings("rawtypes")
@@ -119,6 +130,14 @@ public class PolicyEnforcementFilterTest {
         attributesContext = new AttributesContext(sessionContext);
         attributesContext.getAttributes().put("password", "hifalutin");
         attributesContext.getAttributes().put("ssoTokenSubject", TOKEN);
+        attributesContext.getAttributes().put("client_id", "OpenIG");
+        bindings = bindings(attributesContext, null);
+        @SuppressWarnings("rawtypes")
+        final Expression<Map> claimsSubject = Expression.valueOf("${attributes.claimsSubject}", Map.class);
+        claimsSubject.set(bindings, singletonMap("iss", "jwt-bearer-client"));
+        @SuppressWarnings("rawtypes")
+        final Expression<Map> environmentMap = Expression.valueOf("${attributes.environmentMap}", Map.class);
+        environmentMap.set(bindings, singletonMap("IP", IP_LIST));
         cache = new ThreadSafeCache<>(Executors.newSingleThreadScheduledExecutor());
         target = Expression.valueOf("${attributes.policy}", Map.class);
 
@@ -146,7 +165,23 @@ public class PolicyEnforcementFilterTest {
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"),
                     field("jwtSubject", "${attributes.jwtSubject}"),
-                    field("target", "${attributes.myPolicy}"))) } };
+                    field("target", "${attributes.myPolicy}"))) },
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("claimsSubject", CLAIMS_SUBJECT.getObject()))) },
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("claimsSubject", "${attributes.claimsSubject}"))) },
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
+                    field("environment", ENVIRONMENT.getObject()))) } };
     }
 
     @DataProvider
@@ -167,7 +202,7 @@ public class PolicyEnforcementFilterTest {
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("ssoTokenSubject", "${attributes.ssoTokenSubject}"))) },
-            /* Missing ssoTokenSubject OR jwtSubject. */
+            /* Missing ssoTokenSubject OR jwtSubject OR claimsSubject. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
@@ -187,7 +222,22 @@ public class PolicyEnforcementFilterTest {
                     field("pepPassword", "password"),
                     field("target", 123),
                     field("jwtSubject", "${attributes.jwtSubject}"),
-                    field("application", "anotherApplication"))) } };
+                    field("application", "anotherApplication"))) },
+            /* Invalid claims. */
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("claimsSubject", 123),
+                    field("jwtSubject", "${attributes.jwtSubject}"),
+                    field("application", "anotherApplication"))) },
+            /* Invalid environment */
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
+                    field("environment", 123))) } };
     }
 
     @DataProvider
@@ -204,7 +254,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private Object[][] invalidParameters() throws ExpressionException {
+    private static Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
             { null, Expression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
             { URI.create(OPENAM_URI), Expression.valueOf("${attributes.policy}", Map.class), null },
@@ -221,10 +271,35 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private static Object[][] givenAndExpectedKey() {
         return new Object[][] {
-            { REQUESTED_URI, TOKEN, null, REQUESTED_URI + "@" + TOKEN },
-            { REQUESTED_URI, TOKEN, JWT_TOKEN, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
-            { REQUESTED_URI, "", JWT_TOKEN, REQUESTED_URI + "@" + JWT_TOKEN },
-            { REQUESTED_URI, TOKEN, "", REQUESTED_URI + "@" + TOKEN } };
+            { REQUESTED_URI, TOKEN, null, 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, JWT_TOKEN, 0, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
+            { REQUESTED_URI, "", JWT_TOKEN, 0, REQUESTED_URI + "@" + JWT_TOKEN },
+            { REQUESTED_URI, TOKEN, "", 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, null, CLAIMS_SUBJECT.asMap().hashCode(), REQUESTED_URI + "@" + TOKEN
+                                          + "@" + CLAIMS_SUBJECT.asMap().hashCode() } };
+    }
+
+    @DataProvider
+    private static Object[][] claims() throws ExpressionException {
+        return new Object[][] {
+            { json(object(field("iss", "jwt-bearer-client"),
+                          field("sub", "${attributes.client_id}"),
+                          field("subs", "${false}"),
+                          field("aud", "http://example.com:8088/openam"),
+                          field("exp", 1300819380))),
+              json(object(field("iss", "jwt-bearer-client"),
+                      field("sub", "OpenIG"),
+                      field("subs", false),
+                      field("aud", "http://example.com:8088/openam"),
+                      field("exp", 1300819380))).asMap() },
+            { "${attributes.claimsSubject}", json(object(field("iss", "jwt-bearer-client"))).asMap() } };
+    }
+
+    @DataProvider
+    private static Object[][] environment() throws ExpressionException {
+        return new Object[][] {
+            { json(object(field("IP", IP_LIST))) },
+            { "${attributes.environmentMap}" } };
     }
 
     @Test(dataProvider = "invalidConfigurations",
@@ -283,7 +358,7 @@ public class PolicyEnforcementFilterTest {
         // Given
         final Request request = new Request();
         request.setMethod("GET");
-        request.setUri("http://example.com/resource.jpg");
+        request.setUri(RESOURCE_URI);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
@@ -307,7 +382,7 @@ public class PolicyEnforcementFilterTest {
         // Given
         final Request request = new Request();
         request.setMethod("POST"); // The POST action is denied by policy decision.
-        request.setUri("http://example.com/resource.jpg");
+        request.setUri(RESOURCE_URI);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
@@ -326,7 +401,7 @@ public class PolicyEnforcementFilterTest {
         // Given
         final Request request = new Request();
         request.setMethod("GET");
-        request.setUri("http://example.com/resource.jpg");
+        request.setUri(RESOURCE_URI);
 
         final Response errorResponse = new Response();
         errorResponse.setStatus(GATEWAY_TIMEOUT);
@@ -365,7 +440,7 @@ public class PolicyEnforcementFilterTest {
     public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
         // Given
         final Request request = new Request();
-        request.setMethod("GET").setUri("http://example.com/resource.jpg");
+        request.setMethod("GET").setUri(RESOURCE_URI);
 
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
                                                                      target,
@@ -410,11 +485,86 @@ public class PolicyEnforcementFilterTest {
     }
 
     @Test(dataProvider = "givenAndExpectedKey")
-    public static void shouldSucceedToCreateCacheKey(final String requestedUri,
-                                                     final String ssoToken,
-                                                     final String jwt,
-                                                     final String expected) {
-        assertThat(createKeyCache(ssoToken, jwt, requestedUri)).isEqualTo(expected);
+    public void shouldSucceedToCreateCacheKey(final String requestedUri,
+                                              final String ssoToken,
+                                              final String jwt,
+                                              final int claimsHashCode,
+                                              final String expected) {
+        assertThat(createKeyCache(requestedUri, ssoToken, jwt, claimsHashCode)).isEqualTo(expected);
+    }
+
+    @DataProvider
+    private static Object[][] invalidClaimsEnvironment() throws ExpressionException {
+        return new Object[][] {
+            { null, json(object(field("IP", "Not an array"))) },
+            { null, json(object(field("IP", 123))) },
+            { field("This is", "Not map"), null },
+            { json(object(field("iss", "${invalid"))), null } };
+    }
+
+    @Test(dataProvider = "invalidClaimsEnvironment", expectedExceptions = { JsonValueException.class,
+                                                                            ExpressionException.class })
+    public void shouldFailToBuildResource(final Object claims, final Object environment) throws Exception {
+        final Request request = new Request();
+        request.setMethod("GET").setUri(RESOURCE_URI);
+
+        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
+                buildMinimalHeapletConfiguration().put("claimsSubject", claims)
+                                                  .put("environment", environment));
+
+        filter.buildResources(attributesContext, request);
+    }
+
+    @Test
+    public void shouldSucceedToBuildResource() throws Exception {
+        final Request request = new Request();
+        request.setMethod("GET").setUri(RESOURCE_URI);
+
+        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(buildMinimalHeapletConfiguration());
+
+        final JsonValue resources = filter.buildResources(attributesContext, request);
+
+        assertThat(resources).hasSize(2);
+        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
+        // The ssoToken is given in the buildMinimalHeapletConfiguration
+        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
+    }
+
+    @Test(dataProvider = "claims")
+    public void shouldSucceedToBuildClaimsResource(final Object claims,
+                                                   final Map<String, Object> evaluated) throws Exception {
+        final Request request = new Request();
+        request.setMethod("GET").setUri(RESOURCE_URI);
+
+        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
+                buildMinimalHeapletConfiguration().put("claimsSubject", claims));
+
+        final JsonValue resources = filter.buildResources(attributesContext, request);
+
+        assertThat(resources).hasSize(2);
+        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
+        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken", "claims");
+        // The ssoToken is given in the buildMinimalHeapletConfiguration
+        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        assertThat(resources.get("subject").get("claims").asMap()).isEqualTo(evaluated);
+    }
+
+    @Test(dataProvider = "environment")
+    public void shouldSucceedToBuildEnvironmentResource(final Object environment) throws Exception {
+        final Request request = new Request();
+        request.setMethod("GET").setUri(RESOURCE_URI);
+
+        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
+                buildMinimalHeapletConfiguration().put("environment", environment));
+
+        final JsonValue resources = filter.buildResources(attributesContext, request);
+
+        assertThat(resources).hasSize(3);
+        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
+        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
+        // The ssoToken is given in the buildMinimalHeapletConfiguration
+        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        assertThat(resources.get("environment").get("IP").asList()).isEqualTo(IP_LIST);
     }
 
     @SuppressWarnings("unchecked")
@@ -462,7 +612,7 @@ public class PolicyEnforcementFilterTest {
     private static Object policyDecision() {
         return array(object(field("advices", object(field("AuthLevelConditionAdvice", array("3")))),
                             field("ttl", Long.MAX_VALUE),
-                            field("resource", "http://example.com/resource.jpg"),
+                            field("resource", RESOURCE_URI),
                             field("actions", object(field("POST", false), field("GET", true))),
                             field("attributes", object(field("customAttribute", array("myCustomAttribute"))))));
     }
@@ -504,15 +654,18 @@ public class PolicyEnforcementFilterTest {
         return filter;
     }
 
-    private static JsonValue buildHeapletConfiguration(final String givenMaxCacheExpiration) {
+    private static JsonValue buildMinimalHeapletConfiguration() {
         return json(object(
                        field("openamUrl", OPENAM_URI),
                        field("pepUsername", "jackson"),
                        field("pepPassword", "password"),
                        field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
-                       field("policiesHandler", "policiesHandler"),
-                       field("application", "myApplication"),
-                       field("cacheMaxExpiration", givenMaxCacheExpiration)));
+                       field("policiesHandler", "policiesHandler")));
+    }
+
+    private static JsonValue buildHeapletConfiguration(final String givenMaxCacheExpiration) {
+        return buildMinimalHeapletConfiguration().put("application", "myApplication")
+                                                 .put("cacheMaxExpiration", givenMaxCacheExpiration);
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter(final JsonValue config) throws Exception {

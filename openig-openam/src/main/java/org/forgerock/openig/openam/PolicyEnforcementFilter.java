@@ -39,6 +39,7 @@ import static org.forgerock.util.time.Duration.duration;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -52,6 +53,7 @@ import org.forgerock.http.header.AcceptApiVersionHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
 import org.forgerock.json.resource.InternalServerErrorException;
@@ -63,6 +65,8 @@ import org.forgerock.json.resource.ResourcePath;
 import org.forgerock.json.resource.http.CrestHttp;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.Expressions;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -97,10 +101,16 @@ import org.forgerock.util.time.Duration;
  *          "realm"                  :    String,             [OPTIONAL]
  *          "ssoTokenHeader"         :    String,             [OPTIONAL]
  *          "application"            :    String,             [OPTIONAL]
- *          "ssoTokenSubject"        :    expression,         [OPTIONAL - must be specified if no jwtSubject ]
- *          "jwtSubject"             :    expression,         [OPTIONAL - must be specified if no ssoTokenSubject ]
+ *          "ssoTokenSubject"        :    expression,         [OPTIONAL - must be specified if no jwtSubject or
+ *                                                                        claimsSubject ]
+ *          "jwtSubject"             :    expression,         [OPTIONAL - must be specified if no ssoTokenSubject or
+ *                                                                        claimsSubject ]
+ *          "claimsSubject"          :    map/expression,     [OPTIONAL - must be specified if no jwtSubject or
+ *                                                                        ssoTokenSubject - instance of
+ *                                                                        Map<String, Object> JWT claims ]
  *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute ]
- *          "target"                 :    mapExpression       [OPTIONAL - default is ${attributes.policy} ]
+ *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
+ *          "environment"            :    map/expression      [OPTIONAL - instance of Map<String, List<Object>>]
  *      }
  *  }
  *  }
@@ -118,8 +128,6 @@ import org.forgerock.util.time.Duration;
  * default, these values are stored in ${attributes.policy.attributes} and
  * ${attributes.policy.advices}.
  * <p>
- * Note: Claims are not supported right now.
- * <p>
  * Example of use:
  *
  * <pre>
@@ -131,8 +139,14 @@ import org.forgerock.util.time.Duration;
  *          "pepUsername": "bjensen",
  *          "pepPassword": "${attributes.userpass}",
  *          "application": "myApplication",
- *          "ssoTokenSubject": ${attributes.SSOCurrentUser},
- *          "target": "${attributes.currentPolicy}"
+ *          "ssoTokenSubject": "${attributes.SSOCurrentUser}",
+ *          "claimsSubject": "${attributes.claimsSubject}",
+ *          "target": "${attributes.currentPolicy}",
+ *          "environment": {
+ *              "DAY_OF_WEEK": [
+ *                  "Saturday"
+ *              ]
+ *          }
  *      }
  *  }
  *  }
@@ -149,7 +163,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     private static final String ONE_MINUTE = "1 minute";
     private static final String POLICY_ENDPOINT = "/policies";
     private static final String EVALUATE_ACTION = "evaluate";
-    private static final String SUBJECT_ERROR = "The attribute 'ssoTokenSubject' or 'jwtSubject' must be specified";
+    private static final String SUBJECT_ERROR =
+            "The attribute 'ssoTokenSubject' or 'jwtSubject' or 'claimsSubject' must be specified";
 
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
     private final URI baseUri;
@@ -158,8 +173,10 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     private String application;
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
+    private Function<Bindings, Map<String, Object>, ExpressionException> claimsSubject;
     @SuppressWarnings("rawtypes")
     private final Expression<Map> target;
+    private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment;
 
     @VisibleForTesting
     PolicyEnforcementFilter(final URI baseUri,
@@ -227,6 +244,28 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     }
 
     /**
+     * Sets a function that returns a map of JWT claims to their values, for the
+     * subject.
+     *
+     * @param claimsSubject
+     *            A function that returns a map of JWT claims for the subject.
+     */
+    public void setClaimsSubject(final Function<Bindings, Map<String, Object>, ExpressionException> claimsSubject) {
+        this.claimsSubject = claimsSubject;
+    }
+
+    /**
+     * The environment passed from the client making the authorization request
+     * as a sets a map of keys to lists of values.
+     *
+     * @param environment
+     *            A function that returns a map of keys to lists of values.
+     */
+    public void setEnvironment(final Function<Bindings, Map<String, List<Object>>, ExpressionException> environment) {
+        this.environment = environment;
+    }
+
+    /**
      * Sets the SSO token for the subject.
      *
      * @param ssoTokenSubject
@@ -279,28 +318,24 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
-        Bindings bindings = bindings(context, request);
-        final Map<?, ?> subject =
-                json(object(
-                          fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),
-                          fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(bindings) : null))).asMap();
-
-        if (subject.isEmpty()) {
-            logger.error(SUBJECT_ERROR);
-            return new NotSupportedException().asPromise();
+        JsonValue resources = null;
+        try {
+            resources = buildResources(context, request);
+        } catch (NotSupportedException | ExpressionException ex) {
+            logger.error("Unable to build the resources content");
+            logger.error(ex);
+            return new InternalServerErrorException(ex).asPromise();
         }
-
-        final JsonValue resources = json(object(
-                                            field("resources", array(request.getUri().toASCIIString())),
-                                            field("subject", subject),
-                                            fieldIfNotNull("application", application)));
         actionRequest.setContent(resources);
         actionRequest.setResourceVersion(version(2, 0));
 
-        final String key = createKeyCache((String) subject.get("ssoToken"),
-                                          (String) subject.get("jwt"),
-                                          request.getUri().toASCIIString());
-
+        final JsonValue subject = resources.get("subject");
+        final String key = createKeyCache(request.getUri().toASCIIString(),
+                                          subject.get("ssoToken").asString(),
+                                          subject.get("jwt").asString(),
+                                          subject.get("claims").asMap() != null
+                                                      ? subject.get("claims").asMap().hashCode()
+                                                      : 0);
         try {
             return policyDecisionCache.getValue(key,
                                                 getPolicyDecisionCallable(context, requestHandler, actionRequest),
@@ -308,6 +343,27 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         } catch (InterruptedException | ExecutionException e) {
             return new InternalServerErrorException(e).asPromise();
         }
+    }
+
+    @VisibleForTesting
+    JsonValue buildResources(final Context context, final Request request) throws ExpressionException,
+                                                                                  NotSupportedException {
+        final Bindings bindings = bindings(context, request);
+        final JsonValue subject =
+                 json(object(
+                         fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),
+                         fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(bindings) : null),
+                         fieldIfNotNull("claims", claimsSubject != null ? claimsSubject.apply(bindings) : null)));
+
+        if (subject.size() == 0) {
+            logger.error(SUBJECT_ERROR);
+            throw new NotSupportedException(SUBJECT_ERROR);
+        }
+
+        return json(object(field("resources", array(request.getUri().toASCIIString())),
+                           field("subject", subject.getObject()),
+                           fieldIfNotNull("application", application),
+                           fieldIfNotNull("environment", environment != null ? environment.apply(bindings) : null)));
     }
 
     private AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>
@@ -354,8 +410,13 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     }
 
     @VisibleForTesting
-    static String createKeyCache(final String ssoToken, final String jwt, final String requestedUri) {
-        return new StringBuilder(requestedUri).append(ifSpecified(ssoToken)).append(ifSpecified(jwt)).toString();
+    static String createKeyCache(final String requestedUri,
+                                 final String ssoToken,
+                                 final String jwt,
+                                 final int claimsHashCode) {
+        return new StringBuilder(requestedUri).append(ifSpecified(ssoToken))
+                                              .append(ifSpecified(jwt))
+                                              .append(claimsHashCode != 0 ? "@" + claimsHashCode : "").toString();
     }
 
     private static String ifSpecified(final String value) {
@@ -444,9 +505,15 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 filter.setApplication(config.get("application").asString());
                 filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
                 filter.setJwtSubject(asExpression(config.get("jwtSubject"), String.class));
-                if (config.get("ssoTokenSubject").isNull() && config.get("jwtSubject").isNull()) {
+                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
+
+                if (config.get("ssoTokenSubject").isNull()
+                        && config.get("jwtSubject").isNull()
+                        && config.get("claimsSubject").isNull()) {
                     throw new HeapException(SUBJECT_ERROR);
                 }
+
+                filter.setEnvironment(environment());
 
                 // Sets the cache
                 executor = Executors.newSingleThreadScheduledExecutor();
@@ -456,6 +523,40 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 return filter;
             } catch (URISyntaxException e) {
                 throw new HeapException(e);
+            }
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment() {
+            // Double cast to satisfy compiler error due to type erasure
+            return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class);
+        }
+
+        private static <T> Function<Bindings, Map<String, T>, ExpressionException>
+        asFunction(final JsonValue node, final Class<T> expectedType) {
+
+            if (node.isNull()) {
+                return null;
+            } else if (node.isString()) {
+                return new Function<Bindings, Map<String, T>, ExpressionException>() {
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public Map<String, T> apply(Bindings bindings) throws ExpressionException {
+                        return asExpression(node, Map.class).eval(bindings);
+                    }
+                };
+            } else if (node.isMap()) {
+                return new Function<Bindings, Map<String, T>, ExpressionException>() {
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public Map<String, T> apply(Bindings bindings) throws ExpressionException {
+                        return (Map<String, T>) Expressions.evaluate(node.asMap(expectedType), bindings);
+                    }
+                };
+            } else {
+                throw new JsonValueException(node, "Expecting a String or a Map");
             }
         }
 
