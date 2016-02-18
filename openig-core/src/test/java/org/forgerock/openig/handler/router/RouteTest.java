@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -27,14 +27,20 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.slf4j.MDC;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class RouteTest {
+
+    private static final String ROUTE_NAME = "my-route";
 
     @Mock
     private Handler handler;
@@ -66,8 +72,31 @@ public class RouteTest {
         assertThat(route.handle(new RootContext(), new Request())).isSameAs(promise);
     }
 
+    @Test
+    public void testRouteHasTheMessageDiagnosisContextCorrectlySet() throws Exception {
+        Route route = createRoute(null);
+
+        when(handler.handle(any(Context.class), any(Request.class)))
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) {
+                        // MDC is set only within this execution
+                        assertThat(MDC.get("routeId")).isEqualTo(ROUTE_NAME);
+                        return promise;
+                    }
+                });
+
+        // MDC is empty before
+        assertThat(MDC.get("routeId")).isNull();
+
+        route.handle(new RootContext(), new Request());
+
+        // MDC is empty after
+        assertThat(MDC.get("routeId")).isNull();
+    }
+
     private Route createRoute(final Expression<Boolean> condition) {
-        return new Route(handler, "router", condition) {
+        return new Route(handler, ROUTE_NAME, condition) {
             @Override
             public void start() { }
             @Override

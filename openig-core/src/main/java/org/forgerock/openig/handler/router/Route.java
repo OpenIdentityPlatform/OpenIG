@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -26,6 +26,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.MDC;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -135,6 +136,8 @@ abstract class Route implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        return handler.handle(context, request);
+        try (MDC.MDCCloseable ignored = MDC.putCloseable("routeId", name)) {
+            return handler.handle(context, request);
+        }
     }
 }
