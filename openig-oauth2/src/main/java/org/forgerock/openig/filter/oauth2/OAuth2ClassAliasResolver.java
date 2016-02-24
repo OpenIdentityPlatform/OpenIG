@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -34,8 +34,8 @@ public class OAuth2ClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ClientRegistration", ClientRegistration.class);
         ALIASES.put("Issuer", Issuer.class);
         ALIASES.put("OAuth2ClientFilter", OAuth2ClientFilter.class);
-        ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilter.class);
-        ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilter.class);
+        ALIASES.put("OAuth2ResourceServerFilter", OAuth2ResourceServerFilterHeaplet.class);
+        ALIASES.put("OAuth2RSFilter", OAuth2ResourceServerFilterHeaplet.class);
     }
 
     @Override

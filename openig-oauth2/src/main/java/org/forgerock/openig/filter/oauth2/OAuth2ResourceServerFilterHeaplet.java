@@ -30,32 +30,30 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.authz.modules.oauth2.AccessToken;
-import org.forgerock.authz.modules.oauth2.ResourceAccess;
-import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
-import org.forgerock.authz.modules.oauth2.ResourceServerFilter;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.ResourceAccess;
+import org.forgerock.authz.modules.oauth2.ResourceServerFilter;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
-import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**
- * Validates a {@link Request} that contains an OAuth 2.0 access token. <p> This filter expects an OAuth 2.0 token to
- * be available in the HTTP {@literal Authorization} header:
+ * Validates a {@link Request} that contains an OAuth 2.0 access token.
+ * <p>
+ * This filter expects an OAuth 2.0 token to be available in the HTTP {@literal Authorization} header:
  *
  * <pre>{@code Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9}</pre>
  *
@@ -108,30 +106,67 @@ import org.forgerock.util.time.TimeService;
  *
  * @see Duration
  */
-public class OAuth2ResourceServerFilter extends GenericHeapObject implements Filter {
+public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
 
     /**
      * Name of the realm when none is specified in the heaplet.
      */
     public static final String DEFAULT_REALM_NAME = "OpenIG";
 
-    private final ResourceServerFilter delegate;
+    private ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
+    private ScheduledExecutorService executorService;
 
-    /**
-     * Creates a new {@code OAuth2Filter}.
-     *
-     * @param delegate
-     *         The {@link ResourceServerFilter} to delegate the request.
-     */
-    public OAuth2ResourceServerFilter(final ResourceServerFilter delegate) {
-        this.delegate = delegate;
+    @Override
+    public Object create() throws HeapException {
+        Handler httpHandler = heap.resolve(getWithDeprecation(config, logger, "providerHandler", "httpHandler")
+                                                   .defaultTo(CLIENT_HANDLER_HEAP_KEY),
+                                           Handler.class);
+
+        TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+        AccessTokenResolver resolver = new OpenAmAccessTokenResolver(
+                httpHandler,
+                time,
+                config.get("tokenInfoEndpoint").required().asString());
+
+        // Build the cache
+        Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
+        if (!expiration.isZero()) {
+            executorService = Executors.newSingleThreadScheduledExecutor();
+            cache = new ThreadSafeCache<>(executorService);
+            cache.setDefaultTimeout(expiration);
+            resolver = new CachingAccessTokenResolver(resolver, cache);
+        }
+
+        Set<Expression<String>> scopes =
+                getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
+
+        String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
+
+        Filter filter = new ResourceServerFilter(resolver,
+                                                 time,
+                                                 new OpenIGResourceAccess(scopes),
+                                                 realm);
+
+        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
+                Boolean.TRUE).asBoolean()) {
+            try {
+                Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);
+                return new EnforcerFilter(expr, filter, logger);
+            } catch (ExpressionException e) {
+                // Can be ignored, since we completely control the expression
+            }
+        }
+        return filter;
     }
 
     @Override
-    public Promise<Response, NeverThrowsException> filter(final Context context,
-                                                          final Request request,
-                                                          final Handler next) {
-        return delegate.filter(context, request, next);
+    public void destroy() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
+        if (cache != null) {
+            cache.clear();
+        }
     }
 
     static final class OpenIGResourceAccess implements ResourceAccess {
@@ -156,66 +191,4 @@ public class OAuth2ResourceServerFilter extends GenericHeapObject implements Fil
             return scopeValues;
         }
     }
-
-    /** Creates and initializes an OAuth2 filter in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
-
-        private ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
-        private ScheduledExecutorService executorService;
-
-        @Override
-        public Object create() throws HeapException {
-            Handler httpHandler = heap.resolve(getWithDeprecation(config, logger, "providerHandler", "httpHandler")
-                                           .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                  Handler.class);
-
-            TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-            AccessTokenResolver resolver = new OpenAmAccessTokenResolver(
-                    httpHandler,
-                    time,
-                    config.get("tokenInfoEndpoint").required().asString());
-
-            // Build the cache
-            Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
-            if (!expiration.isZero()) {
-                executorService = Executors.newSingleThreadScheduledExecutor();
-                cache = new ThreadSafeCache<>(executorService);
-                cache.setDefaultTimeout(expiration);
-                resolver = new CachingAccessTokenResolver(resolver, cache);
-            }
-
-            Set<Expression<String>> scopes =
-                    getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
-
-            String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
-
-            final OAuth2ResourceServerFilter filter = new OAuth2ResourceServerFilter(
-                    new ResourceServerFilter(resolver,
-                                             time,
-                                             new OpenIGResourceAccess(scopes),
-                                             realm));
-
-            if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
-                    Boolean.TRUE).asBoolean()) {
-                try {
-                    Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);
-                    return new EnforcerFilter(expr, filter, logger);
-                } catch (ExpressionException e) {
-                    // Can be ignored, since we completely control the expression
-                }
-            }
-            return filter;
-        }
-
-        @Override
-        public void destroy() {
-            if (executorService != null) {
-                executorService.shutdownNow();
-            }
-            if (cache != null) {
-                cache.clear();
-            }
-        }
-    }
-
 }
