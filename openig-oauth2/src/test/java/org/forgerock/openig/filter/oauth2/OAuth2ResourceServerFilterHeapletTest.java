@@ -32,7 +32,7 @@ import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class OAuth2ResourceServerFilterTest {
+public class OAuth2ResourceServerFilterHeapletTest {
 
     /**
      * Re-used token-id.
@@ -44,8 +44,8 @@ public class OAuth2ResourceServerFilterTest {
         final AttributesContext context = new AttributesContext(new RootContext());
         context.getAttributes().put("attribute", "a");
         Request request = buildAuthorizedRequest();
-        final OAuth2ResourceServerFilter.OpenIGResourceAccess resourceAccess =
-                new OAuth2ResourceServerFilter.OpenIGResourceAccess(getScopes("${attributes.attribute}",
+        final OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess resourceAccess =
+                new OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess(getScopes("${attributes.attribute}",
                                                                               "${split('to,b,or,not,to', ',')[1]}",
                                                                               "c"));
         assertThat(resourceAccess.getRequiredScopes(context, request)).containsOnly("a", "b", "c");
@@ -54,8 +54,8 @@ public class OAuth2ResourceServerFilterTest {
     @Test(expectedExceptions = ResponseException.class,
           expectedExceptionsMessageRegExp = ".*scope expression \'.*\' could not be resolved")
     public void shouldFailDueToInvalidScopeExpressions() throws Exception {
-        final OAuth2ResourceServerFilter.OpenIGResourceAccess resourceAccess =
-                new OAuth2ResourceServerFilter.OpenIGResourceAccess(getScopes("${bad.attribute}"));
+        final OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess resourceAccess =
+                new OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess(getScopes("${bad.attribute}"));
         resourceAccess.getRequiredScopes(newContextChain(), buildAuthorizedRequest());
     }
 
