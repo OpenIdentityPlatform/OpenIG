@@ -95,6 +95,7 @@ public final class Responses {
      *         The new {@link Exception} that can be thrown by this function.
      * @return a function that will return {@literal null} and not throw any {@code Exception}.
      */
+    @SuppressWarnings("unchecked")
     public static <V, E extends Exception> Function<NeverThrowsException, V, E> noopExceptionFunction() {
         return (Function<NeverThrowsException, V, E>) NOOP_EXCEPTION_FUNC;
     }
@@ -108,6 +109,7 @@ public final class Responses {
      * @return an async function that creates a {@link Response} with status {@link Status#INTERNAL_SERVER_ERROR}
      * and the exception set as the cause.
      */
+    @SuppressWarnings("unchecked")
     public static <E extends Exception> AsyncFunction<E, Response, NeverThrowsException> internalServerError() {
         return (AsyncFunction<E, Response, NeverThrowsException>) INTERNAL_SERVER_ERROR_ASYNC_FUNC;
     }

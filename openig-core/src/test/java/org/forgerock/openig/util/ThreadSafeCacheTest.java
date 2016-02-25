@@ -123,7 +123,7 @@ public class ThreadSafeCacheTest {
 
         cache.getValue(42, getCallable());
 
-        verify(executorService).schedule(any(Callable.class),
+        verify(executorService).schedule(anyCallable(),
                                          delayCaptor.capture(),
                                          timeUnitCaptor.capture());
         assertThat(delayCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getValue());
@@ -142,7 +142,7 @@ public class ThreadSafeCacheTest {
             }
         });
 
-        verify(executorService).schedule(any(Callable.class),
+        verify(executorService).schedule(anyCallable(),
                                          delayCaptor.capture(),
                                          timeUnitCaptor.capture());
         assertThat(delayCaptor.getValue()).isEqualTo(lowerDuration.getValue());
@@ -159,7 +159,7 @@ public class ThreadSafeCacheTest {
             }
         });
 
-        verify(executorService).submit(any(Callable.class));
+        verify(executorService).submit(anyCallable());
     }
 
     @Test
@@ -173,6 +173,10 @@ public class ThreadSafeCacheTest {
         });
 
         verifyZeroInteractions(executorService);
+    }
+
+    private static Callable<?> anyCallable() {
+        return any(Callable.class);
     }
 
     private Callable<Integer> getCallable() {

@@ -78,7 +78,7 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
         @Override
         public Object create() throws HeapException {
             final Script script = compileScript();
-            final AbstractScriptableHeapObject component = newInstance(script, heap);
+            final AbstractScriptableHeapObject<?> component = newInstance(script, heap);
             Handler clientHandler = heap.resolve(config.get("clientHandler").defaultTo(CLIENT_HANDLER_HEAP_KEY),
                                                  Handler.class);
             component.setClientHandler(clientHandler);
@@ -107,7 +107,7 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
          * @throws JsonValueException if the heaplet (or one of its dependencies) has a
          * malformed configuration.
          */
-        protected abstract AbstractScriptableHeapObject newInstance(final Script script, final Heap heap)
+        protected abstract AbstractScriptableHeapObject<?> newInstance(final Script script, final Heap heap)
                 throws HeapException;
 
         private Script compileScript() throws HeapException {
@@ -198,6 +198,7 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
      * @param clazz the class representing the expected result type of the {@code Promise}
      * @return the Promise of a Response produced by the script
      */
+    @SuppressWarnings("unchecked")
     protected final Promise<V, ScriptException> runScript(final Bindings bindings,
                                                           final Context context,
                                                           final Class<V> clazz) {
