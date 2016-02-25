@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -191,6 +191,7 @@ public class UmaResourceServerFilterTest {
         mockTicketCreation(new Response(Status.CREATED).setEntity(object(field("ticket", TICKET))));
     }
 
+    @SuppressWarnings("unchecked")
     private void mockTicketCreation(Response response) throws URISyntaxException {
         URI ticketUri = new URI("http://as.example.com/uma/permission_request");
         when(service.getTicketEndpoint()).thenReturn(ticketUri);

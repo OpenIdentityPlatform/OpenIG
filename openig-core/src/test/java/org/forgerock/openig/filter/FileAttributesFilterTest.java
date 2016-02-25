@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -50,7 +50,7 @@ public class FileAttributesFilterTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void shouldProduceEmptyMapInCaseOfFailure() throws Exception {
         when(file.getRecord("username", "joe")).thenThrow(new IOException());
 
@@ -65,7 +65,7 @@ public class FileAttributesFilterTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void shouldProduceEmptyMapWhenSearchedEntryDoesNotExist() throws Exception {
         when(file.getRecord("username", "joe")).thenReturn(null);
 
