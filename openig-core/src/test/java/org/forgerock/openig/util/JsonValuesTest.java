@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -21,11 +21,15 @@ import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.util.JsonValues.*;
 import static org.mockito.Mockito.*;
 
+import java.util.concurrent.TimeUnit;
+
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.time.Duration;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -34,6 +38,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -146,6 +151,68 @@ public class JsonValuesTest {
         assertThat(evaluateJsonStaticExpression(json("${8 * 5 + 2}")).asInteger()).isEqualTo(42);
         assertThat(evaluateJsonStaticExpression(json("${join(array('foo', 'bar', 'quix'), '@')}")).asString())
                 .isEqualTo("foo@bar@quix");
+    }
+
+    @Test
+    public void shouldEvaluateAsInteger() throws Exception {
+        assertThat(asInteger(json("${1+1}"))).isEqualTo(2);
+        assertThat(asInteger(json(null))).isNull();
+    }
+
+    @Test(expectedExceptions = JsonValueException.class, dataProvider = "notEvaluableAsInteger")
+    public void shouldNotEvaluateAsInteger(JsonValue node) throws Exception {
+        asInteger(node);
+    }
+
+    @DataProvider
+    public Object[][] notEvaluableAsInteger() {
+        return new Object[][] {
+            { json(true) },
+            { json("${1==1}") }
+        };
+    }
+
+    @Test
+    public void shouldEvaluateAsDuration() throws Exception {
+        Duration duration = asDuration(json("3 seconds"));
+        assertThat(duration.getValue()).isEqualTo(3);
+        assertThat(duration.getUnit()).isEqualTo(TimeUnit.SECONDS);
+
+        assertThat(asDuration(json(null))).isNull();
+    }
+
+    @Test(expectedExceptions = JsonValueException.class, dataProvider = "notEvaluableAsDuration")
+    public void shouldNotEvaluateAsDuration(JsonValue node) throws Exception {
+        asDuration(node);
+    }
+
+    @DataProvider
+    public Object[][] notEvaluableAsDuration() {
+        return new Object[][] {
+            { json(true) },
+            { json("${1==1}") },
+            { json("blah blah") }
+        };
+    }
+
+    @Test
+    public void shouldEvaluateAsBoolean() throws Exception {
+        assertThat(asBoolean(json("${1 == 1}"))).isTrue();
+        assertThat(asBoolean(json(null))).isNull();
+    }
+
+    @Test(expectedExceptions = JsonValueException.class, dataProvider = "notEvaluableAsBoolean")
+    public void shouldNotEvaluateAsBoolean(JsonValue node) throws Exception {
+        asBoolean(node);
+    }
+
+    @DataProvider
+    public Object[][] notEvaluableAsBoolean() {
+        return new Object[][] {
+            { json("foo") },
+            { json(42) },
+            { json(object(field("ultimateAnswer", 42))) }
+        };
     }
 
     @Test(expectedExceptions = JsonException.class,
