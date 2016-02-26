@@ -34,9 +34,17 @@ import org.forgerock.util.promise.Promise;
  * A scriptable filter. This filter acts as a simple wrapper around the
  * scripting engine. Scripts are provided with the bindings provided by {@link AbstractScriptableHeapObject} plus :
  * <ul>
+ * <li>{@link Context context} - the associated request context
+ * <li>{@link Request request} - the HTTP request
  * <li>{@link Handler next} - the next handler in the filter chain.
  * </ul>
- * Like Java based filters, scripts are free to choose whether or not they
+ * <p>Contains also easy access to {@code attributes} from the {@link org.forgerock.services.context.AttributesContext},
+ * e.g: {@code attributes.user = "jackson"}, instead of {@code contexts.attributes.attributes.user = "jackson"}.
+ *
+ * <p>In the same way, it gives access to {@code session} from the {@link org.forgerock.http.session.SessionContext},
+ * for example, you can use: {@code session.put(...)}, instead of {@code contexts.session.session.put(...)}.
+ *
+ * <p>Like Java based filters, scripts are free to choose whether or not they
  * forward the request to the next handler or, instead, return a response
  * immediately.
  */
