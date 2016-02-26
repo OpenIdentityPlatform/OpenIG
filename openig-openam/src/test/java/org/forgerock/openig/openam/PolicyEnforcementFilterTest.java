@@ -240,68 +240,6 @@ public class PolicyEnforcementFilterTest {
                     field("environment", 123))) } };
     }
 
-    @DataProvider
-    private static Object[][] realms() {
-        return new Object[][] {
-            { null },
-            { "" },
-            { "/" },
-            { "realm/" },
-            { "/realm" },
-            { "/realm/" },
-            { "/realm " },
-            { " realm/" } };
-    }
-
-    @DataProvider
-    private static Object[][] invalidParameters() throws ExpressionException {
-        return new Object[][] {
-            { null, Expression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
-            { URI.create(OPENAM_URI), Expression.valueOf("${attributes.policy}", Map.class), null },
-            { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
-    }
-
-    @DataProvider
-    private static Object[][] invalidCacheMaxExpiration() {
-        return new Object[][] {
-            { "0 seconds" },
-            { "unlimited" } };
-    }
-
-    @DataProvider
-    private static Object[][] givenAndExpectedKey() {
-        return new Object[][] {
-            { REQUESTED_URI, TOKEN, null, 0, REQUESTED_URI + "@" + TOKEN },
-            { REQUESTED_URI, TOKEN, JWT_TOKEN, 0, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
-            { REQUESTED_URI, "", JWT_TOKEN, 0, REQUESTED_URI + "@" + JWT_TOKEN },
-            { REQUESTED_URI, TOKEN, "", 0, REQUESTED_URI + "@" + TOKEN },
-            { REQUESTED_URI, TOKEN, null, CLAIMS_SUBJECT.asMap().hashCode(), REQUESTED_URI + "@" + TOKEN
-                                          + "@" + CLAIMS_SUBJECT.asMap().hashCode() } };
-    }
-
-    @DataProvider
-    private static Object[][] claims() throws ExpressionException {
-        return new Object[][] {
-            { json(object(field("iss", "jwt-bearer-client"),
-                          field("sub", "${attributes.client_id}"),
-                          field("subs", "${false}"),
-                          field("aud", "http://example.com:8088/openam"),
-                          field("exp", 1300819380))),
-              json(object(field("iss", "jwt-bearer-client"),
-                      field("sub", "OpenIG"),
-                      field("subs", false),
-                      field("aud", "http://example.com:8088/openam"),
-                      field("exp", 1300819380))).asMap() },
-            { "${attributes.claimsSubject}", json(object(field("iss", "jwt-bearer-client"))).asMap() } };
-    }
-
-    @DataProvider
-    private static Object[][] environment() throws ExpressionException {
-        return new Object[][] {
-            { json(object(field("IP", IP_LIST))) },
-            { "${attributes.environmentMap}" } };
-    }
-
     @Test(dataProvider = "invalidConfigurations",
           expectedExceptions = { JsonValueException.class, HeapException.class })
     public void shouldFailToCreateHeaplet(final JsonValue invalidConfiguration) throws Exception {
@@ -312,6 +250,14 @@ public class PolicyEnforcementFilterTest {
     public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(config);
         assertThat(filter).isNotNull();
+    }
+
+    @DataProvider
+    private static Object[][] invalidParameters() throws ExpressionException {
+        return new Object[][] {
+            { null, Expression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
+            { URI.create(OPENAM_URI), Expression.valueOf("${attributes.policy}", Map.class), null },
+            { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
     }
 
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
@@ -423,12 +369,32 @@ public class PolicyEnforcementFilterTest {
         verify(logger).debug(any(Exception.class));
     }
 
+    @DataProvider
+    private static Object[][] realms() {
+        return new Object[][] {
+            { null },
+            { "" },
+            { "/" },
+            { "realm/" },
+            { "/realm" },
+            { "/realm/" },
+            { "/realm " },
+            { " realm/" } };
+    }
+
     @Test(dataProvider = "realms")
     public static void shouldSucceedToCreateBaseUri(final String realm) throws Exception {
         assertThat(normalizeToJsonEndpoint("http://www.example.com:8090/openam/", realm).toASCIIString())
             .endsWith("/")
             .containsSequence("http://www.example.com:8090/openam/json/",
                               realm != null ? realm.trim() : "");
+    }
+
+    @DataProvider
+    private static Object[][] invalidCacheMaxExpiration() {
+        return new Object[][] {
+            { "0 seconds" },
+            { "unlimited" } };
     }
 
     @Test(dataProvider = "invalidCacheMaxExpiration", expectedExceptions = HeapException.class)
@@ -484,6 +450,17 @@ public class PolicyEnforcementFilterTest {
         verify(next, times(3)).handle(attributesContext, request);
     }
 
+    @DataProvider
+    private static Object[][] givenAndExpectedKey() {
+        return new Object[][] {
+            { REQUESTED_URI, TOKEN, null, 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, JWT_TOKEN, 0, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
+            { REQUESTED_URI, "", JWT_TOKEN, 0, REQUESTED_URI + "@" + JWT_TOKEN },
+            { REQUESTED_URI, TOKEN, "", 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, null, CLAIMS_SUBJECT.asMap().hashCode(), REQUESTED_URI + "@" + TOKEN
+                                          + "@" + CLAIMS_SUBJECT.asMap().hashCode() } };
+    }
+
     @Test(dataProvider = "givenAndExpectedKey")
     public void shouldSucceedToCreateCacheKey(final String requestedUri,
                                               final String ssoToken,
@@ -530,6 +507,22 @@ public class PolicyEnforcementFilterTest {
         assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
     }
 
+    @DataProvider
+    private static Object[][] claims() throws ExpressionException {
+        return new Object[][] {
+            { json(object(field("iss", "jwt-bearer-client"),
+                          field("sub", "${attributes.client_id}"),
+                          field("subs", "${false}"),
+                          field("aud", "http://example.com:8088/openam"),
+                          field("exp", 1300819380))),
+              json(object(field("iss", "jwt-bearer-client"),
+                      field("sub", "OpenIG"),
+                      field("subs", false),
+                      field("aud", "http://example.com:8088/openam"),
+                      field("exp", 1300819380))).asMap() },
+            { "${attributes.claimsSubject}", json(object(field("iss", "jwt-bearer-client"))).asMap() } };
+    }
+
     @Test(dataProvider = "claims")
     public void shouldSucceedToBuildClaimsResource(final Object claims,
                                                    final Map<String, Object> evaluated) throws Exception {
@@ -547,6 +540,13 @@ public class PolicyEnforcementFilterTest {
         // The ssoToken is given in the buildMinimalHeapletConfiguration
         assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
         assertThat(resources.get("subject").get("claims").asMap()).isEqualTo(evaluated);
+    }
+
+    @DataProvider
+    private static Object[][] environment() throws ExpressionException {
+        return new Object[][] {
+            { json(object(field("IP", IP_LIST))) },
+            { "${attributes.environmentMap}" } };
     }
 
     @Test(dataProvider = "environment")
