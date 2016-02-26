@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -115,6 +115,49 @@ public class FunctionsTest {
         Boolean o = Expression.valueOf("${contains(split(attributes.s, ','), 'can')}", Boolean.class)
                               .eval(bindings);
         assertThat(o).isEqualTo(true);
+    }
+
+    @Test
+    public void integer() throws ExpressionException {
+        Object o = Expression.valueOf("${integer('42')}", Object.class).eval();
+        assertThat(o).isInstanceOf(Integer.class).isEqualTo(42);
+    }
+
+    @Test(dataProvider = "integerNull")
+    public void integerBadInput(String value) throws ExpressionException {
+        Object o = Expression.valueOf("${integer(" + value + ")}", Object.class).eval();
+        assertThat(o).isNull();
+    }
+
+    @DataProvider
+    private Object[][] integerNull() {
+        // @formatter:off
+        return new Object[][] {
+            { "'foo'" },
+            { "'1 + 1'" },
+            { null }
+        };
+        // @formatter:on
+    }
+
+    @Test(dataProvider = "booleanData")
+    public void bool(String value, boolean expected) throws ExpressionException {
+        Object o = Expression.valueOf("${bool('" + value + "')}", Object.class).eval();
+        assertThat(o).isInstanceOf(Boolean.class).isEqualTo(expected);
+    }
+
+    @DataProvider
+    private Object[][] booleanData() {
+        // @formatter:off
+        return new Object[][] {
+            { "true", true },
+            { "TRue", true },
+            { "false", false },
+            { "FalsE", false },
+            { null, false },
+            { "foo", false }
+        };
+        // @formatter:on
     }
 
     @DataProvider

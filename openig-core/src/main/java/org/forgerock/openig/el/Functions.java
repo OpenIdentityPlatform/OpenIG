@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -50,6 +50,41 @@ public final class Functions {
      */
     public static String[] array(String... values) {
         return values;
+    }
+
+    /**
+     * Transforms a {@link String} to an {@link Integer}. If the parameter is not a valid integer (in radix 10) then
+     * it returns {@literal null}.
+     * @param value the {@link String} containing the integer representation to be parsed
+     * @return the integer represented by the string argument in the radix 10.
+     */
+    public static Integer integer(String value) {
+        return integerWithRadix(value, 10);
+    }
+
+    /**
+     * Transforms a {@link String} to an {@link Integer}. If the parameter is not a valid integer then it returns
+     * {@literal null}.
+     * @param value the {@link String} containing the integer representation to be parsed
+     * @param radix the radix to be used while parsing {@code s}.
+     * @return the integer represented by the string argument in the specified radix.
+     */
+    public static Integer integerWithRadix(String value, int radix) {
+        try {
+            return Integer.parseInt(value, radix);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Transforms a {@link String} to an {@link Boolean}. The rules for the transformation are the same as the ones
+     * described on {@link Boolean#valueOf(String)}.
+     * @param value the {@link String} containing the boolean representation to be parsed
+     * @return the boolean represented by the string argument.
+     */
+    public static Boolean bool(String value) {
+        return Boolean.valueOf(value);
     }
 
     /**
