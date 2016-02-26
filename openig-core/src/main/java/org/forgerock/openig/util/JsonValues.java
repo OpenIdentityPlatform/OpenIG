@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -19,6 +19,7 @@ package org.forgerock.openig.util;
 import static java.lang.String.*;
 import static java.util.Collections.*;
 import static org.forgerock.http.util.Loader.*;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Function;
 import org.forgerock.util.Utils;
+import org.forgerock.util.time.Duration;
 
 /**
  * Provides additional functionality to {@link JsonValue}.
@@ -58,7 +60,7 @@ public final class JsonValues {
     private JsonValues() { }
 
     /**
-     * Resolves a String-based {@link JsonValue} instance that may contains an {@link Expression}.
+     * Resolves a String-based {@link JsonValue} instance that may contain an {@link Expression}.
      */
     private static final JsonTransformer EXPRESSION_TRANSFORMER = new JsonTransformer() {
         @Override
@@ -143,6 +145,59 @@ public final class JsonValues {
         } catch (ExceptionInInitializerError | InstantiationException | IllegalAccessException e) {
             throw new JsonValueException(value, e);
         }
+    }
+
+    /**
+     * Evaluate a {@link JsonValue} node as an integer : if this is already an integer, it just returns it, but if this
+     * is a string, then it evaluates it as an {@link Expression}, whose expected type is integer.
+     * @param node the node to evaluate
+     * @return the {@link Integer} coming from the node's value if it's an integer or resulting from the evaluation of
+     * the {@link Expression}
+     * @throws JsonValueException if the {@link JsonValue} is neither an integer nor a string
+     */
+    public static Integer asInteger(JsonValue node) {
+        return evaluateJsonStaticExpression(node).asInteger();
+    }
+
+    /**
+     * Evaluate a {@link JsonValue} node as a string : if this is a string then it evaluates it as an
+     * {@link Expression}.
+     * @param node the node to evaluate
+     * @return the {@link String} resulting from the evaluation of the {@link Expression}
+     * @throws JsonValueException if the {@link JsonValue} is neither a {@link String} nor a valid {@link String} typed
+     * expression.
+     */
+    public static String asString(JsonValue node) {
+        return evaluateJsonStaticExpression(node).asString();
+    }
+
+    /**
+     * Evaluate a {@link JsonValue} node as a duration : if this is a string then it evaluates it as an
+     * {@link Expression}, whose expected type is a {@link String} parseable for a {@link Duration}.
+     * @param node the node to evaluate
+     * @return the {@link Duration} resulting from the evaluation of the {@link Expression}
+     * @throws JsonValueException if the {@link JsonValue} is neither a {@link String} nor a valid {@link Duration}
+     * typed expression.
+     */
+    public static Duration asDuration(JsonValue node) {
+        String value = asString(node);
+        try {
+            return value == null ? null : duration(value);
+        } catch (IllegalArgumentException iae) {
+            throw new JsonValueException(node, value + " is not a valid duration");
+        }
+    }
+
+    /**
+     * Evaluate a {@link JsonValue} node as a boolean : if this is already a boolean, it just returns it, but if this
+     * is a string, then it evaluates it as an {@link Expression}, whose expected type is boolean.
+     * @param node the node to evaluate
+     * @return the {@link Boolean} coming from the node's value if it's a boolean or resulting from the evaluation of
+     * the {@link Expression}
+     * @throws JsonValueException if the {@link JsonValue} is neither a boolean nor a string
+     */
+    public static Boolean asBoolean(JsonValue node) {
+        return evaluateJsonStaticExpression(node).asBoolean();
     }
 
     /**
