@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.heap;
 
@@ -100,6 +100,12 @@ public final class Keys {
      * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String LOGSINK_HEAP_KEY = "LogSink";
+
+    /**
+     * Key to retrieve the default {@link java.util.concurrent.ScheduledExecutorService} instance from the
+     * {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String SCHEDULED_THREAD_POOL_HEAP_KEY = "ScheduledThreadPool";
 
     /**
      * Key to retrieve the default {@link SessionManager} instance from the

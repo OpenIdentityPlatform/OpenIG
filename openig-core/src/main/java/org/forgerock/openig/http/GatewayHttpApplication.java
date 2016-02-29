@@ -39,6 +39,7 @@ import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
@@ -117,6 +118,10 @@ public final class GatewayHttpApplication implements HttpApplication {
                                                    field("filters", array(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY)),
                                                    field("handler", CLIENT_HANDLER_HEAP_KEY)))));
 
+    private static final JsonValue DEFAULT_SCHEDULED_THREAD_POOL =
+            json(object(field("name", SCHEDULED_THREAD_POOL_HEAP_KEY),
+                        field("type", "ScheduledThreadPool")));
+
     private HeapImpl heap;
     private TemporaryStorage storage;
     private Environment environment;
@@ -182,6 +187,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY, new TransactionIdOutboundFilter());
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
             heap.addDefaultDeclaration(FORGEROCK_CLIENT_HANDLER);
+            heap.addDefaultDeclaration(DEFAULT_SCHEDULED_THREAD_POOL);
             heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators");
 
             // As all heaplets can specify their own storage and logger,
