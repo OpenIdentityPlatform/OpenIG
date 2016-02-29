@@ -18,12 +18,12 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
-import static org.forgerock.http.handler.Handlers.chainOf;
-import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
