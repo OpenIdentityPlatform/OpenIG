@@ -260,6 +260,7 @@ public class PolicyEnforcementFilterTest {
             { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
     }
 
+    @SuppressWarnings("rawtypes")
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
     public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri,
                                                           final Expression<Map> target,
