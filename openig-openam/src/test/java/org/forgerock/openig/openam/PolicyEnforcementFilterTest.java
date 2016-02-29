@@ -18,6 +18,7 @@ package org.forgerock.openig.openam;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
@@ -30,6 +31,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
@@ -51,7 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -138,7 +139,7 @@ public class PolicyEnforcementFilterTest {
         @SuppressWarnings("rawtypes")
         final Expression<Map> environmentMap = Expression.valueOf("${attributes.environmentMap}", Map.class);
         environmentMap.set(bindings, singletonMap("IP", IP_LIST));
-        cache = new ThreadSafeCache<>(Executors.newSingleThreadScheduledExecutor());
+        cache = new ThreadSafeCache<>(newSingleThreadScheduledExecutor());
         target = Expression.valueOf("${attributes.policy}", Map.class);
 
         when(policiesHandler.handle(any(Context.class), any(Request.class)))
@@ -689,6 +690,7 @@ public class PolicyEnforcementFilterTest {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
+        heap.put(SCHEDULED_THREAD_POOL_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         heap.put("policiesHandler", policiesHandler);
         return heap;
