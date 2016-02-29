@@ -19,6 +19,7 @@ package org.forgerock.openig.filter.oauth2;
 import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
@@ -26,7 +27,6 @@ import static org.forgerock.util.time.Duration.duration;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.authz.modules.oauth2.AccessToken;
@@ -114,7 +114,6 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
     public static final String DEFAULT_REALM_NAME = "OpenIG";
 
     private ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
-    private ScheduledExecutorService executorService;
 
     @Override
     public Object create() throws HeapException {
@@ -131,7 +130,9 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
         // Build the cache
         Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
         if (!expiration.isZero()) {
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            ScheduledExecutorService executorService = heap.resolve(config.get("executor")
+                                                                          .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+                                                                    ScheduledExecutorService.class);
             cache = new ThreadSafeCache<>(executorService);
             cache.setDefaultTimeout(expiration);
             resolver = new CachingAccessTokenResolver(resolver, cache);
@@ -161,9 +162,6 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
 
     @Override
     public void destroy() {
-        if (executorService != null) {
-            executorService.shutdownNow();
-        }
         if (cache != null) {
             cache.clear();
         }
