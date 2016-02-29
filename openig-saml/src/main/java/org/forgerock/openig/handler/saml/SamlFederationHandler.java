@@ -568,9 +568,18 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         return response;
     }
 
-    private static HttpServletResponse adaptResponse(Context context) {
+    private HttpServletResponse adaptResponse(Context context) {
         AttributesContext attributesContext = context.asContext(AttributesContext.class);
-        return (HttpServletResponse) attributesContext.getAttributes().get(HttpServletResponse.class.getName());
+        HttpServletResponse response = (HttpServletResponse) attributesContext.getAttributes()
+                                                                              .get(HttpServletResponse.class.getName());
+        try {
+            return new ResponseAdapter(response);
+        } catch (IOException e) {
+            // If adaptation fails, returns the original object (there is always a servlet response around)
+            logger.warning("Can't wrap original Servlet response, returning original response");
+            logger.warning(e);
+            return response;
+        }
     }
 
     private static HttpServletRequest adaptRequest(Context context, Request req) {
