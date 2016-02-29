@@ -28,6 +28,10 @@ public class FakeTimeService implements TimeService {
     private long current;
     private List<TimeServiceListener> listeners = new ArrayList<>();
 
+    public FakeTimeService() {
+        this(0);
+    }
+
     public FakeTimeService(long start) {
         this.current = start;
     }

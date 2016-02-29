@@ -11,15 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
-package org.forgerock.openig.filter;
+package org.forgerock.http.filter.throttling;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.forgerock.util.Reject;
-import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -80,21 +79,15 @@ class TokenBucket {
      *
      * @param time
      *            the time service to use.
-     * @param capacity
-     *            the maximum number of tokens that can take place in the bucket.
-     * @param duration
-     *            the period of time over which the limit applies.
+     * @param rate
+     *            the rate applied on this bucket.
      */
-    public TokenBucket(TimeService time, int capacity, Duration duration) {
+    public TokenBucket(TimeService time, ThrottlingRate rate) {
         Reject.ifNull(time);
-        Reject.ifTrue(capacity <= 0, "The bucket's capacity has to be greater than 0.");
-        Reject.ifTrue(duration.isUnlimited(), "The duration can't be unlimited.");
         this.time = time;
-        this.capacity = capacity;
-        this.duration = duration.to(TimeUnit.MILLISECONDS);
-        Reject.ifTrue(this.duration < 1, "The duration has to be greater or equal to 1 ms minimum.");
-
-        this.millisToWaitForNextToken = this.duration / (float) capacity;
+        this.capacity = rate.getNumberOfRequests();
+        this.duration = rate.getDuration().to(TimeUnit.MILLISECONDS);
+        this.millisToWaitForNextToken = duration / (float) capacity;
         this.state = new AtomicReference<>();
     }
 
@@ -148,6 +141,33 @@ class TokenBucket {
     public long getRemainingTokensCount() {
         State currentState = state.get();
         return currentState == null ? capacity : currentState.counter;
+    }
+
+    int getCapacity() {
+        return capacity;
+    }
+
+    long getDurationInMillis() {
+        return duration;
+    }
+
+    long getTimestampLastRefill() {
+        State currentState = state.get();
+        return currentState.timestampLastRefill;
+    }
+
+    boolean isEquivalent(TokenBucket that) {
+        return this.capacity == that.capacity && this.duration == that.duration;
+    }
+
+    /**
+     * Returns whether this token bucket is expired or not, meaning that the difference between now and the last refill
+     * is greater than the bucket's duration.
+     * @return whether this token bucket is expired or not
+     */
+
+    public boolean isExpired() {
+        return (time.now() - getTimestampLastRefill()) > getDurationInMillis();
     }
 
 }

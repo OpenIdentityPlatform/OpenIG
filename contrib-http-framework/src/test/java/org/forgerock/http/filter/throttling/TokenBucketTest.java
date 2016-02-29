@@ -13,7 +13,7 @@
  *
  * Copyright 2015-2016 ForgeRock AS.
  */
-package org.forgerock.openig.filter;
+package org.forgerock.http.filter.throttling;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.time.Duration.duration;
@@ -29,17 +29,17 @@ public class TokenBucketTest {
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithUnlimitedDuration() throws Exception {
-        new TokenBucket(mock(TimeService.class), 1, Duration.UNLIMITED);
+        new TokenBucket(mock(TimeService.class), new ThrottlingRate(1, Duration.UNLIMITED));
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithDurationLessThan1Ms() throws Exception {
-        new TokenBucket(mock(TimeService.class), 1, duration("3 nanoseconds"));
+        new TokenBucket(mock(TimeService.class), new ThrottlingRate(1, duration("3 nanoseconds")));
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithNegativeCapacity() throws Exception {
-        new TokenBucket(mock(TimeService.class), -1, duration("42 years")); // arbitrary duration
+        new TokenBucket(mock(TimeService.class), new ThrottlingRate(-1, duration("42 years"))); // arbitrary duration
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TokenBucketTest {
         FakeTimeService time = new FakeTimeService(0);
 
         // a token bucket that can refill 1 token every 333.333 ms.
-        TokenBucket bucket = new TokenBucket(time, 3, duration("1 second"));
+        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
 
         assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2);
@@ -72,7 +72,7 @@ public class TokenBucketTest {
         FakeTimeService time = new FakeTimeService(0);
 
         // a token bucket that can refill 1 token every 0.333 ms.
-        TokenBucket bucket = new TokenBucket(time, 3000, duration("1 second"));
+        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3000, duration("1 second")));
 
         assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
