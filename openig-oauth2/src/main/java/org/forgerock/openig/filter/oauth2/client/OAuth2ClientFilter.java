@@ -33,6 +33,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.removeSession;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -45,7 +46,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.authz.modules.oauth2.OAuth2Error;
@@ -111,6 +111,7 @@ import org.forgerock.util.time.TimeService;
  * "requireLogin"                 : boolean             [OPTIONAL - default require login]
  * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
  * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
+ * "executor"                     : executor            [OPTIONAL - by default uses 'ScheduledThreadPool' heap object]
  * "metadata"                     : {                   [OPTIONAL - contains metadata dedicated for dynamic
  *                                                                  client registration.]
  *             "redirect_uris"    : [ strings ],            [REQUIRED for dynamic client registration.]
@@ -803,7 +804,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     /** Creates and initializes the filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private ScheduledExecutorService executor;
         private ThreadSafeCache<String, Map<String, Object>> cache;
 
         @Override
@@ -845,7 +845,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             // Build the cache of user-info
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
             if (!expiration.isZero()) {
-                executor = Executors.newSingleThreadScheduledExecutor();
+                ScheduledExecutorService executor = heap.resolve(config.get("executor")
+                                                                       .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+                                                                 ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
                 cache.setDefaultTimeout(expiration);
                 filter.setUserInfoCache(cache);
@@ -856,9 +858,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
         @Override
         public void destroy() {
-            if (executor != null) {
-                executor.shutdownNow();
-            }
             if (cache != null) {
                 cache.clear();
             }
