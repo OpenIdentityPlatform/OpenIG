@@ -30,6 +30,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -43,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.Filter;
@@ -110,7 +110,9 @@ import org.forgerock.util.time.Duration;
  *                                                                        Map<String, Object> JWT claims ]
  *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute ]
  *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
- *          "environment"            :    map/expression      [OPTIONAL - instance of Map<String, List<Object>>]
+ *          "environment"            :    map/expression,     [OPTIONAL - instance of Map<String, List<Object>>]
+ *          "executor"               :    executor            [OPTIONAL - by default uses 'ScheduledThreadPool'
+ *                                                                        heap object]
  *      }
  *  }
  *  }
@@ -462,7 +464,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     /** Creates and initializes a policy enforcement filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private ScheduledExecutorService executor;
         private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
 
         @Override
@@ -516,7 +517,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 filter.setEnvironment(environment());
 
                 // Sets the cache
-                executor = Executors.newSingleThreadScheduledExecutor();
+                ScheduledExecutorService executor = heap.resolve(config.get("executor")
+                                                                       .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+                                                                 ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
                 filter.setCache(cache);
 
@@ -577,9 +580,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
         @Override
         public void destroy() {
-            if (executor != null) {
-                executor.shutdownNow();
-            }
             if (cache != null) {
                 cache.clear();
             }
