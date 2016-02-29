@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -52,7 +52,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class PasswordReplayFilterTest {
+public class PasswordReplayFilterHeapletTest {
 
     static final String IS_GET_LOGIN_PAGE = "${matches(request.uri.path, '/login') and (request.method == 'GET')}";
     static final String HTTP_WWW_EXAMPLE_COM_LOGIN = "http://www.example.com/login";
@@ -472,7 +472,7 @@ public class PasswordReplayFilterTest {
 
 
         Filter build() throws Exception {
-            return (Filter) new PasswordReplayFilter.Heaplet().create(Name.of("this"), config, heap);
+            return (Filter) new PasswordReplayFilterHeaplet().create(Name.of("this"), config, heap);
         }
     }
 

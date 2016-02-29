@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.alias;
@@ -36,7 +36,7 @@ import org.forgerock.openig.filter.FileAttributesFilter;
 import org.forgerock.openig.filter.HeaderFilter;
 import org.forgerock.openig.filter.HttpBasicAuthFilter;
 import org.forgerock.openig.filter.LocationHeaderFilter;
-import org.forgerock.openig.filter.PasswordReplayFilter;
+import org.forgerock.openig.filter.PasswordReplayFilterHeaplet;
 import org.forgerock.openig.filter.ScriptableFilter;
 import org.forgerock.openig.filter.SqlAttributesFilter;
 import org.forgerock.openig.filter.StaticRequestFilter;
@@ -88,7 +88,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MonitorEndpointHandler", MonitorEndpointHandler.class);
         ALIASES.put("NullLogSink", NullLogSink.class);
-        ALIASES.put("PasswordReplayFilter", PasswordReplayFilter.class);
+        ALIASES.put("PasswordReplayFilter", PasswordReplayFilterHeaplet.class);
         ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);
