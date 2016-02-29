@@ -16,12 +16,8 @@
 
 package org.forgerock.openig.alias;
 
-import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
 
 import org.forgerock.openig.audit.monitor.MonitorEndpointHandler;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
@@ -56,7 +52,10 @@ import org.forgerock.openig.jwt.JwtSessionManager;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.FileLogSink;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.openig.security.KeyManagerHeaplet;
+import org.forgerock.openig.security.KeyStoreHeaplet;
 import org.forgerock.openig.security.TrustAllManager;
+import org.forgerock.openig.security.TrustManagerHeaplet;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -83,8 +82,8 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("JwtSessionFactory", JwtSessionManager.class);
         ALIASES.put("JwtSession", JwtSessionManager.class);
-        ALIASES.put("KeyManager", KeyManager.class);
-        ALIASES.put("KeyStore", KeyStore.class);
+        ALIASES.put("KeyManager", KeyManagerHeaplet.class);
+        ALIASES.put("KeyStore", KeyStoreHeaplet.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MonitorEndpointHandler", MonitorEndpointHandler.class);
         ALIASES.put("NullLogSink", NullLogSink.class);
@@ -102,7 +101,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("TemporaryStorage", TemporaryStorage.class);
         ALIASES.put("ThrottlingFilter", ThrottlingFilter.class);
         ALIASES.put("TimerDecorator", TimerDecorator.class);
-        ALIASES.put("TrustManager", TrustManager.class);
+        ALIASES.put("TrustManager", TrustManagerHeaplet.class);
         ALIASES.put("TrustAllManager", TrustAllManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
     }
