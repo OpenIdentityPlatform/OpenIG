@@ -11,22 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.doc;
-
-import static org.forgerock.guava.common.base.Strings.isNullOrEmpty;
-import org.forgerock.json.JsonValue;
-import org.glassfish.grizzly.http.Cookie;
-import org.glassfish.grizzly.http.Method;
-import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.NetworkListener;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,6 +26,17 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.forgerock.json.JsonValue;
+import org.glassfish.grizzly.http.Cookie;
+import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 
 /**
  * Simple servlet allowing user-agents to get a home page,
@@ -422,24 +421,24 @@ public final class SampleServer {
                 }
             }
         }
+    }
 
-        /**
-         * Returns true if the String to test is null nor empty.
-         * @param s The String to test.
-         * @return true if the String to test is null nor empty.
-         */
-        private static boolean isNullOrEmpty(final String s) {
-            return s == null || s.isEmpty();
-        }
+    /**
+     * Returns true if the String to test is null nor empty.
+     * @param s The String to test.
+     * @return true if the String to test is null nor empty.
+     */
+    private static boolean isNullOrEmpty(final String s) {
+        return s == null || s.isEmpty();
+    }
 
-        /**
-         * Returns true if the String to test is neither null nor empty.
-         * @param s The String to test.
-         * @return true if the String to test is neither null nor empty.
-         */
-        private static boolean notNullOrEmpty(final String s) {
-            return s != null && !s.isEmpty();
-        }
+    /**
+     * Returns true if the String to test is neither null nor empty.
+     * @param s The String to test.
+     * @return true if the String to test is neither null nor empty.
+     */
+    private static boolean notNullOrEmpty(final String s) {
+        return s != null && !s.isEmpty();
     }
 
     /**
