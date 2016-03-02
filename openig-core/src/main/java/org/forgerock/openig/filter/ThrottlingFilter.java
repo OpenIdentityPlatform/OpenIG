@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -19,8 +19,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.util.JsonValues.asDuration;
 import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.util.time.Duration.duration;
+import static org.forgerock.openig.util.JsonValues.asInteger;
 
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.guava.common.cache.CacheBuilder;
@@ -167,8 +168,8 @@ public class ThrottlingFilter extends GenericHeapObject implements Filter {
 
             JsonValue rate = config.get("rate").required();
 
-            Integer numberOfRequests = rate.get("numberOfRequests").required().asInteger();
-            Duration duration = duration(rate.get("duration").required().asString());
+            Integer numberOfRequests = asInteger(rate.get("numberOfRequests").required());
+            Duration duration = asDuration(rate.get("duration").required());
             Expression<String> partitionKey = asExpression(config.get("partitionKey").defaultTo(DEFAULT_PARTITION_KEY),
                                                            String.class);
 
