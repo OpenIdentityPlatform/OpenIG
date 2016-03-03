@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -197,7 +197,7 @@ class RouteBuilder {
         }
 
         // Ensure we always get a Response even in case of RuntimeException
-        filters.add(new RuntimeExceptionFilter());
+        filters.add(new RuntimeExceptionFilter(logger));
 
         // Log a message if the response is null
         filters.add(new NullResponseFilter(logger));
