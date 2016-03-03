@@ -17,11 +17,13 @@ package org.forgerock.openig.filter;
 
 
 import static org.forgerock.openig.http.Responses.newInternalServerError;
+import static org.forgerock.util.Reject.checkNotNull;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -34,6 +36,16 @@ import org.forgerock.util.promise.RuntimeExceptionHandler;
  * returns a promise completed with a {@link RuntimeException}, or even if a {@link RuntimeException} is thrown.
  */
 public class RuntimeExceptionFilter implements Filter {
+
+    private final Logger logger;
+
+    /**
+     * Constructs a new {@link RuntimeExceptionFilter} and logs some traces through the speficied {@code logger}.
+     * @param logger the logger to use for tracing the caught {@link RuntimeException}
+     */
+    public RuntimeExceptionFilter(Logger logger) {
+        this.logger = checkNotNull(logger);
+    }
 
     @Override
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
@@ -62,6 +74,8 @@ public class RuntimeExceptionFilter implements Filter {
         return new RuntimeExceptionHandler() {
             @Override
             public void handleRuntimeException(RuntimeException exception) {
+                logger.trace("The following RuntimeException was caught : ");
+                logger.trace(exception);
                 promise.handleResult(errorResponse(exception));
             }
         };
