@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.util;
 
+import static org.forgerock.util.promise.Promises.newResultPromise;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,11 +28,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.promise.ExceptionHandler;
+import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 import org.forgerock.util.promise.ResultHandler;
-import org.forgerock.util.promise.RuntimeExceptionHandler;
 import org.forgerock.util.time.Duration;
 
 /**
@@ -81,7 +81,7 @@ public class ThreadSafeCache<K, V> {
         this.defaultTimeoutFunction = new AsyncFunction<V, Duration, Exception>() {
             @Override
             public Promise<Duration, Exception> apply(V value) {
-                return Promises.newResultPromise(defaultTimeout);
+                return newResultPromise(defaultTimeout);
             }
         };
     }
@@ -111,38 +111,36 @@ public class ThreadSafeCache<K, V> {
 
     private void scheduleEviction(final K key,
                                   final V value,
-                                  final AsyncFunction<V, Duration, Exception> timeoutFunction) {
-        try {
-            timeoutFunction.apply(value)
-                           .thenOnResult(new ResultHandler<Duration>() {
-                               @Override
-                               public void handleResult(Duration timeout) {
-                                   if (timeout.isZero()) {
-                                       // Fast path : no need to schedule, evict it now
-                                       evict(key);
-                                   } else if (!timeout.isUnlimited()) {
-                                       // Schedule the eviction
-                                       executorService.schedule(new Expiration(key),
-                                                                timeout.getValue(),
-                                                                timeout.getUnit());
-                                   }
-                               }
-                           })
-                           .thenOnException(new ExceptionHandler<Exception>() {
-                               @Override
-                               public void handleException(Exception exception) {
-                                   evict(key);
-                               }
-                           })
-                           .thenOnRuntimeException(new RuntimeExceptionHandler() {
-                               @Override
-                               public void handleRuntimeException(RuntimeException exception) {
-                                   evict(key);
-                               }
-                           });
-        } catch (Exception e) {
-            evict(key);
-        }
+                                  final AsyncFunction<V, Duration, Exception> timeoutFunction)
+            throws ExecutionException, InterruptedException {
+        newResultPromise(value)
+                .thenAsync(timeoutFunction)
+                .thenCatch(new Function<Exception, Duration, Exception>() {
+                    @Override
+                    public Duration apply(Exception exception) throws Exception {
+                        return Duration.ZERO;
+                    }
+                })
+                .thenCatchRuntimeException(new Function<RuntimeException, Duration, Exception>() {
+                    @Override
+                    public Duration apply(RuntimeException runtimeException) throws Exception {
+                        return Duration.ZERO;
+                    }
+                })
+                .thenOnResult(new ResultHandler<Duration>() {
+                    @Override
+                    public void handleResult(Duration timeout) {
+                        if (timeout.isZero()) {
+                            // Fast path : no need to schedule, evict it now
+                            evict(key);
+                        } else if (!timeout.isUnlimited()) {
+                            // Schedule the eviction
+                            executorService.schedule(new Expiration(key),
+                                                     timeout.getValue(),
+                                                     timeout.getUnit());
+                        }
+                    }
+                });
     }
 
     /**
