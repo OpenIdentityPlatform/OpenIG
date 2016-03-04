@@ -40,9 +40,9 @@ import org.forgerock.util.time.TimeService;
  */
 public class CachingAccessTokenResolver implements AccessTokenResolver {
 
-    private final TimeService time;
     private final AccessTokenResolver resolver;
     private final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
+    private final AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> expires;
 
     /**
      * Builds a {@link CachingAccessTokenResolver} delegating to the given {@link AccessTokenResolver} using the given
@@ -58,15 +58,36 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
     public CachingAccessTokenResolver(final TimeService time,
                                       final AccessTokenResolver resolver,
                                       final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache) {
-        this.time = time;
         this.resolver = resolver;
         this.cache = cache;
+        this.expires = new AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception>() {
+            @Override
+            public Promise<? extends Duration, ? extends Exception> apply(
+                    Promise<AccessToken, AccessTokenException> accessTokenPromise)
+                    throws Exception {
+                return accessTokenPromise.then(new Function<AccessToken, Duration, AccessTokenException>() {
+                    @Override
+                    public Duration apply(AccessToken accessToken) throws AccessTokenException {
+                        if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
+                            return Duration.UNLIMITED;
+                        }
+                        long expires = accessToken.getExpiresAt() - time.now();
+                        if (expires <= 0) {
+                            // The token is already expired
+                            return Duration.ZERO;
+                        }
+
+                        return duration(expires, TimeUnit.MILLISECONDS);
+                    }
+                });
+            }
+        };
     }
 
     @Override
     public Promise<AccessToken, AccessTokenException> resolve(final Context context, final String token) {
         try {
-            return cache.getValue(token, resolveToken(context, token), expires());
+            return cache.getValue(token, resolveToken(context, token), expires);
         } catch (InterruptedException e) {
             return Promises.newExceptionPromise(
                     new AccessTokenException("Timed out retrieving OAuth2 access token information", e));
@@ -82,31 +103,6 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
             @Override
             public Promise<AccessToken, AccessTokenException> call() throws Exception {
                 return resolver.resolve(context, token);
-            }
-        };
-    }
-
-    private AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> expires() {
-        return new AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception>() {
-            @Override
-            public Promise<? extends Duration, ? extends Exception> apply(
-                    Promise<AccessToken, AccessTokenException> accessTokenPromise)
-                    throws Exception {
-                return accessTokenPromise.then(new Function<AccessToken, Duration, AccessTokenException>() {
-                    @Override
-                    public Duration apply(AccessToken accessToken) throws AccessTokenException {
-                        if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
-                            return duration("unlimited");
-                        }
-                        long expires = accessToken.getExpiresAt() - time.now();
-                        if (expires <= 0) {
-                            // The token is already expired
-                            return duration("zero");
-                        }
-
-                        return new Duration(expires, TimeUnit.MILLISECONDS);
-                    }
-                });
             }
         };
     }
