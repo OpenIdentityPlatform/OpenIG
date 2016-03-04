@@ -382,7 +382,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     @Override
                     public Promise<? extends Duration, ? extends ResourceException> apply(JsonValue value)
                             throws Exception {
-                        final Duration timeout = new Duration(value.get("ttl").asLong(), MILLISECONDS);
+                        final Duration timeout = duration(value.get("ttl").asLong(), MILLISECONDS);
                         if (timeout.to(MILLISECONDS) > cacheMaxExpiration.to(MILLISECONDS)) {
                             return newResultPromise(cacheMaxExpiration);
                         }
@@ -393,7 +393,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     @Override
                     public Promise<? extends Duration, ? extends Exception> apply(ResourceException e)
                             throws Exception {
-                        return newResultPromise(new Duration(1L, SECONDS));
+                        return newResultPromise(duration(1L, SECONDS));
                     }
                 });
             }

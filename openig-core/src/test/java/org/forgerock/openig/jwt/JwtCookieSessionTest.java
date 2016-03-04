@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt;
@@ -177,12 +177,10 @@ public class JwtCookieSessionTest {
     @Test
     public void unlimitedSessionTimeout() throws Exception {
 
-        Duration unlimitedSessionTimeout = duration("unlimited");
-
         TimeService timeService = mock(TimeService.class);
         when(timeService.now()).thenReturn(0L);
 
-        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, unlimitedSessionTimeout);
+        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, Duration.UNLIMITED);
         session.put("a-value", "ForgeRock OpenIG");
         Response response = new Response();
         session.save(response);

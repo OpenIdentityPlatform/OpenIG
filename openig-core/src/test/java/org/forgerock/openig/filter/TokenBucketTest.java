@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -28,7 +28,7 @@ public class TokenBucketTest {
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithUnlimitedDuration() throws Exception {
-        new TokenBucket(mock(TimeService.class), 1, duration("unlimited"));
+        new TokenBucket(mock(TimeService.class), 1, Duration.UNLIMITED);
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
@@ -38,7 +38,7 @@ public class TokenBucketTest {
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithNegativeCapacity() throws Exception {
-        new TokenBucket(mock(TimeService.class), -1, mock(Duration.class));
+        new TokenBucket(mock(TimeService.class), -1, duration("42 years")); // arbitrary duration
     }
 
     @Test

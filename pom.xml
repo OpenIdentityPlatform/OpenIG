@@ -88,6 +88,12 @@
         <version>2.3.4</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.forgerock.commons</groupId>
+        <artifactId>forgerock-util</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
