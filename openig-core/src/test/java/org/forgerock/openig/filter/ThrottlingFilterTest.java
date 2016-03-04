@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -46,6 +46,8 @@ public class ThrottlingFilterTest {
 
     private static final Expression<String> DEFAULT_PARTITION_EXPR;
 
+    private static final Duration THREE_MINUTES = duration("3 minutes");
+
     static {
         try {
             DEFAULT_PARTITION_EXPR = Expression.valueOf(ThrottlingFilter.DEFAULT_PARTITION_KEY, String.class);
@@ -57,13 +59,13 @@ public class ThrottlingFilterTest {
     @Test(expectedExceptions = { UncheckedExecutionException.class })
     public void shouldFailWithIncorrectNumberOfRequests() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        new ThrottlingFilter(time, -1, mock(Duration.class), DEFAULT_PARTITION_EXPR);
+        new ThrottlingFilter(time, -1, THREE_MINUTES, DEFAULT_PARTITION_EXPR);
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldFailWithIncorrectDuration() throws Exception {
         FakeTimeService time = new FakeTimeService(0);
-        new ThrottlingFilter(time, 1, duration("unlimited"), DEFAULT_PARTITION_EXPR);
+        new ThrottlingFilter(time, 1, Duration.UNLIMITED, DEFAULT_PARTITION_EXPR);
     }
 
     @Test

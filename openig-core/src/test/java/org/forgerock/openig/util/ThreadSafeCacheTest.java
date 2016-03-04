@@ -155,7 +155,7 @@ public class ThreadSafeCacheTest {
 
             @Override
             public Promise<Duration, Exception> apply(Integer value) throws Exception {
-                return newResultPromise(duration("0 second"));
+                return newResultPromise(Duration.ZERO);
             }
         });
 
@@ -168,7 +168,7 @@ public class ThreadSafeCacheTest {
 
             @Override
             public Promise<Duration, Exception> apply(Integer value) throws Exception {
-                return newResultPromise(duration("unlimited"));
+                return newResultPromise(Duration.UNLIMITED);
             }
         });
 
