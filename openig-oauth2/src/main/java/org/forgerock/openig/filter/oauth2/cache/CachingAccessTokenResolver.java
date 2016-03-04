@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter.oauth2.cache;
 
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.time.Duration.duration;
 
 import java.util.concurrent.Callable;
@@ -23,14 +24,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.authz.modules.oauth2.AccessToken;
-import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.openig.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -60,28 +60,7 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
                                       final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache) {
         this.resolver = resolver;
         this.cache = cache;
-        this.expires = new AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception>() {
-            @Override
-            public Promise<? extends Duration, ? extends Exception> apply(
-                    Promise<AccessToken, AccessTokenException> accessTokenPromise)
-                    throws Exception {
-                return accessTokenPromise.then(new Function<AccessToken, Duration, AccessTokenException>() {
-                    @Override
-                    public Duration apply(AccessToken accessToken) throws AccessTokenException {
-                        if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
-                            return Duration.UNLIMITED;
-                        }
-                        long expires = accessToken.getExpiresAt() - time.now();
-                        if (expires <= 0) {
-                            // The token is already expired
-                            return Duration.ZERO;
-                        }
-
-                        return duration(expires, TimeUnit.MILLISECONDS);
-                    }
-                });
-            }
-        };
+        this.expires = new AccessTokenExpirationFunction(time);
     }
 
     @Override
@@ -89,10 +68,10 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
         try {
             return cache.getValue(token, resolveToken(context, token), expires);
         } catch (InterruptedException e) {
-            return Promises.newExceptionPromise(
+            return newExceptionPromise(
                     new AccessTokenException("Timed out retrieving OAuth2 access token information", e));
         } catch (ExecutionException e) {
-            return Promises.newExceptionPromise(
+            return newExceptionPromise(
                     new AccessTokenException("Initial token resolution has failed", e));
         }
     }
@@ -106,4 +85,49 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
             }
         };
     }
+
+    /**
+     * A function that will compute the access token's timeout.
+     */
+    private static class AccessTokenExpirationFunction
+            implements AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> {
+
+        private static final Function<AccessTokenException, Duration, AccessTokenException> TIMEOUT_ZERO =
+                new Function<AccessTokenException, Duration, AccessTokenException>() {
+                    @Override
+                    public Duration apply(AccessTokenException e) {
+                        // Do not cache the AccessToken if there was a problem while
+                        // resolving it
+                        return Duration.ZERO;
+                    }
+                };
+
+        private final Function<AccessToken, Duration, AccessTokenException> computeTtl;
+
+        public AccessTokenExpirationFunction(final TimeService time) {
+            this.computeTtl = new Function<AccessToken, Duration, AccessTokenException>() {
+                @Override
+                public Duration apply(AccessToken accessToken) {
+                    if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
+                        return Duration.UNLIMITED;
+                    }
+                    long expires = accessToken.getExpiresAt() - time.now();
+                    if (expires <= 0) {
+                        // The token is already expired
+                        return Duration.ZERO;
+                    }
+
+                    return duration(expires, TimeUnit.MILLISECONDS);
+                }
+            };
+        }
+
+        @Override
+        public Promise<? extends Duration, ? extends Exception> apply(
+                Promise<AccessToken, AccessTokenException> accessTokenPromise) throws Exception {
+            return accessTokenPromise.then(computeTtl, TIMEOUT_ZERO);
+        }
+
+    }
+
 }
