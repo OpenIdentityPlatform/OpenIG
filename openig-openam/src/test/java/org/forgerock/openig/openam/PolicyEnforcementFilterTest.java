@@ -21,9 +21,10 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
+import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
-import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -294,7 +295,7 @@ public class PolicyEnforcementFilterTest {
                                                      next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
-        assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
+        assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
                                                                                        .get(DEFAULT_POLICY_KEY);
         assertThat((Map<String, Object>) policyExtraAttributes.get("attributes")).isEmpty();
@@ -340,7 +341,7 @@ public class PolicyEnforcementFilterTest {
                                                      next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
-        assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
+        assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         assertThatAttributesAndAdvicesAreStoredInAttributesContext();
     }
 
@@ -366,7 +367,7 @@ public class PolicyEnforcementFilterTest {
                                                      next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
-        assertThat(finalResponse.getStatus()).isEqualTo(UNAUTHORIZED);
+        assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).debug(any(Exception.class));
     }
