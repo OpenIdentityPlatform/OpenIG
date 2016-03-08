@@ -21,7 +21,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
+import static org.forgerock.http.protocol.Status.FORBIDDEN;
+import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.routing.Version.version;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -83,6 +84,9 @@ import org.forgerock.util.time.Duration;
  * This filter requests policy decisions from OpenAM which evaluates the
  * original URI based on the context and the policies configured, and according
  * to the decisions, allows or denies the current request.
+ * <p>
+ * If the decision denies the request, a 403 FORBIDDEN is returned.
+ * If an error occurred during the process, a 500 INTERNAL SERVER ERROR is returned.
  * <p>
  * Policy decisions are cached for each filter and eviction is based on the
  * "time-to-live" given in the policy decision returned by AM, if this one
@@ -230,7 +234,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         return askForPolicyDecision(context, request)
                     .then(evaluatePolicyDecision(context, request))
                     .thenAsync(allowOrDenyAccessToResource(context, request, next),
-                               returnUnauthorizedResponse);
+                               errorResponse);
     }
 
     /**
@@ -287,14 +291,14 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         this.jwtSubject = jwtSubject;
     }
 
-    private AsyncFunction<ResourceException, Response, NeverThrowsException> returnUnauthorizedResponse =
+    private AsyncFunction<ResourceException, Response, NeverThrowsException> errorResponse =
             new AsyncFunction<ResourceException, Response, NeverThrowsException>() {
 
                 @Override
                 public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
                     logger.debug("Cannot get the policy evaluation");
                     logger.debug(exception);
-                    final Response response = new Response(UNAUTHORIZED);
+                    final Response response = new Response(INTERNAL_SERVER_ERROR);
                     response.setCause(exception);
                     return newResponsePromise(response);
                 }
@@ -309,7 +313,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 if (authorized) {
                     return next.handle(context, request);
                 }
-                return newResponsePromise(new Response(UNAUTHORIZED));
+                return newResponsePromise(new Response(FORBIDDEN));
             }
         };
     }
