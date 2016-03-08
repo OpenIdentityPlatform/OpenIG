@@ -204,6 +204,14 @@ public class PolicyEnforcementFilterTest {
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("ssoTokenSubject", "${attributes.ssoTokenSubject}"))) },
+            /* Invalid pepRealm. */
+            { json(object(
+                    field("openamUrl", OPENAM_URI),
+                    field("pepUsername", "jackson"),
+                    field("pepPassword", "password"),
+                    field("pepRealm", 42),
+                    field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
+                    field("application", "myApplication"))) },
             /* Missing ssoTokenSubject OR jwtSubject OR claimsSubject. */
             { json(object(
                     field("openamUrl", OPENAM_URI),

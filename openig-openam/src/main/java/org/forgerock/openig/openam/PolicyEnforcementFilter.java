@@ -100,9 +100,11 @@ import org.forgerock.util.time.Duration;
  *          "openamUrl"              :    uriExpression,      [REQUIRED]
  *          "pepUsername"            :    expression,         [REQUIRED*]
  *          "pepPassword"            :    expression,         [REQUIRED*]
+ *          "pepRealm"               :    String,             [OPTIONAL*- default value is the one used for "realm"
+ *                                                                        attribute]
  *          "policiesHandler"        :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
  *                                                                        provided in heap.]
- *          "realm"                  :    String,             [OPTIONAL]
+ *          "realm"                  :    String,             [OPTIONAL - default is '/']
  *          "ssoTokenHeader"         :    String,             [OPTIONAL]
  *          "application"            :    String,             [OPTIONAL]
  *          "ssoTokenSubject"        :    expression,         [OPTIONAL - must be specified if no jwtSubject or
@@ -122,12 +124,13 @@ import org.forgerock.util.time.Duration;
  *  }
  * </pre>
  * <p>
- * (*) pepUsername and pepPassword are the credentials of the user who has
- * access to perform the operation, and these fields are required when using
- * heaplet. This heaplet adds an SsoTokenFilter to the policiesHandler's chain
- * and its role is to retrieve and set the SSO token header of this given user.
- * (REST API calls must present the session token, aka SSO Token, in the HTTP
- * header as proof of authentication)
+ * (*) "pepUsername" and "pepPassword" are the credentials, and "pepRealm" is the
+ * realm of the user who has access to perform the operation.
+ * <p>
+ * This heaplet adds an SsoTokenFilter to the policiesHandler's chain and its
+ * role is to retrieve and set the SSO token header of this given user (REST API
+ * calls must present the session token, aka SSO Token, in an HTTP header as
+ * proof of authentication).
  * <p>
  * The target represents a map in the attribute context where the "attributes"
  * and "advices" map fields from the policy decision will be saved in. By
@@ -477,6 +480,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             final Expression<String> pepUsername = asExpression(config.get("pepUsername").required(), String.class);
             final Expression<String> pepPassword = asExpression(config.get("pepPassword").required(), String.class);
             final String realm = config.get("realm").defaultTo("/").asString();
+            final String pepRealm = config.get("pepRealm").defaultTo(realm).asString();
             final Handler policiesHandler = heap.resolve(config.get("policiesHandler")
                                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY),
                                                          Handler.class);
@@ -494,7 +498,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             try {
                 final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
                                                                          new URI(openamUrl),
-                                                                         realm,
+                                                                         pepRealm,
                                                                          ssoTokenHeader,
                                                                          pepUsername,
                                                                          pepPassword,
