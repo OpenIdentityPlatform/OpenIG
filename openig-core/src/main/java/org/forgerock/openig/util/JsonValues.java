@@ -184,7 +184,7 @@ public final class JsonValues {
         try {
             return value == null ? null : duration(value);
         } catch (IllegalArgumentException iae) {
-            throw new JsonValueException(node, value + " is not a valid duration");
+            throw new JsonValueException(node, value + " is not a valid duration", iae);
         }
     }
 
