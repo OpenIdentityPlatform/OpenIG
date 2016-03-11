@@ -176,9 +176,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             "The attribute 'ssoTokenSubject' or 'jwtSubject' or 'claimsSubject' must be specified";
 
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
-    private final URI baseUri;
     private final Duration cacheMaxExpiration;
-    private final Handler policiesHandler;
+    private final RequestHandler requestHandler;
     private String application;
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
@@ -212,11 +211,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                    @SuppressWarnings("rawtypes") final Expression<Map> target,
                                    final Handler policiesHandler,
                                    final Duration cacheMaxExpiration) {
-        this.baseUri = checkNotNull(baseUri);
         this.target = checkNotNull(target);
         this.cacheMaxExpiration = cacheMaxExpiration;
-        this.policiesHandler = chainOf(checkNotNull(policiesHandler),
-                                       new ApiVersionProtocolHeaderFilter());
+        this.requestHandler = CrestHttp.newRequestHandler(policiesHandler, baseUri);
     }
 
     /**
@@ -323,7 +320,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
     private Promise<JsonValue, ResourceException> askForPolicyDecision(final Context context,
                                                                        final Request request) {
-        final RequestHandler requestHandler = CrestHttp.newRequestHandler(policiesHandler, baseUri);
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
@@ -504,12 +500,13 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                          pepPassword,
                                                                          logger);
 
-                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl,
-                                                                                                           realm),
-                                                                                   target,
-                                                                                   chainOf(policiesHandler,
-                                                                                           ssoTokenFilter),
-                                                                                   cacheMaxExpiration);
+                final PolicyEnforcementFilter filter =
+                        new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl, realm),
+                                                    target,
+                                                    chainOf(policiesHandler,
+                                                            ssoTokenFilter,
+                                                            new ApiVersionProtocolHeaderFilter()),
+                                                    cacheMaxExpiration);
 
                 filter.setApplication(config.get("application").asString());
                 filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
@@ -592,18 +589,18 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 cache.clear();
             }
         }
-    }
 
-    private class ApiVersionProtocolHeaderFilter implements Filter {
+        private class ApiVersionProtocolHeaderFilter implements Filter {
 
-        @Override
-        public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
-            // The protocol versions supported in OPENAM-13 is 1.0 and
-            // CREST adapter forces to 2.0, throwing a 'Unsupported major
-            // version: 2.0' exception if not set. CREST operation(action) is
-            // compatible between protocol v1 and v2
-            request.getHeaders().put(AcceptApiVersionHeader.NAME, "protocol=1.0, resource=2.0");
-            return next.handle(context, request);
+            @Override
+            public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
+                // The protocol versions supported in OPENAM-13 is 1.0 and
+                // CREST adapter forces to 2.0, throwing a 'Unsupported major
+                // version: 2.0' exception if not set. CREST operation(action) is
+                // compatible between protocol v1 and v2
+                request.getHeaders().put(AcceptApiVersionHeader.NAME, "protocol=1.0, resource=2.0");
+                return next.handle(context, request);
+            }
         }
     }
 }
