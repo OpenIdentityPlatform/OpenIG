@@ -21,6 +21,7 @@ import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -126,10 +127,9 @@ public class ThreadSafeCacheTest {
 
     @Test
     public void shouldRegisterAnExpirationCallbackWithAppropriateDuration() throws Exception {
-
         cache.getValue(42, getCallable());
 
-        verify(executorService).schedule(anyCallable(),
+        verify(executorService).schedule(anyRunnable(),
                                          delayCaptor.capture(),
                                          timeUnitCaptor.capture());
         assertThat(delayCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getValue());
@@ -139,31 +139,16 @@ public class ThreadSafeCacheTest {
     @Test
     public void shouldOverrideDefaultTimeout() throws Exception {
         final Duration lowerDuration = duration("10 seconds");
+        cache.getValue(42, getCallable(), expire(lowerDuration));
 
-        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
-
-            @Override
-            public Promise<Duration, Exception> apply(Integer value) throws Exception {
-                return newResultPromise(lowerDuration);
-            }
-        });
-
-        verify(executorService).schedule(anyCallable(),
-                                         delayCaptor.capture(),
-                                         timeUnitCaptor.capture());
-        assertThat(delayCaptor.getValue()).isEqualTo(lowerDuration.getValue());
-        assertThat(timeUnitCaptor.getValue()).isEqualTo(lowerDuration.getUnit());
+        verify(executorService).schedule(anyRunnable(),
+                                         eq(lowerDuration.getValue()),
+                                         eq(lowerDuration.getUnit()));
     }
 
     @Test
     public void shouldNotCacheTheValueWhenTimeoutIsZero() throws Exception {
-        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
-
-            @Override
-            public Promise<Duration, Exception> apply(Integer value) throws Exception {
-                return newResultPromise(Duration.ZERO);
-            }
-        });
+        cache.getValue(42, getCallable(), expire(Duration.ZERO));
 
         assertThat(cache.size()).isEqualTo(0);
     }
@@ -217,19 +202,12 @@ public class ThreadSafeCacheTest {
 
     @Test
     public void shouldNotScheduleExpirationWhenTimeoutIsUnlimited() throws Exception {
-        cache.getValue(42, getCallable(), new AsyncFunction<Integer, Duration, Exception>() {
-
-            @Override
-            public Promise<Duration, Exception> apply(Integer value) throws Exception {
-                return newResultPromise(Duration.UNLIMITED);
-            }
-        });
-
+        cache.getValue(42, getCallable(), expire(Duration.UNLIMITED));
         verifyZeroInteractions(executorService);
     }
 
-    private static Callable<?> anyCallable() {
-        return any(Callable.class);
+    private static Runnable anyRunnable() {
+        return any(Runnable.class);
     }
 
     private Callable<Integer> getCallable() {
@@ -237,6 +215,16 @@ public class ThreadSafeCacheTest {
             @Override
             public Integer call() throws Exception {
                 return 404;
+            }
+        };
+    }
+
+    private AsyncFunction<Integer, Duration, Exception> expire(final Duration duration) {
+        return new AsyncFunction<Integer, Duration, Exception>() {
+
+            @Override
+            public Promise<Duration, Exception> apply(Integer ignore) throws Exception {
+                return newResultPromise(duration);
             }
         };
     }

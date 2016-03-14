@@ -95,7 +95,7 @@ public class CachingAccessTokenResolverTest {
 
         AccessToken accessToken = caching.resolve(new RootContext(), TOKEN).get();
 
-        verify(executorService).schedule(any(Callable.class), eq(22L), eq(TimeUnit.MILLISECONDS));
+        verify(executorService).schedule(any(Runnable.class), eq(22L), eq(TimeUnit.MILLISECONDS));
     }
 
     @Test
