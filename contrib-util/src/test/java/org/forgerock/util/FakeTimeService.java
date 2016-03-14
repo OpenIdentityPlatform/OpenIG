@@ -11,19 +11,22 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
-package org.forgerock.openig.filter;
+package org.forgerock.util;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
-class FakeTimeService implements TimeService {
+public class FakeTimeService implements TimeService {
 
     private long current;
+    private List<TimeServiceListener> listeners = new ArrayList<>();
 
     public FakeTimeService(long start) {
         this.current = start;
@@ -43,10 +46,24 @@ class FakeTimeService implements TimeService {
         return advance(duration.to(TimeUnit.MILLISECONDS));
     }
 
+    public long advance(long delay, TimeUnit unit) {
+        return advance(unit.toMillis(delay));
+    }
+
     public long advance(long milliseconds) {
         this.current += milliseconds;
+        for (TimeServiceListener listener : listeners) {
+            listener.notifyCurrentTime(current);
+        }
         return now();
     }
 
+    public void registerTimeServiceListener(TimeServiceListener listener) {
+        listeners.add(listener);
+    }
+
+    public interface TimeServiceListener {
+        void notifyCurrentTime(long current);
+    }
 }
 

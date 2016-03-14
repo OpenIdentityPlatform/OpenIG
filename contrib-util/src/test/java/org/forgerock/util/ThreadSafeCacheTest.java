@@ -23,6 +23,7 @@ import static org.forgerock.util.time.Duration.UNLIMITED;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,9 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -57,18 +55,15 @@ public class ThreadSafeCacheTest {
 
     private ThreadSafeCache<Integer, Integer> cache;
 
-    @Mock
+    private FakeTimeService time;
+
     private ScheduledExecutorService executorService;
-
-    @Captor
-    private ArgumentCaptor<Long> delayCaptor;
-
-    @Captor
-    private ArgumentCaptor<TimeUnit> timeUnitCaptor;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        time = new FakeTimeService(0);
+        executorService = spy(new FakeScheduledExecutorService(time));
         cache = new ThreadSafeCache<>(executorService);
         cache.setDefaultTimeout(DEFAULT_CACHE_TIMEOUT);
     }
@@ -226,6 +221,48 @@ public class ThreadSafeCacheTest {
         cache.getValue(42, getCallable(), expire(duration(42, TimeUnit.SECONDS)));
 
         verify(executorService).schedule(anyRunnable(), eq(42L), eq(TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void shouldCancelTheExpirationTaskWhenClearingTheCache() throws Exception {
+        FakeTimeService time = new FakeTimeService(0);
+        ScheduledExecutorService executorService = new FakeScheduledExecutorService(time);
+        cache = new ThreadSafeCache<>(executorService);
+        final int key = 42;
+        cache.getValue(key, getCallable(), expire(duration(5, TimeUnit.SECONDS)));
+        time.advance(2, TimeUnit.SECONDS);
+        cache.clear();
+
+        // Insert another value for the same key
+        cache.getValue(key, getCallable(), expire(Duration.UNLIMITED));
+        time.advance(4, TimeUnit.SECONDS);
+
+        // We are now 6 seconds after the first value for the key 42 was cached
+        // but we inserted a new value for the same key with an unlimited duration so getting the value for 42 should
+        // not call the Callable.
+        Callable<Integer> callable = spy(getCallable());
+        cache.getValue(key, callable, expire(Duration.UNLIMITED));
+        verify(callable, never()).call();
+    }
+
+    @Test
+    public void shouldCancelTheExpirationTaskWhenEvictingAnEntry() throws Exception {
+        cache = new ThreadSafeCache<>(executorService);
+        final int key = 42;
+        cache.getValue(key, getCallable(), expire(duration(5, TimeUnit.SECONDS)));
+        time.advance(2, TimeUnit.SECONDS);
+        cache.evict(key);
+
+        // Insert another value for the same key
+        cache.getValue(key, getCallable(), expire(Duration.UNLIMITED));
+        time.advance(4, TimeUnit.SECONDS);
+
+        // We are now 6 seconds after the first value for the key 42 was cached
+        // but we inserted a new value for the same key with an unlimited duration so getting the value for 42 should
+        // not call the Callable.
+        Callable<Integer> callable = spy(getCallable());
+        cache.getValue(key, callable, expire(Duration.UNLIMITED));
+        verify(callable, never()).call();
     }
 
     private static Runnable anyRunnable() {
