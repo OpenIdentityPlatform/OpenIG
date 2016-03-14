@@ -17,6 +17,7 @@
 package org.forgerock.openig.util;
 
 import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +56,8 @@ import org.forgerock.util.time.Duration;
  */
 public class ThreadSafeCache<K, V> {
 
+    private static final Duration DEFAULT_TIMEOUT = duration(1L, TimeUnit.MINUTES);
+
     private final ScheduledExecutorService executorService;
     private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
     private AsyncFunction<V, Duration, Exception> defaultTimeoutFunction;
@@ -67,7 +70,7 @@ public class ThreadSafeCache<K, V> {
      */
     public ThreadSafeCache(final ScheduledExecutorService executorService) {
         this.executorService = executorService;
-        setDefaultTimeout(new Duration(1L, TimeUnit.MINUTES));
+        setDefaultTimeout(DEFAULT_TIMEOUT);
     }
 
     /**
@@ -78,12 +81,23 @@ public class ThreadSafeCache<K, V> {
      *            new cache entry timeout
      */
     public void setDefaultTimeout(final Duration defaultTimeout) {
-        this.defaultTimeoutFunction = new AsyncFunction<V, Duration, Exception>() {
+        setDefaultTimeoutFunction(new AsyncFunction<V, Duration, Exception>() {
             @Override
             public Promise<Duration, Exception> apply(V value) {
                 return newResultPromise(defaultTimeout);
             }
-        };
+        });
+    }
+
+    /**
+     * Sets the function that will be applied on each entry to compute the timeout, if none provided in the
+     * caller. Notice that this will impact only new cache entries.
+     *
+     * @param timeoutFunction
+     *            the function that will compute the cache entry timeout
+     */
+    public void setDefaultTimeoutFunction(AsyncFunction<V, Duration, Exception> timeoutFunction) {
+        this.defaultTimeoutFunction = timeoutFunction;
     }
 
     private Future<V> createIfAbsent(final K key,
