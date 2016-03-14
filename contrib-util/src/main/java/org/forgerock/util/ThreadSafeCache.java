@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.forgerock.util.promise.Promise;
@@ -65,7 +66,7 @@ public class ThreadSafeCache<K, V> {
             };
 
     private final ScheduledExecutorService executorService;
-    private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, CacheEntry<V>> cache = new ConcurrentHashMap<>();
     private AsyncFunction<V, Duration, Exception> defaultTimeoutFunction;
     private Duration maxTimeout;
 
@@ -112,39 +113,53 @@ public class ThreadSafeCache<K, V> {
                                      final AsyncFunction<V, Duration, Exception> timeoutFunction)
             throws InterruptedException, ExecutionException {
         // See the javadoc of the class for the intent of the Future and FutureTask.
-        Future<V> future = cache.get(key);
-        if (future == null) {
+        CacheEntry<V> cacheEntry = cache.get(key);
+        if (cacheEntry == null) {
             // First call: no value cached for that key
             final FutureTask<V> futureTask = new FutureTask<>(callable);
-            future = cache.putIfAbsent(key, futureTask);
-            if (future == null) {
+            final CacheEntry<V> futureCacheEntry = new CacheEntry<>(futureTask);
+            cacheEntry = cache.putIfAbsent(key, futureCacheEntry);
+            if (cacheEntry == null) {
                 // after the double check, it seems we are still the first to want to cache that value.
-                future = futureTask;
+                cacheEntry = futureCacheEntry;
 
                 // Compute the value
                 futureTask.run();
 
-                scheduleEviction(key, futureTask.get(), timeoutFunction);
+                scheduleEviction(key, futureCacheEntry, timeoutFunction);
             }
         }
-        return future;
+        return cacheEntry.getFutureTask();
     }
 
     private void scheduleEviction(final K key,
-                                  final V value,
+                                  final CacheEntry<V> cacheEntry,
                                   final AsyncFunction<V, Duration, Exception> timeoutFunction)
             throws ExecutionException, InterruptedException {
-        newResultPromise(value)
+        newResultPromise(cacheEntry.getFutureTask().get())
                 .thenAsync(timeoutFunction)
                 .thenCatch(ON_EXCEPTION_NO_TIMEOUT)
                 .thenCatchRuntimeException(ON_EXCEPTION_NO_TIMEOUT)
                 .thenOnResult(new ResultHandler<Duration>() {
                     @Override
                     public void handleResult(Duration timeout) {
+                        Runnable eviction = new Runnable() {
+                            @Override
+                            public void run() {
+                                // The cache can be cleared and another entry for the same key can be created
+                                // before the eviction is really scheduled : so ensure that we remove the expected
+                                // cache entry
+                                if (cache.remove(key, cacheEntry)) {
+                                    cacheEntry.cancelExpiration();
+                                }
+                            }
+                        };
+
                         if (timeout == null || timeout.isZero()) {
                             // Fast path : no need to schedule, evict it now
-                            evict(key);
-                            return;
+                            // Do not do "executorService.execute(eviction);" as we have no real guarantee that it will
+                            // be executed now
+                            eviction.run();
                         } else {
                             // Cap the timeout if requested
                             if (maxTimeout != null) {
@@ -153,9 +168,10 @@ public class ThreadSafeCache<K, V> {
 
                             if (!timeout.isUnlimited()) {
                                 // Schedule the eviction
-                                executorService.schedule(new Expiration(key),
-                                                         timeout.getValue(),
-                                                         timeout.getUnit());
+                                ScheduledFuture<?> scheduledFuture = executorService.schedule(eviction,
+                                                                                              timeout.getValue(),
+                                                                                              timeout.getUnit());
+                                cacheEntry.setScheduledHandler(scheduledFuture);
                             }
                         }
                     }
@@ -215,7 +231,9 @@ public class ThreadSafeCache<K, V> {
      * Clean-up the cache entries.
      */
     public void clear() {
-        cache.clear();
+        for (K key : cache.keySet()) {
+            evict(key);
+        }
     }
 
     /**
@@ -226,8 +244,15 @@ public class ThreadSafeCache<K, V> {
         return cache.size();
     }
 
-    private Future<V> evict(K key) {
-        return cache.remove(key);
+    /**
+     * Evict a cached value from the cache.
+     * @param key the entry key
+     */
+    public void evict(K key) {
+        CacheEntry<V> entry = cache.remove(key);
+        if (entry != null) {
+            entry.cancelExpiration();
+        }
     }
 
     /**
@@ -247,20 +272,26 @@ public class ThreadSafeCache<K, V> {
         this.maxTimeout = maxTimeout;
     }
 
-    /**
-     * Registered in the executor, this callable simply removes the cache entry
-     * after a specified amount of time.
-     */
-    private class Expiration implements Runnable {
-        private final K key;
+    private static class CacheEntry<V> {
+        private final FutureTask<V> futureTask;
+        ScheduledFuture<?> scheduledHandler;
 
-        public Expiration(final K key) {
-            this.key = key;
+        CacheEntry(FutureTask<V> futureTask) {
+            this.futureTask = futureTask;
         }
 
-        @Override
-        public void run() {
-            evict(key);
+        void setScheduledHandler(ScheduledFuture<?> scheduledHandler) {
+            this.scheduledHandler = scheduledHandler;
+        }
+
+        FutureTask<V> getFutureTask() {
+            return futureTask;
+        }
+
+        void cancelExpiration() {
+            if (scheduledHandler != null) {
+                scheduledHandler.cancel(false);
+            }
         }
     }
 }

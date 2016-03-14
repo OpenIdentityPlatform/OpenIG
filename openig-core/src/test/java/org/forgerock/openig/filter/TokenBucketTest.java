@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Mockito.mock;
 
+import org.forgerock.util.FakeTimeService;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.testng.annotations.Test;
