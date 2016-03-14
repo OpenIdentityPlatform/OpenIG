@@ -18,7 +18,6 @@ package org.forgerock.openig.openam;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
@@ -35,7 +34,6 @@ import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
-import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
 import java.net.URI;
@@ -169,14 +167,12 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     /** The expression which will be used for storing policy decision extra attributes in the context. */
     public static final String DEFAULT_POLICY_KEY = "policy";
 
-    private static final String ONE_MINUTE = "1 minute";
     private static final String POLICY_ENDPOINT = "/policies";
     private static final String EVALUATE_ACTION = "evaluate";
     private static final String SUBJECT_ERROR =
             "The attribute 'ssoTokenSubject' or 'jwtSubject' or 'claimsSubject' must be specified";
 
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
-    private final Duration cacheMaxExpiration;
     private final RequestHandler requestHandler;
     private String application;
     private Expression<String> ssoTokenSubject;
@@ -185,13 +181,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     @SuppressWarnings("rawtypes")
     private final Expression<Map> target;
     private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment;
-
-    @VisibleForTesting
-    PolicyEnforcementFilter(final URI baseUri,
-                            @SuppressWarnings("rawtypes") final Expression<Map> target,
-                            final Handler policiesHandler) {
-        this(baseUri, target, policiesHandler, duration(ONE_MINUTE));
-    }
 
     /**
      * Creates a new OpenAM enforcement filter.
@@ -204,15 +193,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
      *            attributes, not {@code null}.
      * @param policiesHandler
      *            The handler used to get perform policies requests, not {@code null}.
-     * @param cacheMaxExpiration
-     *            The max duration to set the cache.
      */
     public PolicyEnforcementFilter(final URI baseUri,
                                    @SuppressWarnings("rawtypes") final Expression<Map> target,
-                                   final Handler policiesHandler,
-                                   final Duration cacheMaxExpiration) {
+                                   final Handler policiesHandler) {
         this.target = checkNotNull(target);
-        this.cacheMaxExpiration = cacheMaxExpiration;
         this.requestHandler = CrestHttp.newRequestHandler(policiesHandler, baseUri);
     }
 
@@ -371,33 +356,27 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                            fieldIfNotNull("environment", environment != null ? environment.apply(bindings) : null)));
     }
 
-    private AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>
-    extractDurationFromTtl() {
+    private AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception> extractDurationFromTtl() {
+        //@Checkstyle:off
         return new AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>() {
-
             @Override
-            public Promise<Duration, Exception> apply(Promise<JsonValue, ResourceException> value) throws Exception {
-                return value.thenAsync(new AsyncFunction<JsonValue, Duration, Exception>() {
-
+            public Promise<Duration, Exception> apply(Promise<JsonValue, ResourceException> promise) throws Exception {
+                return promise.then(new Function<JsonValue, Duration, Exception>() {
                     @Override
-                    public Promise<? extends Duration, ? extends ResourceException> apply(JsonValue value)
-                            throws Exception {
-                        final Duration timeout = duration(value.get("ttl").asLong(), MILLISECONDS);
-                        if (timeout.to(MILLISECONDS) > cacheMaxExpiration.to(MILLISECONDS)) {
-                            return newResultPromise(cacheMaxExpiration);
-                        }
-                        return newResultPromise(timeout);
+                    public Duration apply(JsonValue node) throws Exception {
+                        return duration(node.get("ttl").asLong(), MILLISECONDS);
                     }
-                }, new AsyncFunction<ResourceException, Duration, Exception>() {
-
+                },
+                                  new Function<ResourceException, Duration, Exception>() {
                     @Override
-                    public Promise<? extends Duration, ? extends Exception> apply(ResourceException e)
-                            throws Exception {
-                        return newResultPromise(duration(1L, SECONDS));
+                    public Duration apply(ResourceException e) throws Exception {
+                        // Do not cache if case of Exception
+                        return Duration.ZERO;
                     }
                 });
             }
         };
+        //@Checkstyle:on
     }
 
     private static Callable<Promise<JsonValue, ResourceException>> getPolicyDecisionCallable(
@@ -482,11 +461,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                          Handler.class);
             final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
 
-            final Duration cacheMaxExpiration = duration(config.get("cacheMaxExpiration").defaultTo(ONE_MINUTE)
-                                                                                         .asString());
-            if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
-                throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
-            }
             @SuppressWarnings("rawtypes")
             final Expression<Map> target = asExpression(
                     config.get("target").defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY)), Map.class);
@@ -505,8 +479,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                     target,
                                                     chainOf(policiesHandler,
                                                             ssoTokenFilter,
-                                                            new ApiVersionProtocolHeaderFilter()),
-                                                    cacheMaxExpiration);
+                                                            new ApiVersionProtocolHeaderFilter()));
 
                 filter.setApplication(config.get("application").asString());
                 filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
@@ -526,6 +499,12 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                        .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
                                                                  ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
+                final Duration cacheMaxExpiration = duration(config.get("cacheMaxExpiration").defaultTo("1 minute")
+                                                                   .asString());
+                if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
+                    throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
+                }
+                cache.setMaxTimeout(cacheMaxExpiration);
                 filter.setCache(cache);
 
                 return filter;
