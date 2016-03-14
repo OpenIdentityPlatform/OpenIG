@@ -229,7 +229,7 @@ public class ThreadSafeCache<K, V> {
      * Registered in the executor, this callable simply removes the cache entry
      * after a specified amount of time.
      */
-    private class Expiration implements Callable<Object> {
+    private class Expiration implements Runnable {
         private final K key;
 
         public Expiration(final K key) {
@@ -237,8 +237,8 @@ public class ThreadSafeCache<K, V> {
         }
 
         @Override
-        public Object call() throws Exception {
-            return evict(key);
+        public void run() {
+            evict(key);
         }
     }
 }

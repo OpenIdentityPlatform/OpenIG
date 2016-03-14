@@ -53,7 +53,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -123,7 +122,7 @@ public class PolicyEnforcementFilterTest {
     private Logger logger;
 
     @Captor
-    private ArgumentCaptor<Callable<Promise<JsonValue, ResourceException>>> captor;
+    private ArgumentCaptor<Runnable> captor;
 
     @BeforeMethod
     public void setUp() throws ExpressionException {
@@ -450,7 +449,7 @@ public class PolicyEnforcementFilterTest {
         verify(next, times(2)).handle(attributesContext, request);
 
         // Mimic cache expiration
-        captor.getValue().call();
+        captor.getValue().run();
 
         // When third call: the policiesHandler must do another call to get the policy decision result.
         filter.filter(attributesContext,
