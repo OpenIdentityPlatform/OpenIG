@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -37,6 +37,16 @@ public final class Handlers {
     private Handlers() { }
 
     /**
+     * A default {@link Handler} implementation that returns an empty ({@literal 403 Forbidden}) {@link Response}.
+     */
+    public static final Handler FORBIDDEN = new Handler() {
+        @Override
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+            return newResponsePromise(new Response(Status.FORBIDDEN));
+        }
+    };
+
+    /**
      * A default {@link Handler} implementation that returns an empty ({@literal 204 No Content}) {@link Response}.
      */
     public static final Handler NO_CONTENT = new Handler() {
@@ -45,5 +55,4 @@ public final class Handlers {
             return newResponsePromise(new Response(Status.NO_CONTENT));
         }
     };
-
 }
