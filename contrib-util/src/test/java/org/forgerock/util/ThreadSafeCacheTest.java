@@ -19,6 +19,7 @@ package org.forgerock.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.UNLIMITED;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -128,10 +129,8 @@ public class ThreadSafeCacheTest {
         cache.getValue(42, getCallable());
 
         verify(executorService).schedule(anyRunnable(),
-                                         delayCaptor.capture(),
-                                         timeUnitCaptor.capture());
-        assertThat(delayCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getValue());
-        assertThat(timeUnitCaptor.getValue()).isEqualTo(DEFAULT_CACHE_TIMEOUT.getUnit());
+                                         eq(DEFAULT_CACHE_TIMEOUT.getValue()),
+                                         eq(DEFAULT_CACHE_TIMEOUT.getUnit()));
     }
 
     @Test
@@ -200,8 +199,33 @@ public class ThreadSafeCacheTest {
 
     @Test
     public void shouldNotScheduleExpirationWhenTimeoutIsUnlimited() throws Exception {
-        cache.getValue(42, getCallable(), expire(Duration.UNLIMITED));
+        cache.getValue(42, getCallable(), expire(UNLIMITED));
         verifyZeroInteractions(executorService);
+    }
+
+    @DataProvider
+    private Object[][] durations() {
+        return new Object[][] {
+            { UNLIMITED },
+            { duration(3, TimeUnit.MINUTES) },
+            { duration(1, TimeUnit.DAYS) },
+        };
+    }
+
+    @Test(dataProvider = "durations")
+    public void shouldNotCacheMoreThanTheMaxTimeout(final Duration timeout) throws Exception {
+        cache.setMaxTimeout(duration(3, TimeUnit.MINUTES));
+        cache.getValue(42, getCallable(), expire(timeout));
+
+        verify(executorService).schedule(anyRunnable(), eq(3L), eq(TimeUnit.MINUTES));
+    }
+
+    @Test
+    public void shouldCacheLessThanTheMaxTimeout() throws Exception {
+        cache.setMaxTimeout(duration(3, TimeUnit.MINUTES));
+        cache.getValue(42, getCallable(), expire(duration(42, TimeUnit.SECONDS)));
+
+        verify(executorService).schedule(anyRunnable(), eq(42L), eq(TimeUnit.SECONDS));
     }
 
     private static Runnable anyRunnable() {

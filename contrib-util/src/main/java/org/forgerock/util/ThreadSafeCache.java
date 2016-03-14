@@ -16,6 +16,7 @@
 
 package org.forgerock.util;
 
+import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
@@ -45,7 +46,7 @@ import org.forgerock.util.time.Duration;
  * the first one will compute the value while the other will get the result from
  * the Future (and will wait until the result is computed or a timeout occurs).
  * <p>
- * By default, cache duration is set to 1 minute.
+ * By default, cache duration is set to 1 minute and there is no maximum timeout.
  *
  * @param <K>
  *            Type of the key
@@ -55,10 +56,18 @@ import org.forgerock.util.time.Duration;
 public class ThreadSafeCache<K, V> {
 
     private static final Duration DEFAULT_TIMEOUT = duration(1L, TimeUnit.MINUTES);
+    private static final Function<Exception, Duration, Exception> ON_EXCEPTION_NO_TIMEOUT =
+            new Function<Exception, Duration, Exception>() {
+                @Override
+                public Duration apply(Exception e) throws Exception {
+                    return Duration.ZERO;
+                }
+            };
 
     private final ScheduledExecutorService executorService;
     private final ConcurrentMap<K, Future<V>> cache = new ConcurrentHashMap<>();
     private AsyncFunction<V, Duration, Exception> defaultTimeoutFunction;
+    private Duration maxTimeout;
 
     /**
      * Build a new {@link ThreadSafeCache} using the given scheduled executor.
@@ -92,10 +101,10 @@ public class ThreadSafeCache<K, V> {
      * caller. Notice that this will impact only new cache entries.
      *
      * @param timeoutFunction
-     *            the function that will compute the cache entry timeout
+     *            the function that will compute the cache entry timeout (must not be {@literal null})
      */
     public void setDefaultTimeoutFunction(AsyncFunction<V, Duration, Exception> timeoutFunction) {
-        this.defaultTimeoutFunction = timeoutFunction;
+        this.defaultTimeoutFunction = checkNotNull(timeoutFunction);
     }
 
     private Future<V> createIfAbsent(final K key,
@@ -127,29 +136,27 @@ public class ThreadSafeCache<K, V> {
             throws ExecutionException, InterruptedException {
         newResultPromise(value)
                 .thenAsync(timeoutFunction)
-                .thenCatch(new Function<Exception, Duration, Exception>() {
-                    @Override
-                    public Duration apply(Exception exception) throws Exception {
-                        return Duration.ZERO;
-                    }
-                })
-                .thenCatchRuntimeException(new Function<RuntimeException, Duration, Exception>() {
-                    @Override
-                    public Duration apply(RuntimeException runtimeException) throws Exception {
-                        return Duration.ZERO;
-                    }
-                })
+                .thenCatch(ON_EXCEPTION_NO_TIMEOUT)
+                .thenCatchRuntimeException(ON_EXCEPTION_NO_TIMEOUT)
                 .thenOnResult(new ResultHandler<Duration>() {
                     @Override
                     public void handleResult(Duration timeout) {
-                        if (timeout.isZero()) {
+                        if (timeout == null || timeout.isZero()) {
                             // Fast path : no need to schedule, evict it now
                             evict(key);
-                        } else if (!timeout.isUnlimited()) {
-                            // Schedule the eviction
-                            executorService.schedule(new Expiration(key),
-                                                     timeout.getValue(),
-                                                     timeout.getUnit());
+                            return;
+                        } else {
+                            // Cap the timeout if requested
+                            if (maxTimeout != null) {
+                                timeout = timeout.compareTo(maxTimeout) < 0 ? timeout : maxTimeout;
+                            }
+
+                            if (!timeout.isUnlimited()) {
+                                // Schedule the eviction
+                                executorService.schedule(new Expiration(key),
+                                                         timeout.getValue(),
+                                                         timeout.getUnit());
+                            }
                         }
                     }
                 });
@@ -221,6 +228,23 @@ public class ThreadSafeCache<K, V> {
 
     private Future<V> evict(K key) {
         return cache.remove(key);
+    }
+
+    /**
+     * Gets the maximum timeout (can be {@literal null}).
+     * @return the maximum timeout
+     */
+    public Duration getMaxTimeout() {
+        return maxTimeout;
+    }
+
+    /**
+     * Sets the maximum timeout. If the timeout returned by the {@literal timeoutFunction} is greater than this
+     * specified maximum timeout, then the maximum timeout is used instead of the returned one to cache the entry.
+     * @param maxTimeout the maximum timeout to use.
+     */
+    public void setMaxTimeout(Duration maxTimeout) {
+        this.maxTimeout = maxTimeout;
     }
 
     /**

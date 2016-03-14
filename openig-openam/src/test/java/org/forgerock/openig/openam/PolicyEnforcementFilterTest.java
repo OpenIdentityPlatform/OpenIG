@@ -35,10 +35,9 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.Options.defaultOptions;
-import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
@@ -420,8 +419,7 @@ public class PolicyEnforcementFilterTest {
 
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
                                                                      target,
-                                                                     policiesHandler,
-                                                                     duration("3 minutes"));
+                                                                     policiesHandler);
         filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
