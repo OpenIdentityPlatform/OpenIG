@@ -17,6 +17,7 @@
 package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.format;
+import static org.forgerock.http.filter.Filters.chainOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
@@ -40,6 +41,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.filter.ConditionEnforcementFilter;
 import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -152,7 +154,7 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                 Boolean.TRUE).asBoolean()) {
             try {
                 Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);
-                return new EnforcerFilter(expr, filter, logger);
+                return chainOf(new ConditionEnforcementFilter(expr), filter);
             } catch (ExpressionException e) {
                 // Can be ignored, since we completely control the expression
             }
