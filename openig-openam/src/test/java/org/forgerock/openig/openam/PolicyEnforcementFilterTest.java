@@ -77,7 +77,7 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.util.ThreadSafeCache;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;

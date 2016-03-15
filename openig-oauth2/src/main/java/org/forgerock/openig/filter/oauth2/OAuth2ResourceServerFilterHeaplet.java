@@ -46,7 +46,7 @@ import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.util.ThreadSafeCache;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
