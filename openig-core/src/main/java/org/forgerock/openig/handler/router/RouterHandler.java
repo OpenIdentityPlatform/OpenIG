@@ -19,7 +19,8 @@ package org.forgerock.openig.handler.router;
 import static java.lang.String.format;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
-import static org.forgerock.openig.heap.Keys.*;
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluate;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.routing.Router;
@@ -43,7 +45,6 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;

@@ -11,17 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
 
 import static java.lang.String.format;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;

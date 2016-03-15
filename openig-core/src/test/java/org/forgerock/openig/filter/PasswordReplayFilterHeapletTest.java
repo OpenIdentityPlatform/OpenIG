@@ -19,11 +19,11 @@ package org.forgerock.openig.filter;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
-import static org.forgerock.openig.http.Responses.newInternalServerError;
 
 import java.io.IOException;
 import java.util.ArrayList;

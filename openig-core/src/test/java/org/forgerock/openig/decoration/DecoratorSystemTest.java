@@ -18,6 +18,7 @@ package org.forgerock.openig.decoration;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.util.Json.readJson;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
@@ -32,7 +33,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -284,7 +284,7 @@ public class DecoratorSystemTest {
                                         response.getEntity().setString(content);
                                         return response;
                                     } catch (IOException e) {
-                                        return Responses.newInternalServerError(e);
+                                        return newInternalServerError(e);
                                     }
                                 }
                             });

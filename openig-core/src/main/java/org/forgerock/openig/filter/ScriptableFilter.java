@@ -16,7 +16,7 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.http.Responses.onExceptionInternalServerError;
+import static org.forgerock.http.Responses.onExceptionInternalServerError;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;

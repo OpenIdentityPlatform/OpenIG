@@ -16,12 +16,12 @@
 
 package org.forgerock.openig.openam;
 
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
