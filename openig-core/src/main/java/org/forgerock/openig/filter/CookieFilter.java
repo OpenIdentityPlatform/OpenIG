@@ -18,6 +18,7 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.util.Utils.joinAsString;
 
 import java.io.IOException;
@@ -47,7 +48,6 @@ import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -244,7 +244,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         } catch (IOException e) {
             logger.error("Can't add request cookies");
             logger.error(e);
-            return Promises.newResultPromise(Responses.newInternalServerError(e));
+            return Promises.newResultPromise(newInternalServerError(e));
         }
 
         // pass request to next handler in chain
@@ -258,7 +258,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                         } catch (IOException e) {
                             logger.error("Can't process managed cookies in response");
                             logger.error(e);
-                            return Responses.newInternalServerError(e);
+                            return newInternalServerError(e);
                         }
                         // remove cookies that are suppressed or managed
                         suppress(value);

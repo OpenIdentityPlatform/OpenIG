@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 
@@ -35,7 +36,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -101,7 +101,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                 }
             } catch (URISyntaxException | ResponseException ex) {
                 logger.error(ex);
-                return Responses.newInternalServerError(ex);
+                return newInternalServerError(ex);
             }
         }
 

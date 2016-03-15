@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.json.JsonValue.field;
@@ -23,7 +24,6 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
-import static org.forgerock.openig.http.Responses.newInternalServerError;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -41,7 +42,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.http.Responses;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;

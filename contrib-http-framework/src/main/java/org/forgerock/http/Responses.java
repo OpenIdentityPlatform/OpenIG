@@ -11,10 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.http;
+package org.forgerock.http;
 
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -29,15 +29,6 @@ import org.forgerock.util.promise.Promise;
  * Provide out-of-the-box, pre-configured {@link Response} objects.
  */
 public final class Responses {
-
-    private static final Function<NeverThrowsException, Object, Exception> NOOP_EXCEPTION_FUNC =
-            new Function<NeverThrowsException, Object, Exception>() {
-                @Override
-                public Object apply(final NeverThrowsException value) throws Exception {
-                    return null;
-                }
-            };
-
     private static final AsyncFunction<Exception, Response, NeverThrowsException> INTERNAL_SERVER_ERROR_ASYNC_FUNC =
             new AsyncFunction<Exception, Response, NeverThrowsException>() {
                 @Override
@@ -45,11 +36,6 @@ public final class Responses {
                     return newResultPromise(newInternalServerError(e));
                 }
             };
-
-    /**
-     * Empty private constructor for utility.
-     */
-    private Responses() { }
 
     /**
      * Generates an empty {@literal Internal Server Error} response ({@literal 500}).
@@ -60,18 +46,13 @@ public final class Responses {
         return new Response(Status.INTERNAL_SERVER_ERROR);
     }
 
-    /**
-     * Generates an {@literal Internal Server Error} response ({@literal 500})
-     * containing the cause of the error response.
-     *
-     * @param exception
-     *            wrapped exception
-     * @return an empty {@literal Internal Server Error} response {@literal 500}
-     *         with the cause set.
-     */
-    public static Response newInternalServerError(Exception exception) {
-        return newInternalServerError().setCause(exception);
-    }
+    private static final Function<NeverThrowsException, Object, Exception> NOOP_EXCEPTION_FUNC =
+            new Function<NeverThrowsException, Object, Exception>() {
+                @Override
+                public Object apply(final NeverThrowsException value) throws Exception {
+                    return null;
+                }
+            };
 
     /**
      * Generates an empty {@literal Not Found} response ({@literal 404}).
@@ -101,20 +82,6 @@ public final class Responses {
     }
 
     /**
-     * Utility method returning an async function that creates a {@link Response} with status
-     * {@link Status#INTERNAL_SERVER_ERROR} and the exception set as the cause.
-     *
-     * @param <E>
-     *         The type of the incoming {@link Exception}
-     * @return an async function that creates a {@link Response} with status {@link Status#INTERNAL_SERVER_ERROR}
-     * and the exception set as the cause.
-     */
-    @SuppressWarnings("unchecked")
-    public static <E extends Exception> AsyncFunction<E, Response, NeverThrowsException> internalServerError() {
-        return (AsyncFunction<E, Response, NeverThrowsException>) INTERNAL_SERVER_ERROR_ASYNC_FUNC;
-    }
-
-    /**
      * Utility function that returns a {@link Response} whose status is {@link Status#INTERNAL_SERVER_ERROR} and the
      * exception attached to the response as the cause.
      *
@@ -131,5 +98,37 @@ public final class Responses {
             }
         };
     }
+
+    /**
+     * Generates an {@literal Internal Server Error} response ({@literal 500})
+     * containing the cause of the error response.
+     *
+     * @param exception
+     *            wrapped exception
+     * @return an empty {@literal Internal Server Error} response {@literal 500}
+     *         with the cause set.
+     */
+    public static Response newInternalServerError(Exception exception) {
+        return newInternalServerError().setCause(exception);
+    }
+
+    /**
+     * Utility method returning an async function that creates a {@link Response} with status
+     * {@link Status#INTERNAL_SERVER_ERROR} and the exception set as the cause.
+     *
+     * @param <E>
+     *         The type of the incoming {@link Exception}
+     * @return an async function that creates a {@link Response} with status {@link Status#INTERNAL_SERVER_ERROR}
+     * and the exception set as the cause.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E extends Exception> AsyncFunction<E, Response, NeverThrowsException> internalServerError() {
+        return (AsyncFunction<E, Response, NeverThrowsException>) INTERNAL_SERVER_ERROR_ASYNC_FUNC;
+    }
+
+    /**
+     * Empty private constructor for utility.
+     */
+    private Responses() { }
 
 }
