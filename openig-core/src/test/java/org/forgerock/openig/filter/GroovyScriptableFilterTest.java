@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -54,6 +54,7 @@ import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
