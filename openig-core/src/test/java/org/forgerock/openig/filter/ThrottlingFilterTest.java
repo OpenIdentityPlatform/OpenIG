@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.forgerock.guava.common.util.concurrent.UncheckedExecutionException;
 import org.forgerock.http.Handler;
+import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
