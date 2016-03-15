@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2015 ForgeRock AS.
+ * Copyright 2012-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -25,9 +25,8 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import java.net.URI;
 import java.util.Collections;
 
-import org.forgerock.http.Handler;
+import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.header.LocationHeader;
-import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
@@ -38,9 +37,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
-import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -216,19 +212,5 @@ public class LocationHeaderFilterTest {
 
         LocationHeader header = LocationHeader.valueOf(response);
         assertThat(header.getLocationUri()).isEqualTo(expectedResult);
-    }
-
-    private static class ResponseHandler implements Handler {
-
-        private final Response response;
-
-        private ResponseHandler(final Response response) {
-            this.response = response;
-        }
-
-        @Override
-        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-            return Promises.newResultPromise(response);
-        }
     }
 }
