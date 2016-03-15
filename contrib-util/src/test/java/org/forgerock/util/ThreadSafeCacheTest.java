@@ -14,7 +14,7 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.util;
+package org.forgerock.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
@@ -35,8 +35,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
