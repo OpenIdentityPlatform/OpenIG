@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -116,8 +116,10 @@ public abstract class GenericHeaplet implements Heaplet {
             String objectName = qualified.getLeaf();
             String slug = slug(objectName);
             if (!slug.equals(objectName)) {
-                logger.warning(format("Heaplet name ('%s') has been converted to "
-                                              + "a slug ('%s') for URL exposition (REST endpoints).",
+                logger.warning(format("The heap object name ('%s') has been transformed to a URL-friendly name ('%s') "
+                                      + "that is exposed in endpoint URLs. To prevent this message, "
+                                      + "consider renaming your heap object with the transformed name, "
+                                      + "or provide your own appropriate value.",
                                       objectName,
                                       slug));
             }

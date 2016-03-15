@@ -138,7 +138,10 @@ class RouteBuilder {
             final Logger logger = new Logger(logSink, routeHeapName);
 
             if (!slug.equals(routeName)) {
-                logger.warning(format("Route name ('%s') has been converted to a slug ('%s') in endpoints URL.",
+                logger.warning(format("Route name ('%s') has been transformed to a URL-friendly name ('%s') that is "
+                                      + "exposed in endpoint URLs. To prevent this message, "
+                                      + "consider renaming your route with the transformed name, "
+                                      + "or provide your own appropriate value.",
                                       routeName,
                                       slug));
             }
