@@ -132,11 +132,13 @@ public class GatewayHttpApplicationTest {
         assertThat(handler.handle(context, new Request().setUri("/openig/api/system/objects")).get().getStatus())
                 .isEqualTo(Status.NO_CONTENT);
     }
+
     @Test
     public void shouldStartGatewayAndUseDefaultForgeRockClientHandler() throws Exception {
         Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "forgerock_client_handler"));
         new GatewayHttpApplication(env).start();
     }
+
     @Test
     public void shouldUseDefaultConfigWhenConfigJsonIsMissing() throws Exception {
         Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "default-config"));
