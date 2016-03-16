@@ -119,6 +119,9 @@ public class ScheduledThreadPoolHeaplet extends GenericHeaplet {
     public void destroy() {
         super.destroy();
         ExecutorService service = (ExecutorService) this.object;
+        if (service == null) {
+            return;
+        }
 
         if (gracefulStop) {
             // Graceful shutdown:
