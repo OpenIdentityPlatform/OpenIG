@@ -39,7 +39,7 @@ import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
@@ -119,8 +119,8 @@ public final class GatewayHttpApplication implements HttpApplication {
                                                    field("handler", CLIENT_HANDLER_HEAP_KEY)))));
 
     private static final JsonValue DEFAULT_SCHEDULED_THREAD_POOL =
-            json(object(field("name", SCHEDULED_THREAD_POOL_HEAP_KEY),
-                        field("type", "ScheduledThreadPool")));
+            json(object(field("name", SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
+                        field("type", "ScheduledExecutorService")));
 
     private HeapImpl heap;
     private TemporaryStorage storage;

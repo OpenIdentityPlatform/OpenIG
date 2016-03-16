@@ -57,7 +57,7 @@ import org.forgerock.openig.security.KeyManagerHeaplet;
 import org.forgerock.openig.security.KeyStoreHeaplet;
 import org.forgerock.openig.security.TrustAllManager;
 import org.forgerock.openig.security.TrustManagerHeaplet;
-import org.forgerock.openig.thread.ScheduledThreadPoolHeaplet;
+import org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -94,7 +94,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);
-        ALIASES.put("ScheduledThreadPool", ScheduledThreadPoolHeaplet.class);
+        ALIASES.put("ScheduledExecutorService", ScheduledExecutorServiceHeaplet.class);
         ALIASES.put("ScriptableFilter", ScriptableFilter.class);
         ALIASES.put("ScriptableHandler", ScriptableHandler.class);
         ALIASES.put("SequenceHandler", SequenceHandler.class);

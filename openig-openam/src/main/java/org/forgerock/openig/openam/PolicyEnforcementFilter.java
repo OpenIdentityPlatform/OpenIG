@@ -31,7 +31,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -523,7 +523,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
                 // Sets the cache
                 ScheduledExecutorService executor = heap.resolve(config.get("executor")
-                                                                       .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+                                                                       .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
                                                                  ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
                 filter.setCache(cache);

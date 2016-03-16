@@ -32,7 +32,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
@@ -698,7 +698,7 @@ public class PolicyEnforcementFilterTest {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
-        heap.put(SCHEDULED_THREAD_POOL_HEAP_KEY, newSingleThreadScheduledExecutor());
+        heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         heap.put("policiesHandler", policiesHandler);
         return heap;
