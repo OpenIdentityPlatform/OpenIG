@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.http;
@@ -19,14 +19,17 @@ package org.forgerock.openig.http;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
+import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -162,6 +165,12 @@ public class GatewayHttpApplicationTest {
                 .isEqualTo(Status.NO_CONTENT);
     }
 
+    @Test
+    public void shouldStartGatewayAndUseDefaultScheduledServiceExecutor() throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "executor"));
+        new GatewayHttpApplication(env).start();
+    }
+
     private static Context buildLocalContext() {
         return ClientContext.buildExternalClientContext(new RootContext())
                             .remoteAddress("127.0.0.1")
@@ -204,6 +213,15 @@ public class GatewayHttpApplicationTest {
             public Object create() throws HeapException {
                 return new PseudoOAuth2Filter();
             }
+        }
+    }
+
+    public static class ExecutorServiceHandler extends GenericHeaplet {
+        @Override
+        public Object create() throws HeapException {
+            // Will throw an exception if missing
+            heap.get(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, ScheduledExecutorService.class);
+            return new ResponseHandler(Status.OK);
         }
     }
 }
