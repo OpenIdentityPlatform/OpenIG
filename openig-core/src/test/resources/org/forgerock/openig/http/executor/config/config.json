@@ -1,0 +1,6 @@
+{
+  "comment": "This configuration creates a Handler that uses the default ScheduledExecutorService",
+  "handler": {
+    "type": "org.forgerock.openig.http.GatewayHttpApplicationTest$ExecutorServiceHandler"
+  }
+}
