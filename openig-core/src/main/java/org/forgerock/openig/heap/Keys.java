@@ -105,7 +105,7 @@ public final class Keys {
      * Key to retrieve the default {@link java.util.concurrent.ScheduledExecutorService} instance from the
      * {@link org.forgerock.openig.heap.Heap}.
      */
-    public static final String SCHEDULED_THREAD_POOL_HEAP_KEY = "ScheduledThreadPool";
+    public static final String SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY = "ScheduledExecutorService";
 
     /**
      * Key to retrieve the default {@link SessionManager} instance from the

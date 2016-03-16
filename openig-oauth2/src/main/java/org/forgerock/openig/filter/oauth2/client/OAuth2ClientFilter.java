@@ -33,7 +33,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.matchesUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.removeSession;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -846,7 +846,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
             if (!expiration.isZero()) {
                 ScheduledExecutorService executor = heap.resolve(config.get("executor")
-                                                                       .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+                                                                       .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
                                                                  ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
                 cache.setDefaultTimeout(expiration);

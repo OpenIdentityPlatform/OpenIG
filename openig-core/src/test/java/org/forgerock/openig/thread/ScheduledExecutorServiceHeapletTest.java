@@ -35,12 +35,12 @@ import org.forgerock.openig.heap.Name;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class ScheduledThreadPoolHeapletTest {
+public class ScheduledExecutorServiceHeapletTest {
 
     @Test
     public void shouldDestroyTheUnderlyingExecutorService() throws Exception {
 
-        Heaplet heaplet = new ScheduledThreadPoolHeaplet();
+        Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
         ExecutorService service = createExecutorService(heaplet, json(object()));
         assertThat(service).isNotNull();
 
@@ -54,7 +54,7 @@ public class ScheduledThreadPoolHeapletTest {
         JsonValue config = json(object(field("gracefulStop", true),
                                        field("gracePeriod", "30 ms")));
 
-        Heaplet heaplet = new ScheduledThreadPoolHeaplet();
+        Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
         ExecutorService service = createExecutorService(heaplet, config);
 
         AtomicReference<State> state = new AtomicReference<>(State.PENDING);
@@ -88,7 +88,7 @@ public class ScheduledThreadPoolHeapletTest {
 
         JsonValue config = json(object(field("gracefulStop", true)));
 
-        Heaplet heaplet = new ScheduledThreadPoolHeaplet();
+        Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
         ExecutorService service = createExecutorService(heaplet, config);
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -127,7 +127,7 @@ public class ScheduledThreadPoolHeapletTest {
 
         JsonValue config = json(object(field("gracefulStop", false)));
 
-        Heaplet heaplet = new ScheduledThreadPoolHeaplet();
+        Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
         ExecutorService service = createExecutorService(heaplet, config);
 
         AtomicReference<State> state = new AtomicReference<>(State.PENDING);

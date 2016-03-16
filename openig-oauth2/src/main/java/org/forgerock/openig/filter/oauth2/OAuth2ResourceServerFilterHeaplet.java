@@ -20,7 +20,7 @@ import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.chainOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.SCHEDULED_THREAD_POOL_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.ofExpression;
@@ -39,6 +39,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.ConditionEnforcementFilter;
@@ -46,8 +47,8 @@ import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
 import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
@@ -132,8 +133,9 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
         // Build the cache
         Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
         if (!expiration.isZero()) {
-            ScheduledExecutorService executorService = heap.resolve(config.get("executor")
-                                                                          .defaultTo(SCHEDULED_THREAD_POOL_HEAP_KEY),
+            JsonValue reference = config.get("executor")
+                                        .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY);
+            ScheduledExecutorService executorService = heap.resolve(reference,
                                                                     ScheduledExecutorService.class);
             cache = new ThreadSafeCache<>(executorService);
             cache.setDefaultTimeout(expiration);

@@ -30,7 +30,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.time.Duration;
 
 /**
- * Heaplet for building {@literal ScheduledThreadPool} instances.
+ * Heaplet for building {@literal ScheduledExecutorService} instances.
  *
  * <p>Creates a thread pool that can schedule commands to run after a given delay, or to execute periodically.
  *
@@ -38,7 +38,7 @@ import org.forgerock.util.time.Duration;
  * <pre>
  *     {@code
  *     {
- *         "type": "ScheduledThreadPool",
+ *         "type": "ScheduledExecutorService",
  *         "config": {
  *             "corePoolSize":  integer > 0 [ OPTIONAL - default to 0 (will grow as needed)]
  *             "gracefulStop":  boolean     [ OPTIONAL - default to false (actively try to kill jobs)]
@@ -52,7 +52,7 @@ import org.forgerock.util.time.Duration;
  * <pre>
  *     {@code
  *     {
- *         "type": "ScheduledThreadPool",
+ *         "type": "ScheduledExecutorService",
  *         "config": {
  *             "corePoolSize": 42 // defaults to 0 (will grow as needed), only positive
  *         }
@@ -94,7 +94,7 @@ import org.forgerock.util.time.Duration;
  * @see ExecutorService#awaitTermination(long, java.util.concurrent.TimeUnit)
  * @see ExecutorService#isTerminated()
  */
-public class ScheduledThreadPoolHeaplet extends GenericHeaplet {
+public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
 
     private Duration gracePeriod;
     private boolean gracefulStop;
