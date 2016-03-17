@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -227,6 +228,30 @@ public final class Issuer {
      */
     public List<Pattern> getSupportedDomains() {
         return Collections.unmodifiableList(supportedDomains);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.authorizeEndpoint, this.name, this.registrationEndpoint, this.supportedDomains,
+                this.tokenEndpoint, this.userInfoEndpoint, this.wellKnownEndpoint);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Issuer other = (Issuer) obj;
+        return Objects.equals(this.authorizeEndpoint, other.authorizeEndpoint)
+                && Objects.equals(this.name, other.name)
+                && Objects.equals(this.registrationEndpoint, other.registrationEndpoint)
+                && Objects.equals(this.supportedDomains, other.supportedDomains)
+                && Objects.equals(this.tokenEndpoint, other.tokenEndpoint)
+                && Objects.equals(this.userInfoEndpoint, other.userInfoEndpoint)
+                && Objects.equals(this.wellKnownEndpoint, other.wellKnownEndpoint);
     }
 
     /**

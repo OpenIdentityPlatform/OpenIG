@@ -19,9 +19,6 @@ import static java.lang.String.format;
 import static org.forgerock.http.Responses.internalServerError;
 import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.CREATED;
-import static org.forgerock.json.JsonValue.field;
-import static org.forgerock.json.JsonValue.json;
-import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
@@ -38,8 +35,6 @@ import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -61,13 +56,6 @@ import org.forgerock.util.promise.Promise;
  * it must be defined as: "scopes"(array of string), which differs from
  * the OAuth2 metadata "scope" (a string containing a space separated list of scope values).
  *
- * <br>
- * Note for developers: The suffix is added to the issuer name to compose the
- * client registration name in the current heap. When automatically called by
- * the {@link OAuth2ClientFilter}, this name is {@literal IssuerName} + {@literal OAuth2ClientFilterName}
- * This is required in order to retrieve the Client Registration when performing
- * dynamic client registration.
- *
  * @see <a href="https://openid.net/specs/openid-connect-registration-1_0.html">
  *      OpenID Connect Dynamic Client Registration 1.0</a>
  * @see <a
@@ -78,38 +66,34 @@ import org.forgerock.util.promise.Promise;
  *      OAuth 2.0 Dynamic Client Registration Protocol </a>
  */
 public class ClientRegistrationFilter implements Filter {
+    private final ClientRegistrationRepository registrations;
     private final Handler registrationHandler;
-    private final Heap heap;
     private final JsonValue config;
-    private final String suffix;
     private final Logger logger;
 
     /**
      * Creates a new dynamic registration filter.
      *
+     * @param repository
+     *            The {@link ClientRegistrationRepository} holding the
+     *            registrations values.
      * @param registrationHandler
-     *            The handler to perform the dynamic registration to the AS.
+     *            The handler to perform the dynamic registration to the
+     *            Authorization Server(AS).
      * @param config
-     *             Can contain any client metadata attributes that the client
-     *             chooses to specify for itself during the registration. Must
-     *             contains the 'redirect_uris' attributes.
-     * @param heap
-     *             A reference to the current heap.
-     * @param suffix
-     *             The name of the client registration in the heap will be
-     *             {@literal IssuerName} + {@literal suffix}. Must not be {@code null}.
+     *            Can contain any client metadata attributes that the client
+     *            chooses to specify for itself during the registration. Must
+     *            contains the 'redirect_uris' attributes.
      * @param logger
-     *             For logging activities.
+     *            For logging activities.
      */
-    public ClientRegistrationFilter(final Handler registrationHandler,
+    public ClientRegistrationFilter(final ClientRegistrationRepository repository,
+                                    final Handler registrationHandler,
                                     final JsonValue config,
-                                    final Heap heap,
-                                    final String suffix,
                                     final Logger logger) {
+        this.registrations = checkNotNull(repository);
         this.registrationHandler = registrationHandler;
         this.config = config;
-        this.heap = heap;
-        this.suffix = checkNotNull(suffix);
         this.logger = logger;
     }
 
@@ -120,8 +104,9 @@ public class ClientRegistrationFilter implements Filter {
         final Map<String, Object> attributes = context.asContext(AttributesContext.class).getAttributes();
         final Issuer issuer = (Issuer) attributes.get(ISSUER_KEY);
         if (issuer == null) {
-            return newResultPromise(newInternalServerError(
-                    new RegistrationException("Cannot retrieve issuer from the context")));
+            final String message = "Cannot retrieve issuer from the context";
+            logger.error(message);
+            return newResultPromise(newInternalServerError(new RegistrationException(message)));
         }
 
         return retrieveClientRegistration(context, issuer)
@@ -145,27 +130,21 @@ public class ClientRegistrationFilter implements Filter {
 
     private Promise<ClientRegistration, RegistrationException> retrieveClientRegistration(final Context context,
                                                                                           final Issuer issuer) {
-        try {
-            final ClientRegistration cr = heap.get(issuer.getName() + suffix, ClientRegistration.class);
-            if (cr != null) {
-                return newResultPromise(cr);
-            }
-        } catch (HeapException e) {
-            String message = format("Error while trying to get the issuer '%s' from the heap", issuer.getName());
-            logger.error(message);
-            logger.error(e);
-            return newExceptionPromise(new RegistrationException(message, e));
+        ClientRegistration cr = registrations.findByIssuer(issuer);
+        if (cr != null) {
+            return newResultPromise(cr);
         }
 
-        // No matching ClientRegistration found in the heap, let's see if we can build one
+        // No matching ClientRegistration found, let's see if we can build one
         if (!config.isDefined("redirect_uris")) {
-            return newExceptionPromise(new RegistrationException(
-                    "Cannot perform dynamic registration: 'redirect_uris' should be defined"));
+            final String message = "Cannot perform dynamic registration: 'redirect_uris' should be defined";
+            logger.error(message);
+            return newExceptionPromise(new RegistrationException(message));
         }
         if (issuer.getRegistrationEndpoint() == null) {
-            return newExceptionPromise(
-                    new RegistrationException(format("Registration is not supported by the issuer '%s'",
-                                                     issuer.getName())));
+            final String message = format("Registration is not supported by the issuer '%s'", issuer.getName());
+            logger.error(message);
+            return newExceptionPromise(new RegistrationException(message));
         }
 
         return performDynamicClientRegistration(context, config, issuer.getRegistrationEndpoint())
@@ -173,26 +152,14 @@ public class ClientRegistrationFilter implements Filter {
                     @Override
                     public ClientRegistration apply(JsonValue registeredClientConfiguration)
                             throws RegistrationException {
-                        try {
-                            return heap.resolve(createClientRegistrationDeclaration(registeredClientConfiguration,
-                                                                                    issuer.getName()),
-                                                ClientRegistration.class);
-                        } catch (HeapException e) {
-                            String message = "Cannot inject inlined Client Registration declaration to heap";
-                            logger.error(message);
-                            logger.error(e);
-                            throw new RegistrationException(message, e);
-                        }
+                        final ClientRegistration registration = new ClientRegistration(null,
+                                                                                       registeredClientConfiguration,
+                                                                                       issuer,
+                                                                                       registrationHandler);
+                        registrations.add(registration);
+                        return registration;
                     }
                 });
-    }
-
-    private JsonValue createClientRegistrationDeclaration(final JsonValue configuration, final String issuerName) {
-        configuration.put("issuer", issuerName);
-        return json(object(
-                       field("name", issuerName + suffix),
-                       field("type", "ClientRegistration"),
-                       field("config", configuration)));
     }
 
     Promise<JsonValue, RegistrationException> performDynamicClientRegistration(
@@ -226,7 +193,6 @@ public class ClientRegistrationFilter implements Filter {
                                                             + "JSON content.", e);
                 }
             }
-
         };
     }
 }
