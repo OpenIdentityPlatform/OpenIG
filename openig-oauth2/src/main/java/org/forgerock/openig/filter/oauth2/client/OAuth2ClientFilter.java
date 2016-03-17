@@ -37,12 +37,16 @@ import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -61,14 +65,13 @@ import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
-import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.forgerock.util.LazyMap;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
@@ -97,31 +100,31 @@ import org.forgerock.util.time.TimeService;
  *
  * <pre>
  * {@code
- * "target"                       : expression,         [OPTIONAL - default is ${attributes.openid}]
- * "clientEndpoint"               : expression,         [REQUIRED]
- * "loginHandler"                 : handler,            [REQUIRED - if multiple client registrations]
- * OR
- * "registration"                 : reference or        [REQUIRED - if you want to use a single client
- *                                  inlined declaration,            registration]
- * "discoveryHandler"             : handler,            [OPTIONAL - by default it uses the 'ClientHandler'
- *                                                                  provided in heap.]
- * "failureHandler"               : handler,            [REQUIRED]
- * "defaultLoginGoto"             : expression,         [OPTIONAL - default return empty page]
- * "defaultLogoutGoto"            : expression,         [OPTIONAL - default return empty page]
- * "requireLogin"                 : boolean             [OPTIONAL - default require login]
- * "requireHttps"                 : boolean             [OPTIONAL - default require SSL]
- * "cacheExpiration"              : duration            [OPTIONAL - default to 20 seconds]
- * "executor"                     : executor            [OPTIONAL - by default uses 'ScheduledThreadPool' heap object]
- * "metadata"                     : {                   [OPTIONAL - contains metadata dedicated for dynamic
- *                                                                  client registration.]
- *             "redirect_uris"    : [ strings ],            [REQUIRED for dynamic client registration.]
- *             "scopes"           : [ strings ]             [OPTIONAL - usage with OpenAM only.]
+ * "target"                       : expression,             [OPTIONAL - default is ${attributes.openid}]
+ * "clientEndpoint"               : expression,             [REQUIRED]
+ * "loginHandler"                 : handler,                [OPTIONAL - if 0 or multiple client registrations.]
+ * "registrations"                : [ reference or          [OPTIONAL - MUST list the client registrations
+ *                                    inlined declaration],             which are going to be used by this client.]
+ * "discoveryHandler"             : handler,                [OPTIONAL - by default it uses the 'ClientHandler'
+ *                                                                      provided in heap.]
+ * "failureHandler"               : handler,                [REQUIRED]
+ * "defaultLoginGoto"             : expression,             [OPTIONAL - default return empty page]
+ * "defaultLogoutGoto"            : expression,             [OPTIONAL - default return empty page]
+ * "requireLogin"                 : boolean                 [OPTIONAL - default require login]
+ * "requireHttps"                 : boolean                 [OPTIONAL - default require SSL]
+ * "cacheExpiration"              : duration                [OPTIONAL - default to 20 seconds]
+ * "executor"                     : executor                [OPTIONAL - by default uses 'ScheduledThreadPool'
+ *                                                                      heap object]
+ * "metadata"                     : {                       [OPTIONAL - contains metadata dedicated for dynamic
+ *                                                                      client registration.]
+ *             "redirect_uris"    : [ strings ],                [REQUIRED for dynamic client registration.]
+ *             "scopes"           : [ strings ]                 [OPTIONAL - usage with OpenAM only.]
  * }
  * }
  * </pre>
  *
- * For example, if you want to use a nascar page (multiple client
- * registrations):
+ * For example, if you want to use a nascar page (with multiple client
+ * registrations, defined in the "registrations" attribute):
  *
  * <pre>
  * {@code
@@ -131,6 +134,7 @@ import org.forgerock.util.time.TimeService;
  *     "config": {
  *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
+ *         "registrations"         : [ "openam", "linkedin", "google" ],
  *         "loginHandler"          : "NascarPage",
  *         "failureHandler"        : "LoginFailed",
  *         "defaultLoginGoto"      : "/homepage",
@@ -153,6 +157,7 @@ import org.forgerock.util.time.TimeService;
  *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
  *         "loginHandler"          : "NascarPage",
+ *         "registrations"         : [ "openam", "linkedin", "google" ],
  *         "failureHandler"        : "LoginFailed",
  *         "defaultLoginGoto"      : "/homepage",
  *         "defaultLogoutGoto"     : "/loggedOut",
@@ -183,7 +188,7 @@ import org.forgerock.util.time.TimeService;
  *     "config": {
  *         "target"                : "${attributes.openid}",
  *         "clientEndpoint"        : "/openid",
- *         "registration"          : "openam",
+ *         "registrations"         : [ "openam" ],
  *         "failureHandler"        : "LoginFailed"
  *     }
  * }
@@ -242,34 +247,34 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Expression<String> defaultLogoutGoto;
     private Handler failureHandler;
     private Handler loginHandler;
-    private ClientRegistration clientRegistration;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
     private Expression<?> target;
     private final TimeService time;
     private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
-    private final Heap heap;
     private final Handler discoveryAndDynamicRegistrationChain;
+    private final ClientRegistrationRepository registrations;
 
     /**
      * Constructs an {@link OAuth2ClientFilter}.
      *
+     * @param registrations
+     *            The {@link ClientRegistrationRepository} that handles the
+     *            registrations.
      * @param time
      *            The TimeService to use.
-     * @param heap
-     *            The current heap.
      * @param discoveryAndDynamicRegistrationChain
      *            The chain used for discovery and dynamic client registration.
      * @param clientEndpoint
      *            The expression which will be used for obtaining the base URI
      *            for this filter.
      */
-    public OAuth2ClientFilter(TimeService time,
-                              Heap heap,
+    public OAuth2ClientFilter(ClientRegistrationRepository registrations,
+                              TimeService time,
                               Handler discoveryAndDynamicRegistrationChain,
                               Expression<String> clientEndpoint) {
+        this.registrations = checkNotNull(registrations);
         this.time = time;
-        this.heap = heap;
         this.clientEndpoint = clientEndpoint;
         this.discoveryAndDynamicRegistrationChain = discoveryAndDynamicRegistrationChain;
     }
@@ -408,18 +413,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     /**
-     * You can avoid a nascar page by setting a client registration.
-     *
-     * @param registration
-     *            The client registration to use.
-     * @return This filter.
-     */
-    public OAuth2ClientFilter setClientRegistration(final ClientRegistration registration) {
-        this.clientRegistration = registration;
-        return this;
-    }
-
-    /**
      * Specifies whether all incoming requests must use TLS. This configuration
      * parameter is optional and set to {@code true} by default.
      *
@@ -487,7 +480,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     private ClientRegistration getClientRegistration(final OAuth2Session session) {
         final String name = session.getClientRegistrationName();
-        return name != null ? getClientRegistrationFromHeap(name) : null;
+        return name != null ? registrations.findByName(name) : null;
     }
 
     private Promise<Response, NeverThrowsException> handleAuthorizationCallback(final Context context,
@@ -530,7 +523,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
             }
 
-            final ClientRegistration client = getClientRegistrationFromHeap(session.getClientRegistrationName());
+            final ClientRegistration client = getClientRegistration(session);
             if (client == null) {
                 throw new OAuth2ErrorException(E_INVALID_REQUEST, format(
                         "Authorization call-back failed because the client registration %s was unrecognized",
@@ -657,7 +650,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
                     "Authorization OpenID Connect Provider must be specified");
         }
-        final ClientRegistration clientRegistration = getClientRegistrationFromHeap(clientRegistrationName);
+        final ClientRegistration clientRegistration = registrations.findByName(clientRegistrationName);
         if (clientRegistration == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST, "Authorization OpenID Connect Provider '"
                     + clientRegistrationName + "' was not recognized");
@@ -716,19 +709,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         return new AuthorizationRedirectHandler(time,
                                                 clientEndpoint,
-                                                cr != null ? cr : clientRegistration,
+                                                cr != null ? cr : registrations.findDefault(),
                                                 logger)
                                     .handle(context, request);
-    }
-
-    private ClientRegistration getClientRegistrationFromHeap(final String name) {
-        ClientRegistration clientRegistration = null;
-        try {
-            clientRegistration = heap.get(name, ClientRegistration.class);
-        } catch (HeapException e) {
-            logger.error(format("Cannot retrieve the client registration '%s' from the heap", name));
-        }
-        return clientRegistration;
     }
 
     private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request) {
@@ -787,23 +770,32 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final Expression<String> clientEndpoint = asExpression(config.get("clientEndpoint").required(),
                                                                    String.class);
 
+            final List<ClientRegistration> clients = new LinkedList<>();
+            final JsonValue regs = getWithDeprecation(config, logger, "registrations", "registration");
+            if (regs.isNotNull()) {
+                if (regs.isString() || regs.isMap()) {
+                    clients.add(heap.resolve(regs, ClientRegistration.class));
+                } else if (regs.isList()) {
+                    clients.addAll(regs.asList(ofRequiredHeapObject(heap, ClientRegistration.class)));
+                } else {
+                    throw new HeapException("'registrations' must contains the name(s) or inlined declaration(s)"
+                                            + "of the client registration's object(s) linked to this client");
+                }
+            }
+            final ClientRegistrationRepository registrations = new ClientRegistrationRepository(clients);
             final Handler discoveryAndDynamicRegistrationChain = chainOf(
                     new AuthorizationRedirectHandler(time, clientEndpoint, logger),
                     new DiscoveryFilter(discoveryHandler, heap, logger),
-                    new ClientRegistrationFilter(discoveryHandler, config.get("metadata"), heap, name, logger));
+                    new ClientRegistrationFilter(registrations, discoveryHandler, config.get("metadata"), logger));
 
-            final OAuth2ClientFilter filter = new OAuth2ClientFilter(time,
-                                                                     heap,
+            final OAuth2ClientFilter filter = new OAuth2ClientFilter(registrations,
+                                                                     time,
                                                                      discoveryAndDynamicRegistrationChain,
                                                                      clientEndpoint);
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
-            final JsonValue registration = getWithDeprecation(config, logger, "registration", "clientRegistrationName");
-            if (registration.isNotNull()) {
-                filter.setClientRegistration(heap.resolve(registration.required(),
-                                                          ClientRegistration.class));
-            } else {
+            if (registrations.needsNascarPage()) {
                 final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
                 filter.setLoginHandler(loginHandler);
             }

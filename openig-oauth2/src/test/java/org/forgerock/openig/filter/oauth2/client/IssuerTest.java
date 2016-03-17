@@ -29,6 +29,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.REGISTRA
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.TOKEN_ENDPOINT;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.USER_INFO_ENDPOINT;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.WELLKNOWN_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildIssuer;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,13 +113,23 @@ public class IssuerTest {
 
     @Test
     public void shouldCreateIssuer() throws Exception {
-        final Issuer issuer = OAuth2TestUtils.buildIssuer("myIssuer", true);
+        final Issuer issuer = buildIssuer("myIssuer", true);
 
         assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(create(ISSUER_URI + AUTHORIZE_ENDPOINT));
         assertThat(issuer.getRegistrationEndpoint()).isEqualTo(create(ISSUER_URI + REGISTRATION_ENDPOINT));
         assertThat(issuer.getTokenEndpoint()).isEqualTo(create(ISSUER_URI + TOKEN_ENDPOINT));
         assertThat(issuer.getUserInfoEndpoint()).isEqualTo(create(ISSUER_URI + USER_INFO_ENDPOINT));
         assertThat(issuer.getWellKnownEndpoint()).isEqualTo(create(ISSUER_URI + WELLKNOWN_ENDPOINT));
+    }
+
+    @Test
+    public void shouldBeEqual() {
+        assertThat(buildIssuer("myIssuer", true)).isEqualTo(buildIssuer("myIssuer", true));
+    }
+
+    @Test
+    public void shouldNotBeEqual() {
+        assertThat(buildIssuer("myIssuer", true)).isNotEqualTo(buildIssuer("myIssuer2", false));
     }
 
     @Test
