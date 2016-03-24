@@ -109,7 +109,7 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
         // Force checks at init time
         gracefulStop = evaluated.get("gracefulStop").defaultTo(true).asBoolean();
         gracePeriod = evaluated.get("gracePeriod").defaultTo("10 seconds").as(duration());
-        return newScheduledThreadPool(corePoolSize());
+        return new MdcScheduledExecutorServiceDelegate(newScheduledThreadPool(corePoolSize()));
     }
 
     private int corePoolSize() throws HeapException {
