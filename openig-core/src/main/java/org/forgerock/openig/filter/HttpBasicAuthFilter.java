@@ -21,20 +21,19 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.handler.Handlers;
-import org.forgerock.http.protocol.Entity;
 import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -47,7 +46,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.encode.Base64;
@@ -59,8 +57,7 @@ import org.forgerock.util.promise.Promise;
  * see <a href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</a>.
  * <p>
  * If challenged for authentication via a {@code 401 Unauthorized} status code by the server,
- * this filter will retry the request with credentials attached. Therefore, the request entity
- * will be branched and stored for the duration of the processing.
+ * this filter will retry the request with credentials attached.
  * <p>
  * Once an HTTP authentication challenge (status code 401) is issued from the remote server,
  * all subsequent requests to that remote server that pass through the filter will include the
@@ -139,8 +136,8 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
             request.getHeaders().remove(header);
         }
 
-        // Ensure we always work on an entity's branch while executing the handler
-        final Handler wrappedNext = Handlers.chainOf(next, new PushPopFilter(logger));
+        // Ensure we always work on a defensive copy of the request while executing the handler.
+        final Handler wrappedNext = chainOf(next, requestCopyFilter());
 
         // Here is the scenario :
         // 1 - try to execute the handler with the cached credentials if any.
@@ -225,34 +222,6 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
     private void setAuthorizationHeader(Headers headers, String userpass) {
         if (userpass != null) {
             headers.put("Authorization", "Basic " + userpass);
-        }
-    }
-
-    /**
-     * Filter that ensures the next handler will work on a branch of the entity's content.
-     */
-    private static class PushPopFilter implements Filter {
-
-        private Logger logger;
-
-        public PushPopFilter(Logger logger) {
-            this.logger = logger;
-        }
-
-        @Override
-        public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler handler) {
-            Entity entity = request.getEntity();
-
-            try {
-                entity.push();
-                return handler.handle(context, request);
-            } catch (IOException e) {
-                logger.error("Can't authenticate user with Basic Http Authorization");
-                logger.error(e);
-                return newResultPromise(new Response(Status.FORBIDDEN));
-            } finally {
-                entity.pop();
-            }
         }
     }
 
