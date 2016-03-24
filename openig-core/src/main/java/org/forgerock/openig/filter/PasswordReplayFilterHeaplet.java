@@ -17,9 +17,11 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.Boolean.TRUE;
+import static org.forgerock.http.filter.Filters.chainOf;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
 import static org.forgerock.util.Utils.closeSilently;
@@ -224,7 +226,7 @@ import org.forgerock.util.promise.ResultHandler;
 public class PasswordReplayFilterHeaplet extends GenericHeaplet {
 
     static final String IS_LOGIN_PAGE_ATTR = "isLoginPage";
-    private EntityExtractFilter extractFilter;
+    private Filter extractFilter;
     private StaticRequestFilter createRequestFilter;
     private Expression<Boolean> loginPage;
     private Filter credentialsFilter;
@@ -259,12 +261,13 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
         extractFilter = null;
         if (hasLoginPageMarker) {
             extractFilter = createEntityExtractFilter();
-            extractFilter.getExtractor()
-                         .getPatterns()
-                         .put(IS_LOGIN_PAGE_ATTR, config.get("loginPageContentMarker").asPattern());
-            extractFilter.getExtractor()
-                         .getTemplates()
-                         .put(IS_LOGIN_PAGE_ATTR, new PatternTemplate("true"));
+            ((EntityExtractFilter) extractFilter).getExtractor()
+                                                 .getPatterns()
+                                                 .put(IS_LOGIN_PAGE_ATTR,
+                                                      config.get("loginPageContentMarker").asPattern());
+            ((EntityExtractFilter) extractFilter).getExtractor()
+                                                 .getTemplates()
+                                                 .put(IS_LOGIN_PAGE_ATTR, new PatternTemplate("true"));
         }
 
         for (JsonValue extraction : config.get("loginPageExtractions")) {
@@ -272,12 +275,16 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
                 extractFilter = createEntityExtractFilter();
             }
             String name = extraction.get("name").required().asString();
-            extractFilter.getExtractor()
-                         .getPatterns()
-                         .put(name, extraction.get("pattern").required().asPattern());
-            extractFilter.getExtractor()
-                         .getTemplates()
-                         .put(name, new PatternTemplate("$1"));
+            ((EntityExtractFilter) extractFilter).getExtractor()
+                                                 .getPatterns()
+                                                 .put(name, extraction.get("pattern").required().asPattern());
+            ((EntityExtractFilter) extractFilter).getExtractor()
+                                                 .getTemplates()
+                                                 .put(name, new PatternTemplate("$1"));
+        }
+
+        if (extractFilter != null) {
+            extractFilter = chainOf(requestCopyFilter(), extractFilter);
         }
 
         if (hasLoginPage) {
@@ -392,6 +399,9 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
                 closeSilently(response);
 
                 // Go through the authentication chain
+                if (replay) {
+                    filters.add(requestCopyFilter());
+                }
                 Promise<Response, NeverThrowsException> promise = chainOf(next, filters).handle(context, request);
                 if (replay) {
                     return promise.thenAsync(replayOriginalRequest(context, request, next));

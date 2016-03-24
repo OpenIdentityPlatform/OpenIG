@@ -136,7 +136,7 @@ public class HttpBasicAuthFilterTest {
         filter.filter(context, request, terminalHandler);
 
         // if credentials were rejected all the times, the failure Handler is invoked
-        verify(terminalHandler).handle(context, request);
+        verify(terminalHandler).handle(any(Context.class), any(Request.class));
         verify(failureHandler).handle(context, request);
     }
 
