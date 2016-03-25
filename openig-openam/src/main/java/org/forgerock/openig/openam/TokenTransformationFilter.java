@@ -23,6 +23,7 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.asString;
 import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -195,8 +196,8 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
             Handler amHandler = heap.resolve(config.get("amHandler").required(),
                                              Handler.class);
             URI baseUri = getOpenamBaseUri();
-            String realm = config.get("realm").defaultTo("/").asString();
-            String ssoTokenHeader = config.get("ssoTokenHeader").asString();
+            String realm = asString(config.get("realm").defaultTo("/"));
+            String ssoTokenHeader = asString(config.get("ssoTokenHeader"));
             Expression<String> username = asExpression(config.get("username").required(), String.class);
             Expression<String> password = asExpression(config.get("password").required(), String.class);
             SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
@@ -219,7 +220,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
         }
 
         private URI getOpenamBaseUri() throws HeapException {
-            String baseUri = config.get("openamUri").required().asString();
+            String baseUri = asString(config.get("openamUri").required());
             try {
                 return new URI(trailingSlash(baseUri));
             } catch (URISyntaxException e) {
