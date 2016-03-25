@@ -35,8 +35,8 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -76,10 +76,10 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.util.promise.Promise;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -108,6 +108,7 @@ public class PolicyEnforcementFilterTest {
     private Bindings bindings;
     private SessionContext sessionContext;
     private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+    private Request resourceRequest;
     @SuppressWarnings("rawtypes")
     private Expression<Map> target;
 
@@ -124,7 +125,7 @@ public class PolicyEnforcementFilterTest {
     private ArgumentCaptor<Runnable> captor;
 
     @BeforeMethod
-    public void setUp() throws ExpressionException {
+    public void setUp() throws Exception {
         initMocks(this);
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
         attributesContext = new AttributesContext(sessionContext);
@@ -143,6 +144,9 @@ public class PolicyEnforcementFilterTest {
 
         when(policiesHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionResponse()));
+
+        resourceRequest = new Request();
+        resourceRequest.setMethod("GET").setUri(RESOURCE_URI);
     }
 
     @DataProvider
@@ -567,12 +571,38 @@ public class PolicyEnforcementFilterTest {
 
         final JsonValue resources = filter.buildResources(attributesContext, request);
 
-        assertThat(resources).hasSize(3);
         assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
         assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
         // The ssoToken is given in the buildMinimalHeapletConfiguration
         assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
         assertThat(resources.get("environment").get("IP").asList()).isEqualTo(IP_LIST);
+    }
+
+    @DataProvider
+    private static Object[][] application() throws ExpressionException {
+        return new Object[][] {
+            { "custom-application" },
+            { "${env['PATH']}" } };
+    }
+
+    @Test(dataProvider = "application")
+    public void shouldSucceedToBuildApplicationResource(final String value) throws Exception {
+
+        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
+                buildMinimalHeapletConfiguration().put("application", value));
+
+        final JsonValue resources = filter.buildResources(attributesContext, resourceRequest);
+
+        assertThat(resources).hasSize(3);
+        assertResourcesContainResourceURIAndSsoToken(resources);
+        assertThat(resources.get("application").asString()).isNotEmpty();
+    }
+
+    private static void assertResourcesContainResourceURIAndSsoToken(final JsonValue resources) {
+        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
+        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
+        // The ssoToken is given in the buildMinimalHeapletConfiguration
+        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
     }
 
     @SuppressWarnings("unchecked")

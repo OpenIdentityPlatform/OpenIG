@@ -31,7 +31,9 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.asDuration;
 import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.asString;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.time.Duration.duration;
@@ -69,10 +71,10 @@ import org.forgerock.openig.el.Expressions;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
+import org.forgerock.util.ThreadSafeCache;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -451,15 +453,15 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         @Override
         public Object create() throws HeapException {
 
-            final String openamUrl = trailingSlash(config.get("openamUrl").required().asString());
+            final String openamUrl = trailingSlash(asString(config.get("openamUrl").required()));
             final Expression<String> pepUsername = asExpression(config.get("pepUsername").required(), String.class);
             final Expression<String> pepPassword = asExpression(config.get("pepPassword").required(), String.class);
-            final String realm = config.get("realm").defaultTo("/").asString();
-            final String pepRealm = config.get("pepRealm").defaultTo(realm).asString();
+            final String realm = asString(config.get("realm").defaultTo("/"));
+            final String pepRealm = asString(config.get("pepRealm").defaultTo(realm));
             final Handler policiesHandler = heap.resolve(config.get("policiesHandler")
                                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY),
                                                          Handler.class);
-            final String ssoTokenHeader = config.get("ssoTokenHeader").asString();
+            final String ssoTokenHeader = asString(config.get("ssoTokenHeader"));
 
             @SuppressWarnings("rawtypes")
             final Expression<Map> target = asExpression(
@@ -481,7 +483,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                             ssoTokenFilter,
                                                             new ApiVersionProtocolHeaderFilter()));
 
-                filter.setApplication(config.get("application").asString());
+                filter.setApplication(asString(config.get("application")));
                 filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
                 filter.setJwtSubject(asExpression(config.get("jwtSubject"), String.class));
                 filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
@@ -499,8 +501,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                        .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
                                                                  ScheduledExecutorService.class);
                 cache = new ThreadSafeCache<>(executor);
-                final Duration cacheMaxExpiration = duration(config.get("cacheMaxExpiration").defaultTo("1 minute")
-                                                                   .asString());
+                final Duration cacheMaxExpiration = asDuration(config.get("cacheMaxExpiration").defaultTo("1 minute"));
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
                     throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
                 }
