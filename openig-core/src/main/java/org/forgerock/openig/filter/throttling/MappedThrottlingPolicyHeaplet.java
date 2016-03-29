@@ -47,21 +47,22 @@ import org.forgerock.openig.heap.HeapException;
  *         "throttlingRatesMapping"       : {                               [REQUIRED - This is a in memory map used to
  *                                                                                      lookup the throttling rate to
  *                                                                                      apply.]
- *               "<throttlingRateKey>" {                  : String          [REQUIRED - The value to match the
- *                                                                                      partitionKey.]
- *                    "numberOfRequests"             : expression<Integer>  [REQUIRED - The number of requests allowed
+ *               "<throttlingRateKey>" {   : String                         [REQUIRED - The value to match the
+ *                                                                                      result of the expression
+ *                                                                                      throttlingRateMapper.]
+ *                    "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
  *                                                                                      to go through this filter during
  *                                                                                      the duration window.]
- *                    "duration"                     : expression<String>   [REQUIRED - The time window during which the
+ *                    "duration"                     : duration             [REQUIRED - The time window during which the
  *                                                                                      incoming requests are counted.]
  *               }
  *         },
  *         "defaultRate" {                 : reference                      [OPTIONAL - the default rate to apply if
  *                                                                                      there is no match]
- *                    "numberOfRequests"             : expression<Integer>  [REQUIRED - The number of requests allowed
+ *                    "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
  *                                                                                      to go through this filter during
  *                                                                                      the duration window.]
- *                    "duration"                     : expression<String>   [REQUIRED - The time window during which the
+ *                    "duration"                     : duration             [REQUIRED - The time window during which the
  *                                                                                      incoming requests are counted.]
  *         }
  *      }

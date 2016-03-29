@@ -35,10 +35,10 @@ import org.forgerock.openig.heap.HeapException;
  *
  *         "defaultRate" {                 : reference                  [OPTIONAL - the default rate to apply if
  *                                                                                  there is no match]
- *                "numberOfRequests"             : expression<Integer>  [REQUIRED - The number of requests allowed
+ *                "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
  *                                                                                  to go through this filter during
  *                                                                                  the duration window.]
- *                "duration"                     : expression<String>   [REQUIRED - The time window during which the
+ *                "duration"                     : duration             [REQUIRED - The time window during which the
  *                                                                                  incoming requests are counted.]
  *         }
  *      }

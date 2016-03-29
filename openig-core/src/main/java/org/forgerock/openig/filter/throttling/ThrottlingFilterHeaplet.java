@@ -54,9 +54,9 @@ import org.forgerock.util.time.TimeService;
  *                                                                          matches when calculating a rate for a group
  *                                                                          of requests.]
  *         "rate": {
- *            "numberOfRequests"          : expression<Integer> [REQUIRED - The number of requests allowed to go through
+ *            "numberOfRequests"          : integer             [REQUIRED - The number of requests allowed to go through
  *                                                                          this filter during the duration window.]
- *            "duration"                  : expression<String>  [REQUIRED - The time window during which we count the
+ *            "duration"                  : duration            [REQUIRED - The time window during which we count the
  *                                                                          incoming requests.]
  *         }
  * OR
