@@ -16,6 +16,7 @@
 package org.forgerock.http.filter.throttling;
 
 import static org.forgerock.util.Reject.checkNotNull;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.util.Map;
 
@@ -25,16 +26,15 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 /**
  * Implementation of {@link ThrottlingPolicy} backed by a {@link Map}.
  *
  * <ul>
  *     <li>if the key is null, then the {@code defaultRate} is returned</li>
- *     <li>if the key can be looked up as key in the {@code lookupMap}, then the matching rate is returned
+ *     <li>if the key can be looked up as key in the {@code throttlingRatesMapping}, then the matching rate is returned
  *     </li>
- *     <li>if the key can't be looked up in the {@code lookupMap}, then the {@code defaultRate} is returned
+ *     <li>if the key can't be looked up in the {@code throttlingRatesMapping}, then the {@code defaultRate} is returned
  *     </li>
  * </ul>
  *
@@ -43,26 +43,26 @@ public class MappedThrottlingPolicy implements ThrottlingPolicy {
 
     private final Map<String, ThrottlingRate> rates;
     private final ThrottlingRate defaultRate;
-    private final AsyncFunction<ContextAndRequest, String, Exception> throttlingRateKey;
+    private final AsyncFunction<ContextAndRequest, String, Exception> throttlingRateMapper;
 
     /**
      * Constructs a new {@link MappedThrottlingPolicy}.
-     * @param throttlingRateKey the key to lookup the throttling rate
-     * @param rates the Map to look into to find the throttling rates.
+     * @param throttlingRateMapper the key to lookup the throttling rate
+     * @param throttlingRatesMapping the Map to look into to find the matching throttling rate.
      * @param defaultRate the default throttling definition.
      */
-    public MappedThrottlingPolicy(AsyncFunction<ContextAndRequest, String, Exception> throttlingRateKey,
-                                  Map<String, ThrottlingRate> rates,
+    public MappedThrottlingPolicy(AsyncFunction<ContextAndRequest, String, Exception> throttlingRateMapper,
+                                  Map<String, ThrottlingRate> throttlingRatesMapping,
                                   ThrottlingRate defaultRate) {
-        this.throttlingRateKey = checkNotNull(throttlingRateKey);
-        this.rates = checkNotNull(rates);
+        this.throttlingRateMapper = checkNotNull(throttlingRateMapper);
+        this.rates = checkNotNull(throttlingRatesMapping);
         this.defaultRate = defaultRate;
     }
 
     @Override
     public Promise<ThrottlingRate, Exception> lookup(Context context, Request request) {
-        return Promises.newResultPromise(new ContextAndRequest(context, request))
-                       .thenAsync(throttlingRateKey)
+        return newResultPromise(new ContextAndRequest(context, request))
+                       .thenAsync(throttlingRateMapper)
                        .then(new Function<String, ThrottlingRate, Exception>() {
                            @Override
                            public ThrottlingRate apply(String key) {

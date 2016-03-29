@@ -41,13 +41,13 @@ import org.forgerock.openig.heap.HeapException;
  * {@code {
  *      "type": "MappedThrottlingPolicy",
  *      "config": {
- *         "throttlingRateKey"            : expression<String>              [REQUIRED - The expression that will be
+ *         "throttlingRateMapper"         : expression<String>              [REQUIRED - The expression that will be
  *                                                                                      evaluated to lookup for a
  *                                                                                      throttling rate.]
- *         "ratesMapping"                 : {                               [REQUIRED - This is a in memory map used to
+ *         "throttlingRatesMapping"       : {                               [REQUIRED - This is a in memory map used to
  *                                                                                      lookup the throttling rate to
  *                                                                                      apply.]
- *               "<throttlingRateKey>" {                  : String               [REQUIRED - The value to match the
+ *               "<throttlingRateKey>" {                  : String          [REQUIRED - The value to match the
  *                                                                                      partitionKey.]
  *                    "numberOfRequests"             : expression<Integer>  [REQUIRED - The number of requests allowed
  *                                                                                      to go through this filter during
@@ -73,8 +73,8 @@ import org.forgerock.openig.heap.HeapException;
  * {@code {
  *      "type": "MappedThrottlingPolicy",
  *      "config": {
- *         "throttlingRateKey" : "${request.headers['Origin'][0]}"
- *         "ratesMapping"  : {
+ *         "throttlingRateMapper" : "${request.headers['Origin'][0]}"
+ *         "throttlingRateMapping"  : {
  *            "http://www.alice.com" : {
  *               "numberOfRequests" : 30,
  *               "duration" : "1 hour"
@@ -95,10 +95,11 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        Expression<String> throttlingRateKey = asExpression(config.get("throttlingRateKey").required(), String.class);
+        Expression<String> throttlingRateMapper = asExpression(config.get("throttlingRateMapper").required(),
+                                                               String.class);
 
         Map<String, ThrottlingRate> rates = new HashMap<>();
-        JsonValue map = config.get("ratesMapping");
+        JsonValue map = config.get("throttlingRatesMapping");
         for (String key : map.keys()) {
             try {
                 rates.put(Expression.valueOf(key, String.class).eval(), createThrottlingRate(map.get(key)));
@@ -116,7 +117,7 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
             logger.warning(format("No throttling rates defined for %s", name));
         }
 
-        return new MappedThrottlingPolicy(new ExpressionRequestAsyncFunction<>(throttlingRateKey),
+        return new MappedThrottlingPolicy(new ExpressionRequestAsyncFunction<>(throttlingRateMapper),
                                           rates,
                                           defaultRate);
     }

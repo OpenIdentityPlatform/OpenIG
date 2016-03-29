@@ -20,6 +20,7 @@ import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY
 import static org.forgerock.openig.util.JsonValues.asDuration;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.asInteger;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -49,21 +50,18 @@ import org.forgerock.util.time.TimeService;
  *         "cleaningInterval"             : duration            [OPTIONAL - The interval to wait for cleaning outdated
  *                                                                          buckets. Cannot be neither zero nor
  *                                                                          unlimited.
- *         "rate": {
- *            "partitionKey"              : expression<String>  [REQUIRED - Expression to evaluate whether a request
+ *         "requestGroupingPolicy"        : expression<String>  [REQUIRED - Expression to evaluate whether a request
  *                                                                          matches when calculating a rate for a group
  *                                                                          of requests.]
- *            "numberOfRequests"          : expression<Integer> [REQUIRED - The number of request allowed to go through
+ *         "rate": {
+ *            "numberOfRequests"          : expression<Integer> [REQUIRED - The number of requests allowed to go through
  *                                                                          this filter during the duration window.]
  *            "duration"                  : expression<String>  [REQUIRED - The time window during which we count the
  *                                                                          incoming requests.]
  *         }
  * OR
- *         "policy"                       : reference or        [REQUIRED - the policy that will define the throttling
+ *         "throttlingRatePolicy"         : reference or        [REQUIRED - the policy that will define the throttling
  *                                          inlined declaration             rate to apply]
- *         "partitionKey"                 : expression<String>  [REQUIRED - Expression to evaluate whether a request
- *                                                                          matches when calculating a rate for a group
- *                                                                          of requests.]
  *      }
  *  }
  *  }
@@ -85,14 +83,17 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
         TimeService time = heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class);
         Duration cleaningInterval = asDuration(config.get("cleaningInterval").defaultTo("5 seconds"));
 
-        final Expression<String> partitionKey = asExpression(config.get("partitionKey").required(), String.class);
-        ThrottlingPolicy policy;
+        final Expression<String> requestGroupingPolicy =
+                asExpression(getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey").required(),
+                             String.class);
+
+        ThrottlingPolicy throttlingRatePolicy;
         if (config.isDefined("rate")) {
             // Backward compatibility and ease of use : for fixed throttling rate we still allow to declare them easily
             // in the configuration
-            policy = new FixedRateThrottlingPolicy(createThrottlingRate(config.get("rate")));
+            throttlingRatePolicy = new FixedRateThrottlingPolicy(createThrottlingRate(config.get("rate")));
         } else {
-            policy = heap.resolve(config.get("policy").required(), ThrottlingPolicy.class);
+            throttlingRatePolicy = heap.resolve(config.get("throttlingRatePolicy").required(), ThrottlingPolicy.class);
         }
 
         ScheduledExecutorService executorService = heap.resolve(config.get("executor")
@@ -102,8 +103,8 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
         return filter = new ThrottlingFilter(executorService,
                                              time,
                                              cleaningInterval,
-                                             new ExpressionRequestAsyncFunction<>(partitionKey),
-                                             policy);
+                                             new ExpressionRequestAsyncFunction<>(requestGroupingPolicy),
+                                             throttlingRatePolicy);
     }
 
     @Override
@@ -113,6 +114,5 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
             filter.stop();
         }
     }
-
 
 }
