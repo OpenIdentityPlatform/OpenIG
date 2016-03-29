@@ -24,14 +24,48 @@ import org.forgerock.openig.heap.HeapException;
 
 /**
  * Creates and initializes a {@link DefaultRateThrottlingPolicy} in a heap environment.
+ * Configuration options:
+ *
+ * <pre>
+ * {@code {
+ *      "type": "DefaultRateThrottlingPolicy",
+ *      "config": {
+ *         "throttlingRatePolicy"         : reference or                [REQUIRED - the policy that will define the
+ *                                          inlined declaration                     throttling rate to apply]
+ *
+ *         "defaultRate" {                 : reference                  [OPTIONAL - the default rate to apply if
+ *                                                                                  there is no match]
+ *                "numberOfRequests"             : expression<Integer>  [REQUIRED - The number of requests allowed
+ *                                                                                  to go through this filter during
+ *                                                                                  the duration window.]
+ *                "duration"                     : expression<String>   [REQUIRED - The time window during which the
+ *                                                                                  incoming requests are counted.]
+ *         }
+ *      }
+ *  }
+ * </pre>
+ *
+ * Example : apply different throttling rates depending of the header 'Origin'. If the header is not specified, let's
+ * apply a default rate of 15 requests per second.
+ * {@code {
+ *      "type": "DefaultRateThrottlingPolicy",
+ *      "config": {
+ *         "throttlingRatePolicy" : "mappedThrottlingPolicy"
+ *         "defaultRate" : {
+ *            "numberOfRequests" : 15,
+ *            "duration" : "1 sec"
+ *         }
+ *      }
+ * }
  */
 public class DefaultRateThrottlingPolicyHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        ThrottlingPolicy dataSource = heap.resolve(config.get("policy").required(), ThrottlingPolicy.class);
+        ThrottlingPolicy throttlingPolicy = heap.resolve(config.get("throttlingRatePolicy").required(),
+                                                         ThrottlingPolicy.class);
         ThrottlingRate defaultRate = ThrottlingFilterHeaplet.createThrottlingRate(config.get("defaultRate").required());
 
-        return new DefaultRateThrottlingPolicy(defaultRate, dataSource);
+        return new DefaultRateThrottlingPolicy(defaultRate, throttlingPolicy);
     }
 }
