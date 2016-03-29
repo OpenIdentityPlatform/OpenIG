@@ -85,16 +85,13 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
         TimeService time = heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class);
         Duration cleaningInterval = asDuration(config.get("cleaningInterval").defaultTo("5 seconds"));
 
-        final Expression<String> partitionKey;
+        final Expression<String> partitionKey = asExpression(config.get("partitionKey").required(), String.class);
         ThrottlingPolicy policy;
         if (config.isDefined("rate")) {
             // Backward compatibility and ease of use : for fixed throttling rate we still allow to declare them easily
             // in the configuration
-            final JsonValue rate = config.get("rate");
-            partitionKey = asExpression(rate.get("partitionKey").required(), String.class);
-            policy = new FixedRateThrottlingPolicy(createThrottlingRate(rate));
+            policy = new FixedRateThrottlingPolicy(createThrottlingRate(config.get("rate")));
         } else {
-            partitionKey = asExpression(config.get("partitionKey").required(), String.class);
             policy = heap.resolve(config.get("policy").required(), ThrottlingPolicy.class);
         }
 
