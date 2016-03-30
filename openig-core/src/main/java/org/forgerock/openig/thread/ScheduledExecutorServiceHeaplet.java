@@ -41,8 +41,8 @@ import org.forgerock.util.time.Duration;
  *         "type": "ScheduledExecutorService",
  *         "config": {
  *             "corePoolSize":  integer > 0 [ OPTIONAL - default to 1 (will grow as needed)]
- *             "gracefulStop":  boolean     [ OPTIONAL - default to false (actively try to kill jobs)]
- *             "gracePeriod" :  duration    [ OPTIONAL - default to '0 second' (no wait)]
+ *             "gracefulStop":  boolean     [ OPTIONAL - default to true (all submitted jobs will be executed)]
+ *             "gracePeriod" :  duration    [ OPTIONAL - default to '10 second']
  *         }
  *     }
  *     }
@@ -65,27 +65,30 @@ import org.forgerock.util.time.Duration;
  * {@code gracefulStop} is a setting that allows a thread pool to wind down nicely without
  * killing aggressively running (and submitted) jobs.
  *
- * <p>Note that this setting is independent of the {@code gracePeriod}: it's not blocking until jobs have finished.
  * <pre>
  *     {@code
  *     {
- *         "gracefulStop": true // defaults to false
+ *         "gracefulStop": false // defaults to true
  *     }
  *     }
  * </pre>
  *
  * <p>{@code gracefulPeriod} attribute defines how long the heaplet should wait for jobs to actually terminate properly.
- * When the period is over, if the executor service is not properly terminated, the heaplet prints a message and exits.
+ *
+ * <p>Note that this setting is only considered when {@code gracefulStop} is set to {@literal true}.
  *
  * <pre>
  *     {@code
  *     {
- *         "gracePeriod": "20 seconds" // defaults to 0 seconds (no wait)
+ *         "gracePeriod": "20 seconds" // defaults to 10 seconds
  *     }
  *     }
  * </pre>
  *
- * Note that all configuration attributes can be defined using static expressions (they can't be resolved against
+ * <p>When the period is over, if the executor service is not properly terminated, the heaplet prints a message and
+ * exits.
+ *
+ * <p>Note that all configuration attributes can be defined using static expressions (they can't be resolved against
  * {@code context} or {@code request} objects that are not available at init time).
  *
  * @see java.util.concurrent.Executors#newScheduledThreadPool(int)
@@ -102,8 +105,8 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
     @Override
     public ExecutorService create() throws HeapException {
         // Force checks at init time
-        gracefulStop = asBoolean(config.get("gracefulStop").defaultTo(false));
-        gracePeriod = asDuration(config.get("gracePeriod").defaultTo("0 second"));
+        gracefulStop = asBoolean(config.get("gracefulStop").defaultTo(true));
+        gracePeriod = asDuration(config.get("gracePeriod").defaultTo("10 seconds"));
         return newScheduledThreadPool(corePoolSize());
     }
 
@@ -125,33 +128,34 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
 
         if (gracefulStop) {
             // Graceful shutdown:
-            // * Does not accepts new jobs
-            // * Submitted jobs will be executed, not killed
+            // * Does not accept new jobs
+            // * Submitted jobs will be executed
+            // * Running jobs won't be killed
             // * Does not wait for termination
             service.shutdown();
+
+            // Only wait for termination if there is a grace period defined
+            if (!gracePeriod.isZero()) {
+                try {
+                    service.awaitTermination(gracePeriod.getValue(), gracePeriod.getUnit());
+                } catch (InterruptedException e) {
+                    logger.trace("Termination interrupted, graceful period abandoned");
+                }
+            }
+
+            if (!service.isTerminated()) {
+                logger.info("All tasks in ExecutorService have not completed yet");
+            }
         } else {
             // Aggressive shutdown:
-            // * Does not accepts new jobs
-            // * Attempt to kill executing jobs (interruption)
+            // * Does not accept new jobs
             // * Clear pending queue (will not be executed)
+            // * Attempt to kill executing jobs (interruption)
             // * Does not wait for termination
             List<Runnable> jobs = service.shutdownNow();
             if (!jobs.isEmpty()) {
                 logger.debug(format("%d submitted jobs will not be executed", jobs.size()));
             }
-        }
-
-        // Only wait for termination if there is a grace period defined
-        if (!gracePeriod.isZero()) {
-            try {
-                service.awaitTermination(gracePeriod.getValue(), gracePeriod.getUnit());
-            } catch (InterruptedException e) {
-                logger.trace("Termination interrupted, graceful period abandoned");
-            }
-        }
-
-        if (!service.isTerminated()) {
-            logger.warning("Executor service did not terminate properly");
         }
     }
 }
