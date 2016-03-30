@@ -40,7 +40,7 @@ import org.forgerock.util.time.Duration;
  *     {
  *         "type": "ScheduledExecutorService",
  *         "config": {
- *             "corePoolSize":  integer > 0 [ OPTIONAL - default to 0 (will grow as needed)]
+ *             "corePoolSize":  integer > 0 [ OPTIONAL - default to 1 (will grow as needed)]
  *             "gracefulStop":  boolean     [ OPTIONAL - default to false (actively try to kill jobs)]
  *             "gracePeriod" :  duration    [ OPTIONAL - default to '0 second' (no wait)]
  *         }
@@ -54,7 +54,7 @@ import org.forgerock.util.time.Duration;
  *     {
  *         "type": "ScheduledExecutorService",
  *         "config": {
- *             "corePoolSize": 42 // defaults to 0 (will grow as needed), only positive
+ *             "corePoolSize": 42 // defaults to 1 (will grow as needed), only positive and non-zero
  *         }
  *     }
  *     }
@@ -108,9 +108,9 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
     }
 
     private int corePoolSize() throws HeapException {
-        int size = asInteger(config.get("corePoolSize").defaultTo(0));
-        if (size < 0) {
-            throw new HeapException("'corePoolSize' can only be a positive value");
+        int size = asInteger(config.get("corePoolSize").defaultTo(1));
+        if (size <= 0) {
+            throw new HeapException("'corePoolSize' can only be a positive (non-zero) value");
         }
         return size;
     }

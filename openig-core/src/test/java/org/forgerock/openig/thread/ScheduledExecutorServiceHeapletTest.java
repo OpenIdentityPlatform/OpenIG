@@ -30,8 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Heaplet;
 import org.forgerock.openig.heap.Name;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -148,6 +150,24 @@ public class ScheduledExecutorServiceHeapletTest {
 
         // task have not been completed (interrupted)
         assertThat(state.get()).isEqualTo(State.KILLED);
+    }
+
+    @DataProvider
+    public static Object[][] invalidConfigurations() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { json(object(field("corePoolSize", 0))) },
+                { json(object(field("corePoolSize", -15))) },
+                { json(object(field("corePoolSize", "${0}"))) },
+                { json(object(field("corePoolSize", "${-15}"))) }
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "invalidConfigurations",
+          expectedExceptions = HeapException.class)
+    public void shouldFailWithInvalidConfiguration(JsonValue config) throws Exception {
+        createExecutorService(new ScheduledExecutorServiceHeaplet(), config);
     }
 
     private enum State {
