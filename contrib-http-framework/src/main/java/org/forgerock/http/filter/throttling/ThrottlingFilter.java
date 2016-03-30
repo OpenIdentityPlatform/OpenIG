@@ -18,7 +18,6 @@ package org.forgerock.http.filter.throttling;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.forgerock.http.Responses.internalServerError;
 import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -29,13 +28,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.forgerock.http.ContextAndRequest;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -44,6 +44,7 @@ import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
@@ -145,128 +146,120 @@ public class ThrottlingFilter implements Filter {
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        Promise<ContextAndRequest, Exception> promise = newResultPromise(new ContextAndRequest(context, request));
-        return promise
-                .thenAsync(requestGroupingPolicy)
-                .thenAsync(new AsyncFunction<String, Response, NeverThrowsException>() {
-                               //@Checkstyle:off
-                               @Override
-                               public Promise<? extends Response, ? extends NeverThrowsException>
-                               apply(String partitionKey) {
-                                   if (partitionKey == null) {
-                                       LOGGER.error("Did not expect a null value for the requestGroupingPolicy after "
-                                                            + "evaluated the function");
-                                       return newResponsePromise(newInternalServerError());
-                                   }
+        final Promise<ThrottlingRate, Exception> throttlingRatePromise =
+                throttlingRatePolicy.lookup(context, request);
+        final Promise<String, Exception> partitionKeyPromise =
+                newResultPromise(new ContextAndRequest(context, request))
+                        .thenAsync(requestGroupingPolicy);
 
-                                   return throttlingRatePolicy.lookup(context, request)
-                                                              .thenAsync(throttle(context,
-                                                                              request,
-                                                                              next,
-                                                                              partitionKey),
-                                                                     internalServerError());
-                               }
-                           },
-                           internalServerError(),
-                           Responses.<RuntimeException>internalServerError());
-        //@Checkstyle:on
+        return whenAllDone(throttlingRatePromise, partitionKeyPromise)
+                .thenAsync(new AsyncFunction<Void, Response, NeverThrowsException>() {
+                    @Override
+                    public Promise<? extends Response, ? extends NeverThrowsException> apply(Void ignore) {
+                        try {
+                            String partitionKey = partitionKeyPromise.get();
+                            if (partitionKey == null) {
+                                LOGGER.error("Did not expect a null value for the partition key after "
+                                                     + "having evaluated the function");
+                                return newResponsePromise(newInternalServerError());
+                            }
+
+                            ThrottlingRate throttlingRate = throttlingRatePromise.get();
+                            if (throttlingRate == null) {
+                                LOGGER.trace("No throttling throttlingRate to apply.");
+                                // Can't apply any restrictions, continue the chain with no restriction
+                                return next.handle(context, request);
+                            }
+
+                            return throttle(selectTokenBucket(partitionKey, throttlingRate));
+                        } catch (ExecutionException | InterruptedException | IllegalArgumentException e) {
+                            return newResponsePromise(newInternalServerError(e));
+                        }
+                    }
+
+                    /**
+                     * Select the {@code TokenBucket} to use : either the one passed as parameter or an
+                     * existing one if there was
+                     * already a "session" in progress.
+                     * If {@code requestGroupingPolicy} is null, then {@literal null} is returned.
+                     */
+                    private TokenBucket selectTokenBucket(String partitionKey, ThrottlingRate rate) {
+                        TokenBucket tokenBucket = new TokenBucket(time, rate);
+                        for (;;) {
+                            TokenBucket previous = buckets.putIfAbsent(partitionKey, tokenBucket);
+                            if (previous == null) {
+                                // There was no previous TokenBucket, so go on with that freshly created one
+                                return tokenBucket;
+                            } else if (previous.isEquivalent(tokenBucket)) {
+                                // Let's continue with the previous one as it may already be processing some requests
+                                return previous;
+                            } else if (buckets.replace(partitionKey, previous, tokenBucket)) {
+                                // The rate definition has changed so try to assign this new TokenBucket
+                                return tokenBucket;
+                            } else {
+                                // The rate definition was not the same but has already been updated,
+                                // let's loop once more to see if we get more chance.
+                            }
+                        }
+                    }
+
+                    private Promise<Response, NeverThrowsException> throttle(TokenBucket bucket) {
+                        if (bucket == null) {
+                            LOGGER.error("No token bucket to use");
+                            return newResponsePromise(newInternalServerError());
+                        }
+                        LOGGER.trace("Applying rate {} requests per {} ms ({} remaining tokens)",
+                                     bucket.getCapacity(),
+                                     bucket.getDurationInMillis(),
+                                     bucket.getRemainingTokensCount());
+                        final long delay = bucket.tryConsume();
+                        if (delay <= 0) {
+                            return next.handle(context, request);
+                        } else {
+                            return newResponsePromise(tooManyRequests(delay));
+                        }
+                    }
+
+                    private Response tooManyRequests(long delay) {
+                        // http://tools.ietf.org/html/rfc6585#section-4
+                        Response response = new Response(Status.TOO_MANY_REQUESTS);
+                        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.37
+                        response.getHeaders().add("Retry-After", computeRetryAfter(delay));
+                        return response;
+                    }
+
+                    private String computeRetryAfter(final long delay) {
+                        // According to the Javadoc of TimeUnit.convert : 999 ms => 0 sec, but we want to answer 1 sec.
+                        //  999 + 999 = 1998 => 1 second
+                        // 1000 + 999 = 1999 => 1 second
+                        // 1001 + 999 = 2000 => 2 seconds
+                        return Long.toString(SECONDS.convert(delay + 999L, MILLISECONDS));
+                    }
+
+                });
     }
 
-    private ThrottlingAsyncFunction throttle(Context context, Request request, Handler next, String partitionKey) {
-        return new ThrottlingAsyncFunction(context, request, next, partitionKey);
-    }
-
-    private class ThrottlingAsyncFunction implements AsyncFunction<ThrottlingRate, Response, NeverThrowsException> {
-        private final Context context;
-        private final Request request;
-        private final Handler next;
-        private final String partitionKey;
-
-        public ThrottlingAsyncFunction(Context context, Request request, Handler next, String partitionKey) {
-            this.context = context;
-            this.request = request;
-            this.next = next;
-            this.partitionKey = partitionKey;
+    private static Promise<Void, NeverThrowsException> whenAllDone(final Promise<?, ?>... promises) {
+        // Fast exit
+        if (promises == null || promises.length == 0) {
+            return newResultPromise(null);
         }
 
-        @Override
-        public Promise<Response, NeverThrowsException> apply(ThrottlingRate rate) {
-            if (rate == null) {
-                LOGGER.trace("No throttling rate to apply.");
-                // Can't apply any restrictions, continue the chain with no restriction
-                return next.handle(context, request);
-            }
+        final AtomicInteger remaining = new AtomicInteger(promises.length);
+        final PromiseImpl<Void, NeverThrowsException> composite = PromiseImpl.create();
 
-            try {
-                return throttle(selectTokenBucket(partitionKey, rate));
-            } catch (IllegalArgumentException e) {
-                LOGGER.error("Unable to setup the TokenBucket");
-                return newResponsePromise(newInternalServerError(e));
-            }
-        }
-
-        /**
-         * Select the {@code TokenBucket} to use : either the one passed as parameter or an existing one if there was
-         * already a "session" in progress.
-         * If {@code requestGroupingPolicy} is null, then {@literal null} is returned.
-         */
-        private TokenBucket selectTokenBucket(String partitionKey, ThrottlingRate rate) {
-            if (partitionKey == null) {
-                return null;
-            }
-
-            TokenBucket tokenBucket = new TokenBucket(time, rate);
-            for (;;) {
-                TokenBucket previous = buckets.putIfAbsent(partitionKey, tokenBucket);
-                if (previous == null) {
-                    // There was no previous TokenBucket, so go on with that freshly created one
-                    return tokenBucket;
-                } else if (previous.isEquivalent(tokenBucket)) {
-                    // Let's continue with the previous one as it may already be processing some requests
-                    return previous;
-                } else if (buckets.replace(partitionKey, previous, tokenBucket)) {
-                    // The rate definition has changed so try to assign this new TokenBucket
-                    return tokenBucket;
-                } else {
-                    // The rate definition was not the same but has already been updated,
-                    // let's loop once more to see if we get more chance.
+        for (final Promise<?, ?> promise : promises) {
+            promise.thenAlways(new Runnable() {
+                @Override
+                public void run() {
+                    if (remaining.decrementAndGet() == 0) {
+                        composite.handleResult(null);
+                    }
                 }
-            }
+            });
         }
 
-        private Promise<Response, NeverThrowsException> throttle(TokenBucket bucket) {
-            if (bucket == null) {
-                LOGGER.error("No token bucket to use");
-                return newResponsePromise(newInternalServerError());
-            }
-            LOGGER.trace("Applying rate {} requests per {} ms ({} remaining tokens)",
-                         bucket.getCapacity(),
-                         bucket.getDurationInMillis(),
-                         bucket.getRemainingTokensCount());
-            final long delay = bucket.tryConsume();
-            if (delay <= 0) {
-                return next.handle(context, request);
-            } else {
-                return newResponsePromise(tooManyRequests(delay));
-            }
-        }
-
-        private Response tooManyRequests(long delay) {
-            // http://tools.ietf.org/html/rfc6585#section-4
-            Response response = new Response(Status.TOO_MANY_REQUESTS);
-            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.37
-            response.getHeaders().add("Retry-After", computeRetryAfter(delay));
-            return response;
-        }
-
-        private String computeRetryAfter(final long delay) {
-            // According to the Javadoc of TimeUnit.convert : 999 ms => 0 sec, but we want to answer 1 sec.
-            //  999 + 999 = 1998 => 1 second
-            // 1000 + 999 = 1999 => 1 second
-            // 1001 + 999 = 2000 => 2 seconds
-            return Long.toString(SECONDS.convert(delay + 999L, MILLISECONDS));
-        }
-
+        return composite;
     }
 
 }

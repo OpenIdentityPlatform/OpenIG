@@ -91,19 +91,17 @@ public class ThrottlingFilterTest {
     @Test
     public void shouldRespondInternalServerErrorOnNullPartitionKey() throws Exception {
         // Given
-        ThrottlingPolicy throttlingPolicy = mock(ThrottlingPolicy.class);
         filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
                                       TimeService.SYSTEM,
                                       CLEANING_INTERVAL,
                                       new StringRequestAsyncFunction(null),
-                                      throttlingPolicy);
+                                      throttlingRatePolicy(1, duration("3 seconds")));
 
         // When
         Response response = filter.filter(new RootContext(), new Request(), new ResponseHandler(Status.OK)).get();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
-        verifyZeroInteractions(throttlingPolicy);
     }
 
     @SuppressWarnings("unchecked")
