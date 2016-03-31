@@ -84,7 +84,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
         Duration cleaningInterval = asDuration(config.get("cleaningInterval").defaultTo("5 seconds"));
 
         final Expression<String> requestGroupingPolicy =
-                asExpression(getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey").required(),
+                asExpression(getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey").defaultTo(""),
                              String.class);
 
         ThrottlingPolicy throttlingRatePolicy;
