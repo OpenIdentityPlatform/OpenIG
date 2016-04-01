@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.filter;
 
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -34,6 +35,8 @@ import java.util.UUID;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.header.CookieHeader;
+import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -61,11 +64,17 @@ public class PasswordReplayFilterHeapletTest {
     static final String FINAL_CONTENT_MARKER = "[this is the originally required content]";
 
     private HeapImpl heap;
+    private Request protectedExampleGetRequest;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         heap = buildDefaultHeap();
+        protectedExampleGetRequest = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
+        protectedExampleGetRequest.getHeaders().put("Host", "www.example.com");
+        protectedExampleGetRequest.setVersion("HTTP/1.1+");
+        protectedExampleGetRequest.getHeaders().put(new CookieHeader(singletonList(new Cookie().setName("a")
+                                                                                               .setValue("b"))));
     }
 
     private Handler verifyAuthRequestOnlyIsSend() {
@@ -182,7 +191,7 @@ public class PasswordReplayFilterHeapletTest {
         final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_LOGIN);
         filter.filter(context,
                       incoming,
-                      verifyAuthSequenceWithNonceReturned(incoming));
+                      verifyAuthSequenceWithNonceReturned(incoming, "ae32f"));
     }
 
     @Test
@@ -218,14 +227,13 @@ public class PasswordReplayFilterHeapletTest {
                                            .build()
                                  .build();
 
-        final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
         Context context = newContextChain();
         AttributesContext attributesContext = context.asContext(AttributesContext.class);
         attributesContext.getAttributes().put("username", "demo");
         attributesContext.getAttributes().put("password", "changeit");
         Response response = filter.filter(context,
-                                          incoming,
-                                          verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
+                                          protectedExampleGetRequest,
+                                          verifyAuthSequenceAfterReturnedLoginPage(protectedExampleGetRequest)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
     }
 
@@ -250,11 +258,10 @@ public class PasswordReplayFilterHeapletTest {
                                  })
                                  .build();
 
-        final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
         Context context = newContextChain();
         Response response = filter.filter(context,
-                                          incoming,
-                                          verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
+                                          protectedExampleGetRequest,
+                                          verifyAuthSequenceAfterReturnedLoginPage(protectedExampleGetRequest)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
     }
 
@@ -284,41 +291,10 @@ public class PasswordReplayFilterHeapletTest {
                                                  "DES")
                                  .build();
 
-        final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
         Response response = filter.filter(newContextChain(),
-                                          incoming,
-                                          verifyAuthSequenceAfterReturnedLoginPage(incoming)).get();
+                                          protectedExampleGetRequest,
+                                          verifyAuthSequenceAfterReturnedLoginPage(protectedExampleGetRequest)).get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
-    }
-
-    private Handler verifyAuthSequenceAfterReturnedLoginPage(final Request incoming) {
-        return new Handler() {
-            int index = 0;
-            @Override
-            public Promise<Response, NeverThrowsException> handle(final Context context,
-                                                                  final Request request) {
-                switch (index++) {
-                case 0:
-                    // Should be the request forwarded as-is
-                    assertThat(request).isSameAs(incoming);
-                    return newResponsePromise(new Response(Status.OK).setEntity("I'm a login page"));
-                case 1:
-                    // Should be the authentication request
-                    assertThat(request).isNotSameAs(incoming);
-                    assertThat(request.getMethod()).isEqualTo("POST");
-                    assertThat(request.getForm().getFirst("username")).isEqualTo("demo");
-                    assertThat(request.getForm().getFirst("password")).isEqualTo("changeit");
-                    return newResponsePromise(new Response(Status.OK));
-                case 2:
-                    // Should be the request forwarded as-is
-                    assertThat(request).isSameAs(incoming);
-                    return newResponsePromise(new Response(Status.OK).setEntity(FINAL_CONTENT_MARKER));
-                default:
-                    fail("No other expected interactions");
-                }
-                return newResponsePromise(new Response(Status.INTERNAL_SERVER_ERROR));
-            }
-        };
     }
 
     @Test
@@ -332,13 +308,12 @@ public class PasswordReplayFilterHeapletTest {
                                            .build()
                                  .build();
 
-        final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
         Context context = newContextChain();
         Response expected = new Response(Status.OK).setEntity(FINAL_CONTENT_MARKER);
         Response response = filter.filter(context,
-                                           incoming,
-                                           verifyOriginalRequestIsForwarded(incoming,
-                                                                            expected)).get();
+                                          protectedExampleGetRequest,
+                                          verifyOriginalRequestIsForwarded(protectedExampleGetRequest,
+                                                                           expected)).get();
         assertThat(response).isEqualTo(expected);
     }
 
@@ -350,8 +325,8 @@ public class PasswordReplayFilterHeapletTest {
                                                                   final Request request) {
                 switch (index++) {
                 case 0:
-                    // Should be the request forwarded as-is
-                    assertThat(request).isSameAs(incoming);
+                    // Should be the same content as the request forwarded
+                    assertThatRequestsAreEquals(request, incoming);
                     return newResponsePromise(response);
                 default:
                     fail("No other expected interactions");
@@ -374,18 +349,22 @@ public class PasswordReplayFilterHeapletTest {
                                            .build()
                                  .build();
 
-        final Request incoming = new Request().setMethod("GET").setUri(HTTP_WWW_EXAMPLE_COM_PROTECTED);
         Context context = newContextChain();
         AttributesContext attributesContext = context.asContext(AttributesContext.class);
         attributesContext.getAttributes().put("username", "demo");
         attributesContext.getAttributes().put("password", "changeit");
         Response response = filter.filter(context,
-                                          incoming,
-                                          verifyAuthSequenceWithNonceReturned(incoming)).get();
+                                          protectedExampleGetRequest,
+                                          verifyAuthSequenceWithNonceReturned(protectedExampleGetRequest, "ae32f"))
+                                  .get();
         assertThat(response.getEntity().getString()).isEqualTo(FINAL_CONTENT_MARKER);
     }
 
-    private Handler verifyAuthSequenceWithNonceReturned(final Request incoming) {
+    private Handler verifyAuthSequenceAfterReturnedLoginPage(final Request incoming) {
+        return verifyAuthSequenceWithNonceReturned(incoming, null);
+    }
+
+    private Handler verifyAuthSequenceWithNonceReturned(final Request incoming, final String nonce) {
         return new Handler() {
             int index = 0;
             @Override
@@ -393,21 +372,23 @@ public class PasswordReplayFilterHeapletTest {
                                                                   final Request request) {
                 switch (index++) {
                 case 0:
-                    // Should be the request forwarded as-is
-                    assertThat(request).isSameAs(incoming);
-                    return newResponsePromise(new Response(Status.OK)
-                                                      .setEntity("I'm a login page (nonce='ae32f')"));
+                    // Should be the same content as the request forwarded
+                    assertThatRequestsAreEquals(request, incoming);
+                    return newResponsePromise(new Response(Status.OK).setEntity(format("I'm a login page (nonce='%s')",
+                                                                                       nonce)));
                 case 1:
                     // Should be the authentication request
                     assertThat(request).isNotSameAs(incoming);
                     assertThat(request.getMethod()).isEqualTo("POST");
                     assertThat(request.getForm().getFirst("username")).isEqualTo("demo");
                     assertThat(request.getForm().getFirst("password")).isEqualTo("changeit");
-                    assertThat(request.getForm().getFirst("nonce")).isEqualTo("ae32f");
+                    if (nonce != null) {
+                        assertThat(request.getForm().getFirst("nonce")).isEqualTo(nonce);
+                    }
                     return newResponsePromise(new Response(Status.OK));
                 case 2:
-                    // Should be the request forwarded as-is
-                    assertThat(request).isSameAs(incoming);
+                    // The original request and incoming must be equals
+                    assertThatRequestsAreEquals(request, incoming);
                     return newResponsePromise(new Response(Status.OK).setEntity(FINAL_CONTENT_MARKER));
                 default:
                     fail("No other expected interactions");
@@ -415,6 +396,19 @@ public class PasswordReplayFilterHeapletTest {
                 return newResponsePromise(new Response(Status.INTERNAL_SERVER_ERROR));
             }
         };
+    }
+
+    private static void assertThatRequestsAreEquals(final Request original, final Request incoming) {
+        assertThat(incoming.getMethod()).isEqualTo(original.getMethod());
+        assertThat(incoming.getUri()).isEqualTo(original.getUri());
+        try {
+            assertThat(incoming.getEntity().getString()).isEqualTo(original.getEntity().getString());
+        } catch (IOException e) {
+            fail("An error occurred while reading the entity content");
+        }
+        assertThat(incoming.getHeaders().keySet()).isEqualTo(original.getHeaders().keySet());
+        assertThat(incoming.getForm().toQueryString()).isEqualTo(original.getForm().toQueryString());
+        assertThat(incoming.getVersion()).isEqualTo(original.getVersion());
     }
 
     private Context newContextChain() {
