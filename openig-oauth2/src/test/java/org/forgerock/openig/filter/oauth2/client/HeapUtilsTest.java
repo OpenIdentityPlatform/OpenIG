@@ -11,12 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
 
@@ -39,6 +41,7 @@ public final class HeapUtilsTest {
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
+        heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         return heap;
     }
 }
