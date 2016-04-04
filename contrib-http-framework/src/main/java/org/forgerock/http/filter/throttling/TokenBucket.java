@@ -120,7 +120,10 @@ class TokenBucket {
 
                 if (counter <= 0) {
                     // We had not any opportunity to refill the bucket so we just give up
-                    return (currentState.timestampLastRefill + (long) this.millisToWaitForNextToken) - now;
+                    long delayForNextRetryInMillis =
+                            (currentState.timestampLastRefill + (long) this.millisToWaitForNextToken) - now;
+                    // Return at least 1ms to indicate we did not consume a token
+                    return Math.max(delayForNextRetryInMillis, 1);
                 }
                 counter--;
                 newState = new State(counter, timestampLastRefill);

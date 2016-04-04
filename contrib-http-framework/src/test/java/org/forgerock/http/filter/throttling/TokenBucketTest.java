@@ -44,7 +44,7 @@ public class TokenBucketTest {
 
     @Test
     public void shouldTheBucketBeRefilled() throws Exception {
-        FakeTimeService time = new FakeTimeService(0);
+        FakeTimeService time = new FakeTimeService(0); // t0
 
         // a token bucket that can refill 1 token every 333.333 ms.
         TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
@@ -52,18 +52,18 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2);
 
-        time.advance(1);
+        time.advance(1); // t0 + 1 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Second time < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(1);
 
-        time.advance(1);
+        time.advance(1); // t0 + 2 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Third time < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(0);
 
-        time.advance(1);
+        time.advance(1); // t0 + 3 ms
         assertThat(bucket.tryConsume()).isEqualTo(330); // Not enough elapsed time to get a refill
 
-        time.advance(330);
+        time.advance(331); // t0 + 334 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Enough elapsed time to get a refill
     }
 
@@ -80,6 +80,20 @@ public class TokenBucketTest {
         time.advance(1);
         assertThat(bucket.tryConsume()).isEqualTo(0); // Second time < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
+    }
+
+    @Test
+    public void shouldNotConsumeMoreTokensThanExpected() throws Exception {
+        FakeTimeService time = new FakeTimeService(42);
+        // 3 reqs / sec means it has a unlimited fractional part
+        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
+
+        // Simulate some heavy load by trying to consume some tokens in the same millisecond : only the first one
+        // has to be consumed.
+        assertThat(bucket.tryConsume()).as("Consume first token").isLessThanOrEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume second token").isLessThanOrEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume third token").isLessThanOrEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume fourth token").isGreaterThan(0);
     }
 
 }
