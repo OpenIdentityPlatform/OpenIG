@@ -21,6 +21,10 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.ISSUER_URI;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.TOKEN_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.USER_INFO_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildIssuerWithoutWellKnownEndpoint;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -52,12 +56,6 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class ClientRegistrationTest {
 
-    private static final String AUTHORIZE_ENDPOINT = "/openam/oauth2/authorize";
-    private static final String TOKEN_ENDPOINT = "/openam/oauth2/access_token";
-    private static final String USER_INFO_ENDPOINT = "/openam/oauth2/userinfo";
-    private static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
-    private static final String SAMPLE_URI = "http://www.example.com:8089";
-
     private Context context;
     private OAuth2Session session;
 
@@ -78,7 +76,7 @@ public class ClientRegistrationTest {
     }
 
     @DataProvider
-    private Object[][] validConfigurations() {
+    private static Object[][] validConfigurations() {
         return new Object[][] {
             /* Minimal configuration. */
             { json(object(
@@ -96,7 +94,7 @@ public class ClientRegistrationTest {
     }
 
     @DataProvider
-    private Object[][] missingRequiredAttributes() {
+    private static Object[][] missingRequiredAttributes() {
         return new Object[][] {
             /* Missing clientId. */
             { json(object(
@@ -117,7 +115,7 @@ public class ClientRegistrationTest {
     }
 
     @DataProvider
-    private Object[][] errorResponseStatus() {
+    private static Object[][] errorResponseStatus() {
         return new Status[][] {
             { Status.BAD_REQUEST },
             { Status.BAD_GATEWAY } };
@@ -169,7 +167,7 @@ public class ClientRegistrationTest {
         verify(handler).handle(eq(context), captor.capture());
         final Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
-        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(request.getUri().toASCIIString()).isEqualTo(ISSUER_URI + TOKEN_ENDPOINT);
         assertThat(request.getEntity().getString()).contains("grant_type=authorization_code",
                                                              "redirect_uri=" + callbackUri, "code=" + code);
     }
@@ -202,7 +200,7 @@ public class ClientRegistrationTest {
         verify(handler).handle(eq(context), captor.capture());
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
-        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(request.getUri().toASCIIString()).isEqualTo(ISSUER_URI + TOKEN_ENDPOINT);
         assertThat(request.getEntity().getString()).contains("grant_type=refresh_token");
     }
 
@@ -235,7 +233,7 @@ public class ClientRegistrationTest {
         verify(handler).handle(eq(context), captor.capture());
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getUri().toASCIIString()).isEqualTo(SAMPLE_URI + USER_INFO_ENDPOINT);
+        assertThat(request.getUri().toASCIIString()).isEqualTo(ISSUER_URI + USER_INFO_ENDPOINT);
         assertThat(request.getHeaders().get("Authorization").getValues()).isNotEmpty();
     }
 
@@ -259,26 +257,17 @@ public class ClientRegistrationTest {
                                              field("scopes", array("openid"))));
         return new ClientRegistration(null,
                                       config,
-                                      getIssuer(),
+                                      buildIssuerWithoutWellKnownEndpoint("myIssuer"),
                                       handler);
     }
 
-    private HeapImpl buildDefaultHeap() throws Exception {
+    private static HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = HeapUtilsTest.buildDefaultHeap();
-        heap.put("myIssuer", getIssuer());
+        heap.put("myIssuer", buildIssuerWithoutWellKnownEndpoint("myIssuer"));
         return heap;
     }
 
-    private Issuer getIssuer() throws Exception {
-        final JsonValue configuration = json(object(
-                field("authorizeEndpoint", SAMPLE_URI + AUTHORIZE_ENDPOINT),
-                field("registrationEndpoint", SAMPLE_URI + REGISTRATION_ENDPOINT),
-                field("tokenEndpoint", SAMPLE_URI + TOKEN_ENDPOINT),
-                field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT)));
-        return new Issuer("myIssuer", configuration);
-    }
-
-    private JsonValue setErrorEntity() {
+    private static JsonValue setErrorEntity() {
         return json(object(field("error", "Generated by tests")));
     }
 }

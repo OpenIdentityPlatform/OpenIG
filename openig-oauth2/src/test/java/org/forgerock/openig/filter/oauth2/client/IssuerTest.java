@@ -23,6 +23,12 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.AUTHORIZE_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.ISSUER_URI;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.REGISTRATION_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.TOKEN_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.USER_INFO_ENDPOINT;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.WELLKNOWN_ENDPOINT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,7 +36,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -38,6 +43,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -49,12 +55,6 @@ import org.testng.annotations.Test;
 /** Unit tests for the Issuer class. */
 @SuppressWarnings("javadoc")
 public class IssuerTest {
-    private static final String AUTHORIZE_ENDPOINT = "/openam/oauth2/authorize";
-    private static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
-    private static final String TOKEN_ENDPOINT = "/openam/oauth2/access_token";
-    private static final String USER_INFO_ENDPOINT = "/openam/oauth2/userinfo";
-    private static final String WELLKNOWN_ENDPOINT = "/openam/oauth2/.well-known/openid-configuration";
-    private static final String SAMPLE_URI = "http://www.example.com:8089";
 
     @Captor
     private ArgumentCaptor<Request> captor;
@@ -68,7 +68,7 @@ public class IssuerTest {
     }
 
     @DataProvider
-    private Object[][] validConfigurations() {
+    private static Object[][] validConfigurations() {
         return new Object[][] {
             { json(object(
                     field("authorizeEndpoint", "http://www.example.com:8089/openam/oauth2/authorize"),
@@ -81,7 +81,7 @@ public class IssuerTest {
     }
 
     @DataProvider
-    private Object[][] missingRequiredAttributes() {
+    private static Object[][] missingRequiredAttributes() {
         return new Object[][] {
             /* Missing authorizeEndpoint. */
             { json(object(
@@ -106,18 +106,19 @@ public class IssuerTest {
         final Issuer.Heaplet heaplet = new Issuer.Heaplet();
         final Issuer issuer = (Issuer) heaplet.create(Name.of("myIssuer"), config, buildDefaultHeap());
         assertThat(issuer.getName()).isEqualTo("myIssuer");
-        assertThat(issuer.getAuthorizeEndpoint().toString()).isEqualTo(SAMPLE_URI + AUTHORIZE_ENDPOINT);
-        assertThat(issuer.getTokenEndpoint().toString()).isEqualTo(SAMPLE_URI + TOKEN_ENDPOINT);
+        assertThat(issuer.getAuthorizeEndpoint().toString()).isEqualTo(ISSUER_URI + AUTHORIZE_ENDPOINT);
+        assertThat(issuer.getTokenEndpoint().toString()).isEqualTo(ISSUER_URI + TOKEN_ENDPOINT);
     }
 
     @Test
     public void shouldCreateIssuer() throws Exception {
-        final Issuer issuer = new Issuer("myIssuer", buildJsonConfig());
-        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(create(SAMPLE_URI + AUTHORIZE_ENDPOINT));
-        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(create(SAMPLE_URI + REGISTRATION_ENDPOINT));
-        assertThat(issuer.getTokenEndpoint()).isEqualTo(create(SAMPLE_URI + TOKEN_ENDPOINT));
-        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(create(SAMPLE_URI + USER_INFO_ENDPOINT));
-        assertThat(issuer.getWellKnownEndpoint()).isEqualTo(create(SAMPLE_URI + WELLKNOWN_ENDPOINT));
+        final Issuer issuer = OAuth2TestUtils.buildIssuer("myIssuer", true);
+
+        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(create(ISSUER_URI + AUTHORIZE_ENDPOINT));
+        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(create(ISSUER_URI + REGISTRATION_ENDPOINT));
+        assertThat(issuer.getTokenEndpoint()).isEqualTo(create(ISSUER_URI + TOKEN_ENDPOINT));
+        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(create(ISSUER_URI + USER_INFO_ENDPOINT));
+        assertThat(issuer.getWellKnownEndpoint()).isEqualTo(create(ISSUER_URI + WELLKNOWN_ENDPOINT));
     }
 
     @Test
@@ -127,7 +128,7 @@ public class IssuerTest {
         response.setStatus(Status.OK);
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
 
-        final URI wellKnownUri = new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT);
+        final URI wellKnownUri = new URI(ISSUER_URI + WELLKNOWN_ENDPOINT);
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
@@ -139,10 +140,10 @@ public class IssuerTest {
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toString()).isEqualTo(wellKnownUri.toString());
         assertThat(issuer.getName()).isEqualTo("myIssuer");
-        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(new URI(SAMPLE_URI + AUTHORIZE_ENDPOINT));
-        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
-        assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(SAMPLE_URI + TOKEN_ENDPOINT));
-        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(SAMPLE_URI + USER_INFO_ENDPOINT));
+        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(new URI(ISSUER_URI + AUTHORIZE_ENDPOINT));
+        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(ISSUER_URI + REGISTRATION_ENDPOINT));
+        assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(ISSUER_URI + TOKEN_ENDPOINT));
+        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(ISSUER_URI + USER_INFO_ENDPOINT));
         assertThat(issuer.getSupportedDomains()).isEmpty();
     }
 
@@ -153,7 +154,7 @@ public class IssuerTest {
         response.setStatus(Status.OK);
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
-        final URI wellKnownUri = new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT);
+        final URI wellKnownUri = new URI(ISSUER_URI + WELLKNOWN_ENDPOINT);
 
         // when
         final Issuer issuer = Issuer.build(new RootContext(),
@@ -168,10 +169,10 @@ public class IssuerTest {
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toString()).isEqualTo(wellKnownUri.toString());
         assertThat(issuer.getName()).isEqualTo("myIssuer");
-        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(new URI(SAMPLE_URI + AUTHORIZE_ENDPOINT));
-        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(SAMPLE_URI + REGISTRATION_ENDPOINT));
-        assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(SAMPLE_URI + TOKEN_ENDPOINT));
-        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(SAMPLE_URI + USER_INFO_ENDPOINT));
+        assertThat(issuer.getAuthorizeEndpoint()).isEqualTo(new URI(ISSUER_URI + AUTHORIZE_ENDPOINT));
+        assertThat(issuer.getRegistrationEndpoint()).isEqualTo(new URI(ISSUER_URI + REGISTRATION_ENDPOINT));
+        assertThat(issuer.getTokenEndpoint()).isEqualTo(new URI(ISSUER_URI + TOKEN_ENDPOINT));
+        assertThat(issuer.getUserInfoEndpoint()).isEqualTo(new URI(ISSUER_URI + USER_INFO_ENDPOINT));
         assertThat(issuer.getSupportedDomains()).hasSize(2);
     }
 
@@ -183,7 +184,7 @@ public class IssuerTest {
         response.setEntity(json(object(field("invalid", "response"))));
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
-        Issuer.build(new RootContext(), "myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler)
+        Issuer.build(new RootContext(), "myIssuer", new URI(ISSUER_URI + WELLKNOWN_ENDPOINT), null, handler)
               .getOrThrow();
     }
 
@@ -195,25 +196,15 @@ public class IssuerTest {
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
-        Issuer.build(new RootContext(), "myIssuer", new URI(SAMPLE_URI + WELLKNOWN_ENDPOINT), null, handler)
+        Issuer.build(new RootContext(), "myIssuer", new URI(ISSUER_URI + WELLKNOWN_ENDPOINT), null, handler)
               .getOrThrow();
     }
 
-    private JsonValue getValidWellKnownOpenIdConfigurationResponse() {
+    private static JsonValue getValidWellKnownOpenIdConfigurationResponse() {
         return json(object(
-                        field("authorizeEndpoint", SAMPLE_URI + AUTHORIZE_ENDPOINT),
-                        field("registrationEndpoint", SAMPLE_URI + REGISTRATION_ENDPOINT),
-                        field("tokenEndpoint", SAMPLE_URI + TOKEN_ENDPOINT),
-                        field("userInfoEndpoint", SAMPLE_URI + USER_INFO_ENDPOINT)));
-    }
-
-    private JsonValue buildJsonConfig() {
-        return json(object(
-                    field("authorizeEndpoint", "http://www.example.com:8089/openam/oauth2/authorize"),
-                    field("registrationEndpoint", "http://www.example.com:8089/openam/oauth2/connect/register"),
-                    field("tokenEndpoint", "http://www.example.com:8089/openam/oauth2/access_token"),
-                    field("userInfoEndpoint", "http://www.example.com:8089/openam/oauth2/userinfo"),
-                    field("wellKnownEndpoint",
-                            "http://www.example.com:8089/openam/oauth2/.well-known/openid-configuration")));
+                        field("authorizeEndpoint", ISSUER_URI + AUTHORIZE_ENDPOINT),
+                        field("registrationEndpoint", ISSUER_URI + REGISTRATION_ENDPOINT),
+                        field("tokenEndpoint", ISSUER_URI + TOKEN_ENDPOINT),
+                        field("userInfoEndpoint", ISSUER_URI + USER_INFO_ENDPOINT)));
     }
 }
