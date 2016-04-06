@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -180,6 +180,9 @@ public class ExpressionTest {
                         + "and request.form['action'][0] != 'logout'}", Boolean.class);
         assertThat(boolExpr.eval(bindings)).isTrue();
 
+        boolExpr = Expression.valueOf("${request.uri.path == '/wordpress/wp-login.php' ? true : false}", Boolean.class);
+        assertThat(boolExpr.eval(bindings)).isTrue();
+
         boolExpr = Expression.valueOf("${request.uri.host == 'wiki.example.com'}", Boolean.class);
         assertThat(boolExpr.eval(bindings)).isTrue();
 
@@ -210,6 +213,10 @@ public class ExpressionTest {
 
         stringExpr = Expression.valueOf("${request.headers['cookie'][0]}", String.class);
         assertThat(stringExpr.eval(bindings)).isNotNull();
+
+        stringExpr = Expression.valueOf(
+                "${empty request.headers['cookie'][0] ? 'name=Tesla' : request.headers['cookie'][0]}", String.class);
+        assertThat(stringExpr.eval(bindings)).isEqualTo("SESSION=value; path=/");
 
         stringExpr = Expression.valueOf("${response.headers['Set-Cookie'][0]}", String.class);
         assertThat(stringExpr.eval(bindings)).isEqualTo("MyCookie=example; Path=/");
