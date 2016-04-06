@@ -315,18 +315,14 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldAuthorizeAccessToRequestedResource() throws Exception {
         // Given
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri(RESOURCE_URI);
-
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
-        when(next.handle(any(Context.class), eq(request)))
+        when(next.handle(any(Context.class), eq(resourceRequest)))
             .thenReturn(newResponsePromise(displayResourceResponse()));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
-                                                     request,
+                                                     resourceRequest,
                                                      next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
@@ -358,10 +354,6 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldFailDueToInvalidServerResponse() throws Exception {
         // Given
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri(RESOURCE_URI);
-
         final Response errorResponse = new Response();
         errorResponse.setStatus(GATEWAY_TIMEOUT);
 
@@ -373,7 +365,7 @@ public class PolicyEnforcementFilterTest {
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
-                                                     request,
+                                                     resourceRequest,
                                                      next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
@@ -418,9 +410,6 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
         // Given
-        final Request request = new Request();
-        request.setMethod("GET").setUri(RESOURCE_URI);
-
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
                                                                      target,
                                                                      policiesHandler);
@@ -429,37 +418,37 @@ public class PolicyEnforcementFilterTest {
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
         filter.setCache(new ThreadSafeCache<String, Promise<JsonValue, ResourceException>>(executorService));
 
-        when(next.handle(any(Context.class), eq(request)))
+        when(next.handle(any(Context.class), eq(resourceRequest)))
             .thenReturn(newResponsePromise(displayResourceResponse()));
 
         // When first call
         filter.filter(attributesContext,
-                      request,
+                      resourceRequest,
                       next).get();
         // Then
         verify(policiesHandler).handle(any(Context.class), any(Request.class));
-        verify(next).handle(attributesContext, request);
+        verify(next).handle(attributesContext, resourceRequest);
         verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
         // When second call
         // The policies handler, which provides the policy response, is not called
         // as the cache entry has not been evicted yet
         filter.filter(attributesContext,
-                      request,
+                      resourceRequest,
                       next).get();
 
-        verify(next, times(2)).handle(attributesContext, request);
+        verify(next, times(2)).handle(attributesContext, resourceRequest);
 
         // Mimic cache expiration
         captor.getValue().run();
 
         // When third call: the policiesHandler must do another call to get the policy decision result.
         filter.filter(attributesContext,
-                      request,
+                      resourceRequest,
                       next).get();
 
         verify(policiesHandler, times(2)).handle(any(Context.class), any(Request.class));
-        verify(next, times(3)).handle(attributesContext, request);
+        verify(next, times(3)).handle(attributesContext, resourceRequest);
     }
 
     @DataProvider
@@ -494,29 +483,21 @@ public class PolicyEnforcementFilterTest {
     @Test(dataProvider = "invalidClaimsEnvironment", expectedExceptions = { JsonValueException.class,
                                                                             ExpressionException.class })
     public void shouldFailToBuildResource(final Object claims, final Object environment) throws Exception {
-        final Request request = new Request();
-        request.setMethod("GET").setUri(RESOURCE_URI);
-
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
                 buildMinimalHeapletConfiguration().put("claimsSubject", claims)
                                                   .put("environment", environment));
 
-        filter.buildResources(attributesContext, request);
+        filter.buildResources(attributesContext, resourceRequest);
     }
 
     @Test
     public void shouldSucceedToBuildResource() throws Exception {
-        final Request request = new Request();
-        request.setMethod("GET").setUri(RESOURCE_URI);
-
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(buildMinimalHeapletConfiguration());
 
-        final JsonValue resources = filter.buildResources(attributesContext, request);
+        final JsonValue resources = filter.buildResources(attributesContext, resourceRequest);
 
         assertThat(resources).hasSize(2);
-        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
-        // The ssoToken is given in the buildMinimalHeapletConfiguration
-        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
+        assertResourcesContainResourceURIAndSsoToken(resources);
     }
 
     @DataProvider
@@ -538,19 +519,14 @@ public class PolicyEnforcementFilterTest {
     @Test(dataProvider = "claims")
     public void shouldSucceedToBuildClaimsResource(final Object claims,
                                                    final Map<String, Object> evaluated) throws Exception {
-        final Request request = new Request();
-        request.setMethod("GET").setUri(RESOURCE_URI);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
                 buildMinimalHeapletConfiguration().put("claimsSubject", claims));
 
-        final JsonValue resources = filter.buildResources(attributesContext, request);
+        final JsonValue resources = filter.buildResources(attributesContext, resourceRequest);
 
         assertThat(resources).hasSize(2);
-        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
-        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken", "claims");
-        // The ssoToken is given in the buildMinimalHeapletConfiguration
-        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        assertResourcesContainResourceURIAndSubjects(resources, "ssoToken", "claims");
         assertThat(resources.get("subject").get("claims").asMap()).isEqualTo(evaluated);
     }
 
@@ -563,18 +539,14 @@ public class PolicyEnforcementFilterTest {
 
     @Test(dataProvider = "environment")
     public void shouldSucceedToBuildEnvironmentResource(final Object environment) throws Exception {
-        final Request request = new Request();
-        request.setMethod("GET").setUri(RESOURCE_URI);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter(
                 buildMinimalHeapletConfiguration().put("environment", environment));
 
-        final JsonValue resources = filter.buildResources(attributesContext, request);
+        final JsonValue resources = filter.buildResources(attributesContext, resourceRequest);
 
-        assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
-        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
-        // The ssoToken is given in the buildMinimalHeapletConfiguration
-        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        assertThat(resources).hasSize(3);
+        assertResourcesContainResourceURIAndSsoToken(resources);
         assertThat(resources.get("environment").get("IP").asList()).isEqualTo(IP_LIST);
     }
 
@@ -599,10 +571,18 @@ public class PolicyEnforcementFilterTest {
     }
 
     private static void assertResourcesContainResourceURIAndSsoToken(final JsonValue resources) {
+        assertResourcesContainResourceURIAndSubjects(resources, "ssoToken");
+    }
+
+    private static void assertResourcesContainResourceURIAndSubjects(final JsonValue resources,
+                                                                     final String... subjects) {
         assertThat(resources.get("resources").get(0).asString()).isEqualTo(RESOURCE_URI);
-        assertThat(resources.get("subject").asMap()).containsOnlyKeys("ssoToken");
-        // The ssoToken is given in the buildMinimalHeapletConfiguration
-        assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        Map<String, Object> subjectsResources = resources.get("subject").asMap();
+        assertThat(subjectsResources).containsOnlyKeys(subjects);
+        if (subjectsResources.containsKey("ssoToken")) {
+            // The ssoToken is given in the buildMinimalHeapletConfiguration
+            assertThat(resources.get("subject").get("ssoToken").asString()).isEqualTo(TOKEN);
+        }
     }
 
     @SuppressWarnings("unchecked")
