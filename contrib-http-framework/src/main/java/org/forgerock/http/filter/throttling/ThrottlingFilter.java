@@ -15,22 +15,14 @@
  */
 package org.forgerock.http.filter.throttling;
 
-import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
-import static org.forgerock.util.time.Duration.duration;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.forgerock.http.ContextAndRequest;
@@ -41,12 +33,9 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
-import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,87 +48,35 @@ import org.slf4j.LoggerFactory;
  */
 public class ThrottlingFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ThrottlingFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ThrottlingFilter.class);
 
-    private final TimeService time;
     private final AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy;
     private final ThrottlingPolicy throttlingRatePolicy;
-    private final ConcurrentMap<String, TokenBucket> buckets;
-    private final ScheduledFuture<?> cleaningFuture;
-
-    private class CleaningThread implements Runnable {
-
-        @Override
-        public void run() {
-            final ConcurrentMap<String, TokenBucket> buckets = ThrottlingFilter.this.buckets;
-            Iterator<Map.Entry<String, TokenBucket>> iterator = buckets.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, TokenBucket> entry = iterator.next();
-                TokenBucket tokenBucket = entry.getValue();
-                if (tokenBucket.isExpired()) {
-                    iterator.remove();
-                    ThrottlingFilter.LOGGER.trace("Cleaned the partition {}", entry.getKey());
-                }
-            }
-        }
-
-    }
+    private final ThrottlingStrategy throttlingStrategy;
 
     /**
      * Constructs a ThrottlingFilter.
      *
-     * @param scheduledExecutor
-     *         the scheduled executor service used to schedule house cleaning tasks (must not be {@code null}).
-     * @param time
-     *         the time service (must not be {@code null}).
-     * @param cleaningInterval
-     *         the interval to wait for cleaning outdated buckets (must not be {@code null} and in the range
-     *         ]0, 1 day]).
      * @param requestGroupingPolicy
      *         the key used to identify the token bucket (must not be {@code null}).
      * @param throttlingRatePolicy
      *         the datasource where to lookup for the rate to apply (must not be {@code null}).
+     * @param throttlingStrategy
+     *         the throttling strategy to apply.
      */
-    public ThrottlingFilter(ScheduledExecutorService scheduledExecutor,
-                            TimeService time,
-                            Duration cleaningInterval,
-                            AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy,
-                            ThrottlingPolicy throttlingRatePolicy) {
-        this(scheduledExecutor,
-             time,
-             cleaningInterval,
-             requestGroupingPolicy,
-             throttlingRatePolicy,
-             new ConcurrentHashMap<String, TokenBucket>());
-    }
-
-    @VisibleForTesting
-    ThrottlingFilter(ScheduledExecutorService scheduledExecutor,
-                     TimeService time,
-                     Duration cleaningInterval,
-                     AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy,
-                     ThrottlingPolicy throttlingRatePolicy,
-                     ConcurrentMap<String, TokenBucket> buckets) {
-        this.time = checkNotNull(time);
+    public ThrottlingFilter(AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy,
+                            ThrottlingPolicy throttlingRatePolicy,
+                            ThrottlingStrategy throttlingStrategy) {
         this.requestGroupingPolicy = checkNotNull(requestGroupingPolicy);
         this.throttlingRatePolicy = checkNotNull(throttlingRatePolicy);
-        this.buckets = checkNotNull(buckets);
-        if (cleaningInterval.isZero() || cleaningInterval.compareTo(duration(1, DAYS)) > 0) {
-            throw new IllegalArgumentException("Invalid value for cleaningInterval : "
-                                                       + "it has to be in the range ]0, 1 day]");
-        }
-
-        cleaningFuture = scheduledExecutor.scheduleWithFixedDelay(new CleaningThread(),
-                                                                  0, // no delay
-                                                                  cleaningInterval.getValue(),
-                                                                  cleaningInterval.getUnit());
+        this.throttlingStrategy = checkNotNull(throttlingStrategy);
     }
 
     /**
      * Stops this filter and frees the resources.
      */
     public void stop() {
-        cleaningFuture.cancel(false);
+        throttlingStrategy.stop();
     }
 
     @Override
@@ -159,65 +96,35 @@ public class ThrottlingFilter implements Filter {
                         try {
                             String partitionKey = partitionKeyPromise.get();
                             if (partitionKey == null) {
-                                LOGGER.error("Did not expect a null value for the partition key after "
+                                logger.error("Did not expect a null value for the partition key after "
                                                      + "having evaluated the function");
                                 return newResponsePromise(newInternalServerError());
                             }
 
                             ThrottlingRate throttlingRate = throttlingRatePromise.get();
                             if (throttlingRate == null) {
-                                LOGGER.trace("No throttling throttlingRate to apply.");
+                                logger.trace("No throttling throttlingRate to apply.");
                                 // Can't apply any restrictions, continue the chain with no restriction
                                 return next.handle(context, request);
                             }
 
-                            return throttle(selectTokenBucket(partitionKey, throttlingRate));
+                            return throttlingStrategy.throttle(partitionKey, throttlingRate)
+                                                     .thenAsync(applyThrottlingDecision());
                         } catch (ExecutionException | InterruptedException | IllegalArgumentException e) {
                             return newResponsePromise(newInternalServerError(e));
                         }
                     }
 
-                    /**
-                     * Select the {@code TokenBucket} to use : either the one passed as parameter or an
-                     * existing one if there was
-                     * already a "session" in progress.
-                     * If {@code requestGroupingPolicy} is null, then {@literal null} is returned.
-                     */
-                    private TokenBucket selectTokenBucket(String partitionKey, ThrottlingRate rate) {
-                        TokenBucket tokenBucket = new TokenBucket(time, rate);
-                        for (;;) {
-                            TokenBucket previous = buckets.putIfAbsent(partitionKey, tokenBucket);
-                            if (previous == null) {
-                                // There was no previous TokenBucket, so go on with that freshly created one
-                                return tokenBucket;
-                            } else if (previous.isEquivalent(tokenBucket)) {
-                                // Let's continue with the previous one as it may already be processing some requests
-                                return previous;
-                            } else if (buckets.replace(partitionKey, previous, tokenBucket)) {
-                                // The rate definition has changed so try to assign this new TokenBucket
-                                return tokenBucket;
-                            } else {
-                                // The rate definition was not the same but has already been updated,
-                                // let's loop once more to see if we get more chance.
+                    private AsyncFunction<Long, Response, NeverThrowsException> applyThrottlingDecision() {
+                        return new AsyncFunction<Long, Response, NeverThrowsException>() {
+                            @Override
+                            public Promise<? extends Response, ? extends NeverThrowsException> apply(Long delay) {
+                                if (delay <= 0) {
+                                    return next.handle(context, request);
+                                }
+                                return newResponsePromise(tooManyRequests(delay));
                             }
-                        }
-                    }
-
-                    private Promise<Response, NeverThrowsException> throttle(TokenBucket bucket) {
-                        if (bucket == null) {
-                            LOGGER.error("No token bucket to use");
-                            return newResponsePromise(newInternalServerError());
-                        }
-                        LOGGER.trace("Applying rate {} requests per {} ms ({} remaining tokens)",
-                                     bucket.getCapacity(),
-                                     bucket.getDurationInMillis(),
-                                     bucket.getRemainingTokensCount());
-                        final long delay = bucket.tryConsume();
-                        if (delay <= 0) {
-                            return next.handle(context, request);
-                        } else {
-                            return newResponsePromise(tooManyRequests(delay));
-                        }
+                        };
                     }
 
                     private Response tooManyRequests(long delay) {

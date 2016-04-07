@@ -15,25 +15,21 @@
  */
 package org.forgerock.http.filter.throttling;
 
-import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.util.promise.Promises.newResultPromise;
-import static org.forgerock.util.time.Duration.UNLIMITED;
-import static org.forgerock.util.time.Duration.ZERO;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.forgerock.http.ContextAndRequest;
 import org.forgerock.http.Handler;
@@ -41,22 +37,18 @@ import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class ThrottlingFilterTest {
-
-    private static final Duration CLEANING_INTERVAL = Duration.duration("5 seconds");
 
     private ThrottlingFilter filter;
 
@@ -67,34 +59,12 @@ public class ThrottlingFilterTest {
         }
     }
 
-    @DataProvider
-    public static Object[][] incorrectCleaningIntervals() {
-        //@Checkstyle:off
-        return new Object[][]{
-                { ZERO },
-                { UNLIMITED },
-                { duration(25, TimeUnit.HOURS) },
-        };
-        //@Checkstyle:on
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class, dataProvider = "incorrectCleaningIntervals")
-    public void shouldRefuseIncorrectCleaningInterval(Duration cleaningInterval) throws Exception {
-        new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                             TimeService.SYSTEM,
-                             cleaningInterval,
-                             new StringRequestAsyncFunction(null),
-                             throttlingRatePolicy(1, duration("3 seconds")));
-    }
-
     @Test
     public void shouldRespondInternalServerErrorOnNullPartitionKey() throws Exception {
         // Given
-        filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                                      TimeService.SYSTEM,
-                                      CLEANING_INTERVAL,
-                                      new StringRequestAsyncFunction(null),
-                                      throttlingRatePolicy(1, duration("3 seconds")));
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction(null),
+                                      throttlingRatePolicy(1, duration("3 seconds")),
+                                      mock(ThrottlingStrategy.class));
 
         // When
         Response response = filter.filter(new RootContext(), new Request(), new ResponseHandler(Status.OK)).get();
@@ -103,25 +73,38 @@ public class ThrottlingFilterTest {
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void shouldForwardTheRequestRequestWhenTokenBucketRateChanged() throws Exception {
+    public void shouldForwardTheRequestWhenTheRateIsNull() throws Exception {
         // Given
-        ConcurrentMap<String, TokenBucket> concurrentMap = mock(ConcurrentMap.class);
-        TokenBucket previousTokenBucket = new TokenBucket(TimeService.SYSTEM,
-                                                          new ThrottlingRate(1, duration("3 seconds")));
-        TokenBucket newTokenBucket = new TokenBucket(TimeService.SYSTEM, new ThrottlingRate(42, duration("5 seconds")));
-        final String partitionKey = "foo";
-        when(concurrentMap.putIfAbsent(partitionKey, newTokenBucket)).thenReturn(previousTokenBucket,
-                                                                                 (TokenBucket) null);
-        when(concurrentMap.replace(partitionKey, previousTokenBucket, newTokenBucket)).thenReturn(false);
+        ThrottlingPolicy throttlingRatePolicy = new ThrottlingPolicy() {
+            @Override
+            public Promise<ThrottlingRate, Exception> lookup(Context context, Request request) {
+                return newResultPromise(null);
+            }
+        };
+        ThrottlingStrategy throttlingStrategy = mock(ThrottlingStrategy.class);
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction("foo"), throttlingRatePolicy, throttlingStrategy);
 
-        filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                                      TimeService.SYSTEM,
-                                      CLEANING_INTERVAL,
-                                      new StringRequestAsyncFunction(partitionKey),
-                                      throttlingRatePolicy(42, duration("5 seconds")),
-                                      concurrentMap);
+        // When
+        Handler handler = mock(Handler.class);
+        Context context = mock(Context.class);
+        Request request = new Request();
+        filter.filter(context, request, handler);
+
+        // Then
+        verify(handler).handle(eq(context), eq(request));
+        verifyZeroInteractions(throttlingStrategy);
+    }
+
+    @Test
+    public void shouldForwardTheRequestWhenTheThrottlingStrategyAccepts() throws Exception {
+        // Given
+        ThrottlingStrategy throttlingStrategy = mock(ThrottlingStrategy.class);
+        when(throttlingStrategy.throttle(eq("foo"), any(ThrottlingRate.class)))
+                .thenReturn(Promises.<Long, NeverThrowsException>newResultPromise(0L));
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction("foo"),
+                                      throttlingRatePolicy(1, duration("3 seconds")),
+                                      throttlingStrategy);
 
         // When
         Response response = filter.filter(new RootContext(), new Request(), new ResponseHandler(Status.OK)).get();
@@ -131,86 +114,35 @@ public class ThrottlingFilterTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
-        // arbitrary variables just to define a valid rate of 1 request per 3 seconds.
-        final int numberOfRequests = 1;
-        final Duration duration = duration("3 seconds");
-
+    public void shouldRefuseTheRequestWhenTheThrottlingStrategyDenies() throws Exception {
         // Given
-        FakeTimeService time = new FakeTimeService();
+        ThrottlingStrategy throttlingStrategy = mock(ThrottlingStrategy.class);
+        when(throttlingStrategy.throttle(eq("foo"), any(ThrottlingRate.class)))
+                .thenReturn(Promises.<Long, NeverThrowsException>newResultPromise(1L));
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction("foo"),
+                                      throttlingRatePolicy(1, duration("3 seconds")),
+                                      throttlingStrategy);
 
-        AsyncFunction<ContextAndRequest, String, Exception> partitionKey =
-                new AsyncFunction<ContextAndRequest, String, Exception>() {
-                    @Override
-                    public Promise<String, Exception> apply(ContextAndRequest contextAndRequest) {
-                        AttributesContext attributesContext = contextAndRequest.getContext()
-                                                                               .asContext(AttributesContext.class);
-                        return newResultPromise((String) attributesContext.getAttributes().get("partitionKey"));
-                    }
-                };
+        // When
+        Response response = filter.filter(new RootContext(), new Request(), new ResponseHandler(Status.OK)).get();
 
-        filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                                      time,
-                                      CLEANING_INTERVAL,
-                                      partitionKey,
-                                      throttlingRatePolicy(numberOfRequests, duration));
-
-        Handler handler = new ResponseHandler(Status.OK);
-
-        Response response;
-
-        // The first request goes through as the bucket "bar-00" is freshly created
-        response = filter.filter(attributesContextWithPartitionKey("bar-00"), new Request(), handler).get();
-        assertThat(response.getStatus()).isEqualTo(Status.OK);
-
-        // The second request has an equivalent throttling definition (same key and same rate), so it uses the same
-        // bucket, which is now empty, so the request can't go through the filter
-        response = filter.filter(attributesContextWithPartitionKey("bar-00"), new Request(), handler).get();
+        // Then
         assertThat(response.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
-
-        // The third request does *not* have an equivalent throttling definition (the key differs), so it uses another
-        // bucket and thus the request can go through the filter.
-        response = filter.filter(attributesContextWithPartitionKey("bar-01"), new Request(), handler).get();
-        assertThat(response.getStatus()).isEqualTo(Status.OK);
-    }
-
-    private Context attributesContextWithPartitionKey(String key) {
-        AttributesContext context = new AttributesContext(new RootContext());
-        context.getAttributes().put("partitionKey", key);
-
-        return context;
     }
 
     @Test
-    public void shouldThrottleRequests() throws Exception {
-        Handler handler = mock(Handler.class);
-        FakeTimeService time = new FakeTimeService();
-        filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                                      time,
-                                      CLEANING_INTERVAL,
-                                      new StringRequestAsyncFunction("foo"),
-                                      throttlingRatePolicy(1, duration("3 seconds")));
+    public void shouldSetTheResponseHeaderRetryAfterWhenTooManyRequests() throws Exception {
+        ThrottlingStrategy throttlingStrategy = mock(ThrottlingStrategy.class);
+        when(throttlingStrategy.throttle(anyString(),
+                                         any(ThrottlingRate.class)))
+                .thenReturn(Promises.<Long, NeverThrowsException>newResultPromise(1L)); // refuse every request
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction("foo"),
+                                      throttlingRatePolicy(1, duration("3 seconds")),
+                                      throttlingStrategy);
 
-        // Timestamp = 0s
-        filter.filter(new RootContext(), new Request(), handler);
-        // This one has to call the handler as there are enough tokens in the bucket.
-        verify(handler).handle(any(Context.class), any(Request.class));
-
-        // Timestamp = 1s
-        time.advance(duration("1 seconds"));
-        reset(handler);
-        Response response = filter.filter(new RootContext(), new Request(), handler).get();
-        // This one does not have to be called as there is no token anymore in the bucket.
-        verifyZeroInteractions(handler);
+        Response response = this.filter.filter(new RootContext(), new Request(), null).get();
         assertThat(response.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
-
-        // Timestamp = 4s
-        time.advance(duration("3 seconds"));
-        reset(handler);
-        filter.filter(new RootContext(), new Request(), handler);
-        // This one has to call the handler as the bucket has been refilled.
-        verify(handler).handle(any(Context.class), any(Request.class));
+        assertThat(response.getHeaders().getFirst("Retry-After")).isEqualTo("1");
     }
 
     /**
@@ -219,16 +151,19 @@ public class ThrottlingFilterTest {
      * request won't be allowed to continue.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldThrottleConcurrentRequests() throws Exception {
         final CountDownLatch pauseHandler = new CountDownLatch(1);
         CountDownLatch waitHandler = new CountDownLatch(1);
 
-        FakeTimeService time = new FakeTimeService();
-        filter = new ThrottlingFilter(newSingleThreadScheduledExecutor(),
-                                      time,
-                                      CLEANING_INTERVAL,
-                                      new StringRequestAsyncFunction("foo"),
-                                      throttlingRatePolicy(1, duration("3 seconds")));
+        ThrottlingStrategy throttlingStrategy = mock(ThrottlingStrategy.class);
+        when(throttlingStrategy.throttle(eq("foo"), any(ThrottlingRate.class)))
+                .thenReturn(Promises.<Long, NeverThrowsException>newResultPromise(0L),
+                            Promises.<Long, NeverThrowsException>newResultPromise(1L));
+
+        filter = new ThrottlingFilter(new StringRequestAsyncFunction("foo"),
+                                      throttlingRatePolicy(1, duration("3 seconds")),
+                                      throttlingStrategy);
 
         final Handler handler = new LatchHandler(pauseHandler, waitHandler);
         Runnable r = new Runnable() {
@@ -242,13 +177,12 @@ public class ThrottlingFilterTest {
         thread.start();
         waitHandler.await(); // Wait here until the handler is executed
 
-        time.advance(duration("2 seconds"));
         try {
             Handler spiedHandler = spy(handler);
             // The second request comes in
             Response response = filter.filter(new RootContext(), new Request(), spiedHandler).get();
 
-            // There is no token anymore in the bucket so the handler does not have to be called.
+            // The throttling strategy refuses it so the handler does not have to be called and must return a 429.
             verifyZeroInteractions(spiedHandler);
             assertThat(response.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
             assertThat(response.getHeaders().getFirst("Retry-After")).isEqualTo("1");
@@ -261,7 +195,7 @@ public class ThrottlingFilterTest {
     /**
      * Utility handler that allows simulation of concurrency.
      */
-    static class LatchHandler implements Handler {
+    private static class LatchHandler implements Handler {
 
         private final CountDownLatch pause;
         private final CountDownLatch signal;
@@ -272,7 +206,7 @@ public class ThrottlingFilterTest {
          * @param signal
          *         this latch will allow to signal the outside stuff that this handler has been called
          */
-        public LatchHandler(CountDownLatch pause, CountDownLatch signal) {
+        LatchHandler(CountDownLatch pause, CountDownLatch signal) {
             this.pause = pause;
             this.signal = signal;
         }
@@ -294,7 +228,7 @@ public class ThrottlingFilterTest {
 
         private final String value;
 
-        public StringRequestAsyncFunction(String value) {
+        StringRequestAsyncFunction(String value) {
             this.value = value;
         }
 

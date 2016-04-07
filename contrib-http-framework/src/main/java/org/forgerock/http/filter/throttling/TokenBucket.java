@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 package org.forgerock.http.filter.throttling;
 
@@ -69,6 +69,7 @@ class TokenBucket {
     }
 
     private final TimeService time;
+    private final ThrottlingRate throttlingRate;
     private final int capacity;
     private final long duration; // in milliseconds
     private final AtomicReference<State> state;
@@ -85,6 +86,7 @@ class TokenBucket {
     public TokenBucket(TimeService time, ThrottlingRate rate) {
         Reject.ifNull(time);
         this.time = time;
+        this.throttlingRate = rate;
         this.capacity = rate.getNumberOfRequests();
         this.duration = rate.getDuration().to(TimeUnit.MILLISECONDS);
         this.millisToWaitForNextToken = duration / (float) capacity;
@@ -95,9 +97,9 @@ class TokenBucket {
      * Consume a token from the bucket. The returned delay is just an indication, and event if wait for that delay,
      * there is no guarantee that this next call will succeed.
      *
-     * @return the delay to wait before a next token can be consumed. If it is less than or equal to 0, that means a
-     *         token has been consumed from the bucket, if it is greater than 0, that means the delay to wait, in
-     *         milliseconds, for having an opportunity to consume a token.
+     * @return the delay to wait before a next token can be consumed. If it is equal to 0, that means a
+     * token has been consumed from the bucket, if it is greater than 0, that means the delay to wait, in
+     * milliseconds, for having an opportunity to consume a token.
      */
     public long tryConsume() {
         do {
@@ -146,12 +148,8 @@ class TokenBucket {
         return currentState == null ? capacity : currentState.counter;
     }
 
-    int getCapacity() {
-        return capacity;
-    }
-
-    long getDurationInMillis() {
-        return duration;
+    public ThrottlingRate getThrottlingRate() {
+        return throttlingRate;
     }
 
     long getTimestampLastRefill() {
@@ -159,18 +157,13 @@ class TokenBucket {
         return currentState.timestampLastRefill;
     }
 
-    boolean isEquivalent(TokenBucket that) {
-        return this.capacity == that.capacity && this.duration == that.duration;
-    }
-
     /**
      * Returns whether this token bucket is expired or not, meaning that the difference between now and the last refill
      * is greater than the bucket's duration.
      * @return whether this token bucket is expired or not
      */
-
     public boolean isExpired() {
-        return (time.now() - getTimestampLastRefill()) > getDurationInMillis();
+        return (time.now() - getTimestampLastRefill()) > duration;
     }
 
 }
