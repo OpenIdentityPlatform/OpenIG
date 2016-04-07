@@ -144,22 +144,13 @@ class AuthorizationRedirectHandler implements Handler {
                     new Function<Response, Response, NeverThrowsException>() {
                         @Override
                         public Response apply(final Response response) {
-                            /*
-                             * Finally create and save the session. This may involve updating response cookies, so it is
-                             * important to do it after creating the response.
-                             */
-                            try {
-                                final String clientUri = clientEndpoint.toString();
-                                final OAuth2Session session = stateNew(timeService)
-                                                                .stateAuthorizing(cr.getName(),
-                                                                                  clientUri,
-                                                                                  nonce,
-                                                                                  requestedScopes);
-                                saveSession(context, session, clientEndpoint);
-                                return response;
-                            } catch (ResponseException e) {
-                                return e.getResponse();
-                            }
+                            final String clientUri = clientEndpoint.toString();
+                            final OAuth2Session session = stateNew(timeService).stateAuthorizing(cr.getName(),
+                                                                                                 clientUri,
+                                                                                                 nonce,
+                                                                                                 requestedScopes);
+                            saveSession(context, session, clientEndpoint);
+                            return response;
                         }
                     });
         } else {

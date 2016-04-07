@@ -145,7 +145,7 @@ final class OAuth2Utils {
 
     static void saveSession(final Context context,
                             final OAuth2Session session,
-                            final URI clientEndpoint) throws ResponseException {
+                            final URI clientEndpoint) {
         SessionContext sessionContext = context.asContext(SessionContext.class);
         sessionContext.getSession().put(sessionKey(context, clientEndpoint), session.toJson().getObject());
     }
