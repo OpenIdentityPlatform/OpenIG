@@ -472,7 +472,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private static Object[][] invalidClaimsEnvironment() throws ExpressionException {
+    private static Object[][] invalidClaimsEnvironment() {
         return new Object[][] {
             { null, json(object(field("IP", "Not an array"))) },
             { null, json(object(field("IP", 123))) },
@@ -501,7 +501,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private static Object[][] claims() throws ExpressionException {
+    private static Object[][] claims() {
         return new Object[][] {
             { json(object(field("iss", "jwt-bearer-client"),
                           field("sub", "${attributes.client_id}"),
@@ -531,7 +531,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private static Object[][] environment() throws ExpressionException {
+    private static Object[][] environment() {
         return new Object[][] {
             { json(object(field("IP", IP_LIST))) },
             { "${attributes.environmentMap}" } };
@@ -551,7 +551,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @DataProvider
-    private static Object[][] application() throws ExpressionException {
+    private static Object[][] application() {
         return new Object[][] {
             { "custom-application" },
             { "${env['PATH']}" } };

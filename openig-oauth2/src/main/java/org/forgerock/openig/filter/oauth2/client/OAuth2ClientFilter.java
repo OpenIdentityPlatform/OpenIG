@@ -644,15 +644,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedDiscovery(final Request request,
-                                                                                 final Context context)
-            throws OAuth2ErrorException, ResponseException {
+                                                                                 final Context context) {
 
         return discoveryAndDynamicRegistrationChain.handle(context, request);
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogin(final Context context,
                                                                              final Request request)
-            throws OAuth2ErrorException, ResponseException {
+            throws OAuth2ErrorException {
         final String clientRegistrationName = request.getForm().getFirst("registration");
         if (clientRegistrationName == null) {
             throw new OAuth2ErrorException(E_INVALID_REQUEST,
@@ -667,8 +666,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedLogout(final Context context,
-                                                                              final Request request)
-            throws ResponseException {
+                                                                              final Request request) {
         final String gotoUri = request.getForm().getFirst("goto");
         return httpRedirectGoto(context, request, gotoUri, defaultLogoutGoto)
                 .then(new Function<Response, Response, NeverThrowsException>() {
@@ -705,35 +703,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return newResultPromise(response);
     }
 
-    private OAuth2Session prepareContext(final Context context, final OAuth2Session session, final Request request)
-            throws ResponseException, OAuth2ErrorException {
-        try {
-            tryPrepareContext(context, session, request);
-            return session;
-        } catch (final OAuth2ErrorException e) {
-            /*
-             * Try again if the access token looks like it has expired and can
-             * be refreshed.
-             */
-            final OAuth2Error error = e.getOAuth2Error();
-            final ClientRegistration clientRegistration = getClientRegistration(session);
-            if (error.is(E_INVALID_TOKEN) && clientRegistration != null && session.getRefreshToken() != null) {
-                // The session is updated with new access token.
-                final JsonValue accessTokenResponse =
-                        blockingCall(clientRegistration.refreshAccessToken(context, session),
-                                     "refreshing the access token");
-                final OAuth2Session refreshedSession = session.stateRefreshed(accessTokenResponse);
-                tryPrepareContext(context, refreshedSession, request);
-                return refreshedSession;
-            }
-
-            /*
-             * It looks like the token cannot be refreshed or something more
-             * serious happened, e.g. the token has the wrong scopes. Re-throw
-             * the error and let the failure-handler deal with it.
-             */
-            throw e;
-        }
+    private OAuth2Session prepareContext(final Context context, final OAuth2Session session, final Request request) {
+        tryPrepareContext(context, session, request);
+        return session;
     }
 
     private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Context context,
@@ -759,8 +731,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return clientRegistration;
     }
 
-    private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request)
-            throws ResponseException, OAuth2ErrorException {
+    private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request) {
         final Map<String, Object> info =
                 new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.

@@ -11,7 +11,7 @@
 * Header, with the fields enclosed by brackets [] replaced by your own identifying
 * information: "Portions copyright [year] [name of copyright owner]".
 *
-* Copyright 2015 ForgeRock AS.
+* Copyright 2015-2016 ForgeRock AS.
 */
 package org.forgerock.openig.handler.router;
 
@@ -30,7 +30,6 @@ import org.forgerock.audit.providers.DefaultLocalHostNameProvider;
 import org.forgerock.audit.providers.LocalHostNameProvider;
 import org.forgerock.audit.providers.ProductInfoProvider;
 import org.forgerock.json.JsonValue;
-import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ServiceUnavailableException;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.Expressions;
@@ -54,7 +53,7 @@ public class AuditServiceObject extends GenericHeapObject {
                 JsonValue evaluatedConfiguration = new JsonValue(Expressions.evaluate(config.asMap(), bindings()));
                 auditService = buildAuditService(evaluatedConfiguration);
                 return auditService;
-            } catch (AuditException | ResourceException | ExpressionException ex) {
+            } catch (AuditException | ExpressionException ex) {
                 throw new HeapException(ex);
             }
         }
@@ -80,8 +79,7 @@ public class AuditServiceObject extends GenericHeapObject {
         }
 
         /** Loads the audit service configuration from JSON. */
-        private AuditService buildAuditService(JsonValue config)
-                throws AuditException, ServiceUnavailableException, ResourceException {
+        private AuditService buildAuditService(JsonValue config) throws AuditException {
             final JsonValue auditServiceConfig = config.get("config");
 
             final AuditServiceConfiguration auditServiceConfiguration;

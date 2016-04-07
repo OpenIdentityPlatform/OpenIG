@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Pattern;
@@ -167,7 +166,7 @@ public class UmaResourceServerFilterTest {
         verifyZeroInteractions(terminal);
     }
 
-    private void assertThatTicketIsReturnedWithStatusForbidden(final Response response) throws IOException {
+    private void assertThatTicketIsReturnedWithStatusForbidden(final Response response) {
         assertThat(response.getStatus()).isEqualTo(Status.UNAUTHORIZED);
         assertThat(response.getHeaders()).containsKey("WWW-Authenticate");
         assertThat(response.getHeaders().getFirst("WWW-Authenticate"))
