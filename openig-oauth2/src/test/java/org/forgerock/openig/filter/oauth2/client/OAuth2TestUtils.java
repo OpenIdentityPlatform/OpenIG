@@ -20,7 +20,12 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
+import java.io.IOException;
+import java.util.HashMap;
+
 import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
 import org.forgerock.json.JsonValue;
 
 @SuppressWarnings("javadoc")
@@ -65,5 +70,18 @@ public final class OAuth2TestUtils {
             configuration.put("wellKnownEndpoint", ISSUER_URI + WELLKNOWN_ENDPOINT);
         }
         return new Issuer(issuerName != null ? issuerName : "myIssuer", configuration);
+    }
+
+    static SimpleMapSession newSession() {
+        return new SimpleMapSession();
+    }
+
+    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void save(Response response) throws IOException {
+            // Nothing to do.
+        }
     }
 }
