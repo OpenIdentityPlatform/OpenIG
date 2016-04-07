@@ -22,22 +22,20 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.newSession;
 import static org.forgerock.openig.util.StringUtil.join;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.routing.UriRouterContext;
-import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
@@ -71,7 +69,7 @@ public class AuthorizationRedirectHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
+        sessionContext = new SessionContext(new RootContext(), newSession());
         attributesContext = new AttributesContext(sessionContext);
         context = new UriRouterContext(attributesContext,
                                        null,
@@ -195,14 +193,5 @@ public class AuthorizationRedirectHandlerTest {
             field("tokenEndpoint", OPENAM_BASE_OAUTH2 + "/access_token"),
             field("userInfoEndpoint", OPENAM_BASE_OAUTH2 + "/userinfo")));
         return new Issuer("myIssuer", issuerConfig);
-    }
-
-    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void save(Response response) throws IOException {
-            // Nothing to do.
-        }
     }
 }
