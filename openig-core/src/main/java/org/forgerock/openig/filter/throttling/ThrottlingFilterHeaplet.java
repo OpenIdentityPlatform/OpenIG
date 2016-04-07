@@ -19,16 +19,19 @@ package org.forgerock.openig.filter.throttling;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
+import java.util.Locale;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.filter.throttling.FixedRateThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingFilter;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
+import org.forgerock.http.filter.throttling.ThrottlingStrategy;
+import org.forgerock.http.filter.throttling.TokenBucketThrottlingStrategy;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
@@ -56,6 +59,9 @@ import org.forgerock.util.time.TimeService;
  *         "requestGroupingPolicy"        : expression<String>  [REQUIRED - Expression to evaluate whether a request
  *                                                                          matches when calculating a rate for a group
  *                                                                          of requests.]
+ *         "strategy"                     : string              [OPTIONAL - The name of the throttling's strategy to
+ *                                                                          use; one of : bursty.
+ *                                                                          Default : bursty]
  *         "rate": {
  *            "numberOfRequests"          : integer             [REQUIRED - The number of requests allowed to go through
  *                                                                          this filter during the duration window.]
@@ -72,7 +78,7 @@ import org.forgerock.util.time.TimeService;
  */
 public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
-    static final Function<JsonValue, ThrottlingRate, JsonValueException> THROTTLING_RATE =
+    private static final Function<JsonValue, ThrottlingRate, JsonValueException> THROTTLING_RATE =
             new Function<JsonValue, ThrottlingRate, JsonValueException>() {
 
                 @Override
@@ -84,8 +90,19 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                 }
             };
 
-    static final Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate() {
+    static Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate() {
         return THROTTLING_RATE;
+    }
+
+    private ThrottlingStrategy throttlingStrategy(String throttlingStrategy,
+                                                  TimeService time,
+                                                  ScheduledExecutorService scheduledExecutor,
+                                                  Duration cleaningInterval) {
+        switch (throttlingStrategy) {
+        case "bursty":
+        default:
+            return new TokenBucketThrottlingStrategy(time, scheduledExecutor, cleaningInterval);
+        }
     }
 
     private ThrottlingFilter filter;
@@ -117,11 +134,18 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
 
-        return filter = new ThrottlingFilter(executorService,
-                                             time,
-                                             cleaningInterval,
-                                             new ExpressionRequestAsyncFunction<>(requestGroupingPolicy),
-                                             throttlingRatePolicy);
+        ThrottlingStrategy throttlingStrategy = throttlingStrategy(config.get("strategy")
+                                                                         .as(evaluated())
+                                                                         .defaultTo("bursty")
+                                                                         .asString()
+                                                                         .toLowerCase(Locale.ROOT),
+                                                                   time,
+                                                                   executorService,
+                                                                   cleaningInterval);
+
+        return filter = new ThrottlingFilter(new ExpressionRequestAsyncFunction<>(requestGroupingPolicy),
+                                             throttlingRatePolicy,
+                                             throttlingStrategy);
     }
 
     @Override

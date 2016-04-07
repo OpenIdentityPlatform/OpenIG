@@ -23,7 +23,7 @@ import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.testng.annotations.Test;
 
-
+@SuppressWarnings("javadoc")
 public class TokenBucketTest {
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
@@ -48,6 +48,7 @@ public class TokenBucketTest {
         // a token bucket that can refill 1 token every 333.333 ms.
         TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
 
+        time.advance(0); // t0 + 0 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2);
 
@@ -55,11 +56,10 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).isEqualTo(0); // Second time < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(1);
 
-        time.advance(1); // t0 + 2 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Third time < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(0);
 
-        time.advance(1); // t0 + 3 ms
+        time.advance(2); // t0 + 3 ms
         assertThat(bucket.tryConsume()).isEqualTo(330); // Not enough elapsed time to get a refill
 
         time.advance(331); // t0 + 334 ms

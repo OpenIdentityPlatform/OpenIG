@@ -81,7 +81,7 @@ public final class ThrottlingRate {
         }
         ThrottlingRate that = (ThrottlingRate) o;
         return numberOfRequests == that.numberOfRequests
-                && Objects.equals(duration, that.duration);
+                && duration.compareTo(that.duration) == 0;
     }
 
     @Override
