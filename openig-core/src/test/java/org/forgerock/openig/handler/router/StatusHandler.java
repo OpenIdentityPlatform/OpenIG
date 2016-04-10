@@ -11,10 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
+
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -46,7 +48,7 @@ public class StatusHandler implements Handler {
 
         @Override
         public Object create() throws HeapException {
-            return new StatusHandler(Status.valueOf(config.get("status").required().asInteger()));
+            return new StatusHandler(Status.valueOf(config.get("status").as(evaluated()).required().asInteger()));
         }
     }
 }

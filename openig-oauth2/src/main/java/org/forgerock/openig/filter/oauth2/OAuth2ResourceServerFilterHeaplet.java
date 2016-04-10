@@ -18,13 +18,16 @@ package org.forgerock.openig.filter.oauth2;
 
 import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.chainOf;
+import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.JsonValueFunctions.setOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
-import static org.forgerock.openig.util.JsonValues.ofExpression;
-import static org.forgerock.util.time.Duration.duration;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +42,6 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.ConditionEnforcementFilter;
@@ -120,40 +122,43 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        Handler httpHandler = heap.resolve(getWithDeprecation(config, logger, "providerHandler", "httpHandler")
-                                                   .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                           Handler.class);
+        Handler httpHandler = getWithDeprecation(config, logger, "providerHandler", "httpHandler")
+                .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                .as(requiredHeapObject(heap, Handler.class));
 
         TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-        AccessTokenResolver resolver = new OpenAmAccessTokenResolver(
-                httpHandler,
-                time,
-                config.get("tokenInfoEndpoint").required().asString());
+        AccessTokenResolver resolver = new OpenAmAccessTokenResolver(httpHandler,
+                                                                     time,
+                                                                     config.get("tokenInfoEndpoint")
+                                                                           .as(evaluated())
+                                                                           .required()
+                                                                           .asString());
 
         // Build the cache
-        Duration expiration = duration(config.get("cacheExpiration").defaultTo("1 minute").asString());
+        Duration expiration = config.get("cacheExpiration").as(evaluated()).defaultTo("1 minute").as(duration());
         if (!expiration.isZero()) {
-            JsonValue reference = config.get("executor")
-                                        .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY);
-            ScheduledExecutorService executorService = heap.resolve(reference,
-                                                                    ScheduledExecutorService.class);
+            ScheduledExecutorService executorService = config.get("executor")
+                                                             .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                             .as(requiredHeapObject(heap,
+                                                                                    ScheduledExecutorService.class));
             cache = new ThreadSafeCache<>(executorService);
             cache.setDefaultTimeout(expiration);
             resolver = new CachingAccessTokenResolver(time, resolver, cache);
         }
 
-        Set<Expression<String>> scopes =
-                getWithDeprecation(config, logger, "scopes", "requiredScopes").required().asSet(ofExpression());
+        Set<Expression<String>> scopes = getWithDeprecation(config, logger, "scopes", "requiredScopes")
+                .required()
+                .as(setOf(expression(String.class)));
 
-        String realm = config.get("realm").defaultTo(DEFAULT_REALM_NAME).asString();
+        String realm = config.get("realm").as(evaluated()).defaultTo(DEFAULT_REALM_NAME).asString();
 
         Filter filter = new ResourceServerFilter(resolver,
                                                  time,
                                                  new OpenIGResourceAccess(scopes),
                                                  realm);
 
-        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").defaultTo(
-                Boolean.TRUE).asBoolean()) {
+        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").as(evaluated())
+                                                                              .defaultTo(Boolean.TRUE).asBoolean()) {
             try {
                 Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);
                 return chainOf(new ConditionEnforcementFilter(expr), filter);

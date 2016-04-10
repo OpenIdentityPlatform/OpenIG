@@ -24,6 +24,8 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;
@@ -314,9 +316,11 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
 
         @Override
         public Object create() throws HeapException {
-            UmaSharingService service = heap.resolve(config.get("umaService").required(), UmaSharingService.class);
-            Handler handler = heap.resolve(config.get("protectionApiHandler").required(), Handler.class);
-            String realm = config.get("realm").defaultTo("uma").asString();
+            UmaSharingService service = config.get("umaService")
+                                              .required()
+                                              .as(requiredHeapObject(heap, UmaSharingService.class));
+            Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
+            String realm = config.get("realm").as(evaluated()).defaultTo("uma").asString();
             return new UmaResourceServerFilter(service, handler, realm);
         }
     }

@@ -12,12 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -124,8 +125,8 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
             final SequenceHandler sequenceHandler = new SequenceHandler();
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Handler handler = heap.resolve(jv.get("handler"), Handler.class);
-                final Expression<Boolean> postcondition = asExpression(jv.get("postcondition"), Boolean.class);
+                final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
+                final Expression<Boolean> postcondition = jv.get("postcondition").as(expression(Boolean.class));
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;

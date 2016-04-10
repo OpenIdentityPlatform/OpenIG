@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.util.Json.readJson;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -50,7 +51,8 @@ public class DecoratorSystemTest {
         JsonValue config = asJson("decorate-object-declaration.json");
         heap.init(config);
 
-        assertThatResponseEntityIsEqualTo(heap.resolve(config.get("handler"), Handler.class), "<h1>Hello World</h1>");
+        assertThatResponseEntityIsEqualTo(config.get("handler").as(requiredHeapObject(heap, Handler.class)),
+                                          "<h1>Hello World</h1>");
     }
 
     @Test
@@ -62,7 +64,7 @@ public class DecoratorSystemTest {
         heap.init(config);
 
         // Decorated twice (Chain + response handler)
-        assertThatResponseEntityIsEqualTo(heap.resolve(config.get("handler"), Handler.class),
+        assertThatResponseEntityIsEqualTo(config.get("handler").as(requiredHeapObject(heap, Handler.class)),
                                           "<h1><h1>Hello World</h1></h1>");
     }
 

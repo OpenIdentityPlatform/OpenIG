@@ -11,16 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
+import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.jwt.JwtCookieSession.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.time.Duration.duration;
+import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -163,13 +164,13 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
         @Override
         public Object create() throws HeapException {
-            KeyPair keyPair = null;
+            KeyPair keyPair;
             JsonValue keystoreValue = config.get("keystore");
-            if (!keystoreValue.isNull()) {
-                KeyStore keyStore = heap.resolve(keystoreValue, KeyStore.class);
+            if (keystoreValue.isNotNull()) {
+                KeyStore keyStore = keystoreValue.as(requiredHeapObject(heap, KeyStore.class));
 
-                String alias = config.get("alias").required().asString();
-                String password = evaluate(config.get("password").required());
+                String alias = config.get("alias").as(evaluated()).required().asString();
+                String password = config.get("password").as(evaluated()).required().asString();
 
                 try {
                     Key key = keyStore.getKey(alias, password.toCharArray());
@@ -223,15 +224,19 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
             TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
-            final Duration sessionTimeout =
-                    duration(config.get("sessionTimeout").defaultTo(DEFAULT_SESSION_TIMEOUT).asString());
+            JsonValue evaluated = config.as(evaluated());
+            final Duration sessionTimeout = evaluated.get("sessionTimeout")
+                                                     .defaultTo(DEFAULT_SESSION_TIMEOUT)
+                                                     .as(duration());
             if (sessionTimeout.isZero()) {
                 throw new HeapException("sessionTimeout duration must be greater than 0");
             }
 
             // Create the session factory with the given KeyPair and cookie name
             return new JwtSessionManager(keyPair,
-                                         config.get("cookieName").defaultTo(OPENIG_JWT_SESSION).asString(),
+                                         evaluated.get("cookieName")
+                                                  .defaultTo(OPENIG_JWT_SESSION)
+                                                  .asString(),
                                          timeService,
                                          sessionTimeout);
         }

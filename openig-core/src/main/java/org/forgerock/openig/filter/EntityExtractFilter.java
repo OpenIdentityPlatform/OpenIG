@@ -17,8 +17,12 @@
 
 package org.forgerock.openig.filter;
 
+import static org.forgerock.json.JsonValueFunctions.charset;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -158,17 +162,17 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             EntityExtractFilter filter = new EntityExtractFilter(
-                    config.get("messageType").required().asEnum(MessageType.class),
-                    asExpression(config.get("target").required(), Object.class),
-                    config.get("charset").asCharset());
+                    config.get("messageType").as(evaluated()).required().as(enumConstant(MessageType.class)),
+                    config.get("target").required().as(expression(Object.class)),
+                    config.get("charset").as(evaluated()).as(charset()));
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                String key = jv.get("key").required().asString();
+                String key = jv.get("key").as(evaluated()).required().asString();
                 if (filter.extractor.getPatterns().containsKey(key)) {
-                    throw new JsonValueException(jv.get("key"), "Key already defined");
+                    throw new JsonValueException(jv.get("key"), "Key already defined (after evaluation : " + key + ")");
                 }
-                filter.extractor.getPatterns().put(key, jv.get("pattern").required().asPattern());
+                filter.extractor.getPatterns().put(key, jv.get("pattern").required().as(pattern()));
                 String template = jv.get("template").asString();
                 if (template != null) {
                     filter.extractor.getTemplates().put(key, new PatternTemplate(template));

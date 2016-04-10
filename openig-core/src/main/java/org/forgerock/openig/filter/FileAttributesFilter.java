@@ -12,17 +12,19 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.json.JsonValueFunctions.charset;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -126,20 +128,21 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            String filename = evaluate(config.get("file").required());
-            SeparatedValuesFile sources = new SeparatedValuesFile(new File(filename),
-                                                                  config.get("charset").defaultTo("UTF-8").asCharset(),
-                                                                  config.get("separator").defaultTo("COMMA")
-                                                                          .asEnum(Separators.class).getSeparator(),
-                                                                  config.get("header").defaultTo(true).asBoolean());
+            SeparatedValuesFile sources =
+                    new SeparatedValuesFile(config.get("file").as(evaluated()).required().as(file()),
+                                            config.get("charset").as(evaluated()).defaultTo("UTF-8").as(charset()),
+                                            config.get("separator").as(evaluated()).defaultTo("COMMA")
+                                                  .as(enumConstant(Separators.class))
+                                                  .getSeparator(),
+                                            config.get("header").as(evaluated()).defaultTo(true).asBoolean());
 
             if (config.isDefined("fields")) {
-                sources.getFields().addAll(config.get("fields").asList(String.class));
+                sources.getFields().addAll(config.get("fields").as(evaluated()).asList(String.class));
             }
             return new FileAttributesFilter(sources,
-                                            config.get("key").required().asString(),
-                                            asExpression(config.get("value").required(), String.class),
-                                            asExpression(config.get("target").required(), Map.class));
+                                            config.get("key").as(evaluated()).required().asString(),
+                                            config.get("value").required().as(expression(String.class)),
+                                            config.get("target").required().as(expression(Map.class)));
         }
     }
 }

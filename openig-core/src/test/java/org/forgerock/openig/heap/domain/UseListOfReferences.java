@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap.domain;
 
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class UseListOfReferences {
         @Override
         public Object create() throws HeapException {
             UseListOfReferences bean = new UseListOfReferences();
-            bean.references = config.get("list-ref").asList(ofRequiredHeapObject(heap, ReferencedObject.class));
+            bean.references = config.get("list-ref").as(listOf(requiredHeapObject(heap, ReferencedObject.class)));
             return bean;
         }
     }

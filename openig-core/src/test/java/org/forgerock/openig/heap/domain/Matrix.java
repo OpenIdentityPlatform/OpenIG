@@ -11,10 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap.domain;
+
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -27,7 +29,7 @@ public class Matrix {
         @Override
         public Object create() throws HeapException {
             Matrix matrix = new Matrix();
-            matrix.architect = heap.resolve(config.get("architect-ref"), Architect.class);
+            matrix.architect = config.get("architect-ref").as(requiredHeapObject(heap, Architect.class));
             return matrix;
         }
     }

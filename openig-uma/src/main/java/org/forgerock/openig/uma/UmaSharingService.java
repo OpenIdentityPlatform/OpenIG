@@ -20,10 +20,14 @@ import static java.lang.String.format;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.json.JsonValueFunctions.pattern;
+import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newCollection;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 
 import java.io.IOException;
@@ -378,10 +382,10 @@ public class UmaSharingService {
 
         @Override
         public Object create() throws HeapException {
-            Handler handler = heap.resolve(config.get("protectionApiHandler").required(), Handler.class);
-            URI uri = config.get("authorizationServerUri").required().asURI();
-            String clientId = evaluate(config.get("clientId").required());
-            String clientSecret = evaluate(config.get("clientSecret").required());
+            Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
+            URI uri = config.get("authorizationServerUri").as(evaluated()).required().as(uri());
+            String clientId = config.get("clientId").as(evaluated()).required().asString();
+            String clientSecret = config.get("clientSecret").as(evaluated()).required().asString();
             try {
                 UmaSharingService service = new UmaSharingService(handler,
                                                                   createResourceTemplates(),
@@ -400,23 +404,25 @@ public class UmaSharingService {
         }
 
         private List<ShareTemplate> createResourceTemplates() throws HeapException {
-            return config.get("resources").required().asList(new Function<JsonValue, ShareTemplate, HeapException>() {
-                @Override
-                public ShareTemplate apply(final JsonValue value) throws HeapException {
-                    return new ShareTemplate(value.get("pattern").required().asPattern(),
-                                             actions(value.get("actions").expect(List.class)));
-                }
-            });
+            return config.get("resources")
+                         .required()
+                         .as(listOf(new Function<JsonValue, ShareTemplate, HeapException>() {
+                             @Override
+                             public ShareTemplate apply(final JsonValue value) throws HeapException {
+                                 return new ShareTemplate(value.get("pattern").required().as(pattern()),
+                                                          actions(value.get("actions").expect(List.class)));
+                             }
+                         }));
         }
 
         private List<ShareTemplate.Action> actions(final JsonValue actions) {
-            return actions.asList(new Function<JsonValue, ShareTemplate.Action, JsonValueException>() {
+            return actions.as(listOf(new Function<JsonValue, ShareTemplate.Action, JsonValueException>() {
                 @Override
                 public ShareTemplate.Action apply(final JsonValue value) {
-                    return new ShareTemplate.Action(asExpression(value.get("condition").required(), Boolean.class),
-                                                    value.get("scopes").asSet(String.class));
+                    return new ShareTemplate.Action(value.get("condition").required().as(expression(Boolean.class)),
+                                                    value.get("scopes").as(evaluated()).asSet(String.class));
                 }
-            });
+            }));
         }
     }
 }

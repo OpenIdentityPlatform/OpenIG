@@ -25,7 +25,9 @@ import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -262,14 +264,13 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Handler failureHandler = heap.resolve(config.get("failureHandler"), Handler.class);
+            Handler failureHandler = config.get("failureHandler").as(requiredHeapObject(heap, Handler.class));
 
-            Expression<String> usernameExpr = asExpression(config.get("username").required(), String.class);
-            Expression<String> passwordExpr = asExpression(config.get("password").required(), String.class);
+            Expression<String> usernameExpr = config.get("username").required().as(expression(String.class));
+            Expression<String> passwordExpr = config.get("password").required().as(expression(String.class));
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(usernameExpr, passwordExpr, failureHandler);
 
-            filter.cacheHeader = config.get("cacheHeader").defaultTo(filter.cacheHeader).asBoolean();
-
+            filter.cacheHeader = config.get("cacheHeader").as(evaluated()).defaultTo(filter.cacheHeader).asBoolean();
             logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);
 
             return filter;

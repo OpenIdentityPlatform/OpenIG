@@ -16,15 +16,12 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.String.*;
-import static java.util.Collections.*;
-import static org.forgerock.http.util.Loader.*;
-import static org.forgerock.util.time.Duration.duration;
+import static java.lang.String.format;
+import static java.util.Collections.unmodifiableList;
+import static org.forgerock.http.util.Loader.loadList;
 
 import java.util.List;
 
-import org.forgerock.json.JsonException;
-import org.forgerock.json.JsonTransformer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
@@ -34,8 +31,6 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Function;
-import org.forgerock.util.Utils;
-import org.forgerock.util.time.Duration;
 
 /**
  * Provides additional functionality to {@link JsonValue}.
@@ -46,37 +41,10 @@ public final class JsonValues {
     private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
             unmodifiableList(loadList(ClassAliasResolver.class));
 
-    private static final Function<JsonValue, Expression<String>, HeapException> OF_EXPRESSION =
-            new Function<JsonValue, Expression<String>, HeapException>() {
-                @Override
-                public Expression<String> apply(final JsonValue value) throws HeapException {
-                    return asExpression(value, String.class);
-                }
-            };
-
     /**
      * Private constructor for utility class.
      */
     private JsonValues() { }
-
-    /**
-     * Resolves a String-based {@link JsonValue} instance that may contain an {@link Expression}.
-     */
-    private static final JsonTransformer EXPRESSION_TRANSFORMER = new JsonTransformer() {
-        @Override
-        public void transform(final JsonValue value) {
-            if (value.isString()) {
-                try {
-                    Expression<Object> expression = Expression.valueOf(value.asString(), Object.class);
-                    value.setObject(expression.eval());
-                } catch (ExpressionException e) {
-                    throw new JsonException(format("Expression '%s' (in %s) is not syntactically correct",
-                                                   value.asString(),
-                                                   value.getPointer()), e);
-                }
-            }
-        }
-    };
 
     private static Class<?> classForName(JsonValue value) {
         String name = value.asString();
@@ -148,153 +116,16 @@ public final class JsonValues {
     }
 
     /**
-     * Evaluate a {@link JsonValue} node as an integer : if this is already an integer, it just returns it, but if this
-     * is a string, then it evaluates it as an {@link Expression}, whose expected type is integer.
-     * @param node the node to evaluate
-     * @return the {@link Integer} coming from the node's value if it's an integer or resulting from the evaluation of
-     * the {@link Expression}
-     * @throws JsonValueException if the {@link JsonValue} is neither an integer nor a string
-     */
-    public static Integer asInteger(JsonValue node) {
-        return evaluateJsonStaticExpression(node).asInteger();
-    }
-
-    /**
-     * Evaluate a {@link JsonValue} node as a string : if this is a string then it evaluates it as an
-     * {@link Expression}.
-     * @param node the node to evaluate
-     * @return the {@link String} resulting from the evaluation of the {@link Expression}
-     * @throws JsonValueException if the {@link JsonValue} is neither a {@link String} nor a valid {@link String} typed
-     * expression.
-     */
-    public static String asString(JsonValue node) {
-        return evaluateJsonStaticExpression(node).asString();
-    }
-
-    /**
-     * Evaluate a {@link JsonValue} node as a duration : if this is a string then it evaluates it as an
-     * {@link Expression}, whose expected type is a {@link String} parseable for a {@link Duration}.
-     * @param node the node to evaluate
-     * @return the {@link Duration} resulting from the evaluation of the {@link Expression}
-     * @throws JsonValueException if the {@link JsonValue} is neither a {@link String} nor a valid {@link Duration}
-     * typed expression.
-     */
-    public static Duration asDuration(JsonValue node) {
-        String value = asString(node);
-        try {
-            return value == null ? null : duration(value);
-        } catch (IllegalArgumentException iae) {
-            throw new JsonValueException(node, value + " is not a valid duration", iae);
-        }
-    }
-
-    /**
-     * Evaluate a {@link JsonValue} node as a boolean : if this is already a boolean, it just returns it, but if this
-     * is a string, then it evaluates it as an {@link Expression}, whose expected type is boolean.
-     * @param node the node to evaluate
-     * @return the {@link Boolean} coming from the node's value if it's a boolean or resulting from the evaluation of
-     * the {@link Expression}
-     * @throws JsonValueException if the {@link JsonValue} is neither a boolean nor a string
-     */
-    public static Boolean asBoolean(JsonValue node) {
-        return evaluateJsonStaticExpression(node).asBoolean();
-    }
-
-    /**
-     * Returns a JSON value string value as an expression. If the value is {@code null}, this
-     * method returns {@code null}.
-     *
-     * @param <T> expected result type
-     * @param value the JSON value containing the expression string.
-     * @param expectedType The expected result type of the expression.
-     * @return the expression represented by the string value.
-     * @throws JsonValueException if the value is not a string or the value is not a valid expression.
-     */
-    public static <T> Expression<T> asExpression(JsonValue value, Class<T> expectedType) {
-        try {
-            return (value == null || value.isNull() ? null : Expression.valueOf(value.asString(), expectedType));
-        } catch (ExpressionException ee) {
-            throw new JsonValueException(value, ee);
-        }
-    }
-
-    /**
-     * Evaluates the given JSON value string as an {@link Expression}.
-     *
-     * @param value
-     *         the JSON value containing the expression string.
-     * @return the String that resulted of the Expression evaluation.
-     * @throws JsonValueException
-     *         if the value is not a string or the value is not a valid string typed expression.
-     */
-    public static String evaluate(JsonValue value) {
-        Expression<String> expression = asExpression(value, String.class);
-        if (expression != null) {
-            return expression.eval();
-        }
-        return null;
-    }
-
-    /**
-     * Evaluates the given JSON value object, applying a {@link JsonTransformer}
-     * that will evaluate all String nodes. Transformation is applied
+     * Returns a function that will evaluate all String nodes. Transformation is applied
      * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
      * and their values are not changed. <p>When an error occurs during the
      * evaluation of an expression, the value is set to {@code null} because we
      * cannot differentiate successful evaluations or failed ones.
      *
-     * @param value
-     *            The JSON value object to evaluate.
-     * @param logger
-     *            The logger which should be used for warnings.
-     * @return A JSON value object which all expressions string are evaluated.
-     * @throws JsonException
-     *             If the value not a valid expression.
+     * @return a function to evaluate String nodes of a {@link JsonValue}
      */
-    public static JsonValue evaluate(final JsonValue value, final Logger logger) {
-        return new JsonValue(value.getObject(), singleton(new JsonTransformer() {
-            @Override
-            public void transform(final JsonValue value) {
-                if (value.isString()) {
-                    try {
-                        // Malformed expressions are ignored
-                        final Expression<Object> expression = asExpression(value, Object.class);
-                        if (expression != null) {
-                            final Object evaluated = expression.eval();
-                            // Errors during evaluation are represented with a null result
-                            if (evaluated == null) {
-                                logger.warning(format("The expression '%s' (in %s) cannot be evaluated",
-                                                      expression, value.getPointer()));
-                            }
-                            // We should only replace the value for successful evaluations,
-                            // but we cannot differentiate successful evaluations or failed ones
-                            value.setObject(evaluated);
-
-                        }
-                    } catch (JsonValueException jve) {
-                        logger.warning(format("The value %s (in %s) is a malformed expression",
-                                              value.asString(), value.getPointer()));
-                    }
-                }
-            }
-        }));
-    }
-
-    /**
-     * Evaluates the given JSON value using an Expression and wraps the returned value as a new JsonValue. This only
-     * change value of String types JsonValues, other types are ignored. This mechanism only perform change on the given
-     * JsonValue object (child nodes are left unchanged).
-     *
-     * @param value
-     *         the JSON value to be evaluated.
-     * @return a new JsonValue instance containing the resolved expression (or the original wrapped value if it was not
-     * changed)
-     * @throws JsonException
-     *         if the expression cannot be evaluated (syntax error or resolution error).
-     */
-    public static JsonValue evaluateJsonStaticExpression(final JsonValue value) {
-        // Returned a transformed, deep object copy
-        return new JsonValue(value, singleton(EXPRESSION_TRANSFORMER));
+    public static Function<JsonValue, JsonValue, JsonValueException> evaluated() {
+        return new ExpressionJsonTransformFunction();
     }
 
     /**
@@ -329,10 +160,21 @@ public final class JsonValues {
     /**
      * Returns a function for transforming JsonValues to expressions.
      *
+     * @param <T> expected result type
+     * @param type The expected result type of the expression.
      * @return A function for transforming JsonValues to expressions.
      */
-    public static Function<JsonValue, Expression<String>, HeapException> ofExpression() {
-        return OF_EXPRESSION;
+    public static <T> Function<JsonValue, Expression<T>, JsonValueException> expression(final Class<T> type) {
+        return new Function<JsonValue, Expression<T>, JsonValueException>() {
+            @Override
+            public Expression<T> apply(final JsonValue value) {
+                try {
+                    return (value == null || value.isNull() ? null : Expression.valueOf(value.asString(), type));
+                } catch (ExpressionException ee) {
+                    throw new JsonValueException(value, ee);
+                }
+            }
+        };
     }
 
     /**
@@ -348,8 +190,7 @@ public final class JsonValues {
      * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
      * objects.
      */
-    public static <T> Function<JsonValue, T, HeapException> ofRequiredHeapObject(final Heap heap,
-                                                                                 final Class<T> type) {
+    public static <T> Function<JsonValue, T, HeapException> requiredHeapObject(final Heap heap, final Class<T> type) {
         return new Function<JsonValue, T, HeapException>() {
             @Override
             public T apply(final JsonValue value) throws HeapException {
@@ -359,19 +200,23 @@ public final class JsonValues {
     }
 
     /**
-     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
-     * constant values of the given type.
+     * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of optional heap
+     * objects.
      *
-     * @param enumType expected type of the enum
-     * @param <T> Enumeration type
-     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of enum
-     * constant values of the given type.
+     * @param heap
+     *         the heap to query for references resolution
+     * @param type
+     *         expected object type
+     * @param <T>
+     *         expected object type
+     * @return a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
+     * objects.
      */
-    public static <T extends Enum<T>> Function<JsonValue, T, HeapException> ofEnum(final Class<T> enumType) {
+    public static <T> Function<JsonValue, T, HeapException> optionalHeapObject(final Heap heap, final Class<T> type) {
         return new Function<JsonValue, T, HeapException>() {
             @Override
             public T apply(final JsonValue value) throws HeapException {
-                return Utils.asEnum(value.asString(), enumType);
+                return heap.resolve(value, type, true);
             }
         };
     }

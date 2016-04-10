@@ -12,13 +12,18 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.io;
 
+import static org.forgerock.http.io.IO.newTemporaryStorage;
+import static org.forgerock.json.JsonValueFunctions.file;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.io.IO;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Factory;
@@ -35,7 +40,7 @@ public class TemporaryStorage implements Factory<Buffer> {
      * Creates a new temporary storage with a default implementation.
      */
     public TemporaryStorage() {
-        this(IO.newTemporaryStorage());
+        this(newTemporaryStorage());
     }
 
     private TemporaryStorage(final Factory<Buffer> factory) {
@@ -53,10 +58,18 @@ public class TemporaryStorage implements Factory<Buffer> {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            return new TemporaryStorage(IO.newTemporaryStorage(config.get("directory").asFile(),
-                    config.get("initialLength").defaultTo(IO.DEFAULT_TMP_INIT_LENGTH).asInteger(),
-                    config.get("memoryLimit").defaultTo(IO.DEFAULT_TMP_MEMORY_LIMIT).asInteger(),
-                    config.get("fileLimit").defaultTo(IO.DEFAULT_TMP_FILE_LIMIT).asInteger()));
+            JsonValue evaluated = config.as(evaluated());
+            return new TemporaryStorage(
+                    newTemporaryStorage(evaluated.get("directory").as(file()),
+                                        evaluated.get("initialLength")
+                                                 .defaultTo(IO.DEFAULT_TMP_INIT_LENGTH)
+                                                 .asInteger(),
+                                        evaluated.get("memoryLimit")
+                                                 .defaultTo(IO.DEFAULT_TMP_MEMORY_LIMIT)
+                                                 .asInteger(),
+                                        evaluated.get("fileLimit")
+                                                 .defaultTo(IO.DEFAULT_TMP_FILE_LIMIT)
+                                                 .asInteger()));
         }
     }
 }

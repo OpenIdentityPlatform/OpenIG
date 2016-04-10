@@ -28,12 +28,13 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.asDuration;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.asString;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.time.Duration.duration;
@@ -453,19 +454,20 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         @Override
         public Object create() throws HeapException {
 
-            final String openamUrl = trailingSlash(asString(config.get("openamUrl").required()));
-            final Expression<String> pepUsername = asExpression(config.get("pepUsername").required(), String.class);
-            final Expression<String> pepPassword = asExpression(config.get("pepPassword").required(), String.class);
-            final String realm = asString(config.get("realm").defaultTo("/"));
-            final String pepRealm = asString(config.get("pepRealm").defaultTo(realm));
-            final Handler policiesHandler = heap.resolve(config.get("policiesHandler")
-                                                               .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                                         Handler.class);
-            final String ssoTokenHeader = asString(config.get("ssoTokenHeader"));
+            final String openamUrl = trailingSlash(config.get("openamUrl").as(evaluated()).required().asString());
+            final Expression<String> pepUsername = config.get("pepUsername").required().as(expression(String.class));
+            final Expression<String> pepPassword = config.get("pepPassword").required().as(expression(String.class));
+            final String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
+            final String pepRealm = config.get("pepRealm").as(evaluated()).defaultTo(realm).asString();
+            final Handler policiesHandler = config.get("policiesHandler")
+                                                  .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                                  .as(requiredHeapObject(heap, Handler.class));
+            final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
 
             @SuppressWarnings("rawtypes")
-            final Expression<Map> target = asExpression(
-                    config.get("target").defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY)), Map.class);
+            final Expression<Map> target = config.get("target")
+                                                 .defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY))
+                                                 .as(expression(Map.class));
 
             try {
                 final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
@@ -483,9 +485,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                             ssoTokenFilter,
                                                             new ApiVersionProtocolHeaderFilter()));
 
-                filter.setApplication(asString(config.get("application")));
-                filter.setSsoTokenSubject(asExpression(config.get("ssoTokenSubject"), String.class));
-                filter.setJwtSubject(asExpression(config.get("jwtSubject"), String.class));
+                filter.setApplication(config.get("application").as(evaluated()).asString());
+                filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
+                filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
                 filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
 
                 if (config.get("ssoTokenSubject").isNull()
@@ -497,11 +499,14 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 filter.setEnvironment(environment());
 
                 // Sets the cache
-                ScheduledExecutorService executor = heap.resolve(config.get("executor")
-                                                                       .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
-                                                                 ScheduledExecutorService.class);
+                ScheduledExecutorService executor = config.get("executor")
+                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
                 cache = new ThreadSafeCache<>(executor);
-                final Duration cacheMaxExpiration = asDuration(config.get("cacheMaxExpiration").defaultTo("1 minute"));
+                final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
+                                                          .as(evaluated())
+                                                          .defaultTo("1 minute")
+                                                          .as(duration());
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
                     throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
                 }
@@ -531,7 +536,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     @SuppressWarnings("unchecked")
                     @Override
                     public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return asExpression(node, Map.class).eval(bindings);
+                        return node.as(expression(Map.class)).eval(bindings);
                     }
                 };
             } else if (node.isMap()) {

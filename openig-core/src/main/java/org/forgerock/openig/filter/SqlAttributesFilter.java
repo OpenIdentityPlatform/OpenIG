@@ -18,10 +18,11 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.String.format;
+import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.log.LogLevel.DEBUG;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.ofExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -204,7 +205,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 throw new HeapException(ne);
             }
             DataSource source;
-            JsonValue dataSource = config.get("dataSource").required();
+            JsonValue dataSource = config.get("dataSource").as(evaluated()).required();
             try {
                 source = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
@@ -214,13 +215,15 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
             }
 
             @SuppressWarnings("rawtypes")
-            Expression<Map> targetExpr = asExpression(config.get("target").required(), Map.class);
+            Expression<Map> targetExpr = config.get("target").required().as(expression(Map.class));
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
                                                                  targetExpr,
-                                                                 config.get("preparedStatement").required().asString());
-
+                                                                 config.get("preparedStatement")
+                                                                       .as(evaluated())
+                                                                       .required()
+                                                                       .asString());
             if (config.isDefined("parameters")) {
-                filter.parameters.addAll(config.get("parameters").asList(ofExpression()));
+                filter.parameters.addAll(config.get("parameters").as(listOf(expression(String.class))));
             }
             return filter;
         }

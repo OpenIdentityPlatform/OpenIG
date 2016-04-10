@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit;
@@ -90,8 +90,8 @@ public class ConditionalAuditEventListener implements AuditEventListener {
 
         @Override
         public Object create() throws HeapException {
-            Expression<Boolean> condition = asExpression(config.get("condition").defaultTo("${true}"),
-                    Boolean.class);
+            Expression<Boolean> condition = config.get("condition").defaultTo("${true}")
+                                                  .as(expression(Boolean.class));
             auditSystem = heap.get(AUDIT_SYSTEM_HEAP_KEY, AuditSystem.class);
             AuditEventListener listener = createListener();
             conditional = new ConditionalAuditEventListener(listener, condition);
