@@ -20,7 +20,8 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -79,8 +80,9 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
         public Object create() throws HeapException {
             final Script script = compileScript();
             final AbstractScriptableHeapObject<?> component = newInstance(script, heap);
-            Handler clientHandler = heap.resolve(config.get("clientHandler").defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                                 Handler.class);
+            Handler clientHandler = config.get("clientHandler")
+                                          .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                          .as(requiredHeapObject(heap, Handler.class));
             component.setClientHandler(clientHandler);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
@@ -135,7 +137,7 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
                     );
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
-                final String script = evaluate(config.get(CONFIG_OPTION_FILE));
+                final String script = config.get(CONFIG_OPTION_FILE).as(evaluated()).asString();
                 try {
                     return Script.fromFile(environment, mimeType, script);
                 } catch (final ScriptException e) {

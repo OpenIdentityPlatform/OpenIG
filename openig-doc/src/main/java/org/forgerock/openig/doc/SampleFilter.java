@@ -11,13 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 // --- JCite ---
 package org.forgerock.openig.doc;
 
-import org.forgerock.services.context.Context;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -25,6 +26,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
@@ -98,8 +100,8 @@ public class SampleFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
 
             SampleFilter filter = new SampleFilter();
-            filter.name  = config.get("name").required().asString();
-            filter.value = config.get("value").required().asString();
+            filter.name  = config.get("name").as(evaluated()).required().asString();
+            filter.value = config.get("value").as(evaluated()).required().asString();
 
             return filter;
         }

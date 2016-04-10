@@ -18,7 +18,10 @@
 
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.emptyList;
 import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Utils.joinAsString;
 
 import java.io.IOException;
@@ -29,25 +32,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 
-import org.forgerock.http.protocol.Header;
-import org.forgerock.http.protocol.Message;
-import org.forgerock.services.context.Context;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.MutableUri;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
+import org.forgerock.http.protocol.Header;
+import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.session.Session;
+import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -409,18 +412,12 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CookieFilter filter = new CookieFilter();
-            filter.suppressed.addAll(config.get("suppressed")
-                    .defaultTo(Collections.emptyList())
-                    .asList(String.class));
-            filter.relayed.addAll(config.get("relayed")
-                    .defaultTo(Collections.emptyList())
-                    .asList(String.class));
-            filter.managed.addAll(config.get("managed")
-                    .defaultTo(Collections.emptyList())
-                    .asList(String.class));
-            filter.defaultAction = config.get("defaultAction")
-                    .defaultTo(filter.defaultAction.toString())
-                    .asEnum(Action.class);
+            JsonValue evaluatedConfig = config.as(evaluated());
+            filter.suppressed.addAll(evaluatedConfig.get("suppressed").defaultTo(emptyList()).asList(String.class));
+            filter.relayed.addAll(evaluatedConfig.get("relayed").defaultTo(emptyList()).asList(String.class));
+            filter.managed.addAll(evaluatedConfig.get("managed").defaultTo(emptyList()).asList(String.class));
+            filter.defaultAction = evaluatedConfig.get("defaultAction").defaultTo(filter.defaultAction.toString())
+                                                  .as(enumConstant(Action.class));
             return filter;
         }
     }

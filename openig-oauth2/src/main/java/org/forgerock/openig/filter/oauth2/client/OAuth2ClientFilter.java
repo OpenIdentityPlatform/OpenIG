@@ -26,6 +26,8 @@ import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
+import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
@@ -38,12 +40,13 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
-import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
-import static org.forgerock.util.time.Duration.duration;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -815,20 +818,21 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         @Override
         public Object create() throws HeapException {
 
-            final Handler discoveryHandler = heap.resolve(config.get("discoveryHandler")
-                                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                                          Handler.class);
+            final Handler discoveryHandler = config.get("discoveryHandler")
+                                                   .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                                   .as(requiredHeapObject(heap, Handler.class));
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-            final Expression<String> clientEndpoint = asExpression(config.get("clientEndpoint").required(),
-                                                                   String.class);
+            final Expression<String> clientEndpoint = config.get("clientEndpoint")
+                                                            .required()
+                                                            .as(expression(String.class));
 
             final List<ClientRegistration> clients = new LinkedList<>();
             final JsonValue regs = getWithDeprecation(config, logger, "registrations", "registration");
             if (regs.isNotNull()) {
                 if (regs.isString() || regs.isMap()) {
-                    clients.add(heap.resolve(regs, ClientRegistration.class));
+                    clients.add(regs.as(requiredHeapObject(heap, ClientRegistration.class)));
                 } else if (regs.isList()) {
-                    clients.addAll(regs.asList(ofRequiredHeapObject(heap, ClientRegistration.class)));
+                    clients.addAll(regs.as(listOf(requiredHeapObject(heap, ClientRegistration.class))));
                 } else {
                     throw new HeapException("'registrations' must contains the name(s) or inlined declaration(s)"
                                             + "of the client registration's object(s) linked to this client");
@@ -845,27 +849,27 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                      discoveryAndDynamicRegistrationChain,
                                                                      clientEndpoint);
 
-            filter.setTarget(asExpression(config.get("target").defaultTo(
-                    format("${attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
+            filter.setTarget(config.get("target").defaultTo(format("${attributes.%s}", DEFAULT_TOKEN_KEY))
+                                   .as(expression(Object.class)));
 
-            final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
+            final Handler loginHandler = config.get("loginHandler").as(optionalHeapObject(heap, Handler.class));
             filter.setLoginHandler(loginHandler);
 
             if (registrations.needsNascarPage() && loginHandler == null) {
                 throw new HeapException("A 'loginHandler' (defining a NASCAR page) is required when there are zero"
-                                        + " or multiple client registrations.");
+                                                + " or multiple client registrations.");
             }
-            filter.setFailureHandler(heap.resolve(config.get("failureHandler"), Handler.class));
-            filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto"), String.class));
-            filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto"), String.class));
-            filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
-            filter.setRequireLogin(config.get("requireLogin").defaultTo(true).asBoolean());
+            filter.setFailureHandler(config.get("failureHandler").as(requiredHeapObject(heap, Handler.class)));
+            filter.setDefaultLoginGoto(config.get("defaultLoginGoto").as(expression(String.class)));
+            filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto").as(expression(String.class)));
+            filter.setRequireHttps(config.get("requireHttps").as(evaluated()).defaultTo(true).asBoolean());
+            filter.setRequireLogin(config.get("requireLogin").as(evaluated()).defaultTo(true).asBoolean());
             // Build the cache of user-info
-            Duration expiration = duration(config.get("cacheExpiration").defaultTo("20 seconds").asString());
+            Duration expiration = config.get("cacheExpiration").as(evaluated()).defaultTo("20 seconds").as(duration());
             if (!expiration.isZero()) {
-                ScheduledExecutorService executor = heap.resolve(config.get("executor")
-                                                                       .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
-                                                                 ScheduledExecutorService.class);
+                ScheduledExecutorService executor = config.get("executor")
+                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
                 cache = new ThreadSafeCache<>(executor);
                 cache.setDefaultTimeout(expiration);
                 filter.setUserInfoCache(cache);

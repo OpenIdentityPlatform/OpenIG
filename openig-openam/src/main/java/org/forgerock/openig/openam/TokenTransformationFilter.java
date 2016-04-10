@@ -22,9 +22,9 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.asString;
-import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 
@@ -193,13 +193,12 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
 
         @Override
         public Object create() throws HeapException {
-            Handler amHandler = heap.resolve(config.get("amHandler").required(),
-                                             Handler.class);
+            Handler amHandler = config.get("amHandler").required().as(requiredHeapObject(heap, Handler.class));
             URI baseUri = getOpenamBaseUri();
-            String realm = asString(config.get("realm").defaultTo("/"));
-            String ssoTokenHeader = asString(config.get("ssoTokenHeader"));
-            Expression<String> username = asExpression(config.get("username").required(), String.class);
-            Expression<String> password = asExpression(config.get("password").required(), String.class);
+            String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
+            String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
+            Expression<String> username = config.get("username").required().as(expression(String.class));
+            Expression<String> password = config.get("password").required().as(expression(String.class));
             SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
                                                                baseUri,
                                                                realm,
@@ -208,10 +207,10 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                                                                password,
                                                                logger);
 
-            Expression<String> idToken = asExpression(config.get("idToken").required(), String.class);
-            Expression<String> target = asExpression(config.get("target").required(), String.class);
+            Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
+            Expression<String> target = config.get("target").required().as(expression(String.class));
 
-            String instance = evaluateJsonStaticExpression(config.get("instance").required()).asString();
+            String instance = config.get("instance").as(evaluated()).required().asString();
 
             return new TokenTransformationFilter(Handlers.chainOf(amHandler, ssoTokenFilter),
                                                  transformationEndpoint(baseUri, realm, instance),
@@ -220,7 +219,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
         }
 
         private URI getOpenamBaseUri() throws HeapException {
-            String baseUri = asString(config.get("openamUri").required());
+            String baseUri = config.get("openamUri").as(evaluated()).required().asString();
             try {
                 return new URI(trailingSlash(baseUri));
             } catch (URISyntaxException e) {

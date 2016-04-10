@@ -23,6 +23,8 @@ import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
 
 import java.util.Arrays;
@@ -80,14 +82,13 @@ public abstract class GenericHeaplet implements Heaplet {
         this.config = config.required().expect(Map.class);
         this.heap = heap;
         if (!SPECIAL_OBJECTS.contains(this.name)) {
-            this.logger = new Logger(
-                    heap.resolve(
-                            config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                            LogSink.class, true),
-                    name);
-            this.storage = heap.resolve(
-                    config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
-                    TemporaryStorage.class);
+            this.logger = new Logger(config.get("logSink")
+                                           .defaultTo(LOGSINK_HEAP_KEY)
+                                           .as(optionalHeapObject(heap, LogSink.class)),
+                                     name);
+            this.storage = config.get("temporaryStorage")
+                                 .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
+                                 .as(requiredHeapObject(heap, TemporaryStorage.class));
         }
         this.object = create();
         if (this.object instanceof GenericHeapObject) {

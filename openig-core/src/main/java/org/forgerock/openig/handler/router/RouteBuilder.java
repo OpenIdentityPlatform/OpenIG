@@ -28,8 +28,8 @@ import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEF
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.evaluateJsonStaticExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.StringUtil.slug;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -132,7 +132,7 @@ class RouteBuilder {
             routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "auditService",
                            "globalDecorators", "monitor");
 
-            Expression<Boolean> condition = asExpression(config.get("condition"), Boolean.class);
+            Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class));
 
             final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
             final Logger logger = new Logger(logSink, routeHeapName);
@@ -238,20 +238,17 @@ class RouteBuilder {
      *
      * By default (if omitted), monitoring is disabled.
      */
-    private MonitorConfig getMonitorConfig(final JsonValue monitor) {
+    private MonitorConfig getMonitorConfig(JsonValue monitor) {
+        JsonValue evaluatedConfig = monitor.as(evaluated());
         MonitorConfig mc = new MonitorConfig();
-        if (monitor.isNull() || monitor.isString() || monitor.isBoolean()) {
-            // expression(boolean), boolean or unset
-            mc.setEnabled(evaluateJsonStaticExpression(monitor.defaultTo("${false}")).asBoolean());
-        } else if (monitor.isMap()) {
+        if (evaluatedConfig.isMap()) {
             // enabled
-            mc.setEnabled(evaluateJsonStaticExpression(monitor.get("enabled").defaultTo("${false}")).asBoolean());
+            mc.setEnabled(evaluatedConfig.get("enabled").defaultTo(false).asBoolean());
             // percentiles
-            JsonValue percentiles = evaluateJsonStaticExpression(monitor.get("percentiles"));
-            mc.setPercentiles(percentiles.defaultTo(DEFAULT_PERCENTILES).asList(Double.class));
+            mc.setPercentiles(evaluatedConfig.get("percentiles").defaultTo(DEFAULT_PERCENTILES).asList(Double.class));
         } else {
             // by default monitoring is disabled
-            mc.setEnabled(false);
+            mc.setEnabled(evaluatedConfig.defaultTo(false).asBoolean());
         }
         return mc;
     }

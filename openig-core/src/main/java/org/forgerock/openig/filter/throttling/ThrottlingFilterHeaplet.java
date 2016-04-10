@@ -16,12 +16,12 @@
 
 package org.forgerock.openig.filter.throttling;
 
+import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.asDuration;
-import static org.forgerock.openig.util.JsonValues.asExpression;
-import static org.forgerock.openig.util.JsonValues.asInteger;
-import static org.forgerock.openig.util.JsonValues.asString;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -30,10 +30,12 @@ import org.forgerock.http.filter.throttling.ThrottlingFilter;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Keys;
+import org.forgerock.util.Function;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -70,11 +72,20 @@ import org.forgerock.util.time.TimeService;
  */
 public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
-    static ThrottlingRate createThrottlingRate(JsonValue rate) {
-        int numberOfRequests = asInteger(rate.get("numberOfRequests").required());
-        String duration = asString(rate.get("duration").required());
+    static final Function<JsonValue, ThrottlingRate, JsonValueException> THROTTLING_RATE =
+            new Function<JsonValue, ThrottlingRate, JsonValueException>() {
 
-        return new ThrottlingRate(numberOfRequests, duration);
+                @Override
+                public ThrottlingRate apply(JsonValue value) {
+                    int numberOfRequests = value.get("numberOfRequests").as(evaluated()).required().asInteger();
+                    String duration = value.get("duration").as(evaluated()).required().asString();
+
+                    return new ThrottlingRate(numberOfRequests, duration);
+                }
+            };
+
+    static final Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate() {
+        return THROTTLING_RATE;
     }
 
     private ThrottlingFilter filter;
@@ -82,24 +93,29 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         TimeService time = heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class);
-        Duration cleaningInterval = asDuration(config.get("cleaningInterval").defaultTo("5 seconds"));
+        Duration cleaningInterval = config.get("cleaningInterval")
+                                          .as(evaluated())
+                                          .defaultTo("5 seconds")
+                                          .as(duration());
 
         final Expression<String> requestGroupingPolicy =
-                asExpression(getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey").defaultTo(""),
-                             String.class);
+                getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey")
+                        .defaultTo("").as(expression(String.class));
 
         ThrottlingPolicy throttlingRatePolicy;
         if (config.isDefined("rate")) {
             // Backward compatibility and ease of use : for fixed throttling rate we still allow to declare them easily
             // in the configuration
-            throttlingRatePolicy = new FixedRateThrottlingPolicy(createThrottlingRate(config.get("rate")));
+            throttlingRatePolicy = new FixedRateThrottlingPolicy(config.get("rate").as(throttlingRate()));
         } else {
-            throttlingRatePolicy = heap.resolve(config.get("throttlingRatePolicy").required(), ThrottlingPolicy.class);
+            throttlingRatePolicy = config.get("throttlingRatePolicy")
+                                         .required()
+                                         .as(requiredHeapObject(heap, ThrottlingPolicy.class));
         }
 
-        ScheduledExecutorService executorService = heap.resolve(config.get("executor")
-                                                                      .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY),
-                                                                ScheduledExecutorService.class);
+        ScheduledExecutorService executorService = config.get("executor")
+                                                         .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                         .as(requiredHeapObject(heap, ScheduledExecutorService.class));
 
         return filter = new ThrottlingFilter(executorService,
                                              time,

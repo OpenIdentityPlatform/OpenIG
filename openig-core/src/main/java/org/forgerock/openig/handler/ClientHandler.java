@@ -31,9 +31,12 @@ import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSL_CIPHER_SUI
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_SSL_ENABLED_PROTOCOLS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TEMPORARY_STORAGE;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_TRUST_MANAGERS;
-import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
-import static org.forgerock.util.time.Duration.duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,54 +173,58 @@ public class ClientHandler extends GenericHeapObject implements Handler {
         @Override
         public Object create() throws HeapException {
             final Options options = Options.defaultOptions();
+            final JsonValue evaluated = config.as(evaluated());
 
-            if (config.isDefined("connections")) {
-                options.set(OPTION_MAX_CONNECTIONS, config.get("connections").asInteger());
+            if (evaluated.isDefined("connections")) {
+                options.set(OPTION_MAX_CONNECTIONS, evaluated.get("connections").asInteger());
             }
 
-            if (config.isDefined("disableReuseConnection")) {
-                options.set(OPTION_REUSE_CONNECTIONS, !config.get("disableReuseConnection").asBoolean());
+            if (evaluated.isDefined("disableReuseConnection")) {
+                options.set(OPTION_REUSE_CONNECTIONS, !evaluated.get("disableReuseConnection").asBoolean());
             }
 
-            if (config.isDefined("disableRetries")) {
-                options.set(OPTION_RETRY_REQUESTS, !config.get("disableRetries").asBoolean());
+            if (evaluated.isDefined("disableRetries")) {
+                options.set(OPTION_RETRY_REQUESTS, !evaluated.get("disableRetries").asBoolean());
             }
 
-            if (config.isDefined("hostnameVerifier")) {
-                options.set(OPTION_HOSTNAME_VERIFIER, config.get("hostnameVerifier")
-                                                            .asEnum(HttpClientHandler.HostnameVerifier.class));
+            if (evaluated.isDefined("hostnameVerifier")) {
+                options.set(OPTION_HOSTNAME_VERIFIER,
+                            evaluated.get("hostnameVerifier")
+                                     .as(enumConstant(HttpClientHandler.HostnameVerifier.class)));
             }
 
-            if (config.isDefined("sslContextAlgorithm")) {
-                options.set(OPTION_SSLCONTEXT_ALGORITHM, config.get("sslContextAlgorithm").asString());
+            if (evaluated.isDefined("sslContextAlgorithm")) {
+                options.set(OPTION_SSLCONTEXT_ALGORITHM, evaluated.get("sslContextAlgorithm").asString());
             }
 
-            if (config.isDefined("soTimeout")) {
-                options.set(OPTION_SO_TIMEOUT, duration(config.get("soTimeout").asString()));
+            if (evaluated.isDefined("soTimeout")) {
+                options.set(OPTION_SO_TIMEOUT, evaluated.get("soTimeout").as(duration()));
             }
 
-            if (config.isDefined("connectionTimeout")) {
-                options.set(OPTION_CONNECT_TIMEOUT, duration(config.get("connectionTimeout").asString()));
+            if (evaluated.isDefined("connectionTimeout")) {
+                options.set(OPTION_CONNECT_TIMEOUT, evaluated.get("connectionTimeout").as(duration()));
             }
 
-            if (config.isDefined("sslEnabledProtocols")) {
-                options.set(OPTION_SSL_ENABLED_PROTOCOLS, config.get("sslEnabledProtocols").asList(String.class));
+            if (evaluated.isDefined("sslEnabledProtocols")) {
+                options.set(OPTION_SSL_ENABLED_PROTOCOLS,
+                            evaluated.get("sslEnabledProtocols").asList(String.class));
             }
 
-            if (config.isDefined("sslCipherSuites")) {
-                options.set(OPTION_SSL_CIPHER_SUITES, config.get("sslCipherSuites").asList(String.class));
+            if (evaluated.isDefined("sslCipherSuites")) {
+                options.set(OPTION_SSL_CIPHER_SUITES, evaluated.get("sslCipherSuites").asList(String.class));
             }
 
-            if (config.isDefined("numberOfWorkers")) {
+            if (evaluated.isDefined("numberOfWorkers")) {
+
                 options.set(AsyncHttpClientProvider.OPTION_WORKER_THREADS,
-                            config.get("numberOfWorkers").asInteger());
+                            evaluated.get("numberOfWorkers").asInteger());
             }
 
             options.set(OPTION_TEMPORARY_STORAGE, storage);
             options.set(OPTION_KEY_MANAGERS, getKeyManagers());
             options.set(OPTION_TRUST_MANAGERS, getTrustManagers());
 
-            if (config.isDefined("httpClient")) {
+            if (evaluated.isDefined("httpClient")) {
                 String message = format("%s no longer uses a 'httpClient' attribute. All former 'HttpClient' "
                                                 + "config attributes must now be set in 'ClientHandler' instead.",
                                         name);
@@ -248,10 +255,9 @@ public class ClientHandler extends GenericHeapObject implements Handler {
                 final JsonValue trustManagerConfig = config.get("trustManager");
                 final List<TrustManager> managers = new ArrayList<>();
                 if (trustManagerConfig.isList()) {
-                    managers.addAll(trustManagerConfig.asList(ofRequiredHeapObject(heap,
-                                                                                   TrustManager.class)));
+                    managers.addAll(trustManagerConfig.as(listOf(requiredHeapObject(heap, TrustManager.class))));
                 } else {
-                    managers.add(heap.resolve(trustManagerConfig, TrustManager.class));
+                    managers.add(trustManagerConfig.as(requiredHeapObject(heap, TrustManager.class)));
                 }
                 trustManagers = managers.toArray(new TrustManager[managers.size()]);
             }
@@ -267,10 +273,9 @@ public class ClientHandler extends GenericHeapObject implements Handler {
                 final JsonValue keyManagerConfig = config.get("keyManager");
                 final List<KeyManager> managers = new ArrayList<>();
                 if (keyManagerConfig.isList()) {
-                    managers.addAll(keyManagerConfig.asList(ofRequiredHeapObject(heap,
-                                                                                 KeyManager.class)));
+                    managers.addAll(keyManagerConfig.as(listOf(requiredHeapObject(heap, KeyManager.class))));
                 } else {
-                    managers.add(heap.resolve(keyManagerConfig, KeyManager.class));
+                    managers.add(keyManagerConfig.as(requiredHeapObject(heap, KeyManager.class)));
                 }
                 keyManagers = managers.toArray(new KeyManager[managers.size()]);
             }

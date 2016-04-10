@@ -12,12 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
+import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.List;
 
@@ -26,7 +27,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.handler.Handlers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -73,12 +73,11 @@ public class Chain extends GenericHeapObject implements Handler {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            Handler terminus = heap.resolve(config.get("handler"),
-                                            Handler.class);
-            JsonValue list = config.get("filters")
-                                   .required()
-                                   .expect(List.class);
-            List<Filter> filters = list.asList(ofRequiredHeapObject(heap, Filter.class));
+            Handler terminus = config.get("handler").as(requiredHeapObject(heap, Handler.class));
+            List<Filter> filters = config.get("filters")
+                                         .required()
+                                         .expect(List.class)
+                                         .as(listOf(requiredHeapObject(heap, Filter.class)));
             return new Chain(terminus, filters);
         }
     }

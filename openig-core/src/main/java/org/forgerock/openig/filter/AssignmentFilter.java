@@ -12,13 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,9 +197,9 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             // optional
             JsonValue bindings = config.get("onRequest").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression<Boolean> condition = asExpression(binding.get("condition"), Boolean.class);
-                Expression<?> target = asExpression(binding.get("target").required(), Object.class);
-                Expression<?> value = asExpression(binding.get("value"), Object.class);
+                Expression<Boolean> condition = binding.get("condition").as(expression(Boolean.class));
+                Expression<?> target = binding.get("target").required().as(expression(Object.class));
+                Expression<?> value = binding.get("value").as(expression(Object.class));
 
                 filter.addRequestBinding(condition, target, value);
             }
@@ -209,9 +209,9 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             // optional
             JsonValue bindings = config.get("onResponse").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression<Boolean> condition = asExpression(binding.get("condition"), Boolean.class);
-                Expression<?> target = asExpression(binding.get("target").required(), Object.class);
-                Expression<?> value = asExpression(binding.get("value"), Object.class);
+                Expression<Boolean> condition = binding.get("condition").as(expression(Boolean.class));
+                Expression<?> target = binding.get("target").required().as(expression(Object.class));
+                Expression<?> value = binding.get("value").as(expression(Object.class));
 
                 filter.addResponseBinding(condition, target, value);
             }

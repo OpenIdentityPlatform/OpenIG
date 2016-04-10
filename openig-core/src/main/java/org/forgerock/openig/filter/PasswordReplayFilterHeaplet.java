@@ -20,9 +20,11 @@ import static java.lang.Boolean.TRUE;
 import static org.forgerock.http.filter.Filters.chainOf;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -241,14 +243,14 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
             throw new HeapException("Either 'loginPage' or 'loginPageContentMarker' (or both) must have a value");
         }
 
-        loginPage = hasLoginPage ? asExpression(config.get("loginPage"), Boolean.class) : null;
+        loginPage = hasLoginPage ? config.get("loginPage").as(expression(Boolean.class)) : null;
 
         createRequestFilter = (StaticRequestFilter) new StaticRequestFilter.Heaplet()
                 .create(qualified.child("$request-creator"),
                         config.get("request").required(),
                         heap);
 
-        credentialsFilter = heap.resolve(config.get("credentials"), Filter.class, true);
+        credentialsFilter = config.get("credentials").as(optionalHeapObject(heap, Filter.class));
 
         JsonValue headerDecryption = config.get("headerDecryption");
         if (headerDecryption.isNotNull()) {
@@ -264,7 +266,7 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
             ((EntityExtractFilter) extractFilter).getExtractor()
                                                  .getPatterns()
                                                  .put(IS_LOGIN_PAGE_ATTR,
-                                                      config.get("loginPageContentMarker").asPattern());
+                                                      config.get("loginPageContentMarker").as(pattern()));
             ((EntityExtractFilter) extractFilter).getExtractor()
                                                  .getTemplates()
                                                  .put(IS_LOGIN_PAGE_ATTR, new PatternTemplate("true"));
@@ -277,7 +279,7 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
             String name = extraction.get("name").required().asString();
             ((EntityExtractFilter) extractFilter).getExtractor()
                                                  .getPatterns()
-                                                 .put(name, extraction.get("pattern").required().asPattern());
+                                                 .put(name, extraction.get("pattern").required().as(pattern()));
             ((EntityExtractFilter) extractFilter).getExtractor()
                                                  .getTemplates()
                                                  .put(name, new PatternTemplate("$1"));

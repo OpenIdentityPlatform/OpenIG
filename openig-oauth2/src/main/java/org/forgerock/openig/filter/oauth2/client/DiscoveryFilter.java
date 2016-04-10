@@ -24,6 +24,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.oauth2.client.Issuer.ISSUER_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -165,7 +166,7 @@ public class DiscoveryFilter implements Filter {
                     public Issuer apply(URI wellKnownUri) throws DiscoveryException {
                         JsonValue issuerDeclaration = createIssuerDeclaration(hostString, wellKnownUri);
                         try {
-                            return heap.resolve(issuerDeclaration, Issuer.class);
+                            return issuerDeclaration.as(requiredHeapObject(heap, Issuer.class));
                         } catch (HeapException e) {
                             String message = format("Cannot resolve the issuerDeclaration '%s'",
                                                     issuerDeclaration.toString());

@@ -45,6 +45,8 @@ import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -192,10 +194,13 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // As all heaplets can specify their own storage and logger,
             // these two lines provide custom logger or storage available.
-            LogSink logSink = heap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class, true);
+            LogSink logSink = config.get("logSink")
+                                    .defaultTo(LOGSINK_HEAP_KEY)
+                                    .as(optionalHeapObject(heap, LogSink.class));
             final Logger logger = new Logger(logSink, Name.of(GatewayHttpApplication.class));
-            storage = heap.resolve(config.get("temporaryStorage").defaultTo(TEMPORARY_STORAGE_HEAP_KEY),
-                    TemporaryStorage.class);
+            storage = config.get("temporaryStorage")
+                            .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
+                            .as(requiredHeapObject(heap, TemporaryStorage.class));
 
             // Protect the /openig namespace
             Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);

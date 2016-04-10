@@ -16,13 +16,14 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static org.forgerock.http.protocol.Status.OK;
+import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -150,11 +151,11 @@ public final class Issuer {
     public Issuer(final String name, final JsonValue config) {
         Reject.ifNull(name, config);
         this.name = name;
-        this.authorizeEndpoint = firstOf(config, "authorizeEndpoint", "authorization_endpoint").required().asURI();
-        this.tokenEndpoint = firstOf(config, "tokenEndpoint", "token_endpoint").required().asURI();
-        this.registrationEndpoint = firstOf(config, "registrationEndpoint", "registration_endpoint").asURI();
-        this.userInfoEndpoint = firstOf(config, "userInfoEndpoint", "userinfo_endpoint").asURI();
-        this.wellKnownEndpoint = config.get("wellKnownEndpoint").asURI();
+        this.authorizeEndpoint = firstOf(config, "authorizeEndpoint", "authorization_endpoint").required().as(uri());
+        this.tokenEndpoint = firstOf(config, "tokenEndpoint", "token_endpoint").required().as(uri());
+        this.registrationEndpoint = firstOf(config, "registrationEndpoint", "registration_endpoint").as(uri());
+        this.userInfoEndpoint = firstOf(config, "userInfoEndpoint", "userinfo_endpoint").as(uri());
+        this.wellKnownEndpoint = config.get("wellKnownEndpoint").as(uri());
         this.supportedDomains = extractPatterns(config.get("supportedDomains").expect(List.class).asList(String.class));
     }
 
@@ -317,25 +318,25 @@ public final class Issuer {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final Handler issuerHandler = heap.resolve(config.get("issuerHandler")
-                                                             .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                                       Handler.class);
+            final Handler issuerHandler = config.get("issuerHandler")
+                                                .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                                .as(requiredHeapObject(heap, Handler.class));
             final List<String> supportedDomains = config.get("supportedDomains").asList(String.class);
             if (config.isDefined("wellKnownEndpoint")
                     && !config.isDefined("authorizeEndpoint")
                     && !config.isDefined("tokenEndpoint")) {
                 try {
-                    final URI wellKnownEndpoint = new URI(evaluate(config.get("wellKnownEndpoint")));
+                    final URI wellKnownEndpoint = config.get("wellKnownEndpoint").as(evaluated()).as(uri());
                     return build(new AttributesContext(new RootContext()),
                                  this.name,
                                  wellKnownEndpoint,
                                  supportedDomains,
                                  issuerHandler).getOrThrow();
-                } catch (URISyntaxException | DiscoveryException | InterruptedException e) {
+                } catch (DiscoveryException | InterruptedException e) {
                     throw new HeapException(e);
                 }
             }
-            return new Issuer(this.name, evaluate(config, logger));
+            return new Issuer(this.name, config.as(evaluated()));
         }
     }
 }

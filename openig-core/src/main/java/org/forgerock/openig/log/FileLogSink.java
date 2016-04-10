@@ -12,14 +12,16 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
 
-import static java.nio.charset.StandardCharsets.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.json.JsonValueFunctions.file;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 
+import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -122,7 +125,8 @@ public class FileLogSink implements LogSink {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            File file = new File(evaluate(config.get("file").required()));
+            JsonValue evaluated = config.as(evaluated());
+            File file = evaluated.get("file").required().as(file());
             try {
                 // try opening file to ensure it's writable at config time
                 FileOutputStream out = new FileOutputStream(file, true);
@@ -131,7 +135,7 @@ public class FileLogSink implements LogSink {
                 throw new JsonValueException(config.get("file"), ioe);
             }
             FileLogSink sink = new FileLogSink(file);
-            sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
+            sink.setLevel(evaluated.get("level").defaultTo(sink.level.name()).as(enumConstant(LogLevel.class)));
             return sink;
         }
     }

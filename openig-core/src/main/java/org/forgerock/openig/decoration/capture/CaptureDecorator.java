@@ -11,17 +11,20 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
 
-import static java.lang.String.*;
-import static java.util.Arrays.*;
-import static org.forgerock.openig.decoration.helper.LazyReference.*;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.*;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -147,14 +150,14 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         }
         if (decoratorConfig.isString()) {
             // Single value
-            modes.add(decoratorConfig.asEnum(CapturePoint.class));
+            modes.add(decoratorConfig.as(enumConstant(CapturePoint.class)));
         } else if (decoratorConfig.isList()) {
             // Array values
-            if (!decoratorConfig.asList(ofEnum(CapturePoint.class)).contains(null)) {
-                modes.addAll(decoratorConfig.asList(ofEnum(CapturePoint.class)));
-            } else {
+            List<CapturePoint> capturePoints = decoratorConfig.as(listOf(enumConstant(CapturePoint.class)));
+            if (capturePoints.contains(null)) {
                 throw new HeapException("Capture's decorator cannot contain null value");
             }
+            modes.addAll(capturePoints);
         } else {
             throw new HeapException(format("Invalid JSON configuration in '%s'. It should either be a simple String "
                                            + " or an array of String", decoratorConfig.toString()));
@@ -183,7 +186,10 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         if (sink == null) {
             // Use the sink of the decorated component
             Heap heap = context.getHeap();
-            sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+            sink = context.getConfig()
+                          .get("logSink")
+                          .defaultTo(LOGSINK_HEAP_KEY)
+                          .as(requiredHeapObject(heap, LogSink.class));
         }
         Name name = context.getName();
         return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureContext);

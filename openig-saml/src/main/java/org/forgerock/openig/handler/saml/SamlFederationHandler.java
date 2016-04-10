@@ -17,6 +17,7 @@ package org.forgerock.openig.handler.saml;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.File;
 import java.io.IOException;
@@ -595,32 +596,39 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
+            final JsonValue evaluated = config.as(evaluated());
             final Map<String, String> attributeMapping = new HashMap<>();
-            JsonValue mappings = config.get("assertionMapping").expect(Map.class);
+            JsonValue mappings = evaluated.get("assertionMapping").expect(Map.class);
             if (mappings != null) {
-                for (String key : mappings.keys()) {
+                for (String key : mappings.keys()) { // TODO: 10/04/16 Do we want to evaluate the keys also ?
                     attributeMapping.put(key, mappings.get(key).asString());
                 }
             }
-            final String authnContextDelimiter = config.get("authnContextDelimiter").defaultTo("|").asString();
-            final String authnContext = config.get("authnContext").asString();
-            final String redirectURI = config.get("redirectURI").asString();
-            final String logoutURI = config.get("logoutURI").asString();
+            final String authnContextDelimiter = evaluated.get("authnContextDelimiter").defaultTo("|").asString();
+            final String authnContext = evaluated.get("authnContext").asString();
+            final String redirectURI = evaluated.get("redirectURI").asString();
+            final String logoutURI = evaluated.get("logoutURI").asString();
             // Give subjectMapping and sessionIndexMapping a default value as they are needed when doing SP initiated
             // SLO
-            final String subjectMapping = config.get("subjectMapping").defaultTo("subjectMapping").asString();
-            final String sessionIndexMapping = config.get("sessionIndexMapping").defaultTo("sessionIndexMapping")
-                    .asString();
-            final String assertionConsumerEndpoint = config.get("assertionConsumerEndpoint")
-                    .defaultTo("fedletapplication").asString();
-            final String sPinitiatedSSOEndpoint = config.get("SPinitiatedSSOEndpoint").defaultTo("SPInitiatedSSO")
-                    .asString();
-            final String singleLogoutEndpoint = config.get("singleLogoutEndpoint").defaultTo("fedletSloRedirect")
-                    .asString();
-            final String singleLogoutEndpointSoap = config.get("singleLogoutEndpointSoap").defaultTo("fedletSloSoap")
-                    .asString();
-            final String sPinitiatedSLOEndpoint = config.get("SPinitiatedSLOEndpoint").defaultTo("SPInitiatedSLO")
-                    .asString();
+            final String subjectMapping = evaluated.get("subjectMapping").defaultTo("subjectMapping").asString();
+            final String sessionIndexMapping = evaluated.get("sessionIndexMapping")
+                                                        .defaultTo("sessionIndexMapping")
+                                                        .asString();
+            final String assertionConsumerEndpoint = evaluated.get("assertionConsumerEndpoint")
+                                                              .defaultTo("fedletapplication")
+                                                              .asString();
+            final String sPinitiatedSSOEndpoint = evaluated.get("SPinitiatedSSOEndpoint")
+                                                           .defaultTo("SPInitiatedSSO")
+                                                           .asString();
+            final String singleLogoutEndpoint = evaluated.get("singleLogoutEndpoint")
+                                                         .defaultTo("fedletSloRedirect")
+                                                         .asString();
+            final String singleLogoutEndpointSoap = evaluated.get("singleLogoutEndpointSoap")
+                                                             .defaultTo("fedletSloSoap")
+                                                             .asString();
+            final String sPinitiatedSLOEndpoint = evaluated.get("SPinitiatedSLOEndpoint")
+                                                           .defaultTo("SPInitiatedSLO")
+                                                           .asString();
             /*
              * Get the gateway configuration directory and set it as a system property to override the default openFed
              * location. Federation config files will reside in the SAML directory.

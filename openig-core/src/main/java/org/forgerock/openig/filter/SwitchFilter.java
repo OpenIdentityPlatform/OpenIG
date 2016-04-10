@@ -18,7 +18,8 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,8 +165,8 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            return new Case(asExpression(value.get("condition"), Boolean.class),
-                            heap.resolve(value.get("handler"), Handler.class));
+            return new Case(value.get("condition").as(expression(Boolean.class)),
+                            value.get("handler").as(requiredHeapObject(heap, Handler.class)));
         }
     }
 }

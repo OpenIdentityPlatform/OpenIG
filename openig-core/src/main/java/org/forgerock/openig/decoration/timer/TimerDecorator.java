@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -93,7 +94,10 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     private static Logger getLogger(final Context context) throws HeapException {
         // Use the sink of the decorated component
         Heap heap = context.getHeap();
-        LogSink sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+        LogSink sink = context.getConfig()
+                              .get("logSink")
+                              .defaultTo(LOGSINK_HEAP_KEY)
+                              .as(requiredHeapObject(heap, LogSink.class));
         Name name = context.getName();
         return new Logger(sink, name.decorated("Timer"));
     }

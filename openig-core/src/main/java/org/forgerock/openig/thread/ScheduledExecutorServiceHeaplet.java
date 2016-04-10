@@ -18,13 +18,13 @@ package org.forgerock.openig.thread;
 
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
-import static org.forgerock.openig.util.JsonValues.asBoolean;
-import static org.forgerock.openig.util.JsonValues.asDuration;
-import static org.forgerock.openig.util.JsonValues.asInteger;
+import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.time.Duration;
@@ -99,19 +99,21 @@ import org.forgerock.util.time.Duration;
  */
 public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
 
+    private JsonValue evaluated;
     private Duration gracePeriod;
     private boolean gracefulStop;
 
     @Override
     public ExecutorService create() throws HeapException {
+        evaluated = config.as(evaluated());
         // Force checks at init time
-        gracefulStop = asBoolean(config.get("gracefulStop").defaultTo(true));
-        gracePeriod = asDuration(config.get("gracePeriod").defaultTo("10 seconds"));
+        gracefulStop = evaluated.get("gracefulStop").defaultTo(true).asBoolean();
+        gracePeriod = evaluated.get("gracePeriod").defaultTo("10 seconds").as(duration());
         return newScheduledThreadPool(corePoolSize());
     }
 
     private int corePoolSize() throws HeapException {
-        int size = asInteger(config.get("corePoolSize").defaultTo(1));
+        int size = evaluated.get("corePoolSize").defaultTo(1).asInteger();
         if (size <= 0) {
             throw new HeapException("'corePoolSize' can only be a positive (non-zero) value");
         }

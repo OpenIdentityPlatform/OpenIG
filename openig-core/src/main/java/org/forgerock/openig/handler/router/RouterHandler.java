@@ -21,7 +21,8 @@ import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.File;
 import java.util.Comparator;
@@ -319,14 +320,15 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             File directory = new File(env.getConfigDirectory(), "routes");
 
             // Configuration can override that value
-            String evaluation = evaluate(config.get("directory"));
+            String evaluation = config.get("directory").as(evaluated()).asString();
             if (evaluation != null) {
                 directory = new File(evaluation);
             }
 
             DirectoryScanner scanner = new DirectoryMonitor(directory);
 
-            int period = config.get("scanInterval").defaultTo(PeriodicDirectoryScanner.TEN_SECONDS).asInteger();
+            int period = config.get("scanInterval").as(evaluated()).defaultTo(PeriodicDirectoryScanner.TEN_SECONDS)
+                               .asInteger();
             if (period > 0) {
                 TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
                 // Wrap the scanner in another scanner that will trigger scan at given interval
@@ -351,9 +353,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                                                                        new EndpointRegistry(routes,
                                                                                             registration.getPath())),
                                                       scanner);
-            handler.setDefaultHandler(heap.resolve(config.get("defaultHandler"),
-                                                   Handler.class,
-                                                   true));
+            handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
             return handler;
         }
 

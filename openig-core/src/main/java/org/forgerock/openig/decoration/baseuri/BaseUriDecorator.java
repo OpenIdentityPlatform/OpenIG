@@ -11,14 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.baseuri;
 
 import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -87,7 +88,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriFilter(delegate, asExpression(decoratorConfig, String.class), getLogger(context));
+            return new BaseUriFilter(delegate, decoratorConfig.as(expression(String.class)), getLogger(context));
         }
         return delegate;
     }
@@ -96,7 +97,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriHandler(delegate, asExpression(decoratorConfig, String.class), getLogger(context));
+            return new BaseUriHandler(delegate, decoratorConfig.as(expression(String.class)), getLogger(context));
         }
         return delegate;
     }
@@ -106,7 +107,10 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
         if (sink == null) {
             // Use the sink of the decorated component
             final Heap heap = context.getHeap();
-            sink = heap.resolve(context.getConfig().get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
+            sink = context.getConfig()
+                          .get("logSink")
+                          .defaultTo(LOGSINK_HEAP_KEY)
+                          .as(requiredHeapObject(heap, LogSink.class));
         }
         final Name name = context.getName();
         return new Logger(sink, name.decorated("BaseUri"));

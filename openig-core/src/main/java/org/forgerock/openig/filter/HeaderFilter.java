@@ -12,16 +12,18 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Filter;
@@ -92,7 +94,7 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
         for (String key : this.addedHeaders.keySet()) {
             for (String value : this.addedHeaders.get(key).getValues()) {
                 JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, asExpression(jsonValue, String.class).eval(bindings));
+                message.getHeaders().add(key, jsonValue.as(expression(String.class)).eval(bindings));
             }
         }
     }
@@ -121,17 +123,16 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             HeaderFilter filter = new HeaderFilter(config.get("messageType")
+                                                         .as(evaluated())
                                                          .required()
-                                                         .asEnum(MessageType.class));
+                                                         .as(enumConstant(MessageType.class)));
             filter.removedHeaders.addAll(config.get("remove")
-                                         .defaultTo(Collections.emptyList())
-                                         .asList(String.class));
-            JsonValue add = config.get("add")
-                    .defaultTo(Collections.emptyMap())
-                    .expect(Map.class);
+                                               .defaultTo(emptyList())
+                                               .as(evaluated())
+                                               .asList(String.class));
+            JsonValue add = config.get("add").defaultTo(emptyMap()).expect(Map.class);
             for (String key : add.keys()) {
-                List<String> values = add.get(key).required().asList(String.class);
-                filter.addedHeaders.put(key, values);
+                filter.addedHeaders.put(key, add.get(key).required().asList(String.class));
             }
             return filter;
         }

@@ -12,13 +12,14 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.List;
 import java.util.Map;
@@ -129,17 +130,17 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final int code = config.get("status").required().asInteger();
-            final String reason = config.get("reason").asString();
+            final int code = config.get("status").as(evaluated()).required().asInteger();
+            final String reason = config.get("reason").as(evaluated()).asString();
             Status status = Status.valueOf(code, reason);
-            final String version = config.get("version").asString();
+            final String version = config.get("version").as(evaluated()).asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final Expression<String> entity = asExpression(config.get("entity"), String.class);
+            final Expression<String> entity = config.get("entity").as(expression(String.class));
             final StaticResponseHandler handler = new StaticResponseHandler(status, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.addHeader(key, asExpression(value.required(), String.class));
+                        handler.addHeader(key, value.required().as(expression(String.class)));
                     }
                 }
             }

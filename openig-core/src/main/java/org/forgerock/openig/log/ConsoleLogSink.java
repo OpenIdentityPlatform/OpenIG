@@ -12,15 +12,18 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.PrintStream;
 
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
@@ -157,9 +160,14 @@ public class ConsoleLogSink implements LogSink {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
+            JsonValue evaluated = config.as(evaluated());
             ConsoleLogSink sink = new ConsoleLogSink();
-            sink.setLevel(config.get("level").defaultTo(sink.level.toString()).asEnum(LogLevel.class));
-            sink.setStream(config.get("stream").defaultTo(sink.stream.toString()).asEnum(Stream.class));
+            sink.setLevel(evaluated.get("level")
+                                   .defaultTo(sink.level.name())
+                                   .as(enumConstant(LogLevel.class)));
+            sink.setStream(evaluated.get("stream")
+                                    .defaultTo(sink.stream.name())
+                                    .as(enumConstant(Stream.class)));
             return sink;
         }
     }

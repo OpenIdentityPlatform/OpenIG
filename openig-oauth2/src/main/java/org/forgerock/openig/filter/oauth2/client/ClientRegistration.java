@@ -24,8 +24,9 @@ import static org.forgerock.authz.modules.oauth2.OAuth2Error.bestEffortResourceS
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.nio.charset.Charset;
@@ -383,14 +384,11 @@ public final class ClientRegistration {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final Handler registrationHandler = heap.resolve(config.get("registrationHandler")
-                                                                   .defaultTo(CLIENT_HANDLER_HEAP_KEY),
-                                                             Handler.class);
-            final Issuer issuer = heap.resolve(config.get("issuer"), Issuer.class);
-            return new ClientRegistration(this.name,
-                                          evaluate(config, logger),
-                                          issuer,
-                                          registrationHandler);
+            final Handler registrationHandler = config.get("registrationHandler")
+                                                      .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                                      .as(requiredHeapObject(heap, Handler.class));
+            final Issuer issuer = config.get("issuer").as(requiredHeapObject(heap, Issuer.class));
+            return new ClientRegistration(this.name, config.as(evaluated()), issuer, registrationHandler);
         }
     }
 }

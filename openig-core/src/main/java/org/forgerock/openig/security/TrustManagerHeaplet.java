@@ -11,12 +11,14 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.security.KeyStore;
 
@@ -52,8 +54,11 @@ public class TrustManagerHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
-        KeyStore keyStore = heap.resolve(storeRef, KeyStore.class);
-        String algorithm = config.get("alg").defaultTo(TrustManagerFactory.getDefaultAlgorithm()).asString();
+        KeyStore keyStore = storeRef.as(requiredHeapObject(heap, KeyStore.class));
+        String algorithm = config.get("alg")
+                                 .as(evaluated())
+                                 .defaultTo(TrustManagerFactory.getDefaultAlgorithm())
+                                 .asString();
 
         TrustManagerFactory factory;
         try {

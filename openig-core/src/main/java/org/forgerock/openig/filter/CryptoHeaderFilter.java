@@ -12,13 +12,15 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
 
 import static java.util.Collections.emptyList;
-import static org.forgerock.openig.util.JsonValues.evaluate;
+import static org.forgerock.json.JsonValueFunctions.charset;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -37,6 +39,7 @@ import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -239,21 +242,25 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();
-            filter.messageType = config.get("messageType").required().asEnum(MessageType.class);
-            filter.operation = config.get("operation").required().asEnum(Operation.class);
-            filter.algorithm = config.get("algorithm").defaultTo(DEFAULT_ALGORITHM).asString();
-            filter.charset = config.get("charset").defaultTo("UTF-8").asCharset();
-            byte[] key = Base64.decode(evaluate(config.get("key").required()));
+            JsonValue evaluated = config.as(evaluated());
+            filter.messageType = evaluated.get("messageType")
+                                       .required()
+                                       .as(enumConstant(MessageType.class));
+            filter.operation = evaluated.get("operation").required().as(enumConstant(Operation.class));
+            filter.algorithm = evaluated.get("algorithm").defaultTo(DEFAULT_ALGORITHM).asString();
+            filter.charset = evaluated.get("charset").defaultTo("UTF-8").as(charset());
+            byte[] key = Base64.decode(evaluated.get("key").required().asString());
             if ((key == null) || (key.length == 0)) {
+                // We want to print the original expression, so we use config instead of evaluated
                 throw new JsonValueException(config.get("key"),
-                        "key evaluation gave an empty result that is not allowed");
+                                             "key evaluation gave an empty result that is not allowed");
             }
             try {
-                filter.key = new SecretKeySpec(key, config.get("keyType").defaultTo("AES").asString());
+                filter.key = new SecretKeySpec(key, evaluated.get("keyType").defaultTo("AES").asString());
             } catch (IllegalArgumentException iae) {
                 throw new JsonValueException(config, iae);
             }
-            filter.headers.addAll(config.get("headers").defaultTo(emptyList()).asList(String.class));
+            filter.headers.addAll(evaluated.get("headers").defaultTo(emptyList()).asList(String.class));
             return filter;
         }
     }

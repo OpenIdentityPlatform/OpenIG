@@ -17,8 +17,8 @@
 package org.forgerock.openig.filter.throttling;
 
 import static java.lang.String.format;
-import static org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet.createThrottlingRate;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet.throttlingRate;
+import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +31,7 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.Function;
 
 /**
  * Creates and initializes a {@link MappedThrottlingPolicy} in a heap environment.
@@ -100,22 +101,14 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        Expression<String> throttlingRateMapper = asExpression(config.get("throttlingRateMapper").required(),
-                                                               String.class);
+        Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
+                                                        .as(expression(String.class));
 
-        Map<String, ThrottlingRate> rates = new HashMap<>();
-        JsonValue map = config.get("throttlingRatesMapping");
-        for (String key : map.keys()) {
-            try {
-                rates.put(Expression.valueOf(key, String.class).eval(), createThrottlingRate(map.get(key)));
-            } catch (ExpressionException e) {
-                throw new HeapException(new JsonValueException(map, "Expecting a valid string expression", e));
-            }
-        }
+        Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping").as(RATES_MAPPING);
 
         ThrottlingRate defaultRate = null;
         if (config.isDefined("defaultRate")) {
-            defaultRate = createThrottlingRate(config.get("defaultRate"));
+            defaultRate = config.get("defaultRate").as(throttlingRate());
         }
 
         if (rates.isEmpty() && defaultRate == null) {
@@ -127,4 +120,21 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
                                           defaultRate);
     }
 
+    private static final  Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException> RATES_MAPPING =
+            new Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException>() {
+
+                @Override
+                public Map<String, ThrottlingRate> apply(JsonValue value) {
+                    Map<String, ThrottlingRate> rates = new HashMap<>();
+                    for (String key : value.keys()) {
+                        try {
+                            rates.put(Expression.valueOf(key, String.class).eval(),
+                                      value.get(key).as(throttlingRate()));
+                        } catch (ExpressionException e) {
+                            throw new JsonValueException(value, "Expecting a valid string expression", e);
+                        }
+                    }
+                    return rates;
+                }
+            };
 }

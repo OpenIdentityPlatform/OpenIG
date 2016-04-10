@@ -18,7 +18,8 @@ package org.forgerock.openig.filter;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.asExpression;
+import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import org.forgerock.http.Filter;
@@ -118,10 +119,11 @@ public class ConditionEnforcementFilter extends GenericHeapObject implements Fil
         @Override
         public Object create() throws HeapException {
 
-            final Expression<Boolean> condition = asExpression(config.get("condition").required(), Boolean.class);
+            final Expression<Boolean> condition = config.get("condition").required().as(expression(Boolean.class));
             if (config.isDefined("failureHandler")) {
-                return new ConditionEnforcementFilter(condition, heap.resolve(config.get("failureHandler"),
-                                                                              Handler.class));
+                return new ConditionEnforcementFilter(condition,
+                                                      config.get("failureHandler")
+                                                            .as(requiredHeapObject(heap, Handler.class)));
             } else {
                 return new ConditionEnforcementFilter(condition);
             }

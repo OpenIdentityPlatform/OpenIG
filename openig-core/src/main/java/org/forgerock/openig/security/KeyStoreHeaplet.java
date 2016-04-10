@@ -11,14 +11,15 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
 
-import static java.lang.String.*;
-import static org.forgerock.openig.util.JsonValues.*;
-import static org.forgerock.util.Utils.*;
+import static java.lang.String.format;
+import static org.forgerock.json.JsonValueFunctions.url;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -55,10 +56,10 @@ public class KeyStoreHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        JsonValue urlString = config.get("url").required();
-        URL url = evaluateJsonStaticExpression(urlString).asURL();
-        String password = evaluate(config.get("password"));
-        String type = config.get("type").defaultTo(KeyStore.getDefaultType()).asString().toUpperCase();
+        JsonValue evaluated = config.as(evaluated());
+        URL url = evaluated.get("url").required().as(url());
+        String password = evaluated.get("password").asString();
+        String type = evaluated.get("type").defaultTo(KeyStore.getDefaultType()).asString().toUpperCase();
 
         KeyStore keyStore = null;
         InputStream keyInput = null;
@@ -68,7 +69,7 @@ public class KeyStoreHeaplet extends GenericHeaplet {
             char[] credentials = (password == null) ? null : password.toCharArray();
             keyStore.load(keyInput, credentials);
         } catch (Exception e) {
-            throw new HeapException(format("Cannot load %S KeyStore from %s", type, urlString.asString()), e);
+            throw new HeapException(format("Cannot load %S KeyStore from %s", type, url.toString()), e);
         } finally {
             closeSilently(keyInput);
         }

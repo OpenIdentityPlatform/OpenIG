@@ -16,6 +16,9 @@
 
 package org.forgerock.openig.filter.throttling;
 
+import static org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet.throttlingRate;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+
 import org.forgerock.http.filter.throttling.DefaultRateThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
@@ -68,9 +71,10 @@ public class DefaultRateThrottlingPolicyHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        ThrottlingPolicy throttlingPolicy = heap.resolve(config.get("throttlingRatePolicy").required(),
-                                                         ThrottlingPolicy.class);
-        ThrottlingRate defaultRate = ThrottlingFilterHeaplet.createThrottlingRate(config.get("defaultRate").required());
+        ThrottlingPolicy throttlingPolicy = config.get("throttlingRatePolicy")
+                                                  .required()
+                                                  .as(requiredHeapObject(heap, ThrottlingPolicy.class));
+        ThrottlingRate defaultRate = config.get("defaultRate").required().as(throttlingRate());
 
         return new DefaultRateThrottlingPolicy(defaultRate, throttlingPolicy);
     }

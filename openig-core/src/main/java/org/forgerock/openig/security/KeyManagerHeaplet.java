@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
@@ -55,9 +55,12 @@ public class KeyManagerHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
-        KeyStore keyStore = heap.resolve(storeRef, KeyStore.class);
-        String password = evaluate(config.get("password").required());
-        String algorithm = config.get("alg").defaultTo(KeyManagerFactory.getDefaultAlgorithm()).asString();
+        KeyStore keyStore = storeRef.as(requiredHeapObject(heap, KeyStore.class));
+        String password = config.get("password").as(evaluated()).required().asString();
+        String algorithm = config.get("alg")
+                                 .as(evaluated())
+                                 .defaultTo(KeyManagerFactory.getDefaultAlgorithm())
+                                 .asString();
 
         // Initialize a KeyManagerFactory
         KeyManagerFactory factory;
