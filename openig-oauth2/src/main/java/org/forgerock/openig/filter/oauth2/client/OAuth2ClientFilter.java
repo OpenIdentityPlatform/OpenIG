@@ -23,6 +23,8 @@ import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.http.protocol.Status.OK;
+import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
@@ -58,7 +60,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
@@ -613,7 +614,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
                         @Override
                         public Promise<Response, NeverThrowsException> apply(final Response response) {
-                            if (Status.UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
+                            if (UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
                                 closeSilently(response);
                                 return sendAuthorizationRedirect(context, request, null);
                             } else if (session != refreshedSession) {
@@ -676,24 +677,24 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 });
     }
 
-    private Promise<Response, NeverThrowsException> httpRedirectGoto(final Context context,
-                                                                     final Request request,
-                                                                     final String gotoUri,
-                                                                     final Expression<String> defaultGotoUri) {
+    private static Promise<Response, NeverThrowsException> httpRedirectGoto(final Context context,
+                                                                            final Request request,
+                                                                            final String gotoUri,
+                                                                            final Expression<String> defaultGotoUri) {
         try {
             if (gotoUri != null) {
                 return completion(httpRedirect(gotoUri));
             } else if (defaultGotoUri != null) {
                 return completion(httpRedirect(buildUri(context, request, defaultGotoUri).toString()));
             } else {
-                return completion(httpResponse(Status.OK));
+                return completion(httpResponse(OK));
             }
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }
     }
 
-    private Promise<Response, NeverThrowsException> completion(Response response) {
+    private static Promise<Response, NeverThrowsException> completion(Response response) {
         return newResultPromise(response);
     }
 
@@ -716,8 +717,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request) {
-        final Map<String, Object> info =
-                new LinkedHashMap<>(session.getAccessTokenResponse());
+        final Map<String, Object> info = new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.
         info.put("client_registration", session.getClientRegistrationName());
         info.put("client_endpoint", session.getClientEndpoint());
@@ -945,7 +945,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
     }
 
-    private <V, E extends Exception> V blockingCall(Promise<V, E> promise, String message)
+    private static <V, E extends Exception> V blockingCall(Promise<V, E> promise, String message)
             throws E, OAuth2ErrorException {
         try {
             return promise.getOrThrow();
