@@ -129,7 +129,7 @@ final class OAuth2Utils {
                                                                             ResponseException {
         SessionContext sessionContext = context.asContext(SessionContext.class);
         final Object sessionJson = sessionContext.getSession().get(sessionKey(context,
-                                                                        buildUri(context, request, clientEndpoint)));
+                                                                   buildUri(context, request, clientEndpoint)));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
         }

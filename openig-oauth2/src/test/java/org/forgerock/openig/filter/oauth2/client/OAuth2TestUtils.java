@@ -58,13 +58,13 @@ public final class OAuth2TestUtils {
     static final String REFRESH_TOKEN = "5dcc34f5-7617-4baf-b36b-77e1e8b8652b";
 
     static ClientRegistration buildClientRegistration(final String clientName,
-                                                      final Handler registrationHandler) throws Exception {
+                                                      final Handler registrationHandler) {
         return buildClientRegistration(clientName, registrationHandler, null);
     }
 
     static ClientRegistration buildClientRegistration(final String clientName,
                                                       final Handler registrationHandler,
-                                                      final String issuerName) throws Exception {
+                                                      final String issuerName) {
         final JsonValue config = json(object(field("clientId", clientName),
                                              field("clientSecret", "password"),
                                              field("issuer", issuerName),
