@@ -804,8 +804,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new HeapException("A 'loginHandler' (defining a NASCAR page) is required when there are zero"
                                         + " or multiple client registrations.");
             }
-            filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
-                    Handler.class));
+            filter.setFailureHandler(heap.resolve(config.get("failureHandler"), Handler.class));
             filter.setDefaultLoginGoto(asExpression(config.get("defaultLoginGoto"), String.class));
             filter.setDefaultLogoutGoto(asExpression(config.get("defaultLogoutGoto"), String.class));
             filter.setRequireHttps(config.get("requireHttps").defaultTo(true).asBoolean());
