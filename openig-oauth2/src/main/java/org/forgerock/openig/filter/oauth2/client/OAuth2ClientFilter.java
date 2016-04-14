@@ -102,7 +102,8 @@ import org.forgerock.util.time.TimeService;
  * {@code
  * "target"                       : expression,             [OPTIONAL - default is ${attributes.openid}]
  * "clientEndpoint"               : expression,             [REQUIRED]
- * "loginHandler"                 : handler,                [OPTIONAL - if 0 or multiple client registrations.]
+ * "loginHandler"                 : handler,                [REQUIRED - if zero or multiple client registrations.
+ *                                                           OPTIONAL - if one client registration.]
  * "registrations"                : [ reference or          [OPTIONAL - MUST list the client registrations
  *                                    inlined declaration],             which are going to be used by this client.]
  * "discoveryHandler"             : handler,                [OPTIONAL - by default it uses the 'ClientHandler'
@@ -795,9 +796,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
             filter.setTarget(asExpression(config.get("target").defaultTo(
                     format("${attributes.%s}", DEFAULT_TOKEN_KEY)), Object.class));
-            if (registrations.needsNascarPage()) {
-                final Handler loginHandler = heap.resolve(config.get("loginHandler").required(), Handler.class, true);
-                filter.setLoginHandler(loginHandler);
+
+            final Handler loginHandler = heap.resolve(config.get("loginHandler"), Handler.class, true);
+            filter.setLoginHandler(loginHandler);
+
+            if (registrations.needsNascarPage() && loginHandler == null) {
+                throw new HeapException("A 'loginHandler' (defining a NASCAR page) is required when there are zero"
+                                        + " or multiple client registrations.");
             }
             filter.setFailureHandler(heap.resolve(config.get("failureHandler"),
                     Handler.class));
