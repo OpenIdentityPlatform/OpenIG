@@ -11,11 +11,11 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.script;
 
-import static org.forgerock.util.Utils.*;
+import static org.forgerock.util.Utils.joinAsString;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +25,8 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.forgerock.openig.config.Environment;
 
 import groovy.lang.Binding;
@@ -210,6 +212,21 @@ public final class Script {
             } catch (final IOException e) {
                 throw new ScriptException(e);
             }
+
+            CompilerConfiguration compilerConfiguration = engine.getConfig();
+            // Set some defaults imports
+            ImportCustomizer importCustomizer = new ImportCustomizer();
+            importCustomizer.addImports("org.forgerock.http.Client",
+                                        "org.forgerock.http.Filter",
+                                        "org.forgerock.http.Handler",
+                                        "org.forgerock.http.util.Uris",
+                                        "org.forgerock.util.AsyncFunction",
+                                        "org.forgerock.util.Function",
+                                        "org.forgerock.util.promise.NeverThrowsException",
+                                        "org.forgerock.util.promise.Promise",
+                                        "org.forgerock.services.context.Context")
+                            .addStarImports("org.forgerock.http.protocol");
+            compilerConfiguration.addCompilationCustomizers(importCustomizer);
 
             // Bootstrap the Groovy environment, e.g. add meta-classes.
             final URL bootstrap =

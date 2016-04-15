@@ -11,13 +11,10 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package scripts.groovy
-
-import org.forgerock.http.protocol.*
-import org.forgerock.util.*
 
 // Calls the next Handler and returns a Promise of the Response.
 // The Response can be handled with asynchronous Promise callbacks.
