@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.authz.modules.oauth2.ResourceAccess;
@@ -45,8 +45,8 @@ import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.filter.ConditionEnforcementFilter;
-import org.forgerock.openig.filter.oauth2.cache.CachingAccessTokenResolver;
-import org.forgerock.openig.filter.oauth2.resolver.OpenAmAccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.cache.CachingAccessTokenResolver;
+import org.forgerock.authz.modules.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -84,7 +84,7 @@ import org.forgerock.util.time.TimeService;
  * {@literal scopes}, {@literal tokenInfoEndpoint} and {@literal providerHandler} are the 3 only mandatory
  * configuration attributes.
  * <p>
- * If {@literal cacheExpiration} is not set, the default is to keep the {@link AccessToken}s for 1 minute.
+ * If {@literal cacheExpiration} is not set, the default is to keep the {@link AccessTokenInfo} objects for 1 minute.
  * {@literal cacheExpiration} is expressed using natural language (use {@literal zero} or {@literal none}
  * to deactivate caching, any 0 valued duration will also deactivate it):
  * <pre>
@@ -118,7 +118,7 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
      */
     public static final String DEFAULT_REALM_NAME = "OpenIG";
 
-    private ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
+    private ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
 
     @Override
     public Object create() throws HeapException {

@@ -14,17 +14,15 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.resolver;
+package org.forgerock.authz.modules.oauth2.resolver;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.el.Bindings.bindings;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.el.Bindings;
-import org.forgerock.openig.el.Expression;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -33,39 +31,35 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class OpenAmAccessTokenBuilderTest {
+public class OpenAmAccessTokenInfoParserTest {
 
     public static final String TOKEN = "45b4c835-2617-4c39-9dc8-708ae493975f5f";
 
     @Mock
     private TimeService time;
 
+    private OpenAmAccessTokenInfoParser accessTokenParser;
+
     @BeforeMethod
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(time.now()).thenReturn(42L);
+        accessTokenParser = new OpenAmAccessTokenInfoParser(time);
     }
 
     @Test
     public void shouldProduceAccessToken() throws Exception {
-        OpenAmAccessToken.Builder builder = new OpenAmAccessToken.Builder(time);
-
         JsonValue info = json(object(
                 field("expires_in", 10),
                 field("access_token", TOKEN),
                 field("scope", array("email", "address"))));
 
-        OpenAmAccessToken token = builder.build(info);
+        AccessTokenInfo token = accessTokenParser.apply(info);
 
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L + 42L);
         assertThat(token.getScopes()).containsOnly("email", "address");
         assertThat(token.getInfo().get("expires_in")).isEqualTo(10);
-        Bindings bindings = bindings("token", token);
-        assertThat(Expression.valueOf("${token.info.scope[0]}", String.class).eval(bindings)).isEqualTo("email");
-        assertThat(Expression.valueOf("${token.info.scope[1]}", String.class).eval(bindings)).isEqualTo("address");
-        assertThat(Expression.valueOf("${token.info.access_token}", String.class).eval(bindings)).isEqualTo(TOKEN);
-        assertThat(token.asJsonValue()).isSameAs(info);
     }
 
     @DataProvider
@@ -81,10 +75,9 @@ public class OpenAmAccessTokenBuilderTest {
         // @Checkstyle:on
     }
 
-    @Test(dataProvider = "invalidJsonStructures",
-          expectedExceptions = AccessTokenException.class)
+    @Test(dataProvider = "invalidJsonStructures", expectedExceptions = AccessTokenException.class)
     public void shouldFailBecauseOfMissingAttribute(JsonValue tokenInfo) throws Exception {
-        new OpenAmAccessToken.Builder(time).build(tokenInfo);
+        accessTokenParser.apply(tokenInfo);
     }
 
     private JsonValue missingExpiresIn() {

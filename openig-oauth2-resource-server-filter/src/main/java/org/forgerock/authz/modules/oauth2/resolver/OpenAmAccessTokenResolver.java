@@ -14,7 +14,7 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.resolver;
+package org.forgerock.authz.modules.oauth2.resolver;
 
 import static java.lang.String.format;
 import static org.forgerock.util.Utils.closeSilently;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.forgerock.authz.modules.oauth2.AccessToken;
+import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
 import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
 import org.forgerock.http.Handler;
@@ -47,7 +47,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
 
     private final Handler client;
     private final String tokenInfoEndpoint;
-    private final OpenAmAccessToken.Builder builder;
+    private final OpenAmAccessTokenInfoParser accessToken;
 
     /**
      * Creates a new {@link OpenAmAccessTokenResolver} configured to access the given {@literal /oauth2/tokeninfo}
@@ -63,30 +63,19 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
     public OpenAmAccessTokenResolver(final Handler client,
                                      final TimeService time,
                                      final String tokenInfoEndpoint) {
-        this(client, new OpenAmAccessToken.Builder(time), tokenInfoEndpoint);
+        this(client, new OpenAmAccessTokenInfoParser(time), tokenInfoEndpoint);
     }
 
-    /**
-     * Creates a new {@link OpenAmAccessTokenResolver} configured to access the given {@literal /oauth2/tokeninfo}
-     * OpenAm endpoint.
-     *
-     * @param client
-     *         Http client handler used to perform the request
-     * @param builder
-     *         AccessToken builder
-     * @param tokenInfoEndpoint
-     *         full URL of the {@literal /oauth2/tokeninfo} endpoint
-     */
-    public OpenAmAccessTokenResolver(final Handler client,
-                                     final OpenAmAccessToken.Builder builder,
+    OpenAmAccessTokenResolver(final Handler client,
+                                     final OpenAmAccessTokenInfoParser accessToken,
                                      final String tokenInfoEndpoint) {
         this.client = client;
-        this.builder = builder;
+        this.accessToken = accessToken;
         this.tokenInfoEndpoint = tokenInfoEndpoint;
     }
 
     @Override
-    public Promise<AccessToken, AccessTokenException> resolve(Context context, final String token) {
+    public Promise<AccessTokenInfo, AccessTokenException> resolve(Context context, final String token) {
         try {
             Request request = new Request();
             request.setMethod("GET");
@@ -99,7 +88,7 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
 
             // Call the client handler
             return client.handle(context, request)
-                         .then(onResult(), Responses.<AccessToken, AccessTokenException>noopExceptionFunction());
+                         .then(onResult(), Responses.<AccessTokenInfo, AccessTokenException>noopExceptionFunction());
         } catch (URISyntaxException e) {
             return Promises.newExceptionPromise(new AccessTokenException(
                     format("The token_info endpoint %s could not be accessed because it is a malformed URI",
@@ -108,16 +97,16 @@ public class OpenAmAccessTokenResolver implements AccessTokenResolver {
         }
     }
 
-    private Function<Response, AccessToken, AccessTokenException> onResult() {
-        return new Function<Response, AccessToken, AccessTokenException>() {
+    private Function<Response, AccessTokenInfo, AccessTokenException> onResult() {
+        return new Function<Response, AccessTokenInfo, AccessTokenException>() {
             @Override
-            public AccessToken apply(Response response) throws AccessTokenException {
+            public AccessTokenInfo apply(Response response) throws AccessTokenException {
                 if (isResponseEmpty(response)) {
                     throw new AccessTokenException("Authorization Server did not return any AccessToken");
                 }
                 JsonValue content = asJson(response.getEntity());
                 if (isOk(response)) {
-                    return builder.build(content);
+                    return content.as(accessToken);
                 }
 
                 if (content.isDefined("error")) {

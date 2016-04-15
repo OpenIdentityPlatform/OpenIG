@@ -20,7 +20,7 @@ import org.forgerock.services.context.AbstractContext;
 import org.forgerock.services.context.Context;
 
 /**
- * An {@link OAuth2Context} could be used to store and retrieve an {@link AccessToken}.
+ * An {@link OAuth2Context} could be used to store and retrieve an {@link AccessTokenInfo}.
  * <p>
  * Once a {@link ResourceServerFilter} has authorized an OAuth2 request and
  * obtained the access token's state, the access token can be stored in the
@@ -41,17 +41,17 @@ import org.forgerock.services.context.Context;
  */
 public class OAuth2Context extends AbstractContext {
 
-    private final AccessToken accessToken;
+    private final AccessTokenInfo accessToken;
 
     /**
-     * Creates a new OAuth2 context with the provided {@link AccessToken}.
+     * Creates a new OAuth2 context with the provided {@link AccessTokenInfo}.
      *
      * @param parent
      *         The parent context.
      * @param accessToken
      *         The access token to store.
      */
-    public OAuth2Context(final Context parent, final AccessToken accessToken) {
+    public OAuth2Context(final Context parent, final AccessTokenInfo accessToken) {
         super(parent, "oauth2");
         this.accessToken = accessToken;
     }
@@ -61,7 +61,7 @@ public class OAuth2Context extends AbstractContext {
      *
      * @return the access token associated with this OAuth2 context.
      */
-    public AccessToken getAccessToken() {
+    public AccessTokenInfo getAccessToken() {
         return accessToken;
     }
 }

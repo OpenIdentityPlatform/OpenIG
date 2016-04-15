@@ -74,7 +74,7 @@ public class ResourceServerFilterTest {
     private AccessTokenResolver resolver;
 
     @Mock
-    private AccessToken token;
+    private AccessTokenInfo token;
 
     @Mock
     private TimeService time;
@@ -92,7 +92,7 @@ public class ResourceServerFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(resolver.resolve(any(Context.class), eq(TOKEN_ID)))
-                .thenReturn(Promises.<AccessToken, AccessTokenException>newResultPromise(token));
+                .thenReturn(Promises.<AccessTokenInfo, AccessTokenException>newResultPromise(token));
         when(token.getScopes())
                 .thenReturn(new HashSet<>(asList("a", "b", "c")));
 
@@ -145,7 +145,7 @@ public class ResourceServerFilterTest {
     @Test
     public void shouldFailBecauseOfUnresolvableToken() throws Exception {
         when(resolver.resolve(any(Context.class), eq(TOKEN_ID)))
-                .thenReturn(Promises.<AccessToken, AccessTokenException> newExceptionPromise(
+                .thenReturn(Promises.<AccessTokenInfo, AccessTokenException> newExceptionPromise(
                                                                                    new AccessTokenException("error")));
         runAndExpectUnauthorizedInvalidTokenResponse();
     }
