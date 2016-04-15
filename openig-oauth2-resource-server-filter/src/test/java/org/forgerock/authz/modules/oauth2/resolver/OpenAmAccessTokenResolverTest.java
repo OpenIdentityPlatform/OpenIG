@@ -14,7 +14,7 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.resolver;
+package org.forgerock.authz.modules.oauth2.resolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -22,8 +22,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.forgerock.authz.modules.oauth2.AccessToken;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
 import org.forgerock.http.Handler;
 import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Request;
@@ -68,7 +68,7 @@ public class OpenAmAccessTokenResolverTest {
         OpenAmAccessTokenResolver resolver = new OpenAmAccessTokenResolver(client, time, "/oauth2/tokeninfo");
 
         final RootContext context = new RootContext();
-        AccessToken token = resolver.resolve(context, TOKEN).get();
+        AccessTokenInfo token = resolver.resolve(context, TOKEN).get();
         assertThat(token.getToken()).isEqualTo(TOKEN);
         assertThat(token.getExpiresAt()).isEqualTo(10000L);
 

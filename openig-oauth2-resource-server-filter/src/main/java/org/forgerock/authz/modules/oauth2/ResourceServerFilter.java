@@ -47,11 +47,11 @@ import org.slf4j.LoggerFactory;
  * It extracts the token and validate it against a token info endpoint using the provided {@link ResourceAccess}.
  * <p>
  * The provided {@link ResourceAccess} must provides the scopes required by the
- * {@link AccessToken} to access the protected resource.
+ * {@link AccessTokenInfo} to access the protected resource.
  * <p>
- * Once the {@link AccessToken} is validated, it is stored in an {@link OAuth2Context} instance
+ * Once the {@link AccessTokenInfo} is validated, it is stored in an {@link OAuth2Context} instance
  * which is forwarded with the {@link Request} to the next {@link Handler}.
- * The {@link AccessToken} could be retrieve in downstream handlers with {@link OAuth2Context#getAccessToken()}.
+ * The {@link AccessTokenInfo} could be retrieve in downstream handlers with {@link OAuth2Context#getAccessToken()}.
  * <p>
  * The {@literal realm} constructor attribute specifies the name of the realm used in the authentication challenges
  * returned back to the client in case of errors.
@@ -166,12 +166,12 @@ public class ResourceServerFilter implements Filter {
 
     }
 
-    private AsyncFunction<AccessToken, Response, NeverThrowsException> onResolverSuccess(final Context context,
-                                                                                         final Request request,
-                                                                                         final Handler next) {
-        return new AsyncFunction<AccessToken, Response, NeverThrowsException>() {
+    private AsyncFunction<AccessTokenInfo, Response, NeverThrowsException> onResolverSuccess(final Context context,
+                                                                                             final Request request,
+                                                                                             final Handler next) {
+        return new AsyncFunction<AccessTokenInfo, Response, NeverThrowsException>() {
             @Override
-            public Promise<? extends Response, ? extends NeverThrowsException> apply(AccessToken accessToken) {
+            public Promise<? extends Response, ? extends NeverThrowsException> apply(AccessTokenInfo accessToken) {
                 // Validate the token (expiration + scopes)
                 if (isExpired(accessToken)) {
                     logger.debug("Access Token {} is expired", accessToken);
@@ -194,7 +194,7 @@ public class ResourceServerFilter implements Filter {
         };
     }
 
-    private boolean isExpired(final AccessToken accessToken) {
+    private boolean isExpired(final AccessTokenInfo accessToken) {
         return time.now() > accessToken.getExpiresAt();
     }
 

@@ -15,7 +15,7 @@
  */
 
 /**
- * This package defines OpenAM specific logic needed to retrieve an {@link org.forgerock.openig.filter.oauth2
- * .AccessToken}.
+ * This package defines OpenAM specific logic needed to retrieve an
+ * {@link org.forgerock.authz.modules.oauth2.AccessToken}.
  */
-package org.forgerock.openig.filter.oauth2.resolver;
+package org.forgerock.authz.modules.oauth2.resolver;

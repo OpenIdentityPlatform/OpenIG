@@ -14,7 +14,7 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.oauth2.cache;
+package org.forgerock.authz.modules.oauth2.cache;
 
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.time.Duration.duration;
@@ -23,8 +23,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.authz.modules.oauth2.AccessToken;
 import org.forgerock.authz.modules.oauth2.AccessTokenException;
+import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
 import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
@@ -36,13 +36,13 @@ import org.forgerock.util.time.TimeService;
 
 /**
  * A {@link CachingAccessTokenResolver} is a delegating {@link AccessTokenResolver} that uses a write-through cache
- * to enable fast {@link AccessToken} resolution.
+ * to enable fast {@link AccessTokenInfo} resolution.
  */
 public class CachingAccessTokenResolver implements AccessTokenResolver {
 
     private final AccessTokenResolver resolver;
-    private final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache;
-    private final AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> expires;
+    private final ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
+    private final AsyncFunction<Promise<AccessTokenInfo, AccessTokenException>, Duration, Exception> expires;
 
     /**
      * Builds a {@link CachingAccessTokenResolver} delegating to the given {@link AccessTokenResolver} using the given
@@ -57,14 +57,15 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
      */
     public CachingAccessTokenResolver(final TimeService time,
                                       final AccessTokenResolver resolver,
-                                      final ThreadSafeCache<String, Promise<AccessToken, AccessTokenException>> cache) {
+                                      final ThreadSafeCache
+                                              <String, Promise<AccessTokenInfo, AccessTokenException>> cache) {
         this.resolver = resolver;
         this.cache = cache;
         this.expires = new AccessTokenExpirationFunction(time);
     }
 
     @Override
-    public Promise<AccessToken, AccessTokenException> resolve(final Context context, final String token) {
+    public Promise<AccessTokenInfo, AccessTokenException> resolve(final Context context, final String token) {
         try {
             return cache.getValue(token, resolveToken(context, token), expires);
         } catch (InterruptedException e) {
@@ -76,11 +77,11 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
         }
     }
 
-    private Callable<Promise<AccessToken, AccessTokenException>> resolveToken(final Context context,
-                                                                              final String token) {
-        return new Callable<Promise<AccessToken, AccessTokenException>>() {
+    private Callable<Promise<AccessTokenInfo, AccessTokenException>> resolveToken(final Context context,
+                                                                                  final String token) {
+        return new Callable<Promise<AccessTokenInfo, AccessTokenException>>() {
             @Override
-            public Promise<AccessToken, AccessTokenException> call() throws Exception {
+            public Promise<AccessTokenInfo, AccessTokenException> call() throws Exception {
                 return resolver.resolve(context, token);
             }
         };
@@ -90,7 +91,7 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
      * A function that will compute the access token's timeout.
      */
     private static class AccessTokenExpirationFunction
-            implements AsyncFunction<Promise<AccessToken, AccessTokenException>, Duration, Exception> {
+            implements AsyncFunction<Promise<AccessTokenInfo, AccessTokenException>, Duration, Exception> {
 
         private static final Function<AccessTokenException, Duration, AccessTokenException> TIMEOUT_ZERO =
                 new Function<AccessTokenException, Duration, AccessTokenException>() {
@@ -102,13 +103,13 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
                     }
                 };
 
-        private final Function<AccessToken, Duration, AccessTokenException> computeTtl;
+        private final Function<AccessTokenInfo, Duration, AccessTokenException> computeTtl;
 
         public AccessTokenExpirationFunction(final TimeService time) {
-            this.computeTtl = new Function<AccessToken, Duration, AccessTokenException>() {
+            this.computeTtl = new Function<AccessTokenInfo, Duration, AccessTokenException>() {
                 @Override
-                public Duration apply(AccessToken accessToken) {
-                    if (accessToken.getExpiresAt() == AccessToken.NEVER_EXPIRES) {
+                public Duration apply(AccessTokenInfo accessToken) {
+                    if (accessToken.getExpiresAt() == AccessTokenInfo.NEVER_EXPIRES) {
                         return Duration.UNLIMITED;
                     }
                     long expires = accessToken.getExpiresAt() - time.now();
@@ -124,7 +125,7 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
 
         @Override
         public Promise<? extends Duration, ? extends Exception> apply(
-                Promise<AccessToken, AccessTokenException> accessTokenPromise) throws Exception {
+                Promise<AccessTokenInfo, AccessTokenException> accessTokenPromise) throws Exception {
             return accessTokenPromise.then(computeTtl, TIMEOUT_ZERO);
         }
 

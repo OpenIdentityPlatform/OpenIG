@@ -29,8 +29,8 @@ public interface AccessTokenResolver {
      *
      * @param context Context chain used to keep a relationship between requests (tracking)
      * @param token token identifier to be resolved
-     * @return a promise completed either with a valid {@link AccessToken} (well formed, known by the server), or by an
-     * exception
+     * @return a promise completed either with a valid {@link AccessTokenInfo} (well formed, known by the server),
+     * or by an exception
      */
-    Promise<AccessToken, AccessTokenException> resolve(Context context, String token);
+    Promise<AccessTokenInfo, AccessTokenException> resolve(Context context, String token);
 }
