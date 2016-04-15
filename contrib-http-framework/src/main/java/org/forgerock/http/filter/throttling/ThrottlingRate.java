@@ -36,13 +36,23 @@ public final class ThrottlingRate {
      * @param numberOfRequests the maximum of requests that can be filtered out during the duration.
      * @param duration the duration of the sliding window.
      */
-    public ThrottlingRate(int numberOfRequests, Duration duration) {
+    ThrottlingRate(int numberOfRequests, Duration duration) {
         Reject.ifTrue(numberOfRequests <= 0, "The bucket's capacity has to be greater than 0.");
         Reject.ifTrue(duration.isUnlimited(), "The duration can't be unlimited.");
         Reject.ifTrue(duration.to(TimeUnit.MILLISECONDS) < 1, "The duration has to be greater or equal to 1 ms "
                 + "minimum.");
         this.numberOfRequests = numberOfRequests;
         this.duration = duration;
+    }
+
+    /**
+     * Constructs a new {@link ThrottlingRate}.
+     *
+     * @param numberOfRequests the maximum of requests that can be filtered out during the duration.
+     * @param duration the string representing the duration of the sliding window.
+     */
+    public ThrottlingRate(int numberOfRequests, String duration) {
+        this(numberOfRequests, Duration.duration(duration));
     }
 
     /**

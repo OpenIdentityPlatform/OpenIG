@@ -20,6 +20,7 @@ import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY
 import static org.forgerock.openig.util.JsonValues.asDuration;
 import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.asInteger;
+import static org.forgerock.openig.util.JsonValues.asString;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,7 +72,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
     static ThrottlingRate createThrottlingRate(JsonValue rate) {
         int numberOfRequests = asInteger(rate.get("numberOfRequests").required());
-        Duration duration = asDuration(rate.get("duration").required());
+        String duration = asString(rate.get("duration").required());
 
         return new ThrottlingRate(numberOfRequests, duration);
     }
