@@ -38,6 +38,7 @@ import org.forgerock.openig.filter.ScriptableFilter;
 import org.forgerock.openig.filter.SqlAttributesFilter;
 import org.forgerock.openig.filter.StaticRequestFilter;
 import org.forgerock.openig.filter.SwitchFilter;
+import org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet;
 import org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet;
 import org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy;
 import org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet;
@@ -78,6 +79,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
+        ALIASES.put("DefaultRateThrottlingPolicy", DefaultRateThrottlingPolicyHeaplet.class);
         ALIASES.put("DesKeyGenHandler", DesKeyGenHandler.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
