@@ -219,6 +219,7 @@ public final class Script {
             importCustomizer.addImports("org.forgerock.http.Client",
                                         "org.forgerock.http.Filter",
                                         "org.forgerock.http.Handler",
+                                        "org.forgerock.http.filter.throttling.ThrottlingRate",
                                         "org.forgerock.http.util.Uris",
                                         "org.forgerock.util.AsyncFunction",
                                         "org.forgerock.util.Function",
