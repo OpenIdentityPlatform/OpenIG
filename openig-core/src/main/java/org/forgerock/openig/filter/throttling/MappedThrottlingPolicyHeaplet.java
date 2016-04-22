@@ -38,58 +38,62 @@ import org.forgerock.openig.heap.HeapException;
  * Configuration options:
  *
  * <pre>
- * {@code {
- *      "type": "MappedThrottlingPolicy",
- *      "config": {
+ * {@code
+ * {
+ *     "type": "MappedThrottlingPolicy",
+ *     "config": {
  *         "throttlingRateMapper"         : expression<String>              [REQUIRED - The expression that will be
  *                                                                                      evaluated to lookup for a
  *                                                                                      throttling rate.]
  *         "throttlingRatesMapping"       : {                               [REQUIRED - This is a in memory map used to
  *                                                                                      lookup the throttling rate to
  *                                                                                      apply.]
- *               "<throttlingRateKey>" {   : String                         [REQUIRED - The value to match the
+ *             "<throttlingRateKey>" {   : String                           [REQUIRED - The value to match the
  *                                                                                      result of the expression
  *                                                                                      throttlingRateMapper.]
- *                    "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
+ *                 "numberOfRequests"             : integer                 [REQUIRED - The number of requests allowed
  *                                                                                      to go through this filter during
  *                                                                                      the duration window.]
- *                    "duration"                     : duration             [REQUIRED - The time window during which the
+ *                 "duration"                     : duration                [REQUIRED - The time window during which the
  *                                                                                      incoming requests are counted.]
- *               }
+ *             }
  *         },
  *         "defaultRate" {                 : reference                      [OPTIONAL - the default rate to apply if
  *                                                                                      there is no match]
- *                    "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
+ *             "numberOfRequests"             : integer                     [REQUIRED - The number of requests allowed
  *                                                                                      to go through this filter during
  *                                                                                      the duration window.]
- *                    "duration"                     : duration             [REQUIRED - The time window during which the
+ *             "duration"                     : duration                    [REQUIRED - The time window during which the
  *                                                                                      incoming requests are counted.]
  *         }
- *      }
- *  }
+ *     }
+ * }
+ * }
  * </pre>
  *
  * Example : apply different throttling rates depending of the header 'Origin'. If the header is not specified, let's
  * apply a default rate of 15 requests per second.
- * {@code {
- *      "type": "MappedThrottlingPolicy",
- *      "config": {
+ * {@code
+ * {
+ *     "type": "MappedThrottlingPolicy",
+ *     "config": {
  *         "throttlingRateMapper" : "${request.headers['Origin'][0]}"
  *         "throttlingRateMapping"  : {
- *            "http://www.alice.com" : {
- *               "numberOfRequests" : 30,
- *               "duration" : "1 hour"
- *            },
- *            "http://www.bob.com" : {
- *               "numberOfRequests" : 42,
- *               "duration" : "1 minute"
- *            }
+ *             "http://www.alice.com" : {
+ *                 "numberOfRequests" : 30,
+ *                 "duration" : "1 hour"
+ *             },
+ *             "http://www.bob.com" : {
+ *                 "numberOfRequests" : 42,
+ *                 "duration" : "1 minute"
+ *             }
  *         },
  *         "defaultRate" : {
- *            "numberOfRequests" : 15,
- *            "duration" : "1 sec"
+ *             "numberOfRequests" : 15,
+ *             "duration" : "1 sec"
  *         }
- *      }
+ *     }
+ * }
  * }
  */
 public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
