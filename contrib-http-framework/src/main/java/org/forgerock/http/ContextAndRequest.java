@@ -22,9 +22,10 @@ import org.forgerock.services.context.Context;
 /**
  * This a value class to hold a {@link Context} and a {@link Request} during the processing of a request.
  * It can be used as a parameter in a {@link org.forgerock.util.Function}.
- * Example
+ * Example:
+ *
  * <pre>
- *     {@code
+ * {@code
  * public class EnforcementFilter implements Filter {
  *
  *     private final AsyncFunction<ContextAndRequest, Boolean, Exception> condition;
@@ -57,7 +58,8 @@ import org.forgerock.services.context.Context;
  *                                        }
  *                                    });
  *     }
- *     }
+ * }
+ * }
  * </pre>
  *
  * @see org.forgerock.http.filter.throttling.ThrottlingFilter

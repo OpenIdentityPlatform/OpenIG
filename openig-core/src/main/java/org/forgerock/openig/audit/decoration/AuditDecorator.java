@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.decoration;
@@ -68,7 +68,7 @@ import org.forgerock.openig.heap.HeapException;
  * <p>
  * A default {@literal audit} decorator is automatically created when OpenIG starts.
  *
- * @see Tag
+ * @see org.forgerock.openig.audit.Tag
  */
 @Deprecated
 public class AuditDecorator extends AbstractHandlerAndFilterDecorator {

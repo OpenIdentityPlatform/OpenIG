@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.audit.internal;
@@ -20,10 +20,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Forward the {@link AuditEvent}s to the registered audit listeners (final consumers of the events).
+ * Forward the {@link org.forgerock.openig.audit.AuditEvent}s to the registered
+ * audit listeners (final consumers of the events).
  * <p>
- * No storage is done in this implementation for later connected agents notifications or for post-processing of
- * emitted events.
+ * No storage is done in this implementation for later connected agents
+ * notifications or for post-processing of emitted events.
  */
 @Deprecated
 public class ForwardingAuditSystem implements org.forgerock.openig.audit.AuditSystem {

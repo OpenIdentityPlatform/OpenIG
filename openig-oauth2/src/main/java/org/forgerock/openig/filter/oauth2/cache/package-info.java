@@ -15,6 +15,6 @@
  */
 
 /**
- * This package contains classes used to implement an {@link org.forgerock.openig.filter.oauth2.AccessToken} cache.
+ * This package contains classes used to implement an {@link org.forgerock.authz.modules.oauth2.AccessToken} cache.
  */
 package org.forgerock.openig.filter.oauth2.cache;

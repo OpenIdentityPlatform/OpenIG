@@ -27,9 +27,10 @@ import org.forgerock.openig.heap.HeapException;
  * Configuration options:
  *
  * <pre>
- * {@code {
- *      "type": "DefaultRateThrottlingPolicy",
- *      "config": {
+ * {@code
+ * {
+ *     "type": "DefaultRateThrottlingPolicy",
+ *     "config": {
  *         "throttlingRatePolicy"         : reference or                [REQUIRED - the policy that will define the
  *                                          inlined declaration                     throttling rate to apply]
  *
@@ -41,22 +42,27 @@ import org.forgerock.openig.heap.HeapException;
  *                "duration"                     : duration             [REQUIRED - The time window during which the
  *                                                                                  incoming requests are counted.]
  *         }
- *      }
- *  }
+ *     }
+ * }
+ * }
  * </pre>
  *
  * Example : apply different throttling rates depending of the header 'Origin'. If the header is not specified, let's
  * apply a default rate of 15 requests per second.
- * {@code {
- *      "type": "DefaultRateThrottlingPolicy",
- *      "config": {
+ * <pre>
+ * {@code
+ * {
+ *     "type": "DefaultRateThrottlingPolicy",
+ *     "config": {
  *         "throttlingRatePolicy" : "mappedThrottlingPolicy"
  *         "defaultRate" : {
- *            "numberOfRequests" : 15,
- *            "duration" : "1 sec"
+ *             "numberOfRequests" : 15,
+ *             "duration" : "1 sec"
  *         }
- *      }
+ *     }
  * }
+ * }
+ * </pre>
  */
 public class DefaultRateThrottlingPolicyHeaplet extends GenericHeaplet {
 
