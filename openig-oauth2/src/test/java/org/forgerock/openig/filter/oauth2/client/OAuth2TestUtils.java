@@ -28,6 +28,9 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
 import org.forgerock.json.JsonValue;
 
+/**
+ * This class contains some utility methods used in OAuth2 unit tests only.
+ */
 @SuppressWarnings("javadoc")
 public final class OAuth2TestUtils {
 
@@ -37,6 +40,22 @@ public final class OAuth2TestUtils {
     static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
     static final String WELLKNOWN_ENDPOINT = "/openam/oauth2/.well-known/openid-configuration";
     static final String ISSUER_URI = "http://www.example.com:8089";
+
+    /** From the OIDC core spec. */
+    static final String ID_TOKEN =
+            // @formatter:off
+                    "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFlOWdkazcifQ.ewogImlzc"
+                    + "yI6ICJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwKICJzdWIiOiAiMjQ4Mjg5"
+                    + "NzYxMDAxIiwKICJhdWQiOiAiczZCaGRSa3F0MyIsCiAibm9uY2UiOiAibi0wUzZ"
+                    + "fV3pBMk1qIiwKICJleHAiOiAxMzExMjgxOTcwLAogImlhdCI6IDEzMTEyODA5Nz"
+                    + "AKfQ.ggW8hZ1EuVLuxNuuIJKX_V8a_OMXzR0EHR9R6jgdqrOOF4daGU96Sr_P6q"
+                    + "Jp6IcmD3HP99Obi1PRs-cwh3LO-p146waJ8IhehcwL7F09JdijmBqkvPeB2T9CJ"
+                    + "NqeGpe-gccMg4vfKjkM8FcGvnzZUN4_KSP0aAp1tOJ1zZwgjxqGByKHiOtX7Tpd"
+                    + "QyHE5lcMiKPXfEIQILVq0pc_E2DzL7emopWoaoZTF_m0_N0YzFC6g6EJbOEoRoS"
+                    + "K5hoDalrcvRYLSrQAZZKflyuVCyixEoV9GfNQC3_osjzw2PAithfubEEBLuVVk4"
+                    + "XUVrWOLrLl0nx7RkKU8NXNHq-rvKMzqg";
+            // @formatter:on
+    static final String REFRESH_TOKEN = "5dcc34f5-7617-4baf-b36b-77e1e8b8652b";
 
     static ClientRegistration buildClientRegistration(final String clientName,
                                                       final Handler registrationHandler) throws Exception {
@@ -70,6 +89,19 @@ public final class OAuth2TestUtils {
             configuration.put("wellKnownEndpoint", ISSUER_URI + WELLKNOWN_ENDPOINT);
         }
         return new Issuer(issuerName != null ? issuerName : "myIssuer", configuration);
+    }
+
+    static JsonValue buildAuthorizedOAuth2Session(final String clientRegistrationName, final String requestedUri) {
+        return json(object(field("crn", clientRegistrationName),
+                           field("ce", requestedUri),
+                           field("s", array("address", "phone", "openid", "profile")),
+                           field("atr", object(field("access_token", ID_TOKEN),
+                                               field("refresh_token", REFRESH_TOKEN),
+                                               field("scope" , "address phone openid profile"),
+                                               field("id_token", ID_TOKEN),
+                                               field("token_type", "Bearer"),
+                                               field("expires_in", 3600))),
+                           field("ea", 1460018881)));
     }
 
     static SimpleMapSession newSession() {
