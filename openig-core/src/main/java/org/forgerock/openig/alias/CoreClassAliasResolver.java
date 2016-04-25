@@ -56,6 +56,7 @@ import org.forgerock.openig.jwt.JwtSessionManager;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.FileLogSink;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.openig.log.Slf4jLogSink;
 import org.forgerock.openig.security.KeyManagerHeaplet;
 import org.forgerock.openig.security.KeyStoreHeaplet;
 import org.forgerock.openig.security.TrustAllManager;
@@ -104,6 +105,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ScriptableHandler", ScriptableHandler.class);
         ALIASES.put("ScriptableThrottlingPolicy", ScriptableThrottlingPolicy.class);
         ALIASES.put("SequenceHandler", SequenceHandler.class);
+        ALIASES.put("Slf4jLogSink", Slf4jLogSink.class);
         ALIASES.put("SqlAttributesFilter", SqlAttributesFilter.class);
         ALIASES.put("StaticRequestFilter", StaticRequestFilter.class);
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
