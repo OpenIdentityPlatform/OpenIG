@@ -82,9 +82,9 @@ import org.forgerock.util.time.TimeService;
  * delegated authorization. The filter does the following depending on the
  * incoming request URI:
  * <ul>
- * <li>{@code {clientEndpoint}/login/{registration}?goto=<url>} - redirects
+ * <li>{@code {clientEndpoint}/login?registration=<registrationName>&goto=<url>} - redirects
  * the user for authorization against the specified client
- * registration
+ * registration.
  * <li>{@code {clientEndpoint}/login?{*}discovery={input}&goto=<url>} -
  * performs issuer discovery and dynamic client registration if possible on
  * the given user input and redirects the user to the client endpoint.
