@@ -41,7 +41,6 @@ import static org.forgerock.openig.util.JsonValues.asExpression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.ofRequiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
-import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.duration;
 
@@ -312,7 +311,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             }
 
             // Everything else...
-            return handleProtectedResource(context, request, next);
+            return handleProtectedResource(context, request, next, true);
         } catch (final OAuth2ErrorException e) {
             return handleOAuth2ErrorException(context, request, e);
         } catch (ResponseException e) {
@@ -601,41 +600,68 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     private Promise<Response, NeverThrowsException> handleProtectedResource(final Context context,
                                                                             final Request request,
-                                                                            final Handler next)
+                                                                            final Handler next,
+                                                                            final boolean refreshToken)
             throws OAuth2ErrorException {
+        final OAuth2Session session;
         try {
-            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
-            if (!session.isAuthorized() && requireLogin) {
-                return sendAuthorizationRedirect(context, request, null);
-            }
-            final OAuth2Session refreshedSession =
-                    session.isAuthorized() ? prepareContext(context, session, request) : session;
-            return next.handle(context, request)
-                    .thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
-                        @Override
-                        public Promise<Response, NeverThrowsException> apply(final Response response) {
-                            if (UNAUTHORIZED.equals(response.getStatus()) && !refreshedSession.isAuthorized()) {
-                                closeSilently(response);
-                                return sendAuthorizationRedirect(context, request, null);
-                            } else if (session != refreshedSession) {
-                                /*
-                                 * Only update the session if it has changed in order to avoid send
-                                 * back JWT session cookies with every response.
-                                 */
-                                try {
-                                    saveSession(context,
-                                                refreshedSession,
-                                                buildUri(context, request, clientEndpoint));
-                                } catch (ResponseException e) {
-                                    return newResultPromise(e.getResponse());
-                                }
-                            }
-                            return newResultPromise(response);
-                        }
-                    });
+            session = loadOrCreateSession(context, request, clientEndpoint, time);
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
         }
+        if (!session.isAuthorized() && requireLogin) {
+            return sendAuthorizationRedirect(context, request, null);
+        }
+        if (session.isAuthorized()) {
+            fillTarget(context, session, request);
+        }
+        final Promise<Response, NeverThrowsException> promise = next.handle(context, request);
+        if (refreshToken) {
+            return promise.thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
+                @Override
+                public Promise<Response, NeverThrowsException> apply(final Response response) {
+                    // We only react once to try to refresh the access
+                    // token.
+                    if (UNAUTHORIZED.equals(response.getStatus())) {
+                        final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response)
+                                                                                   .getOAuth2Error();
+                        final ClientRegistration clientRegistration = getClientRegistration(session);
+                        try {
+                            if (error.is(E_INVALID_TOKEN)
+                                    && clientRegistration != null
+                                    && session.getRefreshToken() != null) {
+                                logger.debug(format("The access token may have expired: %s",
+                                                    error.getErrorDescription()));
+                                refreshAccessTokenAndSaveSession(context, request, session, clientRegistration);
+                                // Try to access to the protected resource again with new access token.
+                                return handleProtectedResource(context, request, next, false);
+                            }
+                        } catch (OAuth2ErrorException | ResponseException e) {
+                            logger.error(e);
+                            return newResultPromise(response);
+                        }
+                    }
+                    return newResultPromise(response);
+                }
+            });
+        }
+        return promise;
+    }
+
+    private void refreshAccessTokenAndSaveSession(final Context context,
+                                                  final Request request,
+                                                  final OAuth2Session session,
+                                                  final ClientRegistration clientRegistration)
+            throws OAuth2ErrorException, ResponseException {
+        final JsonValue refreshedAccessTokenResponse = blockingCall(
+                clientRegistration.refreshAccessToken(context, session), "refreshing the access token");
+        final OAuth2Session refreshedSession = session.stateRefreshed(refreshedAccessTokenResponse);
+
+        /*
+         * Only update the session if it has changed in order to avoid send back
+         * JWT session cookies with every response.
+         */
+        saveSession(context, refreshedSession, buildUri(context, request, clientEndpoint));
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedDiscovery(final Request request,
@@ -698,11 +724,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return newResultPromise(response);
     }
 
-    private OAuth2Session prepareContext(final Context context, final OAuth2Session session, final Request request) {
-        tryPrepareContext(context, session, request);
-        return session;
-    }
-
     private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Context context,
                                                                               final Request request,
                                                                               final ClientRegistration cr) {
@@ -716,7 +737,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                     .handle(context, request);
     }
 
-    private void tryPrepareContext(final Context context, final OAuth2Session session, final Request request) {
+    private void fillTarget(final Context context, final OAuth2Session session, final Request request) {
         final Map<String, Object> info = new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.
         info.put("client_registration", session.getClientRegistrationName());
