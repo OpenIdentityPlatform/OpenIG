@@ -22,6 +22,7 @@ import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
@@ -601,13 +602,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Promise<Response, NeverThrowsException> handleProtectedResource(final Context context,
                                                                             final Request request,
                                                                             final Handler next,
-                                                                            final boolean refreshToken)
-            throws OAuth2ErrorException {
+                                                                            final boolean refreshToken) {
         final OAuth2Session session;
         try {
             session = loadOrCreateSession(context, request, clientEndpoint, time);
         } catch (ResponseException e) {
             return newResultPromise(e.getResponse());
+        } catch (OAuth2ErrorException e) {
+            return newResultPromise(newInternalServerError(e));
         }
         if (!session.isAuthorized() && requireLogin) {
             return sendAuthorizationRedirect(context, request, null);
@@ -617,51 +619,79 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         final Promise<Response, NeverThrowsException> promise = next.handle(context, request);
         if (refreshToken) {
-            return promise.thenAsync(new AsyncFunction<Response, Response, NeverThrowsException>() {
-                @Override
-                public Promise<Response, NeverThrowsException> apply(final Response response) {
-                    // We only react once to try to refresh the access
-                    // token.
-                    if (UNAUTHORIZED.equals(response.getStatus())) {
-                        final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response)
-                                                                                   .getOAuth2Error();
-                        final ClientRegistration clientRegistration = getClientRegistration(session);
-                        try {
-                            if (error.is(E_INVALID_TOKEN)
-                                    && clientRegistration != null
-                                    && session.getRefreshToken() != null) {
-                                logger.debug(format("The access token may have expired: %s",
-                                                    error.getErrorDescription()));
-                                refreshAccessTokenAndSaveSession(context, request, session, clientRegistration);
-                                // Try to access to the protected resource again with new access token.
-                                return handleProtectedResource(context, request, next, false);
-                            }
-                        } catch (OAuth2ErrorException | ResponseException e) {
-                            logger.error(e);
-                            return newResultPromise(response);
-                        }
-                    }
-                    return newResultPromise(response);
-                }
-            });
+            return promise.thenAsync(passThroughOrRefreshToken(context, request, next, session));
         }
         return promise;
     }
 
-    private void refreshAccessTokenAndSaveSession(final Context context,
-                                                  final Request request,
-                                                  final OAuth2Session session,
-                                                  final ClientRegistration clientRegistration)
-            throws OAuth2ErrorException, ResponseException {
-        final JsonValue refreshedAccessTokenResponse = blockingCall(
-                clientRegistration.refreshAccessToken(context, session), "refreshing the access token");
-        final OAuth2Session refreshedSession = session.stateRefreshed(refreshedAccessTokenResponse);
+    private AsyncFunction<Response, Response, NeverThrowsException> passThroughOrRefreshToken(
+            final Context context,
+            final Request request,
+            final Handler next,
+            final OAuth2Session session) {
 
-        /*
-         * Only update the session if it has changed in order to avoid send back
-         * JWT session cookies with every response.
-         */
-        saveSession(context, refreshedSession, buildUri(context, request, clientEndpoint));
+        return new AsyncFunction<Response, Response, NeverThrowsException>() {
+            @Override
+            public Promise<Response, NeverThrowsException> apply(final Response response) {
+                if (!UNAUTHORIZED.equals(response.getStatus())) {
+                    // Just forward the response as-is.
+                    return newResultPromise(response);
+                }
+
+                final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response).getOAuth2Error();
+                final ClientRegistration clientRegistration = getClientRegistration(session);
+                if (!error.is(E_INVALID_TOKEN)
+                        || (error.is(E_INVALID_TOKEN)
+                                && (clientRegistration == null || session.getRefreshToken() == null))) {
+                    // Unauthorized but not due to an invalid token, forwards it.
+                    return newResultPromise(response);
+                }
+
+                // At this point, we only react once to try to refresh the access token.
+                logger.debug(format("The access token may have expired: %s", error.getErrorDescription()));
+                return refreshAccessTokenAndSaveSession(context, request, session, clientRegistration)
+                        .thenAsync(new AsyncFunction<Void, Response, NeverThrowsException>() {
+
+                            @Override
+                            public Promise<Response, NeverThrowsException> apply(Void value) {
+                                // Try to access to the protected resource again with new access token.
+                                return handleProtectedResource(context, request, next, false);
+                            }
+                        }, new AsyncFunction<OAuth2ErrorException, Response, NeverThrowsException>() {
+
+                            @Override
+                            public Promise<Response, NeverThrowsException> apply(OAuth2ErrorException e) {
+                                // Couldn't refresh the access token: return the original response (401)
+                                // to the caller.
+                                logger.error(e);
+                                return newResultPromise(response);
+                            }
+                        });
+            }
+
+        };
+    }
+
+    private Promise<Void, OAuth2ErrorException> refreshAccessTokenAndSaveSession(
+            final Context context,
+            final Request request,
+            final OAuth2Session session,
+            final ClientRegistration clientRegistration) {
+
+        return clientRegistration.refreshAccessToken(context, session).then(
+                new Function<JsonValue, Void, OAuth2ErrorException>() {
+
+                    @Override
+                    public Void apply(JsonValue refreshedAccessTokenResponse) throws OAuth2ErrorException {
+                        final OAuth2Session refreshedSession = session.stateRefreshed(refreshedAccessTokenResponse);
+                        try {
+                            saveSession(context, refreshedSession, buildUri(context, request, clientEndpoint));
+                        } catch (final ResponseException e) {
+                            throw new OAuth2ErrorException(E_SERVER_ERROR, "unable to save the session", e);
+                        }
+                        return null;
+                    }
+                });
     }
 
     private Promise<Response, NeverThrowsException> handleUserInitiatedDiscovery(final Request request,
