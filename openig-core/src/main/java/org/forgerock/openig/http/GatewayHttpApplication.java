@@ -45,6 +45,7 @@ import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
+import static org.forgerock.openig.http.GatewayEnvironment.BASE_SYSTEM_PROPERTY;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
@@ -86,7 +87,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.ConsoleLogSink;
 import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.LogSinkLoggerFactory;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
@@ -94,8 +94,12 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * Configuration class for configuring the OpenIG Gateway.
@@ -140,6 +144,34 @@ public final class GatewayHttpApplication implements HttpApplication {
      */
     GatewayHttpApplication(final Environment environment) {
         this.environment = environment;
+        setupLogSystem();
+    }
+
+    private void setupLogSystem() {
+        // Assume SLF4J is bound to logback in the current environment
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        try {
+            URL logBackXml = findLogBackXml();
+
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(context);
+            // Clear any previous configuration, e.g. default configuration
+            context.reset();
+            context.putProperty(BASE_SYSTEM_PROPERTY, environment.getBaseDirectory().getAbsolutePath());
+            configurator.doConfigure(logBackXml);
+        } catch (JoranException | MalformedURLException je) {
+            // StatusPrinter will handle this
+        }
+        StatusPrinter.printInCaseOfErrorsOrWarnings(context);
+    }
+
+    private URL findLogBackXml() throws MalformedURLException {
+        final File logbackXml = new File(environment.getConfigDirectory(), "logback.xml");
+        if (logbackXml.canRead()) {
+            return logbackXml.toURI().toURL();
+        }
+        return getClass().getResource("logback.xml");
     }
 
     @Override
@@ -225,11 +257,6 @@ public final class GatewayHttpApplication implements HttpApplication {
             Handler rootHandler = chainOf(heap.getHandler(), filters);
             router.setDefaultRoute(rootHandler);
 
-            // Configure SLF4J with the LogSink defined by the user
-            ILoggerFactory factory = LoggerFactory.getILoggerFactory();
-            if (factory instanceof LogSinkLoggerFactory) {
-                ((LogSinkLoggerFactory) factory).setLogSink(logSink);
-            }
             return router;
         } catch (Exception e) {
             LOG.error("Failed to initialise Http Application", e);
