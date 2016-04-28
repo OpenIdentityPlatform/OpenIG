@@ -34,11 +34,11 @@ import org.forgerock.openig.heap.HeapException;
  * {
  *     "type": "DefaultRateThrottlingPolicy",
  *     "config": {
- *         "throttlingRatePolicy"         : reference or                [REQUIRED - the policy that will define the
- *                                          inlined declaration                     throttling rate to apply]
- *
+ *         "delegateThrottlingRatePolicy"  : reference or               [REQUIRED - the policy that will define the
+ *                                           inlined declaration                    throttling rate to apply]
  *         "defaultRate" {                 : reference                  [OPTIONAL - the default rate to apply if
- *                                                                                  there is no match]
+ *                                                                                  the delegated throttling rate
+ *                                                                                  policy returns no rate to apply]
  *                "numberOfRequests"             : integer              [REQUIRED - The number of requests allowed
  *                                                                                  to go through this filter during
  *                                                                                  the duration window.]
@@ -50,14 +50,13 @@ import org.forgerock.openig.heap.HeapException;
  * }
  * </pre>
  *
- * Example : apply different throttling rates depending of the header 'Origin'. If the header is not specified, let's
- * apply a default rate of 15 requests per second.
+ * Example : it applies a rate of 15 requests / sec if the scripted throttling rate policy returns no rate.
  * <pre>
  * {@code
  * {
  *     "type": "DefaultRateThrottlingPolicy",
  *     "config": {
- *         "throttlingRatePolicy" : "mappedThrottlingPolicy"
+ *         "delegateThrottlingRatePolicy" : "scriptedThrottlingRatePolicy"
  *         "defaultRate" : {
  *             "numberOfRequests" : 15,
  *             "duration" : "1 sec"
@@ -71,7 +70,7 @@ public class DefaultRateThrottlingPolicyHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        ThrottlingPolicy throttlingPolicy = config.get("throttlingRatePolicy")
+        ThrottlingPolicy throttlingPolicy = config.get("delegateThrottlingRatePolicy")
                                                   .required()
                                                   .as(requiredHeapObject(heap, ThrottlingPolicy.class));
         ThrottlingRate defaultRate = config.get("defaultRate").required().as(throttlingRate());
