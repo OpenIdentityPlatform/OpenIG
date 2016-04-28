@@ -15,6 +15,7 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
+import static java.lang.String.format;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
@@ -333,7 +334,7 @@ public final class Issuer {
                                  supportedDomains,
                                  issuerHandler).getOrThrow();
                 } catch (DiscoveryException | InterruptedException e) {
-                    throw new HeapException(e);
+                    throw new HeapException(format("Cannot build Issuer '%s'", name), e);
                 }
             }
             return new Issuer(this.name, config.as(evaluated()));
