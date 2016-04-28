@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2012-2015 ForgeRock AS.
+ * Copyright 2012-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -36,7 +36,8 @@ public class HeaderFilterTest {
     public void testAddHeaderToTheResponse() throws Exception {
         HeaderFilter filter = new HeaderFilter(MessageType.RESPONSE);
         filter.getRemovedHeaders().add("Location");
-        filter.getAddedHeaders().add("Location", "http://newtest.com:321${request.uri.path}");
+        filter.getAddedHeaders().add("Location", Expression.valueOf("http://newtest.com:321${request.uri.path}",
+                                                                    String.class));
 
         Request request = new Request();
         request.setMethod("DELETE");
