@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.verify;
 
+import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
@@ -31,6 +32,7 @@ import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -93,5 +95,23 @@ public class MessageCaptureTest {
         capture.capture(new RootContext(), new Response(), CapturePoint.FILTERED_RESPONSE);
 
         verify(logger).info(anyString());
+    }
+
+    @DataProvider
+    public static Object[][] textualContextType() {
+        //@Checkstyle:off
+        return new Object[][]{
+                { "text/jpeg",          "UTF-8" },  // anything starting with "text/"
+                { "appLICAtion/xMl",    "UTF-8" },  // ignore the case
+                { "appLICAtion/json",   null    },  // no Charset but is on the white list
+                { "application/pdf",    "UTF-8" }, // even if not on the white list, with a Charset, type is not on the white list
+        };
+        //@Checkstyle:on
+    }
+
+    @Test(dataProvider = "textualContextType")
+    public void shouldRecognizeTextualContent(String type, String charset) throws Exception {
+        ContentTypeHeader header = new ContentTypeHeader(type, charset, "=====");
+        assertThat(MessageCapture.isTextualContent(header)).isTrue();
     }
 }
