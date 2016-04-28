@@ -24,17 +24,20 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 
+import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.protocol.Headers;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.util.CaseInsensitiveMap;
 import org.forgerock.http.util.CaseInsensitiveSet;
+import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -56,7 +59,8 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
     private final CaseInsensitiveSet removedHeaders = new CaseInsensitiveSet();
 
     /** Header fields to add to the message. */
-    private final Headers addedHeaders = new Headers();
+    private final MultiValueMap<String, Expression<String>> addedHeaders =
+            new MultiValueMap<>(new CaseInsensitiveMap<List<Expression<String>>>());
 
     /**
      * Builds a HeaderFilter processing either the incoming or outgoing message.
@@ -75,12 +79,12 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
     }
 
     /**
-     * Returns the header fields to add to the message.
-     * This is a essentially a Map of String to a List of String, each listed value representing
+     * Returns the header fields to add to the message, represented as a MultiMap of String to a List of String, each
+     * listed value representing
      * an expression that will be evaluated.
      * @return the header fields to add to the message.
      */
-    public Headers getAddedHeaders() {
+    public MultiValueMap<String, Expression<String>> getAddedHeaders() {
         return addedHeaders;
     }
 
@@ -92,9 +96,11 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
             message.getHeaders().remove(s);
         }
         for (String key : this.addedHeaders.keySet()) {
-            for (String value : this.addedHeaders.get(key).getValues()) {
-                JsonValue jsonValue = new JsonValue(value);
-                message.getHeaders().add(key, jsonValue.as(expression(String.class)).eval(bindings));
+            for (Expression<String> expression : this.addedHeaders.get(key)) {
+                String eval = expression.eval(bindings);
+                if (eval != null) {
+                    message.getHeaders().add(key, eval);
+                }
             }
         }
     }
@@ -132,7 +138,9 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
                                                .asList(String.class));
             JsonValue add = config.get("add").defaultTo(emptyMap()).expect(Map.class);
             for (String key : add.keys()) {
-                filter.addedHeaders.put(key, add.get(key).required().asList(String.class));
+                for (JsonValue value : add.get(key).required().expect(List.class)) {
+                    filter.addedHeaders.add(key, value.required().as(expression(String.class)));
+                }
             }
             return filter;
         }
