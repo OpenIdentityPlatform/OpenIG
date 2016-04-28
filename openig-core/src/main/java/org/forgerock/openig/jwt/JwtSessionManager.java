@@ -21,7 +21,7 @@ import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -164,64 +164,6 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
         @Override
         public Object create() throws HeapException {
-            KeyPair keyPair;
-            JsonValue keystoreValue = config.get("keystore");
-            if (keystoreValue.isNotNull()) {
-                KeyStore keyStore = keystoreValue.as(requiredHeapObject(heap, KeyStore.class));
-
-                String alias = config.get("alias").as(evaluated()).required().asString();
-                String password = config.get("password").as(evaluated()).required().asString();
-
-                try {
-                    Key key = keyStore.getKey(alias, password.toCharArray());
-                    if (key instanceof PrivateKey) {
-                        // Get certificate of private key
-                        Certificate cert = keyStore.getCertificate(alias);
-                        if (cert == null) {
-                            throw new HeapException(format("Cannot get Certificate[alias:%s] from KeyStore[ref:%s]",
-                                                           alias,
-                                                           keystoreValue.asString()));
-                        }
-
-                        // Get public key
-                        PublicKey publicKey = cert.getPublicKey();
-
-                        // Return a key pair
-                        keyPair = new KeyPair(publicKey, (PrivateKey) key);
-                    } else {
-                        throw new HeapException(format("Either no Key[alias:%s] is available in KeyStore[ref:%s], "
-                                                       + "or it is not a private key",
-                                                       alias,
-                                                       keystoreValue.asString()));
-                    }
-                } catch (GeneralSecurityException e) {
-                    throw new HeapException(format("Wrong password for Key[alias:%s] in KeyStore[ref:%s]",
-                                                   alias,
-                                                   keystoreValue.asString()),
-                                            e);
-                }
-            } else {
-                /*
-                 * No KeyStore provided: generate a new KeyPair by ourself. In
-                 * this case, 'alias' and 'password' attributes are ignored. JWT
-                 * session cookies will not be portable between OpenIG instances
-                 * config changes, and restarts.
-                 */
-                try {
-                    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-                    generator.initialize(KEY_SIZE, new SecureRandom());
-                    keyPair = generator.generateKeyPair();
-                } catch (NoSuchAlgorithmException e) {
-                    throw new HeapException("Cannot build a random KeyPair", e);
-                }
-
-                logger.warning("JWT session support has been enabled but no encryption keys have "
-                        + "been configured. A temporary key pair will be used but this means that "
-                        + "OpenIG will not be able to decrypt any JWT session cookies after a "
-                        + "configuration change, a server restart, nor will it be able to decrypt "
-                        + "JWT session cookies encrypted by another OpenIG server.");
-            }
-
             TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
             JsonValue evaluated = config.as(evaluated());
@@ -233,12 +175,74 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
             }
 
             // Create the session factory with the given KeyPair and cookie name
-            return new JwtSessionManager(keyPair,
+            return new JwtSessionManager(keyPair(),
                                          evaluated.get("cookieName")
                                                   .defaultTo(OPENIG_JWT_SESSION)
                                                   .asString(),
                                          timeService,
                                          sessionTimeout);
+        }
+
+        private KeyPair keyPair() throws HeapException {
+            KeyStore keyStore = config.get("keystore").as(optionalHeapObject(heap, KeyStore.class));
+            if (keyStore != null) {
+                String alias = config.get("alias").as(evaluated()).required().asString();
+                String password = config.get("password").as(evaluated()).required().asString();
+                return keyPairFromKeyStore(keyStore, alias, password);
+            } else {
+                return keyPairFromScratch();
+            }
+        }
+
+        private KeyPair keyPairFromKeyStore(KeyStore keyStore, String alias, String password) throws HeapException {
+            try {
+                Key key = keyStore.getKey(alias, password.toCharArray());
+                if (key instanceof PrivateKey) {
+                    // Get certificate of private key
+                    Certificate cert = keyStore.getCertificate(alias);
+                    if (cert == null) {
+                        throw new HeapException(format("Cannot get Certificate[alias:%s] from KeyStore[ref:%s]",
+                                                       alias,
+                                                       config.get("keystore").asString()));
+                    }
+
+                    // Get public key
+                    PublicKey publicKey = cert.getPublicKey();
+
+                    // Return a key pair
+                    return new KeyPair(publicKey, (PrivateKey) key);
+                } else {
+                    throw new HeapException(format("Either no Key[alias:%s] is available in KeyStore[ref:%s], "
+                                                   + "or it is not a private key",
+                                                   alias,
+                                                   config.get("keystore").asString()));
+                }
+            } catch (GeneralSecurityException e) {
+                throw new HeapException(format("Wrong password for Key[alias:%s] in KeyStore[ref:%s]",
+                                               alias,
+                                               config.get("keystore").asString()),
+                                        e);
+            }
+        }
+
+        private KeyPair keyPairFromScratch() throws HeapException {
+            // No KeyStore provided: generate a new KeyPair by ourselves. JWT
+            // session cookies will not be portable between OpenIG instances
+            // config changes, and restarts.
+            KeyPair keyPair;
+            try {
+                KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+                generator.initialize(KEY_SIZE, new SecureRandom());
+                keyPair = generator.generateKeyPair();
+            } catch (NoSuchAlgorithmException e) {
+                throw new HeapException("Cannot build a random KeyPair", e);
+            }
+            logger.warning("JWT session support has been enabled but no encryption keys have "
+                                   + "been configured. A temporary key pair will be used but this means that "
+                                   + "OpenIG will not be able to decrypt any JWT session cookies after a "
+                                   + "configuration change, a server restart, nor will it be able to decrypt "
+                                   + "JWT session cookies encrypted by another OpenIG server.");
+            return keyPair;
         }
     }
 }
