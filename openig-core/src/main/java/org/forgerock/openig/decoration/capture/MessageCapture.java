@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.capture;
@@ -39,6 +39,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.annotations.VisibleForTesting;
 
 /**
  * Capture a message.
@@ -49,7 +50,7 @@ public class MessageCapture {
     private static final Set<String> TEXT_TYPES = new HashSet<>(
             Arrays.asList("application/atom+xml", "application/javascript", "application/json",
                           "application/rss+xml", "application/xhtml+xml", "application/xml", "application/xml-dtd",
-                          "application/x-www-form-urlencoded")
+                          "application/x-www-form-urlencoded", "application/soap+xml")
     ); // make all entries lower case
 
     private final Logger logger;
@@ -262,7 +263,8 @@ public class MessageCapture {
      *         the message's content-type
      * @return {@literal true} if the content-type represents a textual content
      */
-    private static boolean isTextualContent(final ContentTypeHeader contentType) {
+    @VisibleForTesting
+    static boolean isTextualContent(final ContentTypeHeader contentType) {
         String type = (contentType.getType() != null ? contentType.getType().toLowerCase() : null);
         return contentType.getCharset() != null
                 // text or white-listed type
