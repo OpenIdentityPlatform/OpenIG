@@ -56,7 +56,7 @@ import org.forgerock.openig.heap.HeapException;
  * {
  *     "type": "DefaultRateThrottlingPolicy",
  *     "config": {
- *         "delegateThrottlingRatePolicy" : "scriptedThrottlingRatePolicy"
+ *         "delegateThrottlingRatePolicy" : "customThrottlingRatePolicy"
  *         "defaultRate" : {
  *             "numberOfRequests" : 15,
  *             "duration" : "1 sec"
