@@ -36,6 +36,7 @@ import java.util.Set;
 import org.forgerock.authz.modules.oauth2.OAuth2;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.header.Warning;
 import org.forgerock.http.header.WarningHeader;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
@@ -298,9 +299,9 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                 // Properly handle 400 errors and UMA error codes
                 // The PAT may need to be refreshed
                 Response forbidden = new Response(Status.FORBIDDEN);
-                forbidden.getHeaders().put(new WarningHeader(MISCELLANEOUS_WARNING,
-                                                             "-",
-                                                             "\"UMA Authorization Server Unreachable\""));
+                forbidden.getHeaders().put(new WarningHeader(new Warning(MISCELLANEOUS_WARNING,
+                                                                        "-",
+                                                                        "UMA Authorization Server Unreachable")));
                 return forbidden;
             } finally {
                 // Close previous response object
