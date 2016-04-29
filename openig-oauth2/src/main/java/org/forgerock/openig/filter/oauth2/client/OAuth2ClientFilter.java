@@ -838,7 +838,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                             + "of the client registration's object(s) linked to this client");
                 }
             }
-            final ClientRegistrationRepository registrations = new ClientRegistrationRepository(clients);
+            final ClientRegistrationRepository registrations = new HeapClientRegistrationRepository(clients,
+                                                                                                    heap,
+                                                                                                    logger);
             final Handler discoveryAndDynamicRegistrationChain = chainOf(
                     new AuthorizationRedirectHandler(time, clientEndpoint, logger),
                     new DiscoveryFilter(discoveryHandler, heap, logger),
