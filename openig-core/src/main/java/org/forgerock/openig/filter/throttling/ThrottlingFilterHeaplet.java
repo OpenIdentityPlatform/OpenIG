@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.filter.throttling.FixedRateThrottlingPolicy;
+import org.forgerock.http.filter.throttling.ConstantThrottlingStrategy;
 import org.forgerock.http.filter.throttling.ThrottlingFilter;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
@@ -60,7 +61,7 @@ import org.forgerock.util.time.Duration;
  *                                                                          matches when calculating a rate for a group
  *                                                                          of requests.]
  *         "strategy"                     : string              [OPTIONAL - The name of the throttling's strategy to
- *                                                                          use; one of : bursty.
+ *                                                                          use; one of : bursty or constant.
  *                                                                          Default : bursty]
  *         "rate": {
  *            "numberOfRequests"          : integer             [REQUIRED - The number of requests allowed to go through
@@ -99,6 +100,8 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                   ScheduledExecutorService scheduledExecutor,
                                                   Duration cleaningInterval) {
         switch (throttlingStrategy) {
+        case "constant" :
+            return new ConstantThrottlingStrategy(ticker, scheduledExecutor, cleaningInterval);
         case "bursty":
         default:
             return new TokenBucketThrottlingStrategy(ticker, scheduledExecutor, cleaningInterval);
