@@ -23,17 +23,16 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.Reject.checkNotNull;
-import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.log.Logger;
@@ -47,8 +46,6 @@ import org.forgerock.util.promise.Promise;
 /**
  * Provides an OpenAM SSO Token in the given header name for downstream components.
  *
- * <p>The SSO Token is stored in the session to avoid DOS on OpenAM endpoints.
- *
  * <p>If the request failed with a {@literal 401} UNAUTHORIZED, a unique attempt to refresh the SSO token is tried.
  *
  * @see <a href="https://forgerock.org/openam/doc/bootstrap/dev-guide/index.html#rest-api-status-codes">OPENAM REST
@@ -61,13 +58,13 @@ public class SsoTokenFilter implements Filter {
     static final String AUTHENTICATION_ENDPOINT = "/authenticate";
     static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
-    private final Handler ssoClientHandler;
     private final URI openamUrl;
     private final String realm;
     private final String headerName;
     private final Expression<String> username;
     private final Expression<String> password;
     private final Logger logger;
+    private final SsoTokenHolder ssoTokenHolder;
 
     SsoTokenFilter(final Handler ssoClientHandler,
                    final URI openamUrl,
@@ -76,13 +73,14 @@ public class SsoTokenFilter implements Filter {
                    final Expression<String> username,
                    final Expression<String> password,
                    final Logger logger) {
-        this.ssoClientHandler = checkNotNull(ssoClientHandler);
         this.openamUrl = checkNotNull(openamUrl);
         this.realm = startsWithSlash(realm);
         this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
         this.username = username;
         this.password = password;
         this.logger = logger;
+        ssoTokenHolder = new SsoTokenHolder(checkNotNull(ssoClientHandler, "The ssoClientHandler cannot be null"),
+                                            logger);
     }
 
     private static String startsWithSlash(final String realm) {
@@ -116,51 +114,14 @@ public class SsoTokenFilter implements Filter {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(Response response) {
                         if (response.getStatus().equals(UNAUTHORIZED)) {
-                            final SessionContext sessionContext = context.asContext(SessionContext.class);
-                            sessionContext.getSession().remove(SSO_TOKEN_KEY);
-                            return createSsoToken(context, request)
-                                    .thenAsync(executeRequestWithToken);
+                            return ssoTokenHolder.updateToken(context, request).thenAsync(executeRequestWithToken);
                         }
                         return newResponsePromise(response);
                     }
                 };
-
-        return findSsoToken(context, request)
-                .thenAsync(executeRequestWithToken)
-                .thenAsync(checkResponse);
-    }
-
-    private Promise<String, NeverThrowsException> findSsoToken(final Context context, final Request request) {
-        final SessionContext sessionContext = context.asContext(SessionContext.class);
-        if (sessionContext.getSession().containsKey(SSO_TOKEN_KEY)) {
-            return newResultPromise((String) sessionContext.getSession().get(SSO_TOKEN_KEY));
-        } else {
-            return createSsoToken(context, request);
-        }
-    }
-
-    private Promise<String, NeverThrowsException> createSsoToken(final Context context, final Request request) {
-        return ssoClientHandler.handle(context, authenticationRequest(bindings(context, request)))
-                               .then(extractSsoToken(context));
-    }
-
-    private Function<Response, String, NeverThrowsException> extractSsoToken(final Context context) {
-        return new Function<Response, String, NeverThrowsException>() {
-            @Override
-            public String apply(Response response) {
-                String token = null;
-                try {
-                    @SuppressWarnings("unchecked")
-                    final Map<String, String> result = (Map<String, String>) response.getEntity().getJson();
-                    token = result.get("tokenId");
-                    context.asContext(SessionContext.class).getSession().put(SSO_TOKEN_KEY, token);
-                } catch (IOException e) {
-                    logger.warning("Couldn't parse as JSON the OpenAM authentication response");
-                    logger.warning(e);
-                }
-                return token;
-            }
-        };
+        return ssoTokenHolder.findToken(context, request)
+                             .thenAsync(executeRequestWithToken)
+                             .thenAsync(checkResponse);
     }
 
     @VisibleForTesting
@@ -172,5 +133,79 @@ public class SsoTokenFilter implements Filter {
         request.getHeaders().put("X-OpenAM-Username", username.eval(bindings));
         request.getHeaders().put("X-OpenAM-Password", password.eval(bindings));
         return request;
+    }
+
+    private class SsoTokenHolder {
+
+        private final Handler ssoClientHandler;
+        private final Logger logger;
+        private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+        private Promise<String, NeverThrowsException> token;
+        private boolean isTokenValid = false;
+
+        SsoTokenHolder(final Handler ssoClientHandler, final Logger logger) {
+            this.ssoClientHandler = ssoClientHandler;
+            this.logger = logger;
+        }
+
+        Promise<String, NeverThrowsException> findToken(final Context context, final Request request) {
+            rwl.readLock().lock();
+            if (!isTokenValid) {
+                // Must release read lock before acquiring write lock
+                rwl.readLock().unlock();
+                rwl.writeLock().lock();
+                try {
+                    // Re-check state because another thread might have
+                    // acquired write lock and changed state before we did.
+                    if (!isTokenValid) {
+                        token = createSsoToken(context, request);
+                        isTokenValid = true;
+                    }
+                    // Downgrade by acquiring read lock before releasing write lock
+                    rwl.readLock().lock();
+                } finally {
+                    // Unlock write, still hold read
+                    rwl.writeLock().unlock();
+                }
+            }
+
+            try {
+                return token;
+            } finally {
+                rwl.readLock().unlock();
+            }
+        }
+
+        Promise<String, NeverThrowsException> updateToken(final Context context, final Request request) {
+            rwl.writeLock().lock();
+            try {
+                isTokenValid = false;
+            } finally {
+                rwl.writeLock().unlock();
+            }
+            return findToken(context, request);
+        }
+
+        private Promise<String, NeverThrowsException> createSsoToken(final Context context, final Request request) {
+            return ssoClientHandler.handle(context, authenticationRequest(bindings(context, request)))
+                                   .then(extractSsoToken());
+        }
+
+        private Function<Response, String, NeverThrowsException> extractSsoToken() {
+            return new Function<Response, String, NeverThrowsException>() {
+                @Override
+                public String apply(Response response) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        final Map<String, String> result = (Map<String, String>) response.getEntity().getJson();
+                        return result.get("tokenId");
+                    } catch (IOException e) {
+                        logger.warning("Couldn't parse as JSON the OpenAM authentication response");
+                        logger.warning(e);
+                    }
+                    return null;
+                }
+            };
+        }
     }
 }

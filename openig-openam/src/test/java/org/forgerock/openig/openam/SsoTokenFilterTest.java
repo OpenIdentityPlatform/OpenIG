@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.openam;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.BAD_REQUEST;
@@ -26,22 +27,19 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.openam.SsoTokenFilter.SSO_TOKEN_KEY;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
@@ -58,14 +56,13 @@ public class SsoTokenFilterTest {
 
     static final private URI OPENAM_URI = URI.create("http://www.example.com:8090/openam/");
     static final private String VALID_TOKEN = "AAAwns...*";
-    static final private String REVOKED_TOKEN = "BBBwns...*";
     static final private Object AUTHENTICATION_SUCCEEDED = object(field("tokenId", VALID_TOKEN),
                                                                   field("successUrl", "/openam/console"));
     private static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
-    private SessionContext sessionContext;
     private AttributesContext attributesContext;
     private Request request;
+    private Response authenticated;
     private Response unauthorized;
 
     @Mock
@@ -77,8 +74,7 @@ public class SsoTokenFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
-        attributesContext = new AttributesContext(sessionContext);
+        attributesContext = new AttributesContext(new RootContext());
         attributesContext.getAttributes().put("password", "hifalutin");
 
         request = new Request();
@@ -86,6 +82,8 @@ public class SsoTokenFilterTest {
         unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", 401),
                                                                    field("reason", "Unauthorized"),
                                                                    field("message", "Access denied"))));
+        authenticated = new Response();
+        authenticated.setStatus(OK).setEntity(AUTHENTICATION_SUCCEEDED);
     }
 
     @DataProvider
@@ -93,14 +91,6 @@ public class SsoTokenFilterTest {
         return new Object[][] {
             { null, OPENAM_URI },
             { next, null } };
-    }
-
-    @DataProvider
-    private static Object[][] ssoTokenHeaderName() {
-        return new Object[][] {
-            { null },
-            { DEFAULT_HEADER_NAME },
-            { "iForgeSession" } };
     }
 
     @Test(dataProvider = "nullRequiredParameters", expectedExceptions = NullPointerException.class)
@@ -132,84 +122,40 @@ public class SsoTokenFilterTest {
         assertThat(request.getUri().toASCIIString()).isEqualTo(OPENAM_URI + "json/myrealm/sub/authenticate");
     }
 
+    @DataProvider
+    private static Object[][] ssoTokenHeaderName() {
+        return new Object[][] {
+            { null },
+            { DEFAULT_HEADER_NAME },
+            { "iForgeSession" } };
+    }
+
     @Test(dataProvider = "ssoTokenHeaderName")
-    public void shouldPlaceGivenSSOTokenToRequestHeader(final String givenSsoTokenHeaderName) throws Exception {
+    public void shouldRequestForSSOTokenWhenNone(final String givenSsoTokenHeaderName) throws Exception {
         // Given
-        sessionContext.getSession().put(SSO_TOKEN_KEY, VALID_TOKEN);
+        when(authenticate.handle(any(Context.class), any(Request.class)))
+                                .thenReturn(newResponsePromise(authenticated));
+
         when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
         buildSsoTokenFilter(givenSsoTokenHeaderName).filter(attributesContext, request, next);
 
         // Then
-        verify(next).handle(any(Context.class), any(Request.class));
+        verify(authenticate).handle(any(Context.class), any(Request.class));
+        verify(next).handle(attributesContext, request);
         assertThat(request.getHeaders().get(givenSsoTokenHeaderName != null
                                             ? givenSsoTokenHeaderName
                                             : DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
     }
 
     @Test
-    public void shouldRequestForSSOTokenWhenNoneInSession() throws Exception {
-        // Given
-        final Response responseContainingToken = new Response();
-        responseContainingToken.setStatus(OK);
-        responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
-
-        when(authenticate.handle(any(Context.class), any(Request.class)))
-                                .thenReturn(newResponsePromise(responseContainingToken));
-
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
-
-        // When
-        buildSsoTokenFilter().filter(attributesContext, request, next);
-
-        // Then
-        verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next).handle(attributesContext, request);
-        assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
-    }
-
-    @Test
-    public void shouldRequestForNewSSOTokenWhenGivenOneIsRevoked() throws Exception {
-        // Given token is revoked: first call to the request fails with a forbidden
-        // Then, it gets new SSO token and succeed to access to request
-
-        // Given
-        sessionContext.getSession().put(SSO_TOKEN_KEY, REVOKED_TOKEN);
-
-        final Response responseContainingToken = new Response();
-        responseContainingToken.setStatus(OK);
-        responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
-
-        when(authenticate.handle(any(Context.class), any(Request.class)))
-                                .thenReturn(newResponsePromise(responseContainingToken));
-
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(unauthorized))
-                                            .thenReturn(newResponsePromise(new Response(OK)));
-
-        // When
-        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
-                                                                    request,
-                                                                    next).get();
-
-        // Then
-        verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next, times(2)).handle(attributesContext, request);
-        assertThat(request.getHeaders().get(DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
-        assertThat(finalResponse.getStatus()).isEqualTo(OK);
-    }
-
-    @Test
     public void shouldRequestForNewSSOTokenOnlyOnceWhenFirstRequestFailed() throws Exception {
         // Given
-        final Response responseContainingToken = new Response();
-        responseContainingToken.setStatus(OK);
-        responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
-
         when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(unauthorized));
 
         when(authenticate.handle(any(Context.class), any(Request.class)))
-                                .thenReturn(newResponsePromise(responseContainingToken));
+                                .thenReturn(newResponsePromise(authenticated));
 
         // When
         final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
@@ -228,7 +174,6 @@ public class SsoTokenFilterTest {
         // Given
         final Response badRequestResponse = new Response();
         badRequestResponse.setStatus(BAD_REQUEST);
-        badRequestResponse.setEntity(object(field("OAuth2Error", "An error occurred")));
 
         when(authenticate.handle(any(Context.class), any(Request.class)))
                 .thenReturn(newResponsePromise(badRequestResponse));
@@ -245,7 +190,110 @@ public class SsoTokenFilterTest {
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).error("Unable to retrieve SSO Token");
+    }
 
+    @Test(timeOut = 1000)
+    public void shouldOnlyAuthenticateOnceOnMultiThreadingMode() throws Exception {
+        // Given
+        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
+
+        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                ssoTokenFilter.filter(attributesContext, request, next);
+            }
+        };
+        final int taskNumber = 10;
+        final CountDownLatch started = new CountDownLatch(taskNumber);
+        final CountDownLatch finished = new CountDownLatch(taskNumber);
+        final ExecutorService executorService = newFixedThreadPool(taskNumber);
+
+        // When
+        for (int i = 0; i < taskNumber; i++) {
+            executorService.execute(new Worker(action, started, finished));
+        }
+
+        finished.await();
+
+        // Then
+        verify(authenticate).handle(any(Context.class), any(Request.class));
+        verify(next, times(taskNumber)).handle(attributesContext, request);
+        shutdownExecutor(executorService);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeOut = 1000)
+    public void shouldUpdateTokenOnMultiThreadingMode() throws Exception {
+        // Given
+        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)),
+                                                                 newResponsePromise(unauthorized),
+                                                                 newResponsePromise(new Response(OK)));
+
+        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                ssoTokenFilter.filter(attributesContext, request, next);
+            }
+        };
+        final int taskNumber = 10;
+        final CountDownLatch started = new CountDownLatch(taskNumber);
+        final CountDownLatch finished = new CountDownLatch(taskNumber);
+        final ExecutorService executorService = newFixedThreadPool(taskNumber);
+
+        // When
+        // First call
+        ssoTokenFilter.filter(attributesContext, request, next).get();
+        // before workers...
+        for (int i = 0; i < taskNumber; i++) {
+            executorService.execute(new Worker(action, started, finished));
+        }
+
+        finished.await();
+
+        // Then
+        // Authenticate is called a first time to generate a token + one more time to update the token
+        verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
+        // Next is called a first time before the workers, plus (x + 1) times by the workers (task_number + one
+        // for managing the unauthorized response).
+        verify(next, times(1 + taskNumber + 1)).handle(attributesContext, request);
+        shutdownExecutor(executorService);
+    }
+
+    class Worker implements Runnable {
+        private Runnable action;
+        private final CountDownLatch started;
+        private final CountDownLatch finished;
+
+        public Worker(Runnable action, CountDownLatch started, CountDownLatch finished) {
+            this.action = action;
+            this.started = started;
+            this.finished = finished;
+        }
+
+        @Override
+        public void run() {
+            started.countDown();
+            try {
+                started.await();
+                action.run();
+                finished.countDown();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private static void shutdownExecutor(final ExecutorService executorService) {
+        try {
+            executorService.shutdown();
+        } finally {
+            executorService.shutdownNow();
+        }
     }
 
     private static SsoTokenFilter buildSsoTokenFilter() throws Exception {
@@ -260,12 +308,5 @@ public class SsoTokenFilterTest {
                                   Expression.valueOf("bjensen", String.class),
                                   Expression.valueOf("${attributes.password}", String.class),
                                   logger);
-    }
-
-    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void save(Response response) throws IOException { }
     }
 }
