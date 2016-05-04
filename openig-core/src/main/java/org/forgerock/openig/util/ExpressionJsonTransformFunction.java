@@ -16,8 +16,6 @@
 
 package org.forgerock.openig.util;
 
-import static org.forgerock.json.JsonValue.json;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -74,7 +72,7 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
             object = value.getObject();
         }
 
-        return json(object);
+        return new JsonValue(object, value.getPointer());
     }
 
     private Object transformString(JsonValue value) {

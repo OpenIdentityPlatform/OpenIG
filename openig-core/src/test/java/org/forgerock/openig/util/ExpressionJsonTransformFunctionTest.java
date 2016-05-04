@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -25,6 +26,7 @@ import static org.forgerock.json.test.assertj.AssertJJsonValueAssert.assertThat;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.test.assertj.Conditions.equalTo;
 
+import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.testng.annotations.Test;
@@ -35,6 +37,13 @@ public class ExpressionJsonTransformFunctionTest {
     @Test
     public void shouldEvaluateStringNode() throws Exception {
         assertThat(evaluate(json("${true}"))).isBoolean().isTrue();
+    }
+
+    @Test
+    public void shouldRetainJsonPointerValue() throws Exception {
+        JsonPointer pointer = new JsonPointer("/object/2/attribute");
+        JsonValue value = evaluate(new JsonValue(null, pointer));
+        assertThat(value.getPointer()).isEqualTo(pointer);
     }
 
     @Test
