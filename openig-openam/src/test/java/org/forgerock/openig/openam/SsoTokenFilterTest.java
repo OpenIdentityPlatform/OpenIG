@@ -65,13 +65,11 @@ public class SsoTokenFilterTest {
 
     private SessionContext sessionContext;
     private AttributesContext attributesContext;
+    private Request request;
     private Response unauthorized;
 
     @Mock
-    static Handler next;
-
-    @Mock
-    static Handler authenticate;
+    static Handler authenticate, next;
 
     @Mock
     static Logger logger;
@@ -83,6 +81,7 @@ public class SsoTokenFilterTest {
         attributesContext = new AttributesContext(sessionContext);
         attributesContext.getAttributes().put("password", "hifalutin");
 
+        request = new Request();
         unauthorized = new Response();
         unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", 401),
                                                                    field("reason", "Unauthorized"),
@@ -137,8 +136,6 @@ public class SsoTokenFilterTest {
     public void shouldPlaceGivenSSOTokenToRequestHeader(final String givenSsoTokenHeaderName) throws Exception {
         // Given
         sessionContext.getSession().put(SSO_TOKEN_KEY, VALID_TOKEN);
-        final Request request = new Request();
-
         when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
@@ -154,7 +151,6 @@ public class SsoTokenFilterTest {
     @Test
     public void shouldRequestForSSOTokenWhenNoneInSession() throws Exception {
         // Given
-        final Request request = new Request();
         final Response responseContainingToken = new Response();
         responseContainingToken.setStatus(OK);
         responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
@@ -180,7 +176,6 @@ public class SsoTokenFilterTest {
 
         // Given
         sessionContext.getSession().put(SSO_TOKEN_KEY, REVOKED_TOKEN);
-        final Request request = new Request();
 
         final Response responseContainingToken = new Response();
         responseContainingToken.setStatus(OK);
@@ -207,8 +202,6 @@ public class SsoTokenFilterTest {
     @Test
     public void shouldRequestForNewSSOTokenOnlyOnceWhenFirstRequestFailed() throws Exception {
         // Given
-        final Request request = new Request();
-
         final Response responseContainingToken = new Response();
         responseContainingToken.setStatus(OK);
         responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
@@ -230,11 +223,9 @@ public class SsoTokenFilterTest {
         assertThat(finalResponse).isSameAs(unauthorized);
     }
 
-
     @Test
     public void shouldRequestForSSOTokenFails() throws Exception {
         // Given
-        final Request request = new Request();
         final Response badRequestResponse = new Response();
         badRequestResponse.setStatus(BAD_REQUEST);
         badRequestResponse.setEntity(object(field("OAuth2Error", "An error occurred")));
