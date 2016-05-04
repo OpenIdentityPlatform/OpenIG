@@ -18,7 +18,7 @@ package org.forgerock.openig.openam;
 
 import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.protocol.Status.FORBIDDEN;
+import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
@@ -49,7 +49,10 @@ import org.forgerock.util.promise.Promise;
  *
  * <p>The SSO Token is stored in the session to avoid DOS on OpenAM endpoints.
  *
- * <p>If the request failed, a unique attempt to refresh the SSO token is tried.
+ * <p>If the request failed with a {@literal 401} UNAUTHORIZED, a unique attempt to refresh the SSO token is tried.
+ *
+ * @see <a href="https://forgerock.org/openam/doc/bootstrap/dev-guide/index.html#rest-api-status-codes">OPENAM REST
+ * API status codes</a>
  */
 public class SsoTokenFilter implements Filter {
 
@@ -112,7 +115,7 @@ public class SsoTokenFilter implements Filter {
 
                     @Override
                     public Promise<Response, NeverThrowsException> apply(Response response) {
-                        if (response.getStatus().equals(FORBIDDEN)) {
+                        if (response.getStatus().equals(UNAUTHORIZED)) {
                             final SessionContext sessionContext = context.asContext(SessionContext.class);
                             sessionContext.getSession().remove(SSO_TOKEN_KEY);
                             return createSsoToken(context, request)

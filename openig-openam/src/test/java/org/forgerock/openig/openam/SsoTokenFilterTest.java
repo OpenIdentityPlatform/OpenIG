@@ -19,10 +19,11 @@ package org.forgerock.openig.openam;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.BAD_REQUEST;
-import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
+import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.openam.SsoTokenFilter.SSO_TOKEN_KEY;
@@ -64,6 +65,7 @@ public class SsoTokenFilterTest {
 
     private SessionContext sessionContext;
     private AttributesContext attributesContext;
+    private Response unauthorized;
 
     @Mock
     static Handler next;
@@ -80,6 +82,11 @@ public class SsoTokenFilterTest {
         sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
         attributesContext = new AttributesContext(sessionContext);
         attributesContext.getAttributes().put("password", "hifalutin");
+
+        unauthorized = new Response();
+        unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", 401),
+                                                                   field("reason", "Unauthorized"),
+                                                                   field("message", "Access denied"))));
     }
 
     @DataProvider
@@ -174,8 +181,6 @@ public class SsoTokenFilterTest {
         // Given
         sessionContext.getSession().put(SSO_TOKEN_KEY, REVOKED_TOKEN);
         final Request request = new Request();
-        final Response forbidden = new Response();
-        forbidden.setStatus(FORBIDDEN);
 
         final Response responseContainingToken = new Response();
         responseContainingToken.setStatus(OK);
@@ -184,7 +189,7 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(any(Context.class), any(Request.class)))
                                 .thenReturn(newResponsePromise(responseContainingToken));
 
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(forbidden))
+        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(unauthorized))
                                             .thenReturn(newResponsePromise(new Response(OK)));
 
         // When
@@ -203,14 +208,12 @@ public class SsoTokenFilterTest {
     public void shouldRequestForNewSSOTokenOnlyOnceWhenFirstRequestFailed() throws Exception {
         // Given
         final Request request = new Request();
-        final Response forbidden = new Response();
-        forbidden.setStatus(FORBIDDEN);
 
         final Response responseContainingToken = new Response();
         responseContainingToken.setStatus(OK);
         responseContainingToken.setEntity(AUTHENTICATION_SUCCEEDED);
 
-        when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(forbidden));
+        when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(unauthorized));
 
         when(authenticate.handle(any(Context.class), any(Request.class)))
                                 .thenReturn(newResponsePromise(responseContainingToken));
@@ -224,7 +227,7 @@ public class SsoTokenFilterTest {
         verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
         verify(next, times(2)).handle(attributesContext, request);
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
-        assertThat(finalResponse).isSameAs(forbidden);
+        assertThat(finalResponse).isSameAs(unauthorized);
     }
 
 
