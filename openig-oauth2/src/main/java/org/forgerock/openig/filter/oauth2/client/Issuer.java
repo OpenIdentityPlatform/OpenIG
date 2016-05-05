@@ -20,7 +20,6 @@ import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.getJsonContent;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
@@ -333,7 +332,9 @@ public final class Issuer {
                     && !config.isDefined("authorizeEndpoint")
                     && !config.isDefined("tokenEndpoint")) {
                 try {
-                    final URI wellKnownEndpoint = config.get("wellKnownEndpoint").as(evaluated()).as(uri());
+                    final URI wellKnownEndpoint = config.get("wellKnownEndpoint")
+                                                        .as(evaluatedWithHeapBindings())
+                                                        .as(uri());
                     return build(new AttributesContext(new RootContext()),
                                  this.name,
                                  wellKnownEndpoint,
@@ -343,7 +344,7 @@ public final class Issuer {
                     throw new HeapException(format("Cannot build Issuer '%s'", name), e);
                 }
             }
-            return new Issuer(this.name, config.as(evaluated()));
+            return new Issuer(this.name, config.as(evaluatedWithHeapBindings()));
         }
     }
 }

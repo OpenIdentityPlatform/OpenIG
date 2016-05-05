@@ -35,6 +35,7 @@ import org.forgerock.http.filter.throttling.ThrottlingStrategy;
 import org.forgerock.http.filter.throttling.TokenBucketThrottlingStrategy;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionRequestAsyncFunction;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -76,20 +77,17 @@ import org.forgerock.util.time.Duration;
  */
 public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
-    private static final Function<JsonValue, ThrottlingRate, JsonValueException> THROTTLING_RATE =
-            new Function<JsonValue, ThrottlingRate, JsonValueException>() {
+    static Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate(final Bindings bindings) {
+        return new Function<JsonValue, ThrottlingRate, JsonValueException>() {
 
-                @Override
-                public ThrottlingRate apply(JsonValue value) {
-                    int numberOfRequests = value.get("numberOfRequests").as(evaluated()).required().asInteger();
-                    String duration = value.get("duration").as(evaluated()).required().asString();
+            @Override
+            public ThrottlingRate apply(JsonValue value) {
+                int numberOfRequests = value.get("numberOfRequests").as(evaluated(bindings)).required().asInteger();
+                String duration = value.get("duration").as(evaluated(bindings)).required().asString();
 
-                    return new ThrottlingRate(numberOfRequests, duration);
-                }
-            };
-
-    static Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate() {
-        return THROTTLING_RATE;
+                return new ThrottlingRate(numberOfRequests, duration);
+            }
+        };
     }
 
     private ThrottlingStrategy throttlingStrategy(String throttlingStrategy,
@@ -109,7 +107,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
     public Object create() throws HeapException {
         Ticker ticker = heap.get(Keys.TICKER_HEAP_KEY, Ticker.class);
         Duration cleaningInterval = config.get("cleaningInterval")
-                                          .as(evaluated())
+                                          .as(evaluatedWithHeapBindings())
                                           .defaultTo("5 seconds")
                                           .as(duration());
 
@@ -121,7 +119,8 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
         if (config.isDefined("rate")) {
             // Backward compatibility and ease of use : for fixed throttling rate we still allow to declare them easily
             // in the configuration
-            throttlingRatePolicy = new FixedRateThrottlingPolicy(config.get("rate").as(throttlingRate()));
+            throttlingRatePolicy = new FixedRateThrottlingPolicy(config.get("rate")
+                                                                       .as(throttlingRate(heap.getBindings())));
         } else {
             throttlingRatePolicy = config.get("throttlingRatePolicy")
                                          .required()
@@ -133,7 +132,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
 
         ThrottlingStrategy throttlingStrategy = throttlingStrategy(config.get("strategy")
-                                                                         .as(evaluated())
+                                                                         .as(evaluatedWithHeapBindings())
                                                                          .defaultTo("bursty")
                                                                          .asString()
                                                                          .toLowerCase(Locale.ROOT),

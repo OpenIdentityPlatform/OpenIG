@@ -34,7 +34,6 @@ import static org.forgerock.http.handler.HttpClientHandler.OPTION_TRUST_MANAGERS
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.listOf;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -173,7 +172,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
         @Override
         public Object create() throws HeapException {
             final Options options = Options.defaultOptions();
-            final JsonValue evaluated = config.as(evaluated());
+            final JsonValue evaluated = config.as(evaluatedWithHeapBindings());
 
             if (evaluated.isDefined("connections")) {
                 options.set(OPTION_MAX_CONNECTIONS, evaluated.get("connections").asInteger());

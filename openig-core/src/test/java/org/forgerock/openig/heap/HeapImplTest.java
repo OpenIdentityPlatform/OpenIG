@@ -11,15 +11,18 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.http.util.Json.*;
-import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.heap.HeapUtilsTest.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.util.Json.readJson;
+import static org.forgerock.json.JsonValue.array;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -432,6 +435,21 @@ public class HeapImplTest {
                                        field("config", object(field("message", "child")))));
         HeapObject resolved = childHeap.resolve(config, HeapObject.class);
         assertThat(resolved.message).isEqualTo("child");
+    }
+
+    @Test
+    public void shouldResolveBindingFromParent() throws Exception {
+        HeapImpl parentHeap = buildDefaultHeap();
+        parentHeap.init(json(object(field("bindings", object(field("name", "parent"))))));
+
+        HeapImpl childHeap = new HeapImpl(parentHeap);
+        childHeap.init(json(object(field("bindings", object(field("name", "child"))))));
+
+        JsonValue config = json(object(field("type", "org.forgerock.openig.heap.HeapObject"),
+                                       field("name", "heap-object"),
+                                       field("config", object(field("message", "${name}")))));
+        assertThat(childHeap.resolve(config, HeapObject.class).message).isEqualTo("child");
+        assertThat(parentHeap.resolve(config, HeapObject.class).message).isEqualTo("parent");
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {

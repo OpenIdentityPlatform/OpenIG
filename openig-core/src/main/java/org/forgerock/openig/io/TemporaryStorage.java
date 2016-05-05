@@ -19,7 +19,6 @@ package org.forgerock.openig.io;
 
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValueFunctions.file;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.io.IO;
@@ -58,7 +57,7 @@ public class TemporaryStorage implements Factory<Buffer> {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             return new TemporaryStorage(
                     newTemporaryStorage(evaluated.get("directory").as(file()),
                                         evaluated.get("initialLength")

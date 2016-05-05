@@ -27,6 +27,7 @@ import org.forgerock.http.filter.throttling.MappedThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.ExpressionRequestAsyncFunction;
@@ -105,11 +106,11 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
         Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
                                                         .as(expression(String.class));
 
-        Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping").as(RATES_MAPPING);
+        Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping").as(ratesMappings(heap.getBindings()));
 
         ThrottlingRate defaultRate = null;
         if (config.isDefined("defaultRate")) {
-            defaultRate = config.get("defaultRate").as(throttlingRate());
+            defaultRate = config.get("defaultRate").as(throttlingRate(heap.getBindings()));
         }
 
         if (rates.isEmpty() && defaultRate == null) {
@@ -121,21 +122,24 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
                                           defaultRate);
     }
 
-    private static final  Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException> RATES_MAPPING =
-            new Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException>() {
+    private Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException>
+    ratesMappings(final Bindings bindings) {
+        return new Function<JsonValue, Map<String, ThrottlingRate>, JsonValueException>() {
 
-                @Override
-                public Map<String, ThrottlingRate> apply(JsonValue value) {
-                    Map<String, ThrottlingRate> rates = new HashMap<>();
-                    for (String key : value.keys()) {
-                        try {
-                            rates.put(Expression.valueOf(key, String.class).eval(),
-                                      value.get(key).as(throttlingRate()));
-                        } catch (ExpressionException e) {
-                            throw new JsonValueException(value, "Expecting a valid string expression", e);
-                        }
+            @Override
+            public Map<String, ThrottlingRate> apply(JsonValue value) {
+                Map<String, ThrottlingRate> rates = new HashMap<>();
+                for (String key : value.keys()) {
+                    try {
+                        rates.put(Expression.valueOf(key, String.class).eval(),
+                                  value.get(key).as(throttlingRate(bindings)));
+                    } catch (ExpressionException e) {
+                        throw new JsonValueException(value, "Expecting a valid string expression", e);
                     }
-                    return rates;
                 }
-            };
+                return rates;
+            }
+        };
+    }
+
 }

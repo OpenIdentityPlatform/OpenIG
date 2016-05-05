@@ -11,31 +11,27 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2016 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.heap;
+package org.forgerock.openig.util;
 
-import static org.forgerock.openig.util.JsonValues.evaluated;
+import java.util.Map;
 
-@SuppressWarnings("javadoc")
-public class HeapObject {
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
+import org.forgerock.util.Function;
 
-    public boolean destroyed;
-    public String message;
+class BindingsFromJsonValueFunction implements Function<JsonValue, Bindings, JsonValueException> {
 
-    public static class Heaplet extends GenericHeaplet {
-
-        @Override
-        public Object create() throws HeapException {
-            HeapObject heapObject = new HeapObject();
-            heapObject.message = config.get("message").as(evaluated(heap.getBindings())).asString();
-            return heapObject;
+    @Override
+    public Bindings apply(JsonValue value) {
+        Bindings bindings = Bindings.bindings();
+        for (String key : value.expect(Map.class).keys()) {
+            bindings.bind(key, value.get(key).getObject());
         }
-
-        @Override
-        public void destroy() {
-            ((HeapObject) object).destroyed = true;
-        }
+        return bindings;
     }
 }
+

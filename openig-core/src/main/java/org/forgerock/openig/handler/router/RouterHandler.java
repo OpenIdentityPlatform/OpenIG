@@ -21,7 +21,6 @@ import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.File;
@@ -320,14 +319,16 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             File directory = new File(env.getConfigDirectory(), "routes");
 
             // Configuration can override that value
-            String evaluation = config.get("directory").as(evaluated()).asString();
+            String evaluation = config.get("directory").as(evaluatedWithHeapBindings()).asString();
             if (evaluation != null) {
                 directory = new File(evaluation);
             }
 
             DirectoryScanner scanner = new DirectoryMonitor(directory);
 
-            int period = config.get("scanInterval").as(evaluated()).defaultTo(PeriodicDirectoryScanner.TEN_SECONDS)
+            int period = config.get("scanInterval")
+                               .as(evaluatedWithHeapBindings())
+                               .defaultTo(PeriodicDirectoryScanner.TEN_SECONDS)
                                .asInteger();
             if (period > 0) {
                 TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);

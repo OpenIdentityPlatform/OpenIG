@@ -130,7 +130,7 @@ class RouteBuilder {
 
         try {
             routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "auditService",
-                           "globalDecorators", "monitor");
+                           "globalDecorators", "monitor", "bindings");
 
             Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class));
 
@@ -239,7 +239,7 @@ class RouteBuilder {
      * By default (if omitted), monitoring is disabled.
      */
     private MonitorConfig getMonitorConfig(JsonValue monitor) {
-        JsonValue evaluatedConfig = monitor.as(evaluated());
+        JsonValue evaluatedConfig = monitor.as(evaluated(heap.getBindings()));
         MonitorConfig mc = new MonitorConfig();
         if (evaluatedConfig.isMap()) {
             // enabled

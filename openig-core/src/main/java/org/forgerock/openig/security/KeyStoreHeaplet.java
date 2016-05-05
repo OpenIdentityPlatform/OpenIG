@@ -18,7 +18,6 @@ package org.forgerock.openig.security;
 
 import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.url;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.InputStream;
@@ -56,7 +55,7 @@ public class KeyStoreHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        JsonValue evaluated = config.as(evaluated());
+        JsonValue evaluated = config.as(evaluatedWithHeapBindings());
         URL url = evaluated.get("url").required().as(url());
         String password = evaluated.get("password").asString();
         String type = evaluated.get("type").defaultTo(KeyStore.getDefaultType()).asString().toUpperCase();

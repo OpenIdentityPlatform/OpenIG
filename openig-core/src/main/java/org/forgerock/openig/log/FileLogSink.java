@@ -20,7 +20,6 @@ package org.forgerock.openig.log;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.file;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.File;
@@ -127,7 +126,7 @@ public class FileLogSink implements LogSink {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             File file = evaluated.get("file").required().as(file());
             try {
                 // try opening file to ensure it's writable at config time

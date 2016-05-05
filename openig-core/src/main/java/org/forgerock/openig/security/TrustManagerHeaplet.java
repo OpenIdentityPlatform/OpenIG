@@ -17,7 +17,6 @@
 package org.forgerock.openig.security;
 
 import static java.lang.String.format;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
@@ -57,7 +56,7 @@ public class TrustManagerHeaplet extends GenericHeaplet {
         JsonValue storeRef = config.get("keystore").required();
         KeyStore keyStore = storeRef.as(requiredHeapObject(heap, KeyStore.class));
         String algorithm = config.get("alg")
-                                 .as(evaluated())
+                                 .as(evaluatedWithHeapBindings())
                                  .defaultTo(TrustManagerFactory.getDefaultAlgorithm())
                                  .asString();
 

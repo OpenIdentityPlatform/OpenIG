@@ -18,7 +18,6 @@ package org.forgerock.openig.handler.router;
 import static org.forgerock.audit.AuditServiceBuilder.newAuditService;
 import static org.forgerock.audit.json.AuditJsonConfig.registerHandlerToService;
 import static org.forgerock.http.HttpApplication.LOGGER;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import org.forgerock.audit.AuditException;
 import org.forgerock.audit.AuditService;
@@ -49,7 +48,7 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         try {
-            auditService = buildAuditService(config.as(evaluated()));
+            auditService = buildAuditService(config.as(evaluatedWithHeapBindings()));
             return auditService;
         } catch (AuditException ex) {
             throw new HeapException(ex);

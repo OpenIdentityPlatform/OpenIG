@@ -32,7 +32,6 @@ import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -455,15 +454,27 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         @Override
         public Object create() throws HeapException {
 
-            final String openamUrl = trailingSlash(config.get("openamUrl").as(evaluated()).required().asString());
-            final String pepUsername = config.get("pepUsername").required().as(evaluated()).asString();
-            final String pepPassword = config.get("pepPassword").required().as(evaluated()).asString();
-            final String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
-            final String pepRealm = config.get("pepRealm").as(evaluated()).defaultTo(realm).asString();
+            final String openamUrl = trailingSlash(config.get("openamUrl")
+                                                         .as(evaluatedWithHeapBindings())
+                                                         .required()
+                                                         .asString());
+            final String pepUsername = config.get("pepUsername")
+                                             .required()
+                                             .as(evaluatedWithHeapBindings())
+                                             .asString();
+            final String pepPassword = config.get("pepPassword")
+                                             .required()
+                                             .as(evaluatedWithHeapBindings())
+                                             .asString();
+            final String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo("/").asString();
+            final String pepRealm = config.get("pepRealm")
+                                          .as(evaluatedWithHeapBindings())
+                                          .defaultTo(realm)
+                                          .asString();
             final Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
                                         .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                         .as(requiredHeapObject(heap, Handler.class));
-            final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
+            final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapBindings()).asString();
 
             @SuppressWarnings("rawtypes")
             final Expression<Map> target = config.get("target")
@@ -486,7 +497,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                             ssoTokenFilter,
                                                             new ApiVersionProtocolHeaderFilter()));
 
-                filter.setApplication(config.get("application").as(evaluated()).asString());
+                filter.setApplication(config.get("application").as(evaluatedWithHeapBindings()).asString());
                 filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
                 filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
                 filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
@@ -506,7 +517,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 String defaultExpiration = "1 minute";
                 cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
                 final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
-                                                          .as(evaluated())
+                                                          .as(evaluatedWithHeapBindings())
                                                           .defaultTo(defaultExpiration)
                                                           .as(duration());
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {

@@ -18,7 +18,6 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.List;
@@ -130,10 +129,10 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final int code = config.get("status").as(evaluated()).required().asInteger();
-            final String reason = config.get("reason").as(evaluated()).asString();
+            final int code = config.get("status").as(evaluatedWithHeapBindings()).required().asInteger();
+            final String reason = config.get("reason").as(evaluatedWithHeapBindings()).asString();
             Status status = Status.valueOf(code, reason);
-            final String version = config.get("version").as(evaluated()).asString();
+            final String version = config.get("version").as(evaluatedWithHeapBindings()).asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
             final Expression<String> entity = config.get("entity").as(expression(String.class));
             final StaticResponseHandler handler = new StaticResponseHandler(status, version, entity);

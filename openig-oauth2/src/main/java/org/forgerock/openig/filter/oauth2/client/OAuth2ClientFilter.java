@@ -38,7 +38,6 @@ import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_SERVER_ERROR;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
@@ -916,12 +915,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     new DiscoveryFilter(discoveryHandler, heap, logger),
                     new ClientRegistrationFilter(registrations,
                                                  discoveryHandler,
-                                                 config.as(evaluated()).get("metadata"),
+                                                 config.as(evaluatedWithHeapBindings()).get("metadata"),
                                                  logger));
 
             // Build the cache of user-info
             final Duration expiration = config.get("cacheExpiration")
-                                              .as(evaluated())
+                                              .as(evaluatedWithHeapBindings())
                                               .defaultTo("10 minutes")
                                               .as(duration());
             ScheduledExecutorService executor = config.get("executor")
@@ -949,8 +948,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             filter.setFailureHandler(config.get("failureHandler").as(requiredHeapObject(heap, Handler.class)));
             filter.setDefaultLoginGoto(config.get("defaultLoginGoto").as(expression(String.class)));
             filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto").as(expression(String.class)));
-            filter.setRequireHttps(config.get("requireHttps").as(evaluated()).defaultTo(true).asBoolean());
-            filter.setRequireLogin(config.get("requireLogin").as(evaluated()).defaultTo(true).asBoolean());
+            filter.setRequireHttps(config.get("requireHttps")
+                                         .as(evaluatedWithHeapBindings())
+                                         .defaultTo(true)
+                                         .asBoolean());
+            filter.setRequireLogin(config.get("requireLogin")
+                                         .as(evaluatedWithHeapBindings())
+                                         .defaultTo(true)
+                                         .asBoolean());
 
             return filter;
         }

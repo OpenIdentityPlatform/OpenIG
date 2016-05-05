@@ -18,7 +18,6 @@ package org.forgerock.openig.thread;
 
 import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.duration;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +103,7 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
 
     @Override
     public ExecutorService create() throws HeapException {
-        evaluated = config.as(evaluated());
+        evaluated = config.as(evaluatedWithHeapBindings());
         // Force checks at init time
         gracefulStop = evaluated.get("gracefulStop").defaultTo(true).asBoolean();
         gracePeriod = evaluated.get("gracePeriod").defaultTo("10 seconds").as(duration());

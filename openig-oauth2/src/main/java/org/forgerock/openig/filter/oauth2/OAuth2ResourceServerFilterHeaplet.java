@@ -24,7 +24,6 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -130,12 +129,15 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
         AccessTokenResolver resolver = new OpenAmAccessTokenResolver(httpHandler,
                                                                      time,
                                                                      config.get("tokenInfoEndpoint")
-                                                                           .as(evaluated())
+                                                                           .as(evaluatedWithHeapBindings())
                                                                            .required()
                                                                            .asString());
 
         // Build the cache
-        Duration expiration = config.get("cacheExpiration").as(evaluated()).defaultTo("1 minute").as(duration());
+        Duration expiration = config.get("cacheExpiration")
+                                    .as(evaluatedWithHeapBindings())
+                                    .defaultTo("1 minute")
+                                    .as(duration());
         if (!expiration.isZero()) {
             ScheduledExecutorService executorService = config.get("executor")
                                                              .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
@@ -149,14 +151,14 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                 .required()
                 .as(setOf(expression(String.class)));
 
-        String realm = config.get("realm").as(evaluated()).defaultTo(DEFAULT_REALM_NAME).asString();
+        String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo(DEFAULT_REALM_NAME).asString();
 
         Filter filter = new ResourceServerFilter(resolver,
                                                  time,
                                                  new OpenIGResourceAccess(scopes),
                                                  realm);
 
-        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").as(evaluated())
+        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").as(evaluatedWithHeapBindings())
                                                                               .defaultTo(Boolean.TRUE).asBoolean()) {
             try {
                 Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);
