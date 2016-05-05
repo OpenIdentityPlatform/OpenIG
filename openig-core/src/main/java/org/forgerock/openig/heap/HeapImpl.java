@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -27,6 +27,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.GLOBAL_DECORATOR_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asClass;
+import static org.forgerock.openig.util.JsonValues.bindings;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.util.Reject.checkNotNull;
 
@@ -48,6 +49,7 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
 
@@ -116,6 +118,11 @@ public class HeapImpl implements Heap {
     private List<JsonValue> defaults = new ArrayList<>();
 
     /**
+     * The bindings hold by this {@link Heap}.
+     */
+    private final Bindings bindings = Bindings.bindings();
+
+    /**
      * Builds an anonymous root heap (will be referenced by children but has no parent itself).
      * Intended for tests only.
      */
@@ -172,6 +179,11 @@ public class HeapImpl implements Heap {
             throws HeapException {
         // process configuration object model structure
         this.config = config;
+        // Register the bindings if any provided
+        this.bindings.bind(config.get("bindings")
+                                 .defaultTo(emptyMap())
+                                 .expect(Map.class)
+                                 .as(bindings()));
         boolean logDeprecationWarning = false;
         JsonValue heap = config.get("heap").defaultTo(emptyList());
         if (heap.isMap()) {
@@ -186,6 +198,7 @@ public class HeapImpl implements Heap {
             // We cannot log anything just yet because the heap is not initialized.
             logDeprecationWarning = true;
         }
+
         for (JsonValue object : heap.expect(List.class)) {
             addDeclaration(object);
         }
@@ -591,6 +604,14 @@ public class HeapImpl implements Heap {
                                                           name.child("top-level-handler"),
                                                           json(emptyMap()));
         return (Handler) topLevelHandlerDecorator.decorate(handler, null, context);
+    }
+
+    @Override
+    public Bindings getBindings() {
+        // At some point the parent will be null, then I return an empty Bindings and the "un-stacking" will fill that
+        // newly created bindings. (and parent is also a HeapImpl) : that means we always return a copy of the Bindings.
+        Bindings parentBindings = parent != null ? parent.getBindings() : Bindings.bindings();
+        return parentBindings.bind(this.bindings);
     }
 
     /**

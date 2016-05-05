@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.log.Logger;
 import org.hamcrest.BaseMatcher;
@@ -135,6 +136,15 @@ public class JsonValuesTest {
         assertThat(json("${8 * 5 + 2}").as(evaluated()).asInteger()).isEqualTo(42);
         assertThat(json("${join(array('foo', 'bar', 'quix'), '@')}").as(evaluated()).asString())
                 .isEqualTo("foo@bar@quix");
+    }
+
+    @Test
+    public void shouldUseBindingsWhenEvaluatingExpressionToRealType() throws Exception {
+        Bindings bindings = Bindings.bindings().bind("i", 2);
+        assertThat(json("${2 == i}").as(evaluated(bindings)).isBoolean()).isTrue();
+        assertThat(json("${8 * 5 + i}").as(evaluated(bindings)).asInteger()).isEqualTo(42);
+        assertThat(json("${join(array('foo', 'bar', 'quix'), i)}").as(evaluated(bindings)).asString())
+                .isEqualTo("foo2bar2quix");
     }
 
     @Test(enabled = false,

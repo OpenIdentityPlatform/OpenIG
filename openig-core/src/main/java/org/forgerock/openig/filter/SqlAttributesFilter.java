@@ -21,7 +21,6 @@ import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.log.LogLevel.DEBUG;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.sql.Connection;
@@ -205,7 +204,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 throw new HeapException(ne);
             }
             DataSource source;
-            JsonValue dataSource = config.get("dataSource").as(evaluated()).required();
+            JsonValue dataSource = config.get("dataSource").as(evaluatedWithHeapBindings()).required();
             try {
                 source = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
@@ -219,7 +218,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
                                                                  targetExpr,
                                                                  config.get("preparedStatement")
-                                                                       .as(evaluated())
+                                                                       .as(evaluatedWithHeapBindings())
                                                                        .required()
                                                                        .asString());
             if (config.isDefined("parameters")) {

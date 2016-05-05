@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static java.lang.String.format;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -247,10 +246,10 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final String method = config.get("method").as(evaluated()).required().asString();
+            final String method = config.get("method").as(evaluatedWithHeapBindings()).required().asString();
             StaticRequestFilter filter = new StaticRequestFilter(method);
             filter.setUri(config.get("uri").required().as(expression(String.class)));
-            filter.setVersion(config.get("version").as(evaluated()).asString());
+            filter.setVersion(config.get("version").as(evaluatedWithHeapBindings()).asString());
             if (config.isDefined("entity")
                     && config.isDefined("form")
                     && "POST".equals(method)) {

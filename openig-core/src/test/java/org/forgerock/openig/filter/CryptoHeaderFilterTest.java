@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -25,6 +25,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.DEFAULT_ALGORITHM;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.DECRYPT;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.ENCRYPT;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.MessageType.REQUEST;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
@@ -241,8 +242,7 @@ public class CryptoHeaderFilterTest {
                                        field("operation", "DECRYPT"),
                                        field("key", "DESKEY"))); // Not a valid key format
 
-        // Note: I've used the special name LogSink to avoid having to configure a real heap
-        heaplet.create(Name.of(LOGSINK_HEAP_KEY), config, null);
+        heaplet.create(Name.of(LOGSINK_HEAP_KEY), config, buildDefaultHeap());
     }
 
     private CryptoHeaderFilter buildDefaultCryptoHeader() {

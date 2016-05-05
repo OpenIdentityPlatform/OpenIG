@@ -23,6 +23,7 @@ import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
@@ -34,11 +35,13 @@ import java.util.Set;
 
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.Logger;
+import org.forgerock.util.Function;
 
 /**
  * A generic base class for heaplets with automatically injected fields.
@@ -167,5 +170,16 @@ public abstract class GenericHeaplet implements Heaplet {
      */
     public void start() throws HeapException {
         // default does nothing
+    }
+
+    /**
+     * Returns a function that will evaluate the expression hold by a {@link JsonValue} using the bindings defined
+     * in the heap of this Heaplet.
+     *
+     * @return a function that will evaluate the expression hold by a {@link JsonValue} using the bindings defined
+     * in the heap of this Heaplet.
+     */
+    protected Function<JsonValue, JsonValue, JsonValueException> evaluatedWithHeapBindings() {
+        return evaluated(heap.getBindings());
     }
 }

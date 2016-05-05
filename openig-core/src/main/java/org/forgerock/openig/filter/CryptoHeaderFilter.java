@@ -20,7 +20,6 @@ package org.forgerock.openig.filter;
 import static java.util.Collections.emptyList;
 import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -242,7 +241,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             filter.messageType = evaluated.get("messageType")
                                        .required()
                                        .as(enumConstant(MessageType.class));

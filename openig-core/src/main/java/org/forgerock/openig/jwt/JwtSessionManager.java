@@ -20,7 +20,6 @@ import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
@@ -185,7 +184,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
         public Object create() throws HeapException {
             TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             final Duration sessionTimeout = evaluated.get("sessionTimeout")
                                                      .defaultTo(DEFAULT_SESSION_TIMEOUT)
                                                      .as(duration());
@@ -206,8 +205,8 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
         private KeyPair keyPair() throws HeapException {
             KeyStore keyStore = config.get("keystore").as(optionalHeapObject(heap, KeyStore.class));
             if (keyStore != null) {
-                String alias = config.get("alias").as(evaluated()).required().asString();
-                String password = config.get("password").as(evaluated()).required().asString();
+                String alias = config.get("alias").as(evaluatedWithHeapBindings()).required().asString();
+                String password = config.get("password").as(evaluatedWithHeapBindings()).required().asString();
                 return keyPairFromKeyStore(keyStore, alias, password);
             } else {
                 return keyPairFromScratch();

@@ -17,7 +17,6 @@ package org.forgerock.openig.ldap;
 
 import static org.forgerock.opendj.ldap.Connections.newCachedConnectionPool;
 import static org.forgerock.opendj.ldap.LDAPConnectionFactory.HEARTBEAT_ENABLED;
-import static org.forgerock.util.Options.defaultOptions;
 
 import java.util.Collections;
 import java.util.HashMap;

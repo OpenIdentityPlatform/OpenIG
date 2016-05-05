@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.heap;
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 
 /**
  * Manages a collection of associated objects created and initialized by {@link Heaplet}
@@ -115,4 +116,10 @@ public interface Heap {
      *         a valid inline declaration.
      */
     <T> T resolve(JsonValue reference, Class<T> type, boolean optional) throws HeapException;
+
+    /**
+     * Returns the bindings from this heap and its parents if any.
+     * @return the bindings from this heap and its parents if any
+     */
+    Bindings getBindings();
 }

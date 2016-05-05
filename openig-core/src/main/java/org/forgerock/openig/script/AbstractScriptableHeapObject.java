@@ -20,7 +20,6 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -137,7 +136,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
                     );
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
-                final String script = config.get(CONFIG_OPTION_FILE).as(evaluated()).asString();
+                final String script = config.get(CONFIG_OPTION_FILE).as(evaluatedWithHeapBindings()).asString();
                 try {
                     return Script.fromFile(environment, mimeType, script);
                 } catch (final ScriptException e) {

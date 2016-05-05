@@ -17,7 +17,6 @@ package org.forgerock.openig.handler.saml;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.File;
 import java.io.IOException;
@@ -596,7 +595,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final JsonValue evaluated = config.as(evaluated());
+            final JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             final Map<String, String> attributeMapping = new HashMap<>();
             JsonValue mappings = evaluated.get("assertionMapping").expect(Map.class);
             if (mappings != null) {

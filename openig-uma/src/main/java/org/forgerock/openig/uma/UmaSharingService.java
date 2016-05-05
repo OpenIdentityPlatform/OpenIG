@@ -25,7 +25,6 @@ import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newCollection;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
@@ -383,9 +382,9 @@ public class UmaSharingService {
         @Override
         public Object create() throws HeapException {
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
-            URI uri = config.get("authorizationServerUri").as(evaluated()).required().as(uri());
-            String clientId = config.get("clientId").as(evaluated()).required().asString();
-            String clientSecret = config.get("clientSecret").as(evaluated()).required().asString();
+            URI uri = config.get("authorizationServerUri").as(evaluatedWithHeapBindings()).required().as(uri());
+            String clientId = config.get("clientId").as(evaluatedWithHeapBindings()).required().asString();
+            String clientSecret = config.get("clientSecret").as(evaluatedWithHeapBindings()).required().asString();
             try {
                 UmaSharingService service = new UmaSharingService(handler,
                                                                   createResourceTemplates(),
@@ -420,7 +419,9 @@ public class UmaSharingService {
                 @Override
                 public ShareTemplate.Action apply(final JsonValue value) {
                     return new ShareTemplate.Action(value.get("condition").required().as(expression(Boolean.class)),
-                                                    value.get("scopes").as(evaluated()).asSet(String.class));
+                                                    value.get("scopes")
+                                                         .as(evaluatedWithHeapBindings())
+                                                         .asSet(String.class));
                 }
             }));
         }

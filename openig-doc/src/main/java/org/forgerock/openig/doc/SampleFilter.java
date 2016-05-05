@@ -17,8 +17,6 @@
 // --- JCite ---
 package org.forgerock.openig.doc;
 
-import static org.forgerock.openig.util.JsonValues.evaluated;
-
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -100,8 +98,8 @@ public class SampleFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
 
             SampleFilter filter = new SampleFilter();
-            filter.name  = config.get("name").as(evaluated()).required().asString();
-            filter.value = config.get("value").as(evaluated()).required().asString();
+            filter.name  = config.get("name").as(evaluatedWithHeapBindings()).required().asString();
+            filter.value = config.get("value").as(evaluatedWithHeapBindings()).required().asString();
 
             return filter;
         }

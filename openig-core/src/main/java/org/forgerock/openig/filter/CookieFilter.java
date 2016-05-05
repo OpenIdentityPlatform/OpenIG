@@ -21,7 +21,6 @@ package org.forgerock.openig.filter;
 import static java.util.Collections.emptyList;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Utils.joinAsString;
 
 import java.io.IOException;
@@ -412,7 +411,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CookieFilter filter = new CookieFilter();
-            JsonValue evaluatedConfig = config.as(evaluated());
+            JsonValue evaluatedConfig = config.as(evaluatedWithHeapBindings());
             filter.suppressed.addAll(evaluatedConfig.get("suppressed").defaultTo(emptyList()).asList(String.class));
             filter.relayed.addAll(evaluatedConfig.get("relayed").defaultTo(emptyList()).asList(String.class));
             filter.managed.addAll(evaluatedConfig.get("managed").defaultTo(emptyList()).asList(String.class));

@@ -24,7 +24,6 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -323,7 +322,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                                               .required()
                                               .as(requiredHeapObject(heap, UmaSharingService.class));
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
-            String realm = config.get("realm").as(evaluated()).defaultTo("uma").asString();
+            String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo("uma").asString();
             return new UmaResourceServerFilter(service, handler, realm);
         }
     }

@@ -21,7 +21,6 @@ import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.io.IOException;
@@ -162,13 +161,16 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             EntityExtractFilter filter = new EntityExtractFilter(
-                    config.get("messageType").as(evaluated()).required().as(enumConstant(MessageType.class)),
+                    config.get("messageType")
+                          .as(evaluatedWithHeapBindings())
+                          .required()
+                          .as(enumConstant(MessageType.class)),
                     config.get("target").required().as(expression(Object.class)),
-                    config.get("charset").as(evaluated()).as(charset()));
+                    config.get("charset").as(evaluatedWithHeapBindings()).as(charset()));
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                String key = jv.get("key").as(evaluated()).required().asString();
+                String key = jv.get("key").as(evaluatedWithHeapBindings()).required().asString();
                 if (filter.extractor.getPatterns().containsKey(key)) {
                     throw new JsonValueException(jv.get("key"), "Key already defined (after evaluation : " + key + ")");
                 }

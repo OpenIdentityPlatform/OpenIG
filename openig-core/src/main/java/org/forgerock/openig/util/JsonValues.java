@@ -25,6 +25,7 @@ import java.util.List;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
@@ -140,6 +141,20 @@ public final class JsonValues {
     }
 
     /**
+     * Returns a function that will evaluate all String nodes. Transformation is applied
+     * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
+     * and their values are not changed. <p>When an error occurs during the
+     * evaluation of an expression, the value is set to {@code null} because we
+     * cannot differentiate successful evaluations or failed ones.
+     *
+     * @param bindings the bindings to use when evaluating the found expressions
+     * @return a function to evaluate String nodes of a {@link JsonValue}
+     */
+    public static Function<JsonValue, JsonValue, JsonValueException> evaluated(Bindings bindings) {
+        return new ExpressionJsonTransformFunction(bindings);
+    }
+
+    /**
      * Returns, if the given JSON value contains one of the names, the first
      * defined JSON value, otherwise if the given JSON value does not match any
      * of the names, then a JsonValue encapsulating null is returned.
@@ -186,6 +201,14 @@ public final class JsonValues {
                 }
             }
         };
+    }
+
+    /**
+     * Returns a function that will create some bindings based of a Map-based {@link JsonValue}.
+     * @return a function that will create some bindings based of a Map-based {@link JsonValue}.
+     */
+    public static Function<JsonValue, Bindings, JsonValueException> bindings() {
+        return new BindingsFromJsonValueFunction();
     }
 
     /**

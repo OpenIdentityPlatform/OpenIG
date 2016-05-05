@@ -19,7 +19,6 @@ package org.forgerock.openig.log;
 
 import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.PrintStream;
 
@@ -162,7 +161,7 @@ public class ConsoleLogSink implements LogSink {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
             ConsoleLogSink sink = new ConsoleLogSink();
             sink.setLevel(evaluated.get("level")
                                    .defaultTo(sink.level.name())

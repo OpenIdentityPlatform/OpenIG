@@ -11,15 +11,17 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.forgerock.openig.heap.Name.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.heap.Name.of;
 
 import java.security.KeyStore;
 
@@ -30,12 +32,6 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class KeyStoreHeapletTest {
 
-    /**
-     * Use a special heap object name to avoid the heaplet complaining about missing LogSink and TemporaryStorage heap
-     * objects.
-     */
-    public static final String OBJECT_NAME = LOGSINK_HEAP_KEY;
-
     @Test
     public void shouldLoadJksKeyStore() throws Exception {
 
@@ -44,7 +40,7 @@ public class KeyStoreHeapletTest {
                 field("password", "changeit")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(Name.of(OBJECT_NAME), config, null);
+        KeyStore store = (KeyStore) heaplet.create(Name.of(getClass().getName()), config, buildDefaultHeap());
 
         assertThat(store.containsAlias("keypair")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("JKS");
@@ -58,7 +54,7 @@ public class KeyStoreHeapletTest {
                 field("type", "PKCS12")
         ));
         KeyStoreHeaplet heaplet = new KeyStoreHeaplet();
-        KeyStore store = (KeyStore) heaplet.create(of(OBJECT_NAME), config, null);
+        KeyStore store = (KeyStore) heaplet.create(of(getClass().getName()), config, buildDefaultHeap());
 
         assertThat(store.containsAlias("mykey")).isTrue();
         assertThat(store.getType()).isEqualToIgnoringCase("PKCS12");

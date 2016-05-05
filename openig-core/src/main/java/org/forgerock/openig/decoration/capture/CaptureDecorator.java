@@ -125,7 +125,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        Set<CapturePoint> points = getCapturePoints(decoratorConfig);
+        Set<CapturePoint> points = getCapturePoints(decoratorConfig, context.getHeap());
         if (!points.isEmpty()) {
             // Only intercept if needed
             return new CaptureFilter(delegate, buildMessageCapture(context), points);
@@ -136,7 +136,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        Set<CapturePoint> points = getCapturePoints(decoratorConfig);
+        Set<CapturePoint> points = getCapturePoints(decoratorConfig, context.getHeap());
         if (!points.isEmpty()) {
             // Only intercept if needed
             return new CaptureHandler(delegate, buildMessageCapture(context), points);
@@ -144,17 +144,17 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         return delegate;
     }
 
-    private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig) throws HeapException {
+    private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig, final Heap heap) throws HeapException {
         Set<CapturePoint> modes = new TreeSet<>();
         if (decoratorConfig.isNull()) {
             throw new HeapException("Capture's decorator cannot be null");
         }
         if (decoratorConfig.isString()) {
             // Single value
-            modes.add(decoratorConfig.as(evaluated()).as(enumConstant(CapturePoint.class)));
+            modes.add(decoratorConfig.as(evaluated(heap.getBindings())).as(enumConstant(CapturePoint.class)));
         } else if (decoratorConfig.isList()) {
             // Array values
-            List<CapturePoint> capturePoints = decoratorConfig.as(evaluated())
+            List<CapturePoint> capturePoints = decoratorConfig.as(evaluated(heap.getBindings()))
                                                               .as(listOf(enumConstant(CapturePoint.class)));
             if (capturePoints.contains(null)) {
                 throw new HeapException("Capture's decorator cannot contain null value");
@@ -208,7 +208,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
                                                             LogSink.class,
                                                             true);
 
-            JsonValue evaluated = config.as(evaluated());
+            JsonValue evaluated = config.as(evaluated(heap.getBindings()));
             boolean captureEntity = evaluated.get("captureEntity").defaultTo(false).asBoolean();
 
             // captureExchange is deprecated

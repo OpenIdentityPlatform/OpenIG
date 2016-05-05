@@ -22,7 +22,6 @@ import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.io.IOException;
@@ -129,18 +128,25 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             SeparatedValuesFile sources =
-                    new SeparatedValuesFile(config.get("file").as(evaluated()).required().as(file()),
-                                            config.get("charset").as(evaluated()).defaultTo("UTF-8").as(charset()),
-                                            config.get("separator").as(evaluated()).defaultTo("COMMA")
+                    new SeparatedValuesFile(config.get("file").as(evaluatedWithHeapBindings()).required().as(file()),
+                                            config.get("charset")
+                                                  .as(evaluatedWithHeapBindings())
+                                                  .defaultTo("UTF-8").as(charset()),
+                                            config.get("separator")
+                                                  .as(evaluatedWithHeapBindings())
+                                                  .defaultTo("COMMA")
                                                   .as(enumConstant(Separators.class))
                                                   .getSeparator(),
-                                            config.get("header").as(evaluated()).defaultTo(true).asBoolean());
+                                            config.get("header")
+                                                  .as(evaluatedWithHeapBindings())
+                                                  .defaultTo(true)
+                                                  .asBoolean());
 
             if (config.isDefined("fields")) {
-                sources.getFields().addAll(config.get("fields").as(evaluated()).asList(String.class));
+                sources.getFields().addAll(config.get("fields").as(evaluatedWithHeapBindings()).asList(String.class));
             }
             return new FileAttributesFilter(sources,
-                                            config.get("key").as(evaluated()).required().asString(),
+                                            config.get("key").as(evaluatedWithHeapBindings()).required().asString(),
                                             config.get("value").required().as(expression(String.class)),
                                             config.get("target").required().as(expression(Map.class)));
         }
