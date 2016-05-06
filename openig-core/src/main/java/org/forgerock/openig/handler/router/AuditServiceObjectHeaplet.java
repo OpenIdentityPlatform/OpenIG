@@ -31,76 +31,71 @@ import org.forgerock.audit.providers.LocalHostNameProvider;
 import org.forgerock.audit.providers.ProductInfoProvider;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ServiceUnavailableException;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 
 /**
  * Constructs an {@link AuditService} through an {@link Heaplet}.
  */
-public class AuditServiceObject extends GenericHeapObject {
+/** Creates and initializes an AuditService in a heap environment. */
+public class AuditServiceObjectHeaplet extends GenericHeaplet {
 
-    /** Creates and initializes an AuditService in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
+    private AuditService auditService;
 
-        private AuditService auditService;
+    @Override
+    public Object create() throws HeapException {
+        try {
+            auditService = buildAuditService(config.as(evaluated()));
+            return auditService;
+        } catch (AuditException ex) {
+            throw new HeapException(ex);
+        }
+    }
 
-        @Override
-        public Object create() throws HeapException {
+    @Override
+    public void start() throws HeapException {
+        super.start();
+        if (auditService != null) {
             try {
-                auditService = buildAuditService(config.as(evaluated()));
-                return auditService;
-            } catch (AuditException ex) {
+                auditService.startup();
+            } catch (ServiceUnavailableException ex) {
                 throw new HeapException(ex);
             }
         }
+    }
 
-        @Override
-        public void start() throws HeapException {
-            super.start();
-            if (auditService != null) {
-                try {
-                    auditService.startup();
-                } catch (ServiceUnavailableException ex) {
-                    throw new HeapException(ex);
-                }
+    @Override
+    public void destroy() {
+        super.destroy();
+        if (auditService != null) {
+            auditService.shutdown();
+        }
+    }
+
+    /** Loads the audit service configuration from JSON. */
+    private AuditService buildAuditService(JsonValue config) throws AuditException {
+        final JsonValue auditServiceConfig = config.get("config");
+
+        final AuditServiceConfiguration auditServiceConfiguration;
+        if (auditServiceConfig.isNotNull()) {
+            auditServiceConfiguration = AuditJsonConfig.parseAuditServiceConfiguration(auditServiceConfig);
+        } else {
+            auditServiceConfiguration = new AuditServiceConfiguration();
+        }
+        AuditServiceBuilder auditServiceBuilder = newAuditService();
+        auditServiceBuilder.withConfiguration(auditServiceConfiguration);
+        auditServiceBuilder.withDependencyProvider(new GatewayDependencyProvider());
+
+        final ClassLoader classLoader = this.getClass().getClassLoader();
+        for (final JsonValue handlerConfig : config.get("event-handlers")) {
+            try {
+                registerHandlerToService(handlerConfig, auditServiceBuilder, classLoader);
+            } catch (Exception ex) {
+                LOGGER.error("Unable to register handler defined by config: " + handlerConfig, ex);
             }
         }
 
-        @Override
-        public void destroy() {
-            super.destroy();
-            if (auditService != null) {
-                auditService.shutdown();
-            }
-        }
-
-        /** Loads the audit service configuration from JSON. */
-        private AuditService buildAuditService(JsonValue config) throws AuditException {
-            final JsonValue auditServiceConfig = config.get("config");
-
-            final AuditServiceConfiguration auditServiceConfiguration;
-            if (auditServiceConfig.isNotNull()) {
-                auditServiceConfiguration = AuditJsonConfig.parseAuditServiceConfiguration(auditServiceConfig);
-            } else {
-                auditServiceConfiguration = new AuditServiceConfiguration();
-            }
-            AuditServiceBuilder auditServiceBuilder = newAuditService();
-            auditServiceBuilder.withConfiguration(auditServiceConfiguration);
-            auditServiceBuilder.withDependencyProvider(new GatewayDependencyProvider());
-
-            final ClassLoader classLoader = this.getClass().getClassLoader();
-            for (final JsonValue handlerConfig : config.get("event-handlers")) {
-                try {
-                    registerHandlerToService(handlerConfig, auditServiceBuilder, classLoader);
-                } catch (Exception ex) {
-                    LOGGER.error("Unable to register handler defined by config: " + handlerConfig, ex);
-                }
-            }
-
-            return auditServiceBuilder.build();
-        }
-
+        return auditServiceBuilder.build();
     }
 
     private static class GatewayDependencyProvider implements DependencyProvider {
