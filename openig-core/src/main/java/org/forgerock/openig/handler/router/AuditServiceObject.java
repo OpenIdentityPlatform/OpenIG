@@ -18,7 +18,7 @@ package org.forgerock.openig.handler.router;
 import static org.forgerock.audit.AuditServiceBuilder.newAuditService;
 import static org.forgerock.audit.json.AuditJsonConfig.registerHandlerToService;
 import static org.forgerock.http.HttpApplication.LOGGER;
-import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import org.forgerock.audit.AuditException;
 import org.forgerock.audit.AuditService;
@@ -31,8 +31,6 @@ import org.forgerock.audit.providers.LocalHostNameProvider;
 import org.forgerock.audit.providers.ProductInfoProvider;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ServiceUnavailableException;
-import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.el.Expressions;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -50,10 +48,9 @@ public class AuditServiceObject extends GenericHeapObject {
         @Override
         public Object create() throws HeapException {
             try {
-                JsonValue evaluatedConfiguration = new JsonValue(Expressions.evaluate(config.asMap(), bindings()));
-                auditService = buildAuditService(evaluatedConfiguration);
+                auditService = buildAuditService(config.as(evaluated()));
                 return auditService;
-            } catch (AuditException | ExpressionException ex) {
+            } catch (AuditException ex) {
                 throw new HeapException(ex);
             }
         }
