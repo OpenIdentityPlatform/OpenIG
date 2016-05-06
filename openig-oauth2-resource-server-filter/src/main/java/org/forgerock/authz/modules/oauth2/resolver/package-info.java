@@ -16,6 +16,6 @@
 
 /**
  * This package defines OpenAM specific logic needed to retrieve an
- * {@link org.forgerock.authz.modules.oauth2.AccessToken}.
+ * {@link org.forgerock.authz.modules.oauth2.AccessTokenInfo}.
  */
 package org.forgerock.authz.modules.oauth2.resolver;

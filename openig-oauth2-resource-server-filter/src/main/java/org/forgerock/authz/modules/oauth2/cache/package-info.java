@@ -14,6 +14,8 @@
  * Copyright 2014-2016 ForgeRock AS.
  */
 
-
-/** This package contains classes used to implement an {@link org.forgerock.authz.modules.oauth2.AccessToken} cache. */
+/**
+ * This package contains classes used to implement an
+ * {@link org.forgerock.authz.modules.oauth2.cache.CachingAccessTokenResolver}.
+ */
 package org.forgerock.authz.modules.oauth2.cache;
