@@ -17,6 +17,7 @@
 package org.forgerock.openig.decoration.timer;
 
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.http.Filter;
@@ -67,7 +68,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        if (decoratorConfig.asBoolean()) {
+        if (decoratorConfig.as(evaluated()).asBoolean()) {
             return new TimerFilter(delegate, getLogger(context));
         }
         return delegate;
@@ -76,7 +77,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        if (decoratorConfig.asBoolean()) {
+        if (decoratorConfig.as(evaluated()).asBoolean()) {
             return new TimerHandler(delegate, getLogger(context));
         }
         return delegate;

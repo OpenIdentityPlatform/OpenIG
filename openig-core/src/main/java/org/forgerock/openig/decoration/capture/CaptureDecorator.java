@@ -22,6 +22,7 @@ import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.List;
@@ -150,10 +151,11 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         }
         if (decoratorConfig.isString()) {
             // Single value
-            modes.add(decoratorConfig.as(enumConstant(CapturePoint.class)));
+            modes.add(decoratorConfig.as(evaluated()).as(enumConstant(CapturePoint.class)));
         } else if (decoratorConfig.isList()) {
             // Array values
-            List<CapturePoint> capturePoints = decoratorConfig.as(listOf(enumConstant(CapturePoint.class)));
+            List<CapturePoint> capturePoints = decoratorConfig.as(evaluated())
+                                                              .as(listOf(enumConstant(CapturePoint.class)));
             if (capturePoints.contains(null)) {
                 throw new HeapException("Capture's decorator cannot contain null value");
             }
@@ -205,15 +207,17 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
                                                             config.get("logSink"),
                                                             LogSink.class,
                                                             true);
-            boolean captureEntity = config.get("captureEntity").defaultTo(false).asBoolean();
+
+            JsonValue evaluated = config.as(evaluated());
+            boolean captureEntity = evaluated.get("captureEntity").defaultTo(false).asBoolean();
 
             // captureExchange is deprecated
             boolean captureContext = false;
-            if (config.isDefined("captureExchange")) {
-                captureContext = config.get("captureExchange").asBoolean();
+            if (evaluated.isDefined("captureExchange")) {
+                captureContext = evaluated.get("captureExchange").asBoolean();
             }
-            if (config.isDefined("captureContext")) {
-                captureContext = config.get("captureContext").asBoolean();
+            if (evaluated.isDefined("captureContext")) {
+                captureContext = evaluated.get("captureContext").asBoolean();
             }
             return new CaptureDecorator(reference, captureEntity, captureContext);
         }
