@@ -18,7 +18,6 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
-import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_ACCESS_DENIED;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
@@ -565,13 +564,6 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Promise<Response, NeverThrowsException> handleOAuth2ErrorException(final Context context,
                                                                                final Request request,
                                                                                final OAuth2ErrorException e) {
-        final OAuth2Error error = e.getOAuth2Error();
-        if (error.is(E_ACCESS_DENIED) || error.is(E_INVALID_TOKEN)) {
-            logger.debug(e.getMessage());
-        } else {
-            // Assume all other errors are more serious operational errors.
-            logger.warning(e.getMessage());
-        }
         final Map<String, Object> info = new LinkedHashMap<>();
         try {
             final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
@@ -597,6 +589,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              * was passed in to this method.
              */
         }
+        final OAuth2Error error = e.getOAuth2Error();
+        logger.error(e.getMessage());
         info.put("error", error.toJsonContent());
         target.set(bindings(context, request), info);
         return failureHandler.handle(context, request);
@@ -918,9 +912,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 try {
                     return callable.call();
                 } catch (Exception e) {
-                    logger.warning(format("Unable to call UserInfo Endpoint from client registration '%s'",
+                    logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
                                           callable.getClientRegistration().getName()));
-                    logger.warning(e);
+                    logger.error(e);
                 }
             } else {
                 // A cache is configured, extract the value from the cache
@@ -928,13 +922,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     return userInfoCache.getValue(callable.getSession().getAccessToken(),
                                                   callable);
                 } catch (InterruptedException e) {
-                    logger.warning(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
-                                          callable.getClientRegistration().getName()));
-                    logger.warning(e);
+                    logger.error(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
+                                        callable.getClientRegistration().getName()));
+                    logger.error(e);
                 } catch (ExecutionException e) {
-                    logger.warning(format("Unable to call UserInfo Endpoint from client registration '%s'",
-                                          callable.getClientRegistration().getName()));
-                    logger.warning(e);
+                    logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
+                                        callable.getClientRegistration().getName()));
+                    logger.error(e);
                 }
             }
 
@@ -985,8 +979,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 saveSession(context, session, buildUri(context, request, clientEndpoint));
                 return blockingCall(clientRegistration.getUserInfo(context, session), "getting the user info").asMap();
             } catch (OAuth2ErrorException ex) {
-                logger.debug("Fail to refresh OAuth2 Access Token");
-                logger.debug(ex);
+                logger.error("Fail to refresh OAuth2 Access Token");
+                logger.error(ex);
                 session = OAuth2Session.stateNew(time);
                 saveSession(context, session, buildUri(context, request, clientEndpoint));
                 throw ex;
