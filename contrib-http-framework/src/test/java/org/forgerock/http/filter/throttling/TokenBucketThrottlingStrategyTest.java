@@ -17,6 +17,7 @@
 package org.forgerock.http.filter.throttling;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.filter.throttling.ThrottlingAssertions.assertAccepted;
@@ -33,8 +34,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -51,16 +52,16 @@ public class TokenBucketThrottlingStrategyTest {
     private static final Duration CLEANING_INTERVAL = Duration.duration("5 seconds");
 
     TokenBucketThrottlingStrategy strategy;
-    FakeTimeService time;
+    FakeTicker ticker;
 
     @BeforeMethod
     public void beforeMethod() {
-        time = new FakeTimeService();
+        ticker = new FakeTicker();
         ScheduledExecutorService scheduledExecutor = mock(ScheduledExecutorService.class);
         when(scheduledExecutor.scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
                 .thenReturn(mock(ScheduledFuture.class));
 
-        strategy = new TokenBucketThrottlingStrategy(time, scheduledExecutor, CLEANING_INTERVAL);
+        strategy = new TokenBucketThrottlingStrategy(ticker, scheduledExecutor, CLEANING_INTERVAL);
     }
 
     @AfterMethod
@@ -81,7 +82,7 @@ public class TokenBucketThrottlingStrategyTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class, dataProvider = "incorrectCleaningIntervals")
     public void shouldRefuseIncorrectCleaningInterval(Duration cleaningInterval) throws Exception {
-        new TokenBucketThrottlingStrategy(TimeService.SYSTEM, newSingleThreadScheduledExecutor(), cleaningInterval);
+        new TokenBucketThrottlingStrategy(Ticker.systemTicker(), newSingleThreadScheduledExecutor(), cleaningInterval);
     }
 
     @Test
@@ -116,7 +117,7 @@ public class TokenBucketThrottlingStrategyTest {
         delay = strategy.throttle(partitionKey, new ThrottlingRate(1, duration("10 seconds"))).get();
         assertAccepted(delay);
 
-        time.advance(duration("3 seconds"));
+        ticker.advance(3, SECONDS);
         delay = strategy.throttle(partitionKey, new ThrottlingRate(1, duration("10 seconds"))).get();
         assertRejected(delay);
     }
@@ -133,14 +134,14 @@ public class TokenBucketThrottlingStrategyTest {
         }
 
         // Only the partition "bar" can accept a request after 170 ms (a bit more than 1/6)
-        time.advance(170);
+        ticker.advance(170, MILLISECONDS);
         delay = strategy.throttle(FOO, THROTTLING_RATE_5_PER_SEC).get();
         assertRejected(delay);
         delay = strategy.throttle(BAR, THROTTLING_RATE_6_PER_SEC).get();
         assertAccepted(delay);
 
         // Both partitions can accept some requests after 470 ms (a bit more than 2*1/6)
-        time.advance(300);
+        ticker.advance(300, MILLISECONDS);
         delay = strategy.throttle(FOO, THROTTLING_RATE_5_PER_SEC).get();
         assertAccepted(delay);
         delay = strategy.throttle(BAR, THROTTLING_RATE_6_PER_SEC).get();
@@ -158,14 +159,14 @@ public class TokenBucketThrottlingStrategyTest {
         delay = strategy.throttle(FOO, throttlingRate).get();
         assertThat(delay).isEqualTo(1_000);
 
-        // Even if time was forwarded by 50ms it's not enough for the token to be expired but the returned delay is
+        // Even if ticker was forwarded by 50ms it's not enough for the token to be expired but the returned delay is
         // returning the correct value to wait for the next valid try
-        time.advance(50);
+        ticker.advance(50, MILLISECONDS);
         delay = strategy.throttle(FOO, throttlingRate).get();
         assertThat(delay).isEqualTo(950);
 
         // Let's follow the advice and retry in the given delay
-        time.advance(delay);
+        ticker.advance(delay, MILLISECONDS);
         delay = strategy.throttle(FOO, throttlingRate).get();
         assertThat(delay).isEqualTo(0);
     }

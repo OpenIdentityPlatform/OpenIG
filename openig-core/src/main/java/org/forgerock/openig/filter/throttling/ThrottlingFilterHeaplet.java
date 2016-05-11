@@ -26,6 +26,7 @@ import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import java.util.Locale;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.filter.throttling.FixedRateThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingFilter;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;
@@ -40,7 +41,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.util.Function;
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 
 /**
  * Creates and initializes a throttling filter in a heap environment.
@@ -95,13 +95,13 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
     }
 
     private ThrottlingStrategy throttlingStrategy(String throttlingStrategy,
-                                                  TimeService time,
+                                                  Ticker ticker,
                                                   ScheduledExecutorService scheduledExecutor,
                                                   Duration cleaningInterval) {
         switch (throttlingStrategy) {
         case "bursty":
         default:
-            return new TokenBucketThrottlingStrategy(time, scheduledExecutor, cleaningInterval);
+            return new TokenBucketThrottlingStrategy(ticker, scheduledExecutor, cleaningInterval);
         }
     }
 
@@ -109,7 +109,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        TimeService time = heap.get(Keys.TIME_SERVICE_HEAP_KEY, TimeService.class);
+        Ticker ticker = heap.get(Keys.TICKER_HEAP_KEY, Ticker.class);
         Duration cleaningInterval = config.get("cleaningInterval")
                                           .as(evaluated())
                                           .defaultTo("5 seconds")
@@ -139,7 +139,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                                          .defaultTo("bursty")
                                                                          .asString()
                                                                          .toLowerCase(Locale.ROOT),
-                                                                   time,
+                                                                   ticker,
                                                                    executorService,
                                                                    cleaningInterval);
 

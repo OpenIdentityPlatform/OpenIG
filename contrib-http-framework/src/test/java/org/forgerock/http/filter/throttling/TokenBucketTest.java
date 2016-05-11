@@ -15,77 +15,82 @@
  */
 package org.forgerock.http.filter.throttling;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.time.Duration.duration;
-import static org.mockito.Mockito.mock;
 
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class TokenBucketTest {
 
-    @Test(expectedExceptions = { IllegalArgumentException.class })
+    private FakeTicker ticker;
+
+    @BeforeMethod
+    public void setUp() throws Exception {
+        ticker = new FakeTicker(0);
+    }
+
+    @Test(expectedExceptions = {IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithUnlimitedDuration() throws Exception {
-        new TokenBucket(mock(TimeService.class), new ThrottlingRate(1, Duration.UNLIMITED));
+        new TokenBucket(ticker, new ThrottlingRate(1, Duration.UNLIMITED));
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithDurationLessThan1Ms() throws Exception {
-        new TokenBucket(mock(TimeService.class), new ThrottlingRate(1, duration("3 nanoseconds")));
+        new TokenBucket(ticker, new ThrottlingRate(1, duration("3 nanoseconds")));
     }
 
     @Test(expectedExceptions = { IllegalArgumentException.class })
     public void shouldNotBePossibleToInstantiateWithNegativeCapacity() throws Exception {
-        new TokenBucket(mock(TimeService.class), new ThrottlingRate(-1, duration("42 years"))); // arbitrary duration
+        new TokenBucket(ticker, new ThrottlingRate(-1, duration("42 years"))); // arbitrary duration
     }
 
     @Test
     public void shouldTheBucketBeRefilled() throws Exception {
-        FakeTimeService time = new FakeTimeService(0); // t0
-
         // a token bucket that can refill 1 token every 333.333 ms.
-        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3, duration("1 second")));
 
-        time.advance(0); // t0 + 0 ms
-        assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
+        ticker.advance(0, MILLISECONDS);
+        assertThat(bucket.tryConsume()).isEqualTo(0); // First ticker, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2);
 
-        time.advance(1); // t0 + 1 ms
-        assertThat(bucket.tryConsume()).isEqualTo(0); // Second time < 1s, so we can consume a token
+        ticker.advance(1, MILLISECONDS); // t0 + 1 ms
+        assertThat(bucket.tryConsume()).isEqualTo(0); // Second ticker < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(1);
 
-        assertThat(bucket.tryConsume()).isEqualTo(0); // Third time < 1s, so we can consume a token
+        assertThat(bucket.tryConsume()).isEqualTo(0); // Third ticker < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(0);
 
-        time.advance(2); // t0 + 3 ms
-        assertThat(bucket.tryConsume()).isEqualTo(330); // Not enough elapsed time to get a refill
+        ticker.advance(2, MILLISECONDS); // t0 + 3 ms
+        assertThat(bucket.tryConsume()).isEqualTo(330); // Not enough elapsed ticker to get a refill
 
-        time.advance(331); // t0 + 334 ms
-        assertThat(bucket.tryConsume()).isEqualTo(0); // Enough elapsed time to get a refill
+        ticker.advance(331, MILLISECONDS); // t0 + 334 ms
+        assertThat(bucket.tryConsume()).isEqualTo(0); // Enough elapsed ticker to get a refill
     }
 
     @Test
     public void shouldTheRefillRateBeLessThan1Millisecond() throws Exception {
-        FakeTimeService time = new FakeTimeService(0);
+        FakeTicker ticker = new FakeTicker(0);
 
         // a token bucket that can refill 1 token every 0.333 ms.
-        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3000, duration("1 second")));
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3000, duration("1 second")));
 
-        assertThat(bucket.tryConsume()).isEqualTo(0); // First time, so we can consume a token
+        assertThat(bucket.tryConsume()).isEqualTo(0); // First ticker, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
 
-        time.advance(1);
-        assertThat(bucket.tryConsume()).isEqualTo(0); // Second time < 1s, so we can consume a token
+        ticker.advance(1, MILLISECONDS);
+        assertThat(bucket.tryConsume()).isEqualTo(0); // Second ticker < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
     }
 
     @Test
     public void shouldNotConsumeMoreTokensThanExpected() throws Exception {
-        FakeTimeService time = new FakeTimeService(42);
+        FakeTicker ticker = new FakeTicker(42);
         // 3 reqs / sec means it has a unlimited fractional part
-        TokenBucket bucket = new TokenBucket(time, new ThrottlingRate(3, duration("1 second")));
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3, duration("1 second")));
 
         // Simulate some heavy load by trying to consume some tokens in the same millisecond : only the first one
         // has to be consumed.
@@ -94,5 +99,6 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).as("Consume third token").isLessThanOrEqualTo(0);
         assertThat(bucket.tryConsume()).as("Consume fourth token").isGreaterThan(0);
     }
+
 
 }

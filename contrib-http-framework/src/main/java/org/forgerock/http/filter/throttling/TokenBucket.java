@@ -15,24 +15,26 @@
  */
 package org.forgerock.http.filter.throttling;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.util.Reject;
-import org.forgerock.util.time.TimeService;
 
 /**
- * A TokenBucket is an helper class that aims to limit the output rate. Each time the method {@link #tryConsume()} is
+ * A TokenBucket is an helper class that aims to limit the output rate. Each ticker the method {@link #tryConsume()} is
  * called, a token is removed from the bucket. Where there is no token anymore into the bucket then the returned value
- * is the time to wait for the availability of the token. An attempt to refill the bucket as much as possible, is done
+ * is the ticker to wait for the availability of the token. An attempt to refill the bucket as much as possible, is done
  * prior any token consumption. That is a variant of the Leaky Bucket algorithm, used in network traffic shaping.
  *
  * You may use it like this to limit the number of calls to your API :
  * <pre>
  * {@code
- * TimeService time = ...
+ * Ticker ticker = ...
  * // We want to limit to maximum 10 calls per seconds
- * TokenBucket bucket = new TokenBucket(time, 10, Duration.duration("1 seconds"));
+ * TokenBucket bucket = new TokenBucket(ticker, 10, Duration.duration("1 seconds"));
  *
  * // Then you use it like this :
  * public long doSomething() throws Exception {
@@ -68,28 +70,28 @@ class TokenBucket {
         }
     }
 
-    private final TimeService time;
+    private final Ticker ticker;
     private final ThrottlingRate throttlingRate;
     private final int capacity;
-    private final long duration; // in milliseconds
+    private final long duration; // in nanoseconds
     private final AtomicReference<State> state;
-    private final float millisToWaitForNextToken;
+    private final long nanosToWaitForNextToken;
 
     /**
      * Construct a TokenBucket.
      *
-     * @param time
-     *            the time service to use.
+     * @param ticker
+     *            the ticker service to use.
      * @param rate
      *            the rate applied on this bucket.
      */
-    public TokenBucket(TimeService time, ThrottlingRate rate) {
-        Reject.ifNull(time);
-        this.time = time;
+    public TokenBucket(Ticker ticker, ThrottlingRate rate) {
+        Reject.ifNull(ticker);
+        this.ticker = ticker;
         this.throttlingRate = rate;
         this.capacity = rate.getNumberOfRequests();
-        this.duration = rate.getDuration().to(TimeUnit.MILLISECONDS);
-        this.millisToWaitForNextToken = duration / (float) capacity;
+        this.duration = rate.getDuration().to(NANOSECONDS);
+        this.nanosToWaitForNextToken = rate.delayBetweenRequests(NANOSECONDS);
         this.state = new AtomicReference<>();
     }
 
@@ -103,12 +105,12 @@ class TokenBucket {
      */
     public long tryConsume() {
         do {
-            final long now = time.now();
+            final long now = ticker.read();
 
             final State currentState = state.get();
             final State newState;
             if (currentState == null) {
-                // First time, start at full capacity minus the current call.
+                // First ticker, start at full capacity minus the current call.
                 newState = new State(capacity - 1, now);
             } else {
                 long timestampLastRefill = currentState.timestampLastRefill;
@@ -122,10 +124,9 @@ class TokenBucket {
 
                 if (counter <= 0) {
                     // We had not any opportunity to refill the bucket so we just give up
-                    long delayForNextRetryInMillis =
-                            (currentState.timestampLastRefill + (long) this.millisToWaitForNextToken) - now;
+                    long delayForNextRetry = (currentState.timestampLastRefill + this.nanosToWaitForNextToken) - now;
                     // Return at least 1ms to indicate we did not consume a token
-                    return Math.max(delayForNextRetryInMillis, 1);
+                    return Math.max(1, MILLISECONDS.convert(delayForNextRetry, NANOSECONDS));
                 }
                 counter--;
                 newState = new State(counter, timestampLastRefill);
@@ -140,10 +141,10 @@ class TokenBucket {
 
     private long tokensThatCanBeAdded(long now, State state) {
         final long elapsedTime = Math.min(duration, now - state.timestampLastRefill);
-        return (long) (elapsedTime / this.millisToWaitForNextToken);
+        return elapsedTime / this.nanosToWaitForNextToken;
     }
 
-    public long getRemainingTokensCount() {
+    long getRemainingTokensCount() {
         State currentState = state.get();
         return currentState == null ? capacity : currentState.counter;
     }
@@ -152,7 +153,7 @@ class TokenBucket {
         return throttlingRate;
     }
 
-    long getTimestampLastRefill() {
+    private long getTimestampLastRefill() {
         State currentState = state.get();
         return currentState.timestampLastRefill;
     }
@@ -163,7 +164,7 @@ class TokenBucket {
      * @return whether this token bucket is expired or not
      */
     public boolean isExpired() {
-        return (time.now() - getTimestampLastRefill()) > duration;
+        return (ticker.read() - getTimestampLastRefill()) > duration;
     }
 
 }

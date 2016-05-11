@@ -42,6 +42,7 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
@@ -60,6 +61,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
@@ -184,7 +186,6 @@ public final class GatewayHttpApplication implements HttpApplication {
             // Load the configuration
             final URL configurationURL = selectConfigurationUrl();
             final JsonValue config = readJson(configurationURL);
-            TimeService timeService = TimeService.SYSTEM;
 
             // Create and configure the heap
             heap = new HeapImpl(Name.of(configurationURL.toString()));
@@ -206,7 +207,8 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
-            heap.put(TIME_SERVICE_HEAP_KEY, timeService);
+            heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
+            heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
 
             AuditSystem auditSystem = new ForwardingAuditSystem();
 
