@@ -28,10 +28,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class TokenBucketThrottlingStrategy implements ThrottlingStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenBucketThrottlingStrategy.class);
 
-    private final TimeService time;
+    private final Ticker ticker;
     private final ConcurrentMap<String, TokenBucket> partitions;
     private final ScheduledFuture<?> cleaningFuture;
 
@@ -70,21 +70,21 @@ public class TokenBucketThrottlingStrategy implements ThrottlingStrategy {
     /**
      * Constructs a new {@link TokenBucketThrottlingStrategy}.
      *
-     * @param time the {@link TimeService} to use to follow the timeline.
+     * @param ticker the {@link Ticker} to use to follow the timeline.
      * @param scheduledExecutor the {@link ScheduledExecutorService} used to schedule cleaning tasks.
      * @param cleaningInterval the interval between 2 cleaning tasks.
      */
-    public TokenBucketThrottlingStrategy(TimeService time,
+    public TokenBucketThrottlingStrategy(Ticker ticker,
                                          ScheduledExecutorService scheduledExecutor,
                                          Duration cleaningInterval) {
-        this(time, new ConcurrentHashMap<String, TokenBucket>(), scheduledExecutor, cleaningInterval);
+        this(ticker, new ConcurrentHashMap<String, TokenBucket>(), scheduledExecutor, cleaningInterval);
     }
 
-    TokenBucketThrottlingStrategy(TimeService time,
+    TokenBucketThrottlingStrategy(Ticker ticker,
                                   ConcurrentMap<String, TokenBucket> partitions,
                                   ScheduledExecutorService scheduledExecutor,
                                   Duration cleaningInterval) {
-        this.time = checkNotNull(time);
+        this.ticker = checkNotNull(ticker);
         this.partitions = checkNotNull(partitions);
         if (cleaningInterval.isZero() || cleaningInterval.compareTo(duration(1, DAYS)) > 0) {
             throw new IllegalArgumentException("Invalid value for cleaningInterval : "
@@ -109,7 +109,7 @@ public class TokenBucketThrottlingStrategy implements ThrottlingStrategy {
         for (;;) {
             TokenBucket previousBucket = partitions.get(partitionKey);
             if (previousBucket == null) {
-                TokenBucket newBucket = new TokenBucket(time, rate);
+                TokenBucket newBucket = new TokenBucket(ticker, rate);
                 previousBucket = partitions.putIfAbsent(partitionKey, newBucket);
                 if (previousBucket == null) {
                     // There was no previous TokenBucket, so go on with that freshly created one
@@ -121,7 +121,7 @@ public class TokenBucketThrottlingStrategy implements ThrottlingStrategy {
                 return previousBucket;
             }
             // The rate definition has changed so try to assign this new TokenBucket
-            TokenBucket newBucket = new TokenBucket(time, rate);
+            TokenBucket newBucket = new TokenBucket(ticker, rate);
             if (partitions.replace(partitionKey, previousBucket, newBucket)) {
                 return newBucket;
             }

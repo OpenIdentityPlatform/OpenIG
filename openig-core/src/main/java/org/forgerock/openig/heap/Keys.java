@@ -15,6 +15,7 @@
  */
 package org.forgerock.openig.heap;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Handler;
 import org.forgerock.http.filter.TransactionIdOutboundFilter;
 import org.forgerock.http.session.SessionManager;
@@ -120,6 +121,11 @@ public final class Keys {
      * {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";
+
+    /**
+     * Key to retrieve a {@link Ticker} instance from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String TICKER_HEAP_KEY = "Ticker";
 
     /**
      * Key to retrieve a {@link TimerDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
