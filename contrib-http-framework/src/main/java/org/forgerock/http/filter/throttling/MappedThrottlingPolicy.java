@@ -18,13 +18,13 @@ package org.forgerock.http.filter.throttling;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.ContextAndRequest;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -41,8 +41,8 @@ import org.forgerock.util.promise.Promise;
  */
 public class MappedThrottlingPolicy implements ThrottlingPolicy {
 
-    private final Map<String, ThrottlingRate> rates;
-    private final ThrottlingRate defaultRate;
+    private final Map<String, Promise<ThrottlingRate, Exception>> rates;
+    private final Promise<ThrottlingRate, Exception> defaultRate;
     private final AsyncFunction<ContextAndRequest, String, Exception> throttlingRateMapper;
 
     /**
@@ -55,22 +55,26 @@ public class MappedThrottlingPolicy implements ThrottlingPolicy {
                                   Map<String, ThrottlingRate> throttlingRatesMapping,
                                   ThrottlingRate defaultRate) {
         this.throttlingRateMapper = checkNotNull(throttlingRateMapper);
-        this.rates = checkNotNull(throttlingRatesMapping);
-        this.defaultRate = defaultRate;
+        checkNotNull(throttlingRatesMapping);
+        this.rates = new HashMap<>(throttlingRatesMapping.size());
+        for (Map.Entry<String, ThrottlingRate> entry : throttlingRatesMapping.entrySet()) {
+            rates.put(entry.getKey(), newResultPromise(entry.getValue()));
+        }
+        this.defaultRate = newResultPromise(defaultRate);
     }
 
     @Override
     public Promise<ThrottlingRate, Exception> lookup(Context context, Request request) {
         return newResultPromise(new ContextAndRequest(context, request))
                        .thenAsync(throttlingRateMapper)
-                       .then(new Function<String, ThrottlingRate, Exception>() {
+                       .thenAsync(new AsyncFunction<String, ThrottlingRate, Exception>() {
                            @Override
-                           public ThrottlingRate apply(String key) {
+                           public Promise<ThrottlingRate, Exception> apply(String key) {
                                if (key == null) {
                                    return defaultRate;
                                }
 
-                               ThrottlingRate rate = rates.get(key);
+                               Promise<ThrottlingRate, Exception> rate = rates.get(key);
                                return rate != null ? rate : defaultRate;
                            }
                        });
