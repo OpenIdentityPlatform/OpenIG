@@ -27,18 +27,18 @@ import org.forgerock.util.promise.Promise;
  */
 public class FixedRateThrottlingPolicy implements ThrottlingPolicy {
 
-    final ThrottlingRate rate;
+    private final Promise<ThrottlingRate, Exception> promiseRate;
 
     /**
      * Constructs a new throttling policy that always returns the same throttling rate.
      * @param rate the rate to return
      */
     public FixedRateThrottlingPolicy(ThrottlingRate rate) {
-        this.rate = rate;
+        this.promiseRate = newResultPromise(rate);
     }
 
     @Override
     public Promise<ThrottlingRate, Exception> lookup(Context context, Request request) {
-        return newResultPromise(rate);
+        return promiseRate;
     }
 }
