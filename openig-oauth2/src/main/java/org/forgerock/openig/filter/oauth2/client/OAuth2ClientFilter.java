@@ -74,7 +74,7 @@ import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.forgerock.util.LazyMap;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
@@ -255,7 +255,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private boolean requireLogin = true;
     private Expression<?> target;
     private final TimeService time;
-    private ThreadSafeCache<String, Map<String, Object>> userInfoCache;
+    private PerItemEvictionStrategyCache<String, Map<String, Object>> userInfoCache;
     private final Handler discoveryAndDynamicRegistrationChain;
     private final ClientRegistrationRepository registrations;
 
@@ -800,14 +800,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * @param userInfoCache
      *         the cache of user info resources.
      */
-    public void setUserInfoCache(final ThreadSafeCache<String, Map<String, Object>> userInfoCache) {
+    public void setUserInfoCache(final PerItemEvictionStrategyCache<String, Map<String, Object>> userInfoCache) {
         this.userInfoCache = userInfoCache;
     }
 
     /** Creates and initializes the filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private ThreadSafeCache<String, Map<String, Object>> cache;
+        private PerItemEvictionStrategyCache<String, Map<String, Object>> cache;
 
         @Override
         public Object create() throws HeapException {
@@ -866,8 +866,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 ScheduledExecutorService executor = config.get("executor")
                                                           .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
                                                           .as(requiredHeapObject(heap, ScheduledExecutorService.class));
-                cache = new ThreadSafeCache<>(executor);
-                cache.setDefaultTimeout(expiration);
+                cache = new PerItemEvictionStrategyCache<>(executor, expiration);
                 filter.setUserInfoCache(cache);
             }
 

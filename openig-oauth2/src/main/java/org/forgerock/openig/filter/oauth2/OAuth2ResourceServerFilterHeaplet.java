@@ -50,7 +50,7 @@ import org.forgerock.authz.modules.oauth2.resolver.OpenAmAccessTokenResolver;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
@@ -118,7 +118,7 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
      */
     public static final String DEFAULT_REALM_NAME = "OpenIG";
 
-    private ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
+    private PerItemEvictionStrategyCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
 
     @Override
     public Object create() throws HeapException {
@@ -141,8 +141,7 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                                                              .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
                                                              .as(requiredHeapObject(heap,
                                                                                     ScheduledExecutorService.class));
-            cache = new ThreadSafeCache<>(executorService);
-            cache.setDefaultTimeout(expiration);
+            cache = new PerItemEvictionStrategyCache<>(executorService, expiration);
             resolver = new CachingAccessTokenResolver(time, resolver, cache);
         }
 

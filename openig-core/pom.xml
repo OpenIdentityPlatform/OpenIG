@@ -60,11 +60,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>contrib-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>1.4.178</version>

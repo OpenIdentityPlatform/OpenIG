@@ -75,7 +75,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -175,7 +175,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     private static final String SUBJECT_ERROR =
             "The attribute 'ssoTokenSubject' or 'jwtSubject' or 'claimsSubject' must be specified";
 
-    private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
+    private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
     private final RequestHandler requestHandler;
     private String application;
     private Expression<String> ssoTokenSubject;
@@ -210,7 +210,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
      * @param cache
      *            The cache for policy decisions to set.
      */
-    public void setCache(final ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache) {
+    public void setCache(final PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache) {
         this.policyDecisionCache = cache;
     }
 
@@ -449,7 +449,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     /** Creates and initializes a policy enforcement filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+        private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache;
 
         @Override
         public Object create() throws HeapException {
@@ -502,10 +502,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 ScheduledExecutorService executor = config.get("executor")
                                                           .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
                                                           .as(requiredHeapObject(heap, ScheduledExecutorService.class));
-                cache = new ThreadSafeCache<>(executor);
+                String defaultExpiration = "1 minute";
+                cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
                 final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
                                                           .as(evaluated())
-                                                          .defaultTo("1 minute")
+                                                          .defaultTo(defaultExpiration)
                                                           .as(duration());
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
                     throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");

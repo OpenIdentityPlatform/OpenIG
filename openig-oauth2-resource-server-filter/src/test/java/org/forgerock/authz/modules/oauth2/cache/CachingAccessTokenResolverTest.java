@@ -36,9 +36,10 @@ import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -60,14 +61,15 @@ public class CachingAccessTokenResolverTest {
     private ScheduledExecutorService executorService;
 
     // Don't know why but if I @Spy this field, Mockito does not re-creates the cache instance, leading to errors
-    private ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
+    private PerItemEvictionStrategyCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(resolver.resolve(any(Context.class), anyString()))
                 .thenReturn(Promises.<AccessTokenInfo, AccessTokenException>newResultPromise(null));
-        cache = spy(new ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>>(executorService));
+        cache = spy(new PerItemEvictionStrategyCache<String, Promise<AccessTokenInfo, AccessTokenException>>(
+                executorService, Duration.duration(1, TimeUnit.MINUTES)));
     }
 
     @Test
