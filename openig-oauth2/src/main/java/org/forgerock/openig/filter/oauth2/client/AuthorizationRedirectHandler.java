@@ -15,8 +15,8 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.appendQuery;

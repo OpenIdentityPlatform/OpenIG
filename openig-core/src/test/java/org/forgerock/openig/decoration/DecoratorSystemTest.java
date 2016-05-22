@@ -18,7 +18,7 @@ package org.forgerock.openig.decoration;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.util.Json.readJson;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;

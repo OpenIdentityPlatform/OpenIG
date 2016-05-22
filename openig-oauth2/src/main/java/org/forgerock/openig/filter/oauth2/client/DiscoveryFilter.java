@@ -16,7 +16,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
-import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.util.Uris.withQuery;
 import static org.forgerock.json.JsonValue.field;
@@ -35,10 +35,10 @@ import java.util.regex.Pattern;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;

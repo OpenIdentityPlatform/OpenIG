@@ -16,7 +16,7 @@
 package org.forgerock.openig.filter;
 
 
-import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import org.forgerock.http.Filter;

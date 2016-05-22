@@ -19,7 +19,7 @@
 package org.forgerock.openig.filter;
 
 import static java.util.Collections.emptyList;
-import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Utils.joinAsString;

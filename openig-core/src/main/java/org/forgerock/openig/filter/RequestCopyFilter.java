@@ -15,8 +15,8 @@
  */
 package org.forgerock.openig.filter;
 
-import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.io.IOException;

@@ -17,7 +17,7 @@
 package org.forgerock.openig.decoration.baseuri;
 
 import static java.lang.String.format;
-import static org.forgerock.http.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 

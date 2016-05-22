@@ -16,8 +16,8 @@
 
 package org.forgerock.openig.openam;
 
-import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
