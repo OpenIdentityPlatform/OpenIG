@@ -29,11 +29,6 @@
   <dependencies>
     <dependency>
       <groupId>org.forgerock.openig</groupId>
-      <artifactId>contrib-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.forgerock.openig</groupId>
       <artifactId>contrib-http-framework</artifactId>
       <version>${project.version}</version>
     </dependency>

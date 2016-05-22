@@ -29,7 +29,7 @@ import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
@@ -41,7 +41,7 @@ import org.forgerock.util.time.TimeService;
 public class CachingAccessTokenResolver implements AccessTokenResolver {
 
     private final AccessTokenResolver resolver;
-    private final ThreadSafeCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
+    private final PerItemEvictionStrategyCache<String, Promise<AccessTokenInfo, AccessTokenException>> cache;
     private final AsyncFunction<Promise<AccessTokenInfo, AccessTokenException>, Duration, Exception> expires;
 
     /**
@@ -57,7 +57,7 @@ public class CachingAccessTokenResolver implements AccessTokenResolver {
      */
     public CachingAccessTokenResolver(final TimeService time,
                                       final AccessTokenResolver resolver,
-                                      final ThreadSafeCache
+                                      final PerItemEvictionStrategyCache
                                               <String, Promise<AccessTokenInfo, AccessTokenException>> cache) {
         this.resolver = resolver;
         this.cache = cache;

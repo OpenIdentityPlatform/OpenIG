@@ -13,7 +13,8 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-package org.forgerock.util;
+
+package org.forgerock.http.filter.throttling;
 
 
 import java.util.ArrayList;

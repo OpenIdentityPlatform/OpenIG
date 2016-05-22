@@ -36,7 +36,6 @@
   <url>http://openig.forgerock.org</url>
 
   <modules>
-    <module>contrib-util</module>
     <module>contrib-http-framework</module>
     <module>openig-core</module>
     <module>openig-war</module>

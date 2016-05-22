@@ -35,9 +35,10 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.Options.defaultOptions;
+import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
@@ -79,7 +80,7 @@ import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
-import org.forgerock.util.ThreadSafeCache;
+import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -107,7 +108,7 @@ public class PolicyEnforcementFilterTest {
     private AttributesContext attributesContext;
     private Bindings bindings;
     private SessionContext sessionContext;
-    private ThreadSafeCache<String, Promise<JsonValue, ResourceException>> cache;
+    private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache;
     private Request resourceRequest;
     @SuppressWarnings("rawtypes")
     private Expression<Map> target;
@@ -139,7 +140,7 @@ public class PolicyEnforcementFilterTest {
         @SuppressWarnings("rawtypes")
         final Expression<Map> environmentMap = Expression.valueOf("${attributes.environmentMap}", Map.class);
         environmentMap.set(bindings, singletonMap("IP", IP_LIST));
-        cache = new ThreadSafeCache<>(newSingleThreadScheduledExecutor());
+        cache = new PerItemEvictionStrategyCache<>(newSingleThreadScheduledExecutor(), duration(1, TimeUnit.MINUTES));
         target = Expression.valueOf("${attributes.policy}", Map.class);
 
         when(policiesHandler.handle(any(Context.class), any(Request.class)))
@@ -416,7 +417,9 @@ public class PolicyEnforcementFilterTest {
         filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
-        filter.setCache(new ThreadSafeCache<String, Promise<JsonValue, ResourceException>>(executorService));
+        PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache =
+                new PerItemEvictionStrategyCache<>(executorService, duration(1, TimeUnit.MINUTES));
+        filter.setCache(cache);
 
         when(next.handle(any(Context.class), eq(resourceRequest)))
             .thenReturn(newResponsePromise(displayResourceResponse()));

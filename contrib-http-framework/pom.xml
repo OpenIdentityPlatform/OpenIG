@@ -28,21 +28,9 @@
   <description>This module will temporary hold the file that to be contributed to forgerock-http-framework.</description>
 
   <dependencies>
-   <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>contrib-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.forgerock.openig</groupId>
-      <artifactId>contrib-util</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
