@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;

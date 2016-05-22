@@ -17,9 +17,9 @@
 package org.forgerock.openig.uma;
 
 import static java.lang.String.format;
-import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.header.WarningHeader.MISCELLANEOUS_WARNING;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;

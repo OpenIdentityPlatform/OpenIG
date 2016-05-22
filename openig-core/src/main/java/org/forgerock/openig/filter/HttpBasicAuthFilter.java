@@ -20,9 +20,9 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.http.Responses.newInternalServerError;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.openig.util.JsonValues.evaluated;

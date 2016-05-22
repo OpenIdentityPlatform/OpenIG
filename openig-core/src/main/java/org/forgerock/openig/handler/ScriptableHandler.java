@@ -15,8 +15,8 @@
  */
 package org.forgerock.openig.handler;
 
+import static org.forgerock.http.protocol.Responses.onExceptionInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.http.Responses.onExceptionInternalServerError;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;

@@ -35,9 +35,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.http.routing.Router;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.Handlers;

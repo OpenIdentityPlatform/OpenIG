@@ -44,9 +44,9 @@ import java.util.regex.Pattern;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.MutableUri;
-import org.forgerock.http.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
