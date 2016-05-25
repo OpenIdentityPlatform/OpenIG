@@ -133,9 +133,7 @@ public class SsoTokenFilterTest {
     @Test(dataProvider = "ssoTokenHeaderName")
     public void shouldRequestForSSOTokenWhenNone(final String givenSsoTokenHeaderName) throws Exception {
         // Given
-        when(authenticate.handle(any(Context.class), any(Request.class)))
-                                .thenReturn(newResponsePromise(authenticated));
-
+        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
         when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
@@ -153,9 +151,7 @@ public class SsoTokenFilterTest {
     public void shouldRequestForNewSSOTokenOnlyOnceWhenFirstRequestFailed() throws Exception {
         // Given
         when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(unauthorized));
-
-        when(authenticate.handle(any(Context.class), any(Request.class)))
-                                .thenReturn(newResponsePromise(authenticated));
+        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
         final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
@@ -176,7 +172,7 @@ public class SsoTokenFilterTest {
         badRequestResponse.setStatus(BAD_REQUEST);
 
         when(authenticate.handle(any(Context.class), any(Request.class)))
-                .thenReturn(newResponsePromise(badRequestResponse));
+            .thenReturn(newResponsePromise(badRequestResponse));
 
         final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
 
