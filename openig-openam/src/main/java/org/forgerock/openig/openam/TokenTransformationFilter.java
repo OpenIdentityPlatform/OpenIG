@@ -197,8 +197,8 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
             URI baseUri = getOpenamBaseUri();
             String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
             String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
-            Expression<String> username = config.get("username").required().as(expression(String.class));
-            Expression<String> password = config.get("password").required().as(expression(String.class));
+            String username = config.get("username").required().as(evaluated()).asString();
+            String password = config.get("password").required().as(evaluated()).asString();
             SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
                                                                baseUri,
                                                                realm,

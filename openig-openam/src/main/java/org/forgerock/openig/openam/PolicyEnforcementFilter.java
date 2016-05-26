@@ -455,8 +455,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         public Object create() throws HeapException {
 
             final String openamUrl = trailingSlash(config.get("openamUrl").as(evaluated()).required().asString());
-            final Expression<String> pepUsername = config.get("pepUsername").required().as(expression(String.class));
-            final Expression<String> pepPassword = config.get("pepPassword").required().as(expression(String.class));
+            final String pepUsername = config.get("pepUsername").required().as(evaluated()).asString();
+            final String pepPassword = config.get("pepPassword").required().as(evaluated()).asString();
             final String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
             final String pepRealm = config.get("pepRealm").as(evaluated()).defaultTo(realm).asString();
             final Handler policiesHandler = config.get("policiesHandler")

@@ -26,7 +26,6 @@ import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.el.Bindings.bindings;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,7 +39,6 @@ import java.util.concurrent.ExecutorService;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -75,7 +73,6 @@ public class SsoTokenFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         attributesContext = new AttributesContext(new RootContext());
-        attributesContext.getAttributes().put("password", "hifalutin");
 
         request = new Request();
         unauthorized = new Response();
@@ -84,6 +81,18 @@ public class SsoTokenFilterTest {
                                                                    field("message", "Access denied"))));
         authenticated = new Response();
         authenticated.setStatus(OK).setEntity(AUTHENTICATION_SUCCEEDED);
+    }
+
+    @SuppressWarnings("unused")
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldFailToCreateFilterWithInvalidRealm() throws Exception {
+        new SsoTokenFilter(authenticate,
+                           OPENAM_URI,
+                           "   >>invalid<<    ",
+                           DEFAULT_HEADER_NAME,
+                           "bjensen",
+                           "hifalutin",
+                           logger);
     }
 
     @DataProvider
@@ -100,26 +109,9 @@ public class SsoTokenFilterTest {
                            openAmUri,
                            "/",
                            DEFAULT_HEADER_NAME,
-                           Expression.valueOf("bjensen", String.class),
-                           Expression.valueOf("${attributes.password}", String.class),
+                           "bjensen",
+                           "hifalutin",
                            logger);
-    }
-
-    @Test
-    public void shouldCreateRequestForSSOToken() throws Exception  {
-        final SsoTokenFilter filter =
-                new SsoTokenFilter(authenticate,
-                                   OPENAM_URI,
-                                   "/myrealm/sub",
-                                   DEFAULT_HEADER_NAME,
-                                   Expression.valueOf("bjensen", String.class),
-                                   Expression.valueOf("${attributes.password}", String.class),
-                                   logger);
-        final Request request = filter.authenticationRequest(bindings(attributesContext, null));
-        assertThat(request.getHeaders().get("X-OpenAM-Username").getFirstValue()).isEqualTo("bjensen");
-        assertThat(request.getHeaders().get("X-OpenAM-Password").getFirstValue()).isEqualTo("hifalutin");
-        assertThat(request.getMethod()).isEqualTo("POST");
-        assertThat(request.getUri().toASCIIString()).isEqualTo(OPENAM_URI + "json/myrealm/sub/authenticate");
     }
 
     @DataProvider
@@ -301,8 +293,8 @@ public class SsoTokenFilterTest {
                                   OPENAM_URI,
                                   null,
                                   headerName,
-                                  Expression.valueOf("bjensen", String.class),
-                                  Expression.valueOf("${attributes.password}", String.class),
+                                  "bjensen",
+                                  "hifalutin",
                                   logger);
     }
 }
