@@ -220,14 +220,6 @@ public class PolicyEnforcementFilterTest {
                     field("openamUrl", OPENAM_URI),
                     field("pepUsername", "jackson"),
                     field("pepPassword", "password"))) },
-            /* Invalid realm. */
-            { json(object(
-                    field("openamUrl", OPENAM_URI),
-                    field("pepUsername", "jackson"),
-                    field("pepPassword", "password"),
-                    field("realm", "   >>invalid<<    "),
-                    field("jwtSubject", "${attributes.jwtSubject}"),
-                    field("application", "anotherApplication"))) },
             /* Invalid target. */
             { json(object(
                     field("openamUrl", OPENAM_URI),
